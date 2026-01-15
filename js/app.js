@@ -636,13 +636,13 @@ function showRechnung(rechnungId) {
                 </tr>
             </thead>
             <tbody>
-                ${rechnung.positionen.map((p, i) => `
+                ${(rechnung.positionen || []).map((p, i) => `
                     <tr>
                         <td>${i + 1}</td>
                         <td>${p.beschreibung}</td>
                         <td>${p.menge} ${p.einheit}</td>
                         <td class="text-right">${formatCurrency(p.preis)}</td>
-                        <td class="text-right">${formatCurrency(p.menge * p.preis)}</td>
+                        <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
                     </tr>
                 `).join('')}
                 ${rechnung.materialKosten > 0 ? `
@@ -1324,8 +1324,9 @@ if (originalMarkPaid) {
 // ============================================
 // Initialize Application
 // ============================================
-function init() {
-    // Core services are self-initializing
+async function init() {
+    // Await store service load (migrates from localStorage if needed)
+    await window.storeService.load();
 
     initAnfrageForm();
     initAngebotForm();
@@ -1336,8 +1337,6 @@ function init() {
     initMahnwesen();
     initBuchhaltung();
     initQuickActions();
-    // initKeyboardShortcuts - handled by UI in future
-    // initCustomerPresets - to be migrated
 
     updateDashboard();
 }
@@ -2078,7 +2077,7 @@ window.updateFollowUpBadge = updateFollowUpBadge;
 window.updateLowStockBadge = updateLowStockBadge;
 
 // Start app
-document.addEventListener('DOMContentLoaded', () => {
-    init();
+document.addEventListener('DOMContentLoaded', async () => {
+    await init();
     initAutomations();
 });

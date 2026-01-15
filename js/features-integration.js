@@ -561,197 +561,79 @@ function exportReportCSV() {
 }
 
 // ============================================
-// Chatbot View
+// AI Assistant (Native/Ollama Style)
 // ============================================
-let activeChatConversationId = null;
 
 function renderChatbot() {
-    if (!window.chatbotService) return;
-
-    const stats = window.chatbotService.getStatistics();
-    const conversations = window.chatbotService.getRecentConversations();
-
-    // Update stats
-    const convEl = document.getElementById('chatbot-conversations');
-    const msgEl = document.getElementById('chatbot-today-messages');
-    const badge = document.getElementById('chatbot-badge');
-
-    if (convEl) convEl.textContent = stats.totalConversations;
-    if (msgEl) msgEl.textContent = stats.todayMessages;
-    if (badge) badge.textContent = stats.activeConversations;
-
-    // Update status indicator
-    const statusEl = document.getElementById('chatbot-status');
-    const toggleBtn = document.getElementById('btn-chatbot-toggle');
-    const isEnabled = window.chatbotService.settings.enabled;
-
-    if (statusEl) {
-        statusEl.textContent = isEnabled ? '🟢 Aktiv' : '⚪ Inaktiv';
-        statusEl.className = 'chatbot-status' + (isEnabled ? ' active' : '');
-    }
-    if (toggleBtn) {
-        toggleBtn.textContent = isEnabled ? 'Deaktivieren' : 'Aktivieren';
-        toggleBtn.className = isEnabled ? 'btn btn-secondary' : 'btn btn-success';
-    }
-
-    // Render conversations list
-    renderConversationList(conversations);
+    if (!window.llmService) return;
+    initAIModelSelector();
 }
 
-function renderConversationList(conversations) {
-    const container = document.getElementById('conversation-list');
-    if (!container) return;
+async function initAIModelSelector() {
+    const select = document.getElementById('ai-model-select');
+    if (!select) return;
 
-    if (conversations.length === 0) {
-        container.innerHTML = '<p class="empty-state-small">Keine aktiven Gespräche</p>';
-        return;
+    const models = await window.llmService.getAvailableModels();
+    if (models.length > 0) {
+        select.innerHTML = models.map(m => `<option value="${m.name}" ${m.name === window.llmService.config.ollamaModel ? 'selected' : ''}>${m.name}</option>`).join('');
     }
-
-    container.innerHTML = conversations.map(conv => {
-        const lastMsg = conv.messages[conv.messages.length - 1];
-        const name = conv.customerData.name || conv.phoneNumber;
-        const preview = lastMsg ? lastMsg.content.substring(0, 40) + '...' : '';
-        const time = new Date(conv.lastMessageAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-
-        return `
-            <div class="conversation-item ${conv.id === activeChatConversationId ? 'active' : ''}" data-id="${conv.id}">
-                <div class="conversation-name">${name}</div>
-                <div class="conversation-preview">${preview}</div>
-                <div class="conversation-time">${time}</div>
-            </div>
-        `;
-    }).join('');
-
-    // Click handlers
-    container.querySelectorAll('.conversation-item').forEach(item => {
-        item.addEventListener('click', () => {
-            activeChatConversationId = item.dataset.id;
-            renderChatMessages();
-            enableChatInput();
-            renderConversationList(window.chatbotService.getRecentConversations());
-        });
-    });
 }
 
-function renderChatMessages() {
-    const container = document.getElementById('chat-messages');
-    const header = document.getElementById('chat-header');
-    if (!container || !activeChatConversationId || !window.chatbotService) return;
+async function sendAiMessage() {
+    const input = document.getElementById('ai-chat-input');
+    const container = document.getElementById('ai-chat-messages');
+    const message = input.value.trim();
 
-    const chatData = window.chatbotService.getChatUIData(activeChatConversationId);
-    if (!chatData) return;
+    if (!message) return;
 
-    // Update header
-    if (header) {
-        header.innerHTML = `
-            <div class="chat-contact">
-                <div class="chat-avatar">👤</div>
-                <div class="chat-contact-info">
-                    <div class="chat-contact-name">${chatData.customerName}</div>
-                    <div class="chat-contact-phone">${chatData.phoneNumber}</div>
-                </div>
-            </div>
-        `;
+    // Remove empty state if still there
+    const emptyState = container.querySelector('.ai-empty-state');
+    if (emptyState) emptyState.remove();
+
+    // 1. Add User Message
+    appendAiMessage('user', message);
+    input.value = '';
+
+    // 2. Show Typing Indicator
+    const typing = document.createElement('div');
+    typing.className = 'ai-typing';
+    typing.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+    container.appendChild(typing);
+    container.scrollTop = container.scrollHeight;
+
+    // 3. Get AI Response
+    try {
+        const history = window.chatbotService.conversations[0]?.messages || []; // Use first conv for history or empty
+        const response = await window.chatbotService.generateResponse(message, history, {});
+
+        typing.remove();
+        appendAiMessage('bot', response);
+    } catch (e) {
+        typing.remove();
+        appendAiMessage('bot', "⚠️ Fehler bei der Verbindung zur KI. Bitte prüfen Sie die Einstellungen.");
     }
+}
 
-    // Render messages
-    if (chatData.messages.length === 0) {
-        container.innerHTML = `
-            <div class="chat-empty">
-                <div class="chat-empty-icon">💬</div>
-                <p>Gespräch gestartet<br>Warte auf Nachrichten...</p>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = chatData.messages.map(msg => `
-        <div class="chat-message ${msg.isUser ? 'user' : 'bot'}">
-            <div class="chat-message-content">${msg.content}</div>
-            <div class="chat-message-time">${msg.time}</div>
-        </div>
-    `).join('');
-
-    // Scroll to bottom
+function appendAiMessage(role, content) {
+    const container = document.getElementById('ai-chat-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `ai-message ${role}`;
+    msgDiv.innerHTML = content.replace(/\n/g, '<br>');
+    container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;
 }
 
-function enableChatInput() {
-    const input = document.getElementById('chat-input');
-    const btn = document.getElementById('btn-send-chat');
-    if (input) input.disabled = false;
-    if (btn) btn.disabled = false;
-}
-
-async function sendChatMessage(message) {
-    if (!message.trim() || !window.chatbotService) return;
-
-    // Get phone number from active conversation or use demo number
-    let phoneNumber;
-    if (activeChatConversationId) {
-        const conv = window.chatbotService.getConversation(activeChatConversationId);
-        phoneNumber = conv?.phoneNumber || '+49' + Math.floor(Math.random() * 1000000000);
-    } else {
-        phoneNumber = '+49' + Math.floor(Math.random() * 1000000000);
-    }
-
-    // Process message (simulate incoming)
-    const result = await window.chatbotService.simulateIncomingMessage(phoneNumber, message);
-    activeChatConversationId = result.conversationId;
-
-    // Update UI
-    renderChatMessages();
-    renderConversationList(window.chatbotService.getRecentConversations());
-    enableChatInput();
-
-    // Clear input
-    document.getElementById('chat-input').value = '';
-}
-
 function initChatbot() {
-    // Toggle chatbot on/off
-    document.getElementById('btn-chatbot-toggle')?.addEventListener('click', () => {
-        const isEnabled = window.chatbotService.settings.enabled;
-        window.chatbotService.updateSettings({ enabled: !isEnabled });
-        renderChatbot();
-        showToast(isEnabled ? 'Chatbot deaktiviert' : 'Chatbot aktiviert', 'info');
+    const btnSend = document.getElementById('btn-send-ai');
+    const input = document.getElementById('ai-chat-input');
+
+    btnSend?.addEventListener('click', sendAiMessage);
+    input?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendAiMessage();
     });
 
-    // Demo button - start demo conversation
-    document.getElementById('btn-demo-chat')?.addEventListener('click', async () => {
-        const demoPhone = '+49123456789';
-        const result = await window.chatbotService.simulateIncomingMessage(demoPhone, 'Hallo, ich habe eine Frage');
-        activeChatConversationId = result.conversationId;
-        renderChatbot();
-        renderChatMessages();
-        enableChatInput();
-        showToast('Demo-Gespräch gestartet', 'info');
-    });
-
-    // Send message
-    document.getElementById('btn-send-chat')?.addEventListener('click', () => {
-        const input = document.getElementById('chat-input');
-        if (input?.value) {
-            sendChatMessage(input.value);
-        }
-    });
-
-    // Enter key to send
-    document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendChatMessage(e.target.value);
-        }
-    });
-
-    // Quick reply buttons
-    document.querySelectorAll('.quick-reply-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const message = btn.dataset.message;
-            if (message) {
-                sendChatMessage(message);
-            }
-        });
-    });
+    // Auto-refresh model list occasionally
+    setInterval(initAIModelSelector, 30000);
 }
 
 // ============================================

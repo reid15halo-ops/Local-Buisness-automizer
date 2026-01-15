@@ -141,6 +141,25 @@ window.UI = {
         this.showToast('Daten exportiert!', 'success');
     },
 
+    // Update AI Model
+    updateAIModel: function (modelName) {
+        if (window.llmService) {
+            window.llmService.saveConfig({ ollamaModel: modelName });
+            showToast(`KI-Modell auf "${modelName}" gewechselt`, 'info');
+        }
+    },
+
+    // Reset Application to Demo State
+    resetApp: function () {
+        if (confirm('Möchten Sie wirklich die gesamte App zurücksetzen?\n\nAlle eigenen Daten werden gelöscht und durch Demo-Daten ersetzt.')) {
+            if (window.storeService) {
+                window.storeService.resetToDemo();
+                showToast('App wird neu gestartet...', 'info');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+    },
+
     toggleAIProvider() {
         const provider = document.getElementById('ai-provider').value;
         const geminiConf = document.getElementById('conf-gemini');

@@ -206,18 +206,36 @@ class ChatbotService {
     }
 
     // Generate response
-    async generateResponse(userMessage, conversationHistory = [], customerData = {}) {
-        // Try Real AI (Unified LLM Service: Gemini or Ollama) first
-        if (window.llmService && window.llmService.isConfigured) {
-            // Smaller delay for AI just to show typing indicator briefly if API is fast
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const aiResponse = await window.llmService.chat(userMessage, conversationHistory);
-            if (aiResponse) return aiResponse;
+    async generateResponse(message, history, customerData) {
+        // 1. Check for Business Relevance (Local Filter)
+        const lowerMsg = message.toLowerCase();
+        const businessKeywords = [
+            'metall', 'stahl', 'hydraulik', 'schweiß', 'geländer', 'treppe', 'tor', 'carport',
+            'schlauch', 'zylinder', 'reparatur', 'montage', 'angebot', 'preis', 'kosten',
+            'termin', 'anfrage', 'mhs', 'kunde', 'service', 'beratung', 'rohrleitung', 'industriemontage'
+        ];
+
+        const isBusinessRelated = businessKeywords.some(kw => lowerMsg.includes(kw)) ||
+            /^(hallo|hi|guten tag|moin)/i.test(lowerMsg);
+
+        if (!isBusinessRelated) {
+            return "Entschuldigung, als Fachberater von MHS kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?";
         }
 
-        // Fallback: Simulated thinking + Local Expert
-        await new Promise(resolve => setTimeout(resolve, 5000 + Math.random() * 5000));
-        return this.getExpertResponse(userMessage, conversationHistory, customerData);
+        // 2. Try LLM (Ollama/Gemini)
+        if (window.llmService && window.llmService.isConfigured) {
+            try {
+                // Add a small delay for "AI thinking"
+                await new Promise(r => setTimeout(r, 800));
+                const response = await window.llmService.chat(message, history);
+                if (response) return response;
+            } catch (e) {
+                console.error('LLM Error in ChatbotService:', e);
+            }
+        }
+
+        // 3. Fallback to Local Expert System
+        return this.getExpertResponse(message, history, customerData);
     }
 
     extractDetails(msg) {

@@ -12,6 +12,19 @@ class LLMService {
         if (!this.config.ollamaModel) this.config.ollamaModel = 'mistral';
     }
 
+    async getAvailableModels() {
+        if (this.config.provider !== 'ollama') return [];
+        try {
+            const response = await fetch(`${this.config.ollamaUrl}/api/tags`);
+            if (!response.ok) return [];
+            const data = await response.json();
+            return data.models || [];
+        } catch (e) {
+            console.error('Failed to fetch Ollama models:', e);
+            return [];
+        }
+    }
+
     saveConfig(newConfig) {
         this.config = { ...this.config, ...newConfig };
         localStorage.setItem('mhs_llm_config', JSON.stringify(this.config));
@@ -27,11 +40,18 @@ class LLMService {
         if (!this.isConfigured) return null;
 
         const systemPrompt = `Du bist ein erfahrener Fachberater für die Firma MHS Metallbau Hydraulik Service (MHS).
+WICHTIG: Antworte AUSSCHLIESSLICH auf Fragen, die einen direkten Bezug zum Unternehmen MHS oder den angebotenen Dienstleistungen (Metallbau, Hydraulik, Schweißen, Rohrleitungsbau) haben.
+
 Deine Expertise umfasst:
 - Metallbau (Geländer, Treppen, Tore, Carports)
 - Hydraulik (Schlauchservice, Zylinderreparatur, Aggregate)
 - Schweißen (WIG, MIG/MAG, E-Hand, Zertifiziert nach DIN EN 1090)
 - Rohrleitungsbau (Ermeto, Presssysteme, Industrie)
+
+RESTRIKTIONEN:
+- Beantworte keine privaten Fragen.
+- Beantworte keine Fragen zu allgemeinem Wissen, Witzen, Wetter oder Politik.
+- Wenn eine Frage keinen Bezug zu MHS oder Technik hat, antworte höflich: "Entschuldigung, als Fachberater von MHS kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?"
 
 Verhalte dich professionell, höflich und lösungsorientiert.
 Antworte präzise auf die Kundenfrage. Wenn technische Details fehlen (z.B. Maße, Material), frage gezielt danach.

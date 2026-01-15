@@ -25,56 +25,108 @@ class StoreService {
         };
         this.STORAGE_KEY = 'mhs-workflow-store';
         this.subscribers = [];
-        this.load();
+        // Note: load() must be called explicitly and awaited in app.js
     }
 
     /**
-     * Loads the store state from localStorage.
-     * Merges saved data with default structure to ensure integrity.
+     * Loads the store state from IndexedDB (with localStorage fallback/migration).
      */
-    load() {
-        const saved = localStorage.getItem(this.STORAGE_KEY);
-        if (saved) {
+    async load() {
+        // 1. Try to get from IndexedDB
+        let data = await window.dbService.get(this.STORAGE_KEY);
+
+        // 2. Migration: Check if data still exists in localStorage
+        const legacyData = localStorage.getItem(this.STORAGE_KEY);
+        if (legacyData && !data) {
+            console.log('Migrating data from localStorage to IndexedDB...');
             try {
-                const parsed = JSON.parse(saved);
-                // Merge to ensure structure integrity
-                Object.assign(this.store, parsed);
-                this.checkStorageUsage();
+                data = JSON.parse(legacyData);
+                await window.dbService.set(this.STORAGE_KEY, data);
+                localStorage.removeItem(this.STORAGE_KEY); // Move, don't just copy
             } catch (e) {
-                console.error('Failed to load store:', e);
+                console.error('Migration failed:', e);
             }
         }
+
+        if (data) {
+            try {
+                // Merge to ensure structure integrity
+                Object.assign(this.store, data);
+                this.checkStorageUsage();
+
+                // If store exists but is effectively empty, load demo data
+                if (this.store.anfragen.length === 0 &&
+                    this.store.angebote.length === 0 &&
+                    this.store.auftraege.length === 0) {
+                    await this.resetToDemo();
+                }
+            } catch (e) {
+                console.error('Failed to parse store data:', e);
+                await this.resetToDemo();
+            }
+        } else {
+            // No data saved yet -> Initial Demo Load
+            await this.resetToDemo();
+        }
+    }
+
+    /**
+     * Hard reset of the application data to demo state.
+     */
+    async resetToDemo() {
+        if (!window.demoDataService) {
+            console.error('DemoDataService not loaded!');
+            return;
+        }
+
+        const demoData = window.demoDataService.getDemoData();
+
+        // Reset storage
+        await window.dbService.clear();
+        localStorage.removeItem('mhs_customer_presets');
+
+        // Populate store in-place to preserve references in app.js
+        Object.keys(this.store).forEach(key => {
+            if (Array.isArray(this.store[key])) {
+                this.store[key] = [];
+            }
+        });
+
+        Object.assign(this.store, demoData, {
+            currentAnfrageId: null,
+            currentAuftragId: null,
+            currentRechnungId: null
+        });
+
+        await this.save();
+        console.log('App reset to demo state (Reference preserved).');
     }
 
     checkStorageUsage() {
-        let total = 0;
-        for (let key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
-                total += (localStorage[key].length + key.length) * 2;
-            }
-        }
-        const sizeInMB = total / (1024 * 1024);
-        if (sizeInMB > 4.0) {
-            console.warn(`Storage Critical: ${sizeInMB.toFixed(2)} MB`);
+        // Estimation for IndexedDB is harder, but we can check the total store object size in memory
+        const json = JSON.stringify(this.store);
+        const sizeInMB = (json.length * 2) / (1024 * 1024); // UTF-16 estimation
+
+        // New limit: 1GB (1024 MB), Warning at 800MB
+        if (sizeInMB > 800.0) {
+            console.warn(`Storage High Usage: ${sizeInMB.toFixed(2)} MB`);
             if (window.errorHandler) {
-                window.errorHandler.warning(`⚠️ Speicher kritisch: ${sizeInMB.toFixed(2)} MB belegt (Max ~5 MB). Bitte alte Daten archivieren.`);
+                window.errorHandler.warning(`⚠️ Speicherplatz fast erschöpft: ${sizeInMB.toFixed(2)} MB belegt (Max 1024 MB).`);
             }
         }
     }
 
     /**
-     * Saves the current store state to localStorage.
-     * Triggers notification to all subscribers.
+     * Saves the current store state to IndexedDB.
      */
-    save() {
+    async save() {
         try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.store));
-            this.notifySubscribers();
+            await window.dbService.set(this.STORAGE_KEY, this.store);
+            this.notify();
         } catch (e) {
-            console.error('Failed to save store:', e);
-            // Check for quota exceeded
-            if (e.name === 'QuotaExceededError') {
-                alert('Speicher voll! Bitte alte Daten löschen oder Backup erstellen.');
+            console.error('Save failed:', e);
+            if (window.errorHandler) {
+                window.errorHandler.error('Fehler beim Speichern der Daten.');
             }
         }
     }

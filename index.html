@@ -429,8 +429,15 @@
                     <div class="settings-card">
                         <h3>🗑️ Daten</h3>
                         <p>Alle lokal gespeicherten Daten</p>
-                        <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
-                        <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
+                            <button class="btn btn-danger" onclick="window.UI.resetApp()"
+                                style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
+                                (Demo)</button>
+                            <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
+                        </div>
+                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">App-Reset stellt den Werkszustand
+                            mit Demo-Daten wieder her.</p>
                     </div>
                 </div>
             </section>
@@ -777,99 +784,69 @@
                 </div>
             </section>
 
-            <!-- KI-Chatbot View -->
+            <!-- AI Assistant View (Ollama-Style) -->
             <section class="view" id="view-chatbot">
-                <header class="view-header">
-                    <div class="view-header-row">
-                        <div>
-                            <h1>🤖 KI-Chatbot</h1>
-                            <p class="subtitle">WhatsApp-Kundenservice mit Gemini AI</p>
+                <div class="ai-window">
+                    <header class="ai-header">
+                        <div class="ai-header-left">
+                            <span class="ai-llama-icon">🦙</span>
+                            <div class="ai-header-info">
+                                <h2 style="font-size: 16px; margin:0;">MHS AI Assistant</h2>
+                                <p style="font-size: 10px; opacity: 0.6; margin:0;">Powered by Ollama / Mistral</p>
+                            </div>
                         </div>
-                        <div class="header-actions">
-                            <span class="chatbot-status" id="chatbot-status">⚪ Inaktiv</span>
-                            <button class="btn btn-success" id="btn-chatbot-toggle">Aktivieren</button>
+                        <div class="model-selector-wrapper">
+                            <select id="ai-model-select" onchange="window.UI.updateAIModel(this.value)">
+                                <option value="mistral">mistral (default)</option>
+                                <option value="llama3">llama3</option>
+                            </select>
                         </div>
-                    </div>
-                </header>
+                    </header>
 
-                <div class="chatbot-stats">
-                    <div class="stat-mini"><span id="chatbot-conversations">0</span><span>Gespräche</span></div>
-                    <div class="stat-mini"><span id="chatbot-today-messages">0</span><span>Nachrichten heute</span>
-                    </div>
-                    <div class="stat-mini stat-success"><span id="chatbot-response-time">
-                            < 5s</span><span>Antwortzeit</span></div>
-                </div>
-
-                <div class="chatbot-container">
-                    <!-- Conversations List -->
-                    <div class="chatbot-sidebar">
-                        <div class="chatbot-sidebar-header">
-                            <h3>📱 WhatsApp-Gespräche</h3>
-                            <button class="btn btn-small btn-primary" id="btn-demo-chat">Demo</button>
-                        </div>
-                        <div class="conversation-list" id="conversation-list">
-                            <p class="empty-state-small">Keine aktiven Gespräche</p>
+                    <div class="ai-chat-area" id="ai-chat-messages">
+                        <div class="ai-empty-state">
+                            <div class="ai-empty-icon">🦙</div>
+                            <h3>Wie kann ich Ihnen heute helfen?</h3>
+                            <p>Stellen Sie Fragen zu Metallbau, Hydraulik oder Ihren Projekten.</p>
                         </div>
                     </div>
 
-                    <!-- Chat Window -->
-                    <div class="chatbot-main">
-                        <div class="chat-header" id="chat-header">
-                            <div class="chat-contact">
-                                <div class="chat-avatar">👤</div>
-                                <div class="chat-contact-info">
-                                    <div class="chat-contact-name">Wähle ein Gespräch</div>
-                                    <div class="chat-contact-phone">-</div>
-                                </div>
-                            </div>
+                    <div class="ai-input-wrapper">
+                        <div class="ai-input-container">
+                            <span style="font-size: 20px; opacity: 0.5;">📎</span>
+                            <input type="text" id="ai-chat-input" placeholder="Fragen Sie den MHS Assistenten..."
+                                autocomplete="off">
+                            <button class="btn btn-primary" id="btn-send-ai"
+                                style="padding: 8px 12px; border-radius: 8px;">
+                                <span>↑</span>
+                            </button>
                         </div>
-
-                        <div class="chat-messages" id="chat-messages">
-                            <div class="chat-empty">
-                                <div class="chat-empty-icon">💬</div>
-                                <p>Wähle ein Gespräch aus der Liste<br>oder starte einen Demo-Chat</p>
-                            </div>
-                        </div>
-
-                        <div class="chat-input-area">
-                            <div class="quick-replies" id="quick-replies">
-                                <button class="quick-reply-btn" data-message="Was sind eure Öffnungszeiten?">🕐
-                                    Öffnungszeiten</button>
-                                <button class="quick-reply-btn" data-message="Welche Leistungen bietet ihr?">🔧
-                                    Leistungen</button>
-                                <button class="quick-reply-btn" data-message="Ich möchte einen Termin">📅
-                                    Termin</button>
-                            </div>
-                            <div class="chat-input-row">
-                                <input type="text" id="chat-input" placeholder="Nachricht simulieren (als Kunde)..."
-                                    disabled>
-                                <button class="btn btn-primary" id="btn-send-chat" disabled>Senden</button>
-                            </div>
-                            <p class="chat-hint">💡 Simuliere Kundennachrichten um die KI-Antworten zu testen</p>
-                        </div>
+                        <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 12px;">
+                            KI kann Fehler machen. Auf Basis von MHS Expertendaten.
+                        </p>
                     </div>
                 </div>
-
-                <!-- Chatbot Settings -->
-                <div class="chatbot-settings-panel" id="chatbot-settings">
-                    <h3>⚙️ Chatbot-Einstellungen</h3>
-                    <div class="settings-grid-inline">
-                        <div class="form-group">
-                            <label>Geschäftszeiten Start</label>
-                            <input type="time" id="chatbot-hours-start" value="08:00">
-                        </div>
-                        <div class="form-group">
-                            <label>Geschäftszeiten Ende</label>
-                            <input type="time" id="chatbot-hours-end" value="18:00">
-                        </div>
-                        <div class="form-group">
-                            <label>Antwort-Verzögerung (ms)</label>
-                            <input type="number" id="chatbot-delay" value="2000" step="500">
-                        </div>
+            </section>
+            <!-- Chatbot Settings -->
+            <div class="chatbot-settings-panel" id="chatbot-settings">
+                <h3>⚙️ Chatbot-Einstellungen</h3>
+                <div class="settings-grid-inline">
+                    <div class="form-group">
+                        <label>Geschäftszeiten Start</label>
+                        <input type="time" id="chatbot-hours-start" value="08:00">
                     </div>
-                    <p class="settings-note">⚠️ Für echte WhatsApp-Integration wird die WhatsApp Business API benötigt.
-                    </p>
+                    <div class="form-group">
+                        <label>Geschäftszeiten Ende</label>
+                        <input type="time" id="chatbot-hours-end" value="18:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Antwort-Verzögerung (ms)</label>
+                        <input type="number" id="chatbot-delay" value="2000" step="500">
+                    </div>
                 </div>
+                <p class="settings-note">⚠️ Für echte WhatsApp-Integration wird die WhatsApp Business API benötigt.
+                </p>
+            </div>
             </section>
 
             <!-- Workflows View -->
@@ -1144,96 +1121,7 @@
                 </div>
             </section>
 
-            <!-- Settings View -->
-            <section class="view" id="view-einstellungen">
-                <header class="view-header">
-                    <h1>⚙️ Einstellungen</h1>
-                    <p class="subtitle">Konfiguration und Systemdaten</p>
-                </header>
 
-                <div class="panel">
-                    <h3>🏢 Firmendaten</h3>
-                    <form id="settings-company-form">
-                        <div class="form-row">
-                            <div class="form-group"><label>Firmenname</label><input type="text" id="company-name"
-                                    value="MHS Metallbau Hydraulik Service"></div>
-                            <div class="form-group"><label>Inhaber</label><input type="text" id="company-owner"
-                                    value="Max Mustermann"></div>
-                        </div>
-                        <div class="form-group"><label>Adresse</label><textarea id="company-address"
-                                rows="2">Handwerkerring 38a, 12345 Musterstadt</textarea></div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Steuernummer</label><input type="text" id="company-taxid"
-                                    value="12/345/67890"></div>
-                            <div class="form-group"><label>USt-IdNr.</label><input type="text" id="company-vatid"
-                                    value="DE123456789"></div>
-                        </div>
-                        <div class="form-actions"><button type="submit" class="btn btn-primary">Speichern</button></div>
-                    </form>
-                </div>
-
-                <div class="panel">
-                    <h3>🎨 Darstellung</h3>
-                    <div class="form-group">
-                        <label class="toggle-label" style="display:flex; align-items:center; gap:10px; cursor:pointer">
-                            <input type="checkbox" id="theme-toggle" checked
-                                onchange="document.body.classList.toggle('light-theme')">
-                            <span>Dark Mode verwenden</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h3>🧠 KI-Konfiguration</h3>
-                    <div class="form-group">
-                        <label>AI Provider</label>
-                        <select id="ai-provider" onchange="window.UI.toggleAIProvider()"
-                            style="width:100%; margin-bottom:10px;">
-                            <option value="gemini">Google Gemini (Cloud)</option>
-                            <option value="ollama">Local AI (Ollama)</option>
-                        </select>
-                    </div>
-
-                    <!-- Gemini Conf -->
-                    <div id="conf-gemini" class="provider-conf">
-                        <p class="description" style="color:var(--text-secondary); margin-bottom:0.5rem;">Benötigt
-                            Internetverbindung & API Key.</p>
-                        <div class="form-group">
-                            <label>Gemini API Key</label>
-                            <input type="password" id="gemini-api-key" placeholder="AIzp...">
-                        </div>
-                    </div>
-
-                    <!-- Ollama Conf -->
-                    <div id="conf-ollama" class="provider-conf" style="display:none;">
-                        <p class="description" style="color:var(--text-secondary); margin-bottom:0.5rem;">Benötigt lokal
-                            laufendes Ollama (Mistral/Llama).</p>
-                        <div class="form-group">
-                            <label>Ollama URL</label>
-                            <input type="text" id="ollama-url" value="http://localhost:11434"
-                                placeholder="http://localhost:11434">
-                        </div>
-                        <div class="form-group">
-                            <label>Modell Name</label>
-                            <input type="text" id="ollama-model" value="mistral"
-                                placeholder="z.B. mistral, llama3, gemma">
-                        </div>
-                    </div>
-
-                    <div class="form-actions" style="margin-top:15px;">
-                        <button class="btn btn-secondary" onclick="window.UI.saveAIConfig()">💾 Konfiguration
-                            Speichern</button>
-                    </div>
-                </div>
-
-                <div class="panel">
-                    <h3>💾 Datenverwaltung</h3>
-                    <div class="form-actions" style="justify-content: flex-start;">
-                        <button class="btn btn-secondary" onclick="window.UI.exportAllData()">📤 Alle Daten
-                            exportieren</button>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
 
@@ -1564,6 +1452,8 @@
     <script src="js/services/security-backup-service.js"></script>
     <!-- Core Infrastructure -->
     <script src="js/services/error-handler.js"></script>
+    <script src="js/services/db-service.js"></script>
+    <script src="js/services/demo-data-service.js"></script>
     <script src="js/services/store-service.js"></script>
     <script src="js/services/llm-service.js"></script>
     <script src="js/services/chatbot-service.js"></script>
