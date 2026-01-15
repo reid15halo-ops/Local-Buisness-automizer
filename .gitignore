@@ -1,0 +1,7 @@
+.gemini/
+.git/
+node_modules/
+dist/
+temp/
+*.log
+.DS_Store

@@ -1,0 +1,265 @@
+/* ============================================
+   Service Worker for MHS Workflow PWA
+   Offline capability and background sync
+   ============================================ */
+
+const CACHE_NAME = 'mhs-workflow-v2';
+const OFFLINE_URL = 'offline.html';
+
+// Files to cache for offline use
+const STATIC_ASSETS = [
+    '/',
+    '/index.html',
+    '/css/styles.css',
+    '/js/app.js',
+    '/js/features-integration.js',
+    '/js/services/gemini-service.js',
+    '/js/services/bookkeeping-service.js',
+    '/js/services/dunning-service.js',
+    '/js/services/material-service.js',
+    '/js/services/work-estimation-service.js',
+    '/js/services/email-service.js',
+    '/js/services/task-service.js',
+    '/js/services/customer-service.js',
+    '/js/services/document-service.js',
+    '/js/services/calendar-service.js',
+    '/js/services/booking-service.js',
+    '/js/services/timetracking-service.js',
+    '/js/services/communication-service.js',
+    '/js/services/phone-service.js',
+    '/js/services/report-service.js',
+    '/js/services/chatbot-service.js',
+    '/js/services/cashflow-service.js',
+    '/js/services/lead-service.js',
+    '/js/services/version-control-service.js',
+    '/js/services/approval-service.js',
+    '/js/services/print-digital-service.js',
+    '/js/services/banking-service.js',
+    '/js/services/sms-reminder-service.js',
+    '/js/services/voice-command-service.js',
+    '/js/services/einvoice-service.js',
+    '/manifest.json'
+];
+
+// External CDN resources to cache
+const CDN_ASSETS = [
+    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
+    'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js'
+];
+
+// Install event - cache static assets
+self.addEventListener('install', (event) => {
+    console.log('[SW] Installing Service Worker...');
+
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('[SW] Caching static assets');
+                // Cache static assets (some may fail, that's ok)
+                return Promise.allSettled(
+                    STATIC_ASSETS.map(url =>
+                        cache.add(url).catch(err => console.log(`[SW] Failed to cache: ${url}`))
+                    )
+                );
+            })
+            .then(() => self.skipWaiting())
+    );
+});
+
+// Activate event - clean old caches
+self.addEventListener('activate', (event) => {
+    console.log('[SW] Activating Service Worker...');
+
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames
+                    .filter(name => name !== CACHE_NAME)
+                    .map(name => {
+                        console.log('[SW] Deleting old cache:', name);
+                        return caches.delete(name);
+                    })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', (event) => {
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Skip non-GET requests
+    if (request.method !== 'GET') return;
+
+    // Skip chrome-extension and other non-http requests
+    if (!url.protocol.startsWith('http')) return;
+
+    event.respondWith(
+        caches.match(request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    // Return cached version, but update cache in background
+                    event.waitUntil(updateCache(request));
+                    return cachedResponse;
+                }
+
+                // Not in cache, fetch from network
+                return fetch(request)
+                    .then((networkResponse) => {
+                        // Cache successful responses
+                        if (networkResponse.ok) {
+                            const responseClone = networkResponse.clone();
+                            caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(request, responseClone);
+                            });
+                        }
+                        return networkResponse;
+                    })
+                    .catch(() => {
+                        // Network failed, return offline page for navigation requests
+                        if (request.mode === 'navigate') {
+                            return caches.match('/index.html');
+                        }
+                        return new Response('Offline', { status: 503 });
+                    });
+            })
+    );
+});
+
+// Update cache in background (stale-while-revalidate)
+async function updateCache(request) {
+    try {
+        const cache = await caches.open(CACHE_NAME);
+        const response = await fetch(request);
+        if (response.ok) {
+            await cache.put(request, response);
+        }
+    } catch (e) {
+        // Network request failed, that's fine
+    }
+}
+
+// Background Sync for offline data
+self.addEventListener('sync', (event) => {
+    console.log('[SW] Background sync:', event.tag);
+
+    if (event.tag === 'sync-data') {
+        event.waitUntil(syncOfflineData());
+    }
+
+    if (event.tag === 'sync-invoices') {
+        event.waitUntil(syncInvoices());
+    }
+
+    if (event.tag === 'sync-time-entries') {
+        event.waitUntil(syncTimeEntries());
+    }
+});
+
+// Sync offline data when back online
+async function syncOfflineData() {
+    console.log('[SW] Syncing offline data...');
+
+    // Get pending sync items from IndexedDB
+    // In real implementation, this would sync with a server
+
+    // Notify client that sync is complete
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+        client.postMessage({
+            type: 'SYNC_COMPLETE',
+            timestamp: new Date().toISOString()
+        });
+    });
+}
+
+async function syncInvoices() {
+    console.log('[SW] Syncing invoices...');
+    // Sync invoices with cloud/DATEV
+}
+
+async function syncTimeEntries() {
+    console.log('[SW] Syncing time entries...');
+    // Sync time tracking data
+}
+
+// Push notifications
+self.addEventListener('push', (event) => {
+    console.log('[SW] Push notification received');
+
+    let data = { title: 'MHS Workflow', body: 'Neue Benachrichtigung' };
+
+    if (event.data) {
+        try {
+            data = event.data.json();
+        } catch (e) {
+            data.body = event.data.text();
+        }
+    }
+
+    const options = {
+        body: data.body,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%236366f1" width="100" height="100" rx="20"/><text x="50" y="62" font-size="45" text-anchor="middle" fill="white">⚙️</text></svg>',
+        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle fill="%23ef4444" cx="50" cy="50" r="50"/></svg>',
+        vibrate: [100, 50, 100],
+        data: data.data || {},
+        actions: data.actions || [
+            { action: 'open', title: 'Öffnen' },
+            { action: 'dismiss', title: 'Ignorieren' }
+        ],
+        tag: data.tag || 'mhs-notification',
+        renotify: true
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title, options)
+    );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+    console.log('[SW] Notification clicked:', event.action);
+
+    event.notification.close();
+
+    if (event.action === 'dismiss') return;
+
+    // Open or focus the app
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clientList) => {
+                // If app is already open, focus it
+                for (const client of clientList) {
+                    if (client.url.includes('/index.html') && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                // Otherwise open new window
+                if (self.clients.openWindow) {
+                    return self.clients.openWindow('/index.html');
+                }
+            })
+    );
+});
+
+// Message handler for client communication
+self.addEventListener('message', (event) => {
+    console.log('[SW] Message received:', event.data);
+
+    if (event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+
+    if (event.data.type === 'GET_VERSION') {
+        event.ports[0].postMessage({ version: CACHE_NAME });
+    }
+
+    if (event.data.type === 'CLEAR_CACHE') {
+        caches.delete(CACHE_NAME).then(() => {
+            event.ports[0].postMessage({ success: true });
+        });
+    }
+});
+
+console.log('[SW] Service Worker loaded');

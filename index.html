@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHS Workflow Demo | Anfrage → Angebot → Rechnung</title>
+    <link rel="stylesheet" href="css/core.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- SheetJS for Excel import -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Hauptmenü öffnen">☰</button>
+            <div class="mobile-logo">MHS Demo</div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">⚙️</div>
+                <span>MHS Demo</span>
+            </div>
+
+            <div class="sidebar-search">
+                <input type="text" id="global-search" placeholder="Suche... (Ctrl+K)" aria-label="Globale Suche">
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="dashboard">
+                    <span class="nav-icon">📊</span>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-view="anfragen">
+                    <span class="nav-icon">📥</span>
+                    Anfragen
+                    <span class="badge" id="anfragen-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="angebote">
+                    <span class="nav-icon">📝</span>
+                    Angebote
+                    <span class="badge" id="angebote-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="auftraege">
+                    <span class="nav-icon">🔧</span>
+                    Aufträge
+                    <span class="badge" id="auftraege-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="rechnungen">
+                    <span class="nav-icon">💰</span>
+                    Rechnungen
+                    <span class="badge" id="rechnungen-badge">0</span>
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item" data-view="aufgaben">
+                    <span class="nav-icon">📋</span>
+                    Aufgaben
+                    <span class="badge" id="aufgaben-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="kunden">
+                    <span class="nav-icon">👥</span>
+                    Kunden
+                    <span class="badge" id="kunden-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="kalender">
+                    <span class="nav-icon">📅</span>
+                    Kalender
+                </button>
+                <button class="nav-item" data-view="zeiterfassung">
+                    <span class="nav-icon">⏱️</span>
+                    Zeiterfassung
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item" data-view="emails">
+                    <span class="nav-icon">📧</span>
+                    E-Mails
+                    <span class="badge" id="emails-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="dokumente">
+                    <span class="nav-icon">📄</span>
+                    Dokumente
+                </button>
+                <button class="nav-item" data-view="chatbot">
+                    <span class="nav-icon">🤖</span>
+                    KI-Chatbot
+                    <span class="badge badge-success" id="chatbot-badge">0</span>
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item" data-view="material">
+                    <span class="nav-icon">📦</span>
+                    Material
+                    <span class="badge" id="material-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="mahnwesen">
+                    <span class="nav-icon">⚠️</span>
+                    Mahnwesen
+                    <span class="badge badge-warning" id="mahnwesen-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="buchhaltung">
+                    <span class="nav-icon">💰</span>
+                    Buchhaltung
+                </button>
+                <button class="nav-item" data-view="berichte">
+                    <span class="nav-icon">📊</span>
+                    Berichte
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-item" data-view="workflows">
+                    <span class="nav-icon">⚡</span>
+                    Workflows
+                    <span class="badge badge-new" id="workflows-badge">NEU</span>
+                </button>
+                <button class="nav-item" data-view="scanner">
+                    <span class="nav-icon">📷</span>
+                    Scanner
+                </button>
+                <button class="nav-item" data-view="backup">
+                    <span class="nav-icon">🔒</span>
+                    Backup
+                </button>
+                <button class="nav-item" data-view="einstellungen">
+                    <span class="nav-icon">⚙️</span>
+                    Einstellungen
+                </button>
+                <button class="nav-item" onclick="window.UI.openModal('modal-help')">
+                    <span class="nav-icon">❓</span>
+                    Hilfe
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-new-anfrage" id="btn-neue-anfrage">
+                    <span>+</span> Neue Anfrage
+                </button>
+                <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 12px;">v1.0.0
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <section class="view active" id="view-dashboard">
+                <header class="view-header">
+                    <h1>Dashboard</h1>
+                    <p class="subtitle">Übersicht aller Vorgänge</p>
+                </header>
+
+                <!-- Quick Actions Panel -->
+                <div class="quick-actions">
+                    <h3>⚡ Quick Actions</h3>
+                    <div class="quick-actions-grid">
+                        <button class="quick-action" id="qa-new-anfrage" title="Neue Anfrage (N)">
+                            <span class="qa-icon">📥</span>
+                            <span class="qa-label">Neue Anfrage</span>
+                            <span class="qa-shortcut">N</span>
+                        </button>
+                        <button class="quick-action" id="qa-demo-workflow" title="Demo starten">
+                            <span class="qa-icon">🚀</span>
+                            <span class="qa-label">Demo-Workflow</span>
+                            <span class="qa-shortcut">D</span>
+                        </button>
+                        <button class="quick-action" id="qa-all-invoices" title="Alle Mahnungen senden">
+                            <span class="qa-icon">⚠️</span>
+                            <span class="qa-label">Alle Mahnungen</span>
+                        </button>
+                        <button class="quick-action" id="qa-datev-export" title="DATEV Export">
+                            <span class="qa-icon">📤</span>
+                            <span class="qa-label">DATEV Export</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- External Links -->
+                <div class="external-links">
+                    <h3>🔗 Externe Tools</h3>
+                    <div class="links-grid">
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="ext-link">
+                            <span class="ext-icon">🤖</span>
+                            <span>Gemini API Key</span>
+                        </a>
+                        <a href="https://elster.de" target="_blank" class="ext-link">
+                            <span class="ext-icon">📋</span>
+                            <span>ELSTER Portal</span>
+                        </a>
+                        <a href="https://n8n.io" target="_blank" class="ext-link">
+                            <span class="ext-icon">⚙️</span>
+                            <span>n8n Automation</span>
+                        </a>
+                        <a href="https://www.ihk.de" target="_blank" class="ext-link">
+                            <span class="ext-icon">🏢</span>
+                            <span>IHK</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="dashboard-stats">
+                    <div class="stat-card stat-anfragen clickable" data-navigate="anfragen">
+                        <div class="stat-icon">📥</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-anfragen">0</span>
+                            <span class="stat-label">Offene Anfragen</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-angebote clickable" data-navigate="angebote">
+                        <div class="stat-icon">📝</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-angebote">0</span>
+                            <span class="stat-label">Wartende Angebote</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-auftraege clickable" data-navigate="auftraege">
+                        <div class="stat-icon">🔧</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-auftraege">0</span>
+                            <span class="stat-label">Aktive Aufträge</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-rechnungen clickable" data-navigate="rechnungen">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-rechnungen">0</span>
+                            <span class="stat-label">Offene Rechnungen</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="workflow-visual">
+                    <h2>Workflow-Übersicht</h2>
+                    <div class="workflow-steps">
+                        <div class="workflow-step">
+                            <div class="step-icon">📥</div>
+                            <div class="step-label">Anfrage</div>
+                            <div class="step-arrow">→</div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-icon">🤖</div>
+                            <div class="step-label">KI-Vorschlag</div>
+                            <div class="step-arrow">→</div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-icon">📝</div>
+                            <div class="step-label">Angebot</div>
+                            <div class="step-arrow">→</div>
+                        </div>
+                        <div class="workflow-step">
+
+                            <div class="step-icon">✅</div>
+                            <div class="step-label">Auftrag</div>
+                            <div class="step-arrow">→</div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-icon">💰</div>
+                            <div class="step-label">Rechnung</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-activity">
+                    <h2>Letzte Aktivitäten</h2>
+                    <div class="activity-list" id="activity-list">
+                        <p class="empty-state">Noch keine Aktivitäten. Erstelle eine neue Anfrage!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Anfragen View -->
+            <section class="view" id="view-anfragen">
+                <header class="view-header">
+                    <h1>Anfragen</h1>
+                    <p class="subtitle">Neue Kundenanfragen</p>
+                </header>
+                <div class="items-list" id="anfragen-list">
+                    <p class="empty-state">Keine offenen Anfragen</p>
+                </div>
+            </section>
+
+            <!-- Angebote View -->
+            <section class="view" id="view-angebote">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Angebote</h1>
+                            <p class="subtitle">Erstellte Angebote</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-check-followups">
+                                📞 Nachfass-Check
+                                <span class="badge badge-warning" id="followup-badge" style="display:none;">0</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                <div class="items-list" id="angebote-list">
+                    <p class="empty-state">Keine Angebote vorhanden</p>
+                </div>
+            </section>
+
+
+            <!-- Aufträge View -->
+            <section class="view" id="view-auftraege">
+                <header class="view-header">
+                    <h1>Aufträge</h1>
+                    <p class="subtitle">Aktive Aufträge</p>
+                </header>
+                <div class="items-list" id="auftraege-list">
+                    <p class="empty-state">Keine aktiven Aufträge</p>
+                </div>
+            </section>
+
+            <!-- Rechnungen View -->
+            <section class="view" id="view-rechnungen">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Rechnungen</h1>
+                            <p class="subtitle">Generierte Rechnungen</p>
+                        </div>
+                        <div class="header-actions">
+                            <label class="btn btn-secondary" for="bank-csv-import">
+                                🏦 Bank-CSV importieren
+                                <input type="file" id="bank-csv-import" accept=".csv" style="display:none;">
+                            </label>
+                            <button class="btn btn-primary" id="btn-match-payments">✓ Zahlungen abgleichen</button>
+                        </div>
+                    </div>
+                </header>
+                <div class="items-list" id="rechnungen-list">
+                    <p class="empty-state">Keine Rechnungen vorhanden</p>
+                </div>
+            </section>
+
+
+            <!-- Material View -->
+            <section class="view" id="view-material">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Materialbestand</h1>
+                            <p class="subtitle">Lager und Preise verwalten</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-warning" id="btn-low-stock">
+                                ⚠️ Bestellvorschläge
+                                <span class="badge" id="lowstock-badge" style="display:none;">0</span>
+                            </button>
+                            <label class="btn btn-primary" for="excel-import">
+                                📥 Excel Import
+                                <input type="file" id="excel-import" accept=".xlsx,.xls" style="display:none">
+                            </label>
+                            <button class="btn btn-secondary" id="btn-demo-materials">Demo-Daten laden</button>
+                        </div>
+
+                    </div>
+                </header>
+                <div class="material-stats">
+                    <div class="stat-mini">
+                        <span id="material-count">0</span>
+                        <span>Artikel</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="material-value">0 €</span>
+                        <span>Lagerwert</span>
+                    </div>
+                    <div class="stat-mini stat-warning">
+                        <span id="material-low">0</span>
+                        <span>Unter Mindestbestand</span>
+                    </div>
+                </div>
+                <div class="material-filter">
+                    <input type="text" id="material-search" placeholder="🔍 Material suchen...">
+                    <select id="material-kategorie-filter">
+                        <option value="">Alle Kategorien</option>
+                    </select>
+                </div>
+                <div class="items-list" id="material-list">
+                    <p class="empty-state">Kein Material vorhanden. Importiere eine Excel-Datei oder lade Demo-Daten.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Einstellungen View -->
+            <section class="view" id="view-einstellungen">
+                <header class="view-header">
+                    <h1>Einstellungen</h1>
+                    <p class="subtitle">API-Keys und Konfiguration</p>
+                </header>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>🤖 Gemini API</h3>
+                        <p>Für echte KI-Textgenerierung</p>
+                        <div class="form-group">
+                            <label for="gemini-api-key">API Key</label>
+                            <input type="password" id="gemini-api-key" placeholder="AIza...">
+                            <small>Hole deinen Key von <a href="https://aistudio.google.com/app/apikey"
+                                    target="_blank">Google AI Studio</a></small>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-gemini">Speichern</button>
+                        <span class="status-indicator" id="gemini-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>💰 Preiskalkulation</h3>
+                        <p>Standard-Stundensatz für Arbeiten</p>
+                        <div class="form-group">
+                            <label for="stundensatz">Stundensatz (€)</label>
+                            <input type="number" id="stundensatz" value="65" step="5">
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-stundensatz">Speichern</button>
+                    </div>
+                    <div class="settings-card">
+                        <h3>📧 n8n Webhook</h3>
+                        <p>Für automatischen Email-Versand</p>
+                        <div class="form-group">
+                            <label for="n8n-webhook-url">Webhook URL</label>
+                            <input type="url" id="n8n-webhook-url" placeholder="https://your-n8n.com/webhook/...">
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-webhook">Speichern</button>
+                        <span class="status-indicator" id="webhook-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>🗑️ Daten</h3>
+                        <p>Alle lokal gespeicherten Daten</p>
+                        <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
+                        <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mahnwesen View -->
+            <section class="view" id="view-mahnwesen">
+                <header class="view-header">
+                    <h1>Mahnwesen</h1>
+                    <p class="subtitle">Überfällige Rechnungen und Eskalation</p>
+                </header>
+                <div class="dunning-overview">
+                    <div class="stat-mini">
+                        <span id="dunning-count">0</span>
+                        <span>Überfällig</span>
+                    </div>
+                    <div class="stat-mini stat-warning">
+                        <span id="dunning-total">0 €</span>
+                        <span>Offene Summe</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="dunning-inkasso">0</span>
+                        <span>Inkasso-Fälle</span>
+                    </div>
+                </div>
+                <h3 style="margin: 24px 0 16px;">Eskalationsstufen</h3>
+                <div class="escalation-timeline">
+                    <div class="escalation-step">
+                        <div class="step-day">Tag 0</div>
+                        <div class="step-name">Rechnung</div>
+                    </div>
+                    <div class="escalation-step">
+                        <div class="step-day">Tag 14</div>
+                        <div class="step-name">Erinnerung</div>
+                    </div>
+                    <div class="escalation-step warning">
+                        <div class="step-day">Tag 28</div>
+                        <div class="step-name">1. Mahnung (+5€)</div>
+                    </div>
+                    <div class="escalation-step warning">
+                        <div class="step-day">Tag 42</div>
+                        <div class="step-name">2. Mahnung (+10€)</div>
+                    </div>
+                    <div class="escalation-step danger">
+                        <div class="step-day">Tag 56</div>
+                        <div class="step-name">3. Mahnung (+15€)</div>
+                    </div>
+                    <div class="escalation-step danger">
+                        <div class="step-day">Tag 70</div>
+                        <div class="step-name">Inkasso</div>
+                    </div>
+                </div>
+                <h3 style="margin: 24px 0 16px;">Offene Fälle</h3>
+                <div class="items-list" id="dunning-list">
+                    <p class="empty-state">Keine überfälligen Rechnungen 🎉</p>
+                </div>
+            </section>
+
+            <!-- Buchhaltung View -->
+            <section class="view" id="view-buchhaltung">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Buchhaltung</h1>
+                            <p class="subtitle">EÜR & Steuerübersicht</p>
+                        </div>
+                        <div class="header-actions">
+                            <select id="buchhaltung-jahr">
+                                <option value="2026">2026</option>
+                                <option value="2025">2025</option>
+                            </select>
+                            <label class="btn btn-secondary" for="buchung-csv-import">
+                                📤 CSV Import
+                                <input type="file" id="buchung-csv-import" accept=".csv" style="display:none;">
+                            </label>
+                            <button class="btn btn-secondary" id="btn-export-csv">📥 CSV Export</button>
+                            <button class="btn btn-primary" id="btn-export-datev">📤 DATEV Export</button>
+                        </div>
+                    </div>
+                </header>
+
+
+                <div class="eur-summary">
+                    <div class="eur-card einnahmen">
+                        <h3>📈 Einnahmen</h3>
+                        <div class="eur-amount" id="eur-einnahmen">0,00 €</div>
+                        <div class="eur-detail">
+                            <span>Netto: <span id="eur-einnahmen-netto">0,00 €</span></span>
+                            <span>USt: <span id="eur-ust">0,00 €</span></span>
+                        </div>
+                    </div>
+                    <div class="eur-card ausgaben">
+                        <h3>📉 Ausgaben</h3>
+                        <div class="eur-amount" id="eur-ausgaben">0,00 €</div>
+                        <div class="eur-detail">
+                            <span>Netto: <span id="eur-ausgaben-netto">0,00 €</span></span>
+                            <span>VSt: <span id="eur-vst">0,00 €</span></span>
+                        </div>
+                    </div>
+                    <div class="eur-card gewinn">
+                        <h3>💰 Gewinn (vor Steuer)</h3>
+                        <div class="eur-amount" id="eur-gewinn">0,00 €</div>
+                        <div class="eur-detail">
+                            <span>USt-Zahllast: <span id="eur-zahllast">0,00 €</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="buchhaltung-actions">
+                    <button class="btn btn-secondary" id="btn-add-ausgabe">+ Ausgabe erfassen</button>
+                </div>
+
+                <h3 style="margin: 24px 0 16px;">Buchungen</h3>
+                <div class="items-list" id="buchungen-list">
+                    <p class="empty-state">Noch keine Buchungen. Rechnungen werden automatisch erfasst.</p>
+                </div>
+            </section>
+
+            <!-- Aufgaben View -->
+            <section class="view" id="view-aufgaben">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Aufgaben</h1>
+                            <p class="subtitle">To-Do-Liste und Aufgabenverwaltung</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="btn-neue-aufgabe">+ Neue Aufgabe</button>
+                        </div>
+                    </div>
+                </header>
+                <div class="task-stats">
+                    <div class="stat-mini"><span id="tasks-open">0</span><span>Offen</span></div>
+                    <div class="stat-mini stat-warning"><span id="tasks-overdue">0</span><span>Überfällig</span></div>
+                    <div class="stat-mini"><span id="tasks-today">0</span><span>Heute fällig</span></div>
+                    <div class="stat-mini stat-success"><span id="tasks-done">0</span><span>Erledigt</span></div>
+                </div>
+                <div class="kanban-board" id="kanban-board">
+                    <div class="kanban-column" data-status="offen">
+                        <h3>⭕ Offen</h3>
+                        <div class="kanban-items" id="kanban-offen"></div>
+                    </div>
+                    <div class="kanban-column" data-status="in_bearbeitung">
+                        <h3>🔄 In Bearbeitung</h3>
+                        <div class="kanban-items" id="kanban-in_bearbeitung"></div>
+                    </div>
+                    <div class="kanban-column" data-status="warten">
+                        <h3>⏸️ Warten</h3>
+                        <div class="kanban-items" id="kanban-warten"></div>
+                    </div>
+                    <div class="kanban-column" data-status="erledigt">
+                        <h3>✅ Erledigt</h3>
+                        <div class="kanban-items" id="kanban-erledigt"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kunden View -->
+            <section class="view" id="view-kunden">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Kunden</h1>
+                            <p class="subtitle">CRM & Kundenverwaltung</p>
+                        </div>
+                        <div class="header-actions">
+                            <label class="btn btn-secondary" for="customer-csv-import">
+                                📥 CSV Import
+                                <input type="file" id="customer-csv-import" accept=".csv,.vcf" style="display:none">
+                            </label>
+                            <button class="btn btn-primary" id="btn-neuer-kunde">+ Neuer Kunde</button>
+                        </div>
+                    </div>
+                </header>
+                <div class="customer-stats">
+                    <div class="stat-mini"><span id="customers-total">0</span><span>Gesamt</span></div>
+                    <div class="stat-mini"><span id="customers-active">0</span><span>Aktiv</span></div>
+                </div>
+                <div class="customer-filter">
+                    <input type="text" id="customer-search" placeholder="🔍 Kunde suchen...">
+                </div>
+                <div class="items-list customer-grid" id="customers-list">
+                    <p class="empty-state">Keine Kunden vorhanden</p>
+                </div>
+            </section>
+
+            <!-- Kalender View -->
+            <section class="view" id="view-kalender">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Kalender</h1>
+                            <p class="subtitle">Termine und Planung</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-prev-week">← Vorherige</button>
+                            <button class="btn btn-secondary" id="btn-today">Heute</button>
+                            <button class="btn btn-secondary" id="btn-next-week">Nächste →</button>
+                            <button class="btn btn-primary" id="btn-neuer-termin">+ Neuer Termin</button>
+                        </div>
+                    </div>
+                </header>
+                <div class="calendar-header" id="calendar-header">
+                    <span class="calendar-title">Woche</span>
+                </div>
+                <div class="calendar-week" id="calendar-week">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- Zeiterfassung View -->
+            <section class="view" id="view-zeiterfassung">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Zeiterfassung</h1>
+                            <p class="subtitle">Arbeitszeiten und Stunden</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-success btn-large" id="btn-clock-toggle">
+                                ▶️ Stempeln
+                            </button>
+                        </div>
+                    </div>
+                </header>
+                <div class="time-clock-display" id="time-clock-display">
+                    <div class="clock-status">Nicht eingestempelt</div>
+                    <div class="clock-timer">00:00:00</div>
+                </div>
+                <div class="time-stats">
+                    <div class="stat-mini"><span id="time-today">0:00</span><span>Heute</span></div>
+                    <div class="stat-mini"><span id="time-week">0:00</span><span>Diese Woche</span></div>
+                    <div class="stat-mini"><span id="time-month">0:00</span><span>Dieser Monat</span></div>
+                </div>
+                <h3 style="margin: 24px 0 16px;">Zeiteinträge</h3>
+                <div class="items-list" id="time-entries-list">
+                    <p class="empty-state">Keine Zeiteinträge vorhanden</p>
+                </div>
+            </section>
+
+            <!-- E-Mails View -->
+            <section class="view" id="view-emails">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>E-Mails</h1>
+                            <p class="subtitle">Posteingang und Automatisierung</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-refresh-emails">🔄 Aktualisieren</button>
+                            <button class="btn btn-primary" id="btn-load-demo-emails">📧 Demo-Mails laden</button>
+                        </div>
+                    </div>
+                </header>
+                <div class="email-stats">
+                    <div class="stat-mini"><span id="emails-unread">0</span><span>Ungelesen</span></div>
+                    <div class="stat-mini"><span id="emails-anfragen">0</span><span>Anfragen</span></div>
+                </div>
+                <div class="email-list" id="email-list">
+                    <p class="empty-state">Keine E-Mails. Klicke "Demo-Mails laden" zum Testen.</p>
+                </div>
+            </section>
+
+            <!-- Dokumente View -->
+            <section class="view" id="view-dokumente">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Dokumente</h1>
+                            <p class="subtitle">Scanner & Archiv</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-scan-document">📷 Scannen</button>
+                            <button class="btn btn-primary" id="btn-upload-document">📤 Hochladen</button>
+                        </div>
+                    </div>
+                </header>
+                <div class="document-stats">
+                    <div class="stat-mini"><span id="docs-total">0</span><span>Dokumente</span></div>
+                    <div class="stat-mini"><span id="docs-receipts">0</span><span>Quittungen</span></div>
+                </div>
+                <div class="document-filter">
+                    <input type="text" id="document-search" placeholder="🔍 Dokumente durchsuchen...">
+                    <select id="document-category-filter">
+                        <option value="">Alle Kategorien</option>
+                        <option value="rechnung">Rechnungen</option>
+                        <option value="quittung">Quittungen</option>
+                        <option value="vertrag">Verträge</option>
+                        <option value="angebot">Angebote</option>
+                        <option value="sonstiges">Sonstiges</option>
+                    </select>
+                </div>
+                <div class="items-list document-grid" id="documents-list">
+                    <p class="empty-state">Keine Dokumente. Scanne oder lade ein Dokument hoch.</p>
+                </div>
+            </section>
+
+            <!-- Berichte View -->
+            <section class="view" id="view-berichte">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Berichte</h1>
+                            <p class="subtitle">Analysen & Auswertungen</p>
+                        </div>
+                    </div>
+                </header>
+                <div class="report-types">
+                    <button class="report-card" data-report="sales">
+                        <span class="report-icon">💰</span>
+                        <span class="report-name">Umsatzbericht</span>
+                    </button>
+                    <button class="report-card" data-report="customer">
+                        <span class="report-icon">👥</span>
+                        <span class="report-name">Kundenbericht</span>
+                    </button>
+                    <button class="report-card" data-report="time">
+                        <span class="report-icon">⏱️</span>
+                        <span class="report-name">Zeitbericht</span>
+                    </button>
+                    <button class="report-card" data-report="tasks">
+                        <span class="report-icon">📋</span>
+                        <span class="report-name">Aufgabenbericht</span>
+                    </button>
+                    <button class="report-card" data-report="bookkeeping">
+                        <span class="report-icon">📊</span>
+                        <span class="report-name">Buchhaltung</span>
+                    </button>
+                </div>
+                <div class="report-filters" id="report-filters">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Von</label>
+                            <input type="date" id="report-start-date">
+                        </div>
+                        <div class="form-group">
+                            <label>Bis</label>
+                            <input type="date" id="report-end-date">
+                        </div>
+                        <button class="btn btn-primary" id="btn-generate-report">Bericht erstellen</button>
+                    </div>
+                </div>
+                <div class="report-output" id="report-output">
+                    <p class="empty-state">Wähle einen Berichtstyp und klicke "Bericht erstellen"</p>
+                </div>
+            </section>
+
+            <!-- KI-Chatbot View -->
+            <section class="view" id="view-chatbot">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>🤖 KI-Chatbot</h1>
+                            <p class="subtitle">WhatsApp-Kundenservice mit Gemini AI</p>
+                        </div>
+                        <div class="header-actions">
+                            <span class="chatbot-status" id="chatbot-status">⚪ Inaktiv</span>
+                            <button class="btn btn-success" id="btn-chatbot-toggle">Aktivieren</button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="chatbot-stats">
+                    <div class="stat-mini"><span id="chatbot-conversations">0</span><span>Gespräche</span></div>
+                    <div class="stat-mini"><span id="chatbot-today-messages">0</span><span>Nachrichten heute</span>
+                    </div>
+                    <div class="stat-mini stat-success"><span id="chatbot-response-time">
+                            < 5s</span><span>Antwortzeit</span></div>
+                </div>
+
+                <div class="chatbot-container">
+                    <!-- Conversations List -->
+                    <div class="chatbot-sidebar">
+                        <div class="chatbot-sidebar-header">
+                            <h3>📱 WhatsApp-Gespräche</h3>
+                            <button class="btn btn-small btn-primary" id="btn-demo-chat">Demo</button>
+                        </div>
+                        <div class="conversation-list" id="conversation-list">
+                            <p class="empty-state-small">Keine aktiven Gespräche</p>
+                        </div>
+                    </div>
+
+                    <!-- Chat Window -->
+                    <div class="chatbot-main">
+                        <div class="chat-header" id="chat-header">
+                            <div class="chat-contact">
+                                <div class="chat-avatar">👤</div>
+                                <div class="chat-contact-info">
+                                    <div class="chat-contact-name">Wähle ein Gespräch</div>
+                                    <div class="chat-contact-phone">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-empty">
+                                <div class="chat-empty-icon">💬</div>
+                                <p>Wähle ein Gespräch aus der Liste<br>oder starte einen Demo-Chat</p>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-area">
+                            <div class="quick-replies" id="quick-replies">
+                                <button class="quick-reply-btn" data-message="Was sind eure Öffnungszeiten?">🕐
+                                    Öffnungszeiten</button>
+                                <button class="quick-reply-btn" data-message="Welche Leistungen bietet ihr?">🔧
+                                    Leistungen</button>
+                                <button class="quick-reply-btn" data-message="Ich möchte einen Termin">📅
+                                    Termin</button>
+                            </div>
+                            <div class="chat-input-row">
+                                <input type="text" id="chat-input" placeholder="Nachricht simulieren (als Kunde)..."
+                                    disabled>
+                                <button class="btn btn-primary" id="btn-send-chat" disabled>Senden</button>
+                            </div>
+                            <p class="chat-hint">💡 Simuliere Kundennachrichten um die KI-Antworten zu testen</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chatbot Settings -->
+                <div class="chatbot-settings-panel" id="chatbot-settings">
+                    <h3>⚙️ Chatbot-Einstellungen</h3>
+                    <div class="settings-grid-inline">
+                        <div class="form-group">
+                            <label>Geschäftszeiten Start</label>
+                            <input type="time" id="chatbot-hours-start" value="08:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Geschäftszeiten Ende</label>
+                            <input type="time" id="chatbot-hours-end" value="18:00">
+                        </div>
+                        <div class="form-group">
+                            <label>Antwort-Verzögerung (ms)</label>
+                            <input type="number" id="chatbot-delay" value="2000" step="500">
+                        </div>
+                    </div>
+                    <p class="settings-note">⚠️ Für echte WhatsApp-Integration wird die WhatsApp Business API benötigt.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Workflows View -->
+            <section class="view" id="view-workflows">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>⚡ Workflow-Automatisierung</h1>
+                            <p class="subtitle">Automatisierte Prozesse verwalten</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="btn-new-workflow">+ Neuer Workflow</button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Workflow Stats -->
+                <div class="workflow-stats-grid">
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">⚡</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="workflow-total">0</span>
+                            <span class="stat-label-mini">Workflows</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">✅</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="workflow-active">0</span>
+                            <span class="stat-label-mini">Aktiv</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">🏃</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="workflow-runs">0</span>
+                            <span class="stat-label-mini">Ausführungen heute</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow Templates -->
+                <div class="panel workflow-templates-panel">
+                    <h3>📋 Vorlagen</h3>
+                    <div class="templates-grid" id="workflow-templates"></div>
+                </div>
+
+                <!-- Active Workflows -->
+                <div class="panel">
+                    <h3>Aktive Workflows</h3>
+                    <div class="workflows-list" id="workflows-list">
+                        <p class="empty-state">Noch keine Workflows erstellt. Verwende eine Vorlage oder erstelle einen
+                            neuen.</p>
+                    </div>
+                </div>
+
+                <!-- Execution Log -->
+                <div class="panel">
+                    <h3>📜 Ausführungs-Protokoll</h3>
+                    <div class="execution-log" id="workflow-log">
+                        <p class="empty-state">Keine Ausführungen</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scanner View -->
+            <section class="view" id="view-scanner">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>📷 Dokumenten-Scanner</h1>
+                            <p class="subtitle">Belege scannen & Daten extrahieren</p>
+                        </div>
+                        <div class="header-actions">
+                            <label class="btn btn-primary" for="scanner-file-input">
+                                📄 Datei hochladen
+                            </label>
+                            <input type="file" id="scanner-file-input" accept="image/*,application/pdf"
+                                style="display:none">
+                            <button class="btn btn-secondary" id="btn-scanner-camera">📷 Kamera</button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Scanner Stats -->
+                <div class="workflow-stats-grid">
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">📄</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="scanner-total">0</span>
+                            <span class="stat-label-mini">Dokumente</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">💰</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="scanner-amount">0 €</span>
+                            <span class="stat-label-mini">Erfasste Beträge</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">⏳</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="scanner-pending">0</span>
+                            <span class="stat-label-mini">Zur Prüfung</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Camera Preview (hidden by default) -->
+                <div class="panel scanner-camera-panel" id="scanner-camera-panel" style="display:none">
+                    <video id="scanner-video" autoplay playsinline></video>
+                    <div class="camera-controls">
+                        <button class="btn btn-primary" id="btn-capture">📸 Aufnehmen</button>
+                        <button class="btn btn-secondary" id="btn-cancel-camera">Abbrechen</button>
+                    </div>
+                </div>
+
+                <!-- Scanned Documents -->
+                <div class="panel">
+                    <div class="panel-header-row">
+                        <h3>Gescannte Dokumente</h3>
+                        <select id="scanner-filter" class="filter-select">
+                            <option value="">Alle Kategorien</option>
+                            <option value="rechnung">Rechnungen</option>
+                            <option value="quittung">Quittungen</option>
+                            <option value="vertrag">Verträge</option>
+                            <option value="sonstiges">Sonstiges</option>
+                        </select>
+                    </div>
+                    <div class="scanned-docs-list" id="scanned-docs-list">
+                        <p class="empty-state">Noch keine Dokumente gescannt. Lade ein Bild hoch oder nutze die Kamera.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- DATEV Export -->
+                <div class="panel datev-panel">
+                    <h3>📤 DATEV Export</h3>
+                    <div class="datev-controls">
+                        <div class="form-row-inline">
+                            <div class="form-group">
+                                <label>Von</label>
+                                <input type="date" id="datev-from" value="">
+                            </div>
+                            <div class="form-group">
+                                <label>Bis</label>
+                                <input type="date" id="datev-to" value="">
+                            </div>
+                            <button class="btn btn-primary" id="btn-datev-export">📥 DATEV Export</button>
+                            <button class="btn btn-secondary" id="btn-euer-report">📊 EÜR Übersicht</button>
+                        </div>
+                    </div>
+                    <div id="datev-result" class="datev-result"></div>
+                </div>
+            </section>
+
+            <!-- Backup View -->
+            <section class="view" id="view-backup">
+                <header class="view-header">
+                    <h1>🔒 Backup & Sicherheit</h1>
+                    <p class="subtitle">Datensicherung und DSGVO-Optionen</p>
+                </header>
+
+                <!-- Storage Stats -->
+                <div class="workflow-stats-grid">
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">💾</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="storage-used">0 MB</span>
+                            <span class="stat-label-mini">Speicher belegt</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">📦</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="backup-count">0</span>
+                            <span class="stat-label-mini">Backups</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">📝</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="activity-count">0</span>
+                            <span class="stat-label-mini">Aktivitäten</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Backup Section -->
+                <div class="panel">
+                    <h3>💾 Datensicherung</h3>
+                    <div class="backup-controls">
+                        <div class="backup-option">
+                            <h4>Manuelles Backup</h4>
+                            <p>Erstelle ein verschlüsseltes Backup aller Daten.</p>
+                            <div class="form-row-inline">
+                                <input type="password" id="backup-password"
+                                    placeholder="Passwort für Verschlüsselung (optional)">
+                                <button class="btn btn-primary" id="btn-create-backup">📥 Backup erstellen</button>
+                            </div>
+                        </div>
+                        <div class="backup-option">
+                            <h4>Backup wiederherstellen</h4>
+                            <p>Lade ein vorhandenes Backup hoch.</p>
+                            <div class="form-row-inline">
+                                <input type="file" id="backup-file-input" accept=".json">
+                                <input type="password" id="restore-password" placeholder="Passwort">
+                                <button class="btn btn-warning" id="btn-restore-backup">🔄 Wiederherstellen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto-Backup Settings -->
+                <div class="panel">
+                    <h3>⚙️ Auto-Backup Einstellungen</h3>
+                    <div class="settings-grid-inline">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="auto-backup-enabled" checked>
+                                Auto-Backup aktiviert
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Intervall</label>
+                            <select id="backup-interval">
+                                <option value="hourly">Stündlich</option>
+                                <option value="daily" selected>Täglich</option>
+                                <option value="weekly">Wöchentlich</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="auto-backups-list" id="auto-backups-list">
+                        <p class="empty-state">Keine Auto-Backups vorhanden</p>
+                    </div>
+                </div>
+
+                <!-- GDPR Section -->
+                <div class="panel gdpr-panel">
+                    <h3>🛡️ DSGVO-Optionen</h3>
+                    <div class="gdpr-controls">
+                        <div class="gdpr-option">
+                            <h4>Kundendaten exportieren</h4>
+                            <p>Exportiere alle Daten eines Kunden (Art. 20 DSGVO).</p>
+                            <div class="form-row-inline">
+                                <select id="gdpr-customer-select">
+                                    <option value="">Kunde wählen...</option>
+                                </select>
+                                <button class="btn btn-secondary" id="btn-gdpr-export">📤 Daten exportieren</button>
+                            </div>
+                        </div>
+                        <div class="gdpr-option">
+                            <h4>Kundendaten löschen</h4>
+                            <p>Lösche alle Daten eines Kunden unwiderruflich (Art. 17 DSGVO).</p>
+                            <div class="form-row-inline">
+                                <select id="gdpr-delete-select">
+                                    <option value="">Kunde wählen...</option>
+                                </select>
+                                <button class="btn btn-danger" id="btn-gdpr-delete">🗑️ Daten löschen</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="panel">
+                    <h3>📜 Aktivitäts-Protokoll</h3>
+                    <div class="activity-log-list" id="security-activity-log">
+                        <p class="empty-state">Keine Aktivitäten protokolliert</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section class="view" id="view-einstellungen">
+                <header class="view-header">
+                    <h1>⚙️ Einstellungen</h1>
+                    <p class="subtitle">Konfiguration und Systemdaten</p>
+                </header>
+
+                <div class="panel">
+                    <h3>🏢 Firmendaten</h3>
+                    <form id="settings-company-form">
+                        <div class="form-row">
+                            <div class="form-group"><label>Firmenname</label><input type="text" id="company-name"
+                                    value="MHS Metallbau Hydraulik Service"></div>
+                            <div class="form-group"><label>Inhaber</label><input type="text" id="company-owner"
+                                    value="Max Mustermann"></div>
+                        </div>
+                        <div class="form-group"><label>Adresse</label><textarea id="company-address"
+                                rows="2">Handwerkerring 38a, 12345 Musterstadt</textarea></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Steuernummer</label><input type="text" id="company-taxid"
+                                    value="12/345/67890"></div>
+                            <div class="form-group"><label>USt-IdNr.</label><input type="text" id="company-vatid"
+                                    value="DE123456789"></div>
+                        </div>
+                        <div class="form-actions"><button type="submit" class="btn btn-primary">Speichern</button></div>
+                    </form>
+                </div>
+
+                <div class="panel">
+                    <h3>🎨 Darstellung</h3>
+                    <div class="form-group">
+                        <label class="toggle-label" style="display:flex; align-items:center; gap:10px; cursor:pointer">
+                            <input type="checkbox" id="theme-toggle" checked
+                                onchange="document.body.classList.toggle('light-theme')">
+                            <span>Dark Mode verwenden</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>🧠 KI-Konfiguration</h3>
+                    <div class="form-group">
+                        <label>AI Provider</label>
+                        <select id="ai-provider" onchange="window.UI.toggleAIProvider()"
+                            style="width:100%; margin-bottom:10px;">
+                            <option value="gemini">Google Gemini (Cloud)</option>
+                            <option value="ollama">Local AI (Ollama)</option>
+                        </select>
+                    </div>
+
+                    <!-- Gemini Conf -->
+                    <div id="conf-gemini" class="provider-conf">
+                        <p class="description" style="color:var(--text-secondary); margin-bottom:0.5rem;">Benötigt
+                            Internetverbindung & API Key.</p>
+                        <div class="form-group">
+                            <label>Gemini API Key</label>
+                            <input type="password" id="gemini-api-key" placeholder="AIzp...">
+                        </div>
+                    </div>
+
+                    <!-- Ollama Conf -->
+                    <div id="conf-ollama" class="provider-conf" style="display:none;">
+                        <p class="description" style="color:var(--text-secondary); margin-bottom:0.5rem;">Benötigt lokal
+                            laufendes Ollama (Mistral/Llama).</p>
+                        <div class="form-group">
+                            <label>Ollama URL</label>
+                            <input type="text" id="ollama-url" value="http://localhost:11434"
+                                placeholder="http://localhost:11434">
+                        </div>
+                        <div class="form-group">
+                            <label>Modell Name</label>
+                            <input type="text" id="ollama-model" value="mistral"
+                                placeholder="z.B. mistral, llama3, gemma">
+                        </div>
+                    </div>
+
+                    <div class="form-actions" style="margin-top:15px;">
+                        <button class="btn btn-secondary" onclick="window.UI.saveAIConfig()">💾 Konfiguration
+                            Speichern</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>💾 Datenverwaltung</h3>
+                    <div class="form-actions" style="justify-content: flex-start;">
+                        <button class="btn btn-secondary" onclick="window.UI.exportAllData()">📤 Alle Daten
+                            exportieren</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal: Ausgabe erfassen -->
+    <div class="modal" id="modal-ausgabe">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ausgabe erfassen</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="form-ausgabe" class="modal-form">
+                <div class="form-group">
+                    <label for="ausgabe-kategorie">Kategorie</label>
+                    <select id="ausgabe-kategorie" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="Wareneinkauf">Wareneinkauf</option>
+                        <option value="Material/Rohstoffe">Material/Rohstoffe</option>
+                        <option value="Fremdleistungen">Fremdleistungen</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Miete/Pacht">Miete/Pacht</option>
+                        <option value="Versicherungen">Versicherungen</option>
+                        <option value="Fahrzeugkosten">Fahrzeugkosten</option>
+                        <option value="Telefon/Internet">Telefon/Internet</option>
+                        <option value="Bürobedarf">Bürobedarf</option>
+                        <option value="Sonstige Ausgaben">Sonstige Ausgaben</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="ausgabe-beschreibung">Beschreibung</label>
+                    <input type="text" id="ausgabe-beschreibung" required placeholder="z.B. Stahllieferung Müller GmbH">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ausgabe-betrag">Betrag (brutto)</label>
+                        <input type="number" id="ausgabe-betrag" required step="0.01" placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label for="ausgabe-datum">Datum</label>
+                        <input type="date" id="ausgabe-datum" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="ausgabe-beleg">Belegnummer</label>
+                    <input type="text" id="ausgabe-beleg" placeholder="z.B. RE-12345">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Ausgabe speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Mahnung erstellen -->
+    <div class="modal" id="modal-mahnung">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Mahnung erstellen</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="mahnung-preview" id="mahnung-preview">
+                <!-- Dynamically generated -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary modal-close">Abbrechen</button>
+                <button type="button" class="btn btn-warning" id="btn-send-mahnung">📧 Mahnung senden</button>
+                <button type="button" class="btn btn-primary" id="btn-print-mahnung">🖨️ Drucken</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Neue Anfrage -->
+    <div class="modal" id="modal-anfrage">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Neue Anfrage erfassen</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="form-anfrage" class="modal-form">
+                <div class="form-group">
+                    <label for="kunde-name">Kundenname *</label>
+                    <input type="text" id="kunde-name" required placeholder="z.B. Müller GmbH">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="kunde-email">E-Mail</label>
+                        <input type="email" id="kunde-email" placeholder="email@beispiel.de">
+                    </div>
+                    <div class="form-group">
+                        <label for="kunde-telefon">Telefon</label>
+                        <input type="tel" id="kunde-telefon" placeholder="+49 123 456789">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="leistungsart">Leistungsart *</label>
+                    <select id="leistungsart" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="metallbau">Metallbau / Stahlkonstruktion</option>
+                        <option value="schweissen">Schweißarbeiten</option>
+                        <option value="rohrleitungsbau">Rohrleitungsbau</option>
+                        <option value="industriemontage">Industriemontage</option>
+                        <option value="hydraulik">Hydraulikschläuche</option>
+                        <option value="reparatur">Reparatur / Wartung</option>
+                        <option value="sonstiges">Sonstiges</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="beschreibung">Beschreibung der Anfrage *</label>
+                    <textarea id="beschreibung" required rows="4"
+                        placeholder="Beschreiben Sie das Projekt..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budget">Geschätztes Budget (€)</label>
+                        <input type="number" id="budget" placeholder="z.B. 5000">
+                    </div>
+                    <div class="form-group">
+                        <label for="termin">Gewünschter Termin</label>
+                        <input type="date" id="termin">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Anfrage speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Angebot erstellen -->
+    <div class="modal" id="modal-angebot">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Angebot erstellen</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="form-angebot" class="modal-form">
+                <input type="hidden" id="angebot-anfrage-id">
+                <div class="angebot-header-info" id="angebot-kunde-info"></div>
+
+                <!-- Customer Presets -->
+                <div class="form-group">
+                    <label>Kundenvorlage laden</label>
+                    <div class="preset-row">
+                        <select id="customer-preset" class="preset-select">
+                            <option value="">-- Keine Vorlage --</option>
+                        </select>
+                        <button type="button" class="btn btn-small" id="btn-load-preset">📋 Vorlage laden</button>
+                        <button type="button" class="btn btn-small btn-secondary" id="btn-save-preset">💾 Als Vorlage
+                            speichern</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Positionen</label>
+                    <p class="hint">💡 Tippe in die Beschreibung für Materialvorschläge aus dem Bestand</p>
+                    <div class="positionen-list" id="positionen-list">
+                        <!-- Dynamically added -->
+                    </div>
+                    <div class="position-actions">
+                        <button type="button" class="btn btn-small" id="btn-add-position">+ Position hinzufügen</button>
+                        <button type="button" class="btn btn-small btn-secondary" id="btn-add-from-material">📦 Aus
+                            Materialbestand</button>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="angebot-text">Angebots-Text</label>
+                    <div class="ai-suggestion">
+                        <button type="button" class="btn btn-ai" id="btn-ai-text">
+                            🤖 KI-Vorschlag generieren
+                        </button>
+                        <span class="ai-hint">Basierend auf der Anfrage</span>
+                    </div>
+                    <textarea id="angebot-text" rows="6" placeholder="Angebots-Beschreibung..."></textarea>
+                </div>
+
+                <div class="angebot-summary">
+                    <div class="summary-row">
+                        <span>Netto:</span>
+                        <span id="angebot-netto">0,00 €</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>MwSt. (19%):</span>
+                        <span id="angebot-mwst">0,00 €</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Gesamt:</span>
+                        <span id="angebot-brutto">0,00 €</span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Angebot erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Auftrag Details -->
+    <div class="modal" id="modal-auftrag">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Auftrag abschließen</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="form-auftrag" class="modal-form">
+                <input type="hidden" id="auftrag-id">
+                <div class="auftrag-info" id="auftrag-info"></div>
+
+                <div class="form-group">
+                    <label for="arbeitszeit">Tatsächliche Arbeitszeit (Stunden)</label>
+                    <input type="number" id="arbeitszeit" step="0.5" placeholder="z.B. 8.5">
+                </div>
+                <div class="form-group">
+                    <label for="material-kosten">Materialkosten (€)</label>
+                    <input type="number" id="material-kosten" step="0.01" placeholder="z.B. 250.00">
+                </div>
+                <div class="form-group">
+                    <label for="notizen">Arbeitsnotizen</label>
+                    <textarea id="notizen" rows="3" placeholder="Durchgeführte Arbeiten..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Abbrechen</button>
+                    <button type="submit" class="btn btn-success">Auftrag abschließen & Rechnung erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Rechnung anzeigen -->
+    <div class="modal" id="modal-rechnung">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Rechnung</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="rechnung-preview" id="rechnung-preview">
+                <!-- Dynamically generated -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary modal-close">Schließen</button>
+                <button type="button" class="btn btn-primary" id="btn-pdf-export">📄 Als PDF speichern</button>
+                <button type="button" class="btn btn-success" id="btn-mark-paid">✓ Als bezahlt markieren</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Hilfe -->
+    <div class="modal" id="modal-help">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Hilfe & Dokumentation</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="help-content" style="padding: 24px;">
+                <h3>Willkommen!</h3>
+                <p>Dies ist das MHS Automatisierungs-Tool.</p>
+                <h4>Tastenkürzel</h4>
+                <ul>
+                    <li><code>Ctrl + N</code>: Neue Anfrage</li>
+                    <li><code>Ctrl + S</code>: Speichern</li>
+                    <li><code>Esc</code>: Dialog schließen</li>
+                </ul>
+                <h4 style="margin-top:16px">Kontakt</h4>
+                <p>Bei Fragen wenden Sie sich an den Support.</p>
+                <div class="form-actions"><button class="btn btn-secondary modal-close">Schließen</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/services/gemini-service.js"></script>
+    <script src="js/services/material-service.js"></script>
+    <script src="js/services/dunning-service.js"></script>
+    <script src="js/services/bookkeeping-service.js"></script>
+    <script src="js/services/work-estimation-service.js"></script>
+    <!-- New Services -->
+    <script src="js/services/email-service.js"></script>
+    <script src="js/services/task-service.js"></script>
+    <script src="js/services/customer-service.js"></script>
+    <script src="js/services/document-service.js"></script>
+    <script src="js/services/calendar-service.js"></script>
+    <script src="js/services/booking-service.js"></script>
+    <script src="js/services/timetracking-service.js"></script>
+    <script src="js/services/communication-service.js"></script>
+    <script src="js/services/phone-service.js"></script>
+    <script src="js/services/report-service.js"></script>
+    <script src="js/services/chatbot-service.js"></script>
+    <!-- Additional Services -->
+    <script src="js/services/cashflow-service.js"></script>
+    <script src="js/services/lead-service.js"></script>
+    <script src="js/services/version-control-service.js"></script>
+    <script src="js/services/approval-service.js"></script>
+    <script src="js/services/print-digital-service.js"></script>
+    <!-- Phase 3 Services -->
+    <script src="js/services/banking-service.js"></script>
+    <script src="js/services/sms-reminder-service.js"></script>
+    <script src="js/services/voice-command-service.js"></script>
+    <script src="js/services/einvoice-service.js"></script>
+    <script src="js/services/payment-service.js"></script>
+    <script src="js/services/contract-service.js"></script>
+    <script src="js/services/profitability-service.js"></script>
+    <script src="js/services/route-service.js"></script>
+    <!-- Phase 3 Priority 3 Services -->
+    <script src="js/services/warranty-service.js"></script>
+    <script src="js/services/photo-service.js"></script>
+    <script src="js/services/ai-assistant-service.js"></script>
+    <script src="js/services/barcode-service.js"></script>
+    <script src="js/services/webhook-service.js"></script>
+    <script src="js/services/qrcode-service.js"></script>
+    <script src="js/services/theme-service.js"></script>
+    <script src="js/services/i18n-service.js"></script>
+    <!-- Completion Services -->
+    <script src="js/services/workflow-service.js"></script>
+    <script src="js/services/ocr-scanner-service.js"></script>
+    <script src="js/services/datev-export-service.js"></script>
+    <script src="js/services/recurring-task-service.js"></script>
+    <script src="js/services/security-backup-service.js"></script>
+    <!-- Core Infrastructure -->
+    <script src="js/services/error-handler.js"></script>
+    <script src="js/services/store-service.js"></script>
+    <script src="js/services/llm-service.js"></script>
+    <script src="js/services/chatbot-service.js"></script>
+    <script src="js/ui/ui-helpers.js"></script>
+    <script src="js/ui/navigation.js"></script>
+
+    <script src="js/features-integration.js"></script>
+    <script src="js/new-features-ui.js"></script>
+    <script src="js/app.js"></script>
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('✅ Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

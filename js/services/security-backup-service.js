@@ -1,0 +1,535 @@
+/* ============================================
+   Security & Backup Service (Feature #30)
+   Data encryption, backup, and GDPR compliance
+   ============================================ */
+
+class SecurityBackupService {
+    constructor() {
+        this.backups = JSON.parse(localStorage.getItem('mhs_backup_log') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('mhs_security_settings') || '{}');
+        this.activityLog = JSON.parse(localStorage.getItem('mhs_activity_log') || '[]');
+
+        // Default settings
+        if (!this.settings.autoBackup) this.settings.autoBackup = true;
+        if (!this.settings.backupInterval) this.settings.backupInterval = 'daily';
+        if (!this.settings.encryptBackups) this.settings.encryptBackups = true;
+        if (!this.settings.maxBackups) this.settings.maxBackups = 10;
+        if (!this.settings.gdprRetentionDays) this.settings.gdprRetentionDays = 365 * 10; // 10 years
+
+        // Start auto-backup scheduler
+        this.startAutoBackup();
+    }
+
+    // =====================================================
+    // DATA ENCRYPTION
+    // =====================================================
+
+    // Generate encryption key from password
+    async deriveKey(password) {
+        const encoder = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw',
+            encoder.encode(password),
+            'PBKDF2',
+            false,
+            ['deriveKey']
+        );
+
+        return await crypto.subtle.deriveKey(
+            {
+                name: 'PBKDF2',
+                salt: encoder.encode('mhs-salt-2024'),
+                iterations: 100000,
+                hash: 'SHA-256'
+            },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    // Encrypt data
+    async encryptData(data, password) {
+        try {
+            const key = await this.deriveKey(password);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encoder = new TextEncoder();
+
+            const encrypted = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                encoder.encode(JSON.stringify(data))
+            );
+
+            // Combine IV and encrypted data
+            const combined = new Uint8Array(iv.length + encrypted.byteLength);
+            combined.set(iv);
+            combined.set(new Uint8Array(encrypted), iv.length);
+
+            return {
+                success: true,
+                data: this.arrayBufferToBase64(combined)
+            };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Decrypt data
+    async decryptData(encryptedBase64, password) {
+        try {
+            const key = await this.deriveKey(password);
+            const combined = this.base64ToArrayBuffer(encryptedBase64);
+
+            const iv = combined.slice(0, 12);
+            const data = combined.slice(12);
+
+            const decrypted = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                data
+            );
+
+            const decoder = new TextDecoder();
+            return {
+                success: true,
+                data: JSON.parse(decoder.decode(decrypted))
+            };
+        } catch (error) {
+            return { success: false, error: 'Entschlüsselung fehlgeschlagen - falsches Passwort?' };
+        }
+    }
+
+    // =====================================================
+    // BACKUP SYSTEM
+    // =====================================================
+
+    // Get all MHS data from localStorage
+    getAllData() {
+        const data = {};
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('mhs_'));
+
+        keys.forEach(key => {
+            try {
+                data[key] = JSON.parse(localStorage.getItem(key));
+            } catch (e) {
+                data[key] = localStorage.getItem(key);
+            }
+        });
+
+        return data;
+    }
+
+    // Create a full backup
+    async createBackup(password = null) {
+        const data = this.getAllData();
+
+        const backup = {
+            id: 'backup-' + Date.now(),
+            version: '2.0',
+            createdAt: new Date().toISOString(),
+            dataKeys: Object.keys(data),
+            recordCounts: this.getRecordCounts(data),
+            encrypted: !!password,
+            data: null
+        };
+
+        // Encrypt if password provided
+        if (password && this.settings.encryptBackups) {
+            const encrypted = await this.encryptData(data, password);
+            if (encrypted.success) {
+                backup.data = encrypted.data;
+            } else {
+                return { success: false, error: 'Verschlüsselung fehlgeschlagen' };
+            }
+        } else {
+            backup.data = JSON.stringify(data);
+        }
+
+        // Log backup
+        this.backups.push({
+            id: backup.id,
+            createdAt: backup.createdAt,
+            encrypted: backup.encrypted,
+            recordCounts: backup.recordCounts,
+            size: backup.data.length
+        });
+
+        // Keep only last X backups in log
+        if (this.backups.length > this.settings.maxBackups) {
+            this.backups = this.backups.slice(-this.settings.maxBackups);
+        }
+
+        this.saveSettings();
+
+        return { success: true, backup };
+    }
+
+    // Download backup as file
+    async downloadBackup(password = null) {
+        const result = await this.createBackup(password);
+        if (!result.success) return result;
+
+        const backup = result.backup;
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MHS_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.logActivity('backup_created', { encrypted: backup.encrypted });
+
+        return { success: true, message: 'Backup erfolgreich erstellt' };
+    }
+
+    // Restore from backup
+    async restoreBackup(backupJson, password = null) {
+        try {
+            const backup = typeof backupJson === 'string' ? JSON.parse(backupJson) : backupJson;
+
+            if (!backup.data || !backup.id) {
+                return { success: false, error: 'Ungültiges Backup-Format' };
+            }
+
+            let data;
+            if (backup.encrypted) {
+                if (!password) {
+                    return { success: false, error: 'Passwort erforderlich für verschlüsseltes Backup' };
+                }
+                const decrypted = await this.decryptData(backup.data, password);
+                if (!decrypted.success) {
+                    return decrypted;
+                }
+                data = decrypted.data;
+            } else {
+                data = JSON.parse(backup.data);
+            }
+
+            // Restore all data
+            for (const [key, value] of Object.entries(data)) {
+                localStorage.setItem(key, JSON.stringify(value));
+            }
+
+            this.logActivity('backup_restored', { backupId: backup.id });
+
+            return {
+                success: true,
+                message: 'Backup erfolgreich wiederhergestellt. Seite wird neu geladen...',
+                needsReload: true
+            };
+
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    // Get record counts for statistics
+    getRecordCounts(data) {
+        const counts = {};
+        for (const [key, value] of Object.entries(data)) {
+            if (Array.isArray(value)) {
+                counts[key] = value.length;
+            } else if (typeof value === 'object') {
+                counts[key] = Object.keys(value).length;
+            }
+        }
+        return counts;
+    }
+
+    // =====================================================
+    // AUTO-BACKUP
+    // =====================================================
+
+    startAutoBackup() {
+        if (!this.settings.autoBackup) return;
+
+        // Check backup status on load
+        setTimeout(() => this.checkAutoBackupNeeded(), 10000);
+
+        // Check every hour
+        setInterval(() => this.checkAutoBackupNeeded(), 3600000);
+    }
+
+    checkAutoBackupNeeded() {
+        if (!this.settings.autoBackup) return;
+
+        const lastBackup = this.backups[this.backups.length - 1];
+        const now = new Date();
+
+        let needsBackup = false;
+
+        if (!lastBackup) {
+            needsBackup = true;
+        } else {
+            const lastDate = new Date(lastBackup.createdAt);
+            const hoursSince = (now - lastDate) / (1000 * 60 * 60);
+
+            switch (this.settings.backupInterval) {
+                case 'hourly': needsBackup = hoursSince >= 1; break;
+                case 'daily': needsBackup = hoursSince >= 24; break;
+                case 'weekly': needsBackup = hoursSince >= 168; break;
+            }
+        }
+
+        if (needsBackup) {
+            this.createAutoBackup();
+        }
+    }
+
+    async createAutoBackup() {
+        // Store backup in localStorage (compressed)
+        const data = this.getAllData();
+        const backup = {
+            id: 'auto-' + Date.now(),
+            createdAt: new Date().toISOString(),
+            data: JSON.stringify(data)
+        };
+
+        // Store in IndexedDB if available, otherwise localStorage
+        const existingAutoBackups = JSON.parse(localStorage.getItem('mhs_auto_backups') || '[]');
+        existingAutoBackups.push(backup);
+
+        // Keep last 3 auto-backups
+        while (existingAutoBackups.length > 3) {
+            existingAutoBackups.shift();
+        }
+
+        localStorage.setItem('mhs_auto_backups', JSON.stringify(existingAutoBackups));
+        console.log('Auto-backup created:', backup.id);
+    }
+
+    // Get auto backups
+    getAutoBackups() {
+        return JSON.parse(localStorage.getItem('mhs_auto_backups') || '[]');
+    }
+
+    // =====================================================
+    // GDPR COMPLIANCE
+    // =====================================================
+
+    // Export all customer data (GDPR Article 20 - Data Portability)
+    exportCustomerData(customerId) {
+        const data = this.getAllData();
+        const customerData = {
+            exportedAt: new Date().toISOString(),
+            customerId: customerId,
+            customer: null,
+            invoices: [],
+            appointments: [],
+            communications: [],
+            documents: []
+        };
+
+        // Find customer
+        if (data.mhs_customers) {
+            customerData.customer = data.mhs_customers.find(c => c.id === customerId);
+        }
+
+        // Find related invoices
+        if (data.mhs_rechnungen) {
+            customerData.invoices = data.mhs_rechnungen.filter(r =>
+                r.kundeId === customerId || r.kunde === customerId
+            );
+        }
+
+        // Find appointments
+        if (data.mhs_appointments) {
+            customerData.appointments = data.mhs_appointments.filter(a =>
+                a.customerId === customerId || a.kundeId === customerId
+            );
+        }
+
+        // Find communications
+        if (data.mhs_communications) {
+            customerData.communications = data.mhs_communications.filter(c =>
+                c.customerId === customerId
+            );
+        }
+
+        return customerData;
+    }
+
+    // Delete all customer data (GDPR Article 17 - Right to Erasure)
+    deleteCustomerData(customerId) {
+        const keysToCheck = [
+            'mhs_customers',
+            'mhs_rechnungen',
+            'mhs_appointments',
+            'mhs_communications',
+            'mhs_leads',
+            'mhs_buchungen'
+        ];
+
+        let deletedCount = 0;
+
+        keysToCheck.forEach(key => {
+            const data = JSON.parse(localStorage.getItem(key) || '[]');
+            if (Array.isArray(data)) {
+                const filtered = data.filter(item =>
+                    item.id !== customerId &&
+                    item.kundeId !== customerId &&
+                    item.customerId !== customerId
+                );
+                deletedCount += data.length - filtered.length;
+                localStorage.setItem(key, JSON.stringify(filtered));
+            }
+        });
+
+        this.logActivity('gdpr_delete', { customerId, deletedCount });
+
+        return { success: true, deletedCount };
+    }
+
+    // Anonymize customer data (alternative to deletion)
+    anonymizeCustomerData(customerId) {
+        if (!window.customerService) return { success: false };
+
+        const customer = window.customerService.getCustomer(customerId);
+        if (!customer) return { success: false, error: 'Kunde nicht gefunden' };
+
+        // Anonymize personal data
+        const anonymized = {
+            name: 'Anonymisiert',
+            email: 'anonymized@example.com',
+            telefon: '000000000',
+            adresse: 'Anonymisiert',
+            strasse: '',
+            plz: '00000',
+            ort: 'Anonymisiert',
+            notizen: '[Daten anonymisiert gem. DSGVO]',
+            anonymizedAt: new Date().toISOString()
+        };
+
+        window.customerService.updateCustomer(customerId, anonymized);
+        this.logActivity('gdpr_anonymize', { customerId });
+
+        return { success: true };
+    }
+
+    // =====================================================
+    // ACTIVITY LOGGING (Audit Trail)
+    // =====================================================
+
+    logActivity(action, details = {}) {
+        this.activityLog.push({
+            id: 'log-' + Date.now(),
+            action,
+            details,
+            timestamp: new Date().toISOString(),
+            user: 'admin' // Would be actual user in multi-user setup
+        });
+
+        // Keep last 1000 entries
+        if (this.activityLog.length > 1000) {
+            this.activityLog = this.activityLog.slice(-1000);
+        }
+
+        localStorage.setItem('mhs_activity_log', JSON.stringify(this.activityLog));
+    }
+
+    getActivityLog(limit = 100, action = null) {
+        let log = [...this.activityLog];
+        if (action) {
+            log = log.filter(l => l.action === action);
+        }
+        return log.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, limit);
+    }
+
+    // =====================================================
+    // ACCESS CONTROL (Basic)
+    // =====================================================
+
+    // Simple PIN protection
+    setPinCode(pin) {
+        const hash = this.hashPin(pin);
+        this.settings.pinHash = hash;
+        this.saveSettings();
+        return { success: true };
+    }
+
+    verifyPin(pin) {
+        if (!this.settings.pinHash) return true; // No PIN set
+        return this.hashPin(pin) === this.settings.pinHash;
+    }
+
+    hashPin(pin) {
+        // Simple hash for PIN (in production, use proper hashing)
+        let hash = 0;
+        for (let i = 0; i < pin.length; i++) {
+            const char = pin.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return hash.toString(16);
+    }
+
+    // =====================================================
+    // UTILITIES
+    // =====================================================
+
+    arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
+
+    base64ToArrayBuffer(base64) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+    }
+
+    // Get storage usage
+    getStorageUsage() {
+        let total = 0;
+        let mhsTotal = 0;
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            const value = localStorage.getItem(key);
+            const size = (key.length + value.length) * 2; // UTF-16
+            total += size;
+            if (key.startsWith('mhs_')) {
+                mhsTotal += size;
+            }
+        }
+
+        return {
+            totalBytes: total,
+            mhsBytes: mhsTotal,
+            totalMB: (total / 1024 / 1024).toFixed(2),
+            mhsMB: (mhsTotal / 1024 / 1024).toFixed(2),
+            percentUsed: ((total / (5 * 1024 * 1024)) * 100).toFixed(1) // Assuming 5MB limit
+        };
+    }
+
+    // Get backup history
+    getBackupHistory() {
+        return this.backups.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+
+    // Update settings
+    updateSettings(newSettings) {
+        this.settings = { ...this.settings, ...newSettings };
+        this.saveSettings();
+    }
+
+    saveSettings() {
+        localStorage.setItem('mhs_security_settings', JSON.stringify(this.settings));
+        localStorage.setItem('mhs_backup_log', JSON.stringify(this.backups));
+    }
+}
+
+window.securityBackupService = new SecurityBackupService();

@@ -1,0 +1,223 @@
+{
+  "name": "MHS Workflow - Email Automatisierung",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mhs-angebot",
+        "options": {}
+      },
+      "id": "webhook-angebot",
+      "name": "Webhook: Neues Angebot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mhs-rechnung",
+        "options": {}
+      },
+      "id": "webhook-rechnung",
+      "name": "Webhook: Neue Rechnung",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 500]
+    },
+    {
+      "parameters": {
+        "fromEmail": "angebot@mhs-technik.de",
+        "toEmail": "={{ $json.kunde.email }}",
+        "subject": "Angebot {{ $json.angebotId }} von MHS Metallbau",
+        "emailType": "html",
+        "message": "<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 30px; }\n.content { padding: 30px; }\n.footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; }\n.btn { display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; }\n.amount { font-size: 24px; font-weight: bold; color: #6366f1; }\n</style>\n</head>\n<body>\n<div class=\"header\">\n<h1>⚙️ MHS Metallbau Hydraulik Service</h1>\n<p>Ihr Partner für Metallbau und mehr</p>\n</div>\n<div class=\"content\">\n<p>Sehr geehrte(r) {{ $json.kunde.name }},</p>\n<p>vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser Angebot.</p>\n<p><strong>Angebots-Nr.:</strong> {{ $json.angebotId }}</p>\n<p><strong>Leistung:</strong> {{ $json.leistungsart }}</p>\n<p class=\"amount\">Gesamtbetrag: {{ $json.brutto }} €</p>\n<p>{{ $json.angebotText }}</p>\n<p>Das Angebot ist 30 Tage gültig.</p>\n<p><a href=\"mailto:info@mhs-technik.de?subject=Auftrag zu {{ $json.angebotId }}\" class=\"btn\">Jetzt beauftragen</a></p>\n</div>\n<div class=\"footer\">\n<p>MHS Metallbau Hydraulik Service<br>\nHandwerkerring 38a, 63776 Mömbris-Rothengrund<br>\nTel: +49 6029 99 22 96 4 | info@mhs-technik.de</p>\n</div>\n</body>\n</html>"
+      },
+      "id": "send-angebot-email",
+      "name": "Email: Angebot senden",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [500, 300],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "rechnung@mhs-technik.de",
+        "toEmail": "={{ $json.kunde.email }}",
+        "subject": "Rechnung {{ $json.rechnungId }} von MHS Metallbau",
+        "emailType": "html",
+        "message": "<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 30px; }\n.content { padding: 30px; }\n.footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; }\n.amount { font-size: 24px; font-weight: bold; color: #22c55e; }\n.payment { background: #f0fdf4; border: 1px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0; }\n</style>\n</head>\n<body>\n<div class=\"header\">\n<h1>⚙️ MHS Metallbau Hydraulik Service</h1>\n<p>Rechnung</p>\n</div>\n<div class=\"content\">\n<p>Sehr geehrte(r) {{ $json.kunde.name }},</p>\n<p>anbei erhalten Sie die Rechnung für die durchgeführten Arbeiten.</p>\n<p><strong>Rechnungs-Nr.:</strong> {{ $json.rechnungId }}</p>\n<p><strong>Rechnungsdatum:</strong> {{ $json.datum }}</p>\n<p class=\"amount\">Rechnungsbetrag: {{ $json.brutto }} €</p>\n<div class=\"payment\">\n<p><strong>Zahlungsinformationen:</strong></p>\n<p>Empfänger: MHS Metallbau Hydraulik Service<br>\nBank: Sparkasse Aschaffenburg<br>\nIBAN: DE00 0000 0000 0000 0000 00<br>\nVerwendungszweck: {{ $json.rechnungId }}</p>\n<p><strong>Zahlungsziel:</strong> 14 Tage ohne Abzug</p>\n</div>\n<p>Vielen Dank für Ihren Auftrag!</p>\n</div>\n<div class=\"footer\">\n<p>MHS Metallbau Hydraulik Service<br>\nHandwerkerring 38a, 63776 Mömbris-Rothengrund<br>\nTel: +49 6029 99 22 96 4 | info@mhs-technik.de</p>\n</div>\n</body>\n</html>",
+        "attachments": "={{ $json.pdfBase64 }}"
+      },
+      "id": "send-rechnung-email",
+      "name": "Email: Rechnung senden",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [500, 500],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={\"success\": true, \"message\": \"Angebot-Email wurde versendet\"}"
+      },
+      "id": "respond-angebot",
+      "name": "Response: Angebot",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={\"success\": true, \"message\": \"Rechnung-Email wurde versendet\"}"
+      },
+      "id": "respond-rechnung",
+      "name": "Response: Rechnung",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 500]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mhs-material-import",
+        "options": {}
+      },
+      "id": "webhook-material",
+      "name": "Webhook: Material Import",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 700]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.spreadsheetId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Materialbestand",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "google-sheets-read",
+      "name": "Google Sheets: Material lesen",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [500, 700],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2",
+          "name": "Google Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={\"success\": true, \"materials\": {{ JSON.stringify($json) }}}"
+      },
+      "id": "respond-material",
+      "name": "Response: Materials",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [750, 700]
+    }
+  ],
+  "connections": {
+    "Webhook: Neues Angebot": {
+      "main": [
+        [
+          {
+            "node": "Email: Angebot senden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Neue Rechnung": {
+      "main": [
+        [
+          {
+            "node": "Email: Rechnung senden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: Angebot senden": {
+      "main": [
+        [
+          {
+            "node": "Response: Angebot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email: Rechnung senden": {
+      "main": [
+        [
+          {
+            "node": "Response: Rechnung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: Material Import": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets: Material lesen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets: Material lesen": {
+      "main": [
+        [
+          {
+            "node": "Response: Materials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "MHS Workflow",
+      "createdAt": "2026-01-14T00:00:00.000Z",
+      "updatedAt": "2026-01-14T00:00:00.000Z"
+    }
+  ],
+  "meta": {
+    "instanceId": "MHS-Demo"
+  }
+}
