@@ -112,7 +112,18 @@ function renderAnfragen() {
     const anfragen = store.anfragen.filter(a => a.status === 'neu');
 
     if (anfragen.length === 0) {
-        container.innerHTML = '<p class="empty-state">Keine offenen Anfragen</p>';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                <h3 style="margin-bottom: 8px;">Keine Anfragen vorhanden</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                    Erstelle deine erste Kundenanfrage um loszulegen.
+                </p>
+                <button class="btn btn-primary" onclick="document.getElementById('btn-neue-anfrage').click()">
+                    ➕ Neue Anfrage erstellen
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -388,7 +399,18 @@ function renderAngebote() {
     const angebote = store.angebote.filter(a => a.status === 'offen');
 
     if (angebote.length === 0) {
-        container.innerHTML = '<p class="empty-state">Keine wartenden Angebote</p>';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                <h3 style="margin-bottom: 8px;">Keine Angebote vorhanden</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                    Erstelle Angebote aus offenen Anfragen.
+                </p>
+                <button class="btn btn-primary" onclick="window.navigationController.navigateTo('anfragen')">
+                    👀 Anfragen ansehen
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -450,7 +472,18 @@ function renderAuftraege() {
     const auftraege = store.auftraege.filter(a => a.status === 'aktiv');
 
     if (auftraege.length === 0) {
-        container.innerHTML = '<p class="empty-state">Keine aktiven Aufträge</p>';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
+                <h3 style="margin-bottom: 8px;">Keine aktiven Aufträge</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                    Aufträge entstehen aus angenommenen Angeboten.
+                </p>
+                <button class="btn btn-primary" onclick="window.navigationController.navigateTo('angebote')">
+                    📝 Angebote ansehen
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -801,7 +834,23 @@ function renderMaterial() {
     }
 
     if (materials.length === 0) {
-        container.innerHTML = '<p class="empty-state">Kein Material vorhanden. Importiere eine Excel-Datei oder lade Demo-Daten.</p>';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+                <h3 style="margin-bottom: 8px;">Keine Materialien vorhanden</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                    Importiere deine Materialliste aus Excel oder lade Demo-Daten.
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="window.materialService.loadDemoData(); renderMaterial();">
+                        🎲 Demo-Daten laden
+                    </button>
+                    <button class="btn btn-primary" onclick="document.getElementById('material-import').click()">
+                        📊 Excel importieren
+                    </button>
+                </div>
+            </div>
+        `;
         return;
     }
 
