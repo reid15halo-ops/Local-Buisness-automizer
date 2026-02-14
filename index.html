@@ -431,6 +431,8 @@
                         <p>Alle lokal gespeicherten Daten</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
+                            <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
+                            <input type="file" id="import-data-file" accept=".json" style="display: none;">
                             <button class="btn btn-danger" onclick="window.UI.resetApp()"
                                 style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
@@ -1418,6 +1420,8 @@
     <!-- Navigation (needs to be loaded before app.js) -->
     <script src="js/ui/navigation.js"></script>
     <script src="js/ui/keyboard-shortcuts.js"></script>
+    <script src="js/services/search-service.js"></script>
+    <script src="js/services/theme-manager.js"></script>
 
     <!-- App Integration -->
     <script src="js/features-integration.js"></script>
