@@ -119,16 +119,16 @@ function renderAnfragen() {
     container.innerHTML = anfragen.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${a.kunde.name}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
                 <span class="item-id">${a.id}</span>
             </div>
             <div class="item-meta">
-                <span>📧 ${a.kunde.email || '-'}</span>
-                <span>📞 ${a.kunde.telefon || '-'}</span>
+                <span>📧 ${window.UI.sanitize(a.kunde.email) || '-'}</span>
+                <span>📞 ${window.UI.sanitize(a.kunde.telefon) || '-'}</span>
                 <span>📅 ${formatDate(a.termin)}</span>
             </div>
             <p class="item-description">
-                <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${a.beschreibung}
+                <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${window.UI.sanitize(a.beschreibung)}
             </p>
             ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
             <div class="item-actions">
@@ -166,9 +166,9 @@ function createAngebotFromAnfrage(anfrageId) {
     // Fill modal info
     document.getElementById('angebot-anfrage-id').value = anfrageId;
     document.getElementById('angebot-kunde-info').innerHTML = `
-        <strong>${anfrage.kunde.name}</strong><br>
+        <strong>${window.UI.sanitize(anfrage.kunde.name)}</strong><br>
         ${getLeistungsartLabel(anfrage.leistungsart)}<br>
-        <small>${anfrage.beschreibung.substring(0, 100)}...</small>
+        <small>${window.UI.sanitize(anfrage.beschreibung.substring(0, 100))}...</small>
     `;
 
     // Clear positions
@@ -395,7 +395,7 @@ function renderAngebote() {
     container.innerHTML = angebote.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${a.kunde.name}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
                 <span class="item-id">${a.id}</span>
             </div>
             <div class="item-meta">
@@ -457,7 +457,7 @@ function renderAuftraege() {
     container.innerHTML = auftraege.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${a.kunde.name}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
                 <span class="item-id">${a.id}</span>
             </div>
             <div class="item-meta">
@@ -483,7 +483,7 @@ function openAuftragModal(auftragId) {
     document.getElementById('auftrag-id').value = auftragId;
 
     document.getElementById('auftrag-info').innerHTML = `
-        <p><strong>${auftrag.kunde.name}</strong></p>
+        <p><strong>${window.UI.sanitize(auftrag.kunde.name)}</strong></p>
         <p>${getLeistungsartLabel(auftrag.leistungsart)}</p>
         <p>Angebotswert: ${formatCurrency(auftrag.angebotsWert)}</p>
     `;
@@ -562,7 +562,7 @@ function renderRechnungen() {
     container.innerHTML = store.rechnungen.map(r => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${r.kunde.name}</h3>
+                <h3 class="item-title">${window.UI.sanitize(r.kunde.name)}</h3>
                 <span class="item-id">${r.id}</span>
             </div>
             <div class="item-meta">
@@ -613,9 +613,9 @@ function showRechnung(rechnungId) {
             <div>
                 <div class="rechnung-label">Rechnungsempfänger</div>
                 <p>
-                    ${rechnung.kunde.name}<br>
-                    ${rechnung.kunde.email || ''}<br>
-                    ${rechnung.kunde.telefon || ''}
+                    ${window.UI.sanitize(rechnung.kunde.name)}<br>
+                    ${window.UI.sanitize(rechnung.kunde.email) || ''}<br>
+                    ${window.UI.sanitize(rechnung.kunde.telefon) || ''}
                 </p>
             </div>
         </div>
@@ -639,8 +639,8 @@ function showRechnung(rechnungId) {
                 ${(rechnung.positionen || []).map((p, i) => `
                     <tr>
                         <td>${i + 1}</td>
-                        <td>${p.beschreibung}</td>
-                        <td>${p.menge} ${p.einheit}</td>
+                        <td>${window.UI.sanitize(p.beschreibung)}</td>
+                        <td>${p.menge} ${window.UI.sanitize(p.einheit)}</td>
                         <td class="text-right">${formatCurrency(p.preis)}</td>
                         <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
                     </tr>

@@ -1403,66 +1403,28 @@
         </div>
     </div>
 
-    <script src="js/services/gemini-service.js"></script>
-    <script src="js/services/material-service.js"></script>
-    <script src="js/services/dunning-service.js"></script>
-    <script src="js/services/bookkeeping-service.js"></script>
-    <script src="js/services/work-estimation-service.js"></script>
-    <!-- New Services -->
-    <script src="js/services/email-service.js"></script>
-    <script src="js/services/task-service.js"></script>
-    <script src="js/services/customer-service.js"></script>
-    <script src="js/services/document-service.js"></script>
-    <script src="js/services/calendar-service.js"></script>
-    <script src="js/services/booking-service.js"></script>
-    <script src="js/services/timetracking-service.js"></script>
-    <script src="js/services/communication-service.js"></script>
-    <script src="js/services/phone-service.js"></script>
-    <script src="js/services/report-service.js"></script>
-    <script src="js/services/chatbot-service.js"></script>
-    <!-- Additional Services -->
-    <script src="js/services/cashflow-service.js"></script>
-    <script src="js/services/lead-service.js"></script>
-    <script src="js/services/version-control-service.js"></script>
-    <script src="js/services/approval-service.js"></script>
-    <script src="js/services/print-digital-service.js"></script>
-    <!-- Phase 3 Services -->
-    <script src="js/services/banking-service.js"></script>
-    <script src="js/services/sms-reminder-service.js"></script>
-    <script src="js/services/voice-command-service.js"></script>
-    <script src="js/services/einvoice-service.js"></script>
-    <script src="js/services/payment-service.js"></script>
-    <script src="js/services/contract-service.js"></script>
-    <script src="js/services/profitability-service.js"></script>
-    <script src="js/services/route-service.js"></script>
-    <!-- Phase 3 Priority 3 Services -->
-    <script src="js/services/warranty-service.js"></script>
-    <script src="js/services/photo-service.js"></script>
-    <script src="js/services/ai-assistant-service.js"></script>
-    <script src="js/services/barcode-service.js"></script>
-    <script src="js/services/webhook-service.js"></script>
-    <script src="js/services/qrcode-service.js"></script>
-    <script src="js/services/theme-service.js"></script>
-    <script src="js/services/i18n-service.js"></script>
-    <!-- Completion Services -->
-    <script src="js/services/workflow-service.js"></script>
-    <script src="js/services/ocr-scanner-service.js"></script>
-    <script src="js/services/datev-export-service.js"></script>
-    <script src="js/services/recurring-task-service.js"></script>
-    <script src="js/services/security-backup-service.js"></script>
-    <!-- Core Infrastructure -->
+    <!-- =====================================
+         Core Infrastructure (Always Loaded)
+         ===================================== -->
     <script src="js/services/error-handler.js"></script>
     <script src="js/services/db-service.js"></script>
     <script src="js/services/demo-data-service.js"></script>
     <script src="js/services/store-service.js"></script>
-    <script src="js/services/llm-service.js"></script>
-    <script src="js/services/chatbot-service.js"></script>
     <script src="js/ui/ui-helpers.js"></script>
+
+    <!-- Lazy Loading System -->
+    <script src="js/services/lazy-loader.js"></script>
+
+    <!-- Navigation (needs to be loaded before app.js) -->
     <script src="js/ui/navigation.js"></script>
 
+    <!-- App Integration -->
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/app.js"></script>
+
+    <!-- Initialize lazy-loaded services after app init -->
+    <script src="js/init-lazy-services.js"></script>
     <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {

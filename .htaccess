@@ -1,0 +1,80 @@
+# ============================================
+# MHS Workflow Demo - Security Headers
+# Content Security Policy & Production Headers
+# ============================================
+
+<IfModule mod_headers.c>
+    # Content Security Policy (CSP)
+    # Prevents XSS, injection attacks, and unauthorized resource loading
+    Header set Content-Security-Policy "\
+        default-src 'self'; \
+        script-src 'self' 'unsafe-inline' https://cdn.sheetjs.com https://cdnjs.cloudflare.com; \
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; \
+        font-src 'self' https://fonts.gstatic.com; \
+        img-src 'self' data: blob:; \
+        connect-src 'self' https://generativelanguage.googleapis.com; \
+        worker-src 'self' blob:; \
+        frame-src 'none'; \
+        object-src 'none'; \
+        base-uri 'self'; \
+        form-action 'self'; \
+        upgrade-insecure-requests;"
+
+    # X-Frame-Options: Prevent clickjacking
+    Header always set X-Frame-Options "DENY"
+
+    # X-Content-Type-Options: Prevent MIME-sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # X-XSS-Protection: Enable XSS filter (legacy browsers)
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer-Policy: Control referrer information
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions-Policy: Restrict browser features
+    Header always set Permissions-Policy "\
+        camera=(), \
+        microphone=(), \
+        geolocation=(), \
+        payment=(), \
+        usb=()"
+</IfModule>
+
+# ============================================
+# Performance Optimization
+# ============================================
+
+<IfModule mod_deflate.c>
+    # Enable GZIP compression
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Cache static assets for 1 year
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+
+    # Cache HTML for 1 hour
+    ExpiresByType text/html "access plus 1 hour"
+
+    # Cache JSON for 5 minutes
+    ExpiresByType application/json "access plus 5 minutes"
+</IfModule>
+
+# ============================================
+# MIME Types
+# ============================================
+
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType text/css .css
+    AddType application/json .json
+    AddType application/manifest+json .webmanifest
+    AddType image/svg+xml .svg
+</IfModule>

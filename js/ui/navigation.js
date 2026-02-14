@@ -63,10 +63,19 @@ class NavigationController {
         }
     }
 
-    navigateTo(viewId, pushState = true) {
+    async navigateTo(viewId, pushState = true) {
         if (!document.getElementById(`view-${viewId}`)) {
             console.error(`View not found: ${viewId}`);
             return;
+        }
+
+        // Lazy load services for this view
+        if (window.lazyLoader) {
+            try {
+                await window.lazyLoader.loadForView(viewId);
+            } catch (error) {
+                console.error('Failed to load services for view:', error);
+            }
         }
 
         // Update active class on view

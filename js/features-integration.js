@@ -575,7 +575,7 @@ async function initAIModelSelector() {
 
     const models = await window.llmService.getAvailableModels();
     if (models.length > 0) {
-        select.innerHTML = models.map(m => `<option value="${m.name}" ${m.name === window.llmService.config.ollamaModel ? 'selected' : ''}>${m.name}</option>`).join('');
+        select.innerHTML = models.map(m => `<option value="${window.UI.sanitize(m.name)}" ${m.name === window.llmService.config.ollamaModel ? 'selected' : ''}>${window.UI.sanitize(m.name)}</option>`).join('');
     }
 }
 
