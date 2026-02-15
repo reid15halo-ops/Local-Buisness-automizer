@@ -1,6 +1,6 @@
-// Supabase Edge Function: Send Email via Resend
+// Supabase Edge Function: Send Email via Proton Mail (VPS Relay)
 // Deploy: supabase functions deploy send-email
-// Env vars: RESEND_API_KEY, SENDER_EMAIL (default: noreply@handwerkflow.de)
+// Env vars: EMAIL_RELAY_URL, EMAIL_RELAY_SECRET
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -30,7 +30,7 @@ serve(async (req) => {
             )
         }
 
-        const { to, subject, body, replyTo } = await req.json()
+        const { to, subject, body, replyTo, cc, bcc } = await req.json()
 
         if (!to || !subject || !body) {
             return new Response(
@@ -39,39 +39,32 @@ serve(async (req) => {
             )
         }
 
-        const resendKey = Deno.env.get('RESEND_API_KEY')
-        if (!resendKey) {
+        // Route to VPS Email Relay (Proton Mail Bridge)
+        const relayUrl = Deno.env.get('EMAIL_RELAY_URL')
+        const relaySecret = Deno.env.get('EMAIL_RELAY_SECRET')
+
+        if (!relayUrl || !relaySecret) {
             return new Response(
-                JSON.stringify({ error: 'RESEND_API_KEY nicht konfiguriert' }),
+                JSON.stringify({ error: 'EMAIL_RELAY_URL und EMAIL_RELAY_SECRET nicht konfiguriert' }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 
-        const senderEmail = Deno.env.get('SENDER_EMAIL') || 'noreply@handwerkflow.de'
-        const senderName = Deno.env.get('SENDER_NAME') || 'HandwerkFlow'
-
-        // Send via Resend API
-        const resendResponse = await fetch('https://api.resend.com/emails', {
+        const relayResponse = await fetch(`${relayUrl}/send-email`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${resendKey}`,
+                'Authorization': `Bearer ${relaySecret}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                from: `${senderName} <${senderEmail}>`,
-                to: Array.isArray(to) ? to : [to],
-                subject,
-                html: body.includes('<') ? body : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;">${body}</pre>`,
-                reply_to: replyTo || undefined,
-            }),
+            body: JSON.stringify({ to, subject, body, replyTo, cc, bcc }),
         })
 
-        const resendData = await resendResponse.json()
+        const relayData = await relayResponse.json()
 
-        if (!resendResponse.ok) {
-            console.error('Resend error:', resendData)
+        if (!relayResponse.ok) {
+            console.error('Relay error:', relayData)
             return new Response(
-                JSON.stringify({ error: 'E-Mail Versand fehlgeschlagen', details: resendData }),
+                JSON.stringify({ error: relayData.error || 'E-Mail Versand fehlgeschlagen', details: relayData.details }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
@@ -81,11 +74,11 @@ serve(async (req) => {
             user_id: user.id,
             action: 'email.send',
             target: to,
-            metadata: { subject, resend_id: resendData.id },
-        }).throwOnError().catch(() => {}) // non-critical
+            metadata: { subject, messageId: relayData.messageId, provider: 'protonmail' },
+        }).throwOnError().catch(() => {})
 
         return new Response(
-            JSON.stringify({ success: true, id: resendData.id }),
+            JSON.stringify({ success: true, messageId: relayData.messageId }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     } catch (err) {

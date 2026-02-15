@@ -1467,16 +1467,57 @@ function initSettings() {
     });
 }
 
+// Generate a unique sender email on first app launch
+function generateSenderEmail() {
+    // Try to build from company name in settings
+    const settings = window.storeService?.state?.settings || {};
+    const firmaName = settings.companyName || settings.firmenname || settings.firma || '';
+
+    let slug = '';
+    if (firmaName) {
+        // Convert "Müller Metallbau GmbH" → "mueller-metallbau"
+        slug = firmaName
+            .toLowerCase()
+            .replace(/gmbh|gbr|kg|ohg|ag|ug|e\.k\.|co\./gi, '')
+            .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 30);
+    }
+
+    if (!slug) {
+        // Fallback: generate short unique ID
+        slug = 'firma-' + crypto.randomUUID().substring(0, 8);
+    }
+
+    // Use plus-addressing on the Proton Mail base address
+    const baseEmail = localStorage.getItem('proton_base_email') || 'noreply@handwerkflow.de';
+    const [localPart, domain] = baseEmail.split('@');
+    const senderEmail = `${localPart}+${slug}@${domain}`;
+
+    localStorage.setItem('sender_email', senderEmail);
+    localStorage.setItem('sender_email_slug', slug);
+
+    // Update UI
+    const emailField = document.getElementById('sender-email');
+    if (emailField) emailField.value = senderEmail;
+
+    console.log('Auto-generated sender email:', senderEmail);
+    return senderEmail;
+}
+
 function initAutomationSettings() {
     // Load saved values
-    const resendKey = localStorage.getItem('resend_api_key');
+    const relayUrl = localStorage.getItem('email_relay_url');
+    const relaySecret = localStorage.getItem('email_relay_secret');
     const senderEmail = localStorage.getItem('sender_email');
     const twilioSid = localStorage.getItem('twilio_sid');
     const twilioToken = localStorage.getItem('twilio_token');
     const twilioFrom = localStorage.getItem('twilio_from');
 
-    if (document.getElementById('resend-api-key')) {
-        document.getElementById('resend-api-key').value = resendKey || '';
+    if (document.getElementById('email-relay-url')) {
+        document.getElementById('email-relay-url').value = relayUrl || '';
+        document.getElementById('email-relay-secret').value = relaySecret || '';
         document.getElementById('sender-email').value = senderEmail || '';
     }
     if (document.getElementById('twilio-sid')) {
@@ -1485,12 +1526,17 @@ function initAutomationSettings() {
         document.getElementById('twilio-from').value = twilioFrom || '';
     }
 
+    // Auto-generate sender email on first launch
+    if (!senderEmail) {
+        generateSenderEmail();
+    }
+
     // Save Email config
     document.getElementById('btn-save-email-config')?.addEventListener('click', () => {
-        const key = document.getElementById('resend-api-key').value.trim();
-        const email = document.getElementById('sender-email').value.trim();
-        localStorage.setItem('resend_api_key', key);
-        localStorage.setItem('sender_email', email);
+        const url = document.getElementById('email-relay-url').value.trim();
+        const secret = document.getElementById('email-relay-secret').value.trim();
+        localStorage.setItem('email_relay_url', url);
+        localStorage.setItem('email_relay_secret', secret);
         updateSettingsStatus();
         showToast('E-Mail-Konfiguration gespeichert', 'success');
     });
@@ -1501,14 +1547,14 @@ function initAutomationSettings() {
             showToast('Supabase muss zuerst konfiguriert sein', 'warning');
             return;
         }
-        const email = document.getElementById('sender-email').value.trim();
+        const email = localStorage.getItem('sender_email');
         if (!email) {
-            showToast('Bitte erst Absender-E-Mail eingeben', 'warning');
+            showToast('Absender-E-Mail konnte nicht generiert werden', 'warning');
             return;
         }
         showToast('Sende Test-E-Mail...', 'info');
         const result = await window.automationAPI.sendEmail(
-            email, 'HandwerkFlow Test', 'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand funktioniert.'
+            email, 'HandwerkFlow Test', 'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand über Proton Mail funktioniert.'
         );
         showToast(result.success ? 'Test-E-Mail gesendet!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
     });
@@ -1543,7 +1589,9 @@ function initAutomationSettings() {
 function updateSettingsStatus() {
     const geminiKey = localStorage.getItem('gemini_api_key');
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
-    const resendKey = localStorage.getItem('resend_api_key');
+    const relayUrl = localStorage.getItem('email_relay_url');
+    const relaySecret = localStorage.getItem('email_relay_secret');
+    const emailConfigured = relayUrl && relaySecret;
     const twilioSid = localStorage.getItem('twilio_sid');
 
     const geminiStatus = document.getElementById('gemini-status');
@@ -1559,7 +1607,7 @@ function updateSettingsStatus() {
 
     setStatus(geminiStatus, geminiKey);
     setStatus(webhookStatus, webhookUrl);
-    setStatus(emailStatus, resendKey);
+    setStatus(emailStatus, emailConfigured);
     setStatus(smsStatus, twilioSid);
 
     // Automation status panel
@@ -1572,9 +1620,9 @@ function updateSettingsStatus() {
     };
 
     setAutoStatus('auto-status-supabase', supabaseOk, 'Verbunden');
-    setAutoStatus('auto-status-email', supabaseOk && resendKey, 'Bereit');
+    setAutoStatus('auto-status-email', supabaseOk && emailConfigured, 'Proton Mail Bereit');
     setAutoStatus('auto-status-sms', supabaseOk && twilioSid, 'Bereit');
-    setAutoStatus('auto-status-overdue', supabaseOk && resendKey, 'Automatisch (tägl. 08:00)');
+    setAutoStatus('auto-status-overdue', supabaseOk && emailConfigured, 'Automatisch (tägl. 08:00)');
     setAutoStatus('auto-status-webhook', webhookUrl, 'Konfiguriert');
 }
 
@@ -2810,6 +2858,7 @@ window.downloadInvoicePDF = downloadInvoicePDF;
 window.generateEInvoice = generateEInvoice;
 window.markInvoiceAsPaid = markInvoiceAsPaid;
 window.previewNextInvoiceNumber = previewNextInvoiceNumber;
+window.generateSenderEmail = generateSenderEmail;
 
 // Start app
 document.addEventListener('DOMContentLoaded', async () => {

@@ -230,6 +230,8 @@ window.UI = {
                 };
                 window.storeService.state.settings = newSettings;
                 window.storeService.save();
+                // Regenerate sender email when company name changes
+                if (typeof generateSenderEmail === 'function') generateSenderEmail();
                 window.UI.showToast('Einstellungen gespeichert', 'success');
             });
         }

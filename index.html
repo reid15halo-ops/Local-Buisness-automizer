@@ -426,16 +426,21 @@
                         <button class="btn btn-primary" id="btn-save-stundensatz">Speichern</button>
                     </div>
                     <div class="settings-card">
-                        <h3>📧 E-Mail Versand (Resend)</h3>
-                        <p>Automatischer E-Mail-Versand für Mahnungen, Erinnerungen & Workflows</p>
+                        <h3>📧 E-Mail Versand (Proton Mail)</h3>
+                        <p>Automatischer E-Mail-Versand über Proton Mail Bridge (VPS Relay)</p>
                         <div class="form-group">
-                            <label for="resend-api-key">Resend API Key</label>
-                            <input type="password" id="resend-api-key" placeholder="re_...">
-                            <small>Kostenlos bis 3.000 E-Mails/Monat: <a href="https://resend.com" target="_blank">resend.com</a></small>
+                            <label for="email-relay-url">Relay Server URL</label>
+                            <input type="url" id="email-relay-url" placeholder="https://dein-vps:3100">
+                            <small>VPS Email Relay Adresse (siehe vps/email-relay/)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="email-relay-secret">Relay API Secret</label>
+                            <input type="password" id="email-relay-secret" placeholder="Geheimschlüssel...">
                         </div>
                         <div class="form-group">
                             <label for="sender-email">Absender-E-Mail</label>
-                            <input type="email" id="sender-email" placeholder="info@deine-firma.de">
+                            <input type="email" id="sender-email" placeholder="info@deine-firma.de" readonly>
+                            <small>Wird automatisch beim ersten Start generiert</small>
                         </div>
                         <button class="btn btn-primary" id="btn-save-email-config">Speichern</button>
                         <button class="btn btn-secondary btn-small" id="btn-test-email" style="margin-left:8px;">Test senden</button>
@@ -479,7 +484,7 @@
                                 <span id="auto-status-supabase" style="color:var(--text-muted);">—</span>
                             </div>
                             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
-                                <span>E-Mail (Resend)</span>
+                                <span>E-Mail (Proton Mail)</span>
                                 <span id="auto-status-email" style="color:var(--text-muted);">—</span>
                             </div>
                             <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">

@@ -43,33 +43,29 @@ serve(async (req) => {
 
         switch (action) {
             case 'email.send': {
-                const resendKey = Deno.env.get('RESEND_API_KEY')
-                if (!resendKey) {
-                    result = { success: false, error: 'RESEND_API_KEY nicht konfiguriert' }
+                const relayUrl = Deno.env.get('EMAIL_RELAY_URL')
+                const relaySecret = Deno.env.get('EMAIL_RELAY_SECRET')
+                if (!relayUrl || !relaySecret) {
+                    result = { success: false, error: 'EMAIL_RELAY_URL/EMAIL_RELAY_SECRET nicht konfiguriert' }
                     break
                 }
-                const senderEmail = Deno.env.get('SENDER_EMAIL') || 'noreply@handwerkflow.de'
-                const senderName = Deno.env.get('SENDER_NAME') || 'HandwerkFlow'
 
-                const emailRes = await fetch('https://api.resend.com/emails', {
+                const emailRes = await fetch(`${relayUrl}/send-email`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${resendKey}`,
+                        'Authorization': `Bearer ${relaySecret}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        from: `${senderName} <${senderEmail}>`,
-                        to: Array.isArray(params.to) ? params.to : [params.to],
+                        to: Array.isArray(params.to) ? params.to.join(', ') : params.to,
                         subject: params.subject || 'HandwerkFlow Benachrichtigung',
-                        html: (params.body || '').includes('<')
-                            ? params.body
-                            : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;">${params.body || ''}</pre>`,
+                        body: params.body || '',
                     }),
                 })
                 const emailData = await emailRes.json()
                 result = emailRes.ok
-                    ? { success: true, data: { id: emailData.id } }
-                    : { success: false, error: emailData.message || 'E-Mail Fehler' }
+                    ? { success: true, data: { messageId: emailData.messageId } }
+                    : { success: false, error: emailData.error || 'E-Mail Fehler' }
                 break
             }
 
