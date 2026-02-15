@@ -32,6 +32,16 @@
         window.lazyLoader.preload('crm');
         window.lazyLoader.preload('documents');
         window.lazyLoader.preload('calendar');
+
+        // Initialize email automation service when loaded
+        setTimeout(() => {
+            if (window.EmailAutomationService && !window.emailAutomationService) {
+                window.emailAutomationService = new window.EmailAutomationService();
+                window.emailAutomationService.init().catch(err => {
+                    console.error('Failed to init EmailAutomationService:', err);
+                });
+            }
+        }, 500);
     }, 2000);
 
     // Log loading stats

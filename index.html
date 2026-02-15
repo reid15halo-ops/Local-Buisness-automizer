@@ -88,6 +88,11 @@
                     E-Mails
                     <span class="badge" id="emails-badge">0</span>
                 </button>
+                <button class="nav-item" data-view="email-automation">
+                    <span class="nav-icon">🤖</span>
+                    E-Mail Automation
+                    <span class="badge" id="email-automation-badge">0</span>
+                </button>
                 <button class="nav-item" data-view="dokumente">
                     <span class="nav-icon">📄</span>
                     Dokumente
@@ -515,6 +520,52 @@
                         <span class="status-indicator" id="webhook-status">● Nicht konfiguriert</span>
                     </div>
                     <div class="settings-card">
+                        <h3>🤖 Automatische E-Mail-Verarbeitung</h3>
+                        <p>KI-gestützte Angebotserstellung aus E-Mails</p>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="email-auto-reply-enabled">
+                                Automatische Angebotserstellung aktivieren
+                            </label>
+                            <small>Eingehende E-Mails werden automatisch analysiert und Angebote erstellt</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email-inbound-address">Empfangs-Adresse</label>
+                            <input type="text" id="email-inbound-address" value="anfragen@handwerkflow.de" readonly>
+                            <small>E-Mails an diese Adresse werden automatisch verarbeitet</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email-reply-template">Antwort-Template</label>
+                            <textarea id="email-reply-template" rows="4" style="font-size: 13px; line-height: 1.5;">Sehr geehrte/r {kunde.name},
+
+vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser Angebot.
+
+Bei Fragen stehen wir Ihnen gerne zur Verfügung.
+
+Mit freundlichen Grüßen
+{firma.name}</textarea>
+                            <small>Verfügbare Platzhalter: {kunde.name}, {firma.name}, {projekt.typ}</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="email-require-approval" checked>
+                                Angebote vor Versand manuell prüfen
+                            </label>
+                            <small>Empfohlen: Angebote werden erstellt, aber erst nach Freigabe versendet</small>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" id="btn-save-email-automation">Speichern</button>
+                            <button class="btn btn-secondary" id="btn-test-email-processing">Test mit Beispiel-Email</button>
+                            <button class="btn btn-secondary btn-small" id="btn-view-email-automation">📊 Historie anzeigen</button>
+                        </div>
+                        <span class="status-indicator" id="email-automation-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
                         <h3>⚡ Automations-Status</h3>
                         <p>Übersicht der konfigurierten Automatisierungen</p>
                         <div id="automation-status-list" style="font-size:14px;">
@@ -856,6 +907,64 @@
                 </div>
                 <div class="email-list" id="email-list">
                     <p class="empty-state">Keine E-Mails. Klicke "Demo-Mails laden" zum Testen.</p>
+                </div>
+            </section>
+
+            <!-- Email Automation View -->
+            <section class="view" id="view-email-automation">
+                <header class="view-header">
+                    <h1>📧 E-Mail Automation</h1>
+                    <p class="subtitle">Automatisch verarbeitete Anfragen</p>
+                </header>
+
+                <div class="automation-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">📥</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-emails-received">0</span>
+                            <span class="stat-label">E-Mails empfangen</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-emails-processed">0</span>
+                            <span class="stat-label">Erfolgreich verarbeitet</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📄</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-quotes-created">0</span>
+                            <span class="stat-label">Angebote erstellt</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-content">
+                            <span class="stat-value" id="stat-avg-time">-</span>
+                            <span class="stat-label">Ø Bearbeitungszeit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 24px;">
+                    <div class="panel-header-row">
+                        <h3>Verarbeitete E-Mails</h3>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="email-history-filter" class="filter-select">
+                                <option value="">Alle</option>
+                                <option value="success">Erfolgreich</option>
+                                <option value="pending">Ausstehend</option>
+                                <option value="failed">Fehler</option>
+                                <option value="test">Test</option>
+                            </select>
+                            <button class="btn btn-secondary btn-small" id="btn-refresh-email-history">🔄 Aktualisieren</button>
+                        </div>
+                    </div>
+                    <div class="email-history-list" id="email-history-list">
+                        <p class="empty-state">Noch keine E-Mails automatisch verarbeitet.</p>
+                    </div>
                 </div>
             </section>
 
@@ -1772,6 +1881,48 @@
     <!-- Modal: Excel Import Wizard (wird dynamisch erstellt) -->
     <div class="modal" id="modal-excel-import">
         <!-- Wird von excel-import-wizard.js erstellt -->
+    </div>
+
+    <!-- Test Email Processing Modal -->
+    <div class="modal" id="modal-test-email">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>🧪 Test E-Mail Verarbeitung</h2>
+                <button class="modal-close" onclick="window.UI.closeModal('modal-test-email')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 16px; color: var(--text-muted);">
+                    Gib eine Beispiel-E-Mail ein, um die automatische Verarbeitung zu testen.
+                </p>
+
+                <div class="form-group">
+                    <label for="test-email-body">E-Mail Inhalt</label>
+                    <textarea id="test-email-body" rows="12" style="font-family: monospace; font-size: 13px;" placeholder="Beispiel eingeben...">Sehr geehrte Damen und Herren,
+
+ich benötige ein Metalltor für meine Einfahrt.
+Breite: 4 Meter
+Höhe: 1,80 Meter
+Material: Verzinkter Stahl
+
+Bitte senden Sie mir ein Angebot.
+
+Mit freundlichen Grüßen
+Max Mustermann
+Musterstraße 123
+12345 Musterstadt
+Tel: 0171-1234567
+Email: max.mustermann@example.com</textarea>
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button class="btn btn-primary" id="btn-run-test">▶️ Verarbeitung testen</button>
+                    <button class="btn btn-secondary" id="btn-load-example-email">📄 Beispiel laden</button>
+                    <button class="btn btn-secondary" onclick="window.UI.closeModal('modal-test-email')">Abbrechen</button>
+                </div>
+
+                <div id="test-result" style="margin-top: 24px;"></div>
+            </div>
+        </div>
     </div>
 
     <!-- =====================================

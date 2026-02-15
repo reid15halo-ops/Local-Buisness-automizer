@@ -2518,6 +2518,165 @@ function initAutomationSettings() {
         showToast('SMS-Konfiguration gespeichert', 'success');
     });
 
+    // Email Automation Config
+    document.getElementById('btn-save-email-automation')?.addEventListener('click', async () => {
+        const enabled = document.getElementById('email-auto-reply-enabled').checked;
+        const requireApproval = document.getElementById('email-require-approval').checked;
+        const replyTemplate = document.getElementById('email-reply-template').value.trim();
+
+        const config = {
+            enabled,
+            requireApproval,
+            replyTemplate,
+            autoCreateQuote: true,
+            autoSendReply: !requireApproval
+        };
+
+        if (window.emailAutomationService) {
+            const result = await window.emailAutomationService.setConfig(config);
+            if (result.success) {
+                updateSettingsStatus();
+                showToast('E-Mail Automation Konfiguration gespeichert', 'success');
+            } else {
+                showToast('Fehler beim Speichern: ' + result.error, 'error');
+            }
+        } else {
+            showToast('Service noch nicht geladen', 'warning');
+        }
+    });
+
+    // Test Email Processing
+    document.getElementById('btn-test-email-processing')?.addEventListener('click', () => {
+        window.UI.openModal('modal-test-email');
+    });
+
+    // View Email Automation History
+    document.getElementById('btn-view-email-automation')?.addEventListener('click', () => {
+        window.UI.switchView('email-automation');
+    });
+
+    // Run Test
+    document.getElementById('btn-run-test')?.addEventListener('click', async () => {
+        const emailText = document.getElementById('test-email-body').value.trim();
+
+        if (!emailText) {
+            showToast('Bitte E-Mail-Text eingeben', 'warning');
+            return;
+        }
+
+        if (!window.emailAutomationService) {
+            showToast('Service noch nicht geladen', 'warning');
+            return;
+        }
+
+        showToast('Verarbeite Test-Email...', 'info');
+
+        const result = await window.emailAutomationService.testProcessing(emailText);
+
+        const resultDiv = document.getElementById('test-result');
+        if (result.success) {
+            resultDiv.className = 'visible';
+            resultDiv.innerHTML = `
+                <div class="test-result-section">
+                    <h4>✅ Analyse erfolgreich</h4>
+                    <div class="test-analysis-grid">
+                        <div class="analysis-item">
+                            <div class="analysis-label">Kunde</div>
+                            <div class="analysis-value">${result.analysis.customerName || '-'}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Telefon</div>
+                            <div class="analysis-value">${result.analysis.phone || '-'}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">E-Mail</div>
+                            <div class="analysis-value">${result.analysis.email || '-'}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Projekttyp</div>
+                            <div class="analysis-value">${result.analysis.projectType}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Dringlichkeit</div>
+                            <div class="analysis-value">${result.analysis.urgency}</div>
+                        </div>
+                        <div class="analysis-item">
+                            <div class="analysis-label">Geschätzter Wert</div>
+                            <div class="analysis-value">${result.analysis.estimatedValue.toFixed(2)} €</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="test-result-section">
+                    <h4>📄 Erstelltes Angebot</h4>
+                    <div style="background: var(--bg-primary); padding: 12px; border-radius: 6px;">
+                        <p><strong>${result.quote.title}</strong></p>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 8px 0;">
+                            Kunde: ${result.quote.customer.name}<br>
+                            Status: ${result.quote.status}<br>
+                            Summe: ${result.quote.total.toFixed(2)} €
+                        </p>
+                    </div>
+                </div>
+            `;
+            showToast('Test erfolgreich!', 'success');
+        } else {
+            resultDiv.className = 'visible';
+            resultDiv.innerHTML = `
+                <div style="color: var(--color-error); padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;">
+                    ❌ Fehler: ${result.error}
+                </div>
+            `;
+            showToast('Test fehlgeschlagen', 'error');
+        }
+    });
+
+    // Load Example Email
+    document.getElementById('btn-load-example-email')?.addEventListener('click', () => {
+        const examples = [
+            `Sehr geehrte Damen und Herren,
+
+ich benötige ein Metalltor für meine Einfahrt.
+Breite: 4 Meter
+Höhe: 1,80 Meter
+Material: Verzinkter Stahl
+
+Bitte senden Sie mir ein Angebot.
+
+Mit freundlichen Grüßen
+Max Mustermann
+Musterstraße 123
+12345 Musterstadt
+Tel: 0171-1234567
+Email: max.mustermann@example.com`,
+            `Hallo,
+
+wir brauchen einen neuen Zaun für unser Grundstück.
+Länge ca. 20 Meter, Höhe 1,50m.
+Können Sie uns ein Angebot machen?
+
+Freundliche Grüße
+Sarah Schmidt
+Tel: 0172-9876543`,
+            `Guten Tag,
+
+ich suche eine Metalltreppe für den Außenbereich.
+Höhenunterschied: ca. 3 Meter
+15-20 Stufen
+Verzinkt und wetterfest
+
+Bitte um Angebot.
+
+MfG
+Thomas Weber
+weber@example.de
+0176-5551234`
+        ];
+
+        const randomExample = examples[Math.floor(Math.random() * examples.length)];
+        document.getElementById('test-email-body').value = randomExample;
+        showToast('Beispiel-Email geladen', 'success');
+    });
+
     // Check overdue manually
     document.getElementById('btn-check-overdue')?.addEventListener('click', async () => {
         if (!window.automationAPI?.isAvailable()) {
@@ -2548,6 +2707,7 @@ function updateSettingsStatus() {
     const webhookStatus = document.getElementById('webhook-status');
     const emailStatus = document.getElementById('email-status');
     const smsStatus = document.getElementById('sms-status');
+    const emailAutomationStatus = document.getElementById('email-automation-status');
 
     const setStatus = (el, configured) => {
         if (!el) return;
@@ -2559,6 +2719,16 @@ function updateSettingsStatus() {
     setStatus(webhookStatus, webhookUrl);
     setStatus(emailStatus, emailConfigured);
     setStatus(smsStatus, twilioSid);
+
+    // Email Automation Status
+    if (window.emailAutomationService) {
+        const config = window.emailAutomationService.getConfig();
+        const configured = config.enabled;
+        if (emailAutomationStatus) {
+            emailAutomationStatus.textContent = configured ? '● Aktiv' : '● Deaktiviert';
+            emailAutomationStatus.className = 'status-indicator' + (configured ? ' connected' : '');
+        }
+    }
 
     // Automation status panel
     const supabaseOk = window.supabaseConfig?.isConfigured();
@@ -2649,7 +2819,11 @@ function switchViewExtended(viewId) {
         case 'material': renderMaterial(); break;
         case 'mahnwesen': renderMahnwesen(); break;
         case 'buchhaltung': renderBuchhaltung(); break;
-        case 'einstellungen': updateSettingsStatus(); break;
+        case 'einstellungen':
+            updateSettingsStatus();
+            loadEmailAutomationConfig();
+            break;
+        case 'email-automation': renderEmailAutomation(); break;
     }
 }
 
@@ -3554,6 +3728,19 @@ function updateLowStockBadge() {
     }
 }
 
+async function updateEmailAutomationBadge() {
+    if (!window.emailAutomationService) return;
+
+    const history = await window.emailAutomationService.getProcessedEmails(100);
+    const pending = history.filter(e => e.status === 'pending').length;
+    const badge = document.getElementById('email-automation-badge');
+
+    if (badge) {
+        badge.textContent = pending;
+        badge.style.display = pending > 0 ? 'inline' : 'none';
+    }
+}
+
 function showLowStockItems() {
     const items = getLowStockItems();
 
@@ -3631,6 +3818,163 @@ function exportOrderList(items) {
 }
 
 // ============================================
+// Email Automation UI Functions
+// ============================================
+
+async function renderEmailAutomation() {
+    if (!window.emailAutomationService) {
+        console.warn('EmailAutomationService not loaded yet');
+        return;
+    }
+
+    // Update stats
+    const stats = await window.emailAutomationService.getStats();
+    document.getElementById('stat-emails-received').textContent = stats.totalProcessed;
+    document.getElementById('stat-emails-processed').textContent = stats.successful;
+    document.getElementById('stat-quotes-created').textContent = stats.quotesCreated;
+
+    // Average processing time (placeholder)
+    const avgTime = stats.totalProcessed > 0 ? '2.3s' : '-';
+    document.getElementById('stat-avg-time').textContent = avgTime;
+
+    // Render history
+    await renderEmailHistory();
+}
+
+async function renderEmailHistory(filter = '') {
+    if (!window.emailAutomationService) {
+        return;
+    }
+
+    const history = await window.emailAutomationService.getProcessedEmails(100);
+    const listEl = document.getElementById('email-history-list');
+
+    if (!listEl) return;
+
+    // Apply filter
+    const filtered = filter ? history.filter(e => e.status === filter) : history;
+
+    if (filtered.length === 0) {
+        listEl.innerHTML = '<p class="empty-state">Noch keine E-Mails verarbeitet.</p>';
+        return;
+    }
+
+    listEl.innerHTML = filtered.map(entry => {
+        const timestamp = new Date(entry.timestamp).toLocaleString('de-DE');
+        const statusClass = entry.status || 'pending';
+        const statusLabel = {
+            'success': '✅ Erfolgreich',
+            'pending': '⏳ Ausstehend',
+            'failed': '❌ Fehler',
+            'test': '🧪 Test'
+        }[statusClass] || statusClass;
+
+        return `
+            <div class="email-history-item" data-id="${entry.id}">
+                <div class="email-history-header">
+                    <div>
+                        <strong>${entry.analysis?.projectType || 'Unbekanntes Projekt'}</strong>
+                        <div class="email-history-meta">
+                            <span>📅 ${timestamp}</span>
+                            ${entry.analysis?.customerName ? `<span>👤 ${entry.analysis.customerName}</span>` : ''}
+                        </div>
+                    </div>
+                    <span class="email-history-status ${statusClass}">${statusLabel}</span>
+                </div>
+
+                ${entry.emailText ? `
+                    <div class="email-preview">${entry.emailText}</div>
+                ` : ''}
+
+                ${entry.analysis ? `
+                    <div class="email-analysis">
+                        ${entry.analysis.customerName ? `
+                            <div class="analysis-item">
+                                <div class="analysis-label">Kunde</div>
+                                <div class="analysis-value">${entry.analysis.customerName}</div>
+                            </div>
+                        ` : ''}
+                        ${entry.analysis.phone ? `
+                            <div class="analysis-item">
+                                <div class="analysis-label">Telefon</div>
+                                <div class="analysis-value">${entry.analysis.phone}</div>
+                            </div>
+                        ` : ''}
+                        ${entry.analysis.email ? `
+                            <div class="analysis-item">
+                                <div class="analysis-label">E-Mail</div>
+                                <div class="analysis-value">${entry.analysis.email}</div>
+                            </div>
+                        ` : ''}
+                        <div class="analysis-item">
+                            <div class="analysis-label">Projekttyp</div>
+                            <div class="analysis-value">${entry.analysis.projectType || '-'}</div>
+                        </div>
+                        ${entry.analysis.estimatedValue ? `
+                            <div class="analysis-item">
+                                <div class="analysis-label">Geschätzter Wert</div>
+                                <div class="analysis-value">${entry.analysis.estimatedValue.toFixed(2)} €</div>
+                            </div>
+                        ` : ''}
+                        ${entry.analysis.urgency ? `
+                            <div class="analysis-item">
+                                <div class="analysis-label">Dringlichkeit</div>
+                                <div class="analysis-value">${entry.analysis.urgency}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                ` : ''}
+
+                ${entry.quote ? `
+                    <div class="email-history-actions">
+                        <button class="btn btn-secondary btn-small" onclick="viewQuoteFromEmail('${entry.id}')">
+                            📄 Angebot anzeigen
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function viewQuoteFromEmail(entryId) {
+    // Placeholder - könnte zum Angebot navigieren
+    showToast('Angebots-Details würden hier angezeigt', 'info');
+}
+
+// Event handlers for email automation view
+document.getElementById('btn-refresh-email-history')?.addEventListener('click', async () => {
+    await renderEmailHistory();
+    showToast('Historie aktualisiert', 'success');
+});
+
+document.getElementById('email-history-filter')?.addEventListener('change', async (e) => {
+    await renderEmailHistory(e.target.value);
+});
+
+// Load email automation config on settings page
+function loadEmailAutomationConfig() {
+    if (!window.emailAutomationService) return;
+
+    const config = window.emailAutomationService.getConfig();
+
+    const enabledEl = document.getElementById('email-auto-reply-enabled');
+    const approvalEl = document.getElementById('email-require-approval');
+    const templateEl = document.getElementById('email-reply-template');
+
+    if (enabledEl) enabledEl.checked = config.enabled;
+    if (approvalEl) approvalEl.checked = config.requireApproval;
+    if (templateEl) templateEl.value = config.replyTemplate;
+}
+
+// Initialize email automation on settings view
+window.addEventListener('emailAutomationConfigChanged', () => {
+    updateSettingsStatus();
+});
+
+window.viewQuoteFromEmail = viewQuoteFromEmail;
+
+// ============================================
 // Initialize all automations
 // ============================================
 function initAutomations() {
@@ -3642,6 +3986,7 @@ function initAutomations() {
     setTimeout(() => {
         updateFollowUpBadge();
         updateLowStockBadge();
+        updateEmailAutomationBadge();
     }, 500);
 }
 
@@ -3803,6 +4148,7 @@ window.addPosition = addPosition;
 window.matchPaymentsToInvoices = matchPaymentsToInvoices;
 window.updateFollowUpBadge = updateFollowUpBadge;
 window.updateLowStockBadge = updateLowStockBadge;
+window.updateEmailAutomationBadge = updateEmailAutomationBadge;
 window.exportAngebotPDF = exportAngebotPDF;
 window.exportMahnungPDF = exportMahnungPDF;
 window.downloadInvoicePDF = downloadInvoicePDF;

@@ -35,6 +35,7 @@ class LazyLoader {
                 'communication-service',
                 'phone-service',
                 'email-service',
+                'email-automation-service',
                 'lead-service'
             ],
 
@@ -114,12 +115,14 @@ class LazyLoader {
             'mahnwesen': ['workflow'],
             'buchhaltung': ['workflow', 'finance'],
             'kunden': ['crm'],
+            'emails': ['crm'],
+            'email-automation': ['crm'],
             'termine': ['calendar'],
             'kalender': ['calendar'],
             'aufgaben': ['automation'],
             'dokumente': ['documents'],
             'berichte': ['reports'],
-            'einstellungen': ['advanced'],
+            'einstellungen': ['advanced', 'crm'],
             'ai-assistent': ['ai']
         };
     }
