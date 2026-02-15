@@ -3873,10 +3873,9 @@ textarea {
     font-weight: 500;
 }
 
-.auftrag-kanban-col[data-status="geplant"] h4 { border-bottom-color: #60a5fa; }
-.auftrag-kanban-col[data-status="in_bearbeitung"] h4 { border-bottom-color: #f59e0b; }
-.auftrag-kanban-col[data-status="pausiert"] h4 { border-bottom-color: #94a3b8; }
-.auftrag-kanban-col[data-status="abgeschlossen"] h4 { border-bottom-color: #22c55e; }
+.auftrag-kanban-col h4 {
+    border-bottom-color: var(--col-color, var(--border-color));
+}
 
 .auftrag-kanban-items {
     display: flex;
@@ -4344,6 +4343,123 @@ textarea {
 
 /* Status badges for Aufträge */
 .status-geplant { color: #60a5fa; }
+.status-material_bestellt { color: #a78bfa; }
 .status-in_bearbeitung { color: #f59e0b; }
-.status-pausiert { color: #94a3b8; }
+.status-qualitaetskontrolle { color: #06b6d4; }
+.status-abnahme { color: #8b5cf6; }
 .status-abgeschlossen { color: #22c55e; }
+.status-pausiert { color: #94a3b8; }
+.status-storniert { color: #ef4444; }
+
+/* Pipeline Visualization */
+.auftrag-pipeline {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.pipeline-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 4px 0;
+}
+
+.pipeline-flow.compact {
+    gap: 0;
+}
+
+.pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    padding: 6px 4px;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.pipeline-step.active,
+.pipeline-step.current {
+    opacity: 1;
+}
+
+.pipeline-step.done {
+    opacity: 0.7;
+}
+
+.pipeline-step.current {
+    transform: scale(1.1);
+}
+
+.pipeline-step.current .pipeline-step-icon {
+    background: var(--step-color);
+    color: #fff;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px color-mix(in srgb, var(--step-color) 50%, transparent);
+}
+
+.pipeline-step-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.pipeline-step-label {
+    font-size: 10px;
+    font-weight: 500;
+    text-align: center;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.pipeline-step-count {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--step-color);
+}
+
+.pipeline-arrow {
+    color: var(--text-muted);
+    font-size: 16px;
+    margin: 0 2px;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+.pipeline-step.done .pipeline-step-label {
+    color: var(--step-color);
+}
+
+.pipeline-step.done .pipeline-step-icon::after {
+    content: '✓';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 10px;
+    background: #22c55e;
+    color: #fff;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 640px) {
+    .pipeline-step {
+        min-width: 60px;
+    }
+    .pipeline-step-label {
+        font-size: 9px;
+    }
+}

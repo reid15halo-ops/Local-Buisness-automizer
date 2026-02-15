@@ -327,65 +327,32 @@
                 </header>
 
                 <!-- Stats -->
-                <div class="auftrag-stats-grid">
-                    <div class="stat-card-mini">
-                        <span class="stat-icon-mini">📋</span>
-                        <div class="stat-content-mini">
-                            <span class="stat-value-mini" id="auf-stat-geplant">0</span>
-                            <span class="stat-label-mini">Geplant</span>
-                        </div>
-                    </div>
-                    <div class="stat-card-mini">
-                        <span class="stat-icon-mini">🔧</span>
-                        <div class="stat-content-mini">
-                            <span class="stat-value-mini" id="auf-stat-bearbeitung">0</span>
-                            <span class="stat-label-mini">In Bearbeitung</span>
-                        </div>
-                    </div>
-                    <div class="stat-card-mini">
-                        <span class="stat-icon-mini">⏸️</span>
-                        <div class="stat-content-mini">
-                            <span class="stat-value-mini" id="auf-stat-pausiert">0</span>
-                            <span class="stat-label-mini">Pausiert</span>
-                        </div>
-                    </div>
-                    <div class="stat-card-mini">
-                        <span class="stat-icon-mini">✅</span>
-                        <div class="stat-content-mini">
-                            <span class="stat-value-mini" id="auf-stat-fertig">0</span>
-                            <span class="stat-label-mini">Abgeschlossen</span>
-                        </div>
-                    </div>
+                <div class="auftrag-stats-grid" id="auftrag-stats-grid">
+                    <!-- Wird dynamisch von JS gerendert -->
+                </div>
+
+                <!-- Status-Pipeline Visualisierung -->
+                <div class="auftrag-pipeline" id="auftrag-pipeline">
+                    <!-- Wird dynamisch von JS gerendert -->
                 </div>
 
                 <!-- Filter -->
                 <div class="auftrag-filter-bar" id="auftrag-filter-bar">
                     <button class="filter-btn active" data-filter="alle">Alle</button>
-                    <button class="filter-btn" data-filter="geplant">Geplant</button>
-                    <button class="filter-btn" data-filter="in_bearbeitung">In Bearbeitung</button>
-                    <button class="filter-btn" data-filter="pausiert">Pausiert</button>
-                    <button class="filter-btn" data-filter="abgeschlossen">Abgeschlossen</button>
+                    <button class="filter-btn" data-filter="geplant">📋 Geplant</button>
+                    <button class="filter-btn" data-filter="material_bestellt">📦 Material</button>
+                    <button class="filter-btn" data-filter="in_bearbeitung">🔧 In Bearbeitung</button>
+                    <button class="filter-btn" data-filter="qualitaetskontrolle">🔍 QK</button>
+                    <button class="filter-btn" data-filter="abnahme">✋ Abnahme</button>
+                    <button class="filter-btn" data-filter="pausiert">⏸️ Pausiert</button>
+                    <button class="filter-btn" data-filter="abgeschlossen">✅ Fertig</button>
+                    <button class="filter-btn" data-filter="storniert">❌ Storniert</button>
                     <input type="text" id="auftrag-search" placeholder="Auftrag suchen..." style="margin-left:auto;padding:6px 12px;border-radius:20px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:13px;width:200px;">
                 </div>
 
-                <!-- Kanban Board -->
+                <!-- Kanban Board (dynamisch generiert) -->
                 <div class="auftrag-kanban" id="auftrag-kanban">
-                    <div class="auftrag-kanban-col" data-status="geplant">
-                        <h4>📋 Geplant <span class="col-count" id="auf-col-geplant">0</span></h4>
-                        <div class="auftrag-kanban-items" id="auf-items-geplant"></div>
-                    </div>
-                    <div class="auftrag-kanban-col" data-status="in_bearbeitung">
-                        <h4>🔧 In Bearbeitung <span class="col-count" id="auf-col-bearbeitung">0</span></h4>
-                        <div class="auftrag-kanban-items" id="auf-items-in_bearbeitung"></div>
-                    </div>
-                    <div class="auftrag-kanban-col" data-status="pausiert">
-                        <h4>⏸️ Pausiert <span class="col-count" id="auf-col-pausiert">0</span></h4>
-                        <div class="auftrag-kanban-items" id="auf-items-pausiert"></div>
-                    </div>
-                    <div class="auftrag-kanban-col" data-status="abgeschlossen">
-                        <h4>✅ Fertig <span class="col-count" id="auf-col-fertig">0</span></h4>
-                        <div class="auftrag-kanban-items" id="auf-items-abgeschlossen"></div>
-                    </div>
+                    <!-- Columns werden von JS erzeugt -->
                 </div>
 
                 <!-- List View (hidden by default) -->
@@ -1554,14 +1521,24 @@
                         <p id="ad-leistungsart"></p>
                         <p id="ad-angebotswert" style="font-size:12px;color:var(--text-secondary);"></p>
                     </div>
-                    <div class="auftrag-info-block">
-                        <h5>Status</h5>
-                        <select class="auftrag-status-select" id="ad-status">
-                            <option value="geplant">Geplant</option>
-                            <option value="in_bearbeitung">In Bearbeitung</option>
-                            <option value="pausiert">Pausiert</option>
-                            <option value="abgeschlossen">Abgeschlossen</option>
-                        </select>
+                    <div class="auftrag-info-block" style="grid-column:1/-1;">
+                        <h5>Status-Pipeline</h5>
+                        <div class="status-pipeline-visual" id="ad-status-pipeline">
+                            <!-- Wird dynamisch von JS gerendert -->
+                        </div>
+                        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:var(--text-muted);">Nächster Schritt:</span>
+                            <div id="ad-status-actions" style="display:flex;gap:6px;flex-wrap:wrap;">
+                                <!-- Dynamische Status-Buttons -->
+                            </div>
+                        </div>
+                        <div id="ad-status-grund-wrapper" style="display:none;margin-top:8px;">
+                            <select id="ad-status-grund" class="auftrag-status-select" style="width:100%;">
+                                <option value="">Grund auswählen...</option>
+                            </select>
+                            <input type="text" id="ad-status-grund-custom" placeholder="Eigener Grund..." style="display:none;margin-top:6px;width:100%;padding:6px 10px;border-radius:var(--border-radius-sm);border:1px solid var(--border-color);background:var(--bg-dark);color:var(--text-primary);font-size:13px;">
+                        </div>
+                        <div id="ad-status-zeit-info" style="margin-top:8px;font-size:11px;color:var(--text-muted);"></div>
                     </div>
                     <div class="auftrag-info-block">
                         <h5>Fortschritt</h5>

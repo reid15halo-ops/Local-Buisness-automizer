@@ -481,30 +481,221 @@ let currentAuftragFilter = 'alle';
 let auftragViewMode = 'kanban';
 let currentDetailAuftragId = null;
 
-const AUFTRAG_STATUS_LABELS = {
-    geplant: 'Geplant',
-    in_bearbeitung: 'In Bearbeitung',
-    pausiert: 'Pausiert',
-    abgeschlossen: 'Abgeschlossen',
-    aktiv: 'In Bearbeitung' // Legacy compat
+// ============================================
+// Auftrag Status System (Vollständige Pipeline)
+// ============================================
+const AUFTRAG_STATUS_CONFIG = {
+    geplant: {
+        label: 'Geplant', icon: '📋', color: '#60a5fa', order: 1,
+        description: 'Auftrag erfasst, Planung läuft',
+        erlaubteUebergaenge: ['material_bestellt', 'in_bearbeitung', 'pausiert', 'storniert']
+    },
+    material_bestellt: {
+        label: 'Material bestellt', icon: '📦', color: '#a78bfa', order: 2,
+        description: 'Material wurde bestellt, wartet auf Lieferung',
+        erlaubteUebergaenge: ['in_bearbeitung', 'geplant', 'pausiert', 'storniert'],
+        autoAktion: 'materialCheck'
+    },
+    in_bearbeitung: {
+        label: 'In Bearbeitung', icon: '🔧', color: '#f59e0b', order: 3,
+        description: 'Arbeiten laufen',
+        erlaubteUebergaenge: ['qualitaetskontrolle', 'abnahme', 'pausiert', 'storniert'],
+        autoAktion: 'zeitStart'
+    },
+    qualitaetskontrolle: {
+        label: 'Qualitätskontrolle', icon: '🔍', color: '#06b6d4', order: 4,
+        description: 'Arbeiten fertig, Qualitätsprüfung',
+        erlaubteUebergaenge: ['in_bearbeitung', 'abnahme', 'pausiert']
+    },
+    abnahme: {
+        label: 'Abnahme', icon: '✋', color: '#8b5cf6', order: 5,
+        description: 'Wartet auf Kundenabnahme',
+        erlaubteUebergaenge: ['abgeschlossen', 'in_bearbeitung', 'qualitaetskontrolle'],
+        autoAktion: 'kundeNotify'
+    },
+    abgeschlossen: {
+        label: 'Abgeschlossen', icon: '✅', color: '#22c55e', order: 6,
+        description: 'Auftrag fertig, Rechnung kann erstellt werden',
+        erlaubteUebergaenge: [],
+        autoAktion: 'rechnungReady'
+    },
+    pausiert: {
+        label: 'Pausiert', icon: '⏸️', color: '#94a3b8', order: 0,
+        description: 'Auftrag unterbrochen',
+        erlaubteUebergaenge: ['geplant', 'material_bestellt', 'in_bearbeitung', 'storniert'],
+        brauchtGrund: true
+    },
+    storniert: {
+        label: 'Storniert', icon: '❌', color: '#ef4444', order: 0,
+        description: 'Auftrag abgebrochen',
+        erlaubteUebergaenge: ['geplant'],
+        brauchtGrund: true
+    }
 };
 
-const AUFTRAG_STATUS_ICONS = {
-    geplant: '📋', in_bearbeitung: '🔧', pausiert: '⏸️', abgeschlossen: '✅', aktiv: '🔧'
-};
+// Legacy-kompatible Lookups
+const AUFTRAG_STATUS_LABELS = {};
+const AUFTRAG_STATUS_ICONS = {};
+Object.entries(AUFTRAG_STATUS_CONFIG).forEach(([key, cfg]) => {
+    AUFTRAG_STATUS_LABELS[key] = cfg.label;
+    AUFTRAG_STATUS_ICONS[key] = cfg.icon;
+});
+AUFTRAG_STATUS_LABELS['aktiv'] = 'In Bearbeitung';
+AUFTRAG_STATUS_ICONS['aktiv'] = '🔧';
+
+// Pausier-Gründe
+const PAUSE_GRUENDE = [
+    'Material nicht verfügbar',
+    'Wetter / Witterung',
+    'Kundenrückfrage offen',
+    'Mitarbeiter krank / nicht verfügbar',
+    'Genehmigung ausstehend',
+    'Planänderung durch Kunden',
+    'Andere Priorität',
+    'Sonstiges'
+];
+
+const STORNO_GRUENDE = [
+    'Kunde hat storniert',
+    'Nicht umsetzbar',
+    'Zu teuer',
+    'Konkurrenzangebot',
+    'Zeitlich nicht machbar',
+    'Sonstiges'
+];
+
+function validateStatusChange(auftrag, newStatus) {
+    const current = auftrag.status;
+    if (current === newStatus) return { valid: false, error: 'Status ist bereits ' + AUFTRAG_STATUS_LABELS[current] };
+    const config = AUFTRAG_STATUS_CONFIG[current];
+    if (!config) return { valid: true }; // Legacy status, allow all
+    if (!config.erlaubteUebergaenge.includes(newStatus)) {
+        return {
+            valid: false,
+            error: `"${AUFTRAG_STATUS_LABELS[current]}" kann nicht direkt zu "${AUFTRAG_STATUS_LABELS[newStatus]}" wechseln.\nErlaubt: ${config.erlaubteUebergaenge.map(s => AUFTRAG_STATUS_LABELS[s]).join(', ')}`
+        };
+    }
+    return { valid: true };
+}
+
+function getErlaubteUebergaenge(status) {
+    const config = AUFTRAG_STATUS_CONFIG[status];
+    if (!config) return Object.keys(AUFTRAG_STATUS_CONFIG);
+    return config.erlaubteUebergaenge;
+}
+
+function executeStatusAutoAktion(auftrag, newStatus) {
+    const config = AUFTRAG_STATUS_CONFIG[newStatus];
+    if (!config?.autoAktion) return;
+
+    switch (config.autoAktion) {
+        case 'materialCheck': {
+            const stueckliste = auftrag.stueckliste || [];
+            if (stueckliste.length > 0 && window.materialService) {
+                const fehlend = stueckliste.filter(item => {
+                    if (!item.materialId) return false;
+                    const mat = window.materialService.getMaterialById(item.materialId);
+                    return mat && mat.bestand < item.menge;
+                });
+                if (fehlend.length > 0) {
+                    showToast(`${fehlend.length} Material-Position(en) unter Mindestbestand`, 'warning');
+                }
+            }
+            break;
+        }
+        case 'zeitStart': {
+            if (window.timeTrackingService && !window.timeTrackingService.currentEntry) {
+                showToast('Tipp: Zeiterfassung im Auftrag starten', 'info');
+            }
+            break;
+        }
+        case 'kundeNotify': {
+            showToast(`Kunde ${auftrag.kunde?.name || ''} kann zur Abnahme eingeladen werden`, 'info');
+            break;
+        }
+        case 'rechnungReady': {
+            auftrag.fortschritt = 100;
+            showToast('Auftrag abgeschlossen - Rechnung kann erstellt werden', 'success');
+            break;
+        }
+    }
+}
+
+function trackStatusDauer(auftrag, oldStatus, newStatus) {
+    if (!auftrag.statusZeiten) auftrag.statusZeiten = {};
+    const now = Date.now();
+    const lastChange = auftrag.letzterStatusWechsel || new Date(auftrag.createdAt).getTime();
+    const dauerMs = now - lastChange;
+
+    if (!auftrag.statusZeiten[oldStatus]) auftrag.statusZeiten[oldStatus] = 0;
+    auftrag.statusZeiten[oldStatus] += dauerMs;
+    auftrag.letzterStatusWechsel = now;
+}
+
+function changeAuftragStatus(auftragId, newStatus, grund) {
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (!auftrag) return { success: false, error: 'Auftrag nicht gefunden' };
+
+    const validation = validateStatusChange(auftrag, newStatus);
+    if (!validation.valid) return { success: false, error: validation.error };
+
+    const config = AUFTRAG_STATUS_CONFIG[newStatus];
+    if (config?.brauchtGrund && !grund) {
+        return { success: false, error: 'Grund erforderlich', brauchtGrund: true };
+    }
+
+    const oldStatus = auftrag.status;
+    trackStatusDauer(auftrag, oldStatus, newStatus);
+
+    if (!auftrag.historie) auftrag.historie = [];
+    const entry = {
+        aktion: 'status',
+        datum: new Date().toISOString(),
+        details: `${AUFTRAG_STATUS_LABELS[oldStatus]} → ${AUFTRAG_STATUS_LABELS[newStatus]}`
+    };
+    if (grund) entry.grund = grund;
+    auftrag.historie.push(entry);
+
+    auftrag.status = newStatus;
+    if (grund) auftrag.statusGrund = grund;
+    else delete auftrag.statusGrund;
+
+    saveStore();
+    executeStatusAutoAktion(auftrag, newStatus);
+    addActivity(AUFTRAG_STATUS_ICONS[newStatus] || '📋', `${auftrag.id}: ${AUFTRAG_STATUS_LABELS[oldStatus]} → ${AUFTRAG_STATUS_LABELS[newStatus]}`);
+
+    return { success: true, oldStatus, newStatus };
+}
 
 function renderAuftraege() {
     const auftraege = store.auftraege || [];
     // Migrate legacy 'aktiv' status
     auftraege.forEach(a => { if (a.status === 'aktiv') a.status = 'in_bearbeitung'; });
 
-    // Update stats
-    const counts = { geplant: 0, in_bearbeitung: 0, pausiert: 0, abgeschlossen: 0 };
+    // Render stats dynamically from config
+    const counts = {};
+    Object.keys(AUFTRAG_STATUS_CONFIG).forEach(k => counts[k] = 0);
     auftraege.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
-    document.getElementById('auf-stat-geplant').textContent = counts.geplant;
-    document.getElementById('auf-stat-bearbeitung').textContent = counts.in_bearbeitung;
-    document.getElementById('auf-stat-pausiert').textContent = counts.pausiert;
-    document.getElementById('auf-stat-fertig').textContent = counts.abgeschlossen;
+
+    const statsGrid = document.getElementById('auftrag-stats-grid');
+    if (statsGrid) {
+        const mainStatuses = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
+        statsGrid.innerHTML = mainStatuses.map(key => {
+            const cfg = AUFTRAG_STATUS_CONFIG[key];
+            return `
+                <div class="stat-card-mini" style="cursor:pointer;" onclick="document.querySelector('.filter-btn[data-filter=${key}]')?.click()">
+                    <span class="stat-icon-mini">${cfg.icon}</span>
+                    <div class="stat-content-mini">
+                        <span class="stat-value-mini">${counts[key] || 0}</span>
+                        <span class="stat-label-mini">${cfg.label}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Render pipeline visualization
+    renderAuftragPipeline(auftraege, counts);
 
     if (auftragViewMode === 'kanban') {
         renderAuftraegeKanban(auftraege);
@@ -513,17 +704,64 @@ function renderAuftraege() {
     }
 }
 
+function renderAuftragPipeline(auftraege, counts) {
+    const container = document.getElementById('auftrag-pipeline');
+    if (!container) return;
+
+    const pipelineStatuses = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
+    const total = auftraege.filter(a => !['storniert'].includes(a.status)).length || 1;
+
+    container.innerHTML = `
+        <div class="pipeline-flow">
+            ${pipelineStatuses.map((key, i) => {
+                const cfg = AUFTRAG_STATUS_CONFIG[key];
+                const count = counts[key] || 0;
+                const pct = Math.round((count / total) * 100);
+                const isActive = count > 0;
+                return `
+                    <div class="pipeline-step ${isActive ? 'active' : ''}" style="--step-color:${cfg.color};">
+                        <div class="pipeline-step-icon">${cfg.icon}</div>
+                        <div class="pipeline-step-label">${cfg.label}</div>
+                        <div class="pipeline-step-count">${count}</div>
+                        ${i < pipelineStatuses.length - 1 ? '<div class="pipeline-arrow">→</div>' : ''}
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        ${(counts.pausiert || 0) > 0 ? `<div style="font-size:12px;color:#94a3b8;margin-top:4px;">⏸️ ${counts.pausiert} pausiert</div>` : ''}
+        ${(counts.storniert || 0) > 0 ? `<div style="font-size:12px;color:#ef4444;margin-top:2px;">❌ ${counts.storniert} storniert</div>` : ''}
+    `;
+}
+
 function renderAuftraegeKanban(auftraege) {
-    document.getElementById('auftrag-kanban').style.display = '';
+    const kanbanContainer = document.getElementById('auftrag-kanban');
+    kanbanContainer.style.display = '';
     document.getElementById('auftraege-list').style.display = 'none';
 
     const searchQuery = (document.getElementById('auftrag-search')?.value || '').toLowerCase();
 
-    ['geplant', 'in_bearbeitung', 'pausiert', 'abgeschlossen'].forEach(status => {
+    // Determine which columns to show
+    let kanbanStatuses = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
+    if (currentAuftragFilter !== 'alle') {
+        kanbanStatuses = [currentAuftragFilter];
+    }
+    // Add pausiert/storniert if they have items or are filtered
+    if (auftraege.some(a => a.status === 'pausiert') || currentAuftragFilter === 'pausiert') {
+        if (!kanbanStatuses.includes('pausiert')) kanbanStatuses.push('pausiert');
+    }
+    if (auftraege.some(a => a.status === 'storniert') || currentAuftragFilter === 'storniert') {
+        if (!kanbanStatuses.includes('storniert')) kanbanStatuses.push('storniert');
+    }
+
+    // Update grid columns count
+    kanbanContainer.style.gridTemplateColumns = `repeat(${Math.min(kanbanStatuses.length, 6)}, 1fr)`;
+
+    // Build columns
+    kanbanContainer.innerHTML = kanbanStatuses.map(status => {
+        const cfg = AUFTRAG_STATUS_CONFIG[status];
+        if (!cfg) return '';
+
         let filtered = auftraege.filter(a => a.status === status);
-        if (currentAuftragFilter !== 'alle' && currentAuftragFilter !== status) {
-            filtered = [];
-        }
         if (searchQuery) {
             filtered = filtered.filter(a =>
                 a.kunde.name.toLowerCase().includes(searchQuery) ||
@@ -532,48 +770,60 @@ function renderAuftraegeKanban(auftraege) {
             );
         }
 
-        const colKey = status === 'in_bearbeitung' ? 'in_bearbeitung' : status;
-        const countEl = document.getElementById(`auf-col-${status === 'in_bearbeitung' ? 'bearbeitung' : (status === 'abgeschlossen' ? 'fertig' : status)}`);
-        if (countEl) countEl.textContent = filtered.length;
+        const cardsHtml = filtered.length === 0
+            ? '<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-muted);">Keine Aufträge</div>'
+            : filtered.map(a => renderAuftragCard(a)).join('');
 
-        const container = document.getElementById(`auf-items-${status}`);
-        if (!container) return;
+        return `
+            <div class="auftrag-kanban-col" data-status="${status}" style="--col-color:${cfg.color}">
+                <h4 style="border-bottom-color:${cfg.color};">
+                    ${cfg.icon} ${cfg.label} <span class="col-count">${filtered.length}</span>
+                </h4>
+                <div class="auftrag-kanban-items">${cardsHtml}</div>
+            </div>
+        `;
+    }).join('');
+}
 
-        if (filtered.length === 0) {
-            container.innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-muted);">Keine Aufträge</div>';
-            return;
-        }
+function renderAuftragCard(a) {
+    const fortschritt = a.fortschritt || 0;
+    const progressClass = fortschritt < 30 ? 'low' : fortschritt < 70 ? 'mid' : 'high';
+    const workers = (a.mitarbeiter || []).map(m => `<span class="worker-chip">${h(m)}</span>`).join('');
+    const checkDone = (a.checkliste || []).filter(c => c.erledigt).length;
+    const checkTotal = (a.checkliste || []).length;
+    const statusCfg = AUFTRAG_STATUS_CONFIG[a.status];
 
-        container.innerHTML = filtered.map(a => {
-            const fortschritt = a.fortschritt || 0;
-            const progressClass = fortschritt < 30 ? 'low' : fortschritt < 70 ? 'mid' : 'high';
-            const workers = (a.mitarbeiter || []).map(m => `<span class="worker-chip">${h(m)}</span>`).join('');
-            const checkDone = (a.checkliste || []).filter(c => c.erledigt).length;
-            const checkTotal = (a.checkliste || []).length;
+    // Status-Dauer berechnen
+    const letzterWechsel = a.letzterStatusWechsel || new Date(a.createdAt).getTime();
+    const dauerMs = Date.now() - letzterWechsel;
+    const dauerTage = Math.floor(dauerMs / 86400000);
+    const dauerText = dauerTage > 0 ? `${dauerTage}d` : `${Math.floor(dauerMs / 3600000)}h`;
 
-            return `
-                <div class="auftrag-card" onclick="openAuftragDetail('${a.id}')">
-                    <div class="auftrag-card-header">
-                        <span class="auftrag-card-title">${h(a.kunde.name)}</span>
-                        <span class="auftrag-card-id">${a.id}</span>
-                    </div>
-                    <div class="auftrag-card-meta">
-                        <span>${getLeistungsartLabel(a.leistungsart)}</span>
-                        <span>${formatCurrency(a.angebotsWert)}</span>
-                        ${a.endDatum ? `<span>bis ${formatDate(a.endDatum)}</span>` : ''}
-                    </div>
-                    ${workers ? `<div class="auftrag-card-workers">${workers}</div>` : ''}
-                    <div class="auftrag-progress-bar">
-                        <div class="auftrag-progress-fill ${progressClass}" style="width:${fortschritt}%"></div>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text-muted);">
-                        <span>${fortschritt}%</span>
-                        ${checkTotal > 0 ? `<span>${checkDone}/${checkTotal} Aufgaben</span>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    });
+    // Pausier-Grund anzeigen
+    const grundHtml = a.statusGrund ? `<div style="font-size:11px;color:${statusCfg?.color || '#94a3b8'};margin-top:4px;font-style:italic;">${h(a.statusGrund)}</div>` : '';
+
+    return `
+        <div class="auftrag-card" onclick="openAuftragDetail('${a.id}')">
+            <div class="auftrag-card-header">
+                <span class="auftrag-card-title">${h(a.kunde.name)}</span>
+                <span class="auftrag-card-id" title="Im Status seit ${dauerText}">${dauerText}</span>
+            </div>
+            <div class="auftrag-card-meta">
+                <span>${getLeistungsartLabel(a.leistungsart)}</span>
+                <span>${formatCurrency(a.angebotsWert)}</span>
+                ${a.endDatum ? `<span>bis ${formatDate(a.endDatum)}</span>` : ''}
+            </div>
+            ${workers ? `<div class="auftrag-card-workers">${workers}</div>` : ''}
+            ${grundHtml}
+            <div class="auftrag-progress-bar">
+                <div class="auftrag-progress-fill ${progressClass}" style="width:${fortschritt}%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text-muted);">
+                <span>${fortschritt}%</span>
+                ${checkTotal > 0 ? `<span>${checkDone}/${checkTotal}</span>` : ''}
+            </div>
+        </div>
+    `;
 }
 
 function renderAuftraegeList(auftraege) {
@@ -651,11 +901,15 @@ function openAuftragDetail(auftragId) {
         [auftrag.kunde.email, auftrag.kunde.telefon].filter(Boolean).join(' | ');
     document.getElementById('ad-leistungsart').textContent = getLeistungsartLabel(auftrag.leistungsart);
     document.getElementById('ad-angebotswert').textContent = `Angebotswert: ${formatCurrency(auftrag.angebotsWert)}`;
-    document.getElementById('ad-status').value = auftrag.status;
     document.getElementById('ad-fortschritt').value = auftrag.fortschritt || 0;
     document.getElementById('ad-fortschritt-label').textContent = `${auftrag.fortschritt || 0}%`;
     document.getElementById('ad-start-datum').value = auftrag.startDatum || '';
     document.getElementById('ad-end-datum').value = auftrag.endDatum || '';
+
+    // Status Pipeline & Actions
+    renderDetailStatusPipeline(auftrag);
+    renderDetailStatusActions(auftrag);
+    renderDetailStatusZeit(auftrag);
 
     // Mitarbeiter
     renderDetailMitarbeiter(auftrag);
@@ -687,6 +941,157 @@ function openAuftragDetail(auftragId) {
 
     openModal('modal-auftrag-detail');
 }
+
+function renderDetailStatusPipeline(auftrag) {
+    const container = document.getElementById('ad-status-pipeline');
+    if (!container) return;
+
+    const pipeline = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
+    const currentIdx = pipeline.indexOf(auftrag.status);
+    const isPaused = auftrag.status === 'pausiert';
+    const isCancelled = auftrag.status === 'storniert';
+
+    container.innerHTML = `
+        <div class="pipeline-flow compact">
+            ${pipeline.map((key, i) => {
+                const cfg = AUFTRAG_STATUS_CONFIG[key];
+                let cls = '';
+                if (isPaused || isCancelled) {
+                    cls = i <= currentIdx ? 'done' : '';
+                } else if (i < currentIdx) cls = 'done';
+                else if (i === currentIdx) cls = 'current';
+                return `
+                    <div class="pipeline-step ${cls}" style="--step-color:${cfg.color};" title="${cfg.description}">
+                        <div class="pipeline-step-icon">${cfg.icon}</div>
+                        <div class="pipeline-step-label">${cfg.label}</div>
+                        ${i < pipeline.length - 1 ? '<div class="pipeline-arrow">→</div>' : ''}
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        ${isPaused ? `<div style="margin-top:6px;font-size:12px;color:#94a3b8;">⏸️ Pausiert${auftrag.statusGrund ? ': ' + h(auftrag.statusGrund) : ''}</div>` : ''}
+        ${isCancelled ? `<div style="margin-top:6px;font-size:12px;color:#ef4444;">❌ Storniert${auftrag.statusGrund ? ': ' + h(auftrag.statusGrund) : ''}</div>` : ''}
+    `;
+}
+
+function renderDetailStatusActions(auftrag) {
+    const container = document.getElementById('ad-status-actions');
+    const grundWrapper = document.getElementById('ad-status-grund-wrapper');
+    if (!container) return;
+
+    const erlaubt = getErlaubteUebergaenge(auftrag.status);
+    if (erlaubt.length === 0) {
+        container.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">Endstatus erreicht</span>';
+        grundWrapper.style.display = 'none';
+        return;
+    }
+
+    container.innerHTML = erlaubt.map(key => {
+        const cfg = AUFTRAG_STATUS_CONFIG[key];
+        if (!cfg) return '';
+        const btnClass = key === 'storniert' ? 'btn-danger' : key === 'pausiert' ? 'btn-secondary' : key === 'abgeschlossen' ? 'btn-success' : 'btn-primary';
+        return `<button class="btn btn-small ${btnClass}" onclick="handleStatusChange('${key}')">${cfg.icon} ${cfg.label}</button>`;
+    }).join('');
+
+    grundWrapper.style.display = 'none';
+}
+
+function renderDetailStatusZeit(auftrag) {
+    const container = document.getElementById('ad-status-zeit-info');
+    if (!container) return;
+
+    const zeiten = auftrag.statusZeiten || {};
+    const entries = Object.entries(zeiten).filter(([k, v]) => v > 0);
+    if (entries.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const formatDauer = (ms) => {
+        const stunden = Math.floor(ms / 3600000);
+        const tage = Math.floor(stunden / 24);
+        if (tage > 0) return `${tage}d ${stunden % 24}h`;
+        if (stunden > 0) return `${stunden}h`;
+        return `${Math.floor(ms / 60000)}min`;
+    };
+
+    container.innerHTML = 'Verweildauer: ' + entries.map(([key, ms]) => {
+        const cfg = AUFTRAG_STATUS_CONFIG[key];
+        return `<span style="color:${cfg?.color || 'inherit'}">${cfg?.icon || ''} ${cfg?.label || key}: ${formatDauer(ms)}</span>`;
+    }).join(' · ');
+}
+
+// Global handler for status change buttons in detail modal
+window.handleStatusChange = function(newStatus) {
+    const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+    if (!auftrag) return;
+
+    const config = AUFTRAG_STATUS_CONFIG[newStatus];
+
+    // Check if reason is needed
+    if (config?.brauchtGrund) {
+        const grundWrapper = document.getElementById('ad-status-grund-wrapper');
+        const grundSelect = document.getElementById('ad-status-grund');
+        const grundCustom = document.getElementById('ad-status-grund-custom');
+
+        grundWrapper.style.display = 'block';
+        grundWrapper.dataset.targetStatus = newStatus;
+
+        const gruende = newStatus === 'storniert' ? STORNO_GRUENDE : PAUSE_GRUENDE;
+        grundSelect.innerHTML = '<option value="">Grund auswählen...</option>' +
+            gruende.map(g => `<option value="${g}">${g}</option>`).join('');
+
+        grundSelect.onchange = () => {
+            grundCustom.style.display = grundSelect.value === 'Sonstiges' ? '' : 'none';
+        };
+
+        // Add confirm button if not already there
+        if (!document.getElementById('ad-btn-confirm-status')) {
+            grundWrapper.insertAdjacentHTML('beforeend',
+                `<button class="btn btn-small btn-primary" id="ad-btn-confirm-status" style="margin-top:8px;" onclick="confirmStatusChange()">Bestätigen</button>`
+            );
+        }
+        return;
+    }
+
+    const result = changeAuftragStatus(auftrag.id, newStatus);
+    if (!result.success) {
+        showToast(result.error, 'error');
+        return;
+    }
+
+    showToast(`Status: ${AUFTRAG_STATUS_LABELS[newStatus]}`, 'success');
+    openAuftragDetail(auftrag.id); // Refresh modal
+    renderAuftraege();
+};
+
+window.confirmStatusChange = function() {
+    const grundWrapper = document.getElementById('ad-status-grund-wrapper');
+    const targetStatus = grundWrapper.dataset.targetStatus;
+    const grundSelect = document.getElementById('ad-status-grund');
+    const grundCustom = document.getElementById('ad-status-grund-custom');
+
+    let grund = grundSelect.value;
+    if (grund === 'Sonstiges') grund = grundCustom.value.trim();
+    if (!grund) {
+        showToast('Bitte Grund angeben', 'warning');
+        return;
+    }
+
+    const result = changeAuftragStatus(currentDetailAuftragId, targetStatus, grund);
+    if (!result.success) {
+        showToast(result.error, 'error');
+        return;
+    }
+
+    grundWrapper.style.display = 'none';
+    const confirmBtn = document.getElementById('ad-btn-confirm-status');
+    if (confirmBtn) confirmBtn.remove();
+
+    showToast(`Status: ${AUFTRAG_STATUS_LABELS[targetStatus]} — ${grund}`, 'success');
+    openAuftragDetail(currentDetailAuftragId);
+    renderAuftraege();
+};
 
 function renderDetailMitarbeiter(auftrag) {
     const list = document.getElementById('ad-mitarbeiter-list');
@@ -995,27 +1400,24 @@ function initAuftragDetailHandlers() {
     };
     document.getElementById('ad-btn-add-kommentar')?.addEventListener('click', sendComment);
 
-    // Save changes
+    // Save changes (Fortschritt, Termine, Mitarbeiter - Status läuft über Buttons)
     document.getElementById('ad-btn-save')?.addEventListener('click', () => {
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
         if (!auftrag) return;
 
-        const oldStatus = auftrag.status;
-        const newStatus = document.getElementById('ad-status').value;
         const newFortschritt = parseInt(document.getElementById('ad-fortschritt').value);
         const newStart = document.getElementById('ad-start-datum').value || null;
         const newEnd = document.getElementById('ad-end-datum').value || null;
 
         if (!auftrag.historie) auftrag.historie = [];
 
-        if (newStatus !== oldStatus) {
-            auftrag.historie.push({ aktion: 'status', datum: new Date().toISOString(), details: `${AUFTRAG_STATUS_LABELS[oldStatus]} → ${AUFTRAG_STATUS_LABELS[newStatus]}` });
-        }
         if (newFortschritt !== (auftrag.fortschritt || 0)) {
             auftrag.historie.push({ aktion: 'fortschritt', datum: new Date().toISOString(), details: `${auftrag.fortschritt || 0}% → ${newFortschritt}%` });
         }
+        if (newStart !== auftrag.startDatum || newEnd !== auftrag.endDatum) {
+            auftrag.historie.push({ aktion: 'termin', datum: new Date().toISOString(), details: `${newStart || '?'} bis ${newEnd || '?'}` });
+        }
 
-        auftrag.status = newStatus;
         auftrag.fortschritt = newFortschritt;
         auftrag.startDatum = newStart;
         auftrag.endDatum = newEnd;
@@ -3412,6 +3814,7 @@ window.openAuftragDetail = openAuftragDetail;
 window.removeAuftragMitarbeiter = removeAuftragMitarbeiter;
 window.toggleChecklistItem = toggleChecklistItem;
 window.removeChecklistItem = removeChecklistItem;
+window.changeAuftragStatus = changeAuftragStatus;
 
 // Start app
 document.addEventListener('DOMContentLoaded', async () => {
