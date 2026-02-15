@@ -363,3 +363,71 @@ CREATE TRIGGER update_kunden_updated_at
 CREATE TRIGGER update_materialien_updated_at
     BEFORE UPDATE ON materialien
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- Automation Log (Workflow Execution History)
+-- ============================================
+CREATE TABLE IF NOT EXISTS automation_log (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    action TEXT NOT NULL,
+    target TEXT DEFAULT '',
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE automation_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users see own automation logs" ON automation_log
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Edge functions can insert logs" ON automation_log
+    FOR INSERT WITH CHECK (true);
+
+CREATE INDEX idx_automation_log_user ON automation_log(user_id);
+CREATE INDEX idx_automation_log_action ON automation_log(action);
+CREATE INDEX idx_automation_log_created ON automation_log(created_at DESC);
+
+-- ============================================
+-- Notifications (In-App Benachrichtigungen)
+-- ============================================
+CREATE TABLE IF NOT EXISTS notifications (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    message TEXT DEFAULT '',
+    type TEXT DEFAULT 'info',
+    read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users see own notifications" ON notifications
+    FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Edge functions can insert notifications" ON notifications
+    FOR INSERT WITH CHECK (true);
+
+CREATE INDEX idx_notifications_user ON notifications(user_id, read);
+
+-- ============================================
+-- Overdue tracking columns for rechnungen
+-- ============================================
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS mahnstufe INTEGER DEFAULT 0;
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS letzte_mahnung TIMESTAMPTZ;
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS kunde_email TEXT;
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS kunde_name TEXT;
+
+-- ============================================
+-- pg_cron: Daily overdue invoice check (08:00 UTC)
+-- Run this manually in SQL Editor after enabling pg_cron extension:
+-- ============================================
+-- SELECT cron.schedule(
+--     'check-overdue-daily',
+--     '0 8 * * *',
+--     $$SELECT net.http_post(
+--         url := (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'supabase_url') || '/functions/v1/check-overdue',
+--         headers := jsonb_build_object(
+--             'Authorization', 'Bearer ' || (SELECT decrypted_secret FROM vault.decrypted_secrets WHERE name = 'service_role_key'),
+--             'Content-Type', 'application/json'
+--         ),
+--         body := '{}'::jsonb
+--     )$$
+-- );

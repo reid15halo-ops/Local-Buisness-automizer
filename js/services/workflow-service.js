@@ -174,25 +174,33 @@ class WorkflowService {
         return true;
     }
 
-    // Execute a single action
+    // Execute a single action (routes through Supabase Edge Functions when available)
     async executeAction(action, context) {
         const params = this.resolveParams(action.params, context);
 
+        // Route through automationAPI for server-side execution
+        if (window.automationAPI) {
+            const result = await window.automationAPI.executeAction(
+                action.type, params, context._workflowId, context._executionId
+            );
+            if (result.success || result.error) {
+                if (!result.success) {
+                    console.warn(`Workflow action ${action.type} failed:`, result.error);
+                }
+                return result;
+            }
+        }
+
+        // Legacy fallback (no automationAPI available)
         switch (action.type) {
             case 'email.send':
-                if (window.emailService) {
-                    await window.emailService.sendEmail({
-                        to: params.to,
-                        subject: params.subject,
-                        body: params.body
-                    });
-                }
+                console.log('[Workflow] E-Mail senden (Supabase nicht verbunden):', params.to, params.subject);
+                if (window.showToast) window.showToast(`E-Mail an ${params.to} benötigt Supabase-Verbindung`, 'warning');
                 break;
 
             case 'sms.send':
-                if (window.smsReminderService) {
-                    await window.smsReminderService.sendSMS(params.to, params.message);
-                }
+                console.log('[Workflow] SMS senden (Supabase nicht verbunden):', params.to);
+                if (window.showToast) window.showToast(`SMS an ${params.to} benötigt Supabase-Verbindung`, 'warning');
                 break;
 
             case 'task.create':
@@ -206,39 +214,22 @@ class WorkflowService {
                 }
                 break;
 
-            case 'invoice.create':
-                // Would integrate with invoice system
-                console.log('Creating invoice:', params);
-                break;
-
-            case 'reminder.create':
-                const delay = this.parseDelay(params.delay);
-                setTimeout(() => {
-                    if (window.Notification && Notification.permission === 'granted') {
-                        new Notification('MHS Erinnerung', { body: params.message });
-                    }
-                }, delay);
-                break;
-
             case 'notification.show':
                 if (window.Notification && Notification.permission === 'granted') {
-                    new Notification('MHS Workflow', { body: params.message });
-                } else {
-                    alert(params.message);
+                    new Notification('HandwerkFlow', { body: params.message });
+                } else if (window.showToast) {
+                    window.showToast(params.message, 'info');
                 }
                 break;
 
             case 'webhook.call':
-                await fetch(params.url, {
-                    method: params.method || 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(params.data || context)
-                });
+                console.log('[Workflow] Webhook (Supabase nicht verbunden):', params.url);
+                if (window.showToast) window.showToast(`Webhook benötigt Supabase-Verbindung`, 'warning');
                 break;
 
             case 'wait':
                 const waitMs = this.parseDelay(`${params.duration} ${params.unit}`);
-                await new Promise(resolve => setTimeout(resolve, waitMs));
+                await new Promise(resolve => setTimeout(resolve, Math.min(waitMs, 30000)));
                 break;
 
             case 'log':

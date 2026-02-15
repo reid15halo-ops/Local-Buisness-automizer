@@ -417,14 +417,76 @@
                         <button class="btn btn-primary" id="btn-save-stundensatz">Speichern</button>
                     </div>
                     <div class="settings-card">
-                        <h3>📧 n8n Webhook</h3>
-                        <p>Für automatischen Email-Versand</p>
+                        <h3>📧 E-Mail Versand (Resend)</h3>
+                        <p>Automatischer E-Mail-Versand für Mahnungen, Erinnerungen & Workflows</p>
+                        <div class="form-group">
+                            <label for="resend-api-key">Resend API Key</label>
+                            <input type="password" id="resend-api-key" placeholder="re_...">
+                            <small>Kostenlos bis 3.000 E-Mails/Monat: <a href="https://resend.com" target="_blank">resend.com</a></small>
+                        </div>
+                        <div class="form-group">
+                            <label for="sender-email">Absender-E-Mail</label>
+                            <input type="email" id="sender-email" placeholder="info@deine-firma.de">
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-email-config">Speichern</button>
+                        <button class="btn btn-secondary btn-small" id="btn-test-email" style="margin-left:8px;">Test senden</button>
+                        <span class="status-indicator" id="email-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>📱 SMS Versand (Twilio)</h3>
+                        <p>SMS-Erinnerungen an Kunden (Termine, Zahlungen)</p>
+                        <div class="form-group">
+                            <label for="twilio-sid">Account SID</label>
+                            <input type="text" id="twilio-sid" placeholder="AC...">
+                        </div>
+                        <div class="form-group">
+                            <label for="twilio-token">Auth Token</label>
+                            <input type="password" id="twilio-token" placeholder="...">
+                        </div>
+                        <div class="form-group">
+                            <label for="twilio-from">Absender-Nummer</label>
+                            <input type="tel" id="twilio-from" placeholder="+49...">
+                            <small>Registriere dich bei <a href="https://www.twilio.com" target="_blank">twilio.com</a></small>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-sms-config">Speichern</button>
+                        <span class="status-indicator" id="sms-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>🔗 Webhook (Erweitert)</h3>
+                        <p>Optional: n8n, Zapier, Make oder eigene Webhooks</p>
                         <div class="form-group">
                             <label for="n8n-webhook-url">Webhook URL</label>
                             <input type="url" id="n8n-webhook-url" placeholder="https://your-n8n.com/webhook/...">
                         </div>
                         <button class="btn btn-primary" id="btn-save-webhook">Speichern</button>
                         <span class="status-indicator" id="webhook-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>⚡ Automations-Status</h3>
+                        <p>Übersicht der konfigurierten Automatisierungen</p>
+                        <div id="automation-status-list" style="font-size:14px;">
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                                <span>Supabase Backend</span>
+                                <span id="auto-status-supabase" style="color:var(--text-muted);">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                                <span>E-Mail (Resend)</span>
+                                <span id="auto-status-email" style="color:var(--text-muted);">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                                <span>SMS (Twilio)</span>
+                                <span id="auto-status-sms" style="color:var(--text-muted);">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                                <span>Auto-Mahnungen</span>
+                                <span id="auto-status-overdue" style="color:var(--text-muted);">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                                <span>Webhook</span>
+                                <span id="auto-status-webhook" style="color:var(--text-muted);">—</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-small" id="btn-check-overdue" style="margin-top:12px;">Mahnungen jetzt prüfen</button>
                     </div>
                     <div class="settings-card">
                         <h3>🗑️ Daten</h3>
@@ -1482,6 +1544,7 @@
     <script src="js/services/theme-manager.js"></script>
 
     <!-- App Integration -->
+    <script src="js/services/automation-api.js"></script>
     <script src="js/services/pdf-service.js"></script>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>

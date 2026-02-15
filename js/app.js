@@ -1417,21 +1417,115 @@ function initSettings() {
     });
 }
 
+function initAutomationSettings() {
+    // Load saved values
+    const resendKey = localStorage.getItem('resend_api_key');
+    const senderEmail = localStorage.getItem('sender_email');
+    const twilioSid = localStorage.getItem('twilio_sid');
+    const twilioToken = localStorage.getItem('twilio_token');
+    const twilioFrom = localStorage.getItem('twilio_from');
+
+    if (document.getElementById('resend-api-key')) {
+        document.getElementById('resend-api-key').value = resendKey || '';
+        document.getElementById('sender-email').value = senderEmail || '';
+    }
+    if (document.getElementById('twilio-sid')) {
+        document.getElementById('twilio-sid').value = twilioSid || '';
+        document.getElementById('twilio-token').value = twilioToken || '';
+        document.getElementById('twilio-from').value = twilioFrom || '';
+    }
+
+    // Save Email config
+    document.getElementById('btn-save-email-config')?.addEventListener('click', () => {
+        const key = document.getElementById('resend-api-key').value.trim();
+        const email = document.getElementById('sender-email').value.trim();
+        localStorage.setItem('resend_api_key', key);
+        localStorage.setItem('sender_email', email);
+        updateSettingsStatus();
+        showToast('E-Mail-Konfiguration gespeichert', 'success');
+    });
+
+    // Test Email
+    document.getElementById('btn-test-email')?.addEventListener('click', async () => {
+        if (!window.automationAPI?.isAvailable()) {
+            showToast('Supabase muss zuerst konfiguriert sein', 'warning');
+            return;
+        }
+        const email = document.getElementById('sender-email').value.trim();
+        if (!email) {
+            showToast('Bitte erst Absender-E-Mail eingeben', 'warning');
+            return;
+        }
+        showToast('Sende Test-E-Mail...', 'info');
+        const result = await window.automationAPI.sendEmail(
+            email, 'HandwerkFlow Test', 'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand funktioniert.'
+        );
+        showToast(result.success ? 'Test-E-Mail gesendet!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
+    });
+
+    // Save SMS config
+    document.getElementById('btn-save-sms-config')?.addEventListener('click', () => {
+        localStorage.setItem('twilio_sid', document.getElementById('twilio-sid').value.trim());
+        localStorage.setItem('twilio_token', document.getElementById('twilio-token').value.trim());
+        localStorage.setItem('twilio_from', document.getElementById('twilio-from').value.trim());
+        updateSettingsStatus();
+        showToast('SMS-Konfiguration gespeichert', 'success');
+    });
+
+    // Check overdue manually
+    document.getElementById('btn-check-overdue')?.addEventListener('click', async () => {
+        if (!window.automationAPI?.isAvailable()) {
+            showToast('Supabase muss zuerst konfiguriert sein', 'warning');
+            return;
+        }
+        showToast('Prüfe überfällige Rechnungen...', 'info');
+        const result = await window.automationAPI.checkOverdue();
+        if (result.success) {
+            showToast(`Geprüft: ${result.checked} Rechnungen, ${result.reminders_sent} Mahnungen gesendet`, 'success');
+        } else {
+            showToast('Fehler: ' + result.error, 'error');
+        }
+    });
+
+    updateSettingsStatus();
+}
+
 function updateSettingsStatus() {
     const geminiKey = localStorage.getItem('gemini_api_key');
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
+    const resendKey = localStorage.getItem('resend_api_key');
+    const twilioSid = localStorage.getItem('twilio_sid');
 
     const geminiStatus = document.getElementById('gemini-status');
     const webhookStatus = document.getElementById('webhook-status');
+    const emailStatus = document.getElementById('email-status');
+    const smsStatus = document.getElementById('sms-status');
 
-    if (geminiStatus) {
-        geminiStatus.textContent = geminiKey ? '● Konfiguriert' : '● Nicht konfiguriert';
-        geminiStatus.className = 'status-indicator' + (geminiKey ? ' connected' : '');
-    }
-    if (webhookStatus) {
-        webhookStatus.textContent = webhookUrl ? '● Konfiguriert' : '● Nicht konfiguriert';
-        webhookStatus.className = 'status-indicator' + (webhookUrl ? ' connected' : '');
-    }
+    const setStatus = (el, configured) => {
+        if (!el) return;
+        el.textContent = configured ? '● Konfiguriert' : '● Nicht konfiguriert';
+        el.className = 'status-indicator' + (configured ? ' connected' : '');
+    };
+
+    setStatus(geminiStatus, geminiKey);
+    setStatus(webhookStatus, webhookUrl);
+    setStatus(emailStatus, resendKey);
+    setStatus(smsStatus, twilioSid);
+
+    // Automation status panel
+    const supabaseOk = window.supabaseConfig?.isConfigured();
+    const setAutoStatus = (id, ok, label) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = ok ? label || 'Aktiv' : 'Nicht konfiguriert';
+        el.style.color = ok ? 'var(--accent-primary)' : 'var(--text-muted)';
+    };
+
+    setAutoStatus('auto-status-supabase', supabaseOk, 'Verbunden');
+    setAutoStatus('auto-status-email', supabaseOk && resendKey, 'Bereit');
+    setAutoStatus('auto-status-sms', supabaseOk && twilioSid, 'Bereit');
+    setAutoStatus('auto-status-overdue', supabaseOk && resendKey, 'Automatisch (tägl. 08:00)');
+    setAutoStatus('auto-status-webhook', webhookUrl, 'Konfiguriert');
 }
 
 // ============================================
@@ -1770,9 +1864,13 @@ async function init() {
     initRechnungActions();
     initMaterial();
     initSettings();
+    initAutomationSettings();
     initMahnwesen();
     initBuchhaltung();
     initQuickActions();
+
+    // Initialize automation API
+    window.automationAPI?.init();
 
     updateDashboard();
 }
