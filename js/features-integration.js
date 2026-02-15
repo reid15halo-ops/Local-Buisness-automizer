@@ -263,21 +263,49 @@ function renderCalendar() {
         header.innerHTML = `<span class="calendar-title">${start.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}</span>`;
     }
 
-    container.innerHTML = weekData.map(day => `
-        <div class="calendar-day ${day.isToday ? 'is-today' : ''}">
-            <div class="calendar-day-header">
-                <span class="calendar-day-name">${day.dayName}</span>
-                <span class="calendar-day-number">${day.dayNumber}</span>
+    // Inject Aufträge with dates into calendar
+    const auftraege = window.storeService?.state?.auftraege || [];
+    const auftragEvents = {};
+    auftraege.forEach(a => {
+        if (!a.startDatum && !a.endDatum) return;
+        if (a.status === 'abgeschlossen') return;
+        const startDate = a.startDatum || a.endDatum;
+        const endDate = a.endDatum || a.startDatum;
+        const s = new Date(startDate);
+        const e = new Date(endDate);
+        for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+            const key = d.toISOString().split('T')[0];
+            if (!auftragEvents[key]) auftragEvents[key] = [];
+            auftragEvents[key].push(a);
+        }
+    });
+
+    container.innerHTML = weekData.map(day => {
+        const dayKey = day.date;
+        const dayAuftraege = auftragEvents[dayKey] || [];
+        const auftraegeHtml = dayAuftraege.map(a => `
+            <div class="calendar-event" style="border-color: #f59e0b; cursor:pointer;" onclick="window.openAuftragDetail && window.openAuftragDetail('${a.id}')">
+                <strong>🔧</strong> ${a.kunde?.name || 'Auftrag'}
             </div>
-            <div class="calendar-events">
-                ${day.appointments.map(apt => `
-                    <div class="calendar-event" style="border-color: ${apt.color || '#6366f1'}">
-                        <strong>${apt.startTime}</strong> ${apt.title}
-                    </div>
-                `).join('')}
+        `).join('');
+
+        return `
+            <div class="calendar-day ${day.isToday ? 'is-today' : ''}">
+                <div class="calendar-day-header">
+                    <span class="calendar-day-name">${day.dayName}</span>
+                    <span class="calendar-day-number">${day.dayNumber}</span>
+                </div>
+                <div class="calendar-events">
+                    ${day.appointments.map(apt => `
+                        <div class="calendar-event" style="border-color: ${apt.color || '#6366f1'}">
+                            <strong>${apt.startTime}</strong> ${apt.title}
+                        </div>
+                    `).join('')}
+                    ${auftraegeHtml}
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function initCalendar() {

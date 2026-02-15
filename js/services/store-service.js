@@ -252,7 +252,14 @@ class StoreService {
             angebotsWert: angebot.brutto,
             netto: angebot.netto,
             mwst: angebot.mwst,
-            status: 'aktiv',
+            status: 'geplant',
+            fortschritt: 0,
+            mitarbeiter: [],
+            startDatum: null,
+            endDatum: null,
+            checkliste: [],
+            kommentare: [],
+            historie: [{ aktion: 'erstellt', datum: new Date().toISOString(), details: `Aus Angebot ${angebotId}` }],
             createdAt: new Date().toISOString()
         };
 
@@ -260,6 +267,60 @@ class StoreService {
         this.save();
         this.addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
 
+        return auftrag;
+    }
+
+    updateAuftrag(auftragId, updates) {
+        const auftrag = this.store.auftraege.find(a => a.id === auftragId);
+        if (!auftrag) return null;
+
+        const oldStatus = auftrag.status;
+        Object.assign(auftrag, updates);
+
+        if (!auftrag.historie) auftrag.historie = [];
+        if (updates.status && updates.status !== oldStatus) {
+            auftrag.historie.push({
+                aktion: 'status',
+                datum: new Date().toISOString(),
+                details: `${oldStatus} → ${updates.status}`
+            });
+        }
+
+        this.save();
+        return auftrag;
+    }
+
+    addAuftragComment(auftragId, text, autor) {
+        const auftrag = this.store.auftraege.find(a => a.id === auftragId);
+        if (!auftrag) return null;
+
+        if (!auftrag.kommentare) auftrag.kommentare = [];
+        const kommentar = {
+            id: 'kom-' + Date.now(),
+            text,
+            autor: autor || 'Benutzer',
+            datum: new Date().toISOString()
+        };
+        auftrag.kommentare.push(kommentar);
+
+        if (!auftrag.historie) auftrag.historie = [];
+        auftrag.historie.push({ aktion: 'kommentar', datum: kommentar.datum, details: text.substring(0, 50) });
+
+        this.save();
+        return kommentar;
+    }
+
+    updateAuftragCheckliste(auftragId, checkliste) {
+        const auftrag = this.store.auftraege.find(a => a.id === auftragId);
+        if (!auftrag) return null;
+
+        auftrag.checkliste = checkliste;
+        // Auto-calculate progress from checklist
+        if (checkliste.length > 0) {
+            auftrag.fortschritt = Math.round((checkliste.filter(c => c.erledigt).length / checkliste.length) * 100);
+        }
+
+        this.save();
         return auftrag;
     }
 

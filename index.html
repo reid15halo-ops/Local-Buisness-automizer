@@ -314,11 +314,83 @@
             <!-- Aufträge View -->
             <section class="view" id="view-auftraege">
                 <header class="view-header">
-                    <h1>Aufträge</h1>
-                    <p class="subtitle">Aktive Aufträge</p>
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Aufträge</h1>
+                            <p class="subtitle">Auftragsverwaltung & Bearbeitung</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-auftrag-list-view">Liste</button>
+                            <button class="btn btn-primary" id="btn-auftrag-kanban-view">Kanban</button>
+                        </div>
+                    </div>
                 </header>
-                <div class="items-list" id="auftraege-list">
-                    <p class="empty-state">Keine aktiven Aufträge</p>
+
+                <!-- Stats -->
+                <div class="auftrag-stats-grid">
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">📋</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="auf-stat-geplant">0</span>
+                            <span class="stat-label-mini">Geplant</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">🔧</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="auf-stat-bearbeitung">0</span>
+                            <span class="stat-label-mini">In Bearbeitung</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">⏸️</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="auf-stat-pausiert">0</span>
+                            <span class="stat-label-mini">Pausiert</span>
+                        </div>
+                    </div>
+                    <div class="stat-card-mini">
+                        <span class="stat-icon-mini">✅</span>
+                        <div class="stat-content-mini">
+                            <span class="stat-value-mini" id="auf-stat-fertig">0</span>
+                            <span class="stat-label-mini">Abgeschlossen</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter -->
+                <div class="auftrag-filter-bar" id="auftrag-filter-bar">
+                    <button class="filter-btn active" data-filter="alle">Alle</button>
+                    <button class="filter-btn" data-filter="geplant">Geplant</button>
+                    <button class="filter-btn" data-filter="in_bearbeitung">In Bearbeitung</button>
+                    <button class="filter-btn" data-filter="pausiert">Pausiert</button>
+                    <button class="filter-btn" data-filter="abgeschlossen">Abgeschlossen</button>
+                    <input type="text" id="auftrag-search" placeholder="Auftrag suchen..." style="margin-left:auto;padding:6px 12px;border-radius:20px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:13px;width:200px;">
+                </div>
+
+                <!-- Kanban Board -->
+                <div class="auftrag-kanban" id="auftrag-kanban">
+                    <div class="auftrag-kanban-col" data-status="geplant">
+                        <h4>📋 Geplant <span class="col-count" id="auf-col-geplant">0</span></h4>
+                        <div class="auftrag-kanban-items" id="auf-items-geplant"></div>
+                    </div>
+                    <div class="auftrag-kanban-col" data-status="in_bearbeitung">
+                        <h4>🔧 In Bearbeitung <span class="col-count" id="auf-col-bearbeitung">0</span></h4>
+                        <div class="auftrag-kanban-items" id="auf-items-in_bearbeitung"></div>
+                    </div>
+                    <div class="auftrag-kanban-col" data-status="pausiert">
+                        <h4>⏸️ Pausiert <span class="col-count" id="auf-col-pausiert">0</span></h4>
+                        <div class="auftrag-kanban-items" id="auf-items-pausiert"></div>
+                    </div>
+                    <div class="auftrag-kanban-col" data-status="abgeschlossen">
+                        <h4>✅ Fertig <span class="col-count" id="auf-col-fertig">0</span></h4>
+                        <div class="auftrag-kanban-items" id="auf-items-abgeschlossen"></div>
+                    </div>
+                </div>
+
+                <!-- List View (hidden by default) -->
+                <div class="items-list" id="auftraege-list" style="display:none;">
+                    <p class="empty-state">Keine Aufträge</p>
                 </div>
             </section>
 
@@ -1450,7 +1522,146 @@
         </div>
     </div>
 
-    <!-- Modal: Auftrag Details -->
+    <!-- Modal: Auftrag Detail (Management) -->
+    <div class="modal" id="modal-auftrag-detail">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="auftrag-detail-title">Auftrag</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="auftrag-detail-tabs" id="auftrag-detail-tabs">
+                <button class="auftrag-tab active" data-tab="uebersicht">Übersicht</button>
+                <button class="auftrag-tab" data-tab="checkliste">Checkliste</button>
+                <button class="auftrag-tab" data-tab="zeiterfassung">Zeiterfassung</button>
+                <button class="auftrag-tab" data-tab="fotos">Fotos</button>
+                <button class="auftrag-tab" data-tab="kommentare">Kommentare</button>
+                <button class="auftrag-tab" data-tab="historie">Historie</button>
+            </div>
+
+            <!-- Tab: Übersicht -->
+            <div class="auftrag-tab-content active" data-tab="uebersicht">
+                <div class="auftrag-overview-grid">
+                    <div class="auftrag-info-block">
+                        <h5>Kunde</h5>
+                        <p id="ad-kunde-name"></p>
+                        <p id="ad-kunde-kontakt" style="font-size:12px;color:var(--text-secondary);"></p>
+                    </div>
+                    <div class="auftrag-info-block">
+                        <h5>Leistung</h5>
+                        <p id="ad-leistungsart"></p>
+                        <p id="ad-angebotswert" style="font-size:12px;color:var(--text-secondary);"></p>
+                    </div>
+                    <div class="auftrag-info-block">
+                        <h5>Status</h5>
+                        <select class="auftrag-status-select" id="ad-status">
+                            <option value="geplant">Geplant</option>
+                            <option value="in_bearbeitung">In Bearbeitung</option>
+                            <option value="pausiert">Pausiert</option>
+                            <option value="abgeschlossen">Abgeschlossen</option>
+                        </select>
+                    </div>
+                    <div class="auftrag-info-block">
+                        <h5>Fortschritt</h5>
+                        <div class="auftrag-fortschritt-wrapper">
+                            <input type="range" id="ad-fortschritt" min="0" max="100" step="5" value="0">
+                            <span class="auftrag-fortschritt-label" id="ad-fortschritt-label">0%</span>
+                        </div>
+                    </div>
+                    <div class="auftrag-info-block">
+                        <h5>Terminplanung</h5>
+                        <div class="form-row" style="gap:8px;">
+                            <div class="form-group" style="margin:0;flex:1;">
+                                <label style="font-size:11px;">Start</label>
+                                <input type="date" id="ad-start-datum" style="font-size:12px;">
+                            </div>
+                            <div class="form-group" style="margin:0;flex:1;">
+                                <label style="font-size:11px;">Ende</label>
+                                <input type="date" id="ad-end-datum" style="font-size:12px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="auftrag-info-block">
+                        <h5>Mitarbeiter</h5>
+                        <div class="mitarbeiter-list" id="ad-mitarbeiter-list"></div>
+                        <div class="mitarbeiter-add-row">
+                            <input type="text" id="ad-mitarbeiter-input" placeholder="Name eingeben...">
+                            <button class="btn btn-small" id="ad-btn-add-mitarbeiter">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Checkliste -->
+            <div class="auftrag-tab-content" data-tab="checkliste">
+                <div class="checkliste-items" id="ad-checkliste-items">
+                    <p class="empty-state" style="padding:20px;text-align:center;">Noch keine Aufgaben</p>
+                </div>
+                <div class="checkliste-add-row">
+                    <input type="text" id="ad-checkliste-input" placeholder="Neue Aufgabe...">
+                    <button class="btn btn-small btn-primary" id="ad-btn-add-checkliste">+ Hinzufügen</button>
+                </div>
+            </div>
+
+            <!-- Tab: Zeiterfassung -->
+            <div class="auftrag-tab-content" data-tab="zeiterfassung">
+                <div class="zeit-total-row" id="ad-zeit-total">
+                    <span>Gesamt</span>
+                    <span>0:00 h</span>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <button class="btn btn-success" id="ad-btn-zeit-start">Stempeln</button>
+                    <button class="btn btn-secondary" id="ad-btn-zeit-manuell">+ Manuell</button>
+                </div>
+                <div class="zeit-entries-list" id="ad-zeit-entries">
+                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Zeiteinträge</p>
+                </div>
+            </div>
+
+            <!-- Tab: Fotos -->
+            <div class="auftrag-tab-content" data-tab="fotos">
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <button class="btn btn-primary" id="ad-btn-foto-capture">Foto aufnehmen</button>
+                    <label class="btn btn-secondary">
+                        Foto hochladen
+                        <input type="file" id="ad-foto-upload" accept="image/*" style="display:none;" multiple>
+                    </label>
+                </div>
+                <div class="foto-gallery" id="ad-foto-gallery">
+                    <p class="empty-state" style="padding:20px;text-align:center;grid-column:1/-1;">Keine Fotos</p>
+                </div>
+            </div>
+
+            <!-- Tab: Kommentare -->
+            <div class="auftrag-tab-content" data-tab="kommentare">
+                <div class="kommentar-list" id="ad-kommentar-list">
+                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Kommentare</p>
+                </div>
+                <div class="kommentar-add-row">
+                    <textarea id="ad-kommentar-input" placeholder="Kommentar schreiben..." rows="2"></textarea>
+                    <button class="btn btn-primary" id="ad-btn-add-kommentar" style="align-self:flex-end;">Senden</button>
+                </div>
+            </div>
+
+            <!-- Tab: Historie -->
+            <div class="auftrag-tab-content" data-tab="historie">
+                <div class="historie-timeline" id="ad-historie-timeline">
+                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Einträge</p>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="form-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-secondary modal-close">Schließen</button>
+                <button type="button" class="btn btn-primary" id="ad-btn-save">Änderungen speichern</button>
+                <button type="button" class="btn btn-success" id="ad-btn-complete">Abschließen & Rechnung</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Auftrag Abschluss (Completion) -->
     <div class="modal" id="modal-auftrag">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">

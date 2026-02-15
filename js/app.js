@@ -50,7 +50,7 @@ function renderActivities() {
 function updateDashboard() {
     const offeneAnfragen = store.anfragen.filter(a => a.status === 'neu').length;
     const wartendeAngebote = store.angebote.filter(a => a.status === 'offen').length;
-    const aktiveAuftraege = store.auftraege.filter(a => a.status === 'aktiv').length;
+    const aktiveAuftraege = store.auftraege.filter(a => a.status !== 'abgeschlossen').length;
     const offeneRechnungen = store.rechnungen.filter(r => r.status === 'offen').length;
 
     document.getElementById('stat-anfragen').textContent = offeneAnfragen;
@@ -454,7 +454,14 @@ function acceptAngebot(angebotId) {
         angebotsWert: angebot.brutto,
         netto: angebot.netto,
         mwst: angebot.mwst,
-        status: 'aktiv',
+        status: 'geplant',
+        fortschritt: 0,
+        mitarbeiter: [],
+        startDatum: null,
+        endDatum: null,
+        checkliste: [],
+        kommentare: [],
+        historie: [{ aktion: 'erstellt', datum: new Date().toISOString(), details: `Aus Angebot ${angebotId}` }],
         createdAt: new Date().toISOString()
     };
 
@@ -468,47 +475,588 @@ function acceptAngebot(angebotId) {
 }
 
 // ============================================
-// Aufträge (Orders)
+// Aufträge (Orders) - Full Management System
 // ============================================
-function renderAuftraege() {
-    const container = document.getElementById('auftraege-list');
-    const auftraege = store.auftraege.filter(a => a.status === 'aktiv');
+let currentAuftragFilter = 'alle';
+let auftragViewMode = 'kanban';
+let currentDetailAuftragId = null;
 
-    if (auftraege.length === 0) {
+const AUFTRAG_STATUS_LABELS = {
+    geplant: 'Geplant',
+    in_bearbeitung: 'In Bearbeitung',
+    pausiert: 'Pausiert',
+    abgeschlossen: 'Abgeschlossen',
+    aktiv: 'In Bearbeitung' // Legacy compat
+};
+
+const AUFTRAG_STATUS_ICONS = {
+    geplant: '📋', in_bearbeitung: '🔧', pausiert: '⏸️', abgeschlossen: '✅', aktiv: '🔧'
+};
+
+function renderAuftraege() {
+    const auftraege = store.auftraege || [];
+    // Migrate legacy 'aktiv' status
+    auftraege.forEach(a => { if (a.status === 'aktiv') a.status = 'in_bearbeitung'; });
+
+    // Update stats
+    const counts = { geplant: 0, in_bearbeitung: 0, pausiert: 0, abgeschlossen: 0 };
+    auftraege.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+    document.getElementById('auf-stat-geplant').textContent = counts.geplant;
+    document.getElementById('auf-stat-bearbeitung').textContent = counts.in_bearbeitung;
+    document.getElementById('auf-stat-pausiert').textContent = counts.pausiert;
+    document.getElementById('auf-stat-fertig').textContent = counts.abgeschlossen;
+
+    if (auftragViewMode === 'kanban') {
+        renderAuftraegeKanban(auftraege);
+    } else {
+        renderAuftraegeList(auftraege);
+    }
+}
+
+function renderAuftraegeKanban(auftraege) {
+    document.getElementById('auftrag-kanban').style.display = '';
+    document.getElementById('auftraege-list').style.display = 'none';
+
+    const searchQuery = (document.getElementById('auftrag-search')?.value || '').toLowerCase();
+
+    ['geplant', 'in_bearbeitung', 'pausiert', 'abgeschlossen'].forEach(status => {
+        let filtered = auftraege.filter(a => a.status === status);
+        if (currentAuftragFilter !== 'alle' && currentAuftragFilter !== status) {
+            filtered = [];
+        }
+        if (searchQuery) {
+            filtered = filtered.filter(a =>
+                a.kunde.name.toLowerCase().includes(searchQuery) ||
+                a.id.toLowerCase().includes(searchQuery) ||
+                (a.leistungsart || '').toLowerCase().includes(searchQuery)
+            );
+        }
+
+        const colKey = status === 'in_bearbeitung' ? 'in_bearbeitung' : status;
+        const countEl = document.getElementById(`auf-col-${status === 'in_bearbeitung' ? 'bearbeitung' : (status === 'abgeschlossen' ? 'fertig' : status)}`);
+        if (countEl) countEl.textContent = filtered.length;
+
+        const container = document.getElementById(`auf-items-${status}`);
+        if (!container) return;
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:20px;font-size:12px;color:var(--text-muted);">Keine Aufträge</div>';
+            return;
+        }
+
+        container.innerHTML = filtered.map(a => {
+            const fortschritt = a.fortschritt || 0;
+            const progressClass = fortschritt < 30 ? 'low' : fortschritt < 70 ? 'mid' : 'high';
+            const workers = (a.mitarbeiter || []).map(m => `<span class="worker-chip">${h(m)}</span>`).join('');
+            const checkDone = (a.checkliste || []).filter(c => c.erledigt).length;
+            const checkTotal = (a.checkliste || []).length;
+
+            return `
+                <div class="auftrag-card" onclick="openAuftragDetail('${a.id}')">
+                    <div class="auftrag-card-header">
+                        <span class="auftrag-card-title">${h(a.kunde.name)}</span>
+                        <span class="auftrag-card-id">${a.id}</span>
+                    </div>
+                    <div class="auftrag-card-meta">
+                        <span>${getLeistungsartLabel(a.leistungsart)}</span>
+                        <span>${formatCurrency(a.angebotsWert)}</span>
+                        ${a.endDatum ? `<span>bis ${formatDate(a.endDatum)}</span>` : ''}
+                    </div>
+                    ${workers ? `<div class="auftrag-card-workers">${workers}</div>` : ''}
+                    <div class="auftrag-progress-bar">
+                        <div class="auftrag-progress-fill ${progressClass}" style="width:${fortschritt}%"></div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text-muted);">
+                        <span>${fortschritt}%</span>
+                        ${checkTotal > 0 ? `<span>${checkDone}/${checkTotal} Aufgaben</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    });
+}
+
+function renderAuftraegeList(auftraege) {
+    document.getElementById('auftrag-kanban').style.display = 'none';
+    const container = document.getElementById('auftraege-list');
+    container.style.display = '';
+
+    let filtered = [...auftraege];
+    if (currentAuftragFilter !== 'alle') {
+        filtered = filtered.filter(a => a.status === currentAuftragFilter);
+    }
+    const searchQuery = (document.getElementById('auftrag-search')?.value || '').toLowerCase();
+    if (searchQuery) {
+        filtered = filtered.filter(a =>
+            a.kunde.name.toLowerCase().includes(searchQuery) ||
+            a.id.toLowerCase().includes(searchQuery)
+        );
+    }
+
+    if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
-                <h3 style="margin-bottom: 8px;">Keine aktiven Aufträge</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 24px;">
-                    Aufträge entstehen aus angenommenen Angeboten.
-                </p>
-                <button class="btn btn-primary" onclick="window.navigationController.navigateTo('angebote')">
-                    📝 Angebote ansehen
-                </button>
-            </div>
-        `;
+            <div class="empty-state" style="padding:40px 20px;text-align:center;">
+                <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
+                <h3>Keine Aufträge</h3>
+                <p style="color:var(--text-secondary);">Aufträge entstehen aus angenommenen Angeboten.</p>
+            </div>`;
         return;
     }
 
-    container.innerHTML = auftraege.map(a => `
-        <div class="item-card">
-            <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
-                <span class="item-id">${a.id}</span>
+    container.innerHTML = filtered.map(a => {
+        const fortschritt = a.fortschritt || 0;
+        const progressClass = fortschritt < 30 ? 'low' : fortschritt < 70 ? 'mid' : 'high';
+        const statusLabel = AUFTRAG_STATUS_LABELS[a.status] || a.status;
+        const workers = (a.mitarbeiter || []).join(', ');
+
+        return `
+            <div class="item-card" onclick="openAuftragDetail('${a.id}')" style="cursor:pointer;">
+                <div class="item-header">
+                    <h3 class="item-title">${h(a.kunde.name)}</h3>
+                    <span class="item-id">${a.id}</span>
+                </div>
+                <div class="item-meta">
+                    <span>${AUFTRAG_STATUS_ICONS[a.status] || ''} ${statusLabel}</span>
+                    <span>${getLeistungsartLabel(a.leistungsart)}</span>
+                    <span>${formatCurrency(a.angebotsWert)}</span>
+                    ${workers ? `<span>👷 ${h(workers)}</span>` : ''}
+                    ${a.startDatum ? `<span>📅 ${formatDate(a.startDatum)} - ${a.endDatum ? formatDate(a.endDatum) : '?'}</span>` : ''}
+                </div>
+                <div style="margin-top:8px;">
+                    <div class="auftrag-progress-bar" style="height:6px;">
+                        <div class="auftrag-progress-fill ${progressClass}" style="width:${fortschritt}%"></div>
+                    </div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${fortschritt}% abgeschlossen</div>
+                </div>
             </div>
-            <div class="item-meta">
-                <span>📋 ${getLeistungsartLabel(a.leistungsart)}</span>
-                <span>💰 Angebotswert: ${formatCurrency(a.angebotsWert)}</span>
-                <span>📅 Start: ${formatDate(a.createdAt)}</span>
-            </div>
-            <div class="item-actions">
-                <span class="status-badge status-aktiv">● In Bearbeitung</span>
-                <button class="btn btn-success" onclick="openAuftragModal('${a.id}')">
-                    ✓ Auftrag abschließen
-                </button>
-            </div>
+        `;
+    }).join('');
+}
+
+// ============================================
+// Auftrag Detail Modal
+// ============================================
+function openAuftragDetail(auftragId) {
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (!auftrag) return;
+
+    currentDetailAuftragId = auftragId;
+
+    // Title
+    document.getElementById('auftrag-detail-title').textContent = `Auftrag ${auftrag.id}`;
+
+    // Tab: Übersicht
+    document.getElementById('ad-kunde-name').textContent = auftrag.kunde.name;
+    document.getElementById('ad-kunde-kontakt').textContent =
+        [auftrag.kunde.email, auftrag.kunde.telefon].filter(Boolean).join(' | ');
+    document.getElementById('ad-leistungsart').textContent = getLeistungsartLabel(auftrag.leistungsart);
+    document.getElementById('ad-angebotswert').textContent = `Angebotswert: ${formatCurrency(auftrag.angebotsWert)}`;
+    document.getElementById('ad-status').value = auftrag.status;
+    document.getElementById('ad-fortschritt').value = auftrag.fortschritt || 0;
+    document.getElementById('ad-fortschritt-label').textContent = `${auftrag.fortschritt || 0}%`;
+    document.getElementById('ad-start-datum').value = auftrag.startDatum || '';
+    document.getElementById('ad-end-datum').value = auftrag.endDatum || '';
+
+    // Mitarbeiter
+    renderDetailMitarbeiter(auftrag);
+
+    // Tab: Checkliste
+    renderDetailCheckliste(auftrag);
+
+    // Tab: Zeiterfassung
+    renderDetailZeiterfassung(auftrag);
+
+    // Tab: Fotos
+    renderDetailFotos(auftrag);
+
+    // Tab: Kommentare
+    renderDetailKommentare(auftrag);
+
+    // Tab: Historie
+    renderDetailHistorie(auftrag);
+
+    // Show first tab
+    document.querySelectorAll('#modal-auftrag-detail .auftrag-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#modal-auftrag-detail .auftrag-tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector('#modal-auftrag-detail .auftrag-tab[data-tab="uebersicht"]').classList.add('active');
+    document.querySelector('#modal-auftrag-detail .auftrag-tab-content[data-tab="uebersicht"]').classList.add('active');
+
+    // Show/hide complete button
+    const completeBtn = document.getElementById('ad-btn-complete');
+    completeBtn.style.display = auftrag.status === 'abgeschlossen' ? 'none' : '';
+
+    openModal('modal-auftrag-detail');
+}
+
+function renderDetailMitarbeiter(auftrag) {
+    const list = document.getElementById('ad-mitarbeiter-list');
+    const mitarbeiter = auftrag.mitarbeiter || [];
+    if (mitarbeiter.length === 0) {
+        list.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">Keine Mitarbeiter zugewiesen</span>';
+    } else {
+        list.innerHTML = mitarbeiter.map((m, i) =>
+            `<span class="mitarbeiter-chip">${h(m)} <span class="remove-worker" onclick="removeAuftragMitarbeiter(${i})">&times;</span></span>`
+        ).join('');
+    }
+}
+
+function removeAuftragMitarbeiter(index) {
+    const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+    if (!auftrag || !auftrag.mitarbeiter) return;
+    const removed = auftrag.mitarbeiter.splice(index, 1);
+    if (!auftrag.historie) auftrag.historie = [];
+    auftrag.historie.push({ aktion: 'mitarbeiter', datum: new Date().toISOString(), details: `${removed[0]} entfernt` });
+    saveStore();
+    renderDetailMitarbeiter(auftrag);
+}
+
+function renderDetailCheckliste(auftrag) {
+    const container = document.getElementById('ad-checkliste-items');
+    const items = auftrag.checkliste || [];
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="padding:20px;text-align:center;">Noch keine Aufgaben</p>';
+        return;
+    }
+    container.innerHTML = items.map((item, i) => `
+        <div class="checkliste-item ${item.erledigt ? 'erledigt' : ''}">
+            <input type="checkbox" ${item.erledigt ? 'checked' : ''} onchange="toggleChecklistItem(${i})">
+            <span class="checkliste-text">${h(item.text)}</span>
+            <span class="checkliste-remove" onclick="removeChecklistItem(${i})">&times;</span>
         </div>
     `).join('');
+}
+
+function toggleChecklistItem(index) {
+    const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+    if (!auftrag || !auftrag.checkliste) return;
+    auftrag.checkliste[index].erledigt = !auftrag.checkliste[index].erledigt;
+    // Auto-recalculate progress
+    const done = auftrag.checkliste.filter(c => c.erledigt).length;
+    auftrag.fortschritt = Math.round((done / auftrag.checkliste.length) * 100);
+    document.getElementById('ad-fortschritt').value = auftrag.fortschritt;
+    document.getElementById('ad-fortschritt-label').textContent = `${auftrag.fortschritt}%`;
+    saveStore();
+    renderDetailCheckliste(auftrag);
+}
+
+function removeChecklistItem(index) {
+    const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+    if (!auftrag || !auftrag.checkliste) return;
+    auftrag.checkliste.splice(index, 1);
+    if (auftrag.checkliste.length > 0) {
+        auftrag.fortschritt = Math.round((auftrag.checkliste.filter(c => c.erledigt).length / auftrag.checkliste.length) * 100);
+    }
+    saveStore();
+    renderDetailCheckliste(auftrag);
+}
+
+function renderDetailZeiterfassung(auftrag) {
+    const entries = window.timeTrackingService?.getEntriesForAuftrag?.(auftrag.id) || [];
+    const totalMinutes = entries.reduce((sum, e) => sum + (e.totalMinutes || 0), 0);
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+
+    document.getElementById('ad-zeit-total').innerHTML = `<span>Gesamt</span><span>${hours}:${String(mins).padStart(2, '0')} h</span>`;
+
+    const container = document.getElementById('ad-zeit-entries');
+    if (entries.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="padding:20px;text-align:center;">Keine Zeiteinträge</p>';
+        return;
+    }
+
+    container.innerHTML = entries.sort((a, b) => b.startTime - a.startTime).map(e => {
+        const h = Math.floor((e.totalMinutes || 0) / 60);
+        const m = (e.totalMinutes || 0) % 60;
+        return `
+            <div class="zeit-entry">
+                <div>
+                    <div>${e.description || 'Arbeitszeit'}</div>
+                    <div class="zeit-entry-date">${formatDate(e.date || e.startTime)}</div>
+                </div>
+                <span class="zeit-entry-hours">${h}:${String(m).padStart(2, '0')} h</span>
+            </div>
+        `;
+    }).join('');
+
+    // Update clock button
+    const clockBtn = document.getElementById('ad-btn-zeit-start');
+    const running = window.timeTrackingService?.currentEntry;
+    if (running && running.auftragId === auftrag.id) {
+        clockBtn.textContent = 'Ausstempeln';
+        clockBtn.className = 'btn btn-danger';
+    } else {
+        clockBtn.textContent = 'Einstempeln';
+        clockBtn.className = 'btn btn-success';
+    }
+}
+
+function renderDetailFotos(auftrag) {
+    const photos = window.photoService?.getPhotosByReference?.('auftrag', auftrag.id) || [];
+    const container = document.getElementById('ad-foto-gallery');
+
+    if (photos.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="padding:20px;text-align:center;grid-column:1/-1;">Keine Fotos</p>';
+        return;
+    }
+
+    container.innerHTML = photos.map(p => `
+        <div class="foto-thumb" onclick="window.open('${p.dataUrl}','_blank')">
+            <img src="${p.dataUrl}" alt="Foto" loading="lazy">
+            <span class="foto-date">${formatDate(p.timestamp || p.createdAt)}</span>
+        </div>
+    `).join('');
+}
+
+function renderDetailKommentare(auftrag) {
+    const comments = auftrag.kommentare || [];
+    const container = document.getElementById('ad-kommentar-list');
+
+    if (comments.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="padding:20px;text-align:center;">Keine Kommentare</p>';
+        return;
+    }
+
+    container.innerHTML = comments.map(k => `
+        <div class="kommentar-item">
+            <div class="kommentar-header">
+                <span class="kommentar-autor">${h(k.autor)}</span>
+                <span class="kommentar-datum">${formatDate(k.datum)} ${new Date(k.datum).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div class="kommentar-text">${h(k.text)}</div>
+        </div>
+    `).join('');
+
+    container.scrollTop = container.scrollHeight;
+}
+
+function renderDetailHistorie(auftrag) {
+    const items = auftrag.historie || [];
+    const container = document.getElementById('ad-historie-timeline');
+
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state" style="padding:20px;text-align:center;">Keine Einträge</p>';
+        return;
+    }
+
+    container.innerHTML = [...items].reverse().map(h_item => `
+        <div class="historie-item">
+            <div><strong>${h(h_item.aktion)}</strong> — ${h(h_item.details || '')}</div>
+            <div class="historie-datum">${formatDate(h_item.datum)} ${new Date(h_item.datum).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</div>
+        </div>
+    `).join('');
+}
+
+function initAuftragDetailHandlers() {
+    // Tab switching
+    document.querySelectorAll('#modal-auftrag-detail .auftrag-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            document.querySelectorAll('#modal-auftrag-detail .auftrag-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#modal-auftrag-detail .auftrag-tab-content').forEach(c => c.classList.remove('active'));
+            tab.classList.add('active');
+            document.querySelector(`#modal-auftrag-detail .auftrag-tab-content[data-tab="${tabName}"]`).classList.add('active');
+        });
+    });
+
+    // Fortschritt slider
+    document.getElementById('ad-fortschritt')?.addEventListener('input', (e) => {
+        document.getElementById('ad-fortschritt-label').textContent = `${e.target.value}%`;
+    });
+
+    // Add Mitarbeiter
+    document.getElementById('ad-btn-add-mitarbeiter')?.addEventListener('click', () => {
+        const input = document.getElementById('ad-mitarbeiter-input');
+        const name = input.value.trim();
+        if (!name) return;
+
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+        if (!auftrag.mitarbeiter) auftrag.mitarbeiter = [];
+        auftrag.mitarbeiter.push(name);
+        if (!auftrag.historie) auftrag.historie = [];
+        auftrag.historie.push({ aktion: 'mitarbeiter', datum: new Date().toISOString(), details: `${name} zugewiesen` });
+        saveStore();
+        input.value = '';
+        renderDetailMitarbeiter(auftrag);
+    });
+
+    // Add Checkliste item
+    const addChecklist = () => {
+        const input = document.getElementById('ad-checkliste-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+        if (!auftrag.checkliste) auftrag.checkliste = [];
+        auftrag.checkliste.push({ text, erledigt: false });
+        saveStore();
+        input.value = '';
+        renderDetailCheckliste(auftrag);
+    };
+    document.getElementById('ad-btn-add-checkliste')?.addEventListener('click', addChecklist);
+    document.getElementById('ad-checkliste-input')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addChecklist(); }
+    });
+
+    // Zeiterfassung - Ein/Ausstempeln
+    document.getElementById('ad-btn-zeit-start')?.addEventListener('click', () => {
+        if (!window.timeTrackingService) { showToast('Zeiterfassung nicht verfügbar', 'warning'); return; }
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+
+        const current = window.timeTrackingService.currentEntry;
+        if (current && current.auftragId === auftrag.id) {
+            window.timeTrackingService.clockOut();
+            showToast('Ausgestempelt', 'success');
+        } else {
+            if (current) window.timeTrackingService.clockOut(); // Clock out from other
+            window.timeTrackingService.clockIn({
+                auftragId: auftrag.id,
+                customerId: auftrag.kunde.name,
+                description: `${auftrag.kunde.name} - ${getLeistungsartLabel(auftrag.leistungsart)}`
+            });
+            showToast('Eingestempelt für ' + auftrag.kunde.name, 'success');
+        }
+        renderDetailZeiterfassung(auftrag);
+    });
+
+    // Zeiterfassung - Manuell
+    document.getElementById('ad-btn-zeit-manuell')?.addEventListener('click', () => {
+        if (!window.timeTrackingService) { showToast('Zeiterfassung nicht verfügbar', 'warning'); return; }
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+
+        const hours = prompt('Stunden eingeben (z.B. 2.5):');
+        if (!hours || isNaN(parseFloat(hours))) return;
+
+        window.timeTrackingService.addManualEntry({
+            auftragId: auftrag.id,
+            customerId: auftrag.kunde.name,
+            description: `Manuell: ${auftrag.kunde.name}`,
+            totalMinutes: Math.round(parseFloat(hours) * 60),
+            date: new Date().toISOString()
+        });
+        showToast(`${hours}h hinzugefügt`, 'success');
+        renderDetailZeiterfassung(auftrag);
+    });
+
+    // Foto aufnehmen
+    document.getElementById('ad-btn-foto-capture')?.addEventListener('click', async () => {
+        if (!window.photoService) { showToast('Foto-Service nicht verfügbar', 'warning'); return; }
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+
+        try {
+            await window.photoService.capturePhoto({ type: 'auftrag', id: auftrag.id });
+            showToast('Foto aufgenommen', 'success');
+            renderDetailFotos(auftrag);
+        } catch (e) {
+            showToast('Kamera nicht verfügbar: ' + e.message, 'error');
+        }
+    });
+
+    // Foto hochladen
+    document.getElementById('ad-foto-upload')?.addEventListener('change', async (e) => {
+        if (!window.photoService) return;
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+
+        for (const file of e.target.files) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                window.photoService.addPhoto(ev.target.result, {
+                    type: 'auftrag', id: auftrag.id, category: 'documentation'
+                });
+                renderDetailFotos(auftrag);
+            };
+            reader.readAsDataURL(file);
+        }
+        showToast(`${e.target.files.length} Foto(s) hochgeladen`, 'success');
+        e.target.value = '';
+    });
+
+    // Kommentar senden
+    const sendComment = () => {
+        const input = document.getElementById('ad-kommentar-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+        if (!auftrag.kommentare) auftrag.kommentare = [];
+        const userName = store.settings?.owner || 'Benutzer';
+        auftrag.kommentare.push({ id: 'kom-' + Date.now(), text, autor: userName, datum: new Date().toISOString() });
+        if (!auftrag.historie) auftrag.historie = [];
+        auftrag.historie.push({ aktion: 'kommentar', datum: new Date().toISOString(), details: text.substring(0, 50) });
+        saveStore();
+        input.value = '';
+        renderDetailKommentare(auftrag);
+    };
+    document.getElementById('ad-btn-add-kommentar')?.addEventListener('click', sendComment);
+
+    // Save changes
+    document.getElementById('ad-btn-save')?.addEventListener('click', () => {
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) return;
+
+        const oldStatus = auftrag.status;
+        const newStatus = document.getElementById('ad-status').value;
+        const newFortschritt = parseInt(document.getElementById('ad-fortschritt').value);
+        const newStart = document.getElementById('ad-start-datum').value || null;
+        const newEnd = document.getElementById('ad-end-datum').value || null;
+
+        if (!auftrag.historie) auftrag.historie = [];
+
+        if (newStatus !== oldStatus) {
+            auftrag.historie.push({ aktion: 'status', datum: new Date().toISOString(), details: `${AUFTRAG_STATUS_LABELS[oldStatus]} → ${AUFTRAG_STATUS_LABELS[newStatus]}` });
+        }
+        if (newFortschritt !== (auftrag.fortschritt || 0)) {
+            auftrag.historie.push({ aktion: 'fortschritt', datum: new Date().toISOString(), details: `${auftrag.fortschritt || 0}% → ${newFortschritt}%` });
+        }
+
+        auftrag.status = newStatus;
+        auftrag.fortschritt = newFortschritt;
+        auftrag.startDatum = newStart;
+        auftrag.endDatum = newEnd;
+
+        saveStore();
+        showToast('Auftrag gespeichert', 'success');
+        renderAuftraege();
+    });
+
+    // Complete → open completion modal
+    document.getElementById('ad-btn-complete')?.addEventListener('click', () => {
+        closeModal('modal-auftrag-detail');
+        openAuftragModal(currentDetailAuftragId);
+    });
+
+    // Kanban/List view toggle
+    document.getElementById('btn-auftrag-kanban-view')?.addEventListener('click', () => {
+        auftragViewMode = 'kanban';
+        document.getElementById('btn-auftrag-kanban-view').classList.replace('btn-secondary', 'btn-primary');
+        document.getElementById('btn-auftrag-list-view').classList.replace('btn-primary', 'btn-secondary');
+        renderAuftraege();
+    });
+    document.getElementById('btn-auftrag-list-view')?.addEventListener('click', () => {
+        auftragViewMode = 'list';
+        document.getElementById('btn-auftrag-list-view').classList.replace('btn-secondary', 'btn-primary');
+        document.getElementById('btn-auftrag-kanban-view').classList.replace('btn-primary', 'btn-secondary');
+        renderAuftraege();
+    });
+
+    // Filter buttons
+    document.querySelectorAll('#auftrag-filter-bar .filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentAuftragFilter = btn.dataset.filter;
+            document.querySelectorAll('#auftrag-filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderAuftraege();
+        });
+    });
+
+    // Search
+    document.getElementById('auftrag-search')?.addEventListener('input', () => renderAuftraege());
 }
 
 // ============================================
@@ -1959,6 +2507,7 @@ async function init() {
     initAnfrageForm();
     initAngebotForm();
     initAuftragForm();
+    initAuftragDetailHandlers();
     initRechnungActions();
     initMaterial();
     initSettings();
@@ -2859,6 +3408,10 @@ window.generateEInvoice = generateEInvoice;
 window.markInvoiceAsPaid = markInvoiceAsPaid;
 window.previewNextInvoiceNumber = previewNextInvoiceNumber;
 window.generateSenderEmail = generateSenderEmail;
+window.openAuftragDetail = openAuftragDetail;
+window.removeAuftragMitarbeiter = removeAuftragMitarbeiter;
+window.toggleChecklistItem = toggleChecklistItem;
+window.removeChecklistItem = removeChecklistItem;
 
 // Start app
 document.addEventListener('DOMContentLoaded', async () => {
