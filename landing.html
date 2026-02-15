@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HandwerkFlow | Die All-in-One Plattform für Handwerksbetriebe</title>
+    <meta name="description" content="Anfrage, Angebot, Auftrag, Rechnung – alles in einer App. Speziell für deutsche Handwerksbetriebe. DATEV-Export, KI-Textgenerierung, Buchhaltung.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <style>
+        /* ============================================
+           Landing Page Styles
+           ============================================ */
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --bg-card-hover: #1f1f23;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #27272a;
+            --radius: 16px;
+            --radius-sm: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ---- Navigation ---- */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 16px;
+            border-radius: var(--radius);
+        }
+
+        /* ---- Hero Section ---- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 80px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--accent-glow);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-hover);
+            margin-bottom: 32px;
+        }
+
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 72px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            max-width: 800px;
+        }
+
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--accent), #3b82f6, var(--accent-hover));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 48px;
+            line-height: 1.8;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 80px;
+            padding-top: 48px;
+            border-top: 1px solid var(--border);
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .hero-stat .label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ---- Workflow Section ---- */
+        .workflow-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 64px;
+        }
+
+        .workflow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .workflow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 24px 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            min-width: 140px;
+            transition: all 0.3s;
+        }
+
+        .workflow-step:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+        }
+
+        .workflow-step .icon { font-size: 32px; }
+        .workflow-step .name { font-weight: 600; font-size: 14px; }
+
+        .workflow-arrow {
+            font-size: 24px;
+            color: var(--text-muted);
+        }
+
+        /* ---- Features Grid ---- */
+        .features-section {
+            padding: 120px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            padding: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 16px;
+        }
+
+        .feature-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 100px;
+            color: var(--accent-hover);
+        }
+
+        /* ---- Pricing ---- */
+        .pricing-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            padding: 40px 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: left;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--accent);
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.1);
+        }
+
+        .pricing-card.featured::before {
+            content: 'Beliebteste Wahl';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 16px;
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 100px;
+            white-space: nowrap;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .pricing-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .pricing-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .pricing-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            margin-bottom: 32px;
+        }
+
+        .pricing-price .amount {
+            font-size: 48px;
+            font-weight: 800;
+        }
+
+        .pricing-price .currency {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .pricing-price .period {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .pricing-features li .check {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        .pricing-cta {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* ---- Waitlist / CTA ---- */
+        .cta-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .cta-box {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 64px 48px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(59, 130, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+        }
+
+        .cta-box h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .waitlist-form {
+            display: flex;
+            gap: 12px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .waitlist-form input {
+            flex: 1;
+            padding: 14px 20px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .waitlist-form input:focus {
+            border-color: var(--accent);
+        }
+
+        .waitlist-form input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .waitlist-success {
+            display: none;
+            padding: 20px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: var(--radius-sm);
+            color: var(--success);
+            font-weight: 500;
+            margin-top: 16px;
+        }
+
+        .waitlist-success.show {
+            display: block;
+        }
+
+        /* ---- Testimonial / Social Proof ---- */
+        .proof-section {
+            padding: 80px 24px;
+            text-align: center;
+        }
+
+        .proof-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 48px;
+            flex-wrap: wrap;
+            opacity: 0.5;
+        }
+
+        .proof-logos span {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* ---- Footer ---- */
+        .footer {
+            padding: 48px 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .footer-links a:hover { color: var(--text); }
+
+        .footer-copy {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .nav { padding: 12px 16px; }
+            .nav-links { display: none; }
+            .hero { padding: 100px 16px 60px; }
+            .hero-stats { flex-direction: column; gap: 24px; }
+            .workflow-steps { flex-direction: column; }
+            .workflow-arrow { transform: rotate(90deg); }
+            .features-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .waitlist-form { flex-direction: column; }
+            .cta-box { padding: 40px 24px; }
+        }
+
+        /* ---- Scroll animations ---- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="#" class="nav-brand">HandwerkFlow</a>
+        <div class="nav-links">
+            <a href="#workflow">Workflow</a>
+            <a href="#features">Features</a>
+            <a href="#pricing">Preise</a>
+            <a href="index.html" class="btn btn-outline">Demo testen</a>
+            <a href="#waitlist" class="btn btn-primary">Kostenlos starten</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            Jetzt in der Beta-Phase
+        </div>
+        <h1>
+            Dein Handwerksbetrieb.<br>
+            <span class="gradient">Komplett automatisiert.</span>
+        </h1>
+        <p>
+            Von der Anfrage bis zur Rechnung &ndash; alles in einer App.
+            DATEV-Export, KI-Angebote, Buchhaltung &amp; mehr.
+            Speziell f&uuml;r deutsche Handwerksbetriebe.
+        </p>
+        <div class="hero-actions">
+            <a href="#waitlist" class="btn btn-primary btn-large">Jetzt Platz sichern</a>
+            <a href="index.html" class="btn btn-outline btn-large">Live-Demo ansehen</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="number">21+</div>
+                <div class="label">Module</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">100%</div>
+                <div class="label">DATEV-kompatibel</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">0&euro;</div>
+                <div class="label">Setup-Kosten</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">KI</div>
+                <div class="label">Angebots-Assistent</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow -->
+    <section class="workflow-section fade-in" id="workflow">
+        <div class="section-label">So funktioniert&apos;s</div>
+        <h2 class="section-title">Ein Workflow. Null Papierkram.</h2>
+        <p class="section-subtitle">
+            Vom Erstkontakt bis zur bezahlten Rechnung &ndash;
+            alles automatisch, alles nachverfolgbar.
+        </p>
+        <div class="workflow-steps">
+            <div class="workflow-step">
+                <span class="icon">&#x1F4E5;</span>
+                <span class="name">Anfrage</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x1F916;</span>
+                <span class="name">KI-Angebot</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x2705;</span>
+                <span class="name">Auftrag</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x1F4B0;</span>
+                <span class="name">Rechnung</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x1F3E6;</span>
+                <span class="name">Zahlung</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section fade-in" id="features">
+        <div class="section-label" style="text-align:center;">Features</div>
+        <h2 class="section-title" style="text-align:center;">Alles, was dein Betrieb braucht</h2>
+        <p class="section-subtitle" style="text-align:center;">
+            21+ Module in einer Plattform. Kein Zusammenstückeln von 10 verschiedenen Tools.
+        </p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CA;</div>
+                <h3>Kompletter Workflow</h3>
+                <p>Anfrage &rarr; Angebot &rarr; Auftrag &rarr; Rechnung &rarr; Mahnung. Automatisch, mit einem Klick.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Angebotserstellung</span>
+                    <span class="feature-tag">Rechnungen</span>
+                    <span class="feature-tag">Mahnwesen</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F916;</div>
+                <h3>KI-Assistent</h3>
+                <p>Angebots-Texte per KI generieren, Arbeitszeiten sch&auml;tzen und Preise kalkulieren. Powered by Gemini &amp; Ollama.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Textgenerierung</span>
+                    <span class="feature-tag">Preiskalkulation</span>
+                    <span class="feature-tag">Sprachsteuerung</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4B0;</div>
+                <h3>Buchhaltung &amp; DATEV</h3>
+                <p>E&Uuml;R-Berechnung, DATEV-Export (SKR03/04), USt-VA und Kassenbuch. Dein Steuerberater wird dich lieben.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">E&Uuml;R</span>
+                    <span class="feature-tag">DATEV-Export</span>
+                    <span class="feature-tag">USt-VA</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F465;</div>
+                <h3>CRM &amp; Kunden</h3>
+                <p>Kundenverwaltung, Lead-Pipeline, Kontakthistorie. Nie wieder Excel-Listen f&uuml;r Kundendaten.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Kundenverwaltung</span>
+                    <span class="feature-tag">Lead-Pipeline</span>
+                    <span class="feature-tag">CSV-Import</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4C5;</div>
+                <h3>Kalender &amp; Buchung</h3>
+                <p>Terminplanung, Online-Buchungsseite f&uuml;r Kunden, Zeiterfassung mit Stempeluhr.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Online-Buchung</span>
+                    <span class="feature-tag">Zeiterfassung</span>
+                    <span class="feature-tag">Kalender</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4F7;</div>
+                <h3>Scanner &amp; Dokumente</h3>
+                <p>Belege scannen, OCR-Texterkennung, automatische Datenextraktion. Quittungen digital in Sekunden.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">OCR-Scanner</span>
+                    <span class="feature-tag">Belegerfassung</span>
+                    <span class="feature-tag">Archiv</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Proof -->
+    <section class="proof-section fade-in">
+        <p style="color: var(--text-muted); font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 32px;">Gebaut f&uuml;r deutsche Handwerksbetriebe</p>
+        <div class="proof-logos">
+            <span>METALLBAU</span>
+            <span>HYDRAULIK</span>
+            <span>SCHWEISSEN</span>
+            <span>ELEKTRIK</span>
+            <span>SHK</span>
+            <span>MONTAGE</span>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing-section fade-in" id="pricing">
+        <div class="section-label">Preise</div>
+        <h2 class="section-title">Einfach. Transparent. Fair.</h2>
+        <p class="section-subtitle">
+            Starte kostenlos. Upgrade wenn du w&auml;chst. Keine versteckten Kosten.
+        </p>
+        <div class="pricing-grid">
+            <!-- Starter -->
+            <div class="pricing-card">
+                <div class="pricing-name">Starter</div>
+                <div class="pricing-desc">F&uuml;r Einzelunternehmer &amp; kleine Betriebe</div>
+                <div class="pricing-price">
+                    <span class="currency">&euro;</span>
+                    <span class="amount">39</span>
+                    <span class="period">/ Monat</span>
+                </div>
+                <ul class="pricing-features">
+                    <li><span class="check">&#x2713;</span> 1 Benutzer</li>
+                    <li><span class="check">&#x2713;</span> Kompletter Workflow</li>
+                    <li><span class="check">&#x2713;</span> 50 Rechnungen / Monat</li>
+                    <li><span class="check">&#x2713;</span> DATEV-Export</li>
+                    <li><span class="check">&#x2713;</span> E-Mail Support</li>
+                    <li><span class="check">&#x2713;</span> KI-Angebots-Assistent</li>
+                </ul>
+                <a href="#waitlist" class="btn btn-outline btn-large pricing-cta">Kostenlos testen</a>
+            </div>
+
+            <!-- Professional -->
+            <div class="pricing-card featured">
+                <div class="pricing-name">Professional</div>
+                <div class="pricing-desc">F&uuml;r Teams &amp; wachsende Betriebe</div>
+                <div class="pricing-price">
+                    <span class="currency">&euro;</span>
+                    <span class="amount">99</span>
+                    <span class="period">/ Monat</span>
+                </div>
+                <ul class="pricing-features">
+                    <li><span class="check">&#x2713;</span> Bis zu 5 Benutzer</li>
+                    <li><span class="check">&#x2713;</span> Alle Starter-Features</li>
+                    <li><span class="check">&#x2713;</span> Unbegrenzte Rechnungen</li>
+                    <li><span class="check">&#x2713;</span> OCR-Scanner</li>
+                    <li><span class="check">&#x2713;</span> Zeiterfassung &amp; Stempeluhr</li>
+                    <li><span class="check">&#x2713;</span> Mahnwesen automatisiert</li>
+                    <li><span class="check">&#x2713;</span> Priorit&auml;ts-Support</li>
+                </ul>
+                <a href="#waitlist" class="btn btn-primary btn-large pricing-cta">Jetzt Platz sichern</a>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="pricing-card">
+                <div class="pricing-name">Enterprise</div>
+                <div class="pricing-desc">F&uuml;r gr&ouml;&szlig;ere Betriebe mit Sonderanforderungen</div>
+                <div class="pricing-price">
+                    <span class="currency">&euro;</span>
+                    <span class="amount">299</span>
+                    <span class="period">/ Monat</span>
+                </div>
+                <ul class="pricing-features">
+                    <li><span class="check">&#x2713;</span> Unbegrenzte Benutzer</li>
+                    <li><span class="check">&#x2713;</span> Alle Professional-Features</li>
+                    <li><span class="check">&#x2713;</span> API-Zugang</li>
+                    <li><span class="check">&#x2713;</span> SSO &amp; Rollen</li>
+                    <li><span class="check">&#x2713;</span> Dedizierter Ansprechpartner</li>
+                    <li><span class="check">&#x2713;</span> Custom Integrationen</li>
+                    <li><span class="check">&#x2713;</span> SLA &amp; On-Premise Option</li>
+                </ul>
+                <a href="#waitlist" class="btn btn-outline btn-large pricing-cta">Kontakt aufnehmen</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA / Waitlist -->
+    <section class="cta-section" id="waitlist">
+        <div class="cta-box fade-in">
+            <h2>Bereit loszulegen?</h2>
+            <p>Sichere dir jetzt deinen Platz in der Beta. Keine Kreditkarte erforderlich.</p>
+            <form class="waitlist-form" id="waitlist-form">
+                <input type="email" placeholder="deine@email.de" required id="waitlist-email" autocomplete="email">
+                <button type="submit" class="btn btn-primary">Platz sichern</button>
+            </form>
+            <div class="waitlist-success" id="waitlist-success">
+                &#x2705; Du bist auf der Warteliste! Wir melden uns bald bei dir.
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px;">
+                Kostenlos. Keine Kreditkarte. Jederzeit k&uuml;ndbar.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="#">Impressum</a>
+            <a href="#">Datenschutz</a>
+            <a href="#">AGB</a>
+            <a href="#">Kontakt</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 HandwerkFlow. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Waitlist form
+        document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('waitlist-email').value.trim();
+            if (!email) return;
+
+            const btn = e.target.querySelector('button');
+            btn.textContent = 'Wird gesendet...';
+            btn.disabled = true;
+
+            try {
+                // Save to Supabase if configured
+                if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY) {
+                    await fetch(`${window.SUPABASE_URL}/rest/v1/waitlist`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': window.SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${window.SUPABASE_ANON_KEY}`
+                        },
+                        body: JSON.stringify({ email, signed_up_at: new Date().toISOString() })
+                    });
+                } else {
+                    // Fallback: save locally
+                    const waitlist = JSON.parse(localStorage.getItem('handwerkflow_waitlist') || '[]');
+                    waitlist.push({ email, date: new Date().toISOString() });
+                    localStorage.setItem('handwerkflow_waitlist', JSON.stringify(waitlist));
+                }
+
+                // Show success
+                document.getElementById('waitlist-success').classList.add('show');
+                e.target.style.display = 'none';
+            } catch (err) {
+                // Fallback: save locally even on API error
+                const waitlist = JSON.parse(localStorage.getItem('handwerkflow_waitlist') || '[]');
+                waitlist.push({ email, date: new Date().toISOString() });
+                localStorage.setItem('handwerkflow_waitlist', JSON.stringify(waitlist));
+
+                document.getElementById('waitlist-success').classList.add('show');
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

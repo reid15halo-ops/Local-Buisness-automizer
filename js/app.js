@@ -14,6 +14,13 @@ const saveStore = () => window.storeService.save();
 const addActivity = (icon, title) => window.storeService.addActivity(icon, title);
 const generateId = (prefix) => window.storeService.generateId(prefix);
 
+// XSS Protection: escape all user-provided strings in templates
+const h = (str) => {
+    if (typeof str !== 'string') return String(str ?? '');
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
+    return str.replace(/[&<>"']/g, c => map[c]);
+};
+
 // Expose render functions for NavigationController
 window.renderAnfragen = renderAnfragen;
 window.renderAngebote = renderAngebote;
@@ -119,21 +126,21 @@ function renderAnfragen() {
     container.innerHTML = anfragen.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${a.kunde.name}</h3>
-                <span class="item-id">${a.id}</span>
+                <h3 class="item-title">${h(a.kunde.name)}</h3>
+                <span class="item-id">${h(a.id)}</span>
             </div>
             <div class="item-meta">
-                <span>📧 ${a.kunde.email || '-'}</span>
-                <span>📞 ${a.kunde.telefon || '-'}</span>
+                <span>📧 ${h(a.kunde.email || '-')}</span>
+                <span>📞 ${h(a.kunde.telefon || '-')}</span>
                 <span>📅 ${formatDate(a.termin)}</span>
             </div>
             <p class="item-description">
-                <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${a.beschreibung}
+                <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${h(a.beschreibung)}
             </p>
             ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
             <div class="item-actions">
                 <span class="status-badge status-neu">● Neu</span>
-                <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${a.id}')">
+                <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${h(a.id)}')">
                     📝 Angebot erstellen
                 </button>
             </div>
@@ -278,12 +285,17 @@ function addPosition(prefill = null) {
             return;
         }
 
-        suggestBox.innerHTML = materials.slice(0, 5).map(m => `
-            <div class="material-suggest-item" data-material='${JSON.stringify(m)}'>
-                <span class="material-suggest-name">${m.bezeichnung}</span>
+        // Store materials in a lookup map to avoid JSON in data attributes
+        const suggestMaterials = {};
+        materials.slice(0, 5).forEach((m, i) => { suggestMaterials[i] = m; });
+        suggestBox._materials = suggestMaterials;
+
+        suggestBox.innerHTML = materials.slice(0, 5).map((m, i) => `
+            <div class="material-suggest-item" data-index="${i}">
+                <span class="material-suggest-name">${h(m.bezeichnung)}</span>
                 <span class="material-suggest-meta">
                     <span class="price">${formatCurrency(m.vkPreis || m.preis)}</span>
-                    <span class="stock">${m.bestand} ${m.einheit}</span>
+                    <span class="stock">${m.bestand} ${h(m.einheit)}</span>
                 </span>
             </div>
         `).join('');
@@ -292,7 +304,8 @@ function addPosition(prefill = null) {
         // Handle selection
         suggestBox.querySelectorAll('.material-suggest-item').forEach(item => {
             item.addEventListener('click', () => {
-                const material = JSON.parse(item.dataset.material);
+                const material = suggestBox._materials[item.dataset.index];
+                if (!material) return;
                 row.querySelector('.pos-beschreibung').value = material.bezeichnung;
                 row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
                 row.querySelector('.pos-einheit').value = material.einheit;
@@ -395,8 +408,8 @@ function renderAngebote() {
     container.innerHTML = angebote.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${a.kunde.name}</h3>
-                <span class="item-id">${a.id}</span>
+                <h3 class="item-title">${h(a.kunde.name)}</h3>
+                <span class="item-id">${h(a.id)}</span>
             </div>
             <div class="item-meta">
                 <span>📋 ${a.positionen.length} Positionen</span>
@@ -406,7 +419,7 @@ function renderAngebote() {
             <p class="item-description">${getLeistungsartLabel(a.leistungsart)}</p>
             <div class="item-actions">
                 <span class="status-badge status-offen">● Wartet auf Annahme</span>
-                <button class="btn btn-success" onclick="acceptAngebot('${a.id}')">
+                <button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
                     ✓ Auftrag erteilen
                 </button>
             </div>
@@ -457,8 +470,8 @@ function renderAuftraege() {
     container.innerHTML = auftraege.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${a.kunde.name}</h3>
-                <span class="item-id">${a.id}</span>
+                <h3 class="item-title">${h(a.kunde.name)}</h3>
+                <span class="item-id">${h(a.id)}</span>
             </div>
             <div class="item-meta">
                 <span>📋 ${getLeistungsartLabel(a.leistungsart)}</span>
@@ -467,7 +480,7 @@ function renderAuftraege() {
             </div>
             <div class="item-actions">
                 <span class="status-badge status-aktiv">● In Bearbeitung</span>
-                <button class="btn btn-success" onclick="openAuftragModal('${a.id}')">
+                <button class="btn btn-success" onclick="openAuftragModal('${h(a.id)}')">
                     ✓ Auftrag abschließen
                 </button>
             </div>
@@ -562,18 +575,18 @@ function renderRechnungen() {
     container.innerHTML = store.rechnungen.map(r => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${r.kunde.name}</h3>
-                <span class="item-id">${r.id}</span>
+                <h3 class="item-title">${h(r.kunde.name)}</h3>
+                <span class="item-id">${h(r.id)}</span>
             </div>
             <div class="item-meta">
                 <span>💰 ${formatCurrency(r.brutto)}</span>
                 <span>📅 ${formatDate(r.createdAt)}</span>
             </div>
             <div class="item-actions">
-                <span class="status-badge status-${r.status}">
+                <span class="status-badge status-${h(r.status)}">
                     ● ${r.status === 'offen' ? 'Offen' : 'Bezahlt'}
                 </span>
-                <button class="btn btn-primary" onclick="showRechnung('${r.id}')">
+                <button class="btn btn-primary" onclick="showRechnung('${h(r.id)}')">
                     📄 Anzeigen
                 </button>
             </div>
@@ -596,7 +609,7 @@ function showRechnung(rechnungId) {
             </div>
             <div class="rechnung-nummer">
                 <h3>Rechnung</h3>
-                <p>${rechnung.id}</p>
+                <p>${h(rechnung.id)}</p>
             </div>
         </div>
 
@@ -613,9 +626,9 @@ function showRechnung(rechnungId) {
             <div>
                 <div class="rechnung-label">Rechnungsempfänger</div>
                 <p>
-                    ${rechnung.kunde.name}<br>
-                    ${rechnung.kunde.email || ''}<br>
-                    ${rechnung.kunde.telefon || ''}
+                    ${h(rechnung.kunde.name)}<br>
+                    ${h(rechnung.kunde.email || '')}<br>
+                    ${h(rechnung.kunde.telefon || '')}
                 </p>
             </div>
         </div>
@@ -639,8 +652,8 @@ function showRechnung(rechnungId) {
                 ${(rechnung.positionen || []).map((p, i) => `
                     <tr>
                         <td>${i + 1}</td>
-                        <td>${p.beschreibung}</td>
-                        <td>${p.menge} ${p.einheit}</td>
+                        <td>${h(p.beschreibung)}</td>
+                        <td>${p.menge} ${h(p.einheit)}</td>
                         <td class="text-right">${formatCurrency(p.preis)}</td>
                         <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
                     </tr>
@@ -811,7 +824,7 @@ function renderMaterial() {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
                         <span class="material-sku">${m.artikelnummer}</span>
                     </div>
                     <span class="material-kategorie">${m.kategorie}</span>
@@ -887,7 +900,7 @@ function renderMaterialList(materials) {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
                         <span class="material-sku">${m.artikelnummer}</span>
                     </div>
                     <span class="material-kategorie">${m.kategorie}</span>
@@ -988,6 +1001,50 @@ function updateSettingsStatus() {
         webhookStatus.textContent = webhookUrl ? '● Konfiguriert' : '● Nicht konfiguriert';
         webhookStatus.className = 'status-indicator' + (webhookUrl ? ' connected' : '');
     }
+
+    // Supabase status
+    const supabaseStatus = document.getElementById('supabase-status');
+    if (supabaseStatus) {
+        const configured = window.supabaseConfig?.isConfigured();
+        supabaseStatus.textContent = configured ? '● Konfiguriert' : '● Nicht konfiguriert';
+        supabaseStatus.className = 'status-indicator' + (configured ? ' connected' : '');
+    }
+
+    // Stripe status
+    const stripeStatus = document.getElementById('stripe-status');
+    if (stripeStatus) {
+        const configured = window.stripeService?.isConfigured();
+        stripeStatus.textContent = configured ? '● Konfiguriert' : '● Nicht konfiguriert';
+        stripeStatus.className = 'status-indicator' + (configured ? ' connected' : '');
+    }
+
+    // Load saved values into inputs
+    const supabaseUrlInput = document.getElementById('supabase-url');
+    const supabaseKeyInput = document.getElementById('supabase-anon-key');
+    const stripeKeyInput = document.getElementById('stripe-key');
+
+    if (supabaseUrlInput) supabaseUrlInput.value = localStorage.getItem('supabase_url') || '';
+    if (supabaseKeyInput) supabaseKeyInput.value = localStorage.getItem('supabase_anon_key') || '';
+    if (stripeKeyInput) stripeKeyInput.value = localStorage.getItem('stripe_publishable_key') || '';
+}
+
+function initCloudSettings() {
+    // Save Supabase
+    document.getElementById('btn-save-supabase')?.addEventListener('click', () => {
+        const url = document.getElementById('supabase-url').value.trim();
+        const key = document.getElementById('supabase-anon-key').value.trim();
+        window.supabaseConfig?.update(url, key);
+        updateSettingsStatus();
+        showToast('☁️ Supabase konfiguriert!', 'success');
+    });
+
+    // Save Stripe
+    document.getElementById('btn-save-stripe')?.addEventListener('click', () => {
+        const key = document.getElementById('stripe-key').value.trim();
+        window.stripeService?.saveConfig(key);
+        updateSettingsStatus();
+        showToast('💳 Stripe konfiguriert!', 'success');
+    });
 }
 
 // ============================================
@@ -1334,9 +1391,14 @@ async function init() {
     initRechnungActions();
     initMaterial();
     initSettings();
+    initCloudSettings();
     initMahnwesen();
     initBuchhaltung();
     initQuickActions();
+
+    // Initialize Supabase & Stripe if configured
+    window.supabaseConfig?.init();
+    window.stripeService?.init();
 
     updateDashboard();
 }

@@ -17,6 +17,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- SheetJS for Excel import -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/" async></script>
 </head>
 
 <body>
@@ -425,6 +429,32 @@
                         </div>
                         <button class="btn btn-primary" id="btn-save-webhook">Speichern</button>
                         <span class="status-indicator" id="webhook-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>☁️ Supabase (Cloud-Backend)</h3>
+                        <p>Für Login, Cloud-Sync und Team-Nutzung</p>
+                        <div class="form-group">
+                            <label for="supabase-url">Project URL</label>
+                            <input type="url" id="supabase-url" placeholder="https://xyz.supabase.co">
+                        </div>
+                        <div class="form-group">
+                            <label for="supabase-anon-key">Anon Key</label>
+                            <input type="password" id="supabase-anon-key" placeholder="eyJ...">
+                            <small>Aus Supabase Dashboard: Settings &gt; API</small>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-supabase">Speichern</button>
+                        <span class="status-indicator" id="supabase-status">● Nicht konfiguriert</span>
+                    </div>
+                    <div class="settings-card">
+                        <h3>💳 Stripe (Zahlungen)</h3>
+                        <p>Für SaaS-Abonnements</p>
+                        <div class="form-group">
+                            <label for="stripe-key">Publishable Key</label>
+                            <input type="password" id="stripe-key" placeholder="pk_live_...">
+                            <small>Aus <a href="https://dashboard.stripe.com/apikeys" target="_blank">Stripe Dashboard</a></small>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-stripe">Speichern</button>
+                        <span class="status-indicator" id="stripe-status">● Nicht konfiguriert</span>
                     </div>
                     <div class="settings-card">
                         <h3>🗑️ Daten</h3>
@@ -1403,6 +1433,13 @@
         </div>
     </div>
 
+    <!-- Core Infrastructure (load first) -->
+    <script src="js/services/sanitize-service.js"></script>
+    <script src="js/services/supabase-config.js"></script>
+    <script src="js/services/auth-service.js"></script>
+    <script src="js/services/supabase-db-service.js"></script>
+    <script src="js/services/stripe-service.js"></script>
+    <!-- Business Services -->
     <script src="js/services/gemini-service.js"></script>
     <script src="js/services/material-service.js"></script>
     <script src="js/services/dunning-service.js"></script>
