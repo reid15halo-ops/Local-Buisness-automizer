@@ -115,6 +115,113 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // New Workflow Button
+    document.getElementById('btn-new-workflow')?.addEventListener('click', openNewWorkflowModal);
+
+    function openNewWorkflowModal() {
+        if (!window.workflowService) return;
+
+        const triggers = window.workflowService.triggerTypes;
+        const actions = window.workflowService.actionTypes;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.id = 'modal-new-workflow';
+        modal.innerHTML = `
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>⚡ Neuer Workflow</h2>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <form id="form-new-workflow" style="padding:0 24px 24px;">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="wf-name" required placeholder="z.B. Zahlungserinnerung automatisch" style="width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:14px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Beschreibung</label>
+                        <input type="text" id="wf-desc" placeholder="Kurze Beschreibung..." style="width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:14px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Trigger (Auslöser)</label>
+                        <select id="wf-trigger" style="width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:14px;">
+                            ${Object.entries(triggers).map(([key, t]) => `<option value="${key}">${t.icon} ${t.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Aktion</label>
+                        <select id="wf-action" style="width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:14px;">
+                            ${Object.entries(actions).map(([key, a]) => `<option value="${key}">${a.icon} ${a.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div id="wf-action-params" style="margin-top:12px;"></div>
+                    <div class="form-actions" style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button type="button" class="btn btn-secondary" id="wf-cancel">Abbrechen</button>
+                        <button type="submit" class="btn btn-primary">Workflow erstellen</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Update action params on action change
+        const actionSelect = modal.querySelector('#wf-action');
+        actionSelect.addEventListener('change', () => {
+            const actionKey = actionSelect.value;
+            const actionDef = actions[actionKey];
+            const paramsDiv = modal.querySelector('#wf-action-params');
+
+            if (actionDef.params.length === 0) {
+                paramsDiv.innerHTML = '';
+                return;
+            }
+
+            paramsDiv.innerHTML = actionDef.params.map(p => `
+                <div class="form-group" style="margin-bottom:8px;">
+                    <label style="font-size:13px;text-transform:capitalize;">${p}</label>
+                    <input type="text" name="ap-${p}" placeholder="${p}" style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:13px;">
+                </div>
+            `).join('');
+        });
+        actionSelect.dispatchEvent(new Event('change'));
+
+        // Close handlers
+        const closeModal = () => modal.remove();
+        modal.querySelector('.modal-overlay').addEventListener('click', closeModal);
+        modal.querySelector('.modal-close').addEventListener('click', closeModal);
+        modal.querySelector('#wf-cancel').addEventListener('click', closeModal);
+
+        // Submit
+        modal.querySelector('#form-new-workflow').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = modal.querySelector('#wf-name').value.trim();
+            const description = modal.querySelector('#wf-desc').value.trim();
+            const triggerType = modal.querySelector('#wf-trigger').value;
+            const actionType = modal.querySelector('#wf-action').value;
+
+            // Collect action params
+            const actionParams = {};
+            modal.querySelectorAll('#wf-action-params input').forEach(input => {
+                const paramName = input.name.replace('ap-', '');
+                if (input.value.trim()) actionParams[paramName] = input.value.trim();
+            });
+
+            const result = window.workflowService.createWorkflow({
+                name,
+                description,
+                trigger: { type: triggerType, params: {} },
+                actions: [{ type: actionType, params: actionParams }]
+            });
+
+            if (result.success) {
+                showNotification('Workflow "' + name + '" erstellt!', 'success');
+                closeModal();
+                initWorkflowsView();
+            }
+        });
+    }
+
     function renderWorkflowLog() {
         if (!window.workflowService) return;
         const container = document.getElementById('workflow-log');

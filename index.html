@@ -781,6 +781,9 @@
                         <button class="btn btn-primary" id="btn-generate-report">Bericht erstellen</button>
                     </div>
                 </div>
+                <div class="report-chart-container" id="report-chart-container" style="display:none;">
+                    <canvas id="report-chart" height="280"></canvas>
+                </div>
                 <div class="report-output" id="report-output">
                     <p class="empty-state">Wähle einen Berichtstyp und klicke "Bericht erstellen"</p>
                 </div>
@@ -1479,6 +1482,7 @@
     <script src="js/services/theme-manager.js"></script>
 
     <!-- App Integration -->
+    <script src="js/services/pdf-service.js"></script>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/app.js"></script>

@@ -507,57 +507,320 @@ function initReports() {
     });
 }
 
-function generateReport() {
+let currentReport = null;
+let reportChart = null;
+
+async function ensureChartJS() {
+    if (window.Chart) return;
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Chart.js konnte nicht geladen werden'));
+        document.head.appendChild(script);
+    });
+}
+
+async function generateReport() {
     const startDate = document.getElementById('report-start-date')?.value;
     const endDate = document.getElementById('report-end-date')?.value;
     const output = document.getElementById('report-output');
+    const chartContainer = document.getElementById('report-chart-container');
 
-    if (!output || !window.reportService) return;
+    if (!output) return;
 
+    // Use store data directly if reportService isn't available
     let report;
-    switch (selectedReportType) {
-        case 'sales':
-            report = window.reportService.generateSalesReport(startDate, endDate);
-            break;
-        case 'customer':
-            report = window.reportService.generateCustomerReport(startDate, endDate);
-            break;
-        case 'time':
-            report = window.reportService.generateTimeReport(startDate, endDate);
-            break;
-        case 'tasks':
-            report = window.reportService.generateTaskReport(startDate, endDate);
-            break;
-        case 'bookkeeping':
-            report = window.reportService.generateBookkeepingReport(new Date().getFullYear());
-            break;
+    if (window.reportService) {
+        switch (selectedReportType) {
+            case 'sales':
+                report = window.reportService.generateSalesReport(startDate, endDate);
+                break;
+            case 'customer':
+                report = window.reportService.generateCustomerReport(startDate, endDate);
+                break;
+            case 'time':
+                report = window.reportService.generateTimeReport(startDate, endDate);
+                break;
+            case 'tasks':
+                report = window.reportService.generateTaskReport(startDate, endDate);
+                break;
+            case 'bookkeeping':
+                report = window.reportService.generateBookkeepingReport(new Date().getFullYear());
+                break;
+        }
+    }
+
+    // Fallback: generate from store data directly
+    if (!report && window.storeService) {
+        const store = window.storeService.state;
+        if (selectedReportType === 'sales') {
+            const rechnungen = (store.rechnungen || []).filter(r => {
+                const d = (r.createdAt || r.datum || '').split('T')[0];
+                return d >= (startDate || '') && d <= (endDate || '9999');
+            });
+            const totalBrutto = rechnungen.reduce((s, r) => s + (r.brutto || 0), 0);
+            const paid = rechnungen.filter(r => r.status === 'bezahlt');
+            const open = rechnungen.filter(r => r.status === 'offen');
+
+            const byMonth = {};
+            rechnungen.forEach(r => {
+                const m = (r.createdAt || r.datum || '').substring(0, 7);
+                if (!byMonth[m]) byMonth[m] = { count: 0, sum: 0 };
+                byMonth[m].count++;
+                byMonth[m].sum += r.brutto || 0;
+            });
+
+            report = {
+                type: 'sales', title: 'Umsatzbericht',
+                period: { start: startDate, end: endDate },
+                summary: {
+                    'Rechnungen': rechnungen.length,
+                    'Umsatz (Brutto)': totalBrutto,
+                    'Bezahlt': paid.reduce((s, r) => s + (r.brutto || 0), 0),
+                    'Offen': open.reduce((s, r) => s + (r.brutto || 0), 0)
+                },
+                byMonth: Object.entries(byMonth).map(([month, d]) => ({ month, count: d.count, sum: d.sum })).sort((a, b) => a.month.localeCompare(b.month)),
+                details: rechnungen
+            };
+        }
     }
 
     if (!report) {
         output.innerHTML = '<p class="empty-state">Bericht konnte nicht erstellt werden</p>';
+        if (chartContainer) chartContainer.style.display = 'none';
         return;
     }
 
-    // Render report
+    currentReport = report;
+
+    // Render summary cards
+    const summaryLabels = {
+        anzahlRechnungen: 'Rechnungen', gesamtBrutto: 'Umsatz (Brutto)', gesamtNetto: 'Umsatz (Netto)',
+        bezahlt: 'Bezahlt', offen: 'Offen', anzahlBezahlt: 'Bezahlt (Anz.)', anzahlOffen: 'Offen (Anz.)',
+        totalCustomers: 'Kunden gesamt', activeCustomers: 'Aktive Kunden', newCustomers: 'Neukunden',
+        totalEntries: 'Einträge', totalHours: 'Stunden gesamt', billableHours: 'Abrechenbar',
+        nonBillableHours: 'Nicht abrechenbar', avgHoursPerDay: 'Ø Std./Tag',
+        totalTasks: 'Aufgaben', completed: 'Erledigt', open: 'Offen', overdue: 'Überfällig', completionRate: 'Abschlussrate',
+        einnahmen: 'Einnahmen', ausgaben: 'Ausgaben', gewinn: 'Gewinn', mwstZahllast: 'USt-Zahllast',
+        'Rechnungen': 'Rechnungen', 'Umsatz (Brutto)': 'Umsatz (Brutto)', 'Bezahlt': 'Bezahlt', 'Offen': 'Offen'
+    };
+
+    const currencyKeys = ['gesamtBrutto', 'gesamtNetto', 'bezahlt', 'offen', 'einnahmen', 'ausgaben', 'gewinn', 'mwstZahllast', 'Umsatz (Brutto)', 'Bezahlt', 'Offen'];
+
     let html = `<h3>${report.title}</h3>`;
-    html += `<p style="color: var(--text-muted); margin-bottom: 24px;">Zeitraum: ${report.period?.start || report.year} - ${report.period?.end || ''}</p>`;
+    html += `<p style="color:var(--text-muted);margin-bottom:20px;">Zeitraum: ${report.period?.start || report.year || ''} – ${report.period?.end || ''}</p>`;
 
     html += '<div class="report-summary">';
     for (const [key, value] of Object.entries(report.summary || {})) {
-        const displayValue = typeof value === 'number' && key.includes('umsatz') || key.includes('einnahmen') || key.includes('ausgaben') || key.includes('gewinn')
-            ? formatCurrency(value)
-            : value;
-        html += `<div class="report-stat"><div class="report-stat-value">${displayValue}</div><div class="report-stat-label">${key}</div></div>`;
+        const label = summaryLabels[key] || key;
+        const isPercent = key === 'completionRate';
+        const isCurrency = currencyKeys.includes(key);
+        const displayValue = isCurrency ? formatCurrency(value) : isPercent ? `${value}%` : value;
+        html += `<div class="report-stat"><div class="report-stat-value">${displayValue}</div><div class="report-stat-label">${label}</div></div>`;
     }
     html += '</div>';
 
-    html += `<button class="btn btn-secondary" onclick="exportReportCSV()">📥 Als CSV exportieren</button>`;
+    // Top customers table for customer report
+    if (report.topCustomers?.length > 0) {
+        html += '<h4 style="margin-top:20px;">Top-Kunden nach Umsatz</h4>';
+        html += '<table class="report-table"><thead><tr><th>Kunde</th><th>Rechnungen</th><th class="text-right">Umsatz</th></tr></thead><tbody>';
+        report.topCustomers.forEach(c => {
+            html += `<tr><td>${c.name}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
+        });
+        html += '</tbody></table>';
+    }
+
+    html += '<div style="margin-top:20px;display:flex;gap:12px;">';
+    html += '<button class="btn btn-secondary" onclick="exportReportCSV()">CSV exportieren</button>';
+    html += '</div>';
 
     output.innerHTML = html;
+
+    // Draw chart
+    try {
+        await ensureChartJS();
+        renderReportChart(report);
+    } catch (e) {
+        console.warn('Chart.js not available:', e);
+        if (chartContainer) chartContainer.style.display = 'none';
+    }
+}
+
+function renderReportChart(report) {
+    const chartContainer = document.getElementById('report-chart-container');
+    const ctx = document.getElementById('report-chart');
+    if (!chartContainer || !ctx || !window.Chart) return;
+
+    // Destroy previous chart
+    if (reportChart) { reportChart.destroy(); reportChart = null; }
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        getComputedStyle(document.body).getPropertyValue('--bg-primary').includes('1a');
+    const textColor = isDark ? '#ccc' : '#555';
+    const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+
+    let config = null;
+
+    if (report.type === 'sales' && report.byMonth?.length > 0) {
+        config = {
+            type: 'bar',
+            data: {
+                labels: report.byMonth.map(m => m.month),
+                datasets: [{
+                    label: 'Umsatz (Brutto)',
+                    data: report.byMonth.map(m => m.sum),
+                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                    borderColor: 'rgb(99, 102, 241)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }, {
+                    label: 'Anzahl Rechnungen',
+                    data: report.byMonth.map(m => m.count),
+                    type: 'line',
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: textColor } } },
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { ticks: { color: textColor, callback: v => '€' + v.toLocaleString('de-DE') }, grid: { color: gridColor } },
+                    y1: { position: 'right', ticks: { color: textColor }, grid: { display: false } }
+                }
+            }
+        };
+    } else if (report.type === 'customer' && report.topCustomers?.length > 0) {
+        config = {
+            type: 'doughnut',
+            data: {
+                labels: report.topCustomers.map(c => c.name),
+                datasets: [{
+                    data: report.topCustomers.map(c => c.revenue),
+                    backgroundColor: ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#64748b']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'right', labels: { color: textColor } } }
+            }
+        };
+    } else if (report.type === 'time' && report.byDay?.length > 0) {
+        config = {
+            type: 'bar',
+            data: {
+                labels: report.byDay.map(d => d.date),
+                datasets: [{
+                    label: 'Stunden',
+                    data: report.byDay.map(d => d.hours),
+                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                    borderColor: 'rgb(34, 197, 94)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: textColor } } },
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { ticks: { color: textColor, callback: v => v + 'h' }, grid: { color: gridColor } }
+                }
+            }
+        };
+    } else if (report.type === 'tasks' && report.byPriority) {
+        config = {
+            type: 'doughnut',
+            data: {
+                labels: ['Dringend', 'Hoch', 'Normal', 'Niedrig'],
+                datasets: [{
+                    data: [report.byPriority.urgent || 0, report.byPriority.high || 0, report.byPriority.normal || 0, report.byPriority.low || 0],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#6366f1', '#64748b']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'right', labels: { color: textColor } } }
+            }
+        };
+    } else if (report.type === 'bookkeeping' && report.summary) {
+        const s = report.summary;
+        config = {
+            type: 'bar',
+            data: {
+                labels: ['Einnahmen', 'Ausgaben', 'Gewinn'],
+                datasets: [{
+                    label: 'Betrag (€)',
+                    data: [s.einnahmen || 0, s.ausgaben || 0, s.gewinn || 0],
+                    backgroundColor: ['rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)', 'rgba(99, 102, 241, 0.7)'],
+                    borderColor: ['rgb(34, 197, 94)', 'rgb(239, 68, 68)', 'rgb(99, 102, 241)'],
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { ticks: { color: textColor, callback: v => '€' + v.toLocaleString('de-DE') }, grid: { color: gridColor } }
+                }
+            }
+        };
+    }
+
+    if (config) {
+        chartContainer.style.display = 'block';
+        reportChart = new window.Chart(ctx, config);
+    } else {
+        chartContainer.style.display = 'none';
+    }
 }
 
 function exportReportCSV() {
-    showToast('CSV Export (Demo)', 'info');
+    if (!currentReport) {
+        showToast('Bitte erst einen Bericht erstellen', 'warning');
+        return;
+    }
+
+    let csv = '';
+    if (window.reportService) {
+        csv = window.reportService.exportToCSV(currentReport);
+    }
+
+    // Fallback CSV generation
+    if (!csv && currentReport.details) {
+        if (currentReport.type === 'sales') {
+            csv = 'Nr;Datum;Kunde;Netto;Brutto;Status\n';
+            currentReport.details.forEach(r => {
+                csv += `${r.id};${r.createdAt || r.datum || ''};${r.kunde?.name || ''};${r.netto || 0};${r.brutto || 0};${r.status}\n`;
+            });
+        }
+    }
+
+    if (!csv) {
+        // Generic summary export
+        csv = 'Kennzahl;Wert\n';
+        for (const [k, v] of Object.entries(currentReport.summary || {})) {
+            csv += `${k};${v}\n`;
+        }
+    }
+
+    const BOM = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentReport.title || 'Bericht'}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showToast('CSV exportiert!', 'success');
 }
 
 // ============================================

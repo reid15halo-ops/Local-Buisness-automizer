@@ -428,6 +428,9 @@ function renderAngebote() {
             <p class="item-description">${getLeistungsartLabel(a.leistungsart)}</p>
             <div class="item-actions">
                 <span class="status-badge status-offen">● Wartet auf Annahme</span>
+                <button class="btn btn-secondary btn-small" onclick="exportAngebotPDF('${h(a.id)}')">
+                    PDF
+                </button>
                 <button class="btn btn-success" onclick="acceptAngebot('${a.id}')">
                     ✓ Auftrag erteilen
                 </button>
@@ -1129,37 +1132,19 @@ function showRechnung(rechnungId) {
 }
 
 function initRechnungActions() {
-    document.getElementById('btn-pdf-export').addEventListener('click', () => {
-        // Simple print-based PDF export
-        const preview = document.getElementById('rechnung-preview').innerHTML;
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Rechnung</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; }
-                    table { width: 100%; border-collapse: collapse; }
-                    th, td { padding: 10px; text-align: left; }
-                    th { background: #f0f0f0; }
-                    td { border-bottom: 1px solid #ddd; }
-                    .text-right { text-align: right; }
-                    .total-row { font-weight: bold; border-top: 2px solid #000; }
-                    .rechnung-header { display: flex; justify-content: space-between; margin-bottom: 40px; }
-                    .rechnung-adressen { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
-                    .rechnung-label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; }
-                    .rechnung-totals { display: flex; justify-content: flex-end; margin-top: 20px; }
-                    .rechnung-totals table { width: 280px; }
-                    .rechnung-section-header td { font-weight: 600; padding-top: 16px; border-bottom: 2px solid #999; }
-                    .rechnung-stueckliste { margin-top: 16px; padding: 12px 16px; background: #f8f8f8; border-radius: 8px; font-size: 13px; }
-                </style>
-            </head>
-            <body>${preview}</body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
+    document.getElementById('btn-pdf-export').addEventListener('click', async () => {
+        if (!store.currentRechnungId) return;
+        const rechnung = store.rechnungen.find(r => r.id === store.currentRechnungId);
+        if (!rechnung) return;
+
+        try {
+            showToast('PDF wird erstellt...', 'info');
+            await window.pdfService.generateRechnung(rechnung);
+            showToast(`Rechnung ${rechnung.id} als PDF gespeichert`, 'success');
+        } catch (err) {
+            console.error('PDF generation error:', err);
+            showToast('PDF-Erstellung fehlgeschlagen: ' + err.message, 'error');
+        }
     });
 
     document.getElementById('btn-mark-paid').addEventListener('click', () => {
@@ -1607,24 +1592,16 @@ function initMahnwesen() {
         }
     });
 
-    // Print Mahnung
-    document.getElementById('btn-print-mahnung')?.addEventListener('click', () => {
-        const text = document.getElementById('mahnung-preview').textContent;
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Mahnung</title>
-                <style>
-                    body { font-family: Arial, sans-serif; padding: 40px; white-space: pre-wrap; line-height: 1.6; }
-                </style>
-            </head>
-            <body>${text}</body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
+    // PDF Mahnung
+    document.getElementById('btn-print-mahnung')?.addEventListener('click', async () => {
+        const rechnungId = store.currentMahnungRechnungId;
+        const stufe = store.currentMahnungStufe;
+        const rechnung = store.rechnungen.find(r => r.id === rechnungId);
+        if (!rechnung) return;
+
+        const level = stufe?.level || 1;
+        const fee = stufe?.gebuehr || 0;
+        await exportMahnungPDF(rechnungId, level, fee);
     });
 }
 
@@ -2522,6 +2499,35 @@ function initAutomations() {
 }
 
 // Make functions globally available
+// ============================================
+// PDF Export Functions
+// ============================================
+async function exportAngebotPDF(angebotId) {
+    const angebot = store.angebote.find(a => a.id === angebotId);
+    if (!angebot) return;
+    try {
+        showToast('PDF wird erstellt...', 'info');
+        await window.pdfService.generateAngebot(angebot);
+        showToast(`Angebot ${angebot.id} als PDF gespeichert`, 'success');
+    } catch (err) {
+        console.error('PDF error:', err);
+        showToast('PDF-Erstellung fehlgeschlagen: ' + err.message, 'error');
+    }
+}
+
+async function exportMahnungPDF(rechnungId, level, fee) {
+    const rechnung = store.rechnungen.find(r => r.id === rechnungId);
+    if (!rechnung) return;
+    try {
+        showToast('Mahnung-PDF wird erstellt...', 'info');
+        await window.pdfService.generateMahnung(rechnung, level, fee);
+        showToast('Mahnung als PDF gespeichert', 'success');
+    } catch (err) {
+        console.error('PDF error:', err);
+        showToast('PDF-Erstellung fehlgeschlagen: ' + err.message, 'error');
+    }
+}
+
 window.createAngebotFromAnfrage = createAngebotFromAnfrage;
 window.acceptAngebot = acceptAngebot;
 window.openAuftragModal = openAuftragModal;
@@ -2534,6 +2540,8 @@ window.addPosition = addPosition;
 window.matchPaymentsToInvoices = matchPaymentsToInvoices;
 window.updateFollowUpBadge = updateFollowUpBadge;
 window.updateLowStockBadge = updateLowStockBadge;
+window.exportAngebotPDF = exportAngebotPDF;
+window.exportMahnungPDF = exportMahnungPDF;
 
 // Start app
 document.addEventListener('DOMContentLoaded', async () => {
