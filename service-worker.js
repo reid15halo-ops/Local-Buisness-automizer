@@ -3,13 +3,14 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'mhs-workflow-v2';
+const CACHE_NAME = 'mhs-workflow-v3';
 const OFFLINE_URL = 'offline.html';
 
 // Files to cache for offline use
 const STATIC_ASSETS = [
     '/',
     '/index.html',
+    '/offline.html',
     '/css/styles.css',
     '/js/app.js',
     '/js/features-integration.js',
@@ -119,7 +120,7 @@ self.addEventListener('fetch', (event) => {
                     .catch(() => {
                         // Network failed, return offline page for navigation requests
                         if (request.mode === 'navigate') {
-                            return caches.match('/index.html');
+                            return caches.match(OFFLINE_URL) || caches.match('/index.html');
                         }
                         return new Response('Offline', { status: 503 });
                     });

@@ -313,6 +313,9 @@ window.UI = {
     }
 };
 
+// HTML escape shorthand used throughout app.js for XSS prevention
+window.h = window.UI.sanitize;
+
 // Backwards compatibility for app.js calls
 window.formatCurrency = window.UI.formatCurrency;
 window.formatDate = window.UI.formatDate;
