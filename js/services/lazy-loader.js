@@ -10,15 +10,10 @@ class LazyLoader {
 
         // Service groups - load on demand
         this.serviceGroups = {
-            // Core - always loaded
-            core: [
-                'error-handler',
-                'db-service',
-                'demo-data-service',
-                'store-service',
-                'ui-helpers',
-                'navigation'
-            ],
+            // Core - loaded via <script> tags in index.html (not lazy-loaded)
+            // error-handler, db-service, demo-data-service, store-service,
+            // ui-helpers (js/ui/), navigation (js/ui/) are all eagerly loaded
+            core: [],
 
             // Basic workflow - load on dashboard/init
             workflow: [

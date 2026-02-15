@@ -314,271 +314,263 @@ class ChatbotService {
 
                 return `⚙️ **Hydraulikschlauch-Service**${spec}\n\n**Wir fertigen vor Ort:**\n• Durchmesser: DN6 bis DN51\n• Druckstufen: 1SN (225 bar) bis 4SH (500 bar)\n• Anschlüsse: ${kb.hydraulik.anschluesse.slice(0, 5).join(', ')} u.v.m.\n\n**Preise:**\nBsp: DN10, 1m, 2SN → ca. 35€\nBsp: DN16, 2m, 2SN → ca. 55€\nBsp: DN25, 3m, 4SP → ca. 120€\n\n**Ablauf:**\n1. Alten Schlauch bringen/vermessen\n2. Passende Armatur wählen\n3. Pressen (ca. 15 Min.)\n4. Prüfung + Dokumentation\n\n📞 **Notfall?** Mobiler Service: ${kb.company.phone}` + this.getSubtleMarketing('hydraulik');
             }
-            return `⚙️ **Hydraulikschlauch-Service**\n\n**Wir fertigen vor Ort:**\n• Durchmesser: DN6 bis DN51\n• Druckstufen: 1SN (225 bar) bis 4SH (500 bar)\n• Anschlüsse: ${kb.hydraulik.anschluesse.slice(0, 5).join(', ')} u.v.m.\n\n**Preise:**\nBsp: DN10, 1m, 2SN → ca. 35€\nBsp: DN16, 2m, 2SN → ca. 55€\nBsp: DN25, 3m, 4SP → ca. 120€\n\n**Ablauf:**\n1. Alten Schlauch bringen/vermessen\n2. Passende Armatur wählen\n3. Pressen (ca. 15 Min.)\n4. Prüfung + Dokumentation\n\n📞 **Notfall?** Mobiler Service: ${kb.company.phone}` + this.getSubtleMarketing('hydraulik');
-        }
-        if (lowerMsg.match(/zylinder|undicht|kolben|dichtung/)) {
-            const rp = kb.pricing.hydraulik.zylinderReparatur;
-            return `⚙️ **Zylinder-Reparatur**\n\n**Häufige Probleme:**\n• Kolbenstange undicht → Dichtungssatz\n• Innere Leckage → Kolbendichtungen\n• Stange beschädigt → Hartverchromung\n\n**Preise:** ${rp.min}-${rp.max}€ (${rp.note})\n\n**Wir reparieren alle Hersteller:**\nBosch Rexroth, Parker, HKS, Liebherr...\n\n**Ablauf:**\n1. Zylinder anliefern/Abholung\n2. Befundung + Kostenvoranschlag\n3. Reparatur nach Freigabe\n4. Prüfung + Garantie\n\n💡 Haben Sie Typenschild-Daten?` + this.getSubtleMarketing('hydraulik');
-        }
-        if (lowerMsg.match(/problem|defekt|geräusch|langsam|heiß|tropf/)) {
-            let response = `⚙️ **Hydraulik-Diagnose**\n\n`;
-            for (const [problem, loesung] of Object.entries(kb.hydraulik.probleme)) {
-                if (lowerMsg.includes(problem.toLowerCase()) ||
-                    (problem === 'Leckage' && lowerMsg.match(/leck|tropf|undicht/)) ||
-                    (problem === 'Überhitzung' && lowerMsg.match(/heiß|warm/))) {
-                    response += `**${problem}:**\n${loesung}\n\n`;
+            if (lowerMsg.match(/zylinder|undicht|kolben|dichtung/)) {
+                const rp = kb.pricing.hydraulik.zylinderReparatur;
+                return `⚙️ **Zylinder-Reparatur**\n\n**Häufige Probleme:**\n• Kolbenstange undicht → Dichtungssatz\n• Innere Leckage → Kolbendichtungen\n• Stange beschädigt → Hartverchromung\n\n**Preise:** ${rp.min}-${rp.max}€ (${rp.note})\n\n**Wir reparieren alle Hersteller:**\nBosch Rexroth, Parker, HKS, Liebherr...\n\n**Ablauf:**\n1. Zylinder anliefern/Abholung\n2. Befundung + Kostenvoranschlag\n3. Reparatur nach Freigabe\n4. Prüfung + Garantie\n\n💡 Haben Sie Typenschild-Daten?` + this.getSubtleMarketing('hydraulik');
+            }
+            if (lowerMsg.match(/problem|defekt|geräusch|langsam|heiß|tropf/)) {
+                let response = `⚙️ **Hydraulik-Diagnose**\n\n`;
+                for (const [problem, loesung] of Object.entries(kb.hydraulik.probleme)) {
+                    if (lowerMsg.includes(problem.toLowerCase()) ||
+                        (problem === 'Leckage' && lowerMsg.match(/leck|tropf|undicht/)) ||
+                        (problem === 'Überhitzung' && lowerMsg.match(/heiß|warm/))) {
+                        response += `**${problem}:**\n${loesung}\n\n`;
+                    }
                 }
+                if (response === `⚙️ **Hydraulik-Diagnose**\n\n`) {
+                    response += `Beschreiben Sie das Problem genauer:\n• Leckage/Tropfen?\n• Kraftverlust/langsam?\n• Ungewöhnliche Geräusche?\n• Überhitzung?\n\nOder rufen Sie an: ${kb.company.phone}`;
+                }
+                return response;
             }
-            if (response === `⚙️ **Hydraulik-Diagnose**\n\n`) {
-                response += `Beschreiben Sie das Problem genauer:\n• Leckage/Tropfen?\n• Kraftverlust/langsam?\n• Ungewöhnliche Geräusche?\n• Überhitzung?\n\nOder rufen Sie an: ${kb.company.phone}`;
-            }
-            return response;
+            return `⚙️ **Hydraulik-Komplett-Service**\n\n**Schlauchservice:**\n• Mobile Fertigung vor Ort\n• DN6-DN51, bis 500 bar\n• Alle Anschlussarten\n\n**Reparatur:**\n• Zylinder überholen\n• Pumpen, Motoren\n• Ventile, Steuerungen\n\n**Wartung:**\n• Ölwechsel + Filter\n• Systemcheck\n• Lecksuche\n\n**Marken:** Bosch, Parker, Bucher, HKS...\n\n📞 **Notdienst 24/7:** ${kb.company.phone}\n\nWas liegt bei Ihnen an?`;
         }
-        return `⚙️ **Hydraulik-Komplett-Service**\n\n**Schlauchservice:**\n• Mobile Fertigung vor Ort\n• DN6-DN51, bis 500 bar\n• Alle Anschlussarten\n\n**Reparatur:**\n• Zylinder überholen\n• Pumpen, Motoren\n• Ventile, Steuerungen\n\n**Wartung:**\n• Ölwechsel + Filter\n• Systemcheck\n• Lecksuche\n\n**Marken:** Bosch, Parker, Bucher, HKS...\n\n📞 **Notdienst 24/7:** ${kb.company.phone}\n\nWas liegt bei Ihnen an?`;
-    }
 
-    // === ROHRLEITUNGSBAU ===
-    if(lowerMsg.match(/rohr|leitung|pipeline|trasse|verrohrung|medium|medien/)) {
-    return `🔧 **Rohrleitungsbau-Expertise**\n\n**Verfahren:**\n• **Verschraubung:** Ermeto/Schneidring (Hydraulik/Hochdruck)\n• **Presssysteme:** Mapress/Viega (Wasser, Luft, Trennmittel)\n• **Schweißen:** WIG/Orbitalschweißen (Prozessleitungen)\n\n**Medien:**\n• Druckluft, Wasser, Kühlwasser\n• Öl, Schmierstoffe, Emulsionen\n• Trennmittel-Versorgung\n\n**Materialien:**\n• Edelstahl (V2A/V4A) - korrosionsfrei\n• C-Stahl verzinkt - wirtschaftlich\n• Kunststoff (PE/PVC)\n\n📏 Nennen Sie uns Durchmesser (DN), Länge und Medium für ein Angebot!`;
-}
+        // === ROHRLEITUNGSBAU ===
+        if (lowerMsg.match(/rohr|leitung|pipeline|trasse|verrohrung|medium|medien/)) {
+            return `🔧 **Rohrleitungsbau-Expertise**\n\n**Verfahren:**\n• **Verschraubung:** Ermeto/Schneidring (Hydraulik/Hochdruck)\n• **Presssysteme:** Mapress/Viega (Wasser, Luft, Trennmittel)\n• **Schweißen:** WIG/Orbitalschweißen (Prozessleitungen)\n\n**Medien:**\n• Druckluft, Wasser, Kühlwasser\n• Öl, Schmierstoffe, Emulsionen\n• Trennmittel-Versorgung\n\n**Materialien:**\n• Edelstahl (V2A/V4A) - korrosionsfrei\n• C-Stahl verzinkt - wirtschaftlich\n• Kunststoff (PE/PVC)\n\n📏 Nennen Sie uns Durchmesser (DN), Länge und Medium für ein Angebot!`;
+        }
 
-// === SCHWEISSEN - EXPERT ===
-// Using word boundaries \b for short acronyms to avoid matches like 'benö(tig)e'
-if (lowerMsg.match(/schweiß|schweiss|\bwig\b|\btig\b|\bmig\b|\bmag\b|elektro|e-hand/)) {
-    if (lowerMsg.match(/\bwig\b|\btig\b/)) {
-        return `🔥 **WIG-Schweißen (TIG)**\n\n**Einsatz:**\n• Edelstahl, Aluminium\n• Dünnwandige Werkstücke\n• Sichtbare Nähte höchster Qualität\n\n**Vorteile:**\n✅ Sauberste Naht\n✅ Spritzerlos\n✅ Flexibel bei Materialdicke\n\n**Typische Arbeiten:**\n• Edelstahl-Geländer\n• Aluminium-Konstruktionen\n• Lebensmittel-/Pharmatechnik\n• Kunstobjekte\n\n**Unsere Expertise:**\n• DVS-zertifizierte Schweißer\n• Schutzgas Argon 4.6+\n• Dokumentation nach ISO\n\nWas soll geschweißt werden?`;
-    }
-    if (lowerMsg.match(/\bmig\b|\bmag\b/)) {
-        return `🔥 **MIG/MAG-Schweißen**\n\n**MAG (CO2/Mischgas):**\n• Für Baustahl, Edelstahl\n• Schnell, wirtschaftlich\n\n**MIG (Argon):**\n• Für Aluminium\n• Sauberes Nahtbild\n\n**Vorteile:**\n✅ Hohe Abschmelzleistung\n✅ Wirtschaftlich für Serien\n✅ Bis zu 30mm Materialstärke\n\n**Typische Arbeiten:**\n• Stahlkonstruktionen\n• Treppen, Geländer\n• Behälter, Tanks\n• Fahrzeugbau\n\nFür welches Material/Projekt benötigen Sie Schweißarbeiten?`;
-    }
-    return `🔥 **Schweißtechnik bei MHS**\n\n**Verfahren:**\n• **WIG/TIG:** Edelstahl, Alu, Sichtnaht (höchste Qualität)\n• **MIG/MAG:** Baustahl, Edelstahl (schnell, wirtschaftlich)\n• **E-Hand:** Outdoor, Reparatur (flexibel)\n• **Autogen:** Brennschneiden, Löten\n\n**Materialien:**\nStahl, Edelstahl, Aluminium, Gusseisen\n\n**Zertifizierung:**\n✅ ${kb.company.certifications[0]}\n✅ DVS-zertifizierte Schweißer\n\n**Stundensatz:** ${kb.pricing.hourlyRates.schweissen.min}-${kb.pricing.hourlyRates.schweissen.max} €/Std\n\nFür welche Arbeit benötigen Sie Schweißen?`;
-}
+        // === SCHWEISSEN - EXPERT ===
+        // Using word boundaries \b for short acronyms to avoid matches like 'benö(tig)e'
+        if (lowerMsg.match(/schweiß|schweiss|\bwig\b|\btig\b|\bmig\b|\bmag\b|elektro|e-hand/)) {
+            if (lowerMsg.match(/\bwig\b|\btig\b/)) {
+                return `🔥 **WIG-Schweißen (TIG)**\n\n**Einsatz:**\n• Edelstahl, Aluminium\n• Dünnwandige Werkstücke\n• Sichtbare Nähte höchster Qualität\n\n**Vorteile:**\n✅ Sauberste Naht\n✅ Spritzerlos\n✅ Flexibel bei Materialdicke\n\n**Typische Arbeiten:**\n• Edelstahl-Geländer\n• Aluminium-Konstruktionen\n• Lebensmittel-/Pharmatechnik\n• Kunstobjekte\n\n**Unsere Expertise:**\n• DVS-zertifizierte Schweißer\n• Schutzgas Argon 4.6+\n• Dokumentation nach ISO\n\nWas soll geschweißt werden?`;
+            }
+            if (lowerMsg.match(/\bmig\b|\bmag\b/)) {
+                return `🔥 **MIG/MAG-Schweißen**\n\n**MAG (CO2/Mischgas):**\n• Für Baustahl, Edelstahl\n• Schnell, wirtschaftlich\n\n**MIG (Argon):**\n• Für Aluminium\n• Sauberes Nahtbild\n\n**Vorteile:**\n✅ Hohe Abschmelzleistung\n✅ Wirtschaftlich für Serien\n✅ Bis zu 30mm Materialstärke\n\n**Typische Arbeiten:**\n• Stahlkonstruktionen\n• Treppen, Geländer\n• Behälter, Tanks\n• Fahrzeugbau\n\nFür welches Material/Projekt benötigen Sie Schweißarbeiten?`;
+            }
+            return `🔥 **Schweißtechnik bei MHS**\n\n**Verfahren:**\n• **WIG/TIG:** Edelstahl, Alu, Sichtnaht (höchste Qualität)\n• **MIG/MAG:** Baustahl, Edelstahl (schnell, wirtschaftlich)\n• **E-Hand:** Outdoor, Reparatur (flexibel)\n• **Autogen:** Brennschneiden, Löten\n\n**Materialien:**\nStahl, Edelstahl, Aluminium, Gusseisen\n\n**Zertifizierung:**\n✅ ${kb.company.certifications[0]}\n✅ DVS-zertifizierte Schweißer\n\n**Stundensatz:** ${kb.pricing.hourlyRates.schweissen.min}-${kb.pricing.hourlyRates.schweissen.max} €/Std\n\nFür welche Arbeit benötigen Sie Schweißen?`;
+        }
 
+        // === MATERIALBERATUNG ===
+        if (lowerMsg.match(/material|stahl|edelstahl|aluminium|verzink|pulver|rost|v2a|v4a/)) {
+            if (lowerMsg.match(/v2a|v4a|edelstahl|inox/)) {
+                return `🔬 **Edelstahl-Beratung**\n\n**V2A (1.4301):**\n• Für: Innen, überdacht\n• Korrosion: Gut\n• Preis: Standard-Edelstahl\n\n**V4A (1.4404):**\n• Für: Außen, Pool, Küstennähe\n• Korrosion: Sehr gut (Molybdän)\n• Preis: +20-30%\n\n**Empfehlung:**\n✅ Innen/überdacht → V2A reicht\n✅ Außen ungeschützt → V4A\n✅ Chlor/Salzwasser → V4A Pflicht\n\n**Oberflächenoptionen:**\n• Geschliffen (Korn 240/320)\n• Gebürstet\n• Poliert (Spiegel)\n\nFür welche Anwendung?`;
+            }
+            if (lowerMsg.match(/verzink|rost|korrosion|wetterfest/)) {
+                return `🔬 **Korrosionsschutz-Beratung**\n\n**Feuerverzinkung:**\n• Lebensdauer: ${kb.materials.oberflaechen.feuerverzinkt.lifetime}\n• Selbstheilend bei Kratzern\n• Standard für Außen\n\n**Pulverbeschichtung:**\n• Lebensdauer: ${kb.materials.oberflaechen.pulverbeschichtet.lifetime}\n• RAL-Farben möglich\n• Optisch hochwertig\n\n**Duplex (Verzinken + Pulvern):**\n• Lebensdauer: ${kb.materials.oberflaechen.duplex.lifetime}\n• Maximaler Schutz + Farbe\n\n**Meine Empfehlung:**\n• Ländlich: Feuerverzinkt reicht\n• Industrie/Straße: Duplex ideal\n• Optik wichtig: Pulver auf Verzinkung`;
+            }
+            return `🔬 **Material-Beratung**\n\n**Stahl:**\n• S235: Allgemein, günstig\n• S355: Höher belastbar\n• CorTen: Rostoptik, wetterfest\n\n**Edelstahl:**\n• V2A: Innen, überdacht\n• V4A: Außen, Chlor, Salzwasser\n\n**Aluminium:**\n• Leicht, korrosionsfest\n• Ideal für Solar, Küste\n\n**Oberflächenschutz:**\n• Verzinken: 25-50 Jahre\n• Pulvern: 15-25 Jahre, farbig\n• Duplex: Maximum\n\nFür welches Projekt?`;
+        }
 
-// === MATERIALBERATUNG ===
-if (lowerMsg.match(/material|stahl|edelstahl|aluminium|verzink|pulver|rost|v2a|v4a/)) {
-    if (lowerMsg.match(/v2a|v4a|edelstahl|inox/)) {
-        return `🔬 **Edelstahl-Beratung**\n\n**V2A (1.4301):**\n• Für: Innen, überdacht\n• Korrosion: Gut\n• Preis: Standard-Edelstahl\n\n**V4A (1.4404):**\n• Für: Außen, Pool, Küstennähe\n• Korrosion: Sehr gut (Molybdän)\n• Preis: +20-30%\n\n**Empfehlung:**\n✅ Innen/überdacht → V2A reicht\n✅ Außen ungeschützt → V4A\n✅ Chlor/Salzwasser → V4A Pflicht\n\n**Oberflächenoptionen:**\n• Geschliffen (Korn 240/320)\n• Gebürstet\n• Poliert (Spiegel)\n\nFür welche Anwendung?`;
-    }
-    if (lowerMsg.match(/verzink|rost|korrosion|wetterfest/)) {
-        return `🔬 **Korrosionsschutz-Beratung**\n\n**Feuerverzinkung:**\n• Lebensdauer: ${kb.materials.oberflaechen.feuerverzinkt.lifetime}\n• Selbstheilend bei Kratzern\n• Standard für Außen\n\n**Pulverbeschichtung:**\n• Lebensdauer: ${kb.materials.oberflaechen.pulverbeschichtet.lifetime}\n• RAL-Farben möglich\n• Optisch hochwertig\n\n**Duplex (Verzinken + Pulvern):**\n• Lebensdauer: ${kb.materials.oberflaechen.duplex.lifetime}\n• Maximaler Schutz + Farbe\n\n**Meine Empfehlung:**\n• Ländlich: Feuerverzinkt reicht\n• Industrie/Straße: Duplex ideal\n• Optik wichtig: Pulver auf Verzinkung`;
-    }
-    return `🔬 **Material-Beratung**\n\n**Stahl:**\n• S235: Allgemein, günstig\n• S355: Höher belastbar\n• CorTen: Rostoptik, wetterfest\n\n**Edelstahl:**\n• V2A: Innen, überdacht\n• V4A: Außen, Chlor, Salzwasser\n\n**Aluminium:**\n• Leicht, korrosionsfest\n• Ideal für Solar, Küste\n\n**Oberflächenschutz:**\n• Verzinken: 25-50 Jahre\n• Pulvern: 15-25 Jahre, farbig\n• Duplex: Maximum\n\nFür welches Projekt?`;
-}
+        // === PREISE ALLGEMEIN ===
+        if (lowerMsg.match(/preis|kosten|was kostet|teuer|günstig|budget|€|euro/)) {
+            const hr = kb.pricing.hourlyRates;
+            return `💰 **Preisübersicht MHS**\n\n**Stundensätze:**\n• Metallbau: ${hr.metallbau.min}-${hr.metallbau.max} €/Std\n• Schweißen: ${hr.schweissen.min}-${hr.schweissen.max} €/Std\n• Hydraulik: ${hr.hydraulik.min}-${hr.hydraulik.max} €/Std\n• Montage: ${hr.montage.min}-${hr.montage.max} €/Std\n\n**Produkte (Richtwerte):**\n• Geländer: ab 150 €/lfm\n• Treppen: ab 3.500€\n• Tore: ab 1.200€\n• Carports: ab 2.500€\n• Hydraulikschläuche: ab 25€\n\n✅ **Kostenlose Beratung + Aufmaß!**\n\n_Endpreise nach Aufmaß vor Ort._\n\nFür welches Projekt brauchen Sie Preise?`;
+        }
 
-// === PREISE ALLGEMEIN ===
-if (lowerMsg.match(/preis|kosten|was kostet|teuer|günstig|budget|€|euro/)) {
-    const hr = kb.pricing.hourlyRates;
-    return `💰 **Preisübersicht MHS**\n\n**Stundensätze:**\n• Metallbau: ${hr.metallbau.min}-${hr.metallbau.max} €/Std\n• Schweißen: ${hr.schweissen.min}-${hr.schweissen.max} €/Std\n• Hydraulik: ${hr.hydraulik.min}-${hr.hydraulik.max} €/Std\n• Montage: ${hr.montage.min}-${hr.montage.max} €/Std\n\n**Produkte (Richtwerte):**\n• Geländer: ab 150 €/lfm\n• Treppen: ab 3.500€\n• Tore: ab 1.200€\n• Carports: ab 2.500€\n• Hydraulikschläuche: ab 25€\n\n✅ **Kostenlose Beratung + Aufmaß!**\n\n_Endpreise nach Aufmaß vor Ort._\n\nFür welches Projekt brauchen Sie Preise?`;
-}
+        // === ÖFFNUNGSZEITEN ===
+        if (lowerMsg.match(/öffnungszeit|geöffnet|wann offen|geschäftszeit/)) {
+            const h = kb.company.hours;
+            return `🕐 **Geschäftszeiten**\n\n📆 Mo-Fr: ${h.weekday}\n📆 Samstag: ${h.saturday}\n📆 Sonntag: geschlossen\n\n**Notdienst:**\n🚨 ${h.emergency}\n📞 ${kb.company.phone}\n\n**Einsatzgebiet:**\n📍 ${kb.company.serviceArea}`;
+        }
 
-// === ÖFFNUNGSZEITEN ===
-if (lowerMsg.match(/öffnungszeit|geöffnet|wann offen|geschäftszeit/)) {
-    const h = kb.company.hours;
-    return `🕐 **Geschäftszeiten**\n\n📆 Mo-Fr: ${h.weekday}\n📆 Samstag: ${h.saturday}\n📆 Sonntag: geschlossen\n\n**Notdienst:**\n🚨 ${h.emergency}\n📞 ${kb.company.phone}\n\n**Einsatzgebiet:**\n📍 ${kb.company.serviceArea}`;
-}
+        // === TERMIN ===
+        if (lowerMsg.match(/termin|vereinbar|kommen|besuch|aufmaß/)) {
+            return `📅 **Terminvereinbarung**\n\n**Wir bieten:**\n✅ Kostenlose Beratung vor Ort\n✅ Kostenloses Aufmaß\n✅ Flexible Zeitfenster\n\n**Ablauf:**\n1. Besichtigung durch Meister\n2. Material + Ausführung besprechen\n3. Aufmaß + Fotodokumentation\n4. Angebot innerhalb 3 Werktagen\n\n**Dafür brauche ich:**\n• Ihren Namen\n• Telefonnummer\n• Kurze Projektbeschreibung\n\nWie heißen Sie und worum geht es?`;
+        }
 
-// === TERMIN ===
-if (lowerMsg.match(/termin|vereinbar|kommen|besuch|aufmaß/)) {
-    return `📅 **Terminvereinbarung**\n\n**Wir bieten:**\n✅ Kostenlose Beratung vor Ort\n✅ Kostenloses Aufmaß\n✅ Flexible Zeitfenster\n\n**Ablauf:**\n1. Besichtigung durch Meister\n2. Material + Ausführung besprechen\n3. Aufmaß + Fotodokumentation\n4. Angebot innerhalb 3 Werktagen\n\n**Dafür brauche ich:**\n• Ihren Namen\n• Telefonnummer\n• Kurze Projektbeschreibung\n\nWie heißen Sie und worum geht es?`;
-}
+        // === NOTFALL ===
+        if (lowerMsg.match(/notfall|dringend|sofort|stillstand|ausgefallen|akut/)) {
+            return `🚨 **NOTFALL-SERVICE**\n\n📞 **SOFORT ANRUFEN:**\n# ${kb.company.phone}\n\n**24/7 Erreichbar für:**\n• Maschinenausfall\n• Hydraulikschaden\n• Schlauchplatzer\n• Sicherheitsdefekte\n\n**Reaktionszeit:** 2 Std. vor Ort\n\n**Mobile Ausstattung:**\n✅ Schlauchpresse\n✅ Schweißgerät\n✅ Standard-Ersatzteile\n\n⚠️ Bei Notfällen nicht schreiben – ANRUFEN!`;
+        }
 
-// === NOTFALL ===
-if (lowerMsg.match(/notfall|dringend|sofort|stillstand|ausgefallen|akut/)) {
-    return `🚨 **NOTFALL-SERVICE**\n\n📞 **SOFORT ANRUFEN:**\n# ${kb.company.phone}\n\n**24/7 Erreichbar für:**\n• Maschinenausfall\n• Hydraulikschaden\n• Schlauchplatzer\n• Sicherheitsdefekte\n\n**Reaktionszeit:** 2 Std. vor Ort\n\n**Mobile Ausstattung:**\n✅ Schlauchpresse\n✅ Schweißgerät\n✅ Standard-Ersatzteile\n\n⚠️ Bei Notfällen nicht schreiben – ANRUFEN!`;
-}
+        // === KONTAKT / ÜBER UNS ===
+        if (lowerMsg.match(/kontakt|adresse|telefon|email|wo seid|über euch|wer seid/)) {
+            const c = kb.company;
+            return `📍 **${c.name}**\n\n**${c.owner}**\n🏆 ${c.experience}\n👥 ${c.team}\n\n**Adresse:**\n📍 ${c.address}\n\n**Kontakt:**\n📞 ${c.phone}\n📧 ${c.email}\n\n**Zertifizierungen:**\n${c.certifications.map(cert => '✅ ' + cert).join('\n')}\n\n**Einsatzgebiet:**\n🗺️ ${c.serviceArea}\n\nWie können wir helfen?`;
+        }
 
-// === KONTAKT / ÜBER UNS ===
-if (lowerMsg.match(/kontakt|adresse|telefon|email|wo seid|über euch|wer seid/)) {
-    const c = kb.company;
-    return `📍 **${c.name}**\n\n**${c.owner}**\n🏆 ${c.experience}\n👥 ${c.team}\n\n**Adresse:**\n📍 ${c.address}\n\n**Kontakt:**\n📞 ${c.phone}\n📧 ${c.email}\n\n**Zertifizierungen:**\n${c.certifications.map(cert => '✅ ' + cert).join('\n')}\n\n**Einsatzgebiet:**\n🗺️ ${c.serviceArea}\n\nWie können wir helfen?`;
-}
+        // === LEISTUNGEN ===
+        if (lowerMsg.match(/leistung|was macht|was bietet|angebot|service|können sie|könnt ihr/)) {
+            return `🔧 **Unser Leistungsspektrum**\n\n**🏗️ METALLBAU:**\n• Geländer & Handläufe\n• Treppen (innen/außen)\n• Tore & Zäune\n• Carports & Vordächer\n• Balkone & Terrassen\n\n**⚙️ HYDRAULIK:**\n• Schlauchkonfektionierung\n• Zylinder-Reparatur\n• Pumpen & Aggregate\n• Notfall-Service 24/7\n\n**🔥 SCHWEISSEN:**\n• WIG, MIG/MAG, E-Hand\n• Stahl, Edelstahl, Alu\n• Reparaturschweißen\n\n**🔨 MONTAGE:**\n• Industriemontage\n• Maschinentransport\n• Wartung\n\n**Qualität:** ${kb.company.certifications[0]}\n\nWofür interessieren Sie sich?`;
+        }
 
-// === LEISTUNGEN ===
-if (lowerMsg.match(/leistung|was macht|was bietet|angebot|service|können sie|könnt ihr/)) {
-    return `🔧 **Unser Leistungsspektrum**\n\n**🏗️ METALLBAU:**\n• Geländer & Handläufe\n• Treppen (innen/außen)\n• Tore & Zäune\n• Carports & Vordächer\n• Balkone & Terrassen\n\n**⚙️ HYDRAULIK:**\n• Schlauchkonfektionierung\n• Zylinder-Reparatur\n• Pumpen & Aggregate\n• Notfall-Service 24/7\n\n**🔥 SCHWEISSEN:**\n• WIG, MIG/MAG, E-Hand\n• Stahl, Edelstahl, Alu\n• Reparaturschweißen\n\n**🔨 MONTAGE:**\n• Industriemontage\n• Maschinentransport\n• Wartung\n\n**Qualität:** ${kb.company.certifications[0]}\n\nWofür interessieren Sie sich?`;
-}
+        // === DANKE ===
+        if (lowerMsg.match(/danke|vielen dank|super|toll|prima|perfekt/)) {
+            return `Sehr gern geschehen! 😊\n\nAls Meisterbetrieb liegt uns Qualität am Herzen.\n\nKann ich noch technische Fragen beantworten?\n\n📞 Oder direkt: ${kb.company.phone}`;
+        }
 
-// === DANKE ===
-if (lowerMsg.match(/danke|vielen dank|super|toll|prima|perfekt/)) {
-    return `Sehr gern geschehen! 😊\n\nAls Meisterbetrieb liegt uns Qualität am Herzen.\n\nKann ich noch technische Fragen beantworten?\n\n📞 Oder direkt: ${kb.company.phone}`;
-}
+        // === TSCHÜSS ===
+        if (lowerMsg.match(/tschüss|auf wiedersehen|bye|ciao|bis bald/)) {
+            return `Auf Wiedersehen! 👋\n\n**Ihre Vorteile bei MHS:**\n✅ Meisterbetrieb mit ${kb.company.experience}\n✅ Faire Preise\n✅ Zuverlässig & pünktlich\n\n📞 ${kb.company.phone}\n📧 ${kb.company.email}\n\nWir freuen uns auf Ihren Auftrag!`;
+        }
 
-// === TSCHÜSS ===
-if (lowerMsg.match(/tschüss|auf wiedersehen|bye|ciao|bis bald/)) {
-    return `Auf Wiedersehen! 👋\n\n**Ihre Vorteile bei MHS:**\n✅ Meisterbetrieb mit ${kb.company.experience}\n✅ Faire Preise\n✅ Zuverlässig & pünktlich\n\n📞 ${kb.company.phone}\n📧 ${kb.company.email}\n\nWir freuen uns auf Ihren Auftrag!`;
-}
+        // === JA/NEIN ===
+        if (/^(ja|jo|jep|genau|richtig|ok|okay|klar)$/i.test(lowerMsg)) {
+            return `Prima! 👍\n\nSchildern Sie mir gerne Ihr Projekt oder Ihre Frage – ich berate Sie fachkundig!\n\nOder nennen Sie mir Ihre Telefonnummer für einen Rückruf.`;
+        }
+        if (/^(nein|ne|nö)$/i.test(lowerMsg)) {
+            return `Alles klar! Falls später Fragen aufkommen, melden Sie sich jederzeit.\n\n📞 ${kb.company.phone}\n\nSchönen Tag noch! ☀️`;
+        }
 
-// === JA/NEIN ===
-if (/^(ja|jo|jep|genau|richtig|ok|okay|klar)$/i.test(lowerMsg)) {
-    return `Prima! 👍\n\nSchildern Sie mir gerne Ihr Projekt oder Ihre Frage – ich berate Sie fachkundig!\n\nOder nennen Sie mir Ihre Telefonnummer für einen Rückruf.`;
-}
-if (/^(nein|ne|nö)$/i.test(lowerMsg)) {
-    return `Alles klar! Falls später Fragen aufkommen, melden Sie sich jederzeit.\n\n📞 ${kb.company.phone}\n\nSchönen Tag noch! ☀️`;
-}
+        // === FRAGEN ALLGEMEIN ===
+        if (lowerMsg.match(/^(wie|was|welch|wann|wo|warum|wieviel|können)/)) {
+            if (lowerMsg.match(/lange|dauer|zeit/)) {
+                return `⏱️ **Projektdauer (Richtwerte)**\n\n• Geländer 5m: 2-3 Tage + 1 Tag Montage\n• Treppe: 2-4 Wochen\n• Tor: 1-2 Wochen\n• Schlauchpresse: 15 Minuten\n• Zylinder-Reparatur: 2-5 Werktage\n\nUm welches Projekt geht es?`;
+            }
+            if (lowerMsg.match(/garantie|gewährleist/)) {
+                return `📜 **Gewährleistung**\n\n• Metallbau: 5 Jahre auf Konstruktion\n• Schweißnähte: lebenslang nach DIN\n• Oberflächenbeschichtung: 2 Jahre\n• Hydraulik-Reparatur: 12 Monate\n\nAlle Arbeiten DIN/EN-dokumentiert.`;
+            }
+        }
 
-// === FRAGEN ALLGEMEIN ===
-if (lowerMsg.match(/^(wie|was|welch|wann|wo|warum|wieviel|können)/)) {
-    if (lowerMsg.match(/lange|dauer|zeit/)) {
-        return `⏱️ **Projektdauer (Richtwerte)**\n\n• Geländer 5m: 2-3 Tage + 1 Tag Montage\n• Treppe: 2-4 Wochen\n• Tor: 1-2 Wochen\n• Schlauchpresse: 15 Minuten\n• Zylinder-Reparatur: 2-5 Werktage\n\nUm welches Projekt geht es?`;
-    }
-    if (lowerMsg.match(/garantie|gewährleist/)) {
-        return `📜 **Gewährleistung**\n\n• Metallbau: 5 Jahre auf Konstruktion\n• Schweißnähte: lebenslang nach DIN\n• Oberflächenbeschichtung: 2 Jahre\n• Hydraulik-Reparatur: 12 Monate\n\nAlle Arbeiten DIN/EN-dokumentiert.`;
-    }
-}
-
-// === DEFAULT - SMART ===
-return `Danke für Ihre Nachricht! 📩\n\nIch bin Fachberater für:\n\n🏗️ **Metallbau** – Geländer, Treppen, Tore (inkl. Preise)\n⚙️ **Hydraulik** – Schläuche, Zylinder, Problemlösung\n🔥 **Schweißen** – Verfahren, Materialberatung\n🔬 **Materialien** – Stahl, Edelstahl, Oberflächenschutz\n\n**Beispielfragen:**\n• \"Was kostet ein Geländer aus Edelstahl?\"\n• \"Hydraulikschlauch geplatzt - was tun?\"\n• \"V2A oder V4A für außen?\"\n\nOder schildern Sie einfach Ihr Projekt!\n\n📞 Direkt: ${kb.company.phone}`;
+        // === DEFAULT - SMART ===
+        return `Danke für Ihre Nachricht! 📩\n\nIch bin Fachberater für:\n\n🏗️ **Metallbau** – Geländer, Treppen, Tore (inkl. Preise)\n⚙️ **Hydraulik** – Schläuche, Zylinder, Problemlösung\n🔥 **Schweißen** – Verfahren, Materialberatung\n🔬 **Materialien** – Stahl, Edelstahl, Oberflächenschutz\n\n**Beispielfragen:**\n• \"Was kostet ein Geländer aus Edelstahl?\"\n• \"Hydraulikschlauch geplatzt - was tun?\"\n• \"V2A oder V4A für außen?\"\n\nOder schildern Sie einfach Ihr Projekt!\n\n📞 Direkt: ${kb.company.phone}`;
     }
 
     // Process incoming message
     async processIncomingMessage(from, message, messageId = null) {
-    const conversationId = this.getOrCreateConversation(from);
-    const conversation = this.getConversation(conversationId);
+        const conversationId = this.getOrCreateConversation(from);
+        const conversation = this.getConversation(conversationId);
 
-    conversation.messages.push({
-        id: messageId || 'msg-' + Date.now(),
-        role: 'user',
-        content: message,
-        timestamp: new Date().toISOString()
-    });
-
-    const intent = this.detectIntent(message);
-    let response = await this.generateResponse(message, conversation.messages, conversation.customerData);
-
-    if (intent.needsHuman) {
-        response += '\n\n_Ein Mitarbeiter wurde benachrichtigt._';
-        this.notifyStaff(conversation, intent);
-    }
-
-    conversation.messages.push({
-        id: 'resp-' + Date.now(),
-        role: 'assistant',
-        content: response,
-        timestamp: new Date().toISOString()
-    });
-
-    this.extractAndSaveCustomerData(conversation, message);
-    this.saveConversations();
-    this.queueOutgoingMessage(from, response);
-
-    return { response, conversationId, intent };
-}
-
-// Detect intent
-detectIntent(message) {
-    const lowerMsg = message.toLowerCase();
-    return {
-        greeting: /^(hallo|hi|guten|moin|servus|hey)/i.test(lowerMsg),
-        appointment: /termin|vereinbar|kommen/i.test(lowerMsg),
-        price: /preis|kosten|was kostet/i.test(lowerMsg),
-        emergency: /notfall|dringend|sofort|ausgefallen/i.test(lowerMsg),
-        complaint: /beschwerde|unzufrieden|problem/i.test(lowerMsg),
-        needsHuman: /notfall|dringend|beschwerde|reklamation/i.test(lowerMsg)
-    };
-}
-
-// Extract customer data
-extractAndSaveCustomerData(conversation, message) {
-    const phoneMatch = message.match(/(\+49|0)[0-9\s\-\/]{8,15}/);
-    if (phoneMatch) conversation.customerData.telefon = phoneMatch[0].replace(/[\s\-\/]/g, '');
-    const emailMatch = message.match(/[\w.-]+@[\w.-]+\.\w+/);
-    if (emailMatch) conversation.customerData.email = emailMatch[0];
-    const nameMatch = message.match(/(?:ich bin|mein name ist|ich heiße|name:?)\s+([A-ZÄÖÜa-zäöüß]+(?:\s+[A-ZÄÖÜa-zäöüß]+)?)/i);
-    if (nameMatch) conversation.customerData.name = nameMatch[1];
-}
-
-// Notify staff
-notifyStaff(conversation, intent) {
-    if (window.taskService) {
-        let priority = intent.emergency ? 'urgent' : (intent.complaint ? 'high' : 'normal');
-        window.taskService.addTask({
-            title: `WhatsApp: ${conversation.customerData.name || conversation.phoneNumber}`,
-            description: `Anfrage: ${conversation.messages.slice(-2)[0]?.content || ''}`,
-            priority,
-            source: 'whatsapp',
-            dueDate: new Date().toISOString().split('T')[0]
+        conversation.messages.push({
+            id: messageId || 'msg-' + Date.now(),
+            role: 'user',
+            content: message,
+            timestamp: new Date().toISOString()
         });
+
+        const intent = this.detectIntent(message);
+        let response = await this.generateResponse(message, conversation.messages, conversation.customerData);
+
+        if (intent.needsHuman) {
+            response += '\n\n_Ein Mitarbeiter wurde benachrichtigt._';
+            this.notifyStaff(conversation, intent);
+        }
+
+        conversation.messages.push({
+            id: 'resp-' + Date.now(),
+            role: 'assistant',
+            content: response,
+            timestamp: new Date().toISOString()
+        });
+
+        this.extractAndSaveCustomerData(conversation, message);
+        this.saveConversations();
+        this.queueOutgoingMessage(from, response);
+
+        return { response, conversationId, intent };
     }
-}
 
-// Queue outgoing message
-queueOutgoingMessage(to, message) {
-    this.messageQueue.push({
-        id: 'out-' + Date.now(),
-        to, message,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-    });
-    this.saveQueue();
-}
-
-// Conversation management
-getOrCreateConversation(phoneNumber) {
-    let conversation = this.conversations.find(c => c.phoneNumber === phoneNumber);
-    if (!conversation) {
-        conversation = {
-            id: 'conv-' + Date.now(),
-            phoneNumber,
-            messages: [],
-            customerData: {},
-            createdAt: new Date().toISOString(),
-            lastMessageAt: new Date().toISOString(),
-            status: 'active'
+    detectIntent(message) {
+        const lowerMsg = message.toLowerCase();
+        return {
+            greeting: /^(hallo|hi|guten|moin|servus|hey)/i.test(lowerMsg),
+            appointment: /termin|vereinbar|kommen/i.test(lowerMsg),
+            price: /preis|kosten|was kostet/i.test(lowerMsg),
+            emergency: /notfall|dringend|sofort|ausgefallen/i.test(lowerMsg),
+            complaint: /beschwerde|unzufrieden|problem/i.test(lowerMsg),
+            needsHuman: /notfall|dringend|beschwerde|reklamation/i.test(lowerMsg)
         };
-        this.conversations.push(conversation);
     }
-    conversation.lastMessageAt = new Date().toISOString();
-    return conversation.id;
-}
 
-getConversation(id) { return this.conversations.find(c => c.id === id); }
-getActiveConversations() { return this.conversations.filter(c => c.status === 'active').sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)); }
-getRecentConversations(limit = 20) { return this.conversations.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)).slice(0, limit); }
+    extractAndSaveCustomerData(conversation, message) {
+        const phoneMatch = message.match(/(\+49|0)[0-9\s\-\/]{8,15}/);
+        if (phoneMatch) conversation.customerData.telefon = phoneMatch[0].replace(/[\s\-\/]/g, '');
+        const emailMatch = message.match(/[\w.-]+@[\w.-]+\.\w+/);
+        if (emailMatch) conversation.customerData.email = emailMatch[0];
+        const nameMatch = message.match(/(?:ich bin|mein name ist|ich heiße|name:?)\s+([A-ZÄÖÜa-zäöüß]+(?:\s+[A-ZÄÖÜa-zäöüß]+)?)/i);
+        if (nameMatch) conversation.customerData.name = nameMatch[1];
+    }
+
+    notifyStaff(conversation, intent) {
+        if (window.taskService) {
+            let priority = intent.emergency ? 'urgent' : (intent.complaint ? 'high' : 'normal');
+            window.taskService.addTask({
+                title: `WhatsApp: ${conversation.customerData.name || conversation.phoneNumber}`,
+                description: `Anfrage: ${conversation.messages.slice(-2)[0]?.content || ''}`,
+                priority,
+                source: 'whatsapp',
+                dueDate: new Date().toISOString().split('T')[0]
+            });
+        }
+    }
+
+    queueOutgoingMessage(to, message) {
+        this.messageQueue.push({
+            id: 'out-' + Date.now(),
+            to, message,
+            status: 'pending',
+            createdAt: new Date().toISOString()
+        });
+        this.saveQueue();
+    }
+
+    getOrCreateConversation(phoneNumber) {
+        let conversation = this.conversations.find(c => c.phoneNumber === phoneNumber);
+        if (!conversation) {
+            conversation = {
+                id: 'conv-' + Date.now(),
+                phoneNumber,
+                messages: [],
+                customerData: {},
+                createdAt: new Date().toISOString(),
+                lastMessageAt: new Date().toISOString(),
+                status: 'active'
+            };
+            this.conversations.push(conversation);
+        }
+        conversation.lastMessageAt = new Date().toISOString();
+        return conversation.id;
+    }
+
+    getConversation(id) { return this.conversations.find(c => c.id === id); }
+    getActiveConversations() { return this.conversations.filter(c => c.status === 'active').sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)); }
+    getRecentConversations(limit = 20) { return this.conversations.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt)).slice(0, limit); }
 
     async simulateIncomingMessage(phoneNumber, message) {
-    return await this.processIncomingMessage(phoneNumber, message);
-}
+        return await this.processIncomingMessage(phoneNumber, message);
+    }
 
-getChatUIData(conversationId) {
-    const conversation = this.getConversation(conversationId);
-    if (!conversation) return null;
-    return {
-        phoneNumber: conversation.phoneNumber,
-        customerName: conversation.customerData.name || 'Unbekannt',
-        messages: conversation.messages.map(m => ({
-            ...m,
-            isUser: m.role === 'user',
-            time: new Date(m.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
-        })),
-        customerData: conversation.customerData
-    };
-}
+    getChatUIData(conversationId) {
+        const conversation = this.getConversation(conversationId);
+        if (!conversation) return null;
+        return {
+            phoneNumber: conversation.phoneNumber,
+            customerName: conversation.customerData.name || 'Unbekannt',
+            messages: conversation.messages.map(m => ({
+                ...m,
+                isUser: m.role === 'user',
+                time: new Date(m.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+            })),
+            customerData: conversation.customerData
+        };
+    }
 
-getQuickReplies() {
-    return [
-        { id: 'prices', label: '💰 Preise', message: 'Was kosten Ihre Leistungen?' },
-        { id: 'services', label: '🔧 Leistungen', message: 'Welche Leistungen bieten Sie an?' },
-        { id: 'appointment', label: '📅 Termin', message: 'Ich möchte einen Termin vereinbaren' },
-        { id: 'emergency', label: '🚨 Notfall', message: 'Ich habe einen dringenden Notfall' }
-    ];
-}
+    getQuickReplies() {
+        return [
+            { id: 'prices', label: '💰 Preise', message: 'Was kosten Ihre Leistungen?' },
+            { id: 'services', label: '🔧 Leistungen', message: 'Welche Leistungen bieten Sie an?' },
+            { id: 'appointment', label: '📅 Termin', message: 'Ich möchte einen Termin vereinbaren' },
+            { id: 'emergency', label: '🚨 Notfall', message: 'Ich habe einen dringenden Notfall' }
+        ];
+    }
 
-getStatistics() {
-    const today = new Date().toISOString().split('T')[0];
-    return {
-        totalConversations: this.conversations.length,
-        activeConversations: this.conversations.filter(c => c.status === 'active').length,
-        todayMessages: this.conversations.reduce((sum, c) => sum + c.messages.filter(m => m.timestamp.startsWith(today)).length, 0)
-    };
-}
+    getStatistics() {
+        const today = new Date().toISOString().split('T')[0];
+        return {
+            totalConversations: this.conversations.length,
+            activeConversations: this.conversations.filter(c => c.status === 'active').length,
+            todayMessages: this.conversations.reduce((sum, c) => sum + c.messages.filter(m => m.timestamp.startsWith(today)).length, 0)
+        };
+    }
 
-updateSettings(updates) { this.settings = { ...this.settings, ...updates }; this.saveSettings(); }
-getSettings() { return this.settings; }
+    updateSettings(updates) { this.settings = { ...this.settings, ...updates }; this.saveSettings(); }
+    getSettings() { return this.settings; }
 
-saveConversations() { localStorage.setItem('mhs_chatbot_conversations', JSON.stringify(this.conversations)); }
-saveQueue() { localStorage.setItem('mhs_chatbot_queue', JSON.stringify(this.messageQueue)); }
-saveSettings() { localStorage.setItem('mhs_chatbot_settings', JSON.stringify(this.settings)); }
+    saveConversations() { localStorage.setItem('mhs_chatbot_conversations', JSON.stringify(this.conversations)); }
+    saveQueue() { localStorage.setItem('mhs_chatbot_queue', JSON.stringify(this.messageQueue)); }
+    saveSettings() { localStorage.setItem('mhs_chatbot_settings', JSON.stringify(this.settings)); }
 }
 
 window.chatbotService = new ChatbotService();
