@@ -25,31 +25,65 @@ class StoreService {
         };
         this.STORAGE_KEY = 'mhs-workflow-store';
         this.subscribers = [];
-        // Note: load() must be called explicitly and awaited in app.js
+        this.currentUserId = null; // Track which user's data is loaded
+
+        // Subscribe to user changes
+        if (window.userManager) {
+            window.userManager.onUserChange(async (user) => {
+                if (user) {
+                    await this.loadForUser(user.id);
+                } else {
+                    this._clearStore();
+                }
+            });
+        }
+        // Note: load() or loadForUser() must be called explicitly and awaited in app.js
     }
 
     /**
-     * Loads the store state from IndexedDB (with localStorage fallback/migration).
+     * Loads the store state for a specific user from IndexedDB.
+     * @param {string} userId - User ID to load data for
      */
-    async load() {
-        // 1. Try to get from IndexedDB
-        let data = await window.dbService.get(this.STORAGE_KEY);
+    async loadForUser(userId) {
+        if (!userId) {
+            throw new Error('User ID is required');
+        }
 
-        // 2. Migration: Check if data still exists in localStorage
-        const legacyData = localStorage.getItem(this.STORAGE_KEY);
-        if (legacyData && !data) {
-            console.log('Migrating data from localStorage to IndexedDB...');
-            try {
-                data = JSON.parse(legacyData);
-                await window.dbService.set(this.STORAGE_KEY, data);
-                localStorage.removeItem(this.STORAGE_KEY); // Move, don't just copy
-            } catch (e) {
-                console.error('Migration failed:', e);
+        console.log(`Loading data for user: ${userId}`);
+        this.currentUserId = userId;
+
+        // 1. Try to get user-specific data from IndexedDB
+        let data = await window.dbService.getUserData(userId, this.STORAGE_KEY);
+
+        // 2. Migration: If no user data exists, check old app_state store (v1 → v2 migration)
+        if (!data) {
+            const legacyData = await window.dbService.get(this.STORAGE_KEY);
+            if (legacyData && userId === 'default') {
+                console.log('Migrating legacy data to user_default_data...');
+                data = legacyData;
+                await window.dbService.setUserData(userId, this.STORAGE_KEY, data);
+            }
+        }
+
+        // 3. Migration: Check if data still exists in localStorage (very old version)
+        if (!data) {
+            const legacyLocalStorage = localStorage.getItem(this.STORAGE_KEY);
+            if (legacyLocalStorage && userId === 'default') {
+                console.log('Migrating data from localStorage to user-specific IndexedDB...');
+                try {
+                    data = JSON.parse(legacyLocalStorage);
+                    await window.dbService.setUserData(userId, this.STORAGE_KEY, data);
+                    localStorage.removeItem(this.STORAGE_KEY);
+                } catch (e) {
+                    console.error('Migration failed:', e);
+                }
             }
         }
 
         if (data) {
             try {
+                // Clear current store
+                this._clearStore();
                 // Merge to ensure structure integrity
                 Object.assign(this.store, data);
                 this.checkStorageUsage();
@@ -68,10 +102,39 @@ class StoreService {
             // No data saved yet -> Initial Demo Load
             await this.resetToDemo();
         }
+
+        this.notify();
     }
 
     /**
-     * Hard reset of the application data to demo state.
+     * Legacy load method (backward compatibility).
+     * Loads data for the current user or 'default' user if not logged in.
+     * @deprecated Use loadForUser() instead
+     */
+    async load() {
+        const currentUser = window.userManager?.getCurrentUser();
+        const userId = currentUser ? currentUser.id : 'default';
+        return await this.loadForUser(userId);
+    }
+
+    /**
+     * Clears the in-memory store to default state.
+     * @private
+     */
+    _clearStore() {
+        this.store.anfragen = [];
+        this.store.angebote = [];
+        this.store.auftraege = [];
+        this.store.rechnungen = [];
+        this.store.activities = [];
+        this.store.currentAnfrageId = null;
+        this.store.currentAuftragId = null;
+        this.store.currentRechnungId = null;
+        // Keep settings (theme, etc.)
+    }
+
+    /**
+     * Hard reset of the application data to demo state (user-specific).
      */
     async resetToDemo() {
         if (!window.demoDataService) {
@@ -81,8 +144,11 @@ class StoreService {
 
         const demoData = window.demoDataService.getDemoData();
 
-        // Reset storage
-        await window.dbService.clear();
+        // Determine user ID
+        const userId = this.currentUserId || 'default';
+
+        // Clear user-specific storage
+        await window.dbService.clearUserData(userId);
         localStorage.removeItem('mhs_customer_presets');
 
         // Populate store in-place to preserve references in app.js
@@ -99,7 +165,7 @@ class StoreService {
         });
 
         await this.save();
-        console.log('App reset to demo state (Reference preserved).');
+        console.log(`App reset to demo state for user: ${userId} (Reference preserved).`);
     }
 
     checkStorageUsage() {
@@ -117,11 +183,15 @@ class StoreService {
     }
 
     /**
-     * Saves the current store state to IndexedDB.
+     * Saves the current store state to IndexedDB (user-specific).
      */
     async save() {
         try {
-            await window.dbService.set(this.STORAGE_KEY, this.store);
+            // Determine user ID
+            const userId = this.currentUserId || 'default';
+
+            // Save to user-specific store
+            await window.dbService.setUserData(userId, this.STORAGE_KEY, this.store);
             this.notify();
         } catch (e) {
             console.error('Save failed:', e);
@@ -193,7 +263,7 @@ class StoreService {
         return auftrag;
     }
 
-    completeAuftrag(auftragId, completionData) {
+    async completeAuftrag(auftragId, completionData = {}) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) return null;
 
@@ -203,60 +273,92 @@ class StoreService {
             ...completionData
         });
 
-        // Build invoice positions: original positions + Stückliste + extra costs
-        const rechnungsPositionen = [...(auftrag.positionen || [])];
-        const stueckliste = auftrag.stueckliste || [];
-
-        stueckliste.forEach(item => {
-            rechnungsPositionen.push({
-                beschreibung: `Material: ${item.bezeichnung}`,
-                menge: item.menge,
-                einheit: item.einheit,
-                preis: item.vkPreis,
-                isMaterial: true,
-                artikelnummer: item.artikelnummer,
-                ekPreis: item.ekPreis
-            });
-        });
-
-        if ((auftrag.extraMaterialKosten || 0) > 0) {
-            rechnungsPositionen.push({
-                beschreibung: 'Sonstige Materialkosten',
-                menge: 1,
-                einheit: 'pauschal',
-                preis: auftrag.extraMaterialKosten,
-                isMaterial: true
-            });
-        }
-
-        const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-
-        const rechnung = {
-            id: this.generateId('RE'),
-            auftragId,
-            angebotId: auftrag.angebotId,
-            kunde: auftrag.kunde,
-            leistungsart: auftrag.leistungsart,
-            positionen: rechnungsPositionen,
-            stueckliste: stueckliste,
-            arbeitszeit: auftrag.arbeitszeit,
-            materialKosten: auftrag.materialKosten || 0,
-            extraMaterialKosten: auftrag.extraMaterialKosten || 0,
-            stuecklisteVK: auftrag.stuecklisteVK || 0,
-            stuecklisteEK: auftrag.stuecklisteEK || 0,
-            notizen: auftrag.notizen,
-            netto: netto,
-            mwst: netto * 0.19,
-            brutto: netto * 1.19,
-            status: 'offen',
-            createdAt: new Date().toISOString()
-        };
-
-        this.store.rechnungen.push(rechnung);
         this.save();
-        this.addActivity('💰', `Rechnung ${rechnung.id} erstellt`);
 
-        return rechnung;
+        // Create Invoice using InvoiceService
+        try {
+            if (!window.invoiceService) {
+                console.error('InvoiceService not available, falling back to enhanced invoice creation');
+
+                // Fallback: Enhanced invoice creation with Stückliste support
+                // Build invoice positions: original positions + Stückliste + extra costs
+                const rechnungsPositionen = [...(auftrag.positionen || [])];
+                const stueckliste = auftrag.stueckliste || [];
+
+                stueckliste.forEach(item => {
+                    rechnungsPositionen.push({
+                        beschreibung: `Material: ${item.bezeichnung}`,
+                        menge: item.menge,
+                        einheit: item.einheit,
+                        preis: item.vkPreis,
+                        isMaterial: true,
+                        artikelnummer: item.artikelnummer,
+                        ekPreis: item.ekPreis
+                    });
+                });
+
+                if ((auftrag.extraMaterialKosten || 0) > 0) {
+                    rechnungsPositionen.push({
+                        beschreibung: 'Sonstige Materialkosten',
+                        menge: 1,
+                        einheit: 'pauschal',
+                        preis: auftrag.extraMaterialKosten,
+                        isMaterial: true
+                    });
+                }
+
+                const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
+
+                const rechnung = {
+                    id: this.generateId('RE'),
+                    nummer: this.generateId('RE'), // Simple fallback number
+                    auftragId,
+                    angebotId: auftrag.angebotId,
+                    kunde: auftrag.kunde,
+                    leistungsart: auftrag.leistungsart,
+                    positionen: rechnungsPositionen,
+                    stueckliste: stueckliste,
+                    arbeitszeit: auftrag.arbeitszeit,
+                    materialKosten: auftrag.materialKosten || 0,
+                    extraMaterialKosten: auftrag.extraMaterialKosten || 0,
+                    stuecklisteVK: auftrag.stuecklisteVK || 0,
+                    stuecklisteEK: auftrag.stuecklisteEK || 0,
+                    notizen: auftrag.notizen,
+                    netto: netto,
+                    mwst: netto * 0.19,
+                    brutto: netto * 1.19,
+                    status: 'offen',
+                    datum: new Date().toISOString(),
+                    faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+
+                this.store.rechnungen.push(rechnung);
+                this.save();
+                this.addActivity('💰', `Rechnung ${rechnung.nummer} erstellt`);
+
+                return rechnung;
+            }
+
+            // Use InvoiceService for GoBD-compliant invoice creation
+            const invoiceOptions = {
+                generatePDF: completionData.generatePDF || false,
+                openPDF: completionData.openPDF || false,
+                downloadPDF: completionData.downloadPDF || false,
+                generateEInvoice: completionData.generateEInvoice || false,
+                paymentTermDays: completionData.paymentTermDays || 14,
+                templateId: completionData.templateId || 'standard-de'
+            };
+
+            const rechnung = await window.invoiceService.createInvoice(auftrag, invoiceOptions);
+
+            return rechnung;
+
+        } catch (error) {
+            console.error('Error creating invoice:', error);
+            // Still return something if invoice creation fails
+            return null;
+        }
     }
 
     addActivity(icon, title) {
@@ -285,6 +387,11 @@ class StoreService {
 
     notifySubscribers() {
         this.subscribers.forEach(cb => cb(this.store));
+    }
+
+    // Alias for notifySubscribers (for consistency)
+    notify() {
+        this.notifySubscribers();
     }
 }
 

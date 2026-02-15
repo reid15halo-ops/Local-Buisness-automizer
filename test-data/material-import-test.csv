@@ -1,0 +1,8 @@
+Artikelnummer;Bezeichnung;Kategorie;Preis;VK-Preis;Bestand;Einheit;Lieferant
+ST-001;Stahlträger IPE 100;Stahlträger;12.50;18.00;50;m;Stahl AG
+ST-002;Stahlträger IPE 200;Stahlträger;24.00;32.00;30;m;Stahl AG
+RR-001;Rechteckrohr 50x50x3;Rohre;8.50;12.00;120;m;Rohrstahl GmbH
+RR-002;Rechteckrohr 100x50x4;Rohre;14.00;19.00;80;m;Rohrstahl GmbH
+BL-001;Stahlblech 5mm;Bleche;45.00;62.00;25;qm;Blech Express
+SCHR-001;Schraube M12x40 8.8;Verbindungsmittel;0.35;0.55;500;Stk.;Schrauben Müller
+HYD-001;Hydraulikschlauch DN16;Hydraulik;15.00;22.00;60;m;Hydraulik Pro

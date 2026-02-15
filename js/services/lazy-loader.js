@@ -84,7 +84,11 @@ class LazyLoader {
                 'banking-service',
                 'payment-service',
                 'datev-export-service',
-                'einvoice-service'
+                'einvoice-service',
+                'invoice-numbering-service',
+                'invoice-template-service',
+                'pdf-generation-service',
+                'invoice-service'
             ],
 
             // Advanced Features - load on demand

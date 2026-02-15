@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            background: #4f46e5;
+            color: white;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #6366f1;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Invoice System Test</h1>
+
+    <div class="test-section">
+        <h2>1. Service Availability Test</h2>
+        <button onclick="testServices()">Test Services</button>
+        <div id="service-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Invoice Number Generation Test</h2>
+        <button onclick="testNumberGeneration()">Generate Number</button>
+        <button onclick="testNumberPreview()">Preview Next</button>
+        <div id="number-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Template Rendering Test</h2>
+        <button onclick="testTemplate()">Test Template</button>
+        <div id="template-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. PDF Generation Test</h2>
+        <button onclick="testPDFGeneration()">Generate Test PDF</button>
+        <div id="pdf-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Full Invoice Creation Test</h2>
+        <button onclick="testFullInvoice()">Create Test Invoice</button>
+        <div id="invoice-result" class="result"></div>
+    </div>
+
+    <!-- Load Services -->
+    <script src="js/services/db-service.js"></script>
+    <script src="js/services/store-service.js"></script>
+    <script src="js/services/einvoice-service.js"></script>
+    <script src="js/services/invoice-numbering-service.js"></script>
+    <script src="js/services/invoice-template-service.js"></script>
+    <script src="js/services/pdf-generation-service.js"></script>
+    <script src="js/services/invoice-service.js"></script>
+
+    <script>
+        // Test Functions
+        async function testServices() {
+            const result = document.getElementById('service-result');
+            const services = [
+                'dbService',
+                'invoiceNumberingService',
+                'invoiceTemplateService',
+                'pdfGenerationService',
+                'invoiceService',
+                'eInvoiceService'
+            ];
+
+            let output = '';
+            let allPresent = true;
+
+            for (const service of services) {
+                const present = !!window[service];
+                output += `${present ? '✅' : '❌'} ${service}\n`;
+                if (!present) allPresent = false;
+            }
+
+            result.textContent = output;
+            result.className = allPresent ? 'result success' : 'result error';
+        }
+
+        async function testNumberGeneration() {
+            const result = document.getElementById('number-result');
+            try {
+                await window.dbService.init();
+                const number = await window.invoiceNumberingService.generateNumber('test-user');
+                result.textContent = `✅ Generated: ${number}`;
+                result.className = 'result success';
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testNumberPreview() {
+            const result = document.getElementById('number-result');
+            try {
+                await window.dbService.init();
+                const preview = await window.invoiceNumberingService.previewNext('test-user');
+                result.textContent = `Preview: ${preview}`;
+                result.className = 'result success';
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testTemplate() {
+            const result = document.getElementById('template-result');
+            try {
+                const testInvoice = {
+                    nummer: 'RE-2026-0001',
+                    datum: new Date().toISOString(),
+                    faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                    kunde: {
+                        name: 'Test Kunde GmbH',
+                        strasse: 'Teststraße 123',
+                        plz: '12345',
+                        ort: 'Teststadt'
+                    },
+                    positionen: [
+                        { beschreibung: 'Test Position 1', menge: 2, einzelpreis: 100 },
+                        { beschreibung: 'Test Position 2', menge: 1, einzelpreis: 50 }
+                    ],
+                    netto: 250,
+                    mwst: 47.50,
+                    brutto: 297.50
+                };
+
+                const rendered = window.invoiceTemplateService.render('standard-de', testInvoice);
+                result.textContent = `✅ Template rendered successfully\n${JSON.stringify(rendered, null, 2)}`;
+                result.className = 'result success';
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testPDFGeneration() {
+            const result = document.getElementById('pdf-result');
+            try {
+                const testInvoice = {
+                    nummer: 'RE-2026-0001',
+                    datum: new Date().toISOString(),
+                    faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                    kunde: {
+                        name: 'Test Kunde GmbH',
+                        strasse: 'Teststraße 123',
+                        plz: '12345',
+                        ort: 'Teststadt'
+                    },
+                    positionen: [
+                        { beschreibung: 'Metallbau Arbeit', menge: 10, einzelpreis: 65 },
+                        { beschreibung: 'Material', menge: 1, einzelpreis: 150 }
+                    ],
+                    netto: 800,
+                    mwst: 152,
+                    brutto: 952
+                };
+
+                result.textContent = '⏳ Lade pdfmake...';
+                await window.pdfGenerationService.init();
+
+                result.textContent = '⏳ Generiere PDF...';
+                await window.pdfGenerationService.openPDF(testInvoice);
+
+                result.textContent = '✅ PDF erfolgreich generiert und geöffnet!';
+                result.className = 'result success';
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}\n${error.stack}`;
+                result.className = 'result error';
+            }
+        }
+
+        async function testFullInvoice() {
+            const result = document.getElementById('invoice-result');
+            try {
+                // Initialize services
+                await window.dbService.init();
+                await window.invoiceService.init();
+
+                // Create test Auftrag
+                const testAuftrag = {
+                    id: 'AUF-001',
+                    angebotId: 'ANG-001',
+                    kunde: {
+                        name: 'Test Kunde GmbH',
+                        firma: 'Test Kunde GmbH',
+                        strasse: 'Teststraße 123',
+                        plz: '12345',
+                        ort: 'Teststadt',
+                        email: 'test@kunde.de'
+                    },
+                    leistungsart: 'Metallbau',
+                    positionen: [
+                        {
+                            name: 'Geländer montieren',
+                            beschreibung: 'Montage Geländer 5m',
+                            menge: 1,
+                            einzelpreis: 650
+                        },
+                        {
+                            name: 'Material',
+                            beschreibung: 'Edelstahl Profile',
+                            menge: 1,
+                            einzelpreis: 250
+                        }
+                    ],
+                    arbeitszeit: 10,
+                    materialKosten: 250,
+                    netto: 650,
+                    notizen: 'Test Auftrag'
+                };
+
+                // Mock storeService
+                if (!window.storeService) {
+                    window.storeService = {
+                        state: { rechnungen: [] },
+                        generateId: (prefix) => `${prefix}-${Date.now()}`,
+                        save: () => {},
+                        addActivity: (icon, text) => console.log(`${icon} ${text}`),
+                        getCurrentUserId: () => 'test-user'
+                    };
+                }
+
+                result.textContent = '⏳ Erstelle Rechnung...';
+
+                const invoice = await window.invoiceService.createInvoice(testAuftrag, {
+                    generatePDF: false,
+                    openPDF: false,
+                    downloadPDF: false,
+                    generateEInvoice: false
+                });
+
+                result.textContent = `✅ Rechnung erstellt!\n\nRechnungsnummer: ${invoice.nummer}\nBetrag: ${invoice.brutto.toFixed(2)} €\nFällig: ${new Date(invoice.faelligkeitsdatum).toLocaleDateString('de-DE')}\n\n${JSON.stringify(invoice, null, 2)}`;
+                result.className = 'result success';
+            } catch (error) {
+                result.textContent = `❌ Error: ${error.message}\n${error.stack}`;
+                result.className = 'result error';
+            }
+        }
+
+        // Auto-run service test on load
+        window.addEventListener('load', () => {
+            setTimeout(testServices, 500);
+        });
+    </script>
+</body>
+</html>

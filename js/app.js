@@ -965,18 +965,30 @@ function renderRechnungen() {
         <div class="item-card">
             <div class="item-header">
                 <h3 class="item-title">${window.UI.sanitize(r.kunde.name)}</h3>
-                <span class="item-id">${r.id}</span>
+                <span class="item-id">${r.nummer || r.id}</span>
             </div>
             <div class="item-meta">
                 <span>💰 ${formatCurrency(r.brutto)}</span>
                 <span>📅 ${formatDate(r.createdAt)}</span>
+                ${r.faelligkeitsdatum ? `<span>⏰ Fällig: ${formatDate(r.faelligkeitsdatum)}</span>` : ''}
             </div>
-            <div class="item-actions">
+            <div class="item-actions" style="gap: 8px; display: flex; flex-wrap: wrap; align-items: center;">
                 <span class="status-badge status-${r.status}">
-                    ● ${r.status === 'offen' ? 'Offen' : 'Bezahlt'}
+                    ● ${r.status === 'offen' ? 'Offen' : r.status === 'bezahlt' ? 'Bezahlt' : r.status === 'storniert' ? 'Storniert' : r.status}
                 </span>
+                <button class="btn btn-secondary btn-sm" onclick="downloadInvoicePDF('${r.id}')" title="PDF herunterladen">
+                    📄 PDF
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="generateEInvoice('${r.id}')" title="E-Rechnung (XRechnung)">
+                    🔐 E-Rechnung
+                </button>
+                ${r.status === 'offen' ? `
+                    <button class="btn btn-success btn-sm" onclick="markInvoiceAsPaid('${r.id}')" title="Als bezahlt markieren">
+                        ✓ Bezahlt
+                    </button>
+                ` : ''}
                 <button class="btn btn-primary" onclick="showRechnung('${r.id}')">
-                    📄 Anzeigen
+                    👁 Anzeigen
                 </button>
             </div>
         </div>
@@ -1407,6 +1419,44 @@ function initSettings() {
         a.click();
         showToast('📥 Daten exportiert!', 'success');
     });
+
+    // Invoice Template Settings
+    document.getElementById('btn-save-template')?.addEventListener('click', () => {
+        const templateId = document.getElementById('invoice-template').value;
+        localStorage.setItem('default_invoice_template', templateId);
+        showToast('✅ Template-Einstellung gespeichert!', 'success');
+    });
+
+    // Invoice Numbering Settings
+    document.getElementById('btn-save-invoice-numbering')?.addEventListener('click', async () => {
+        try {
+            const prefix = document.getElementById('invoice-prefix').value;
+            const format = document.getElementById('invoice-format').value;
+            const yearlyReset = document.getElementById('invoice-yearly-reset').checked;
+
+            if (window.invoiceNumberingService) {
+                const userId = window.storeService?.getCurrentUserId?.() || 'default';
+                await window.invoiceNumberingService.updateConfig(userId, {
+                    prefix: prefix,
+                    format: format,
+                    resetYearly: yearlyReset
+                });
+
+                // Update preview
+                await updateInvoiceNumberPreview();
+
+                showToast('✅ Rechnungsnummern-Einstellung gespeichert!', 'success');
+            } else {
+                showToast('❌ Invoice Service nicht verfügbar', 'error');
+            }
+        } catch (error) {
+            console.error('Error saving invoice numbering:', error);
+            showToast('❌ Fehler beim Speichern', 'error');
+        }
+    });
+
+    // Load invoice numbering preview
+    updateInvoiceNumberPreview();
 
     // Clear Data
     document.getElementById('btn-clear-data')?.addEventListener('click', () => {
@@ -2596,6 +2646,122 @@ function initAutomations() {
     }, 500);
 }
 
+// ============================================
+// Invoice Management Functions
+// ============================================
+
+/**
+ * Download invoice PDF
+ */
+async function downloadInvoicePDF(invoiceId) {
+    try {
+        if (!window.invoiceService) {
+            showToast('❌ Invoice Service nicht verfügbar', 'error');
+            return;
+        }
+
+        showToast('📄 Generiere PDF...', 'info');
+
+        await window.invoiceService.generatePDF(invoiceId, {
+            download: true,
+            open: false
+        });
+
+        showToast('✅ PDF heruntergeladen!', 'success');
+    } catch (error) {
+        console.error('PDF download error:', error);
+        showToast('❌ Fehler beim PDF-Download: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Generate e-invoice (XRechnung)
+ */
+async function generateEInvoice(invoiceId) {
+    try {
+        if (!window.invoiceService) {
+            showToast('❌ Invoice Service nicht verfügbar', 'error');
+            return;
+        }
+
+        showToast('🔐 Generiere E-Rechnung...', 'info');
+
+        const result = await window.invoiceService.generateEInvoice(invoiceId, {
+            format: 'xrechnung',
+            download: true
+        });
+
+        if (result.success) {
+            showToast('✅ E-Rechnung (XRechnung) erstellt!', 'success');
+        } else {
+            showToast('❌ E-Rechnung Fehler', 'error');
+        }
+    } catch (error) {
+        console.error('E-Invoice generation error:', error);
+        showToast('❌ Fehler bei E-Rechnung: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Mark invoice as paid
+ */
+async function markInvoiceAsPaid(invoiceId) {
+    try {
+        const confirmed = confirm('Rechnung als bezahlt markieren?');
+        if (!confirmed) return;
+
+        if (!window.invoiceService) {
+            showToast('❌ Invoice Service nicht verfügbar', 'error');
+            return;
+        }
+
+        const invoice = await window.invoiceService.markAsPaid(invoiceId, {
+            method: 'Überweisung',
+            note: ''
+        });
+
+        showToast('✅ Rechnung als bezahlt markiert!', 'success');
+        renderRechnungen();
+        updateDashboard();
+    } catch (error) {
+        console.error('Mark as paid error:', error);
+        showToast('❌ Fehler: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Preview next invoice number
+ */
+async function previewNextInvoiceNumber() {
+    try {
+        if (!window.invoiceNumberingService) {
+            return 'N/A';
+        }
+
+        const userId = window.storeService?.getCurrentUserId?.() || 'default';
+        const preview = await window.invoiceNumberingService.previewNext(userId);
+        return preview;
+    } catch (error) {
+        console.error('Preview error:', error);
+        return 'Error';
+    }
+}
+
+/**
+ * Update invoice number preview in settings
+ */
+async function updateInvoiceNumberPreview() {
+    const previewElement = document.getElementById('invoice-number-preview');
+    if (!previewElement) return;
+
+    try {
+        const preview = await previewNextInvoiceNumber();
+        previewElement.textContent = preview;
+    } catch (error) {
+        previewElement.textContent = 'Fehler beim Laden';
+    }
+}
+
 // Make functions globally available
 // ============================================
 // PDF Export Functions
@@ -2640,6 +2806,10 @@ window.updateFollowUpBadge = updateFollowUpBadge;
 window.updateLowStockBadge = updateLowStockBadge;
 window.exportAngebotPDF = exportAngebotPDF;
 window.exportMahnungPDF = exportMahnungPDF;
+window.downloadInvoicePDF = downloadInvoicePDF;
+window.generateEInvoice = generateEInvoice;
+window.markInvoiceAsPaid = markInvoiceAsPaid;
+window.previewNextInvoiceNumber = previewNextInvoiceNumber;
 
 // Start app
 document.addEventListener('DOMContentLoaded', async () => {

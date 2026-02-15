@@ -1,0 +1,6 @@
+Name;Firma;E-Mail;Telefon;Straße;PLZ;Ort
+;Test GmbH;valid@test.de;0123456789;Teststraße 1;12345;Teststadt
+Ungültige Email;Firma;ungueltige-email;0987654321;Straße 2;54321;Stadt
+Kunde Drei;Firma Drei;kunde3@test.de;abc123def;Straße 3;1234;Stadt3
+;;;;;
+Valider Kunde;Firma OK;ok@test.de;030 1234567;Straße 4;10115;Berlin

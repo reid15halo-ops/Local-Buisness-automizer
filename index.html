@@ -171,6 +171,11 @@
                             <span class="qa-label">Demo-Workflow</span>
                             <span class="qa-shortcut">D</span>
                         </button>
+                        <button class="quick-action" id="qa-excel-import" title="Excel/CSV Daten importieren">
+                            <span class="qa-icon">📊</span>
+                            <span class="qa-label">Daten importieren</span>
+                            <span class="qa-shortcut">I</span>
+                        </button>
                         <button class="quick-action" id="qa-all-invoices" title="Alle Mahnungen senden">
                             <span class="qa-icon">⚠️</span>
                             <span class="qa-label">Alle Mahnungen</span>
@@ -323,9 +328,12 @@
                     <div class="view-header-row">
                         <div>
                             <h1>Rechnungen</h1>
-                            <p class="subtitle">Generierte Rechnungen</p>
+                            <p class="subtitle">Generierte Rechnungen (GoBD-konform)</p>
                         </div>
                         <div class="header-actions">
+                            <button class="btn btn-secondary" onclick="document.querySelector('.nav-item[data-view=\\'einstellungen\\']').click()">
+                                ⚙️ Vorlagen
+                            </button>
                             <label class="btn btn-secondary" for="bank-csv-import">
                                 🏦 Bank-CSV importieren
                                 <input type="file" id="bank-csv-import" accept=".csv" style="display:none;">
@@ -353,7 +361,8 @@
                                 ⚠️ Bestellvorschläge
                                 <span class="badge" id="lowstock-badge" style="display:none;">0</span>
                             </button>
-                            <label class="btn btn-primary" for="excel-import">
+                            <button class="btn btn-primary" id="btn-import-wizard-material">📥 Excel/CSV Import</button>
+                            <label class="btn btn-secondary" for="excel-import" style="display:none;">
                                 📥 Excel Import
                                 <input type="file" id="excel-import" accept=".xlsx,.xls" style="display:none">
                             </label>
@@ -487,6 +496,47 @@
                             </div>
                         </div>
                         <button class="btn btn-secondary btn-small" id="btn-check-overdue" style="margin-top:12px;">Mahnungen jetzt prüfen</button>
+                    </div>
+                    <div class="settings-card">
+                        <h3>📄 Rechnungsvorlagen</h3>
+                        <p>Template-Auswahl für PDF-Generierung</p>
+                        <div class="form-group">
+                            <label for="invoice-template">Standard-Template</label>
+                            <select id="invoice-template" class="form-control">
+                                <option value="standard-de">Standard Deutsch (§14 UStG)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-template">Speichern</button>
+                    </div>
+                    <div class="settings-card">
+                        <h3>🔢 Rechnungsnummern</h3>
+                        <p>GoBD-konforme Nummerierung</p>
+                        <div class="form-group">
+                            <label for="invoice-prefix">Präfix</label>
+                            <input type="text" id="invoice-prefix" value="RE" maxlength="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="invoice-format">Format</label>
+                            <select id="invoice-format" class="form-control">
+                                <option value="{PREFIX}-{YEAR}-{NUMBER:4}">RE-2026-0001</option>
+                                <option value="{PREFIX}{YEAR}{NUMBER:4}">RE20260001</option>
+                                <option value="{PREFIX}-{NUMBER:6}">RE-000001 (fortlaufend)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nächste Nummer (Vorschau)</label>
+                            <div id="invoice-number-preview" style="padding: 8px; background: var(--card-bg); border-radius: 4px; font-family: monospace;">
+                                Lade...
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="invoice-yearly-reset" checked>
+                                Jährlicher Reset
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" id="btn-save-invoice-numbering">Speichern</button>
+                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">⚠️ Änderungen müssen GoBD-konform sein!</p>
                     </div>
                     <div class="settings-card">
                         <h3>🗑️ Daten</h3>
@@ -667,7 +717,8 @@
                             <p class="subtitle">CRM & Kundenverwaltung</p>
                         </div>
                         <div class="header-actions">
-                            <label class="btn btn-secondary" for="customer-csv-import">
+                            <button class="btn btn-secondary" id="btn-import-wizard-kunden">📥 Excel/CSV Import</button>
+                            <label class="btn btn-secondary" for="customer-csv-import" style="display:none;">
                                 📥 CSV Import
                                 <input type="file" id="customer-csv-import" accept=".csv,.vcf" style="display:none">
                             </label>
@@ -1525,6 +1576,11 @@
         </div>
     </div>
 
+    <!-- Modal: Excel Import Wizard (wird dynamisch erstellt) -->
+    <div class="modal" id="modal-excel-import">
+        <!-- Wird von excel-import-wizard.js erstellt -->
+    </div>
+
     <!-- =====================================
          Core Infrastructure (Always Loaded)
          ===================================== -->
@@ -1532,7 +1588,9 @@
     <script src="js/services/db-service.js"></script>
     <script src="js/services/demo-data-service.js"></script>
     <script src="js/services/store-service.js"></script>
+    <script src="js/services/excel-recognition-service.js"></script>
     <script src="js/ui/ui-helpers.js"></script>
+    <script src="js/ui/excel-import-wizard.js"></script>
 
     <!-- Lazy Loading System -->
     <script src="js/services/lazy-loader.js"></script>
@@ -1548,6 +1606,7 @@
     <script src="js/services/pdf-service.js"></script>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
+    <script src="js/excel-import-integration.js"></script>
     <script src="js/app.js"></script>
 
     <!-- Initialize lazy-loaded services after app init -->
