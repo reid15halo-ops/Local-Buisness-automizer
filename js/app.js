@@ -3077,6 +3077,19 @@ if (originalMarkPaid) {
 // Initialize Application
 // ============================================
 async function init() {
+    // Check if setup wizard needs to run
+    if (window.setupWizard && !window.setupWizard.isSetupComplete()) {
+        // Show setup wizard if APIs are not configured
+        const missing = window.setupWizard.getMissingKeys();
+        if (missing.length > 0) {
+            console.log('⚙️ Setup incomplete. Missing keys:', missing.map(k => k.name).join(', '));
+            if (window.setupWizardUI) {
+                window.setupWizardUI.show();
+                return; // Don't initialize app until setup is complete
+            }
+        }
+    }
+
     // Await store service load (migrates from localStorage if needed)
     await window.storeService.load();
 
@@ -4161,6 +4174,14 @@ window.removeAuftragMitarbeiter = removeAuftragMitarbeiter;
 window.toggleChecklistItem = toggleChecklistItem;
 window.removeChecklistItem = removeChecklistItem;
 window.changeAuftragStatus = changeAuftragStatus;
+
+// Expose init function globally for setup wizard
+window.app = {
+    init: async () => {
+        await init();
+        initAutomations();
+    }
+};
 
 // Start app
 document.addEventListener('DOMContentLoaded', async () => {
