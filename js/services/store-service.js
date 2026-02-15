@@ -203,20 +203,51 @@ class StoreService {
             ...completionData
         });
 
-        // Create Invoice automatically
+        // Build invoice positions: original positions + Stückliste + extra costs
+        const rechnungsPositionen = [...(auftrag.positionen || [])];
+        const stueckliste = auftrag.stueckliste || [];
+
+        stueckliste.forEach(item => {
+            rechnungsPositionen.push({
+                beschreibung: `Material: ${item.bezeichnung}`,
+                menge: item.menge,
+                einheit: item.einheit,
+                preis: item.vkPreis,
+                isMaterial: true,
+                artikelnummer: item.artikelnummer,
+                ekPreis: item.ekPreis
+            });
+        });
+
+        if ((auftrag.extraMaterialKosten || 0) > 0) {
+            rechnungsPositionen.push({
+                beschreibung: 'Sonstige Materialkosten',
+                menge: 1,
+                einheit: 'pauschal',
+                preis: auftrag.extraMaterialKosten,
+                isMaterial: true
+            });
+        }
+
+        const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
+
         const rechnung = {
             id: this.generateId('RE'),
             auftragId,
             angebotId: auftrag.angebotId,
             kunde: auftrag.kunde,
             leistungsart: auftrag.leistungsart,
-            positionen: auftrag.positionen,
+            positionen: rechnungsPositionen,
+            stueckliste: stueckliste,
             arbeitszeit: auftrag.arbeitszeit,
-            materialKosten: auftrag.materialKosten,
+            materialKosten: auftrag.materialKosten || 0,
+            extraMaterialKosten: auftrag.extraMaterialKosten || 0,
+            stuecklisteVK: auftrag.stuecklisteVK || 0,
+            stuecklisteEK: auftrag.stuecklisteEK || 0,
             notizen: auftrag.notizen,
-            netto: auftrag.netto + (auftrag.materialKosten || 0),
-            mwst: (auftrag.netto + (auftrag.materialKosten || 0)) * 0.19,
-            brutto: (auftrag.netto + (auftrag.materialKosten || 0)) * 1.19,
+            netto: netto,
+            mwst: netto * 0.19,
+            brutto: netto * 1.19,
             status: 'offen',
             createdAt: new Date().toISOString()
         };

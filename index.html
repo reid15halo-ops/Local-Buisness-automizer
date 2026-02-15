@@ -1332,7 +1332,7 @@
     <!-- Modal: Auftrag Details -->
     <div class="modal" id="modal-auftrag">
         <div class="modal-overlay"></div>
-        <div class="modal-content">
+        <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2>Auftrag abschließen</h2>
                 <button class="modal-close">&times;</button>
@@ -1345,13 +1345,68 @@
                     <label for="arbeitszeit">Tatsächliche Arbeitszeit (Stunden)</label>
                     <input type="number" id="arbeitszeit" step="0.5" placeholder="z.B. 8.5">
                 </div>
+
+                <!-- Stückliste / Bill of Materials -->
                 <div class="form-group">
-                    <label for="material-kosten">Materialkosten (€)</label>
-                    <input type="number" id="material-kosten" step="0.01" placeholder="z.B. 250.00">
+                    <label>Stückliste (verwendete Materialien)</label>
+                    <p class="hint">Materialien aus dem Bestand auswählen. Kosten werden automatisch berechnet.</p>
+                    <div class="stueckliste-container" id="stueckliste-container">
+                        <div class="stueckliste-header">
+                            <span class="sl-col-name">Material</span>
+                            <span class="sl-col-menge">Menge</span>
+                            <span class="sl-col-einheit">Einheit</span>
+                            <span class="sl-col-preis">EK/Stk</span>
+                            <span class="sl-col-vk">VK/Stk</span>
+                            <span class="sl-col-gesamt">Gesamt (VK)</span>
+                            <span class="sl-col-action"></span>
+                        </div>
+                        <div id="stueckliste-rows">
+                            <!-- Dynamisch per JS -->
+                        </div>
+                        <div class="stueckliste-footer">
+                            <div class="stueckliste-add-row">
+                                <button type="button" class="btn btn-small" id="btn-add-stueckliste">+ Material hinzufügen</button>
+                                <button type="button" class="btn btn-small btn-secondary" id="btn-add-stueckliste-bestand">📦 Aus Bestand wählen</button>
+                                <button type="button" class="btn btn-small btn-secondary" id="btn-suggest-stueckliste">🤖 KI-Vorschlag</button>
+                            </div>
+                            <div class="stueckliste-summary">
+                                <div class="summary-row">
+                                    <span>Material (EK):</span>
+                                    <span id="sl-total-ek">0,00 €</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Material (VK):</span>
+                                    <span id="sl-total-vk">0,00 €</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>Marge:</span>
+                                    <span id="sl-total-marge">0,00 €</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <label for="material-kosten-extra">Sonstige Materialkosten (€)</label>
+                    <input type="number" id="material-kosten-extra" step="0.01" placeholder="z.B. für Fremdmaterial ohne Bestand" value="0">
+                    <small>Materialien, die nicht im Bestand sind (z.B. Fremdleistungen)</small>
+                </div>
+
                 <div class="form-group">
                     <label for="notizen">Arbeitsnotizen</label>
                     <textarea id="notizen" rows="3" placeholder="Durchgeführte Arbeiten..."></textarea>
+                </div>
+
+                <!-- Gesamt-Übersicht -->
+                <div class="auftrag-total-summary" id="auftrag-total-summary">
+                    <h4>Rechnungsvorschau</h4>
+                    <div class="summary-row"><span>Angebotspositionen (netto):</span><span id="at-angebot-netto">0,00 €</span></div>
+                    <div class="summary-row"><span>Stückliste Material (VK):</span><span id="at-material-vk">0,00 €</span></div>
+                    <div class="summary-row"><span>Sonstiges Material:</span><span id="at-extra">0,00 €</span></div>
+                    <div class="summary-row"><span>Netto gesamt:</span><span id="at-netto">0,00 €</span></div>
+                    <div class="summary-row"><span>MwSt. 19%:</span><span id="at-mwst">0,00 €</span></div>
+                    <div class="summary-row total"><span>Brutto gesamt:</span><span id="at-brutto">0,00 €</span></div>
                 </div>
 
                 <div class="form-actions">

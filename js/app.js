@@ -508,6 +508,11 @@ function renderAuftraege() {
     `).join('');
 }
 
+// ============================================
+// Stückliste (Bill of Materials) Management
+// ============================================
+let stuecklisteItems = []; // Current BOM items in modal
+
 function openAuftragModal(auftragId) {
     const auftrag = store.auftraege.find(a => a.id === auftragId);
     if (!auftrag) return;
@@ -516,20 +521,312 @@ function openAuftragModal(auftragId) {
     document.getElementById('auftrag-id').value = auftragId;
 
     document.getElementById('auftrag-info').innerHTML = `
-        <p><strong>${window.UI.sanitize(auftrag.kunde.name)}</strong></p>
+        <p><strong>${h(auftrag.kunde.name)}</strong></p>
         <p>${getLeistungsartLabel(auftrag.leistungsart)}</p>
         <p>Angebotswert: ${formatCurrency(auftrag.angebotsWert)}</p>
+        <p style="font-size:12px; color:var(--text-muted);">Positionen: ${auftrag.positionen.map(p => h(p.beschreibung)).join(', ')}</p>
     `;
 
     document.getElementById('arbeitszeit').value = '';
-    document.getElementById('material-kosten').value = '';
+    document.getElementById('material-kosten-extra').value = '0';
     document.getElementById('notizen').value = '';
+
+    // Reset Stückliste
+    stuecklisteItems = [];
+    renderStueckliste();
+    updateAuftragTotalSummary(auftrag);
 
     openModal('modal-auftrag');
 }
 
+function addStuecklisteRow(prefill = null) {
+    const item = {
+        id: `sl-${Date.now()}-${Math.random().toString(36).substr(2,4)}`,
+        materialId: prefill?.id || prefill?.materialId || null,
+        artikelnummer: prefill?.artikelnummer || '',
+        bezeichnung: prefill?.bezeichnung || '',
+        menge: prefill?.menge || 1,
+        einheit: prefill?.einheit || 'Stk.',
+        ekPreis: prefill?.preis || prefill?.ekPreis || 0,
+        vkPreis: prefill?.vkPreis || 0,
+        bestandVerfuegbar: prefill?.bestand || 0
+    };
+    stuecklisteItems.push(item);
+    renderStueckliste();
+    updateStuecklisteSummary();
+}
+
+function removeStuecklisteRow(itemId) {
+    stuecklisteItems = stuecklisteItems.filter(i => i.id !== itemId);
+    renderStueckliste();
+    updateStuecklisteSummary();
+}
+
+function renderStueckliste() {
+    const container = document.getElementById('stueckliste-rows');
+    if (!container) return;
+
+    if (stuecklisteItems.length === 0) {
+        container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">Noch keine Materialien hinzugefügt. Klicke "Material hinzufügen" oder "Aus Bestand wählen".</div>';
+        return;
+    }
+
+    container.innerHTML = stuecklisteItems.map(item => `
+        <div class="stueckliste-row" data-sl-id="${item.id}">
+            <div class="sl-name-wrapper">
+                <input type="text" class="sl-name-input" value="${h(item.bezeichnung)}"
+                    placeholder="Material suchen..." data-sl-id="${item.id}" autocomplete="off">
+                <div class="sl-suggest" id="sl-suggest-${item.id}" style="display:none;"></div>
+            </div>
+            <input type="number" class="sl-menge" value="${item.menge}" min="0.1" step="0.5"
+                data-sl-id="${item.id}" oninput="onStuecklisteChange(this)">
+            <span style="font-size:13px;color:var(--text-secondary);">${h(item.einheit)}</span>
+            <span style="font-size:13px;">${formatCurrency(item.ekPreis)}</span>
+            <span style="font-size:13px;">${formatCurrency(item.vkPreis)}</span>
+            <span class="sl-gesamt">${formatCurrency(item.menge * item.vkPreis)}</span>
+            <button type="button" class="sl-remove-btn" onclick="removeStuecklisteRow('${item.id}')" title="Entfernen">&times;</button>
+        </div>
+    `).join('');
+
+    // Setup autocomplete for each name input
+    container.querySelectorAll('.sl-name-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const slId = e.target.dataset.slId;
+            const suggestBox = document.getElementById(`sl-suggest-${slId}`);
+
+            if (query.length < 2) {
+                suggestBox.style.display = 'none';
+                return;
+            }
+
+            const materials = window.materialService?.searchMaterials(query) || [];
+            if (materials.length === 0) {
+                suggestBox.style.display = 'none';
+                return;
+            }
+
+            // Store materials for selection
+            suggestBox._materials = materials.slice(0, 8);
+            suggestBox.innerHTML = materials.slice(0, 8).map((m, i) => `
+                <div class="sl-suggest-item" data-idx="${i}">
+                    <span class="sl-suggest-name">${h(m.bezeichnung)}</span>
+                    <span class="sl-suggest-meta">
+                        <span>EK ${formatCurrency(m.preis)}</span>
+                        <span>VK ${formatCurrency(m.vkPreis || m.preis)}</span>
+                        <span>${m.bestand} ${h(m.einheit)}</span>
+                    </span>
+                </div>
+            `).join('');
+            suggestBox.style.display = 'block';
+
+            suggestBox.querySelectorAll('.sl-suggest-item').forEach(si => {
+                si.addEventListener('click', () => {
+                    const mat = suggestBox._materials[parseInt(si.dataset.idx)];
+                    if (!mat) return;
+                    selectMaterialForStueckliste(slId, mat);
+                    suggestBox.style.display = 'none';
+                });
+            });
+        });
+
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                const suggestBox = document.getElementById(`sl-suggest-${input.dataset.slId}`);
+                if (suggestBox) suggestBox.style.display = 'none';
+            }, 200);
+        });
+    });
+}
+
+function selectMaterialForStueckliste(slId, material) {
+    const item = stuecklisteItems.find(i => i.id === slId);
+    if (!item) return;
+
+    item.materialId = material.id;
+    item.artikelnummer = material.artikelnummer;
+    item.bezeichnung = material.bezeichnung;
+    item.einheit = material.einheit;
+    item.ekPreis = material.preis;
+    item.vkPreis = material.vkPreis || material.preis;
+    item.bestandVerfuegbar = material.bestand;
+
+    renderStueckliste();
+    updateStuecklisteSummary();
+}
+
+function onStuecklisteChange(input) {
+    const slId = input.dataset.slId;
+    const item = stuecklisteItems.find(i => i.id === slId);
+    if (!item) return;
+
+    item.menge = parseFloat(input.value) || 0;
+    // Update Gesamt in row
+    const row = input.closest('.stueckliste-row');
+    const gesamtEl = row?.querySelector('.sl-gesamt');
+    if (gesamtEl) gesamtEl.textContent = formatCurrency(item.menge * item.vkPreis);
+
+    updateStuecklisteSummary();
+}
+
+function updateStuecklisteSummary() {
+    const totalEK = stuecklisteItems.reduce((sum, i) => sum + (i.menge * i.ekPreis), 0);
+    const totalVK = stuecklisteItems.reduce((sum, i) => sum + (i.menge * i.vkPreis), 0);
+
+    const ekEl = document.getElementById('sl-total-ek');
+    const vkEl = document.getElementById('sl-total-vk');
+    const margeEl = document.getElementById('sl-total-marge');
+
+    if (ekEl) ekEl.textContent = formatCurrency(totalEK);
+    if (vkEl) vkEl.textContent = formatCurrency(totalVK);
+    if (margeEl) margeEl.textContent = formatCurrency(totalVK - totalEK);
+
+    // Update total summary
+    const auftragId = document.getElementById('auftrag-id')?.value;
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (auftrag) updateAuftragTotalSummary(auftrag);
+}
+
+function updateAuftragTotalSummary(auftrag) {
+    const materialVK = stuecklisteItems.reduce((sum, i) => sum + (i.menge * i.vkPreis), 0);
+    const extra = parseFloat(document.getElementById('material-kosten-extra')?.value) || 0;
+    const angebotNetto = auftrag.netto || 0;
+
+    const netto = angebotNetto + materialVK + extra;
+    const mwst = netto * 0.19;
+    const brutto = netto + mwst;
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = formatCurrency(val); };
+    set('at-angebot-netto', angebotNetto);
+    set('at-material-vk', materialVK);
+    set('at-extra', extra);
+    set('at-netto', netto);
+    set('at-mwst', mwst);
+    set('at-brutto', brutto);
+}
+
+function openStuecklisteBestandPicker() {
+    const materials = window.materialService?.getAllMaterials() || [];
+    if (materials.length === 0) {
+        showToast('Materialbestand leer – lade Demo-Daten in der Material-Ansicht', 'warning');
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'sl-picker-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📦 Material aus Bestand wählen</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="material-filter" style="padding:0 24px;">
+                <input type="text" id="sl-picker-search" placeholder="🔍 Material suchen..." style="width:100%;padding:10px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:14px;">
+            </div>
+            <div class="material-picker-list" id="sl-picker-list" style="max-height:400px;overflow-y:auto;padding:12px 24px;">
+                ${materials.map((m, i) => `
+                    <div class="material-picker-item" data-idx="${i}" style="display:flex;align-items:center;gap:12px;padding:10px;border-bottom:1px solid var(--border-color);cursor:pointer;">
+                        <div class="material-picker-check" style="width:20px;height:20px;border:2px solid var(--border-color);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;"></div>
+                        <div style="flex:1">
+                            <div style="font-weight:500;">${h(m.bezeichnung)}</div>
+                            <div style="font-size:12px;color:var(--text-muted);">
+                                ${h(m.artikelnummer)} · EK ${formatCurrency(m.preis)} · VK ${formatCurrency(m.vkPreis || m.preis)} · ${m.bestand} ${h(m.einheit)} auf Lager
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="form-actions" style="padding:16px 24px;">
+                <button class="btn btn-secondary" id="sl-picker-cancel">Abbrechen</button>
+                <button class="btn btn-primary" id="sl-picker-add">Ausgewählte hinzufügen</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const selected = new Set();
+    modal.querySelectorAll('.material-picker-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const idx = parseInt(item.dataset.idx);
+            item.classList.toggle('selected');
+            if (item.classList.contains('selected')) {
+                selected.add(idx);
+                item.querySelector('.material-picker-check').textContent = '✓';
+                item.querySelector('.material-picker-check').style.borderColor = 'var(--accent-primary)';
+                item.querySelector('.material-picker-check').style.color = 'var(--accent-primary)';
+            } else {
+                selected.delete(idx);
+                item.querySelector('.material-picker-check').textContent = '';
+                item.querySelector('.material-picker-check').style.borderColor = 'var(--border-color)';
+            }
+        });
+    });
+
+    // Search filter
+    modal.querySelector('#sl-picker-search')?.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        modal.querySelectorAll('.material-picker-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(q) ? 'flex' : 'none';
+        });
+    });
+
+    modal.querySelector('#sl-picker-cancel').addEventListener('click', () => modal.remove());
+    modal.querySelector('.modal-overlay').addEventListener('click', () => modal.remove());
+    modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+
+    modal.querySelector('#sl-picker-add').addEventListener('click', () => {
+        selected.forEach(idx => {
+            const m = materials[idx];
+            if (m) addStuecklisteRow(m);
+        });
+        if (selected.size > 0) {
+            showToast(`${selected.size} Material(ien) zur Stückliste hinzugefügt`, 'success');
+        }
+        modal.remove();
+    });
+}
+
+function suggestStuecklisteMaterials() {
+    const auftragId = document.getElementById('auftrag-id')?.value;
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (!auftrag) return;
+
+    // Build description from all positions
+    const beschreibung = auftrag.positionen.map(p => p.beschreibung).join(' ');
+    const suggestions = window.materialService?.suggestMaterials(beschreibung) || [];
+
+    if (suggestions.length === 0) {
+        showToast('Keine passenden Materialien im Bestand gefunden', 'info');
+        return;
+    }
+
+    suggestions.forEach(m => {
+        // Don't add duplicates
+        if (!stuecklisteItems.some(i => i.materialId === m.id)) {
+            addStuecklisteRow(m);
+        }
+    });
+
+    showToast(`${suggestions.length} Material-Vorschläge hinzugefügt`, 'success');
+}
+
 function initAuftragForm() {
     const form = document.getElementById('form-auftrag');
+
+    // Stückliste button handlers
+    document.getElementById('btn-add-stueckliste')?.addEventListener('click', () => addStuecklisteRow());
+    document.getElementById('btn-add-stueckliste-bestand')?.addEventListener('click', () => openStuecklisteBestandPicker());
+    document.getElementById('btn-suggest-stueckliste')?.addEventListener('click', () => suggestStuecklisteMaterials());
+
+    // Update total summary when extra costs change
+    document.getElementById('material-kosten-extra')?.addEventListener('input', () => {
+        const auftragId = document.getElementById('auftrag-id')?.value;
+        const auftrag = store.auftraege.find(a => a.id === auftragId);
+        if (auftrag) updateAuftragTotalSummary(auftrag);
+    });
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -538,26 +835,90 @@ function initAuftragForm() {
         const auftrag = store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) return;
 
+        const arbeitszeit = parseFloat(document.getElementById('arbeitszeit').value) || 0;
+        const extraMaterialKosten = parseFloat(document.getElementById('material-kosten-extra').value) || 0;
+        const notizen = document.getElementById('notizen').value;
+
+        // Collect Stückliste data
+        const stueckliste = stuecklisteItems.filter(i => i.bezeichnung).map(item => ({
+            materialId: item.materialId,
+            artikelnummer: item.artikelnummer,
+            bezeichnung: item.bezeichnung,
+            menge: item.menge,
+            einheit: item.einheit,
+            ekPreis: item.ekPreis,
+            vkPreis: item.vkPreis
+        }));
+
+        // Calculate totals
+        const stuecklisteVK = stueckliste.reduce((sum, i) => sum + (i.menge * i.vkPreis), 0);
+        const stuecklisteEK = stueckliste.reduce((sum, i) => sum + (i.menge * i.ekPreis), 0);
+        const totalMaterialKosten = stuecklisteVK + extraMaterialKosten;
+
+        // Update Auftrag
         auftrag.status = 'abgeschlossen';
-        auftrag.arbeitszeit = parseFloat(document.getElementById('arbeitszeit').value) || 0;
-        auftrag.materialKosten = parseFloat(document.getElementById('material-kosten').value) || 0;
-        auftrag.notizen = document.getElementById('notizen').value;
+        auftrag.arbeitszeit = arbeitszeit;
+        auftrag.stueckliste = stueckliste;
+        auftrag.stuecklisteVK = stuecklisteVK;
+        auftrag.stuecklisteEK = stuecklisteEK;
+        auftrag.extraMaterialKosten = extraMaterialKosten;
+        auftrag.materialKosten = totalMaterialKosten;
+        auftrag.notizen = notizen;
         auftrag.completedAt = new Date().toISOString();
 
-        // Create invoice
+        // Reduce stock for each material from Stückliste
+        stueckliste.forEach(item => {
+            if (item.materialId && window.materialService) {
+                window.materialService.updateStock(item.materialId, -item.menge);
+            }
+        });
+
+        // Create invoice with Stückliste as individual positions
+        const rechnungsPositionen = [...(auftrag.positionen || [])];
+
+        // Add Stückliste items as separate invoice positions
+        stueckliste.forEach(item => {
+            rechnungsPositionen.push({
+                beschreibung: `Material: ${item.bezeichnung}`,
+                menge: item.menge,
+                einheit: item.einheit,
+                preis: item.vkPreis,
+                isMaterial: true,
+                artikelnummer: item.artikelnummer,
+                ekPreis: item.ekPreis
+            });
+        });
+
+        // Add extra material costs as position if > 0
+        if (extraMaterialKosten > 0) {
+            rechnungsPositionen.push({
+                beschreibung: 'Sonstige Materialkosten',
+                menge: 1,
+                einheit: 'pauschal',
+                preis: extraMaterialKosten,
+                isMaterial: true
+            });
+        }
+
+        const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
+
         const rechnung = {
             id: generateId('RE'),
             auftragId,
             angebotId: auftrag.angebotId,
             kunde: auftrag.kunde,
             leistungsart: auftrag.leistungsart,
-            positionen: auftrag.positionen,
-            arbeitszeit: auftrag.arbeitszeit,
-            materialKosten: auftrag.materialKosten,
-            notizen: auftrag.notizen,
-            netto: auftrag.netto + auftrag.materialKosten,
-            mwst: (auftrag.netto + auftrag.materialKosten) * 0.19,
-            brutto: (auftrag.netto + auftrag.materialKosten) * 1.19,
+            positionen: rechnungsPositionen,
+            stueckliste: stueckliste,
+            arbeitszeit: arbeitszeit,
+            materialKosten: totalMaterialKosten,
+            extraMaterialKosten: extraMaterialKosten,
+            stuecklisteVK: stuecklisteVK,
+            stuecklisteEK: stuecklisteEK,
+            notizen: notizen,
+            netto: netto,
+            mwst: netto * 0.19,
+            brutto: netto * 1.19,
             status: 'offen',
             createdAt: new Date().toISOString()
         };
@@ -565,7 +926,12 @@ function initAuftragForm() {
         store.rechnungen.push(rechnung);
         saveStore();
 
-        addActivity('💰', `Rechnung ${rechnung.id} erstellt (${formatCurrency(rechnung.brutto)})`);
+        // Activity log with Stückliste info
+        const slInfo = stueckliste.length > 0 ? ` (${stueckliste.length} Materialien)` : '';
+        addActivity('💰', `Rechnung ${rechnung.id} erstellt (${formatCurrency(rechnung.brutto)})${slInfo}`);
+
+        // Update material view if visible
+        if (typeof renderMaterial === 'function') renderMaterial();
 
         closeModal('modal-auftrag');
         switchView('rechnungen');
@@ -669,26 +1035,68 @@ function showRechnung(rechnungId) {
                 </tr>
             </thead>
             <tbody>
-                ${(rechnung.positionen || []).map((p, i) => `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td>${window.UI.sanitize(p.beschreibung)}</td>
-                        <td>${p.menge} ${window.UI.sanitize(p.einheit)}</td>
-                        <td class="text-right">${formatCurrency(p.preis)}</td>
-                        <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
-                    </tr>
-                `).join('')}
-                ${rechnung.materialKosten > 0 ? `
-                    <tr>
-                        <td>${rechnung.positionen.length + 1}</td>
-                        <td>Materialkosten</td>
-                        <td>1</td>
-                        <td class="text-right">${formatCurrency(rechnung.materialKosten)}</td>
-                        <td class="text-right">${formatCurrency(rechnung.materialKosten)}</td>
-                    </tr>
-                ` : ''}
+                ${(() => {
+                    const leistungen = (rechnung.positionen || []).filter(p => !p.isMaterial);
+                    const materialien = (rechnung.positionen || []).filter(p => p.isMaterial);
+                    let pos = 0;
+                    let rows = '';
+
+                    // Leistungspositionen (service items from Angebot)
+                    leistungen.forEach(p => {
+                        pos++;
+                        rows += `<tr>
+                            <td>${pos}</td>
+                            <td>${h(p.beschreibung)}</td>
+                            <td>${p.menge} ${h(p.einheit)}</td>
+                            <td class="text-right">${formatCurrency(p.preis)}</td>
+                            <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
+                        </tr>`;
+                    });
+
+                    // Stückliste / Materialien section
+                    if (materialien.length > 0) {
+                        rows += `<tr class="rechnung-section-header">
+                            <td colspan="5" style="font-weight:600; padding-top:16px; border-bottom:2px solid var(--border-color);">
+                                Materialien / Stückliste
+                            </td>
+                        </tr>`;
+                        materialien.forEach(p => {
+                            pos++;
+                            rows += `<tr>
+                                <td>${pos}</td>
+                                <td>${h(p.beschreibung)}${p.artikelnummer ? ` <span style="color:var(--text-muted);font-size:12px;">(${h(p.artikelnummer)})</span>` : ''}</td>
+                                <td>${p.menge} ${h(p.einheit)}</td>
+                                <td class="text-right">${formatCurrency(p.preis)}</td>
+                                <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
+                            </tr>`;
+                        });
+                    }
+
+                    // Legacy fallback: old invoices without isMaterial flag
+                    if (materialien.length === 0 && rechnung.materialKosten > 0) {
+                        pos++;
+                        rows += `<tr>
+                            <td>${pos}</td>
+                            <td>Materialkosten</td>
+                            <td>1</td>
+                            <td class="text-right">${formatCurrency(rechnung.materialKosten)}</td>
+                            <td class="text-right">${formatCurrency(rechnung.materialKosten)}</td>
+                        </tr>`;
+                    }
+
+                    return rows;
+                })()}
             </tbody>
         </table>
+
+        ${rechnung.stueckliste?.length > 0 ? `
+        <div class="rechnung-stueckliste" style="margin-top:16px;padding:12px 16px;background:var(--bg-secondary);border-radius:8px;font-size:13px;">
+            <strong>Materialmarge:</strong>
+            EK gesamt: ${formatCurrency(rechnung.stuecklisteEK || 0)} ·
+            VK gesamt: ${formatCurrency(rechnung.stuecklisteVK || 0)} ·
+            Marge: <span style="color:var(--accent-primary);font-weight:600;">${formatCurrency((rechnung.stuecklisteVK || 0) - (rechnung.stuecklisteEK || 0))}</span>
+        </div>
+        ` : ''}
 
         <div class="rechnung-totals">
             <table>
@@ -743,6 +1151,8 @@ function initRechnungActions() {
                     .rechnung-label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 8px; }
                     .rechnung-totals { display: flex; justify-content: flex-end; margin-top: 20px; }
                     .rechnung-totals table { width: 280px; }
+                    .rechnung-section-header td { font-weight: 600; padding-top: 16px; border-bottom: 2px solid #999; }
+                    .rechnung-stueckliste { margin-top: 16px; padding: 12px 16px; background: #f8f8f8; border-radius: 8px; font-size: 13px; }
                 </style>
             </head>
             <body>${preview}</body>
