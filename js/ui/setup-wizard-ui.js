@@ -14,8 +14,10 @@ class SetupWizardUI {
      */
     show() {
         this.render();
-        this.modal = document.getElementById('setup-wizard-modal');
-        this.modal.classList.add('visible');
+        // modal is already set in render()
+        if (this.modal) {
+            this.modal.classList.add('visible');
+        }
         this.updateStepContent();
     }
 
@@ -81,6 +83,7 @@ class SetupWizardUI {
         `;
 
         document.body.appendChild(modal);
+        this.modal = modal; // Set modal reference before attaching listeners
         this.attachEventListeners();
     }
 
