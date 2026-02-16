@@ -7,6 +7,8 @@
     <title>MHS Workflow Demo | Anfrage → Angebot → Rechnung</title>
     <link rel="stylesheet" href="css/core.css">
     <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/purchase-orders.css">
+    <link rel="stylesheet" href="css/reorder-engine.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
@@ -195,6 +197,11 @@
                     <span class="nav-icon">📦</span>
                     Material
                     <span class="badge" id="material-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="bestellungen">
+                    <span class="nav-icon">🛒</span>
+                    Bestellungen
+                    <span class="badge" id="bestellungen-badge">0</span>
                 </button>
                 <button class="nav-item" data-view="mahnwesen">
                     <span class="nav-icon">⚠️</span>
@@ -543,6 +550,66 @@
                 <div class="items-list" id="material-list">
                     <p class="empty-state">Kein Material vorhanden. Importiere eine Excel-Datei oder lade Demo-Daten.
                     </p>
+                </div>
+            </section>
+
+            <!-- Bestellungen View -->
+            <section class="view" id="view-bestellungen">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Bestellungen</h1>
+                            <p class="subtitle">Lieferant-Verwaltung und Bestellverlauf</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="btn-new-bestellung">
+                                ➕ Neue Bestellung
+                            </button>
+                            <button class="btn btn-secondary" id="btn-auto-po-low-stock">
+                                ⚠️ Aus Bestandsmangel
+                            </button>
+                            <button class="btn btn-secondary" id="btn-demo-po">
+                                Demo-Daten laden
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- PO Stats -->
+                <div class="material-stats">
+                    <div class="stat-mini">
+                        <span id="po-count">0</span>
+                        <span>Bestellungen</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="po-value-open">0 €</span>
+                        <span>Offene Wert</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="po-expected-soon">0</span>
+                        <span>Fällig in 7 Tagen</span>
+                    </div>
+                </div>
+
+                <!-- Status Filters -->
+                <div class="material-filter">
+                    <input type="text" id="po-search" placeholder="🔍 Bestellung suchen...">
+                    <select id="po-status-filter">
+                        <option value="">Alle Status</option>
+                        <option value="entwurf">Entwurf</option>
+                        <option value="bestellt">Bestellt</option>
+                        <option value="teillieferung">Teillieferung</option>
+                        <option value="geliefert">Geliefert</option>
+                        <option value="storniert">Storniert</option>
+                    </select>
+                    <select id="po-supplier-filter">
+                        <option value="">Alle Lieferanten</option>
+                    </select>
+                </div>
+
+                <!-- PO List -->
+                <div class="po-list" id="po-list">
+                    <p class="empty-state">Keine Bestellungen vorhanden. Erstelle eine neue Bestellung oder lade Demo-Daten.</p>
                 </div>
             </section>
 
@@ -2431,6 +2498,181 @@ Email: max.mustermann@example.com</textarea>
         </div>
     </div>
 
+    <!-- Bestellung Modal -->
+    <div class="modal" id="modal-bestellung">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modal-bestellung-title">Neue Bestellung</h2>
+                <button class="modal-close" data-action="close-modal-bestellung">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="po-nummer">Bestellnummer</label>
+                    <input type="text" id="po-nummer" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="po-lieferant-name">Lieferant</label>
+                    <input type="text" id="po-lieferant-name" placeholder="z.B. Stahl Schmidt GmbH" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="po-lieferant-email">E-Mail</label>
+                        <input type="email" id="po-lieferant-email" placeholder="bestellung@beispiel.de">
+                    </div>
+                    <div class="form-group">
+                        <label for="po-lieferant-telefon">Telefon</label>
+                        <input type="tel" id="po-lieferant-telefon" placeholder="+49 ...">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="po-lieferant-ansprechpartner">Ansprechpartner</label>
+                    <input type="text" id="po-lieferant-ansprechpartner" placeholder="z.B. Herr Müller">
+                </div>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h3 style="margin: 0;">Positionen</h3>
+                    <button class="btn btn-small btn-secondary" id="btn-add-po-position">+ Position</button>
+                </div>
+
+                <div class="po-positions" id="po-positions">
+                    <!-- Positions added here -->
+                </div>
+
+                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+
+                <div class="form-group">
+                    <label for="po-lieferdatum">Erwartetes Lieferdatum</label>
+                    <input type="date" id="po-lieferdatum">
+                </div>
+
+                <div class="form-group">
+                    <label for="po-notizen">Notizen</label>
+                    <textarea id="po-notizen" rows="4" placeholder="z.B. Lieferbedingungen, Rabatte..."></textarea>
+                </div>
+
+                <!-- Summary -->
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                    <div class="summary-row">
+                        <span>Netto:</span>
+                        <span id="po-summary-netto">0,00 €</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>MwSt. (19%):</span>
+                        <span id="po-summary-mwst">0,00 €</span>
+                    </div>
+                    <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; font-weight: bold;">
+                        <span>Brutto:</span>
+                        <span id="po-summary-brutto">0,00 €</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="close-modal-bestellung">Abbrechen</button>
+                <button class="btn btn-primary" id="btn-save-bestellung">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PO Detail Modal -->
+    <div class="modal" id="modal-po-detail">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="po-detail-nummer">Bestellung PO-2026-001</h2>
+                <button class="modal-close" data-action="close-modal-po-detail">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Status and dates -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Status</label>
+                        <div id="po-detail-status" style="padding: 8px 0;">
+                            <span class="badge">-</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bestelldatum</label>
+                        <div id="po-detail-bestelldatum">-</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Erwartete Lieferung</label>
+                        <div id="po-detail-lieferdatum-erwartet">-</div>
+                    </div>
+                </div>
+
+                <!-- Supplier info -->
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin: 16px 0;">
+                    <h3 style="margin-top: 0;">Lieferant</h3>
+                    <p style="margin: 4px 0;"><strong id="po-detail-lieferant-name">-</strong></p>
+                    <p style="margin: 4px 0;">📧 <span id="po-detail-lieferant-email">-</span></p>
+                    <p style="margin: 4px 0;">📞 <span id="po-detail-lieferant-telefon">-</span></p>
+                    <p style="margin: 4px 0;">👤 <span id="po-detail-lieferant-ansprechpartner">-</span></p>
+                </div>
+
+                <!-- Positions -->
+                <div style="margin-top: 24px;">
+                    <h3>Positionen</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color);">
+                                <th style="text-align: left; padding: 8px;">Material</th>
+                                <th style="text-align: right; padding: 8px; width: 80px;">Menge</th>
+                                <th style="text-align: right; padding: 8px; width: 80px;">EK-Preis</th>
+                                <th style="text-align: right; padding: 8px; width: 100px;">Geliefert</th>
+                                <th style="text-align: right; padding: 8px; width: 100px;">Gesamt</th>
+                            </tr>
+                        </thead>
+                        <tbody id="po-detail-positionen">
+                            <!-- Positions listed here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Summary -->
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-top: 24px;">
+                    <div class="summary-row">
+                        <span>Netto:</span>
+                        <span id="po-detail-netto">0,00 €</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>MwSt. (19%):</span>
+                        <span id="po-detail-mwst">0,00 €</span>
+                    </div>
+                    <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; font-weight: bold;">
+                        <span>Brutto:</span>
+                        <span id="po-detail-brutto">0,00 €</span>
+                    </div>
+                </div>
+
+                <!-- Notizen -->
+                <div style="margin-top: 24px;">
+                    <h3>Notizen</h3>
+                    <p id="po-detail-notizen" style="color: var(--text-muted);">-</p>
+                </div>
+
+                <!-- Wareneingang Recording -->
+                <div id="po-wareneingang-section" style="margin-top: 24px; display: none;">
+                    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
+                    <h3>Wareneingang buchen</h3>
+                    <div id="po-wareneingang-form">
+                        <!-- Form added dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-action="close-modal-po-detail">Schließen</button>
+                <button class="btn btn-warning" id="btn-cancel-po" style="display: none;">Stornieren</button>
+                <button class="btn btn-success" id="btn-record-delivery" style="display: none;">Wareneingang buchen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- =====================================
          Internationalization (i18n)
          ===================================== -->
@@ -2487,6 +2729,10 @@ Email: max.mustermann@example.com</textarea>
     <!-- App Integration -->
     <script src="js/services/automation-api.js"></script>
     <script src="js/services/pdf-service.js"></script>
+    <script src="js/services/purchase-order-service.js"></script>
+    <script src="js/services/reorder-engine-service.js"></script>
+    <script src="js/ui/purchase-order-ui.js"></script>
+    <script src="js/ui/reorder-engine-ui.js"></script>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/excel-import-integration.js"></script>
@@ -2497,6 +2743,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/modules/activity.js"></script>
     <script src="js/modules/dashboard.js"></script>
     <script src="js/modules/anfragen.js"></script>
+    <script src="js/modules/material-picker.js"></script>
     <script src="js/modules/angebote.js"></script>
     <script src="js/modules/auftraege.js"></script>
     <script src="js/modules/rechnungen.js"></script>

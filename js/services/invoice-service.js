@@ -169,13 +169,19 @@ class InvoiceService {
         // Integrate with bookkeeping if available
         if (this.bookkeepingService) {
             try {
-                await this.bookkeepingService.recordPayment({
+                // 1. Record payment (Umsatzerlöse / Revenue)
+                this.bookkeepingService.recordPayment({
                     invoiceId: invoice.id,
                     amount: invoice.brutto,
                     date: invoice.paidAt,
                     method: invoice.paymentMethod,
                     reference: invoice.nummer
                 });
+
+                // 2. Record material costs (COGS / Materialaufwendungen) if applicable
+                if (invoice.materialKosten > 0 || invoice.stueckliste) {
+                    this.bookkeepingService.recordMaterialCosts(invoice);
+                }
             } catch (error) {
                 console.error('Bookkeeping integration error:', error);
                 // Continue even if bookkeeping fails

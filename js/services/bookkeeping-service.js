@@ -59,6 +59,45 @@ class BookkeepingService {
         return this.addBuchung(buchung);
     }
 
+    // Record payment when invoice is paid (creates Umsatzerlöse entry)
+    recordPayment(payment) {
+        // payment = {invoiceId, amount, date, method, reference}
+        const buchung = {
+            typ: 'einnahme',
+            kategorie: 'Umsatzerlöse',
+            beschreibung: `Zahlung Rechnung ${payment.reference}`,
+            rechnungId: payment.invoiceId,
+            datum: payment.date,
+            brutto: payment.amount,
+            belegnummer: payment.reference,
+            zahlungsart: payment.method || 'Überweisung'
+        };
+        return this.addBuchung(buchung);
+    }
+
+    // Record material costs (COGS) for an invoice
+    recordMaterialCosts(rechnung) {
+        // Only create entry if there are material costs
+        if (!rechnung.materialKosten && !rechnung.stueckliste) {
+            return null;
+        }
+
+        const materialKosten = rechnung.materialKosten || 0;
+
+        const buchung = {
+            typ: 'ausgabe',
+            kategorie: 'Materialaufwendungen',
+            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${rechnung.kunde.name}`,
+            rechnungId: rechnung.id,
+            datum: rechnung.paidAt || rechnung.createdAt,
+            brutto: materialKosten,
+            belegnummer: rechnung.nummer,
+            zahlungsart: 'Material',
+            auftragId: rechnung.auftragId
+        };
+        return this.addBuchung(buchung);
+    }
+
     // Ausgabe hinzufügen
     addAusgabe(daten) {
         const buchung = {
@@ -84,15 +123,20 @@ class BookkeepingService {
 
         const einnahmen = jahresBuchungen.filter(b => b.typ === 'einnahme');
         const ausgaben = jahresBuchungen.filter(b => b.typ === 'ausgabe');
+        const materialKosten = ausgaben.filter(b => b.kategorie === 'Materialaufwendungen');
+        const sonstigeAusgaben = ausgaben.filter(b => b.kategorie !== 'Materialaufwendungen');
 
         const summeEinnahmenBrutto = einnahmen.reduce((sum, b) => sum + b.brutto, 0);
         const summeEinnahmenNetto = einnahmen.reduce((sum, b) => sum + b.netto, 0);
         const summeUst = einnahmen.reduce((sum, b) => sum + (b.ust || 0), 0);
 
+        const summeMaterialKosten = materialKosten.reduce((sum, b) => sum + b.brutto, 0);
+        const summeSonstigeAusgaben = sonstigeAusgaben.reduce((sum, b) => sum + b.brutto, 0);
         const summeAusgabenBrutto = ausgaben.reduce((sum, b) => sum + b.brutto, 0);
         const summeAusgabenNetto = ausgaben.reduce((sum, b) => sum + b.netto, 0);
         const summeVorsteuer = ausgaben.reduce((sum, b) => sum + (b.vorsteuer || 0), 0);
 
+        const rohertrag = summeEinnahmenNetto - summeMaterialKosten;
         const gewinnVorSteuer = summeEinnahmenNetto - summeAusgabenNetto;
         const ustZahllast = summeUst - summeVorsteuer;
 
@@ -104,7 +148,19 @@ class BookkeepingService {
                 ust: summeUst,
                 anzahl: einnahmen.length
             },
+            materialaufwendungen: {
+                brutto: summeMaterialKosten,
+                netto: summeMaterialKosten,
+                anzahl: materialKosten.length
+            },
+            rohertrag: rohertrag,
             ausgaben: {
+                brutto: summeSonstigeAusgaben,
+                netto: summeSonstigeAusgaben,
+                vorsteuer: summeVorsteuer,
+                anzahl: sonstigeAusgaben.length
+            },
+            ausgabenGesamt: {
                 brutto: summeAusgabenBrutto,
                 netto: summeAusgabenNetto,
                 vorsteuer: summeVorsteuer,
@@ -358,6 +414,103 @@ class BookkeepingService {
         });
     }
 
+    getBuchungenByPeriod(typ, startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        return this.buchungen.filter(b => {
+            const datum = new Date(b.datum);
+            return b.typ === typ && datum >= start && datum <= end;
+        });
+    }
+
+    getBuchungenByKategorie(kategorie, startDate = null, endDate = null) {
+        let filtered = this.buchungen.filter(b => b.kategorie === kategorie);
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            filtered = filtered.filter(b => {
+                const datum = new Date(b.datum);
+                return datum >= start && datum <= end;
+            });
+        }
+
+        return filtered;
+    }
+
+    getGrossProfit(startDate, endDate) {
+        const einnahmen = this.getBuchungenByPeriod('einnahme', startDate, endDate);
+        const materialKosten = this.getBuchungenByKategorie('Materialaufwendungen', startDate, endDate);
+
+        const revenue = einnahmen.reduce((sum, b) => sum + (b.brutto || 0), 0);
+        const cogs = materialKosten.reduce((sum, b) => sum + (b.brutto || 0), 0);
+        const grossProfit = revenue - cogs;
+        const margin = revenue > 0 ? ((grossProfit / revenue) * 100).toFixed(1) : 0;
+
+        return {
+            revenue: revenue,
+            cogs: cogs,
+            grossProfit: grossProfit,
+            margin: margin + '%',
+            anzahlEinnahmen: einnahmen.length,
+            anzahlMaterialkosten: materialKosten.length
+        };
+    }
+
+    getProfitByAuftrag(auftragId) {
+        const buchungen = this.buchungen.filter(b => b.auftragId === auftragId ||
+                                                      (b.rechnungId && this.findRechnungByBuchung(b)));
+
+        const einnahmen = buchungen.filter(b => b.typ === 'einnahme');
+        const ausgaben = buchungen.filter(b => b.typ === 'ausgabe');
+
+        const revenue = einnahmen.reduce((sum, b) => sum + (b.brutto || 0), 0);
+        const costs = ausgaben.reduce((sum, b) => sum + (b.brutto || 0), 0);
+        const profit = revenue - costs;
+        const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
+
+        return {
+            auftragId: auftragId,
+            revenue: revenue,
+            costs: costs,
+            profit: profit,
+            margin: margin + '%'
+        };
+    }
+
+    getMonthlyBreakdown(year) {
+        const months = {};
+
+        for (let m = 1; m <= 12; m++) {
+            const monthBuchungen = this.getBuchungenForMonat(year, m);
+            const einnahmen = monthBuchungen.filter(b => b.typ === 'einnahme');
+            const ausgaben = monthBuchungen.filter(b => b.typ === 'ausgabe');
+            const materialKosten = monthBuchungen.filter(b => b.kategorie === 'Materialaufwendungen');
+
+            const revenue = einnahmen.reduce((sum, b) => sum + (b.brutto || 0), 0);
+            const totalExpenses = ausgaben.reduce((sum, b) => sum + (b.brutto || 0), 0);
+            const cogs = materialKosten.reduce((sum, b) => sum + (b.brutto || 0), 0);
+
+            const monthName = new Date(year, m - 1, 1).toLocaleDateString('de-DE', { month: 'long' });
+
+            months[m] = {
+                monat: monthName,
+                einnahmen: revenue,
+                ausgaben: totalExpenses,
+                materialkosten: cogs,
+                gewinn: revenue - cogs,
+                bruttogewinn: revenue - totalExpenses
+            };
+        }
+
+        return months;
+    }
+
+    findRechnungByBuchung(buchung) {
+        // Helper to find invoice associated with a buchung
+        return buchung.rechnungId;
+    }
+
     getAllBuchungen() {
         return this.buchungen;
     }
@@ -372,6 +525,7 @@ class BookkeepingService {
     // ============================================
     getAusgabenKategorien() {
         return [
+            'Materialaufwendungen',
             'Wareneinkauf',
             'Material/Rohstoffe',
             'Fremdleistungen',

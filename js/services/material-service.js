@@ -7,6 +7,8 @@ class MaterialService {
     constructor() {
         this.bestand = JSON.parse(localStorage.getItem('material_bestand') || '[]');
         this.stundensatz = parseFloat(localStorage.getItem('stundensatz') || '65');
+        this.reservierungen = JSON.parse(localStorage.getItem('material_reservations') || '[]');
+        this.lagerbewegungen = JSON.parse(localStorage.getItem('stock_movements') || '[]');
     }
 
     // ============================================
@@ -96,15 +98,37 @@ class MaterialService {
     }
 
     getMaterial(id) {
-        return this.bestand.find(m => m.id === id);
+        const material = this.bestand.find(m => m.id === id);
+        return material ? this._ensureReservationFields(material) : null;
+    }
+
+    getMaterialById(id) {
+        // Alias for getMaterial for backward compatibility
+        return this.getMaterial(id);
     }
 
     getMaterialByArtikelnummer(artikelnummer) {
-        return this.bestand.find(m => m.artikelnummer === artikelnummer);
+        const material = this.bestand.find(m => m.artikelnummer === artikelnummer);
+        return material ? this._ensureReservationFields(material) : null;
     }
 
     getAllMaterials() {
-        return this.bestand;
+        // Ensure all materials have reservation fields
+        return this.bestand.map(m => this._ensureReservationFields(m));
+    }
+
+    _ensureReservationFields(material) {
+        if (!material.reserviert) {
+            material.reserviert = 0;
+        }
+        return material;
+    }
+
+    getAvailableStock(materialId) {
+        const material = this.getMaterial(materialId);
+        if (!material) {return 0;}
+        this._ensureReservationFields(material);
+        return material.bestand - material.reserviert;
     }
 
     getKategorien() {
@@ -218,7 +242,352 @@ class MaterialService {
     }
 
     getLowStockItems() {
-        return this.bestand.filter(m => m.bestand <= m.minBestand && m.minBestand > 0);
+        // Consider available stock (not just physical stock) when checking low stock
+        return this.bestand.filter(m => {
+            const verfuegbar = this.getAvailableStock(m.id);
+            return verfuegbar <= m.minBestand && m.minBestand > 0;
+        });
+    }
+
+    // ============================================
+    // Stock Reservation System
+    // ============================================
+
+    /**
+     * Reserve materials for an Auftrag
+     * @param {string} auftragId - Order ID
+     * @param {Array} items - [{materialId, menge}, ...]
+     * @returns {Object} {success: bool, shortages: [{materialId, needed, available}, ...]}
+     */
+    reserveForAuftrag(auftragId, items) {
+        const shortages = [];
+
+        // First check if all items are available
+        items.forEach(item => {
+            const material = this.getMaterial(item.materialId);
+            if (!material) {
+                shortages.push({
+                    materialId: item.materialId,
+                    needed: item.menge,
+                    available: 0,
+                    materialName: 'Unbekannt'
+                });
+                return;
+            }
+
+            const available = this.getAvailableStock(item.materialId);
+            if (available < item.menge) {
+                shortages.push({
+                    materialId: item.materialId,
+                    needed: item.menge,
+                    available: available,
+                    materialName: material.bezeichnung
+                });
+            }
+        });
+
+        if (shortages.length > 0) {
+            return { success: false, shortages };
+        }
+
+        // All items available - perform the reservation
+        items.forEach(item => {
+            const material = this.getMaterial(item.materialId);
+            if (material) {
+                this._ensureReservationFields(material);
+                material.reserviert += item.menge;
+
+                // Record the reservation
+                const reservation = {
+                    id: `RES-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    auftragId,
+                    materialId: item.materialId,
+                    menge: item.menge,
+                    datum: new Date().toISOString()
+                };
+                this.reservierungen.push(reservation);
+
+                // Record stock movement
+                this._recordStockMovement({
+                    materialId: item.materialId,
+                    auftragId,
+                    type: 'reserved',
+                    quantity: item.menge,
+                    previousStock: material.bestand,
+                    newStock: material.bestand // Physical stock unchanged
+                });
+            }
+        });
+
+        this.save();
+        return { success: true, shortages: [] };
+    }
+
+    /**
+     * Release reservation when order is cancelled
+     * @param {string} auftragId - Order ID
+     */
+    releaseReservation(auftragId) {
+        const reservations = this.reservierungen.filter(r => r.auftragId === auftragId);
+
+        reservations.forEach(res => {
+            const material = this.getMaterial(res.materialId);
+            if (material) {
+                this._ensureReservationFields(material);
+                material.reserviert = Math.max(0, material.reserviert - res.menge);
+
+                this._recordStockMovement({
+                    materialId: res.materialId,
+                    auftragId,
+                    type: 'released',
+                    quantity: -res.menge,
+                    previousStock: material.bestand,
+                    newStock: material.bestand
+                });
+            }
+        });
+
+        // Remove all reservations for this auftrag
+        this.reservierungen = this.reservierungen.filter(r => r.auftragId !== auftragId);
+        this.save();
+    }
+
+    /**
+     * Consume reserved stock when order is completed
+     * @param {string} auftragId - Order ID
+     * @returns {Array} Items that were consumed
+     */
+    consumeReserved(auftragId) {
+        const reservations = this.reservierungen.filter(r => r.auftragId === auftragId);
+        const consumed = [];
+
+        reservations.forEach(res => {
+            const material = this.getMaterial(res.materialId);
+            if (material) {
+                this._ensureReservationFields(material);
+
+                // Reduce both bestand and reserviert by the same amount
+                material.bestand = Math.max(0, material.bestand - res.menge);
+                material.reserviert = Math.max(0, material.reserviert - res.menge);
+
+                this._recordStockMovement({
+                    materialId: res.materialId,
+                    auftragId,
+                    type: 'consumed',
+                    quantity: -res.menge,
+                    previousStock: material.bestand + res.menge, // Before reduction
+                    newStock: material.bestand
+                });
+
+                consumed.push({
+                    materialId: res.materialId,
+                    menge: res.menge,
+                    bezeichnung: material.bezeichnung
+                });
+            }
+        });
+
+        // Remove all reservations for this auftrag
+        this.reservierungen = this.reservierungen.filter(r => r.auftragId !== auftragId);
+        this.save();
+
+        return consumed;
+    }
+
+    /**
+     * Check if all materials in a list are available
+     * @param {Array} items - [{materialId, menge}, ...]
+     * @returns {Object} {allAvailable: bool, items: [{materialId, needed, available, shortage}, ...]}
+     */
+    checkAvailability(items) {
+        const details = items.map(item => {
+            const material = this.getMaterial(item.materialId);
+            const available = this.getAvailableStock(item.materialId);
+            const shortage = Math.max(0, item.menge - available);
+
+            return {
+                materialId: item.materialId,
+                materialName: material ? material.bezeichnung : 'Unbekannt',
+                needed: item.menge,
+                available: available,
+                shortage: shortage
+            };
+        });
+
+        const allAvailable = details.every(item => item.shortage === 0);
+        return { allAvailable, items: details };
+    }
+
+    /**
+     * Get all reservations for an Auftrag
+     * @param {string} auftragId - Order ID
+     * @returns {Array} Reservation records
+     */
+    getReservations(auftragId) {
+        return this.reservierungen.filter(r => r.auftragId === auftragId);
+    }
+
+    /**
+     * Record a stock movement for audit trail
+     * @private
+     */
+    _recordStockMovement(movement) {
+        const record = {
+            id: `MOV-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            materialId: movement.materialId,
+            auftragId: movement.auftragId,
+            type: movement.type, // 'reserved' | 'released' | 'consumed' | 'received' | 'adjusted'
+            quantity: movement.quantity,
+            previousStock: movement.previousStock,
+            newStock: movement.newStock,
+            timestamp: new Date().toISOString()
+        };
+        this.lagerbewegungen.push(record);
+        return record;
+    }
+
+    /**
+     * Get stock movement history
+     * @param {string} materialId - Material ID (optional, get all if not provided)
+     * @returns {Array} Stock movement records
+     */
+    getStockMovements(materialId = null) {
+        if (materialId) {
+            return this.lagerbewegungen.filter(m => m.materialId === materialId);
+        }
+        return this.lagerbewegungen;
+    }
+
+    /**
+     * Get stock movements filtered by date range
+     * @param {string} startDate - ISO date string
+     * @param {string} endDate - ISO date string
+     * @returns {Array} Filtered stock movements
+     */
+    getMovementsByDateRange(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        return this.lagerbewegungen.filter(m => {
+            const mDate = new Date(m.timestamp);
+            return mDate >= start && mDate <= end;
+        });
+    }
+
+    /**
+     * Get stock movements filtered by type
+     * @param {string} type - Movement type (reserved, released, consumed, received, adjusted)
+     * @returns {Array} Filtered stock movements
+     */
+    getMovementsByType(type) {
+        return this.lagerbewegungen.filter(m => m.type === type);
+    }
+
+    /**
+     * Get movement summary for a material
+     * @param {string} materialId - Material ID
+     * @returns {Object} {totalIn, totalOut, netChange, movementCount}
+     */
+    getMovementsSummary(materialId) {
+        const movements = this.getStockMovements(materialId);
+
+        const summary = {
+            materialId: materialId,
+            material: this.getMaterial(materialId),
+            movementCount: movements.length,
+            totalIncoming: 0,
+            totalOutgoing: 0,
+            netChange: 0,
+            byType: {}
+        };
+
+        movements.forEach(m => {
+            const type = m.type;
+            if (!summary.byType[type]) {
+                summary.byType[type] = { count: 0, quantity: 0 };
+            }
+            summary.byType[type].count++;
+            summary.byType[type].quantity += m.quantity;
+
+            // Positive = incoming, Negative = outgoing
+            if (m.quantity > 0) {
+                summary.totalIncoming += m.quantity;
+            } else {
+                summary.totalOutgoing += Math.abs(m.quantity);
+            }
+        });
+
+        summary.netChange = summary.totalIncoming - summary.totalOutgoing;
+        return summary;
+    }
+
+    /**
+     * Export stock movements to CSV
+     * @returns {string} CSV formatted string
+     */
+    exportMovementsToCSV() {
+        const material = window.materialService.getAllMaterials();
+        const materialMap = {};
+        material.forEach(m => materialMap[m.id] = m);
+
+        let csv = 'Datum,Material,Artikelnummer,Typ,Menge,Bestand Vorher,Bestand Nachher,Referenz,Referenz ID\n';
+
+        this.lagerbewegungen.forEach(m => {
+            const mat = materialMap[m.materialId];
+            const matName = mat ? mat.bezeichnung : 'Unbekannt';
+            const matArtNr = mat ? mat.artikelnummer : '';
+            const refId = m.auftragId || m.id || '';
+
+            // Escape CSV
+            const escapeCsv = (str) => {
+                if (!str) {return '';}
+                if (typeof str !== 'string') {str = str.toString();}
+                return str.includes(',') || str.includes('"') || str.includes('\n')
+                    ? `"${str.replace(/"/g, '""')}"` : str;
+            };
+
+            csv += `${m.timestamp.split('T')[0]},${escapeCsv(matName)},${escapeCsv(matArtNr)},${m.type},${m.quantity},${m.previousStock},${m.newStock},${m.type},${escapeCsv(refId)}\n`;
+        });
+
+        return csv;
+    }
+
+    /**
+     * Get stock movement trend (last N days)
+     * @param {number} days - Number of days to analyze
+     * @returns {Array} Daily summary [{date, incoming, outgoing, net}, ...]
+     */
+    getMovementTrend(days = 30) {
+        const now = new Date();
+        const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+        const trends = {};
+
+        // Initialize all dates
+        for (let i = 0; i < days; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
+            const dateStr = date.toISOString().split('T')[0];
+            trends[dateStr] = { date: dateStr, incoming: 0, outgoing: 0 };
+        }
+
+        // Aggregate movements
+        this.lagerbewegungen.forEach(m => {
+            const dateStr = m.timestamp.split('T')[0];
+            if (trends[dateStr]) {
+                if (m.quantity > 0) {
+                    trends[dateStr].incoming += m.quantity;
+                } else {
+                    trends[dateStr].outgoing += Math.abs(m.quantity);
+                }
+            }
+        });
+
+        // Calculate net and sort
+        return Object.values(trends).map(t => ({
+            ...t,
+            net: t.incoming - t.outgoing
+        })).sort((a, b) => new Date(a.date) - new Date(b.date));
     }
 
     // ============================================
@@ -238,6 +607,8 @@ class MaterialService {
     // ============================================
     save() {
         localStorage.setItem('material_bestand', JSON.stringify(this.bestand));
+        localStorage.setItem('material_reservations', JSON.stringify(this.reservierungen));
+        localStorage.setItem('stock_movements', JSON.stringify(this.lagerbewegungen));
     }
 
     exportToJSON() {

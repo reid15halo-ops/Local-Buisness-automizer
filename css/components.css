@@ -5437,6 +5437,67 @@ textarea {
     border-left-color: #6b7280;
 }
 
+/* Material Picker Selector in Angebot Position Rows */
+.position-material-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.position-material-picker {
+    background: #2a2a30;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.position-material-picker:hover {
+    background: #333;
+    border-color: #6366f1;
+}
+
+.position-material-info {
+    font-size: 12px;
+    color: #999;
+    flex: 1;
+    min-width: 120px;
+}
+
+.position-material-clear {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.position-material-clear:hover {
+    color: #f59e0b;
+}
+
+.position-stock-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #999;
+    margin-left: 8px;
+}
+
+.position-margin-info {
+    font-size: 11px;
+    color: #6366f1;
+    margin-top: 4px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
     .notification-panel {
@@ -5450,5 +5511,10 @@ textarea {
 
     .notification-bell-container {
         margin-right: 8px;
+    }
+
+    .position-material-selector {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

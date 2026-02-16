@@ -297,13 +297,28 @@ function initAngebotForm() {
 
         const positionen = [];
         document.querySelectorAll('.position-row').forEach(row => {
-            const beschreibung = row.querySelector('.pos-beschreibung').value;
+            const beschreibungInput = row.querySelector('.pos-beschreibung');
+            const beschreibung = beschreibungInput.value;
             const menge = parseFloat(row.querySelector('.pos-menge').value) || 0;
             const einheit = row.querySelector('.pos-einheit').value;
             const preis = parseFloat(row.querySelector('.pos-preis').value) || 0;
+            const materialId = beschreibungInput.dataset.materialId || null;
 
             if (beschreibung && menge && preis) {
-                positionen.push({ beschreibung, menge, einheit, preis });
+                const position = { beschreibung, menge, einheit, preis };
+
+                // Add material-specific fields
+                if (materialId) {
+                    const material = window.materialService?.getMaterial(materialId);
+                    if (material) {
+                        position.materialId = materialId;
+                        position.ekPreis = material.preis;
+                        position.bestandVerfuegbar = material.bestand;
+                        position.artikelnummer = material.artikelnummer;
+                    }
+                }
+
+                positionen.push(position);
             }
         });
 
@@ -349,10 +364,20 @@ function addPosition(prefill = null) {
 
         const uniqueId = Date.now();
 
+        // Prepare material display info
+        let materialDisplay = 'Kein Material zugewiesen';
+        if (prefill?.materialId) {
+            const material = window.materialService?.getMaterial(prefill.materialId);
+            if (material) {
+                materialDisplay = `${material.bezeichnung} (${material.artikelnummer})`;
+            }
+        }
+
         row.innerHTML = `
             <div class="pos-beschreibung-wrapper">
                 <input type="text" class="pos-beschreibung" placeholder="Beschreibung tippen..."
                        data-suggest-id="${uniqueId}"
+                       data-material-id="${prefill?.materialId || ''}"
                        value="${prefill?.beschreibung || ''}"
                        autocomplete="off">
                 <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
@@ -360,13 +385,61 @@ function addPosition(prefill = null) {
             <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" data-action-input="update-angebot-summary">
             <input type="text" class="pos-einheit" placeholder="Einheit" value="${prefill?.einheit || 'Stk.'}">
             <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" data-action-input="update-angebot-summary">
+            <div class="position-material-selector">
+                <button type="button" class="btn btn-small position-material-picker" data-position-id="${uniqueId}">📦 Material</button>
+                <span class="position-material-info" data-position-id="${uniqueId}">${materialDisplay}</span>
+                ${prefill?.materialId ? `<button type="button" class="position-material-clear" data-position-id="${uniqueId}">✕</button>` : ''}
+            </div>
             <button type="button" class="position-remove" data-action="remove-position">×</button>
         `;
         container.appendChild(row);
 
-        // Setup autocomplete
+        // Setup material picker button
+        const pickerBtn = row.querySelector('.position-material-picker');
+        const materialInfo = row.querySelector('.position-material-info');
+        const clearBtn = row.querySelector('.position-material-clear');
         const input = row.querySelector('.pos-beschreibung');
         const suggestBox = row.querySelector('.material-suggest');
+
+        if (pickerBtn) {
+            pickerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.materialPickerUI?.open?.((material) => {
+                    // Update position with material data
+                    input.value = material.bezeichnung;
+                    input.dataset.materialId = material.id;
+                    row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
+                    row.querySelector('.pos-einheit').value = material.einheit;
+
+                    // Update material info display
+                    materialInfo.textContent = `${material.bezeichnung} (${material.artikelnummer})`;
+
+                    // Show clear button if not already present
+                    if (!row.querySelector('.position-material-clear')) {
+                        const newClearBtn = document.createElement('button');
+                        newClearBtn.type = 'button';
+                        newClearBtn.className = 'position-material-clear';
+                        newClearBtn.dataset.positionId = uniqueId;
+                        newClearBtn.textContent = '✕';
+                        newClearBtn.addEventListener('click', clearMaterialSelection);
+                        pickerBtn.parentElement.appendChild(newClearBtn);
+                    }
+
+                    updateAngebotSummary();
+                });
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', clearMaterialSelection);
+        }
+
+        function clearMaterialSelection() {
+            input.dataset.materialId = '';
+            materialInfo.textContent = 'Kein Material zugewiesen';
+            clearBtn?.remove?.();
+            updateAngebotSummary();
+        }
 
         if (input && suggestBox) {
             input.addEventListener('input', (e) => {
@@ -576,12 +649,28 @@ function acceptAngebot(angebotId) {
 
     angebot.status = 'angenommen';
 
+    // Build stueckliste from positionen with materialId
+    const stueckliste = angebot.positionen
+        .filter(pos => pos.materialId)
+        .map(pos => ({
+            materialId: pos.materialId,
+            artikelnummer: pos.artikelnummer,
+            beschreibung: pos.beschreibung,
+            menge: pos.menge,
+            einheit: pos.einheit,
+            ekPreis: pos.ekPreis,
+            vkPreis: pos.preis,
+            bestandBenötigt: pos.menge,
+            bestandVerfügbar: pos.bestandVerfuegbar
+        }));
+
     const auftrag = {
         id: generateId('AUF'),
         angebotId,
         kunde: angebot.kunde,
         leistungsart: angebot.leistungsart,
         positionen: angebot.positionen,
+        stueckliste: stueckliste,  // NEW: Material list from positionen
         angebotsWert: angebot.brutto,
         netto: angebot.netto,
         mwst: angebot.mwst,
@@ -595,6 +684,38 @@ function acceptAngebot(angebotId) {
         historie: [{ aktion: 'erstellt', datum: new Date().toISOString(), details: `Aus Angebot ${angebotId}` }],
         createdAt: new Date().toISOString()
     };
+
+    // Attempt to reserve materials for the order
+    if (window.materialService && stueckliste.length > 0) {
+        const reservationItems = stueckliste.map(item => ({
+            materialId: item.materialId,
+            menge: item.menge
+        }));
+
+        const reservationResult = window.materialService.reserveForAuftrag(auftrag.id, reservationItems);
+
+        if (!reservationResult.success) {
+            // Show warning about stock shortages
+            let warningMsg = '⚠️ Nicht genügend Material verfügbar:\n\n';
+            reservationResult.shortages.forEach(shortage => {
+                warningMsg += `${shortage.materialName}: Benötigt ${shortage.needed}, verfügbar ${shortage.available}\n`;
+            });
+
+            const proceed = confirm(warningMsg + '\nTrotzdem Auftrag erstellen?');
+            if (!proceed) {
+                // Restore angebot status if user cancels
+                angebot.status = 'offen';
+                return;
+            }
+
+            // If user confirms despite shortages, show a note in auftrag
+            auftrag.reservationWarning = {
+                timestamp: new Date().toISOString(),
+                shortages: reservationResult.shortages,
+                message: 'Auftrag erstellt trotz Materialengpässen'
+            };
+        }
+    }
 
     store.auftraege.push(auftrag);
     saveStore();
@@ -726,10 +847,11 @@ function executeStatusAutoAktion(auftrag, newStatus) {
                 const fehlend = stueckliste.filter(item => {
                     if (!item.materialId) {return false;}
                     const mat = window.materialService.getMaterialById(item.materialId);
-                    return mat && mat.bestand < item.menge;
+                    const verfuegbar = window.materialService.getAvailableStock(item.materialId);
+                    return mat && verfuegbar < item.menge;
                 });
                 if (fehlend.length > 0) {
-                    showToast(`${fehlend.length} Material-Position(en) unter Mindestbestand`, 'warning');
+                    showToast(`${fehlend.length} Material-Position(en) nicht verfügbar (bereits reserviert oder nicht auf Lager)`, 'warning');
                 }
             }
             break;
@@ -790,6 +912,11 @@ function changeAuftragStatus(auftragId, newStatus, grund) {
     auftrag.status = newStatus;
     if (grund) {auftrag.statusGrund = grund;}
     else {delete auftrag.statusGrund;}
+
+    // Release reserved materials if order is cancelled
+    if (newStatus === 'storniert' && window.materialService) {
+        window.materialService.releaseReservation(auftrag.id);
+    }
 
     saveStore();
     executeStatusAutoAktion(auftrag, newStatus);
@@ -1950,12 +2077,13 @@ function initAuftragForm() {
         auftrag.notizen = notizen;
         auftrag.completedAt = new Date().toISOString();
 
-        // Reduce stock for each material from Stückliste
-        stueckliste.forEach(item => {
-            if (item.materialId && window.materialService) {
-                window.materialService.updateStock(item.materialId, -item.menge);
+        // Consume reserved materials (convert reserved → consumed in stock)
+        if (window.materialService) {
+            const consumed = window.materialService.consumeReserved(auftrag.id);
+            if (consumed.length > 0) {
+                auftrag.consumedMaterials = consumed;
             }
-        });
+        }
 
         // Create invoice with Stückliste as individual positions
         const rechnungsPositionen = [...(auftrag.positionen || [])];

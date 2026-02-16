@@ -45,13 +45,28 @@ function initAngebotForm() {
 
         const positionen = [];
         document.querySelectorAll('.position-row').forEach(row => {
-            const beschreibung = row.querySelector('.pos-beschreibung').value;
+            const beschreibungInput = row.querySelector('.pos-beschreibung');
+            const beschreibung = beschreibungInput.value;
             const menge = parseFloat(row.querySelector('.pos-menge').value) || 0;
             const einheit = row.querySelector('.pos-einheit').value;
             const preis = parseFloat(row.querySelector('.pos-preis').value) || 0;
+            const materialId = beschreibungInput.dataset.materialId || null;
 
             if (beschreibung && menge && preis) {
-                positionen.push({ beschreibung, menge, einheit, preis });
+                const position = { beschreibung, menge, einheit, preis };
+
+                // Add material-specific fields
+                if (materialId) {
+                    const material = window.materialService?.getMaterial(materialId);
+                    if (material) {
+                        position.materialId = materialId;
+                        position.ekPreis = material.preis;
+                        position.bestandVerfuegbar = material.bestand;
+                        position.artikelnummer = material.artikelnummer;
+                    }
+                }
+
+                positionen.push(position);
             }
         });
 
@@ -94,10 +109,20 @@ function addPosition(prefill = null) {
 
     const uniqueId = Date.now();
 
+    // Prepare material display info
+    let materialDisplay = 'Kein Material zugewiesen';
+    if (prefill?.materialId) {
+        const material = window.materialService?.getMaterial(prefill.materialId);
+        if (material) {
+            materialDisplay = `${material.bezeichnung} (${material.artikelnummer})`;
+        }
+    }
+
     row.innerHTML = `
         <div class="pos-beschreibung-wrapper">
             <input type="text" class="pos-beschreibung" placeholder="Beschreibung tippen..."
                    data-suggest-id="${uniqueId}"
+                   data-material-id="${prefill?.materialId || ''}"
                    value="${prefill?.beschreibung || ''}"
                    autocomplete="off">
             <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
@@ -105,13 +130,61 @@ function addPosition(prefill = null) {
         <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" oninput="updateAngebotSummary()">
         <input type="text" class="pos-einheit" placeholder="Einheit" value="${prefill?.einheit || 'Stk.'}">
         <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" oninput="updateAngebotSummary()">
+        <div class="position-material-selector">
+            <button type="button" class="btn btn-small position-material-picker" data-position-id="${uniqueId}">📦 Material</button>
+            <span class="position-material-info" data-position-id="${uniqueId}">${materialDisplay}</span>
+            ${prefill?.materialId ? `<button type="button" class="position-material-clear" data-position-id="${uniqueId}">✕</button>` : ''}
+        </div>
         <button type="button" class="position-remove" onclick="this.parentElement.remove(); updateAngebotSummary();">×</button>
     `;
     container.appendChild(row);
 
-    // Setup autocomplete
+    // Setup material picker button
+    const pickerBtn = row.querySelector('.position-material-picker');
+    const materialInfo = row.querySelector('.position-material-info');
+    const clearBtn = row.querySelector('.position-material-clear');
     const input = row.querySelector('.pos-beschreibung');
     const suggestBox = row.querySelector('.material-suggest');
+
+    if (pickerBtn) {
+        pickerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.materialPickerUI?.open((material) => {
+                // Update position with material data
+                input.value = material.bezeichnung;
+                input.dataset.materialId = material.id;
+                row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
+                row.querySelector('.pos-einheit').value = material.einheit;
+
+                // Update material info display
+                materialInfo.textContent = `${material.bezeichnung} (${material.artikelnummer})`;
+
+                // Show clear button
+                if (!row.querySelector('.position-material-clear')) {
+                    const newClearBtn = document.createElement('button');
+                    newClearBtn.type = 'button';
+                    newClearBtn.className = 'position-material-clear';
+                    newClearBtn.dataset.positionId = uniqueId;
+                    newClearBtn.textContent = '✕';
+                    newClearBtn.addEventListener('click', clearMaterialSelection);
+                    pickerBtn.parentElement.appendChild(newClearBtn);
+                }
+
+                updateAngebotSummary();
+            });
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearMaterialSelection);
+    }
+
+    function clearMaterialSelection() {
+        input.dataset.materialId = '';
+        materialInfo.textContent = 'Kein Material zugewiesen';
+        clearBtn?.remove?.();
+        updateAngebotSummary();
+    }
 
     input.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
@@ -281,12 +354,28 @@ function acceptAngebot(angebotId) {
 
     angebot.status = 'angenommen';
 
+    // Build stueckliste from positionen with materialId
+    const stueckliste = angebot.positionen
+        .filter(pos => pos.materialId)
+        .map(pos => ({
+            materialId: pos.materialId,
+            artikelnummer: pos.artikelnummer,
+            beschreibung: pos.beschreibung,
+            menge: pos.menge,
+            einheit: pos.einheit,
+            ekPreis: pos.ekPreis,
+            vkPreis: pos.preis,
+            bestandBenötigt: pos.menge,
+            bestandVerfügbar: pos.bestandVerfuegbar
+        }));
+
     const auftrag = {
         id: generateId('AUF'),
         angebotId,
         kunde: angebot.kunde,
         leistungsart: angebot.leistungsart,
         positionen: angebot.positionen,
+        stueckliste: stueckliste,  // NEW: Material list from positionen
         angebotsWert: angebot.brutto,
         netto: angebot.netto,
         mwst: angebot.mwst,
