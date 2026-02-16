@@ -1,64 +1,35 @@
 ---
 name: migrate-entity
-description: Migrate a legacy German-named entity (e.g., anfragen, angebote) to the new English FreyAI schema, updating SQL, store-service, and UI references.
+description: Migrate a legacy German-named entity to the new English FreyAI schema — SQL, store-service mappings, and migration script.
 argument-hint: [german-name] [english-name]
+context: fork
+agent: general-purpose
 allowed-tools: Read, Write, Edit, Grep, Glob
 ---
 
-## Migrate Entity: German → English
+## Migrate Entity: German to English
 
-Migrate `$ARGUMENTS` (parse as `[german-name] [english-name]`).
+**Arguments:** `$ARGUMENTS` — parse as `[german-name] [english-name]`
 
-### Context
-
-The FreyAI Core project is transitioning from German-named tables/columns (legacy MHS Workflow) to English-named tables. The current state:
-
-- **Already English**: `profiles`, `clients`, `products`, `invoices` (in `supabase_schema.sql`)
-- **Still German**: `anfragen`, `angebote`, `auftraege`, `rechnungen` (in store-service.js `_tableMap`)
-
-### Migration Steps
+### Steps
 
 #### 1. Schema
-
-- **Read** `supabase_schema.sql`
-- If the English table doesn't exist yet, create it following `/add-table` conventions
-- Design a column mapping from the German schema to English:
-
-Example mapping:
-```
-anfragen.kunde_name      → inquiries.customer_name
-anfragen.leistungsart    → inquiries.service_type
-anfragen.beschreibung    → inquiries.description
-anfragen.termin          → inquiries.deadline
-anfragen.budget          → inquiries.budget
-```
+- Read `supabase_schema.sql`
+- Create English table if missing (follow `/add-table` conventions)
+- Design column mapping (e.g., `kunde_name` → `customer_name`)
 
 #### 2. Store Service
+- Update `_tableMap`: German table → English table
+- Update `_map<Entity>FromDB()`: new English columns → existing camelCase JS
+- Update `_mapToDB()`: camelCase JS → new English columns
+- Do NOT rename `this.store.<german>` array (UI still uses it)
 
-- **Read** `js/services/store-service.js`
-- Update `_tableMap`: change the Supabase table name from German to English
-- Update `_map<Entity>FromDB()`: map new English column names → existing camelCase JS properties
-- Update `_mapToDB()`: map camelCase JS → new English column names
-- **Do NOT** rename the `this.store.<german>` array or the public API methods yet (the UI still uses them)
-
-#### 3. Data Migration SQL
-
-Generate a one-time migration script that copies data from the old German table to the new English table:
-
+#### 3. Migration SQL
 ```sql
-INSERT INTO <english_table> (id, user_id, <english_columns...>)
-SELECT id, user_id, <german_columns...>
+INSERT INTO <english_table> (id, user_id, <english_cols>)
+SELECT id, user_id, <german_cols>
 FROM <german_table>;
 ```
 
-#### 4. UI Mapping (Document Only)
-
-List all places in the UI (`js/app.js`, `js/ui/`, `js/features-integration.js`) that reference the German entity name. Do NOT change them yet — just create a report for the future UI rewrite.
-
-### Output
-
-Provide:
-1. The updated SQL in `supabase_schema.sql` (if table is new)
-2. The updated mappings in `store-service.js`
-3. A migration SQL script (as a comment block or separate file)
-4. A report of UI references that will need updating later
+#### 4. UI Report
+List all files referencing the German entity name — do NOT change them.
