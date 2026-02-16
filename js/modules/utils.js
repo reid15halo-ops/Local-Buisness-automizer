@@ -20,7 +20,7 @@ const closeModal = window.UI.closeModal.bind(window.UI);
 const h = window.UI.sanitize.bind(window.UI);
 const switchView = window.switchView || ((viewId) => {
     const element = document.querySelector(`[data-view="${viewId}"]`);
-    if (element) element.click();
+    if (element) {element.click();}
 });
 
 // Delay utility

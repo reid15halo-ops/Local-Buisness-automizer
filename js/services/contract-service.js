@@ -90,7 +90,7 @@ class ContractService {
     // Create contract from template
     createFromTemplate(templateId, customerData) {
         const template = this.templates.find(t => t.id === templateId);
-        if (!template) return { success: false, error: 'Template not found' };
+        if (!template) {return { success: false, error: 'Template not found' };}
 
         return this.createContract({
             templateId: templateId,
@@ -132,8 +132,8 @@ class ContractService {
     // Generate invoice for contract
     generateInvoice(contractId) {
         const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract) return { success: false, error: 'Contract not found' };
-        if (contract.status !== 'active') return { success: false, error: 'Contract not active' };
+        if (!contract) {return { success: false, error: 'Contract not found' };}
+        if (contract.status !== 'active') {return { success: false, error: 'Contract not active' };}
 
         // Create invoice in system
         const invoice = {
@@ -162,7 +162,7 @@ class ContractService {
         // Add to main invoice store
         if (typeof store !== 'undefined' && store.rechnungen) {
             store.rechnungen.push(invoice);
-            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveStore === 'function') {saveStore();}
         }
 
         // Update contract
@@ -231,7 +231,7 @@ class ContractService {
     // Record service performed
     recordService(contractId, serviceData) {
         const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract) return { success: false };
+        if (!contract) {return { success: false };}
 
         contract.servicesPerformed++;
         contract.lastServiceDate = new Date().toISOString();
@@ -270,7 +270,7 @@ class ContractService {
     // Renew contract
     renewContract(contractId, newEndDate = null) {
         const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract) return { success: false };
+        if (!contract) {return { success: false };}
 
         if (newEndDate) {
             contract.endDate = newEndDate;
@@ -292,7 +292,7 @@ class ContractService {
     // Cancel contract
     cancelContract(contractId, reason = '') {
         const contract = this.contracts.find(c => c.id === contractId);
-        if (!contract) return { success: false };
+        if (!contract) {return { success: false };}
 
         contract.status = 'cancelled';
         contract.cancelledAt = new Date().toISOString();

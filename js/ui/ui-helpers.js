@@ -14,7 +14,7 @@ window.UI = {
     },
 
     formatDate(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         return new Date(dateStr).toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',
@@ -23,7 +23,7 @@ window.UI = {
     },
 
     formatDateTime(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         return new Date(dateStr).toLocaleString('de-DE', {
             day: '2-digit',
             month: '2-digit',
@@ -34,7 +34,7 @@ window.UI = {
     },
 
     getRelativeTime(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         const now = new Date();
         const date = new Date(dateStr);
         const diffMs = now - date;
@@ -42,10 +42,10 @@ window.UI = {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return 'Gerade eben';
-        if (diffMins < 60) return `vor ${diffMins} Min.`;
-        if (diffHours < 24) return `vor ${diffHours} Std.`;
-        if (diffDays < 7) return `vor ${diffDays} Tagen`;
+        if (diffMins < 1) {return 'Gerade eben';}
+        if (diffMins < 60) {return `vor ${diffMins} Min.`;}
+        if (diffHours < 24) {return `vor ${diffHours} Std.`;}
+        if (diffDays < 7) {return `vor ${diffDays} Tagen`;}
         return this.formatDate(dateStr);
     },
 
@@ -65,7 +65,7 @@ window.UI = {
     // --- Security ---
 
     sanitize(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         const temp = document.createElement('div');
         temp.textContent = str;
         return temp.innerHTML;
@@ -79,7 +79,7 @@ window.UI = {
             modal.classList.add('active');
             // Auto-focus first input
             const input = modal.querySelector('input, textarea');
-            if (input) input.focus();
+            if (input) {input.focus();}
         }
     },
 
@@ -164,8 +164,8 @@ window.UI = {
         const provider = document.getElementById('ai-provider').value;
         const geminiConf = document.getElementById('conf-gemini');
         const ollamaConf = document.getElementById('conf-ollama');
-        if (geminiConf) geminiConf.style.display = provider === 'gemini' ? 'block' : 'none';
-        if (ollamaConf) ollamaConf.style.display = provider === 'ollama' ? 'block' : 'none';
+        if (geminiConf) {geminiConf.style.display = provider === 'gemini' ? 'block' : 'none';}
+        if (ollamaConf) {ollamaConf.style.display = provider === 'ollama' ? 'block' : 'none';}
     },
 
     saveAIConfig() {
@@ -188,16 +188,16 @@ window.UI = {
     initSettingsLogic() {
         if (window.storeService && window.storeService.state.settings) {
             const settings = window.storeService.state.settings;
-            if (document.getElementById('company-name')) document.getElementById('company-name').value = settings.companyName || '';
-            if (document.getElementById('company-owner')) document.getElementById('company-owner').value = settings.owner || '';
-            if (document.getElementById('company-address')) document.getElementById('company-address').value = settings.address || '';
-            if (document.getElementById('company-taxid')) document.getElementById('company-taxid').value = settings.taxId || '';
-            if (document.getElementById('company-vatid')) document.getElementById('company-vatid').value = settings.vatId || '';
+            if (document.getElementById('company-name')) {document.getElementById('company-name').value = settings.companyName || '';}
+            if (document.getElementById('company-owner')) {document.getElementById('company-owner').value = settings.owner || '';}
+            if (document.getElementById('company-address')) {document.getElementById('company-address').value = settings.address || '';}
+            if (document.getElementById('company-taxid')) {document.getElementById('company-taxid').value = settings.taxId || '';}
+            if (document.getElementById('company-vatid')) {document.getElementById('company-vatid').value = settings.vatId || '';}
 
             if (settings.theme === 'light') {
                 document.body.classList.add('light-theme');
                 const toggle = document.getElementById('theme-toggle');
-                if (toggle) toggle.checked = false;
+                if (toggle) {toggle.checked = false;}
             }
         }
 
@@ -209,16 +209,16 @@ window.UI = {
                 providerSelect.value = config.provider || 'gemini';
                 this.toggleAIProvider();
             }
-            if (document.getElementById('gemini-api-key')) document.getElementById('gemini-api-key').value = config.apiKey || '';
-            if (document.getElementById('ollama-url')) document.getElementById('ollama-url').value = config.ollamaUrl || 'http://localhost:11434';
-            if (document.getElementById('ollama-model')) document.getElementById('ollama-model').value = config.ollamaModel || 'mistral';
+            if (document.getElementById('gemini-api-key')) {document.getElementById('gemini-api-key').value = config.apiKey || '';}
+            if (document.getElementById('ollama-url')) {document.getElementById('ollama-url').value = config.ollamaUrl || 'http://localhost:11434';}
+            if (document.getElementById('ollama-model')) {document.getElementById('ollama-model').value = config.ollamaModel || 'mistral';}
         }
 
         const form = document.getElementById('settings-company-form');
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                if (!window.storeService.state.settings) window.storeService.state.settings = {};
+                if (!window.storeService.state.settings) {window.storeService.state.settings = {};}
 
                 const newSettings = {
                     ...window.storeService.state.settings,
@@ -231,7 +231,7 @@ window.UI = {
                 window.storeService.state.settings = newSettings;
                 window.storeService.save();
                 // Regenerate sender email when company name changes
-                if (typeof generateSenderEmail === 'function') generateSenderEmail();
+                if (typeof generateSenderEmail === 'function') {generateSenderEmail();}
                 window.UI.showToast('Einstellungen gespeichert', 'success');
             });
         }
@@ -242,10 +242,10 @@ window.UI = {
                 const isDark = e.target.checked;
                 if (isDark) {
                     document.body.classList.remove('light-theme');
-                    if (window.storeService.state.settings) window.storeService.state.settings.theme = 'dark';
+                    if (window.storeService.state.settings) {window.storeService.state.settings.theme = 'dark';}
                 } else {
                     document.body.classList.add('light-theme');
-                    if (window.storeService.state.settings) window.storeService.state.settings.theme = 'light';
+                    if (window.storeService.state.settings) {window.storeService.state.settings.theme = 'light';}
                 }
                 window.storeService.save();
             });
@@ -254,7 +254,7 @@ window.UI = {
 
     initSearchLogic() {
         const input = document.getElementById('global-search');
-        if (!input) return;
+        if (!input) {return;}
 
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -280,8 +280,8 @@ window.UI = {
                 e.preventDefault();
                 window.storeService?.save();
                 // Ensure showToast exists or use fallback
-                if (window.showToast) window.showToast('💾 Gespeichert', 'success');
-                else if (window.errorHandler?.showToast) window.errorHandler.showToast('💾 Gespeichert', 'success');
+                if (window.showToast) {window.showToast('💾 Gespeichert', 'success');}
+                else if (window.errorHandler?.showToast) {window.errorHandler.showToast('💾 Gespeichert', 'success');}
             }
         });
     },

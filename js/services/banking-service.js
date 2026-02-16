@@ -57,7 +57,7 @@ class BankingService {
     // Fetch transactions (demo mode)
     async fetchTransactions(accountId, dateRange = {}) {
         const account = this.accounts.find(a => a.id === accountId);
-        if (!account) return { success: false, error: 'Account not found' };
+        if (!account) {return { success: false, error: 'Account not found' };}
 
         // In production: Call FinTS/Nordigen API
         // For demo: Generate new transactions
@@ -154,17 +154,17 @@ class BankingService {
         const amount = transaction.amount;
 
         // Rule-based categorization
-        if (purpose.includes('rechnung') || purpose.includes('zahlung')) return 'einnahme_kunde';
-        if (purpose.includes('material') || purpose.includes('würth') || purpose.includes('klöckner')) return 'material';
-        if (purpose.includes('diesel') || purpose.includes('tanken') || purpose.includes('benzin')) return 'fahrzeug';
-        if (purpose.includes('miete') || purpose.includes('pacht')) return 'miete';
-        if (purpose.includes('versicherung')) return 'versicherung';
-        if (purpose.includes('strom') || purpose.includes('gas') || purpose.includes('wasser')) return 'nebenkosten';
-        if (purpose.includes('telekom') || purpose.includes('vodafone') || purpose.includes('o2')) return 'kommunikation';
-        if (purpose.includes('lohn') || purpose.includes('gehalt')) return 'personal';
+        if (purpose.includes('rechnung') || purpose.includes('zahlung')) {return 'einnahme_kunde';}
+        if (purpose.includes('material') || purpose.includes('würth') || purpose.includes('klöckner')) {return 'material';}
+        if (purpose.includes('diesel') || purpose.includes('tanken') || purpose.includes('benzin')) {return 'fahrzeug';}
+        if (purpose.includes('miete') || purpose.includes('pacht')) {return 'miete';}
+        if (purpose.includes('versicherung')) {return 'versicherung';}
+        if (purpose.includes('strom') || purpose.includes('gas') || purpose.includes('wasser')) {return 'nebenkosten';}
+        if (purpose.includes('telekom') || purpose.includes('vodafone') || purpose.includes('o2')) {return 'kommunikation';}
+        if (purpose.includes('lohn') || purpose.includes('gehalt')) {return 'personal';}
 
         // Amount-based guessing
-        if (amount > 0) return 'sonstige_einnahme';
+        if (amount > 0) {return 'sonstige_einnahme';}
         return 'sonstige_ausgabe';
     }
 
@@ -217,7 +217,7 @@ class BankingService {
     // Match a payment to an invoice
     matchPaymentToInvoice(transactionId, invoiceId) {
         const tx = this.transactions.find(t => t.id === transactionId);
-        if (!tx) return { success: false };
+        if (!tx) {return { success: false };}
 
         tx.matched = true;
         tx.matchedTo = { type: 'rechnung', id: invoiceId };
@@ -237,7 +237,7 @@ class BankingService {
                 invoice.status = 'bezahlt';
                 invoice.bezahltAm = new Date().toISOString();
                 invoice.zahlungseingang = tx.amount;
-                if (typeof saveStore === 'function') saveStore();
+                if (typeof saveStore === 'function') {saveStore();}
             }
         }
 

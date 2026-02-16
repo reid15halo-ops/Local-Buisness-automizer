@@ -218,11 +218,11 @@ class InvoiceService {
      * @returns {Array} Overdue invoices
      */
     getOverdueInvoices() {
-        if (!this.storeService) return [];
+        if (!this.storeService) {return [];}
 
         const now = new Date();
         return this.storeService.state.rechnungen.filter(invoice => {
-            if (invoice.status !== 'offen') return false;
+            if (invoice.status !== 'offen') {return false;}
 
             const dueDate = new Date(invoice.faelligkeitsdatum || invoice.createdAt);
             return dueDate < now;
@@ -235,7 +235,7 @@ class InvoiceService {
      * @returns {Array} Filtered invoices
      */
     getInvoicesByStatus(status) {
-        if (!this.storeService) return [];
+        if (!this.storeService) {return [];}
         return this.storeService.state.rechnungen.filter(r => r.status === status);
     }
 
@@ -245,7 +245,7 @@ class InvoiceService {
      * @returns {Object|null} Invoice
      */
     getInvoiceByNumber(nummer) {
-        if (!this.storeService) return null;
+        if (!this.storeService) {return null;}
         return this.storeService.state.rechnungen.find(r => r.nummer === nummer);
     }
 
@@ -357,7 +357,7 @@ class InvoiceService {
      * @returns {Object} Statistics
      */
     getStatistics() {
-        if (!this.storeService) return {};
+        if (!this.storeService) {return {};}
 
         const invoices = this.storeService.state.rechnungen;
 

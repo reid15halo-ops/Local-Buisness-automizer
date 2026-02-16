@@ -22,11 +22,11 @@ class AutomationAPI {
     }
 
     async getAuthHeaders() {
-        if (!this.initialized) this.init();
-        if (!this.supabaseUrl) return null;
+        if (!this.initialized) {this.init();}
+        if (!this.supabaseUrl) {return null;}
 
         const session = await window.authService?.getSession();
-        if (!session?.access_token) return null;
+        if (!session?.access_token) {return null;}
 
         return {
             'Authorization': `Bearer ${session.access_token}`,
@@ -97,7 +97,7 @@ class AutomationAPI {
                 executionId,
             });
 
-            if (result.success !== undefined) return result;
+            if (result.success !== undefined) {return result;}
         }
 
         // Fallback: handle locally what we can

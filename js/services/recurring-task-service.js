@@ -66,7 +66,7 @@ class RecurringTaskService {
     // Update recurring task
     updateRecurringTask(id, updates) {
         const task = this.recurringTasks.find(t => t.id === id);
-        if (!task) return { success: false, error: 'Nicht gefunden' };
+        if (!task) {return { success: false, error: 'Nicht gefunden' };}
 
         Object.assign(task, updates, { updatedAt: new Date().toISOString() });
         task.nextDue = this.calculateNextOccurrence(task);

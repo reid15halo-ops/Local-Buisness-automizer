@@ -247,12 +247,12 @@ class ExcelImportWizard {
             e.preventDefault();
             uploadArea.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            if (file) this.handleFileSelect(file);
+            if (file) {this.handleFileSelect(file);}
         });
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) this.handleFileSelect(file);
+            if (file) {this.handleFileSelect(file);}
         });
 
         document.getElementById('btn-next-step').addEventListener('click', () => {
@@ -297,8 +297,8 @@ class ExcelImportWizard {
     }
 
     formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024) {return bytes + ' B';}
+        if (bytes < 1024 * 1024) {return (bytes / 1024).toFixed(1) + ' KB';}
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 

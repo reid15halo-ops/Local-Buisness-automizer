@@ -24,7 +24,7 @@ class SupabaseDBService {
     // ---- Generic CRUD ----
 
     async getAll(table, filters = {}) {
-        if (!this.isOnline()) return this._getLocal(table);
+        if (!this.isOnline()) {return this._getLocal(table);}
 
         try {
             let query = this.getClient()
@@ -38,7 +38,7 @@ class SupabaseDBService {
             });
 
             const { data, error } = await query;
-            if (error) throw error;
+            if (error) {throw error;}
             return data || [];
         } catch (err) {
             console.warn(`Supabase getAll(${table}) failed, using local:`, err.message);
@@ -47,7 +47,7 @@ class SupabaseDBService {
     }
 
     async getById(table, id) {
-        if (!this.isOnline()) return this._getLocalById(table, id);
+        if (!this.isOnline()) {return this._getLocalById(table, id);}
 
         try {
             const { data, error } = await this.getClient()
@@ -56,7 +56,7 @@ class SupabaseDBService {
                 .eq('id', id)
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
             return data;
         } catch (err) {
             console.warn(`Supabase getById(${table}, ${id}) failed:`, err.message);
@@ -68,7 +68,7 @@ class SupabaseDBService {
         // Always save locally first (offline-first)
         this._saveLocal(table, record);
 
-        if (!this.isOnline()) return record;
+        if (!this.isOnline()) {return record;}
 
         try {
             const { data, error } = await this.getClient()
@@ -80,7 +80,7 @@ class SupabaseDBService {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
             return data;
         } catch (err) {
             console.warn(`Supabase create(${table}) failed, saved locally:`, err.message);
@@ -93,7 +93,7 @@ class SupabaseDBService {
         // Update locally first
         this._updateLocal(table, id, updates);
 
-        if (!this.isOnline()) return updates;
+        if (!this.isOnline()) {return updates;}
 
         try {
             const { data, error } = await this.getClient()
@@ -103,7 +103,7 @@ class SupabaseDBService {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
             return data;
         } catch (err) {
             console.warn(`Supabase update(${table}, ${id}) failed:`, err.message);
@@ -115,7 +115,7 @@ class SupabaseDBService {
     async delete(table, id) {
         this._deleteLocal(table, id);
 
-        if (!this.isOnline()) return;
+        if (!this.isOnline()) {return;}
 
         try {
             const { error } = await this.getClient()
@@ -123,7 +123,7 @@ class SupabaseDBService {
                 .delete()
                 .eq('id', id);
 
-            if (error) throw error;
+            if (error) {throw error;}
         } catch (err) {
             console.warn(`Supabase delete(${table}, ${id}) failed:`, err.message);
             this._addToSyncQueue(table, 'delete', { id });
@@ -133,7 +133,7 @@ class SupabaseDBService {
     // ---- Sync ----
 
     async syncAll() {
-        if (!this.isOnline()) return { synced: 0, errors: 0 };
+        if (!this.isOnline()) {return { synced: 0, errors: 0 };}
 
         const queue = this._getSyncQueue();
         let synced = 0;
@@ -179,14 +179,14 @@ class SupabaseDBService {
 
     // Upload all local data to Supabase (initial migration)
     async migrateToCloud() {
-        if (!this.isOnline()) throw new Error('Nicht eingeloggt');
+        if (!this.isOnline()) {throw new Error('Nicht eingeloggt');}
 
         const userId = window.authService.getUser()?.id;
         let migrated = 0;
 
         for (const table of this.tables) {
             const localData = this._getLocal(table);
-            if (localData.length === 0) continue;
+            if (localData.length === 0) {continue;}
 
             const records = localData.map(record => ({
                 ...record,
@@ -216,7 +216,7 @@ class SupabaseDBService {
 
     _getLocal(table) {
         const store = window.storeService?.state;
-        if (store && store[table]) return store[table];
+        if (store && store[table]) {return store[table];}
 
         try {
             return JSON.parse(localStorage.getItem(`hwf_${table}`) || '[]');

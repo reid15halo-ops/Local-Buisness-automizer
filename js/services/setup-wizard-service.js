@@ -145,7 +145,7 @@ class SetupWizardService {
         ];
 
         return allKeys.filter(({ key, required }) => {
-            if (!required) return false; // Skip optional keys
+            if (!required) {return false;} // Skip optional keys
             const value = localStorage.getItem(key);
             return !value || value.trim() === '';
         });

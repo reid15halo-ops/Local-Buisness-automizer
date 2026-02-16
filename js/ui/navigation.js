@@ -85,7 +85,7 @@ class NavigationController {
         // Update active class on nav item
         this.navItems.forEach(n => n.classList.remove('active'));
         const activeNav = document.querySelector(`.nav-item[data-view="${viewId}"]`);
-        if (activeNav) activeNav.classList.add('active');
+        if (activeNav) {activeNav.classList.add('active');}
 
         // Update current view reference
         this.currentView = viewId;
@@ -108,19 +108,19 @@ class NavigationController {
         // Ideally these should listen to the 'viewchange' event instead
         switch (viewId) {
             case 'dashboard':
-                if (window.updateDashboard) window.updateDashboard();
+                if (window.updateDashboard) {window.updateDashboard();}
                 break;
             case 'anfragen':
-                if (window.renderAnfragen) window.renderAnfragen();
+                if (window.renderAnfragen) {window.renderAnfragen();}
                 break;
             case 'angebote':
-                if (window.renderAngebote) window.renderAngebote();
+                if (window.renderAngebote) {window.renderAngebote();}
                 break;
             case 'auftraege':
-                if (window.renderAuftraege) window.renderAuftraege();
+                if (window.renderAuftraege) {window.renderAuftraege();}
                 break;
             case 'rechnungen':
-                if (window.renderRechnungen) window.renderRechnungen();
+                if (window.renderRechnungen) {window.renderRechnungen();}
                 break;
             // New features (Self-initializing via their own listeners, but good to ensure)
             case 'workflows':

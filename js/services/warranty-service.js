@@ -9,8 +9,8 @@ class WarrantyService {
         this.settings = JSON.parse(localStorage.getItem('mhs_warranty_settings') || '{}');
 
         // Default settings
-        if (!this.settings.defaultWarrantyMonths) this.settings.defaultWarrantyMonths = 24;
-        if (!this.settings.reminderDaysBefore) this.settings.reminderDaysBefore = 30;
+        if (!this.settings.defaultWarrantyMonths) {this.settings.defaultWarrantyMonths = 24;}
+        if (!this.settings.reminderDaysBefore) {this.settings.reminderDaysBefore = 30;}
     }
 
     // Add warranty for a job/product
@@ -73,8 +73,8 @@ class WarrantyService {
     // Add warranty claim
     addClaim(warrantyId, claimData) {
         const warranty = this.warranties.find(w => w.id === warrantyId);
-        if (!warranty) return { success: false, error: 'Warranty not found' };
-        if (warranty.status !== 'active') return { success: false, error: 'Warranty not active' };
+        if (!warranty) {return { success: false, error: 'Warranty not found' };}
+        if (warranty.status !== 'active') {return { success: false, error: 'Warranty not active' };}
 
         const claim = {
             id: 'claim-' + Date.now(),
@@ -111,10 +111,10 @@ class WarrantyService {
     // Resolve claim
     resolveClaim(warrantyId, claimId, resolution) {
         const warranty = this.warranties.find(w => w.id === warrantyId);
-        if (!warranty) return { success: false };
+        if (!warranty) {return { success: false };}
 
         const claim = warranty.claims.find(c => c.id === claimId);
-        if (!claim) return { success: false };
+        if (!claim) {return { success: false };}
 
         claim.status = 'resolved';
         claim.resolution = resolution.description;
@@ -168,7 +168,7 @@ class WarrantyService {
             }
         });
 
-        if (updated > 0) this.save();
+        if (updated > 0) {this.save();}
         return updated;
     }
 
@@ -259,7 +259,7 @@ class WarrantyService {
     // Void warranty
     voidWarranty(id, reason) {
         const warranty = this.warranties.find(w => w.id === id);
-        if (!warranty) return { success: false };
+        if (!warranty) {return { success: false };}
 
         warranty.status = 'voided';
         warranty.voidedAt = new Date().toISOString();
@@ -273,7 +273,7 @@ class WarrantyService {
     // Extend warranty
     extendWarranty(id, additionalMonths) {
         const warranty = this.warranties.find(w => w.id === id);
-        if (!warranty) return { success: false };
+        if (!warranty) {return { success: false };}
 
         warranty.durationMonths += additionalMonths;
         warranty.endDate = this.calculateEndDate(warranty.startDate, warranty.durationMonths);

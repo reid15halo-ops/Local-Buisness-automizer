@@ -8,7 +8,7 @@
 // ============================================
 function renderEmails() {
     const container = document.getElementById('email-list');
-    if (!container || !window.emailService) return;
+    if (!container || !window.emailService) {return;}
 
     const emails = window.emailService.getAllEmails();
 
@@ -17,9 +17,9 @@ function renderEmails() {
     const anfragenEl = document.getElementById('emails-anfragen');
     const badgeEl = document.getElementById('emails-badge');
 
-    if (unreadEl) unreadEl.textContent = window.emailService.getUnreadCount();
-    if (anfragenEl) anfragenEl.textContent = emails.filter(e => e.category === 'anfrage').length;
-    if (badgeEl) badgeEl.textContent = window.emailService.getUnreadCount();
+    if (unreadEl) {unreadEl.textContent = window.emailService.getUnreadCount();}
+    if (anfragenEl) {anfragenEl.textContent = emails.filter(e => e.category === 'anfrage').length;}
+    if (badgeEl) {badgeEl.textContent = window.emailService.getUnreadCount();}
 
     if (emails.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine E-Mails. Klicke "Demo-Mails laden" zum Testen.</p>';
@@ -48,7 +48,7 @@ function renderEmails() {
     // Click handlers
     container.querySelectorAll('.email-item').forEach(item => {
         item.addEventListener('click', (e) => {
-            if (e.target.closest('button')) return;
+            if (e.target.closest('button')) {return;}
             const id = item.dataset.id;
             window.emailService.markAsRead(id);
             renderEmails();
@@ -84,7 +84,7 @@ function initEmails() {
         // Guard: Require confirmation in production mode
         if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
             const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-E-Mails laden');
-            if (!confirmed) return;
+            if (!confirmed) {return;}
         }
 
         const demoEmails = window.emailService.getDemoEmails();
@@ -109,7 +109,7 @@ function initEmails() {
 // Tasks View (Kanban)
 // ============================================
 function renderTasks() {
-    if (!window.taskService) return;
+    if (!window.taskService) {return;}
 
     const stats = window.taskService.getStatistics();
     const kanban = window.taskService.getKanbanData();
@@ -121,12 +121,12 @@ function renderTasks() {
     document.getElementById('tasks-done')?.textContent && (document.getElementById('tasks-done').textContent = stats.completed);
 
     const badge = document.getElementById('aufgaben-badge');
-    if (badge) badge.textContent = stats.open + stats.overdue;
+    if (badge) {badge.textContent = stats.open + stats.overdue;}
 
     // Render Kanban columns
     ['offen', 'in_bearbeitung', 'warten', 'erledigt'].forEach(status => {
         const container = document.getElementById(`kanban-${status}`);
-        if (!container) return;
+        if (!container) {return;}
 
         const tasks = kanban[status] || [];
         container.innerHTML = tasks.map(task => `
@@ -178,7 +178,7 @@ function initTasks() {
 // ============================================
 function renderCustomers() {
     const container = document.getElementById('customers-list');
-    if (!container || !window.customerService) return;
+    if (!container || !window.customerService) {return;}
 
     const customers = window.customerService.getAllCustomers();
 
@@ -187,7 +187,7 @@ function renderCustomers() {
     document.getElementById('customers-active')?.textContent && (document.getElementById('customers-active').textContent = window.customerService.getActiveCustomers().length);
 
     const badge = document.getElementById('kunden-badge');
-    if (badge) badge.textContent = customers.length;
+    if (badge) {badge.textContent = customers.length;}
 
     if (customers.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine Kunden vorhanden</p>';
@@ -261,7 +261,7 @@ let calendarStartDate = new Date();
 function renderCalendar() {
     const container = document.getElementById('calendar-week');
     const header = document.getElementById('calendar-header');
-    if (!container || !window.calendarService) return;
+    if (!container || !window.calendarService) {return;}
 
     // Set start to Monday
     const start = new Date(calendarStartDate);
@@ -279,15 +279,15 @@ function renderCalendar() {
     const auftraege = window.storeService?.state?.auftraege || [];
     const auftragEvents = {};
     auftraege.forEach(a => {
-        if (!a.startDatum && !a.endDatum) return;
-        if (a.status === 'abgeschlossen') return;
+        if (!a.startDatum && !a.endDatum) {return;}
+        if (a.status === 'abgeschlossen') {return;}
         const startDate = a.startDatum || a.endDatum;
         const endDate = a.endDatum || a.startDatum;
         const s = new Date(startDate);
         const e = new Date(endDate);
         for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
             const key = d.toISOString().split('T')[0];
-            if (!auftragEvents[key]) auftragEvents[key] = [];
+            if (!auftragEvents[key]) {auftragEvents[key] = [];}
             auftragEvents[key].push(a);
         }
     });
@@ -363,7 +363,7 @@ let clockInterval = null;
 function renderTimeTracking() {
     const display = document.getElementById('time-clock-display');
     const entriesList = document.getElementById('time-entries-list');
-    if (!window.timeTrackingService) return;
+    if (!window.timeTrackingService) {return;}
 
     const isActive = window.timeTrackingService.isClockActive();
     const timer = window.timeTrackingService.getActiveTimer();
@@ -449,7 +449,7 @@ function initTimeTracking() {
 // ============================================
 function renderDocuments() {
     const container = document.getElementById('documents-list');
-    if (!container || !window.documentService) return;
+    if (!container || !window.documentService) {return;}
 
     const docs = window.documentService.getAllDocuments();
 
@@ -551,7 +551,7 @@ let currentReport = null;
 let reportChart = null;
 
 async function ensureChartJS() {
-    if (window.Chart) return;
+    if (window.Chart) {return;}
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
@@ -567,7 +567,7 @@ async function generateReport() {
     const output = document.getElementById('report-output');
     const chartContainer = document.getElementById('report-chart-container');
 
-    if (!output) return;
+    if (!output) {return;}
 
     // Use store data directly if reportService isn't available
     let report;
@@ -606,7 +606,7 @@ async function generateReport() {
             const byMonth = {};
             rechnungen.forEach(r => {
                 const m = (r.createdAt || r.datum || '').substring(0, 7);
-                if (!byMonth[m]) byMonth[m] = { count: 0, sum: 0 };
+                if (!byMonth[m]) {byMonth[m] = { count: 0, sum: 0 };}
                 byMonth[m].count++;
                 byMonth[m].sum += r.brutto || 0;
             });
@@ -628,7 +628,7 @@ async function generateReport() {
 
     if (!report) {
         output.innerHTML = '<p class="empty-state">Bericht konnte nicht erstellt werden</p>';
-        if (chartContainer) chartContainer.style.display = 'none';
+        if (chartContainer) {chartContainer.style.display = 'none';}
         return;
     }
 
@@ -683,14 +683,14 @@ async function generateReport() {
         renderReportChart(report);
     } catch (e) {
         console.warn('Chart.js not available:', e);
-        if (chartContainer) chartContainer.style.display = 'none';
+        if (chartContainer) {chartContainer.style.display = 'none';}
     }
 }
 
 function renderReportChart(report) {
     const chartContainer = document.getElementById('report-chart-container');
     const ctx = document.getElementById('report-chart');
-    if (!chartContainer || !ctx || !window.Chart) return;
+    if (!chartContainer || !ctx || !window.Chart) {return;}
 
     // Destroy previous chart
     if (reportChart) { reportChart.destroy(); reportChart = null; }
@@ -868,13 +868,13 @@ function exportReportCSV() {
 // ============================================
 
 function renderChatbot() {
-    if (!window.llmService) return;
+    if (!window.llmService) {return;}
     initAIModelSelector();
 }
 
 async function initAIModelSelector() {
     const select = document.getElementById('ai-model-select');
-    if (!select) return;
+    if (!select) {return;}
 
     const models = await window.llmService.getAvailableModels();
     if (models.length > 0) {
@@ -887,11 +887,11 @@ async function sendAiMessage() {
     const container = document.getElementById('ai-chat-messages');
     const message = input.value.trim();
 
-    if (!message) return;
+    if (!message) {return;}
 
     // Remove empty state if still there
     const emptyState = container.querySelector('.ai-empty-state');
-    if (emptyState) emptyState.remove();
+    if (emptyState) {emptyState.remove();}
 
     // 1. Add User Message
     appendAiMessage('user', message);
@@ -932,7 +932,7 @@ function initChatbot() {
 
     btnSend?.addEventListener('click', sendAiMessage);
     input?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendAiMessage();
+        if (e.key === 'Enter') {sendAiMessage();}
     });
 
     // Auto-refresh model list occasionally

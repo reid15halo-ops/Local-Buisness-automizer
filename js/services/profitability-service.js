@@ -9,9 +9,9 @@ class ProfitabilityService {
         this.overheadSettings = JSON.parse(localStorage.getItem('mhs_overhead_settings') || '{}');
 
         // Default overhead settings
-        if (!this.overheadSettings.hourlyOverhead) this.overheadSettings.hourlyOverhead = 25; // €/hour
-        if (!this.overheadSettings.materialMarkup) this.overheadSettings.materialMarkup = 15; // %
-        if (!this.overheadSettings.targetMargin) this.overheadSettings.targetMargin = 25; // %
+        if (!this.overheadSettings.hourlyOverhead) {this.overheadSettings.hourlyOverhead = 25;} // €/hour
+        if (!this.overheadSettings.materialMarkup) {this.overheadSettings.materialMarkup = 15;} // %
+        if (!this.overheadSettings.targetMargin) {this.overheadSettings.targetMargin = 25;} // %
     }
 
     // Analyze a completed job

@@ -9,9 +9,9 @@ class PhotoService {
         this.settings = JSON.parse(localStorage.getItem('mhs_photo_settings') || '{}');
 
         // Default settings
-        if (!this.settings.maxPhotoSize) this.settings.maxPhotoSize = 1024 * 1024; // 1MB
-        if (!this.settings.compressionQuality) this.settings.compressionQuality = 0.7;
-        if (!this.settings.defaultCategory) this.settings.defaultCategory = 'documentation';
+        if (!this.settings.maxPhotoSize) {this.settings.maxPhotoSize = 1024 * 1024;} // 1MB
+        if (!this.settings.compressionQuality) {this.settings.compressionQuality = 0.7;}
+        if (!this.settings.defaultCategory) {this.settings.defaultCategory = 'documentation';}
     }
 
     // Capture photo from camera
@@ -149,12 +149,12 @@ class PhotoService {
     // Update photo metadata
     updatePhoto(id, updates) {
         const photo = this.photos.find(p => p.id === id);
-        if (!photo) return { success: false };
+        if (!photo) {return { success: false };}
 
-        if (updates.title) photo.title = updates.title;
-        if (updates.description) photo.description = updates.description;
-        if (updates.category) photo.category = updates.category;
-        if (updates.tags) photo.tags = updates.tags;
+        if (updates.title) {photo.title = updates.title;}
+        if (updates.description) {photo.description = updates.description;}
+        if (updates.category) {photo.category = updates.category;}
+        if (updates.tags) {photo.tags = updates.tags;}
 
         this.save();
         return { success: true, photo };
@@ -163,7 +163,7 @@ class PhotoService {
     // Delete photo
     deletePhoto(id) {
         const index = this.photos.findIndex(p => p.id === id);
-        if (index === -1) return { success: false };
+        if (index === -1) {return { success: false };}
 
         this.photos.splice(index, 1);
         this.save();
@@ -272,7 +272,7 @@ class PhotoService {
         this.photos = this.photos.filter(p => p.timestamp >= cutoffStr);
         const removedCount = oldCount - this.photos.length;
 
-        if (removedCount > 0) this.save();
+        if (removedCount > 0) {this.save();}
         return removedCount;
     }
 

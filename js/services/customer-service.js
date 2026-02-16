@@ -89,10 +89,10 @@ class CustomerService {
     // Duplicate Detection
     findDuplicates(customer) {
         return this.customers.filter(c => {
-            if (customer.email && c.email && c.email.toLowerCase() === customer.email.toLowerCase()) return true;
-            if (customer.telefon && c.telefon && c.telefon.replace(/\D/g, '') === customer.telefon.replace(/\D/g, '')) return true;
+            if (customer.email && c.email && c.email.toLowerCase() === customer.email.toLowerCase()) {return true;}
+            if (customer.telefon && c.telefon && c.telefon.replace(/\D/g, '') === customer.telefon.replace(/\D/g, '')) {return true;}
             if (customer.name && c.name && c.name.toLowerCase() === customer.name.toLowerCase() &&
-                customer.firma && c.firma && c.firma.toLowerCase() === customer.firma.toLowerCase()) return true;
+                customer.firma && c.firma && c.firma.toLowerCase() === customer.firma.toLowerCase()) {return true;}
             return false;
         });
     }
@@ -100,7 +100,7 @@ class CustomerService {
     mergeCustomers(primaryId, secondaryId) {
         const primary = this.getCustomer(primaryId);
         const secondary = this.getCustomer(secondaryId);
-        if (!primary || !secondary) return null;
+        if (!primary || !secondary) {return null;}
 
         // Merge data: keep primary, fill gaps from secondary
         const merged = {
@@ -116,7 +116,7 @@ class CustomerService {
 
         // Reassign interactions
         this.interactions.forEach(i => {
-            if (i.customerId === secondaryId) i.customerId = primaryId;
+            if (i.customerId === secondaryId) {i.customerId = primaryId;}
         });
 
         this.updateCustomer(primaryId, merged);
@@ -162,26 +162,26 @@ class CustomerService {
     // Import Functions
     importFromCSV(csvContent) {
         const lines = csvContent.split('\n');
-        if (lines.length < 2) return { success: 0, failed: 0 };
+        if (lines.length < 2) {return { success: 0, failed: 0 };}
 
         const headers = lines[0].split(';').map(h => h.trim().toLowerCase());
         const imported = [];
 
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(';');
-            if (values.length < 2) continue;
+            if (values.length < 2) {continue;}
 
             const customer = {};
             headers.forEach((header, idx) => {
                 const value = values[idx]?.trim() || '';
-                if (header.includes('name')) customer.name = value;
-                else if (header.includes('firma') || header.includes('company')) customer.firma = value;
-                else if (header.includes('email') || header.includes('mail')) customer.email = value;
-                else if (header.includes('tel') || header.includes('phone')) customer.telefon = value;
-                else if (header.includes('mobil') || header.includes('handy')) customer.mobil = value;
-                else if (header.includes('straße') || header.includes('strasse') || header.includes('street')) customer.strasse = value;
-                else if (header.includes('plz') || header.includes('zip')) customer.plz = value;
-                else if (header.includes('ort') || header.includes('city') || header.includes('stadt')) customer.ort = value;
+                if (header.includes('name')) {customer.name = value;}
+                else if (header.includes('firma') || header.includes('company')) {customer.firma = value;}
+                else if (header.includes('email') || header.includes('mail')) {customer.email = value;}
+                else if (header.includes('tel') || header.includes('phone')) {customer.telefon = value;}
+                else if (header.includes('mobil') || header.includes('handy')) {customer.mobil = value;}
+                else if (header.includes('straße') || header.includes('strasse') || header.includes('street')) {customer.strasse = value;}
+                else if (header.includes('plz') || header.includes('zip')) {customer.plz = value;}
+                else if (header.includes('ort') || header.includes('city') || header.includes('stadt')) {customer.ort = value;}
             });
 
             if (customer.name || customer.firma) {
@@ -202,11 +202,11 @@ class CustomerService {
             const lines = vcard.split('\n');
 
             lines.forEach(line => {
-                if (line.startsWith('FN:')) customer.name = line.replace('FN:', '').trim();
-                else if (line.startsWith('ORG:')) customer.firma = line.replace('ORG:', '').trim();
-                else if (line.startsWith('EMAIL')) customer.email = line.split(':').pop().trim();
-                else if (line.startsWith('TEL;TYPE=CELL')) customer.mobil = line.split(':').pop().trim();
-                else if (line.startsWith('TEL')) customer.telefon = line.split(':').pop().trim();
+                if (line.startsWith('FN:')) {customer.name = line.replace('FN:', '').trim();}
+                else if (line.startsWith('ORG:')) {customer.firma = line.replace('ORG:', '').trim();}
+                else if (line.startsWith('EMAIL')) {customer.email = line.split(':').pop().trim();}
+                else if (line.startsWith('TEL;TYPE=CELL')) {customer.mobil = line.split(':').pop().trim();}
+                else if (line.startsWith('TEL')) {customer.telefon = line.split(':').pop().trim();}
                 else if (line.startsWith('ADR')) {
                     const parts = line.split(':').pop().split(';');
                     customer.strasse = parts[2] || '';
@@ -298,7 +298,7 @@ class CustomerService {
 
     formatAddress(customer) {
         const a = customer.adresse || {};
-        if (!a.strasse && !a.plz && !a.ort) return '-';
+        if (!a.strasse && !a.plz && !a.ort) {return '-';}
         return `${a.strasse}, ${a.plz} ${a.ort}`.trim();
     }
 

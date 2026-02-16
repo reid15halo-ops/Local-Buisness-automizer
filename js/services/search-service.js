@@ -13,7 +13,7 @@ class SearchService {
     buildIndex() {
         this.index = [];
         const store = window.storeService?.state;
-        if (!store) return;
+        if (!store) {return;}
 
         // Index Anfragen
         store.anfragen?.forEach(item => {
@@ -285,7 +285,7 @@ class SearchService {
 
     init() {
         const searchInput = document.getElementById('global-search');
-        if (!searchInput) return;
+        if (!searchInput) {return;}
 
         let debounceTimer;
 

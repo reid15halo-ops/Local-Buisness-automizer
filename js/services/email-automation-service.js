@@ -27,7 +27,7 @@ Mit freundlichen Grüßen
     }
 
     async init() {
-        if (this.initialized) return;
+        if (this.initialized) {return;}
 
         // Ensure config exists
         const config = this.getConfig();
@@ -44,7 +44,7 @@ Mit freundlichen Grüßen
      */
     getConfig() {
         const stored = localStorage.getItem(this.storageKey);
-        if (!stored) return { ...this.defaultConfig };
+        if (!stored) {return { ...this.defaultConfig };}
 
         try {
             return { ...this.defaultConfig, ...JSON.parse(stored) };
@@ -79,7 +79,7 @@ Mit freundlichen Grüßen
      */
     async getProcessedEmails(limit = 50) {
         const stored = localStorage.getItem(this.historyKey);
-        if (!stored) return [];
+        if (!stored) {return [];}
 
         try {
             const history = JSON.parse(stored);
@@ -244,11 +244,11 @@ Mit freundlichen Grüßen
     extractCustomerName(text) {
         // Suche nach "Mit freundlichen Grüßen\n[Name]"
         const greetingMatch = text.match(/(?:Freundlichen Grüßen|Grüße|MfG)\s*\n\s*([^\n]+)/i);
-        if (greetingMatch) return greetingMatch[1].trim();
+        if (greetingMatch) {return greetingMatch[1].trim();}
 
         // Suche nach "ich bin [Name]"
         const introMatch = text.match(/ich bin\s+([A-Z][a-zäöüß]+\s+[A-Z][a-zäöüß]+)/i);
-        if (introMatch) return introMatch[1].trim();
+        if (introMatch) {return introMatch[1].trim();}
 
         return null;
     }
@@ -323,16 +323,16 @@ Mit freundlichen Grüßen
 
         let baseValue = 1000; // Basis
 
-        if (projectType.includes('Tor')) baseValue = 2500;
-        if (projectType.includes('Zaun')) baseValue = 1500;
-        if (projectType.includes('Treppe')) baseValue = 3500;
-        if (projectType.includes('Balkon')) baseValue = 4000;
-        if (projectType.includes('Überdachung')) baseValue = 3000;
+        if (projectType.includes('Tor')) {baseValue = 2500;}
+        if (projectType.includes('Zaun')) {baseValue = 1500;}
+        if (projectType.includes('Treppe')) {baseValue = 3500;}
+        if (projectType.includes('Balkon')) {baseValue = 4000;}
+        if (projectType.includes('Überdachung')) {baseValue = 3000;}
 
         // Erhöhe Wert basierend auf Dimensionen
         if (dimensions.width) {
             const width = parseFloat(dimensions.width);
-            if (width > 4) baseValue *= 1.5;
+            if (width > 4) {baseValue *= 1.5;}
         }
 
         return baseValue;

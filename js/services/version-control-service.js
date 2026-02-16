@@ -49,14 +49,14 @@ class VersionControlService {
     // Get specific version
     getVersion(documentId, versionNumber) {
         const docVersions = this.versions[documentId];
-        if (!docVersions) return null;
+        if (!docVersions) {return null;}
         return docVersions.versions.find(v => v.number === versionNumber);
     }
 
     // Get latest version
     getLatestVersion(documentId) {
         const docVersions = this.versions[documentId];
-        if (!docVersions || docVersions.versions.length === 0) return null;
+        if (!docVersions || docVersions.versions.length === 0) {return null;}
         return docVersions.versions[docVersions.versions.length - 1];
     }
 
@@ -65,7 +65,7 @@ class VersionControlService {
         const v1 = this.getVersion(documentId, version1);
         const v2 = this.getVersion(documentId, version2);
 
-        if (!v1 || !v2) return null;
+        if (!v1 || !v2) {return null;}
 
         const comparison = {
             documentId: documentId,
@@ -150,7 +150,7 @@ class VersionControlService {
     // Restore a previous version
     restoreVersion(documentId, versionNumber) {
         const version = this.getVersion(documentId, versionNumber);
-        if (!version) return null;
+        if (!version) {return null;}
 
         // Create a new version with restored content
         const restoredVersion = this.createVersion(
@@ -169,7 +169,7 @@ class VersionControlService {
     // Get version history summary
     getVersionHistory(documentId) {
         const docVersions = this.versions[documentId];
-        if (!docVersions) return [];
+        if (!docVersions) {return [];}
 
         return docVersions.versions.map(v => ({
             versionId: v.versionId,
@@ -186,7 +186,7 @@ class VersionControlService {
     // Update version status
     updateVersionStatus(documentId, versionNumber, status) {
         const version = this.getVersion(documentId, versionNumber);
-        if (!version) return null;
+        if (!version) {return null;}
 
         version.status = status;
         version.statusUpdatedAt = new Date().toISOString();
@@ -227,7 +227,7 @@ class VersionControlService {
     // Export version history
     exportHistory(documentId) {
         const docVersions = this.versions[documentId];
-        if (!docVersions) return null;
+        if (!docVersions) {return null;}
 
         return {
             documentId: documentId,

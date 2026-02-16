@@ -94,7 +94,7 @@ class DBService {
      * @returns {Promise<any>}
      */
     async get(key) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction([this.storeName], 'readonly');
             const store = transaction.objectStore(this.storeName);
@@ -113,7 +113,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async set(key, value) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction([this.storeName], 'readwrite');
             const store = transaction.objectStore(this.storeName);
@@ -130,7 +130,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async clear() {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction([this.storeName], 'readwrite');
             const store = transaction.objectStore(this.storeName);
@@ -191,7 +191,7 @@ class DBService {
      * @returns {Promise<any>}
      */
     async getUserData(userId, key) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         const storeName = `user_${userId}_data`;
 
         // Ensure store exists
@@ -217,7 +217,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async setUserData(userId, key, value) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         const storeName = `user_${userId}_data`;
 
         // Ensure store exists
@@ -241,7 +241,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async clearUserData(userId) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         const storeName = `user_${userId}_data`;
 
         if (!this.db.objectStoreNames.contains(storeName)) {
@@ -267,7 +267,7 @@ class DBService {
      * @returns {Promise<Array>}
      */
     async getAllUsers() {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['users'], 'readonly');
             const store = transaction.objectStore('users');
@@ -284,7 +284,7 @@ class DBService {
      * @returns {Promise<Object|null>}
      */
     async getUser(userId) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['users'], 'readonly');
             const store = transaction.objectStore('users');
@@ -301,7 +301,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async saveUser(user) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['users'], 'readwrite');
             const store = transaction.objectStore('users');
@@ -318,7 +318,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async deleteUser(userId) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
 
         // Delete user record
         await new Promise((resolve, reject) => {
@@ -344,7 +344,7 @@ class DBService {
      * @returns {Promise<number>} The auto-generated ID
      */
     async addToSyncQueue(item) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sync_queue'], 'readwrite');
             const store = transaction.objectStore('sync_queue');
@@ -366,7 +366,7 @@ class DBService {
      * @returns {Promise<Array>}
      */
     async getUnsyncedQueue(userId = null) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sync_queue'], 'readonly');
             const store = transaction.objectStore('sync_queue');
@@ -390,7 +390,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async markQueueItemSynced(queueId) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sync_queue'], 'readwrite');
             const store = transaction.objectStore('sync_queue');
@@ -415,7 +415,7 @@ class DBService {
      * @returns {Promise<void>}
      */
     async deleteQueueItem(queueId) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sync_queue'], 'readwrite');
             const store = transaction.objectStore('sync_queue');
@@ -432,7 +432,7 @@ class DBService {
      * @returns {Promise<number>} Number of deleted items
      */
     async cleanupSyncedQueue(olderThanMs = Date.now() - 7 * 24 * 60 * 60 * 1000) {
-        if (!this.db) await this.init();
+        if (!this.db) {await this.init();}
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(['sync_queue'], 'readwrite');
             const store = transaction.objectStore('sync_queue');

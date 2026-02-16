@@ -11,12 +11,12 @@ class ChatbotService {
         this.kb = this.initKnowledgeBase();
 
         // Default settings
-        if (!this.settings.enabled) this.settings.enabled = true;
+        if (!this.settings.enabled) {this.settings.enabled = true;}
         if (!this.settings.businessHours) {
             this.settings.businessHours = { start: '08:00', end: '18:00', weekends: false };
         }
-        if (!this.settings.autoReplyDelay) this.settings.autoReplyDelay = 500;
-        if (!this.settings.language) this.settings.language = 'de';
+        if (!this.settings.autoReplyDelay) {this.settings.autoReplyDelay = 500;}
+        if (!this.settings.language) {this.settings.language = 'de';}
     }
 
     // =====================================================
@@ -165,9 +165,9 @@ class ChatbotService {
     // Get current season for marketing
     getCurrentSeason() {
         const month = new Date().getMonth();
-        if (month >= 2 && month <= 4) return 'fruehling';
-        if (month >= 5 && month <= 7) return 'sommer';
-        if (month >= 8 && month <= 10) return 'herbst';
+        if (month >= 2 && month <= 4) {return 'fruehling';}
+        if (month >= 5 && month <= 7) {return 'sommer';}
+        if (month >= 8 && month <= 10) {return 'herbst';}
         return 'winter';
     }
 
@@ -228,7 +228,7 @@ class ChatbotService {
                 // Add a small delay for "AI thinking"
                 await new Promise(r => setTimeout(r, 800));
                 const response = await window.llmService.chat(message, history);
-                if (response) return response;
+                if (response) {return response;}
             } catch (e) {
                 console.error('LLM Error in ChatbotService:', e);
             }
@@ -309,8 +309,8 @@ class ChatbotService {
         if (lowerMsg.match(/hydraulik|schlauch|zylinder|pumpe|öl|druck|leck|press/)) {
             if (lowerMsg.match(/schlauch|press|anschluss/)) {
                 let spec = "";
-                if (details.dn) spec += `\n✅ **Dimension DN${details.dn}** haben wir lagernd.`;
-                if (details.pressure) spec += `\n✅ **${details.pressure} bar** sind für unsere 4SH-Schläuche kein Problem.`;
+                if (details.dn) {spec += `\n✅ **Dimension DN${details.dn}** haben wir lagernd.`;}
+                if (details.pressure) {spec += `\n✅ **${details.pressure} bar** sind für unsere 4SH-Schläuche kein Problem.`;}
 
                 return `⚙️ **Hydraulikschlauch-Service**${spec}\n\n**Wir fertigen vor Ort:**\n• Durchmesser: DN6 bis DN51\n• Druckstufen: 1SN (225 bar) bis 4SH (500 bar)\n• Anschlüsse: ${kb.hydraulik.anschluesse.slice(0, 5).join(', ')} u.v.m.\n\n**Preise:**\nBsp: DN10, 1m, 2SN → ca. 35€\nBsp: DN16, 2m, 2SN → ca. 55€\nBsp: DN25, 3m, 4SP → ca. 120€\n\n**Ablauf:**\n1. Alten Schlauch bringen/vermessen\n2. Passende Armatur wählen\n3. Pressen (ca. 15 Min.)\n4. Prüfung + Dokumentation\n\n📞 **Notfall?** Mobiler Service: ${kb.company.phone}` + this.getSubtleMarketing('hydraulik');
             }
@@ -476,11 +476,11 @@ class ChatbotService {
 
     extractAndSaveCustomerData(conversation, message) {
         const phoneMatch = message.match(/(\+49|0)[0-9\s\-\/]{8,15}/);
-        if (phoneMatch) conversation.customerData.telefon = phoneMatch[0].replace(/[\s\-\/]/g, '');
+        if (phoneMatch) {conversation.customerData.telefon = phoneMatch[0].replace(/[\s\-\/]/g, '');}
         const emailMatch = message.match(/[\w.-]+@[\w.-]+\.\w+/);
-        if (emailMatch) conversation.customerData.email = emailMatch[0];
+        if (emailMatch) {conversation.customerData.email = emailMatch[0];}
         const nameMatch = message.match(/(?:ich bin|mein name ist|ich heiße|name:?)\s+([A-ZÄÖÜa-zäöüß]+(?:\s+[A-ZÄÖÜa-zäöüß]+)?)/i);
-        if (nameMatch) conversation.customerData.name = nameMatch[1];
+        if (nameMatch) {conversation.customerData.name = nameMatch[1];}
     }
 
     notifyStaff(conversation, intent) {
@@ -534,7 +534,7 @@ class ChatbotService {
 
     getChatUIData(conversationId) {
         const conversation = this.getConversation(conversationId);
-        if (!conversation) return null;
+        if (!conversation) {return null;}
         return {
             phoneNumber: conversation.phoneNumber,
             customerName: conversation.customerData.name || 'Unbekannt',

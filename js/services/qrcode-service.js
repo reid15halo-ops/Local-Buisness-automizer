@@ -9,9 +9,9 @@ class QrCodeService {
         this.settings = JSON.parse(localStorage.getItem('mhs_qr_settings') || '{}');
 
         // Default settings
-        if (!this.settings.size) this.settings.size = 200;
-        if (!this.settings.errorCorrection) this.settings.errorCorrection = 'M';
-        if (!this.settings.includePaymentLink) this.settings.includePaymentLink = true;
+        if (!this.settings.size) {this.settings.size = 200;}
+        if (!this.settings.errorCorrection) {this.settings.errorCorrection = 'M';}
+        if (!this.settings.includePaymentLink) {this.settings.includePaymentLink = true;}
     }
 
     // Generate QR code as data URL

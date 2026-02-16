@@ -124,7 +124,7 @@ class BookingService {
     // Available Slots for Customer Portal
     getAvailableSlots(serviceTypeId, date) {
         const service = this.getServiceType(serviceTypeId);
-        if (!service) return [];
+        if (!service) {return [];}
 
         // Get base available slots from calendar
         if (window.calendarService) {

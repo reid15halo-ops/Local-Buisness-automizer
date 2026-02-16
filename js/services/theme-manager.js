@@ -37,7 +37,7 @@ class ThemeManager {
 
     setupToggle() {
         const toggleBtn = document.getElementById('theme-toggle');
-        if (!toggleBtn) return;
+        if (!toggleBtn) {return;}
 
         toggleBtn.addEventListener('click', () => {
             this.toggle();
@@ -75,7 +75,7 @@ class ThemeManager {
         const icon = document.getElementById('theme-icon');
         const text = document.getElementById('theme-text');
 
-        if (!icon || !text) return;
+        if (!icon || !text) {return;}
 
         if (this.currentTheme === 'dark') {
             icon.textContent = '☀️';

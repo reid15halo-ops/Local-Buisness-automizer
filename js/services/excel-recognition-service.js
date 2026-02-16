@@ -147,7 +147,7 @@ class ExcelRecognitionService {
      */
     parseCSV(text) {
         const lines = text.split('\n').filter(line => line.trim());
-        if (lines.length < 2) throw new Error('CSV enthält keine Daten');
+        if (lines.length < 2) {throw new Error('CSV enthält keine Daten');}
 
         // Erkenne Delimiter (Semikolon oder Komma)
         const delimiter = lines[0].includes(';') ? ';' : ',';
@@ -157,7 +157,7 @@ class ExcelRecognitionService {
 
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(delimiter);
-            if (values.length < 2) continue;
+            if (values.length < 2) {continue;}
 
             const row = {};
             headers.forEach((header, idx) => {
@@ -261,7 +261,7 @@ class ExcelRecognitionService {
 
         // Mappe Spalten
         for (const [sourceCol, targetField] of Object.entries(mapping)) {
-            if (!targetField) continue; // Spalte wird nicht gemappt
+            if (!targetField) {continue;} // Spalte wird nicht gemappt
 
             const value = row[sourceCol];
 
@@ -288,7 +288,7 @@ class ExcelRecognitionService {
      * Validiert einzelnes Feld basierend auf Typ
      */
     validateField(fieldName, value, result) {
-        if (!value || value === '') return undefined;
+        if (!value || value === '') {return undefined;}
 
         const strValue = String(value).trim();
 
@@ -513,7 +513,7 @@ class ExcelRecognitionService {
 
         // Analysiere Datentypen
         Object.entries(mapping).forEach(([source, target]) => {
-            if (!target) return;
+            if (!target) {return;}
 
             const samples = data.slice(0, 10).map(row => row[source]);
             const nonEmpty = samples.filter(v => v && v !== '');
@@ -559,9 +559,9 @@ class ExcelRecognitionService {
             for (const item of batch) {
                 try {
                     const imported = await this.importItem(item, dataType, skipDuplicates, updateExisting);
-                    if (imported.action === 'imported') results.imported++;
-                    else if (imported.action === 'skipped') results.skipped++;
-                    else if (imported.action === 'updated') results.updated++;
+                    if (imported.action === 'imported') {results.imported++;}
+                    else if (imported.action === 'skipped') {results.skipped++;}
+                    else if (imported.action === 'updated') {results.updated++;}
                 } catch (error) {
                     results.errors.push({
                         item,

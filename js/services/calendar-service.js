@@ -119,9 +119,9 @@ class CalendarService {
     // Conflict Detection
     checkConflicts(date, startTime, endTime, excludeId = null) {
         return this.appointments.filter(a => {
-            if (a.id === excludeId) return false;
-            if (a.date !== date) return false;
-            if (a.status === 'abgesagt') return false;
+            if (a.id === excludeId) {return false;}
+            if (a.date !== date) {return false;}
+            if (a.status === 'abgesagt') {return false;}
 
             // Check time overlap
             const aStart = this.timeToMinutes(a.startTime);
@@ -149,7 +149,7 @@ class CalendarService {
         const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date).getDay()];
         const workHours = this.settings.workingHours[dayOfWeek];
 
-        if (!workHours || !workHours.active) return [];
+        if (!workHours || !workHours.active) {return [];}
 
         const slots = [];
         const existingApts = this.getAppointmentsForDay(date);
@@ -193,7 +193,7 @@ class CalendarService {
         const reminders = [];
 
         this.appointments.forEach(apt => {
-            if (!apt.reminder || apt.status === 'abgesagt') return;
+            if (!apt.reminder || apt.status === 'abgesagt') {return;}
 
             const aptDateTime = new Date(`${apt.date}T${apt.startTime}`);
             const reminderTime = new Date(aptDateTime.getTime() - apt.reminderMinutes * 60000);

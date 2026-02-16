@@ -122,7 +122,7 @@ function initMaterial() {
     if (excelInput) {
         excelInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {return;}
 
             try {
                 showToast('📥 Importiere Excel...', 'info');
@@ -284,7 +284,7 @@ function renderMahnwesen() {
 
 function openMahnungModal(rechnungId) {
     const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
 
     const modal = document.getElementById('modal-mahnung');
     if (modal) {
@@ -296,7 +296,7 @@ function openMahnungModal(rechnungId) {
 function initMahnwesen() {
     document.getElementById('btn-mahnung-create')?.addEventListener('click', () => {
         const rechnungId = document.querySelector('[data-rechnung-id]').dataset.rechnungId;
-        if (!rechnungId) return;
+        if (!rechnungId) {return;}
 
         const mahnung = {
             id: generateId('MAH'),
@@ -306,7 +306,7 @@ function initMahnwesen() {
             status: 'versendet'
         };
 
-        if (!store.mahnungen) store.mahnungen = [];
+        if (!store.mahnungen) {store.mahnungen = [];}
         store.mahnungen.push(mahnung);
         saveStore();
 

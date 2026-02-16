@@ -11,11 +11,11 @@ class PaymentService {
             this.settings = JSON.parse(localStorage.getItem('mhs_payment_settings') || '{}');
 
             // Default settings
-            if (!this.settings.depositPercentage) this.settings.depositPercentage = 30;
-            if (!this.settings.depositRequired) this.settings.depositRequired = false;
-            if (!this.settings.depositThreshold) this.settings.depositThreshold = 1000; // Require deposit over €1000
-            if (!this.settings.paymentMethods) this.settings.paymentMethods = ['bank', 'paypal'];
-            if (!this.settings.businessName) this.settings.businessName = 'MHS Service';
+            if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
+            if (!this.settings.depositRequired) {this.settings.depositRequired = false;}
+            if (!this.settings.depositThreshold) {this.settings.depositThreshold = 1000;} // Require deposit over €1000
+            if (!this.settings.paymentMethods) {this.settings.paymentMethods = ['bank', 'paypal'];}
+            if (!this.settings.businessName) {this.settings.businessName = 'MHS Service';}
         } catch (error) {
             console.error('PaymentService initialization error:', error);
             if (window.errorHandler) {
@@ -129,8 +129,8 @@ class PaymentService {
 
     // Calculate deposit amount
     calculateDeposit(totalAmount) {
-        if (!this.settings.depositRequired) return 0;
-        if (totalAmount < this.settings.depositThreshold) return 0;
+        if (!this.settings.depositRequired) {return 0;}
+        if (totalAmount < this.settings.depositThreshold) {return 0;}
 
         return Math.round(totalAmount * (this.settings.depositPercentage / 100) * 100) / 100;
     }
@@ -198,7 +198,7 @@ class PaymentService {
     // Update the referenced document
     updateReference(link) {
         try {
-            if (!link) return;
+            if (!link) {return;}
 
             if (link.referenceType === 'rechnung') {
                 // Update invoice
@@ -214,7 +214,7 @@ class PaymentService {
                                 invoice.status = 'bezahlt';
                                 invoice.bezahltAm = link.paidAt;
                             }
-                            if (typeof saveStore === 'function') saveStore();
+                            if (typeof saveStore === 'function') {saveStore();}
                         }
                     } catch (invoiceError) {
                         console.error('Error updating invoice:', invoiceError);
@@ -247,7 +247,7 @@ class PaymentService {
     // Send payment confirmation
     sendPaymentConfirmation(payment) {
         try {
-            if (!payment) return;
+            if (!payment) {return;}
 
             console.log(`💳 Zahlungsbestätigung: ${this.formatCurrency(payment.amount)} von ${payment.customerEmail}`);
 

@@ -105,7 +105,7 @@ class DocumentService {
 
     // OCR with Tesseract.js
     async loadOCRLibrary() {
-        if (this.ocrLibLoaded) return true;
+        if (this.ocrLibLoaded) {return true;}
         // Check if Tesseract is available
         if (typeof Tesseract !== 'undefined') {
             this.ocrLibLoaded = true;
@@ -301,8 +301,8 @@ class DocumentService {
     }
 
     formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        if (bytes < 1024) {return bytes + ' B';}
+        if (bytes < 1024 * 1024) {return (bytes / 1024).toFixed(1) + ' KB';}
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 

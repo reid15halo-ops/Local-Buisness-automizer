@@ -229,7 +229,7 @@ class ActivityIndicatorService {
      * Main update function
      */
     update() {
-        if (!window.storeService) return;
+        if (!window.storeService) {return;}
 
         const state = window.storeService.state;
 
@@ -275,7 +275,7 @@ class ActivityIndicatorService {
      */
     updateBadge(view, count, badgeClass) {
         const badgeEl = document.getElementById(`${view}-badge`);
-        if (!badgeEl) return;
+        if (!badgeEl) {return;}
 
         // Remove previous badge classes
         badgeEl.className = 'badge';
@@ -299,10 +299,10 @@ class ActivityIndicatorService {
         today.setHours(0, 0, 0, 0);
 
         return (state.rechnungen || []).filter(r => {
-            if (r.status === 'bezahlt' || r.status === 'storniert') return false;
+            if (r.status === 'bezahlt' || r.status === 'storniert') {return false;}
 
             // Check if overdue based on zahlungsziel or status
-            if (r.status === 'überfällig') return true;
+            if (r.status === 'überfällig') {return true;}
 
             // Check zahlungsziel if it exists
             if (r.zahlungsziel) {
@@ -335,7 +335,7 @@ class ActivityIndicatorService {
         if (!state.aufgaben || state.aufgaben.length === 0) {
             // Approximate urgent tasks from order deadlines
             return (state.auftraege || []).filter(a => {
-                if (!a.deadline) return false;
+                if (!a.deadline) {return false;}
                 const deadline = new Date(a.deadline);
                 deadline.setHours(0, 0, 0, 0);
                 return deadline <= today;
@@ -343,8 +343,8 @@ class ActivityIndicatorService {
         }
 
         return (state.aufgaben || []).filter(task => {
-            if (task.completed) return false;
-            if (!task.dueDate) return false;
+            if (task.completed) {return false;}
+            if (!task.dueDate) {return false;}
 
             const dueDate = new Date(task.dueDate);
             dueDate.setHours(0, 0, 0, 0);
@@ -357,13 +357,13 @@ class ActivityIndicatorService {
      */
     updatePriorityActionsCard(state) {
         const dashboard = document.getElementById('view-dashboard');
-        if (!dashboard) return;
+        if (!dashboard) {return;}
 
         let card = dashboard.querySelector('.priority-actions-card');
         if (!card) {
             // Create the card if it doesn't exist
             const quickActions = dashboard.querySelector('.quick-actions');
-            if (!quickActions) return;
+            if (!quickActions) {return;}
 
             card = document.createElement('div');
             card.className = 'priority-actions-card';
@@ -435,8 +435,8 @@ class ActivityIndicatorService {
 
         // 1. Overdue invoices (red - danger)
         const overdueInvoices = (state.rechnungen || []).filter(r => {
-            if (r.status === 'bezahlt' || r.status === 'storniert') return false;
-            if (r.status === 'überfällig') return true;
+            if (r.status === 'bezahlt' || r.status === 'storniert') {return false;}
+            if (r.status === 'überfällig') {return true;}
 
             if (r.zahlungsziel) {
                 const deadline = new Date(r.zahlungsziel);
@@ -471,8 +471,8 @@ class ActivityIndicatorService {
 
         // 2. New inquiries waiting >24h (amber - warning)
         const oldNewInquiries = (state.anfragen || []).filter(a => {
-            if (a.status !== 'neu') return false;
-            if (!a.createdAt) return false;
+            if (a.status !== 'neu') {return false;}
+            if (!a.createdAt) {return false;}
             const created = new Date(a.createdAt);
             const hoursAgo = (today - created) / (1000 * 60 * 60);
             return hoursAgo > 24;
@@ -492,8 +492,8 @@ class ActivityIndicatorService {
 
         // 3. New inquiries (recent) (blue - info)
         const newInquiries = (state.anfragen || []).filter(a => {
-            if (a.status !== 'neu') return false;
-            if (!a.createdAt) return false;
+            if (a.status !== 'neu') {return false;}
+            if (!a.createdAt) {return false;}
             const created = new Date(a.createdAt);
             const hoursAgo = (today - created) / (1000 * 60 * 60);
             return hoursAgo <= 24;
@@ -513,7 +513,7 @@ class ActivityIndicatorService {
 
         // 4. Orders near deadline (blue - info)
         const nearDeadline = (state.auftraege || []).filter(a => {
-            if (!a.deadline) return false;
+            if (!a.deadline) {return false;}
             const deadline = new Date(a.deadline);
             const daysUntil = (deadline - today) / (1000 * 60 * 60 * 24);
             return daysUntil > 0 && daysUntil <= 1;
@@ -573,7 +573,7 @@ class ActivityIndicatorService {
      * Get relative time string
      */
     getRelativeTime(dateString) {
-        if (!dateString) return '';
+        if (!dateString) {return '';}
 
         const date = new Date(dateString);
         const now = new Date();
@@ -582,10 +582,10 @@ class ActivityIndicatorService {
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
 
-        if (seconds < 60) return 'gerade eben';
-        if (minutes < 60) return `vor ${minutes}m`;
-        if (hours < 24) return `vor ${hours}h`;
-        if (days === 1) return 'gestern';
+        if (seconds < 60) {return 'gerade eben';}
+        if (minutes < 60) {return `vor ${minutes}m`;}
+        if (hours < 24) {return `vor ${hours}h`;}
+        if (days === 1) {return 'gestern';}
         return `vor ${days}d`;
     }
 
@@ -593,7 +593,7 @@ class ActivityIndicatorService {
      * Format date
      */
     formatDate(dateString) {
-        if (!dateString) return '';
+        if (!dateString) {return '';}
         const date = new Date(dateString);
         return date.toLocaleDateString('de-DE', {
             month: 'short',

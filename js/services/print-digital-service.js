@@ -10,9 +10,9 @@ class PrintDigitalService {
         this.settings = JSON.parse(localStorage.getItem('mhs_print_settings') || '{}');
 
         // Default settings
-        if (!this.settings.preferDigital) this.settings.preferDigital = true;
-        if (!this.settings.autoDigitize) this.settings.autoDigitize = true;
-        if (!this.settings.faxEmail) this.settings.faxEmail = '';
+        if (!this.settings.preferDigital) {this.settings.preferDigital = true;}
+        if (!this.settings.autoDigitize) {this.settings.autoDigitize = true;}
+        if (!this.settings.faxEmail) {this.settings.faxEmail = '';}
     }
 
     // Add item to print queue
@@ -64,7 +64,7 @@ class PrintDigitalService {
     // Process print queue item
     processPrintItem(itemId) {
         const item = this.printQueue.find(i => i.id === itemId);
-        if (!item) return { success: false, error: 'Item not found' };
+        if (!item) {return { success: false, error: 'Item not found' };}
 
         if (item.deliveryMethod === 'print') {
             // Simulate print (in real app, would connect to print service)
@@ -88,7 +88,7 @@ class PrintDigitalService {
     // Send digital version
     sendDigital(itemId) {
         const item = this.printQueue.find(i => i.id === itemId);
-        if (!item) return { success: false, error: 'Item not found' };
+        if (!item) {return { success: false, error: 'Item not found' };}
 
         // Simulate email sending
         item.status = 'digital_sent';
@@ -166,10 +166,10 @@ class PrintDigitalService {
     // Categorize fax content
     categorizeFax(text) {
         const lower = text.toLowerCase();
-        if (lower.includes('rechnung') || lower.includes('invoice')) return 'rechnung';
-        if (lower.includes('angebot') || lower.includes('quote')) return 'angebot';
-        if (lower.includes('bestellung') || lower.includes('order')) return 'bestellung';
-        if (lower.includes('mahnung')) return 'mahnung';
+        if (lower.includes('rechnung') || lower.includes('invoice')) {return 'rechnung';}
+        if (lower.includes('angebot') || lower.includes('quote')) {return 'angebot';}
+        if (lower.includes('bestellung') || lower.includes('order')) {return 'bestellung';}
+        if (lower.includes('mahnung')) {return 'mahnung';}
         return 'sonstiges';
     }
 

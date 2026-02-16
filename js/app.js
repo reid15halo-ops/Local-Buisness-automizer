@@ -27,7 +27,7 @@ window.updateDashboard = updateDashboard;
 function renderActivities() {
     try {
         const container = document.getElementById('activity-list');
-        if (!container) return;
+        if (!container) {return;}
 
         const activities = window.storeService?.state?.activities || [];
 
@@ -69,10 +69,10 @@ function updateDashboard() {
         const statAuftraege = document.getElementById('stat-auftraege');
         const statRechnungen = document.getElementById('stat-rechnungen');
 
-        if (statAnfragen) statAnfragen.textContent = offeneAnfragen;
-        if (statAngebote) statAngebote.textContent = wartendeAngebote;
-        if (statAuftraege) statAuftraege.textContent = aktiveAuftraege;
-        if (statRechnungen) statRechnungen.textContent = offeneRechnungen;
+        if (statAnfragen) {statAnfragen.textContent = offeneAnfragen;}
+        if (statAngebote) {statAngebote.textContent = wartendeAngebote;}
+        if (statAuftraege) {statAuftraege.textContent = aktiveAuftraege;}
+        if (statRechnungen) {statRechnungen.textContent = offeneRechnungen;}
 
         // Update badges
         const anfragenBadge = document.getElementById('anfragen-badge');
@@ -80,10 +80,10 @@ function updateDashboard() {
         const auftraegeBadge = document.getElementById('auftraege-badge');
         const rechnungenBadge = document.getElementById('rechnungen-badge');
 
-        if (anfragenBadge) anfragenBadge.textContent = offeneAnfragen;
-        if (angeboteBadge) angeboteBadge.textContent = wartendeAngebote;
-        if (auftraegeBadge) auftraegeBadge.textContent = aktiveAuftraege;
-        if (rechnungenBadge) rechnungenBadge.textContent = offeneRechnungen;
+        if (anfragenBadge) {anfragenBadge.textContent = offeneAnfragen;}
+        if (angeboteBadge) {angeboteBadge.textContent = wartendeAngebote;}
+        if (auftraegeBadge) {auftraegeBadge.textContent = aktiveAuftraege;}
+        if (rechnungenBadge) {rechnungenBadge.textContent = offeneRechnungen;}
 
         renderActivities();
     } catch (error) {
@@ -104,7 +104,7 @@ function initAnfrageForm() {
         const modal = document.getElementById('modal-anfrage');
         const form = document.getElementById('form-anfrage');
 
-        if (!btn || !form) return;
+        if (!btn || !form) {return;}
 
         btn.addEventListener('click', () => openModal('modal-anfrage'));
 
@@ -147,7 +147,7 @@ function initAnfrageForm() {
                     closeModal('modal-anfrage');
                     switchView('anfragen');
                     const anfragenBtn = document.querySelector('[data-view="anfragen"]');
-                    if (anfragenBtn) anfragenBtn.click();
+                    if (anfragenBtn) {anfragenBtn.click();}
                 }
             } catch (error) {
                 if (window.errorHandler) {
@@ -169,7 +169,7 @@ function initAnfrageForm() {
 function renderAnfragen() {
     try {
         const container = document.getElementById('anfragen-list');
-        if (!container) return;
+        if (!container) {return;}
 
         const anfragen = store?.anfragen?.filter(a => a.status === 'neu') || [];
 
@@ -239,7 +239,7 @@ function getLeistungsartLabel(key) {
 // ============================================
 function createAngebotFromAnfrage(anfrageId) {
     try {
-        if (!anfrageId || !store?.anfragen) return;
+        if (!anfrageId || !store?.anfragen) {return;}
 
         const anfrage = store.anfragen.find(a => a.id === anfrageId);
         if (!anfrage) {
@@ -254,7 +254,7 @@ function createAngebotFromAnfrage(anfrageId) {
         const positionenListEl = document.getElementById('positionen-list');
         const angebotTextEl = document.getElementById('angebot-text');
 
-        if (angebotAnfrageIdEl) angebotAnfrageIdEl.value = anfrageId;
+        if (angebotAnfrageIdEl) {angebotAnfrageIdEl.value = anfrageId;}
 
         if (angebotKundeInfoEl) {
             angebotKundeInfoEl.innerHTML = `
@@ -265,11 +265,11 @@ function createAngebotFromAnfrage(anfrageId) {
         }
 
         // Clear positions
-        if (positionenListEl) positionenListEl.innerHTML = '';
+        if (positionenListEl) {positionenListEl.innerHTML = '';}
         addPosition();
 
         // Clear text
-        if (angebotTextEl) angebotTextEl.value = '';
+        if (angebotTextEl) {angebotTextEl.value = '';}
 
         openModal('modal-angebot');
     } catch (error) {
@@ -342,7 +342,7 @@ function initAngebotForm() {
 function addPosition(prefill = null) {
     try {
         const container = document.getElementById('positionen-list');
-        if (!container) return;
+        if (!container) {return;}
 
         const row = document.createElement('div');
         row.className = 'position-row';
@@ -403,9 +403,9 @@ function addPosition(prefill = null) {
                                 const priceInput = row.querySelector('.pos-preis');
                                 const einheitInput = row.querySelector('.pos-einheit');
 
-                                if (descInput) descInput.value = material.bezeichnung;
-                                if (priceInput) priceInput.value = material.vkPreis || material.preis;
-                                if (einheitInput) einheitInput.value = material.einheit;
+                                if (descInput) {descInput.value = material.bezeichnung;}
+                                if (priceInput) {priceInput.value = material.vkPreis || material.preis;}
+                                if (einheitInput) {einheitInput.value = material.einheit;}
                                 suggestBox.style.display = 'none';
                                 updateAngebotSummary();
                             } catch (error) {
@@ -457,9 +457,9 @@ function updateAngebotSummary() {
         const mwstEl = document.getElementById('angebot-mwst');
         const bruttoEl = document.getElementById('angebot-brutto');
 
-        if (nettoEl) nettoEl.textContent = formatCurrency(netto);
-        if (mwstEl) mwstEl.textContent = formatCurrency(mwst);
-        if (bruttoEl) bruttoEl.textContent = formatCurrency(brutto);
+        if (nettoEl) {nettoEl.textContent = formatCurrency(netto);}
+        if (mwstEl) {mwstEl.textContent = formatCurrency(mwst);}
+        if (bruttoEl) {bruttoEl.textContent = formatCurrency(brutto);}
     } catch (error) {
         if (window.errorHandler) {
             window.errorHandler.handle(error, 'updateAngebotSummary', false);
@@ -472,7 +472,7 @@ function updateAngebotSummary() {
 function generateAIText() {
     const anfrageId = document.getElementById('angebot-anfrage-id').value;
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
-    if (!anfrage) return;
+    if (!anfrage) {return;}
 
     // Simulate AI text generation
     const aiBtn = document.getElementById('btn-ai-text');
@@ -572,7 +572,7 @@ function renderAngebote() {
 
 function acceptAngebot(angebotId) {
     const angebot = store.angebote.find(a => a.id === angebotId);
-    if (!angebot) return;
+    if (!angebot) {return;}
 
     angebot.status = 'angenommen';
 
@@ -697,9 +697,9 @@ const STORNO_GRUENDE = [
 
 function validateStatusChange(auftrag, newStatus) {
     const current = auftrag.status;
-    if (current === newStatus) return { valid: false, error: 'Status ist bereits ' + AUFTRAG_STATUS_LABELS[current] };
+    if (current === newStatus) {return { valid: false, error: 'Status ist bereits ' + AUFTRAG_STATUS_LABELS[current] };}
     const config = AUFTRAG_STATUS_CONFIG[current];
-    if (!config) return { valid: true }; // Legacy status, allow all
+    if (!config) {return { valid: true };} // Legacy status, allow all
     if (!config.erlaubteUebergaenge.includes(newStatus)) {
         return {
             valid: false,
@@ -711,20 +711,20 @@ function validateStatusChange(auftrag, newStatus) {
 
 function getErlaubteUebergaenge(status) {
     const config = AUFTRAG_STATUS_CONFIG[status];
-    if (!config) return Object.keys(AUFTRAG_STATUS_CONFIG);
+    if (!config) {return Object.keys(AUFTRAG_STATUS_CONFIG);}
     return config.erlaubteUebergaenge;
 }
 
 function executeStatusAutoAktion(auftrag, newStatus) {
     const config = AUFTRAG_STATUS_CONFIG[newStatus];
-    if (!config?.autoAktion) return;
+    if (!config?.autoAktion) {return;}
 
     switch (config.autoAktion) {
         case 'materialCheck': {
             const stueckliste = auftrag.stueckliste || [];
             if (stueckliste.length > 0 && window.materialService) {
                 const fehlend = stueckliste.filter(item => {
-                    if (!item.materialId) return false;
+                    if (!item.materialId) {return false;}
                     const mat = window.materialService.getMaterialById(item.materialId);
                     return mat && mat.bestand < item.menge;
                 });
@@ -753,22 +753,22 @@ function executeStatusAutoAktion(auftrag, newStatus) {
 }
 
 function trackStatusDauer(auftrag, oldStatus, newStatus) {
-    if (!auftrag.statusZeiten) auftrag.statusZeiten = {};
+    if (!auftrag.statusZeiten) {auftrag.statusZeiten = {};}
     const now = Date.now();
     const lastChange = auftrag.letzterStatusWechsel || new Date(auftrag.createdAt).getTime();
     const dauerMs = now - lastChange;
 
-    if (!auftrag.statusZeiten[oldStatus]) auftrag.statusZeiten[oldStatus] = 0;
+    if (!auftrag.statusZeiten[oldStatus]) {auftrag.statusZeiten[oldStatus] = 0;}
     auftrag.statusZeiten[oldStatus] += dauerMs;
     auftrag.letzterStatusWechsel = now;
 }
 
 function changeAuftragStatus(auftragId, newStatus, grund) {
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return { success: false, error: 'Auftrag nicht gefunden' };
+    if (!auftrag) {return { success: false, error: 'Auftrag nicht gefunden' };}
 
     const validation = validateStatusChange(auftrag, newStatus);
-    if (!validation.valid) return { success: false, error: validation.error };
+    if (!validation.valid) {return { success: false, error: validation.error };}
 
     const config = AUFTRAG_STATUS_CONFIG[newStatus];
     if (config?.brauchtGrund && !grund) {
@@ -778,18 +778,18 @@ function changeAuftragStatus(auftragId, newStatus, grund) {
     const oldStatus = auftrag.status;
     trackStatusDauer(auftrag, oldStatus, newStatus);
 
-    if (!auftrag.historie) auftrag.historie = [];
+    if (!auftrag.historie) {auftrag.historie = [];}
     const entry = {
         aktion: 'status',
         datum: new Date().toISOString(),
         details: `${AUFTRAG_STATUS_LABELS[oldStatus]} → ${AUFTRAG_STATUS_LABELS[newStatus]}`
     };
-    if (grund) entry.grund = grund;
+    if (grund) {entry.grund = grund;}
     auftrag.historie.push(entry);
 
     auftrag.status = newStatus;
-    if (grund) auftrag.statusGrund = grund;
-    else delete auftrag.statusGrund;
+    if (grund) {auftrag.statusGrund = grund;}
+    else {delete auftrag.statusGrund;}
 
     saveStore();
     executeStatusAutoAktion(auftrag, newStatus);
@@ -801,12 +801,12 @@ function changeAuftragStatus(auftragId, newStatus, grund) {
 function renderAuftraege() {
     const auftraege = store.auftraege || [];
     // Migrate legacy 'aktiv' status
-    auftraege.forEach(a => { if (a.status === 'aktiv') a.status = 'in_bearbeitung'; });
+    auftraege.forEach(a => { if (a.status === 'aktiv') {a.status = 'in_bearbeitung';} });
 
     // Render stats dynamically from config
     const counts = {};
     Object.keys(AUFTRAG_STATUS_CONFIG).forEach(k => counts[k] = 0);
-    auftraege.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+    auftraege.forEach(a => { if (counts[a.status] !== undefined) {counts[a.status]++;} });
 
     const statsGrid = document.getElementById('auftrag-stats-grid');
     if (statsGrid) {
@@ -837,7 +837,7 @@ function renderAuftraege() {
 
 function renderAuftragPipeline(auftraege, counts) {
     const container = document.getElementById('auftrag-pipeline');
-    if (!container) return;
+    if (!container) {return;}
 
     const pipelineStatuses = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
     const total = auftraege.filter(a => !['storniert'].includes(a.status)).length || 1;
@@ -878,10 +878,10 @@ function renderAuftraegeKanban(auftraege) {
     }
     // Add pausiert/storniert if they have items or are filtered
     if (auftraege.some(a => a.status === 'pausiert') || currentAuftragFilter === 'pausiert') {
-        if (!kanbanStatuses.includes('pausiert')) kanbanStatuses.push('pausiert');
+        if (!kanbanStatuses.includes('pausiert')) {kanbanStatuses.push('pausiert');}
     }
     if (auftraege.some(a => a.status === 'storniert') || currentAuftragFilter === 'storniert') {
-        if (!kanbanStatuses.includes('storniert')) kanbanStatuses.push('storniert');
+        if (!kanbanStatuses.includes('storniert')) {kanbanStatuses.push('storniert');}
     }
 
     // Update grid columns count
@@ -890,7 +890,7 @@ function renderAuftraegeKanban(auftraege) {
     // Build columns
     kanbanContainer.innerHTML = kanbanStatuses.map(status => {
         const cfg = AUFTRAG_STATUS_CONFIG[status];
-        if (!cfg) return '';
+        if (!cfg) {return '';}
 
         let filtered = auftraege.filter(a => a.status === status);
         if (searchQuery) {
@@ -1019,7 +1019,7 @@ function renderAuftraegeList(auftraege) {
 // ============================================
 function openAuftragDetail(auftragId) {
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return;
+    if (!auftrag) {return;}
 
     currentDetailAuftragId = auftragId;
 
@@ -1075,7 +1075,7 @@ function openAuftragDetail(auftragId) {
 
 function renderDetailStatusPipeline(auftrag) {
     const container = document.getElementById('ad-status-pipeline');
-    if (!container) return;
+    if (!container) {return;}
 
     const pipeline = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
     const currentIdx = pipeline.indexOf(auftrag.status);
@@ -1089,8 +1089,8 @@ function renderDetailStatusPipeline(auftrag) {
                 let cls = '';
                 if (isPaused || isCancelled) {
                     cls = i <= currentIdx ? 'done' : '';
-                } else if (i < currentIdx) cls = 'done';
-                else if (i === currentIdx) cls = 'current';
+                } else if (i < currentIdx) {cls = 'done';}
+                else if (i === currentIdx) {cls = 'current';}
                 return `
                     <div class="pipeline-step ${cls}" style="--step-color:${cfg.color};" title="${cfg.description}">
                         <div class="pipeline-step-icon">${cfg.icon}</div>
@@ -1108,7 +1108,7 @@ function renderDetailStatusPipeline(auftrag) {
 function renderDetailStatusActions(auftrag) {
     const container = document.getElementById('ad-status-actions');
     const grundWrapper = document.getElementById('ad-status-grund-wrapper');
-    if (!container) return;
+    if (!container) {return;}
 
     const erlaubt = getErlaubteUebergaenge(auftrag.status);
     if (erlaubt.length === 0) {
@@ -1119,7 +1119,7 @@ function renderDetailStatusActions(auftrag) {
 
     container.innerHTML = erlaubt.map(key => {
         const cfg = AUFTRAG_STATUS_CONFIG[key];
-        if (!cfg) return '';
+        if (!cfg) {return '';}
         const btnClass = key === 'storniert' ? 'btn-danger' : key === 'pausiert' ? 'btn-secondary' : key === 'abgeschlossen' ? 'btn-success' : 'btn-primary';
         return `<button class="btn btn-small ${btnClass}" onclick="handleStatusChange('${key}')">${cfg.icon} ${cfg.label}</button>`;
     }).join('');
@@ -1129,7 +1129,7 @@ function renderDetailStatusActions(auftrag) {
 
 function renderDetailStatusZeit(auftrag) {
     const container = document.getElementById('ad-status-zeit-info');
-    if (!container) return;
+    if (!container) {return;}
 
     const zeiten = auftrag.statusZeiten || {};
     const entries = Object.entries(zeiten).filter(([k, v]) => v > 0);
@@ -1141,8 +1141,8 @@ function renderDetailStatusZeit(auftrag) {
     const formatDauer = (ms) => {
         const stunden = Math.floor(ms / 3600000);
         const tage = Math.floor(stunden / 24);
-        if (tage > 0) return `${tage}d ${stunden % 24}h`;
-        if (stunden > 0) return `${stunden}h`;
+        if (tage > 0) {return `${tage}d ${stunden % 24}h`;}
+        if (stunden > 0) {return `${stunden}h`;}
         return `${Math.floor(ms / 60000)}min`;
     };
 
@@ -1155,7 +1155,7 @@ function renderDetailStatusZeit(auftrag) {
 // Global handler for status change buttons in detail modal
 window.handleStatusChange = function(newStatus) {
     const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-    if (!auftrag) return;
+    if (!auftrag) {return;}
 
     const config = AUFTRAG_STATUS_CONFIG[newStatus];
 
@@ -1203,7 +1203,7 @@ window.confirmStatusChange = function() {
     const grundCustom = document.getElementById('ad-status-grund-custom');
 
     let grund = grundSelect.value;
-    if (grund === 'Sonstiges') grund = grundCustom.value.trim();
+    if (grund === 'Sonstiges') {grund = grundCustom.value.trim();}
     if (!grund) {
         showToast('Bitte Grund angeben', 'warning');
         return;
@@ -1217,7 +1217,7 @@ window.confirmStatusChange = function() {
 
     grundWrapper.style.display = 'none';
     const confirmBtn = document.getElementById('ad-btn-confirm-status');
-    if (confirmBtn) confirmBtn.remove();
+    if (confirmBtn) {confirmBtn.remove();}
 
     showToast(`Status: ${AUFTRAG_STATUS_LABELS[targetStatus]} — ${grund}`, 'success');
     openAuftragDetail(currentDetailAuftragId);
@@ -1238,9 +1238,9 @@ function renderDetailMitarbeiter(auftrag) {
 
 function removeAuftragMitarbeiter(index) {
     const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-    if (!auftrag || !auftrag.mitarbeiter) return;
+    if (!auftrag || !auftrag.mitarbeiter) {return;}
     const removed = auftrag.mitarbeiter.splice(index, 1);
-    if (!auftrag.historie) auftrag.historie = [];
+    if (!auftrag.historie) {auftrag.historie = [];}
     auftrag.historie.push({ aktion: 'mitarbeiter', datum: new Date().toISOString(), details: `${removed[0]} entfernt` });
     saveStore();
     renderDetailMitarbeiter(auftrag);
@@ -1264,7 +1264,7 @@ function renderDetailCheckliste(auftrag) {
 
 function toggleChecklistItem(index) {
     const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-    if (!auftrag || !auftrag.checkliste) return;
+    if (!auftrag || !auftrag.checkliste) {return;}
     auftrag.checkliste[index].erledigt = !auftrag.checkliste[index].erledigt;
     // Auto-recalculate progress
     const done = auftrag.checkliste.filter(c => c.erledigt).length;
@@ -1277,7 +1277,7 @@ function toggleChecklistItem(index) {
 
 function removeChecklistItem(index) {
     const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-    if (!auftrag || !auftrag.checkliste) return;
+    if (!auftrag || !auftrag.checkliste) {return;}
     auftrag.checkliste.splice(index, 1);
     if (auftrag.checkliste.length > 0) {
         auftrag.fortschritt = Math.round((auftrag.checkliste.filter(c => c.erledigt).length / auftrag.checkliste.length) * 100);
@@ -1403,13 +1403,13 @@ function initAuftragDetailHandlers() {
     document.getElementById('ad-btn-add-mitarbeiter')?.addEventListener('click', () => {
         const input = document.getElementById('ad-mitarbeiter-input');
         const name = input.value.trim();
-        if (!name) return;
+        if (!name) {return;}
 
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
-        if (!auftrag.mitarbeiter) auftrag.mitarbeiter = [];
+        if (!auftrag) {return;}
+        if (!auftrag.mitarbeiter) {auftrag.mitarbeiter = [];}
         auftrag.mitarbeiter.push(name);
-        if (!auftrag.historie) auftrag.historie = [];
+        if (!auftrag.historie) {auftrag.historie = [];}
         auftrag.historie.push({ aktion: 'mitarbeiter', datum: new Date().toISOString(), details: `${name} zugewiesen` });
         saveStore();
         input.value = '';
@@ -1420,11 +1420,11 @@ function initAuftragDetailHandlers() {
     const addChecklist = () => {
         const input = document.getElementById('ad-checkliste-input');
         const text = input.value.trim();
-        if (!text) return;
+        if (!text) {return;}
 
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
-        if (!auftrag.checkliste) auftrag.checkliste = [];
+        if (!auftrag) {return;}
+        if (!auftrag.checkliste) {auftrag.checkliste = [];}
         auftrag.checkliste.push({ text, erledigt: false });
         saveStore();
         input.value = '';
@@ -1439,14 +1439,14 @@ function initAuftragDetailHandlers() {
     document.getElementById('ad-btn-zeit-start')?.addEventListener('click', () => {
         if (!window.timeTrackingService) { showToast('Zeiterfassung nicht verfügbar', 'warning'); return; }
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         const current = window.timeTrackingService.currentEntry;
         if (current && current.auftragId === auftrag.id) {
             window.timeTrackingService.clockOut();
             showToast('Ausgestempelt', 'success');
         } else {
-            if (current) window.timeTrackingService.clockOut(); // Clock out from other
+            if (current) {window.timeTrackingService.clockOut();} // Clock out from other
             window.timeTrackingService.clockIn({
                 auftragId: auftrag.id,
                 customerId: auftrag.kunde.name,
@@ -1461,10 +1461,10 @@ function initAuftragDetailHandlers() {
     document.getElementById('ad-btn-zeit-manuell')?.addEventListener('click', () => {
         if (!window.timeTrackingService) { showToast('Zeiterfassung nicht verfügbar', 'warning'); return; }
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         const hours = prompt('Stunden eingeben (z.B. 2.5):');
-        if (!hours || isNaN(parseFloat(hours))) return;
+        if (!hours || isNaN(parseFloat(hours))) {return;}
 
         window.timeTrackingService.addManualEntry({
             auftragId: auftrag.id,
@@ -1481,7 +1481,7 @@ function initAuftragDetailHandlers() {
     document.getElementById('ad-btn-foto-capture')?.addEventListener('click', async () => {
         if (!window.photoService) { showToast('Foto-Service nicht verfügbar', 'warning'); return; }
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         try {
             await window.photoService.capturePhoto({ type: 'auftrag', id: auftrag.id });
@@ -1494,9 +1494,9 @@ function initAuftragDetailHandlers() {
 
     // Foto hochladen
     document.getElementById('ad-foto-upload')?.addEventListener('change', async (e) => {
-        if (!window.photoService) return;
+        if (!window.photoService) {return;}
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         for (const file of e.target.files) {
             const reader = new FileReader();
@@ -1516,14 +1516,14 @@ function initAuftragDetailHandlers() {
     const sendComment = () => {
         const input = document.getElementById('ad-kommentar-input');
         const text = input.value.trim();
-        if (!text) return;
+        if (!text) {return;}
 
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
-        if (!auftrag.kommentare) auftrag.kommentare = [];
+        if (!auftrag) {return;}
+        if (!auftrag.kommentare) {auftrag.kommentare = [];}
         const userName = store.settings?.owner || 'Benutzer';
         auftrag.kommentare.push({ id: 'kom-' + Date.now(), text, autor: userName, datum: new Date().toISOString() });
-        if (!auftrag.historie) auftrag.historie = [];
+        if (!auftrag.historie) {auftrag.historie = [];}
         auftrag.historie.push({ aktion: 'kommentar', datum: new Date().toISOString(), details: text.substring(0, 50) });
         saveStore();
         input.value = '';
@@ -1534,13 +1534,13 @@ function initAuftragDetailHandlers() {
     // Save changes (Fortschritt, Termine, Mitarbeiter - Status läuft über Buttons)
     document.getElementById('ad-btn-save')?.addEventListener('click', () => {
         const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         const newFortschritt = parseInt(document.getElementById('ad-fortschritt').value);
         const newStart = document.getElementById('ad-start-datum').value || null;
         const newEnd = document.getElementById('ad-end-datum').value || null;
 
-        if (!auftrag.historie) auftrag.historie = [];
+        if (!auftrag.historie) {auftrag.historie = [];}
 
         if (newFortschritt !== (auftrag.fortschritt || 0)) {
             auftrag.historie.push({ aktion: 'fortschritt', datum: new Date().toISOString(), details: `${auftrag.fortschritt || 0}% → ${newFortschritt}%` });
@@ -1599,7 +1599,7 @@ let stuecklisteItems = []; // Current BOM items in modal
 
 function openAuftragModal(auftragId) {
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return;
+    if (!auftrag) {return;}
 
     store.currentAuftragId = auftragId;
     document.getElementById('auftrag-id').value = auftragId;
@@ -1648,7 +1648,7 @@ function removeStuecklisteRow(itemId) {
 
 function renderStueckliste() {
     const container = document.getElementById('stueckliste-rows');
-    if (!container) return;
+    if (!container) {return;}
 
     if (stuecklisteItems.length === 0) {
         container.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">Noch keine Materialien hinzugefügt. Klicke "Material hinzufügen" oder "Aus Bestand wählen".</div>';
@@ -1707,7 +1707,7 @@ function renderStueckliste() {
             suggestBox.querySelectorAll('.sl-suggest-item').forEach(si => {
                 si.addEventListener('click', () => {
                     const mat = suggestBox._materials[parseInt(si.dataset.idx)];
-                    if (!mat) return;
+                    if (!mat) {return;}
                     selectMaterialForStueckliste(slId, mat);
                     suggestBox.style.display = 'none';
                 });
@@ -1717,7 +1717,7 @@ function renderStueckliste() {
         input.addEventListener('blur', () => {
             setTimeout(() => {
                 const suggestBox = document.getElementById(`sl-suggest-${input.dataset.slId}`);
-                if (suggestBox) suggestBox.style.display = 'none';
+                if (suggestBox) {suggestBox.style.display = 'none';}
             }, 200);
         });
     });
@@ -1725,7 +1725,7 @@ function renderStueckliste() {
 
 function selectMaterialForStueckliste(slId, material) {
     const item = stuecklisteItems.find(i => i.id === slId);
-    if (!item) return;
+    if (!item) {return;}
 
     item.materialId = material.id;
     item.artikelnummer = material.artikelnummer;
@@ -1742,13 +1742,13 @@ function selectMaterialForStueckliste(slId, material) {
 function onStuecklisteChange(input) {
     const slId = input.dataset.slId;
     const item = stuecklisteItems.find(i => i.id === slId);
-    if (!item) return;
+    if (!item) {return;}
 
     item.menge = parseFloat(input.value) || 0;
     // Update Gesamt in row
     const row = input.closest('.stueckliste-row');
     const gesamtEl = row?.querySelector('.sl-gesamt');
-    if (gesamtEl) gesamtEl.textContent = formatCurrency(item.menge * item.vkPreis);
+    if (gesamtEl) {gesamtEl.textContent = formatCurrency(item.menge * item.vkPreis);}
 
     updateStuecklisteSummary();
 }
@@ -1761,14 +1761,14 @@ function updateStuecklisteSummary() {
     const vkEl = document.getElementById('sl-total-vk');
     const margeEl = document.getElementById('sl-total-marge');
 
-    if (ekEl) ekEl.textContent = formatCurrency(totalEK);
-    if (vkEl) vkEl.textContent = formatCurrency(totalVK);
-    if (margeEl) margeEl.textContent = formatCurrency(totalVK - totalEK);
+    if (ekEl) {ekEl.textContent = formatCurrency(totalEK);}
+    if (vkEl) {vkEl.textContent = formatCurrency(totalVK);}
+    if (margeEl) {margeEl.textContent = formatCurrency(totalVK - totalEK);}
 
     // Update total summary
     const auftragId = document.getElementById('auftrag-id')?.value;
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (auftrag) updateAuftragTotalSummary(auftrag);
+    if (auftrag) {updateAuftragTotalSummary(auftrag);}
 }
 
 function updateAuftragTotalSummary(auftrag) {
@@ -1780,7 +1780,7 @@ function updateAuftragTotalSummary(auftrag) {
     const mwst = netto * 0.19;
     const brutto = netto + mwst;
 
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = formatCurrency(val); };
+    const set = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = formatCurrency(val);} };
     set('at-angebot-netto', angebotNetto);
     set('at-material-vk', materialVK);
     set('at-extra', extra);
@@ -1864,7 +1864,7 @@ function openStuecklisteBestandPicker() {
     modal.querySelector('#sl-picker-add').addEventListener('click', () => {
         selected.forEach(idx => {
             const m = materials[idx];
-            if (m) addStuecklisteRow(m);
+            if (m) {addStuecklisteRow(m);}
         });
         if (selected.size > 0) {
             showToast(`${selected.size} Material(ien) zur Stückliste hinzugefügt`, 'success');
@@ -1876,7 +1876,7 @@ function openStuecklisteBestandPicker() {
 function suggestStuecklisteMaterials() {
     const auftragId = document.getElementById('auftrag-id')?.value;
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return;
+    if (!auftrag) {return;}
 
     // Build description from all positions
     const beschreibung = auftrag.positionen.map(p => p.beschreibung).join(' ');
@@ -1909,7 +1909,7 @@ function initAuftragForm() {
     document.getElementById('material-kosten-extra')?.addEventListener('input', () => {
         const auftragId = document.getElementById('auftrag-id')?.value;
         const auftrag = store.auftraege.find(a => a.id === auftragId);
-        if (auftrag) updateAuftragTotalSummary(auftrag);
+        if (auftrag) {updateAuftragTotalSummary(auftrag);}
     });
 
     form.addEventListener('submit', (e) => {
@@ -1917,7 +1917,7 @@ function initAuftragForm() {
 
         const auftragId = document.getElementById('auftrag-id').value;
         const auftrag = store.auftraege.find(a => a.id === auftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         const arbeitszeit = parseFloat(document.getElementById('arbeitszeit').value) || 0;
         const extraMaterialKosten = parseFloat(document.getElementById('material-kosten-extra').value) || 0;
@@ -2015,7 +2015,7 @@ function initAuftragForm() {
         addActivity('💰', `Rechnung ${rechnung.id} erstellt (${formatCurrency(rechnung.brutto)})${slInfo}`);
 
         // Update material view if visible
-        if (typeof renderMaterial === 'function') renderMaterial();
+        if (typeof renderMaterial === 'function') {renderMaterial();}
 
         closeModal('modal-auftrag');
         switchView('rechnungen');
@@ -2078,7 +2078,7 @@ function renderRechnungen() {
 
 function showRechnung(rechnungId) {
     const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
 
     store.currentRechnungId = rechnungId;
 
@@ -2226,9 +2226,9 @@ function showRechnung(rechnungId) {
 
 function initRechnungActions() {
     document.getElementById('btn-pdf-export').addEventListener('click', async () => {
-        if (!store.currentRechnungId) return;
+        if (!store.currentRechnungId) {return;}
         const rechnung = store.rechnungen.find(r => r.id === store.currentRechnungId);
-        if (!rechnung) return;
+        if (!rechnung) {return;}
 
         try {
             showToast('PDF wird erstellt...', 'info');
@@ -2241,7 +2241,7 @@ function initRechnungActions() {
     });
 
     document.getElementById('btn-mark-paid').addEventListener('click', () => {
-        if (!store.currentRechnungId) return;
+        if (!store.currentRechnungId) {return;}
 
         const rechnung = store.rechnungen.find(r => r.id === store.currentRechnungId);
         if (rechnung) {
@@ -2372,7 +2372,7 @@ function initMaterial() {
     if (excelInput) {
         excelInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {return;}
 
             try {
                 showToast('📥 Importiere Excel...', 'info');
@@ -2395,7 +2395,7 @@ function initMaterial() {
             // Guard: Require confirmation in production mode
             if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
                 const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-Materialien laden');
-                if (!confirmed) return;
+                if (!confirmed) {return;}
             }
 
             window.materialService.loadDemoMaterials();
@@ -2593,7 +2593,7 @@ function generateSenderEmail() {
 
     // Update UI
     const emailField = document.getElementById('sender-email');
-    if (emailField) emailField.value = senderEmail;
+    if (emailField) {emailField.value = senderEmail;}
 
     console.log('Auto-generated sender email:', senderEmail);
     return senderEmail;
@@ -2853,7 +2853,7 @@ function updateSettingsStatus() {
     const emailAutomationStatus = document.getElementById('email-automation-status');
 
     const setStatus = (el, configured) => {
-        if (!el) return;
+        if (!el) {return;}
         el.textContent = configured ? '● Konfiguriert' : '● Nicht konfiguriert';
         el.className = 'status-indicator' + (configured ? ' connected' : '');
     };
@@ -2877,7 +2877,7 @@ function updateSettingsStatus() {
     const supabaseOk = window.supabaseConfig?.isConfigured();
     const setAutoStatus = (id, ok, label) => {
         const el = document.getElementById(id);
-        if (!el) return;
+        if (!el) {return;}
         el.textContent = ok ? label || 'Aktiv' : 'Nicht konfiguriert';
         el.style.color = ok ? 'var(--accent-primary)' : 'var(--text-muted)';
     };
@@ -2894,7 +2894,7 @@ function updateSettingsStatus() {
 // ============================================
 function showToast(message, type = 'info') {
     const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
+    if (existing) {existing.remove();}
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -2913,7 +2913,7 @@ function showToast(message, type = 'info') {
 async function generateAITextReal() {
     const anfrageId = document.getElementById('angebot-anfrage-id').value;
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
-    if (!anfrage) return;
+    if (!anfrage) {return;}
 
     const aiBtn = document.getElementById('btn-ai-text');
     aiBtn.innerHTML = '⏳ Generiere mit Gemini...';
@@ -3023,7 +3023,7 @@ function renderMahnwesen() {
 
 function openMahnungModal(rechnungId) {
     const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
 
     const status = window.dunningService.checkRechnungStatus(rechnung);
     const text = window.dunningService.generateMahnText(rechnung, status.stufe);
@@ -3056,7 +3056,7 @@ function initMahnwesen() {
         const rechnungId = store.currentMahnungRechnungId;
         const stufe = store.currentMahnungStufe;
         const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-        if (!rechnung) return;
+        if (!rechnung) {return;}
 
         const level = stufe?.level || 1;
         const fee = stufe?.gebuehr || 0;
@@ -3173,7 +3173,7 @@ function initBuchhaltung() {
     // CSV Import
     document.getElementById('buchung-csv-import')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {return;}
 
         try {
             const content = await file.text();
@@ -3328,7 +3328,7 @@ async function runDemoWorkflow() {
     // Guard: Require confirmation in production mode
     if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
         const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-Workflow');
-        if (!confirmed) return;
+        if (!confirmed) {return;}
     }
 
     showToast('🚀 Demo-Workflow startet...', 'info');
@@ -3462,7 +3462,7 @@ function initKeyboardShortcuts() {
 
         // Check if any modal is open
         const modalOpen = document.querySelector('.modal.active');
-        if (modalOpen) return;
+        if (modalOpen) {return;}
 
         switch (e.key.toLowerCase()) {
             case 'n':
@@ -3552,7 +3552,7 @@ function initCustomerPresets() {
     const presetSelect = document.getElementById('customer-preset');
 
     function updatePresetDropdown() {
-        if (!presetSelect) return;
+        if (!presetSelect) {return;}
         const emails = Object.keys(customerPresets);
         presetSelect.innerHTML = '<option value="">-- Keine Vorlage --</option>' +
             emails.map(email => `<option value="${email}">${email} (${customerPresets[email].length} Pos.)</option>`).join('');
@@ -3702,7 +3702,7 @@ function initPaymentMatching() {
     // Bank CSV Import
     document.getElementById('bank-csv-import')?.addEventListener('change', async (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {return;}
 
         try {
             const content = await file.text();
@@ -3774,7 +3774,7 @@ function matchPaymentsToInvoices() {
 
             // Remove used transaction
             const idx = bankTransactions.indexOf(match);
-            if (idx >= 0) bankTransactions.splice(idx, 1);
+            if (idx >= 0) {bankTransactions.splice(idx, 1);}
         }
     });
 
@@ -3804,7 +3804,7 @@ function initFollowUp() {
 function getFollowUpOffers() {
     const now = new Date();
     return store.angebote.filter(a => {
-        if (a.status !== 'offen') return false;
+        if (a.status !== 'offen') {return false;}
         const created = new Date(a.createdAt);
         const daysSince = Math.floor((now - created) / (1000 * 60 * 60 * 24));
         return daysSince >= FOLLOWUP_DAYS;
@@ -3897,7 +3897,7 @@ function updateLowStockBadge() {
 }
 
 async function updateEmailAutomationBadge() {
-    if (!window.emailAutomationService) return;
+    if (!window.emailAutomationService) {return;}
 
     const history = await window.emailAutomationService.getProcessedEmails(100);
     const pending = history.filter(e => e.status === 'pending').length;
@@ -4017,7 +4017,7 @@ async function renderEmailHistory(filter = '') {
     const history = await window.emailAutomationService.getProcessedEmails(100);
     const listEl = document.getElementById('email-history-list');
 
-    if (!listEl) return;
+    if (!listEl) {return;}
 
     // Apply filter
     const filtered = filter ? history.filter(e => e.status === filter) : history;
@@ -4122,7 +4122,7 @@ document.getElementById('email-history-filter')?.addEventListener('change', asyn
 
 // Load email automation config on settings page
 function loadEmailAutomationConfig() {
-    if (!window.emailAutomationService) return;
+    if (!window.emailAutomationService) {return;}
 
     const config = window.emailAutomationService.getConfig();
 
@@ -4130,9 +4130,9 @@ function loadEmailAutomationConfig() {
     const approvalEl = document.getElementById('email-require-approval');
     const templateEl = document.getElementById('email-reply-template');
 
-    if (enabledEl) enabledEl.checked = config.enabled;
-    if (approvalEl) approvalEl.checked = config.requireApproval;
-    if (templateEl) templateEl.value = config.replyTemplate;
+    if (enabledEl) {enabledEl.checked = config.enabled;}
+    if (approvalEl) {approvalEl.checked = config.requireApproval;}
+    if (templateEl) {templateEl.value = config.replyTemplate;}
 }
 
 // Initialize email automation on settings view
@@ -4220,7 +4220,7 @@ async function generateEInvoice(invoiceId) {
 async function markInvoiceAsPaid(invoiceId) {
     try {
         const confirmed = confirm('Rechnung als bezahlt markieren?');
-        if (!confirmed) return;
+        if (!confirmed) {return;}
 
         if (!window.invoiceService) {
             showToast('❌ Invoice Service nicht verfügbar', 'error');
@@ -4264,7 +4264,7 @@ async function previewNextInvoiceNumber() {
  */
 async function updateInvoiceNumberPreview() {
     const previewElement = document.getElementById('invoice-number-preview');
-    if (!previewElement) return;
+    if (!previewElement) {return;}
 
     try {
         const preview = await previewNextInvoiceNumber();
@@ -4280,7 +4280,7 @@ async function updateInvoiceNumberPreview() {
 // ============================================
 async function exportAngebotPDF(angebotId) {
     const angebot = store.angebote.find(a => a.id === angebotId);
-    if (!angebot) return;
+    if (!angebot) {return;}
     try {
         showToast('PDF wird erstellt...', 'info');
         await window.pdfService.generateAngebot(angebot);
@@ -4293,7 +4293,7 @@ async function exportAngebotPDF(angebotId) {
 
 async function exportMahnungPDF(rechnungId, level, fee) {
     const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
     try {
         showToast('Mahnung-PDF wird erstellt...', 'info');
         await window.pdfService.generateMahnung(rechnung, level, fee);

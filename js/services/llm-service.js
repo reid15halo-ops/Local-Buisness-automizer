@@ -10,9 +10,9 @@ class LLMService {
     constructor() {
         this.config = JSON.parse(localStorage.getItem('mhs_llm_config') || '{"provider":"gemini"}');
         // Default configs
-        if (!this.config.provider) this.config.provider = 'gemini';
-        if (!this.config.ollamaUrl) this.config.ollamaUrl = 'http://localhost:11434';
-        if (!this.config.ollamaModel) this.config.ollamaModel = 'mistral';
+        if (!this.config.provider) {this.config.provider = 'gemini';}
+        if (!this.config.ollamaUrl) {this.config.ollamaUrl = 'http://localhost:11434';}
+        if (!this.config.ollamaModel) {this.config.ollamaModel = 'mistral';}
 
         // Setup Gemini proxy
         this.geminiProxyUrl = null;
@@ -27,10 +27,10 @@ class LLMService {
     }
 
     async getAvailableModels() {
-        if (this.config.provider !== 'ollama') return [];
+        if (this.config.provider !== 'ollama') {return [];}
         try {
             const response = await fetch(`${this.config.ollamaUrl}/api/tags`);
-            if (!response.ok) return [];
+            if (!response.ok) {return [];}
             const data = await response.json();
             return data.models || [];
         } catch (e) {
@@ -45,13 +45,13 @@ class LLMService {
     }
 
     get isConfigured() {
-        if (this.config.provider === 'gemini') return !!this.config.apiKey;
-        if (this.config.provider === 'ollama') return !!this.config.ollamaUrl; // Url is usually set
+        if (this.config.provider === 'gemini') {return !!this.config.apiKey;}
+        if (this.config.provider === 'ollama') {return !!this.config.ollamaUrl;} // Url is usually set
         return false;
     }
 
     async chat(message, history) {
-        if (!this.isConfigured) return null;
+        if (!this.isConfigured) {return null;}
 
         const systemPrompt = `Du bist ein erfahrener Fachberater für die Firma MHS Metallbau Hydraulik Service (MHS).
 WICHTIG: Antworte AUSSCHLIESSLICH auf Fragen, die einen direkten Bezug zum Unternehmen MHS oder den angebotenen Dienstleistungen (Metallbau, Hydraulik, Schweißen, Rohrleitungsbau) haben.
@@ -109,7 +109,7 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
                 })
             });
 
-            if (!response.ok) throw new Error('Ollama connection failed');
+            if (!response.ok) {throw new Error('Ollama connection failed');}
             const data = await response.json();
             return data.message?.content || null;
         } catch (e) {
@@ -180,7 +180,7 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
             body: JSON.stringify(payload)
         });
 
-        if (!response.ok) throw new Error('Gemini API Error: ' + response.status);
+        if (!response.ok) {throw new Error('Gemini API Error: ' + response.status);}
         const data = await response.json();
         return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
     }

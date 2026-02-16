@@ -8,8 +8,8 @@ class CashFlowService {
         this.settings = JSON.parse(localStorage.getItem('mhs_cashflow_settings') || '{}');
 
         // Default settings
-        if (!this.settings.monthsToForecast) this.settings.monthsToForecast = 6;
-        if (!this.settings.safetyBuffer) this.settings.safetyBuffer = 5000; // Minimum cash buffer
+        if (!this.settings.monthsToForecast) {this.settings.monthsToForecast = 6;}
+        if (!this.settings.safetyBuffer) {this.settings.safetyBuffer = 5000;} // Minimum cash buffer
     }
 
     // Get current financial snapshot
@@ -58,7 +58,7 @@ class CashFlowService {
     // Calculate monthly average from historical data
     calculateMonthlyAverage(type) {
         const bookkeeping = window.bookkeepingService;
-        if (!bookkeeping) return 0;
+        if (!bookkeeping) {return 0;}
 
         const buchungen = bookkeeping.buchungen || [];
         const last6Months = new Date();

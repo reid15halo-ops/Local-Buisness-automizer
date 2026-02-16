@@ -114,14 +114,14 @@ class StripeService {
             }
         });
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         // Redirect to Stripe Checkout
         if (this.stripe && data.sessionId) {
             const { error: stripeError } = await this.stripe.redirectToCheckout({
                 sessionId: data.sessionId
             });
-            if (stripeError) throw stripeError;
+            if (stripeError) {throw stripeError;}
         } else if (data.url) {
             window.location.href = data.url;
         }
@@ -130,7 +130,7 @@ class StripeService {
     // Open Stripe Customer Portal (manage subscription)
     async openBillingPortal() {
         const supabase = window.supabaseConfig?.get();
-        if (!supabase) throw new Error('Supabase nicht konfiguriert');
+        if (!supabase) {throw new Error('Supabase nicht konfiguriert');}
 
         const { data, error } = await supabase.functions.invoke('create-portal-session', {
             body: {
@@ -138,7 +138,7 @@ class StripeService {
             }
         });
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         if (data.url) {
             window.location.href = data.url;
@@ -148,11 +148,11 @@ class StripeService {
     // Get current subscription status
     async getSubscriptionStatus() {
         const supabase = window.supabaseConfig?.get();
-        if (!supabase) return { plan: 'starter', status: 'trialing' };
+        if (!supabase) {return { plan: 'starter', status: 'trialing' };}
 
         try {
             const user = window.authService?.getUser();
-            if (!user) return { plan: 'starter', status: 'none' };
+            if (!user) {return { plan: 'starter', status: 'none' };}
 
             const { data, error } = await supabase
                 .from('profiles')
@@ -160,7 +160,7 @@ class StripeService {
                 .eq('id', user.id)
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
             return {
                 plan: data?.plan || 'starter',
                 hasSubscription: !!data?.stripe_subscription_id,
@@ -204,7 +204,7 @@ class StripeService {
     // Render pricing cards (reusable UI component)
     renderPricingCards(containerSelector) {
         const container = document.querySelector(containerSelector);
-        if (!container) return;
+        if (!container) {return;}
 
         container.innerHTML = Object.entries(this.plans).map(([key, plan]) => `
             <div class="pricing-card ${key === 'professional' ? 'featured' : ''}">

@@ -59,7 +59,7 @@ class PhoneService {
             call.status = 'completed';
             call.endedAt = new Date().toISOString();
             call.notes = notes;
-            if (duration) call.duration = duration;
+            if (duration) {call.duration = duration;}
             this.save();
 
             // Log to communication service if available
@@ -185,7 +185,7 @@ class PhoneService {
     }
 
     formatPhoneForDisplay(number) {
-        if (!number) return '-';
+        if (!number) {return '-';}
 
         // Try to format nicely
         let clean = number.replace(/[^\d+]/g, '');
@@ -219,7 +219,7 @@ class PhoneService {
 
     calculateAvgDuration() {
         const callsWithDuration = this.callHistory.filter(c => c.duration);
-        if (callsWithDuration.length === 0) return 0;
+        if (callsWithDuration.length === 0) {return 0;}
         const total = callsWithDuration.reduce((sum, c) => sum + c.duration, 0);
         return Math.round(total / callsWithDuration.length);
     }
@@ -228,7 +228,7 @@ class PhoneService {
     generateId() { return 'call-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
 
     formatDuration(seconds) {
-        if (!seconds) return '-';
+        if (!seconds) {return '-';}
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
         return `${m}:${String(s).padStart(2, '0')}`;

@@ -9,7 +9,7 @@ function initAnfrageForm() {
     const btn = document.getElementById('btn-neue-anfrage');
     const form = document.getElementById('form-anfrage');
 
-    if (!btn || !form) return;
+    if (!btn || !form) {return;}
 
     btn.addEventListener('click', () => openModal('modal-anfrage'));
 

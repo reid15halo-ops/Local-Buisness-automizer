@@ -42,7 +42,7 @@ class TaskService {
         const index = this.tasks.findIndex(t => t.id === id);
         if (index !== -1) {
             this.tasks[index] = { ...this.tasks[index], ...updates, updatedAt: new Date().toISOString() };
-            if (updates.status === 'erledigt') this.tasks[index].completedAt = new Date().toISOString();
+            if (updates.status === 'erledigt') {this.tasks[index].completedAt = new Date().toISOString();}
             this.save();
             return this.tasks[index];
         }
@@ -106,7 +106,7 @@ class TaskService {
         const today = new Date();
         const future = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
         return this.tasks.filter(t => {
-            if (!t.dueDate || t.status === 'erledigt') return false;
+            if (!t.dueDate || t.status === 'erledigt') {return false;}
             const due = new Date(t.dueDate);
             return due > today && due <= future;
         }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
@@ -133,7 +133,7 @@ class TaskService {
     processRecurringTasks() {
         const today = new Date().toISOString().split('T')[0];
         this.recurringTasks.forEach(rec => {
-            if (!rec.active || rec.lastGenerated === today) return;
+            if (!rec.active || rec.lastGenerated === today) {return;}
             if (this.shouldGenerateToday(rec)) {
                 this.addTask({ title: rec.title, description: rec.description, priority: rec.priority, dueDate: today, source: 'recurring', sourceId: rec.id });
                 rec.lastGenerated = today;
@@ -144,16 +144,16 @@ class TaskService {
 
     shouldGenerateToday(rec) {
         const dayOfWeek = new Date().getDay();
-        if (rec.frequency === 'daily') return true;
-        if (rec.frequency === 'weekly') return rec.weekdays.includes(dayOfWeek);
-        if (rec.frequency === 'monthly') return new Date().getDate() === rec.monthDay;
+        if (rec.frequency === 'daily') {return true;}
+        if (rec.frequency === 'weekly') {return rec.weekdays.includes(dayOfWeek);}
+        if (rec.frequency === 'monthly') {return new Date().getDate() === rec.monthDay;}
         return false;
     }
 
     // Generate from Email
     generateTasksFromEmail(email, emailService) {
         const mainTask = emailService.createTaskFromEmail(email);
-        if (mainTask) this.addTask(mainTask);
+        if (mainTask) {this.addTask(mainTask);}
         return mainTask;
     }
 
@@ -192,7 +192,7 @@ class TaskService {
     getStatusLabel(s) { return { offen: 'Offen', in_bearbeitung: 'In Bearbeitung', warten: 'Warten', erledigt: 'Erledigt' }[s] || s; }
 
     formatDate(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 

@@ -11,9 +11,9 @@ class TimeTrackingService {
         this.settings = JSON.parse(localStorage.getItem('mhs_time_settings') || '{}');
 
         // Default settings
-        if (!this.settings.dailyHours) this.settings.dailyHours = 8;
-        if (!this.settings.overtimeThreshold) this.settings.overtimeThreshold = 40;
-        if (!this.settings.breakDuration) this.settings.breakDuration = 30;
+        if (!this.settings.dailyHours) {this.settings.dailyHours = 8;}
+        if (!this.settings.overtimeThreshold) {this.settings.overtimeThreshold = 40;}
+        if (!this.settings.breakDuration) {this.settings.breakDuration = 30;}
     }
 
     // Time Entry CRUD
@@ -81,7 +81,7 @@ class TimeTrackingService {
 
     clockOut(employeeId = 'default', description = '') {
         const timer = this.activeTimers[employeeId];
-        if (!timer) return null;
+        if (!timer) {return null;}
 
         const now = new Date();
         const entry = this.addEntry({
@@ -104,7 +104,7 @@ class TimeTrackingService {
 
     getActiveTimer(employeeId = 'default') {
         const timer = this.activeTimers[employeeId];
-        if (!timer) return null;
+        if (!timer) {return null;}
 
         const started = new Date(timer.startedAt);
         const now = new Date();
@@ -181,9 +181,9 @@ class TimeTrackingService {
 
     getBillableHoursForPeriod(startDate, endDate, customerId = null) {
         return this.entries.filter(e => {
-            if (!e.billable) return false;
-            if (e.date < startDate || e.date > endDate) return false;
-            if (customerId && e.customerId !== customerId) return false;
+            if (!e.billable) {return false;}
+            if (e.date < startDate || e.date > endDate) {return false;}
+            if (customerId && e.customerId !== customerId) {return false;}
             return true;
         }).reduce((sum, e) => sum + e.durationHours, 0);
     }
@@ -195,7 +195,7 @@ class TimeTrackingService {
         // Group by date
         const byDate = {};
         entries.forEach(e => {
-            if (!byDate[e.date]) byDate[e.date] = [];
+            if (!byDate[e.date]) {byDate[e.date] = [];}
             byDate[e.date].push(e);
         });
 
@@ -282,7 +282,7 @@ class TimeTrackingService {
     getStatistics(employeeId = null, year = null, month = null) {
         let entries = this.entries;
 
-        if (employeeId) entries = entries.filter(e => e.employeeId === employeeId);
+        if (employeeId) {entries = entries.filter(e => e.employeeId === employeeId);}
         if (year && month) {
             const monthStr = `${year}-${String(month).padStart(2, '0')}`;
             entries = entries.filter(e => e.date.startsWith(monthStr));

@@ -203,7 +203,7 @@ Antworte im JSON-Format:
     }
 
     async chat(message, history) {
-        if (!this.isConfigured) return null;
+        if (!this.isConfigured) {return null;}
 
         const context = history.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${m.content}`).join('\n');
 

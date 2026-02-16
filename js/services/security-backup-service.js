@@ -10,11 +10,11 @@ class SecurityBackupService {
         this.activityLog = JSON.parse(localStorage.getItem('mhs_activity_log') || '[]');
 
         // Default settings
-        if (!this.settings.autoBackup) this.settings.autoBackup = true;
-        if (!this.settings.backupInterval) this.settings.backupInterval = 'daily';
-        if (!this.settings.encryptBackups) this.settings.encryptBackups = true;
-        if (!this.settings.maxBackups) this.settings.maxBackups = 10;
-        if (!this.settings.gdprRetentionDays) this.settings.gdprRetentionDays = 365 * 10; // 10 years
+        if (!this.settings.autoBackup) {this.settings.autoBackup = true;}
+        if (!this.settings.backupInterval) {this.settings.backupInterval = 'daily';}
+        if (!this.settings.encryptBackups) {this.settings.encryptBackups = true;}
+        if (!this.settings.maxBackups) {this.settings.maxBackups = 10;}
+        if (!this.settings.gdprRetentionDays) {this.settings.gdprRetentionDays = 365 * 10;} // 10 years
 
         // Start auto-backup scheduler
         this.startAutoBackup();
@@ -169,7 +169,7 @@ class SecurityBackupService {
     // Download backup as file
     async downloadBackup(password = null) {
         const result = await this.createBackup(password);
-        if (!result.success) return result;
+        if (!result.success) {return result;}
 
         const backup = result.backup;
         const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -247,7 +247,7 @@ class SecurityBackupService {
     // =====================================================
 
     startAutoBackup() {
-        if (!this.settings.autoBackup) return;
+        if (!this.settings.autoBackup) {return;}
 
         // Check backup status on load
         setTimeout(() => this.checkAutoBackupNeeded(), 10000);
@@ -257,7 +257,7 @@ class SecurityBackupService {
     }
 
     checkAutoBackupNeeded() {
-        if (!this.settings.autoBackup) return;
+        if (!this.settings.autoBackup) {return;}
 
         const lastBackup = this.backups[this.backups.length - 1];
         const now = new Date();
@@ -388,10 +388,10 @@ class SecurityBackupService {
 
     // Anonymize customer data (alternative to deletion)
     anonymizeCustomerData(customerId) {
-        if (!window.customerService) return { success: false };
+        if (!window.customerService) {return { success: false };}
 
         const customer = window.customerService.getCustomer(customerId);
-        if (!customer) return { success: false, error: 'Kunde nicht gefunden' };
+        if (!customer) {return { success: false, error: 'Kunde nicht gefunden' };}
 
         // Anonymize personal data
         const anonymized = {
@@ -454,7 +454,7 @@ class SecurityBackupService {
     }
 
     verifyPin(pin) {
-        if (!this.settings.pinHash) return true; // No PIN set
+        if (!this.settings.pinHash) {return true;} // No PIN set
         return this.hashPin(pin) === this.settings.pinHash;
     }
 

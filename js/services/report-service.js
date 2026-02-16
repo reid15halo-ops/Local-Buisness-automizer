@@ -32,7 +32,7 @@ class ReportService {
         const byMonth = {};
         filtered.forEach(r => {
             const month = (r.datum?.substring(0, 7)) || 'unknown';
-            if (!byMonth[month]) byMonth[month] = { count: 0, sum: 0 };
+            if (!byMonth[month]) {byMonth[month] = { count: 0, sum: 0 };}
             byMonth[month].count++;
             byMonth[month].sum += r.brutto || 0;
         });
@@ -68,7 +68,7 @@ class ReportService {
         // Calculate revenue per customer
         const customerRevenue = {};
         rechnungen.forEach(r => {
-            if (r.datum < startDate || r.datum > endDate) return;
+            if (r.datum < startDate || r.datum > endDate) {return;}
             const key = r.kunde?.email || r.kunde?.name || 'unknown';
             if (!customerRevenue[key]) {
                 customerRevenue[key] = {
@@ -110,8 +110,8 @@ class ReportService {
         }
 
         const entries = window.timeTrackingService.entries.filter(e => {
-            if (e.date < startDate || e.date > endDate) return false;
-            if (employeeId && e.employeeId !== employeeId) return false;
+            if (e.date < startDate || e.date > endDate) {return false;}
+            if (employeeId && e.employeeId !== employeeId) {return false;}
             return true;
         });
 
@@ -121,7 +121,7 @@ class ReportService {
         // Group by day
         const byDay = {};
         entries.forEach(e => {
-            if (!byDay[e.date]) byDay[e.date] = 0;
+            if (!byDay[e.date]) {byDay[e.date] = 0;}
             byDay[e.date] += e.durationHours || 0;
         });
 
@@ -129,7 +129,7 @@ class ReportService {
         const byProject = {};
         entries.forEach(e => {
             const key = e.auftragId || 'ohne-zuordnung';
-            if (!byProject[key]) byProject[key] = 0;
+            if (!byProject[key]) {byProject[key] = 0;}
             byProject[key] += e.durationHours || 0;
         });
 
@@ -179,7 +179,7 @@ class ReportService {
         const byCategory = {};
         tasks.forEach(t => {
             const cat = t.category || 'allgemein';
-            if (!byCategory[cat]) byCategory[cat] = 0;
+            if (!byCategory[cat]) {byCategory[cat] = 0;}
             byCategory[cat]++;
         });
 

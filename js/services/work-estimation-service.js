@@ -107,22 +107,22 @@ class WorkEstimationService {
     // Komplexitätsanalyse
     // ============================================
     analysiereKomplexitaet(beschreibung) {
-        if (!beschreibung) return 'mittel';
+        if (!beschreibung) {return 'mittel';}
 
         const text = beschreibung.toLowerCase();
         let punkteEinfach = 0;
         let punkteKomplex = 0;
 
         this.komplexitaetsKeywords.einfach.forEach(kw => {
-            if (text.includes(kw)) punkteEinfach++;
+            if (text.includes(kw)) {punkteEinfach++;}
         });
 
         this.komplexitaetsKeywords.komplex.forEach(kw => {
-            if (text.includes(kw)) punkteKomplex++;
+            if (text.includes(kw)) {punkteKomplex++;}
         });
 
-        if (punkteKomplex > punkteEinfach + 1) return 'komplex';
-        if (punkteEinfach > punkteKomplex + 1) return 'einfach';
+        if (punkteKomplex > punkteEinfach + 1) {return 'komplex';}
+        if (punkteEinfach > punkteKomplex + 1) {return 'einfach';}
         return 'mittel';
     }
 
@@ -170,7 +170,7 @@ Antworte NUR im JSON-Format:
                 })
             });
 
-            if (!response.ok) throw new Error('API Error');
+            if (!response.ok) {throw new Error('API Error');}
 
             const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -215,7 +215,7 @@ Antworte NUR im JSON-Format:
     findeAehnlicheArbeiten(anfrage) {
         return this.historischeArbeiten.filter(h => {
             // Gleiche Leistungsart
-            if (h.leistungsart === anfrage.leistungsart) return true;
+            if (h.leistungsart === anfrage.leistungsart) {return true;}
 
             // Ähnliche Beschreibung
             if (anfrage.beschreibung && h.beschreibung) {
@@ -233,9 +233,9 @@ Antworte NUR im JSON-Format:
     // Helpers
     // ============================================
     berechneKonfidenz(anfrage, historisch) {
-        if (historisch.length >= 5) return 'hoch';
-        if (historisch.length >= 2) return 'mittel';
-        if (anfrage.budget) return 'mittel';
+        if (historisch.length >= 5) {return 'hoch';}
+        if (historisch.length >= 2) {return 'mittel';}
+        if (anfrage.budget) {return 'mittel';}
         return 'niedrig';
     }
 

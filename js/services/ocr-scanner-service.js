@@ -9,8 +9,8 @@ class OcrScannerService {
         this.settings = JSON.parse(localStorage.getItem('mhs_ocr_settings') || '{}');
 
         // Default settings
-        if (!this.settings.language) this.settings.language = 'deu'; // German
-        if (!this.settings.autoProcess) this.settings.autoProcess = true;
+        if (!this.settings.language) {this.settings.language = 'deu';} // German
+        if (!this.settings.autoProcess) {this.settings.autoProcess = true;}
     }
 
     // Scan document from file input
@@ -249,7 +249,7 @@ class OcrScannerService {
     // Create document entry for bookkeeping from scan
     createBookkeepingEntry(docId) {
         const doc = this.getDocument(docId);
-        if (!doc || !doc.extractedData) return { success: false };
+        if (!doc || !doc.extractedData) {return { success: false };}
 
         if (window.bookkeepingService) {
             const entry = window.bookkeepingService.addBuchung({

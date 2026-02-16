@@ -7,7 +7,7 @@ const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, g
 
 function createAngebotFromAnfrage(anfrageId) {
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
-    if (!anfrage) return;
+    if (!anfrage) {return;}
 
     store.currentAnfrageId = anfrageId;
 
@@ -177,7 +177,7 @@ function updateAngebotSummary() {
 function generateAIText() {
     const anfrageId = document.getElementById('angebot-anfrage-id').value;
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
-    if (!anfrage) return;
+    if (!anfrage) {return;}
 
     // Simulate AI text generation
     const aiBtn = document.getElementById('btn-ai-text');
@@ -277,7 +277,7 @@ function renderAngebote() {
 
 function acceptAngebot(angebotId) {
     const angebot = store.angebote.find(a => a.id === angebotId);
-    if (!angebot) return;
+    if (!angebot) {return;}
 
     angebot.status = 'angenommen';
 

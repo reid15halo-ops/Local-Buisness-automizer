@@ -11,7 +11,7 @@
         // Click delegation - main handler
         document.addEventListener('click', (e) => {
             const target = e.target.closest('[data-action]');
-            if (!target) return;
+            if (!target) {return;}
 
             const action = target.dataset.action;
             const id = target.dataset.id;
@@ -146,7 +146,7 @@
                         // Guard: Require confirmation in production mode
                         if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
                             const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-Materialien laden');
-                            if (!confirmed) return;
+                            if (!confirmed) {return;}
                         }
 
                         window.materialService?.loadDemoData?.();

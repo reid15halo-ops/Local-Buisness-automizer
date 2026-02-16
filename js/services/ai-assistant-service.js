@@ -9,8 +9,8 @@ class AiAssistantService {
         this.settings = JSON.parse(localStorage.getItem('mhs_ai_settings') || '{}');
 
         // Default settings
-        if (!this.settings.language) this.settings.language = 'de';
-        if (!this.settings.personality) this.settings.personality = 'professional';
+        if (!this.settings.language) {this.settings.language = 'de';}
+        if (!this.settings.personality) {this.settings.personality = 'professional';}
     }
 
     // Ask a natural language question
@@ -104,7 +104,7 @@ class AiAssistantService {
 
         for (const pattern of patterns) {
             const match = text.match(pattern);
-            if (match) return match[1];
+            if (match) {return match[1];}
         }
         return null;
     }

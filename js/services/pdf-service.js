@@ -13,7 +13,7 @@ class PDFService {
     }
 
     async ensureLoaded() {
-        if (this.loaded && window.jspdf) return;
+        if (this.loaded && window.jspdf) {return;}
         await new Promise((resolve, reject) => {
             if (window.jspdf) { this.loaded = true; resolve(); return; }
             const script = document.createElement('script');
@@ -219,7 +219,7 @@ class PDFService {
     }
 
     fmtDate(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 

@@ -21,7 +21,7 @@ class AuthService {
     // Register new user
     async register(email, password, metadata = {}) {
         const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+        if (!client) {throw new Error('Supabase nicht konfiguriert');}
 
         const { data, error } = await client.auth.signUp({
             email,
@@ -36,7 +36,7 @@ class AuthService {
             }
         });
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         this.user = data.user;
         this.session = data.session;
@@ -47,14 +47,14 @@ class AuthService {
     // Login
     async login(email, password) {
         const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+        if (!client) {throw new Error('Supabase nicht konfiguriert');}
 
         const { data, error } = await client.auth.signInWithPassword({
             email,
             password
         });
 
-        if (error) throw error;
+        if (error) {throw error;}
 
         this.user = data.user;
         this.session = data.session;
@@ -65,7 +65,7 @@ class AuthService {
     // Logout
     async logout() {
         const client = this.getClient();
-        if (!client) return;
+        if (!client) {return;}
 
         await client.auth.signOut();
         this.user = null;
@@ -76,31 +76,31 @@ class AuthService {
     // Password reset
     async resetPassword(email) {
         const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+        if (!client) {throw new Error('Supabase nicht konfiguriert');}
 
         const { error } = await client.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/index.html'
         });
 
-        if (error) throw error;
+        if (error) {throw error;}
     }
 
     // Update password
     async updatePassword(newPassword) {
         const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+        if (!client) {throw new Error('Supabase nicht konfiguriert');}
 
         const { error } = await client.auth.updateUser({
             password: newPassword
         });
 
-        if (error) throw error;
+        if (error) {throw error;}
     }
 
     // Get current session
     async getSession() {
         const client = this.getClient();
-        if (!client) return null;
+        if (!client) {return null;}
 
         const { data: { session } } = await client.auth.getSession();
         this.session = session;

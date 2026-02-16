@@ -125,7 +125,7 @@ class MaterialService {
     // ============================================
     calculatePositionPrice(materialId, menge, arbeitsstunden = 0) {
         const material = this.getMaterial(materialId);
-        if (!material) return null;
+        if (!material) {return null;}
 
         const materialkosten = menge * (material.vkPreis || material.preis);
         const arbeitskosten = arbeitsstunden * this.stundensatz;

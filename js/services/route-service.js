@@ -9,11 +9,11 @@ class RouteService {
         this.settings = JSON.parse(localStorage.getItem('mhs_route_settings') || '{}');
 
         // Default settings
-        if (!this.settings.startAddress) this.settings.startAddress = 'Musterstraße 1, 63843 Niedernberg';
-        if (!this.settings.workStartTime) this.settings.workStartTime = '08:00';
-        if (!this.settings.workEndTime) this.settings.workEndTime = '17:00';
-        if (!this.settings.avgServiceDuration) this.settings.avgServiceDuration = 60; // minutes
-        if (!this.settings.avgTravelSpeed) this.settings.avgTravelSpeed = 40; // km/h
+        if (!this.settings.startAddress) {this.settings.startAddress = 'Musterstraße 1, 63843 Niedernberg';}
+        if (!this.settings.workStartTime) {this.settings.workStartTime = '08:00';}
+        if (!this.settings.workEndTime) {this.settings.workEndTime = '17:00';}
+        if (!this.settings.avgServiceDuration) {this.settings.avgServiceDuration = 60;} // minutes
+        if (!this.settings.avgTravelSpeed) {this.settings.avgTravelSpeed = 40;} // km/h
     }
 
     // Create optimized route for a day
@@ -71,7 +71,7 @@ class RouteService {
 
     // Optimize stop order using nearest neighbor algorithm
     optimizeStopOrder(stops) {
-        if (stops.length <= 1) return stops;
+        if (stops.length <= 1) {return stops;}
 
         const optimized = [];
         const remaining = [...stops];
@@ -107,7 +107,7 @@ class RouteService {
 
     // Calculate distance between two points (Haversine formula)
     calculateDistance(coord1, coord2) {
-        if (!coord1 || !coord2) return 10; // Default 10km
+        if (!coord1 || !coord2) {return 10;} // Default 10km
 
         const R = 6371; // Earth's radius in km
         const dLat = this.toRad(coord2.lat - coord1.lat);
@@ -173,7 +173,7 @@ class RouteService {
 
     // Calculate total duration
     calculateTotalDuration(stops) {
-        if (stops.length === 0) return 0;
+        if (stops.length === 0) {return 0;}
         const lastStop = stops[stops.length - 1];
         return this.parseTime(lastStop.estimatedDeparture) - this.parseTime(this.settings.workStartTime);
     }
@@ -186,7 +186,7 @@ class RouteService {
     // Generate Google Maps link for route
     getGoogleMapsLink(routeId) {
         const route = this.routes.find(r => r.id === routeId);
-        if (!route) return null;
+        if (!route) {return null;}
 
         const addresses = [
             this.settings.startAddress,
@@ -212,10 +212,10 @@ class RouteService {
     // Update stop status
     updateStopStatus(routeId, stopId, status) {
         const route = this.routes.find(r => r.id === routeId);
-        if (!route) return { success: false };
+        if (!route) {return { success: false };}
 
         const stop = route.stops.find(s => s.id === stopId);
-        if (!stop) return { success: false };
+        if (!stop) {return { success: false };}
 
         stop.status = status; // pending, arrived, in_progress, completed, skipped
         stop.statusUpdatedAt = new Date().toISOString();

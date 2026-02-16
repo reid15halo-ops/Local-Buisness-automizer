@@ -51,7 +51,7 @@ class DemoGuardService {
     // Show banner indicating demo mode is active
     showDemoBanner() {
         const existingBanner = document.getElementById('demo-mode-banner');
-        if (existingBanner) return; // Already shown
+        if (existingBanner) {return;} // Already shown
 
         const banner = document.createElement('div');
         banner.id = 'demo-mode-banner';
@@ -74,7 +74,7 @@ class DemoGuardService {
 
     // Hide demo buttons if not in dev mode
     hideDemoButtons() {
-        if (this.isDeveloperMode) return;
+        if (this.isDeveloperMode) {return;}
 
         const demoElements = document.querySelectorAll(
             '[data-action="load-demo-materials"], #qa-demo-workflow, #btn-load-demo-emails, #btn-demo-materials'
@@ -88,10 +88,10 @@ class DemoGuardService {
     // Show dev mode controls in settings
     initDevModeToggle() {
         const settingsModal = document.getElementById('settings-panel');
-        if (!settingsModal) return;
+        if (!settingsModal) {return;}
 
         // Check if toggle already exists
-        if (document.getElementById('dev-mode-toggle')) return;
+        if (document.getElementById('dev-mode-toggle')) {return;}
 
         const devModeSection = document.createElement('div');
         devModeSection.className = 'settings-card';

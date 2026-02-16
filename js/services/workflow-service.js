@@ -82,7 +82,7 @@ class WorkflowService {
     // Update workflow
     updateWorkflow(id, updates) {
         const workflow = this.workflows.find(w => w.id === id);
-        if (!workflow) return { success: false, error: 'Workflow nicht gefunden' };
+        if (!workflow) {return { success: false, error: 'Workflow nicht gefunden' };}
 
         Object.assign(workflow, updates, { updatedAt: new Date().toISOString() });
         this.save();
@@ -110,8 +110,8 @@ class WorkflowService {
     // Execute a workflow
     async executeWorkflow(workflowId, triggerData = {}) {
         const workflow = this.workflows.find(w => w.id === workflowId);
-        if (!workflow) return { success: false, error: 'Workflow nicht gefunden' };
-        if (!workflow.active) return { success: false, error: 'Workflow ist deaktiviert' };
+        if (!workflow) {return { success: false, error: 'Workflow nicht gefunden' };}
+        if (!workflow.active) {return { success: false, error: 'Workflow ist deaktiviert' };}
 
         const executionId = 'exec-' + Date.now();
         const context = { ...triggerData, _workflowId: workflowId, _executionId: executionId };
@@ -158,8 +158,8 @@ class WorkflowService {
 
             let result = false;
             switch (condition.operator) {
-                case 'equals': result = value == compareValue; break;
-                case 'not_equals': result = value != compareValue; break;
+                case 'equals': result = value === compareValue; break;
+                case 'not_equals': result = value !== compareValue; break;
                 case 'contains': result = String(value).includes(compareValue); break;
                 case 'not_contains': result = !String(value).includes(compareValue); break;
                 case 'greater_than': result = Number(value) > Number(compareValue); break;
@@ -169,7 +169,7 @@ class WorkflowService {
             }
 
             // AND logic - all conditions must be true
-            if (!result) return false;
+            if (!result) {return false;}
         }
         return true;
     }
@@ -195,12 +195,12 @@ class WorkflowService {
         switch (action.type) {
             case 'email.send':
                 console.log('[Workflow] E-Mail senden (Supabase nicht verbunden):', params.to, params.subject);
-                if (window.showToast) window.showToast(`E-Mail an ${params.to} benötigt Supabase-Verbindung`, 'warning');
+                if (window.showToast) {window.showToast(`E-Mail an ${params.to} benötigt Supabase-Verbindung`, 'warning');}
                 break;
 
             case 'sms.send':
                 console.log('[Workflow] SMS senden (Supabase nicht verbunden):', params.to);
-                if (window.showToast) window.showToast(`SMS an ${params.to} benötigt Supabase-Verbindung`, 'warning');
+                if (window.showToast) {window.showToast(`SMS an ${params.to} benötigt Supabase-Verbindung`, 'warning');}
                 break;
 
             case 'task.create':
@@ -224,7 +224,7 @@ class WorkflowService {
 
             case 'webhook.call':
                 console.log('[Workflow] Webhook (Supabase nicht verbunden):', params.url);
-                if (window.showToast) window.showToast(`Webhook benötigt Supabase-Verbindung`, 'warning');
+                if (window.showToast) {window.showToast(`Webhook benötigt Supabase-Verbindung`, 'warning');}
                 break;
 
             case 'wait':
@@ -249,7 +249,7 @@ class WorkflowService {
 
     // Resolve a single value (supports {{variable}} syntax)
     resolveValue(template, context) {
-        if (typeof template !== 'string') return template;
+        if (typeof template !== 'string') {return template;}
         return template.replace(/\{\{(\w+(?:\.\w+)*)\}\}/g, (match, path) => {
             const parts = path.split('.');
             let value = context;
@@ -263,7 +263,7 @@ class WorkflowService {
     // Parse delay string like "5 minutes"
     parseDelay(delayStr) {
         const match = String(delayStr).match(/(\d+)\s*(sekunde|minute|stunde|tag|second|minute|hour|day)/i);
-        if (!match) return 0;
+        if (!match) {return 0;}
         const value = parseInt(match[1]);
         const unit = match[2].toLowerCase();
         const multipliers = {
@@ -295,8 +295,8 @@ class WorkflowService {
             if (value && data[key] !== undefined) {
                 if (typeof value === 'string' && value.startsWith('*')) {
                     // Wildcard/contains match
-                    if (!String(data[key]).includes(value.slice(1))) return false;
-                } else if (data[key] != value) {
+                    if (!String(data[key]).includes(value.slice(1))) {return false;}
+                } else if (data[key] !== value) {
                     return false;
                 }
             }
@@ -308,7 +308,7 @@ class WorkflowService {
     startEngine() {
         // Check scheduled workflows every minute
         setInterval(() => {
-            if (!this.isRunning) return;
+            if (!this.isRunning) {return;}
             this.checkScheduledWorkflows();
         }, 60000);
 
@@ -331,13 +331,13 @@ class WorkflowService {
             }
 
             if (trigger.type === 'schedule.weekly' &&
-                trigger.params.day == currentDay &&
+                trigger.params.day === currentDay &&
                 trigger.params.time === currentTime) {
                 this.executeWorkflow(workflow.id, { scheduled: true });
             }
 
             if (trigger.type === 'schedule.monthly' &&
-                trigger.params.dayOfMonth == currentDayOfMonth &&
+                trigger.params.dayOfMonth === currentDayOfMonth &&
                 trigger.params.time === currentTime) {
                 this.executeWorkflow(workflow.id, { scheduled: true });
             }

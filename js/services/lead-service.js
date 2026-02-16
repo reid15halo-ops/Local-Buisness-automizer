@@ -75,7 +75,7 @@ class LeadService {
     // Update lead
     updateLead(id, updates) {
         const lead = this.leads.find(l => l.id === id);
-        if (!lead) return null;
+        if (!lead) {return null;}
 
         // Track stage changes
         if (updates.stage && updates.stage !== lead.stage) {
@@ -106,9 +106,9 @@ class LeadService {
     calculateScore(lead) {
         let score = 0;
 
-        if (lead.email) score += this.scoringRules.hasEmail;
-        if (lead.telefon) score += this.scoringRules.hasPhone;
-        if (lead.firma) score += this.scoringRules.hasCompany;
+        if (lead.email) {score += this.scoringRules.hasEmail;}
+        if (lead.telefon) {score += this.scoringRules.hasPhone;}
+        if (lead.firma) {score += this.scoringRules.hasCompany;}
 
         if (lead.budget) {
             if (lead.budget >= 10000) {
@@ -118,13 +118,13 @@ class LeadService {
             }
         }
 
-        if (lead.timeline === 'dringend') score += this.scoringRules.urgentTimeline;
-        if (lead.quelle === 'empfehlung') score += this.scoringRules.referral;
-        if (lead.quelle === 'bestandskunde') score += this.scoringRules.returningCustomer;
+        if (lead.timeline === 'dringend') {score += this.scoringRules.urgentTimeline;}
+        if (lead.quelle === 'empfehlung') {score += this.scoringRules.referral;}
+        if (lead.quelle === 'bestandskunde') {score += this.scoringRules.returningCustomer;}
 
         // Activity-based scoring
         const hasResponse = lead.aktivitaeten.some(a => a.typ === 'antwort_erhalten');
-        if (hasResponse) score += this.scoringRules.responded;
+        if (hasResponse) {score += this.scoringRules.responded;}
 
         return Math.min(score, 100);
     }
@@ -181,7 +181,7 @@ class LeadService {
     // Add activity to lead
     addActivity(leadId, activity) {
         const lead = this.getLead(leadId);
-        if (!lead) return null;
+        if (!lead) {return null;}
 
         const newActivity = {
             id: 'act-' + Date.now(),
@@ -203,7 +203,7 @@ class LeadService {
     // Convert lead to Anfrage
     convertToAnfrage(leadId) {
         const lead = this.getLead(leadId);
-        if (!lead) return null;
+        if (!lead) {return null;}
 
         // Create Anfrage object (integrate with existing system)
         const anfrage = {
@@ -227,7 +227,7 @@ class LeadService {
         // Add to store if available
         if (typeof store !== 'undefined' && store.anfragen) {
             store.anfragen.push(anfrage);
-            if (typeof saveStore === 'function') saveStore();
+            if (typeof saveStore === 'function') {saveStore();}
         }
 
         return anfrage;
@@ -292,9 +292,9 @@ class LeadService {
 
     // Get score label
     getScoreLabel(score) {
-        if (score >= 80) return { label: 'Heiß', color: '#ef4444', icon: '🔥' };
-        if (score >= 60) return { label: 'Warm', color: '#f59e0b', icon: '☀️' };
-        if (score >= 40) return { label: 'Lauwarm', color: '#eab308', icon: '🌤️' };
+        if (score >= 80) {return { label: 'Heiß', color: '#ef4444', icon: '🔥' };}
+        if (score >= 60) {return { label: 'Warm', color: '#f59e0b', icon: '☀️' };}
+        if (score >= 40) {return { label: 'Lauwarm', color: '#eab308', icon: '🌤️' };}
         return { label: 'Kalt', color: '#3b82f6', icon: '❄️' };
     }
 
@@ -312,18 +312,18 @@ class LeadService {
 
         for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',');
-            if (values.length < 2) continue;
+            if (values.length < 2) {continue;}
 
             const lead = {};
             headers.forEach((header, index) => {
                 if (values[index]) {
                     const value = values[index].trim().replace(/^"|"$/g, '');
-                    if (header.includes('name')) lead.name = value;
-                    else if (header.includes('email')) lead.email = value;
-                    else if (header.includes('telefon') || header.includes('phone')) lead.telefon = value;
-                    else if (header.includes('firma') || header.includes('company')) lead.firma = value;
-                    else if (header.includes('budget')) lead.budget = parseFloat(value) || null;
-                    else if (header.includes('quelle') || header.includes('source')) lead.quelle = value;
+                    if (header.includes('name')) {lead.name = value;}
+                    else if (header.includes('email')) {lead.email = value;}
+                    else if (header.includes('telefon') || header.includes('phone')) {lead.telefon = value;}
+                    else if (header.includes('firma') || header.includes('company')) {lead.firma = value;}
+                    else if (header.includes('budget')) {lead.budget = parseFloat(value) || null;}
+                    else if (header.includes('quelle') || header.includes('source')) {lead.quelle = value;}
                 }
             });
 

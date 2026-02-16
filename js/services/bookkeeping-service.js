@@ -120,7 +120,7 @@ class BookkeepingService {
     berechneUStVA(jahr, monat = null, quartal = null) {
         let buchungen = this.buchungen.filter(b => {
             const datum = new Date(b.datum);
-            if (datum.getFullYear() !== jahr) return false;
+            if (datum.getFullYear() !== jahr) {return false;}
 
             if (monat !== null) {
                 return datum.getMonth() + 1 === monat;
@@ -248,7 +248,7 @@ class BookkeepingService {
         const findColumnIndex = (names) => {
             for (const name of names) {
                 const idx = headers.findIndex(h => h.includes(name));
-                if (idx >= 0) return idx;
+                if (idx >= 0) {return idx;}
             }
             return -1;
         };
@@ -273,12 +273,12 @@ class BookkeepingService {
         for (let i = 1; i < lines.length; i++) {
             try {
                 const values = this.parseCSVLine(lines[i], separator);
-                if (values.length < 2) continue;
+                if (values.length < 2) {continue;}
 
                 // Parse betrag (handle German format)
                 let betrag = values[colIdx.betrag]?.replace(/"/g, '').replace(/\s/g, '');
                 betrag = parseFloat(betrag.replace('.', '').replace(',', '.'));
-                if (isNaN(betrag) || betrag === 0) continue;
+                if (isNaN(betrag) || betrag === 0) {continue;}
 
                 // Determine typ from betrag sign or column
                 let typ = 'ausgabe';

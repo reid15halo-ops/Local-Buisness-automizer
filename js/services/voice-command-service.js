@@ -12,10 +12,10 @@ class VoiceCommandService {
         this.commandHistory = JSON.parse(localStorage.getItem('mhs_voice_history') || '[]');
 
         // Default settings
-        if (!this.settings.language) this.settings.language = 'de-DE';
-        if (!this.settings.speakResponses) this.settings.speakResponses = true;
-        if (!this.settings.wakeWord) this.settings.wakeWord = 'okay mhs';
-        if (!this.settings.continuousListening) this.settings.continuousListening = false;
+        if (!this.settings.language) {this.settings.language = 'de-DE';}
+        if (!this.settings.speakResponses) {this.settings.speakResponses = true;}
+        if (!this.settings.wakeWord) {this.settings.wakeWord = 'okay mhs';}
+        if (!this.settings.continuousListening) {this.settings.continuousListening = false;}
 
         // Initialize speech recognition
         this.initRecognition();
@@ -270,7 +270,7 @@ class VoiceCommandService {
 
     // Text-to-speech
     speak(text) {
-        if (!this.settings.speakResponses || !this.synthesis) return;
+        if (!this.settings.speakResponses || !this.synthesis) {return;}
 
         // Cancel any ongoing speech
         this.synthesis.cancel();

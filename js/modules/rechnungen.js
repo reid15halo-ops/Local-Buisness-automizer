@@ -51,12 +51,12 @@ function renderRechnungen() {
 
 function showRechnung(rechnungId) {
     const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
 
     store.currentRechnungId = rechnungId;
 
     const modal = document.getElementById('modal-rechnung');
-    if (!modal) return;
+    if (!modal) {return;}
 
     const statusHTML = rechnung.status === 'bezahlt'
         ? `<span class="status-badge" style="background:#22c55e;">✅ Bezahlt am ${formatDate(rechnung.paidAt)}</span>`

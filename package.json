@@ -9,6 +9,9 @@
     "type": "git",
     "url": "https://github.com/yourorg/local-business-automizer"
   },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "keywords": [
     "CRM",
     "invoicing",
@@ -21,7 +24,7 @@
   "scripts": {
     "dev": "npx serve . -l 3000",
     "build": "bash deploy.sh",
-    "lint": "npx eslint js/ --ext .js",
+    "lint": "eslint js/",
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "npx serve dist/ -l 8080"

@@ -434,7 +434,7 @@ MHS Metallbau Hydraulik Service`
 
     fillTemplate(templateKey, data) {
         const template = this.templates[templateKey];
-        if (!template) return null;
+        if (!template) {return null;}
 
         let subject = template.subject;
         let body = template.body;
@@ -538,10 +538,10 @@ MHS Metallbau Hydraulik Service`
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
 
-        if (minutes < 1) return 'Gerade eben';
-        if (minutes < 60) return `vor ${minutes} Min.`;
-        if (hours < 24) return `vor ${hours} Std.`;
-        if (days === 1) return 'Gestern';
+        if (minutes < 1) {return 'Gerade eben';}
+        if (minutes < 60) {return `vor ${minutes} Min.`;}
+        if (hours < 24) {return `vor ${hours} Std.`;}
+        if (days === 1) {return 'Gestern';}
         return this.formatDate(dateStr);
     }
 }

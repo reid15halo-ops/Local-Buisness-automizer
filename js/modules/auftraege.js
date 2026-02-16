@@ -73,9 +73,9 @@ AUFTRAG_STATUS_ICONS['aktiv'] = '🔧';
 // Status change helpers
 function validateStatusChange(auftrag, newStatus) {
     const current = auftrag.status;
-    if (current === newStatus) return { valid: false, error: 'Status ist bereits ' + AUFTRAG_STATUS_LABELS[current] };
+    if (current === newStatus) {return { valid: false, error: 'Status ist bereits ' + AUFTRAG_STATUS_LABELS[current] };}
     const config = AUFTRAG_STATUS_CONFIG[current];
-    if (!config) return { valid: true };
+    if (!config) {return { valid: true };}
     if (!config.erlaubteUebergaenge.includes(newStatus)) {
         return {
             valid: false,
@@ -87,20 +87,20 @@ function validateStatusChange(auftrag, newStatus) {
 
 function getErlaubteUebergaenge(status) {
     const config = AUFTRAG_STATUS_CONFIG[status];
-    if (!config) return Object.keys(AUFTRAG_STATUS_CONFIG);
+    if (!config) {return Object.keys(AUFTRAG_STATUS_CONFIG);}
     return config.erlaubteUebergaenge;
 }
 
 function executeStatusAutoAktion(auftrag, newStatus) {
     const config = AUFTRAG_STATUS_CONFIG[newStatus];
-    if (!config?.autoAktion) return;
+    if (!config?.autoAktion) {return;}
 
     switch (config.autoAktion) {
         case 'materialCheck':
             const stueckliste = auftrag.stueckliste || [];
             if (stueckliste.length > 0 && window.materialService) {
                 const fehlend = stueckliste.filter(item => {
-                    if (!item.materialId) return false;
+                    if (!item.materialId) {return false;}
                     const mat = window.materialService.getMaterialById(item.materialId);
                     return mat && mat.bestand < item.menge;
                 });
@@ -125,22 +125,22 @@ function executeStatusAutoAktion(auftrag, newStatus) {
 }
 
 function trackStatusDauer(auftrag, oldStatus, newStatus) {
-    if (!auftrag.statusZeiten) auftrag.statusZeiten = {};
+    if (!auftrag.statusZeiten) {auftrag.statusZeiten = {};}
     const now = Date.now();
     const lastChange = auftrag.letzterStatusWechsel || new Date(auftrag.createdAt).getTime();
     const dauerMs = now - lastChange;
 
-    if (!auftrag.statusZeiten[oldStatus]) auftrag.statusZeiten[oldStatus] = 0;
+    if (!auftrag.statusZeiten[oldStatus]) {auftrag.statusZeiten[oldStatus] = 0;}
     auftrag.statusZeiten[oldStatus] += dauerMs;
     auftrag.letzterStatusWechsel = now;
 }
 
 function changeAuftragStatus(auftragId, newStatus, grund) {
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return { success: false, error: 'Auftrag nicht gefunden' };
+    if (!auftrag) {return { success: false, error: 'Auftrag nicht gefunden' };}
 
     const validation = validateStatusChange(auftrag, newStatus);
-    if (!validation.valid) return { success: false, error: validation.error };
+    if (!validation.valid) {return { success: false, error: validation.error };}
 
     const config = AUFTRAG_STATUS_CONFIG[newStatus];
     if (config?.brauchtGrund && !grund) {
@@ -150,18 +150,18 @@ function changeAuftragStatus(auftragId, newStatus, grund) {
     const oldStatus = auftrag.status;
     trackStatusDauer(auftrag, oldStatus, newStatus);
 
-    if (!auftrag.historie) auftrag.historie = [];
+    if (!auftrag.historie) {auftrag.historie = [];}
     const entry = {
         aktion: 'status',
         datum: new Date().toISOString(),
         details: `${AUFTRAG_STATUS_LABELS[oldStatus]} → ${AUFTRAG_STATUS_LABELS[newStatus]}`
     };
-    if (grund) entry.grund = grund;
+    if (grund) {entry.grund = grund;}
     auftrag.historie.push(entry);
 
     auftrag.status = newStatus;
-    if (grund) auftrag.statusGrund = grund;
-    else delete auftrag.statusGrund;
+    if (grund) {auftrag.statusGrund = grund;}
+    else {delete auftrag.statusGrund;}
 
     saveStore();
     executeStatusAutoAktion(auftrag, newStatus);
@@ -173,11 +173,11 @@ function changeAuftragStatus(auftragId, newStatus, grund) {
 // Render functions
 function renderAuftraege() {
     const auftraege = store.auftraege || [];
-    auftraege.forEach(a => { if (a.status === 'aktiv') a.status = 'in_bearbeitung'; });
+    auftraege.forEach(a => { if (a.status === 'aktiv') {a.status = 'in_bearbeitung';} });
 
     const counts = {};
     Object.keys(AUFTRAG_STATUS_CONFIG).forEach(k => counts[k] = 0);
-    auftraege.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+    auftraege.forEach(a => { if (counts[a.status] !== undefined) {counts[a.status]++;} });
 
     const statsGrid = document.getElementById('auftrag-stats-grid');
     if (statsGrid) {
@@ -207,7 +207,7 @@ function renderAuftraege() {
 
 function renderAuftragPipeline(auftraege, counts) {
     const container = document.getElementById('auftrag-pipeline');
-    if (!container) return;
+    if (!container) {return;}
 
     const pipelineStatuses = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
     const total = auftraege.filter(a => !['storniert'].includes(a.status)).length || 1;
@@ -246,17 +246,17 @@ function renderAuftraegeKanban(auftraege) {
         kanbanStatuses = [currentAuftragFilter];
     }
     if (auftraege.some(a => a.status === 'pausiert') || currentAuftragFilter === 'pausiert') {
-        if (!kanbanStatuses.includes('pausiert')) kanbanStatuses.push('pausiert');
+        if (!kanbanStatuses.includes('pausiert')) {kanbanStatuses.push('pausiert');}
     }
     if (auftraege.some(a => a.status === 'storniert') || currentAuftragFilter === 'storniert') {
-        if (!kanbanStatuses.includes('storniert')) kanbanStatuses.push('storniert');
+        if (!kanbanStatuses.includes('storniert')) {kanbanStatuses.push('storniert');}
     }
 
     kanbanContainer.style.gridTemplateColumns = `repeat(${Math.min(kanbanStatuses.length, 6)}, 1fr)`;
 
     kanbanContainer.innerHTML = kanbanStatuses.map(status => {
         const cfg = AUFTRAG_STATUS_CONFIG[status];
-        if (!cfg) return '';
+        if (!cfg) {return '';}
 
         let filtered = auftraege.filter(a => a.status === status);
         if (searchQuery) {
@@ -387,7 +387,7 @@ function initAuftragDetailHandlers() {
 function openAuftragDetail(auftragId) {
     currentDetailAuftragId = auftragId;
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return;
+    if (!auftrag) {return;}
     // Detail view implementation handled elsewhere
     window.AppUtils.openModal('modal-auftrag-detail');
 }

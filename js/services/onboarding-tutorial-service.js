@@ -107,7 +107,7 @@ class OnboardingTutorialService {
      * Start or resume the tutorial
      */
     async start(stepIndex = 0) {
-        if (this.isActive) return;
+        if (this.isActive) {return;}
 
         this.isActive = true;
         this.currentStep = stepIndex;
@@ -169,7 +169,7 @@ class OnboardingTutorialService {
      * Create the overlay element
      */
     createOverlay() {
-        if (this.overlayElement) return;
+        if (this.overlayElement) {return;}
 
         this.overlayElement = document.createElement('div');
         this.overlayElement.className = 'tutorial-overlay';
@@ -187,7 +187,7 @@ class OnboardingTutorialService {
      * Create the tooltip element
      */
     createTooltip() {
-        if (this.tooltipElement) return;
+        if (this.tooltipElement) {return;}
 
         this.tooltipElement = document.createElement('div');
         this.tooltipElement.className = 'tutorial-tooltip';
@@ -230,16 +230,16 @@ class OnboardingTutorialService {
 
         // Allow keyboard navigation
         document.addEventListener('keydown', (e) => {
-            if (!this.isActive) return;
+            if (!this.isActive) {return;}
 
             if (e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
                 const nextBtn = this.tooltipElement.querySelector('#tutorial-next');
-                if (nextBtn) nextBtn.click();
+                if (nextBtn) {nextBtn.click();}
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 const prevBtn = this.tooltipElement.querySelector('#tutorial-prev');
-                if (prevBtn && this.currentStep > 0) prevBtn.click();
+                if (prevBtn && this.currentStep > 0) {prevBtn.click();}
             } else if (e.key === 'Escape') {
                 e.preventDefault();
                 this.showSkipConfirm();
@@ -286,7 +286,7 @@ class OnboardingTutorialService {
      * Position tooltip relative to highlighted element
      */
     positionTooltip(step) {
-        if (!step.targetSelector || !this.tooltipElement) return;
+        if (!step.targetSelector || !this.tooltipElement) {return;}
 
         const target = document.querySelector(step.targetSelector);
         if (!target) {
@@ -355,7 +355,7 @@ class OnboardingTutorialService {
      * Center tooltip on screen
      */
     centerTooltip() {
-        if (!this.tooltipElement) return;
+        if (!this.tooltipElement) {return;}
 
         const tooltipWidth = 400;
         const tooltipHeight = 300;
@@ -446,7 +446,7 @@ class OnboardingTutorialService {
      */
     injectStyles() {
         // Check if styles already injected
-        if (document.getElementById('tutorial-styles')) return;
+        if (document.getElementById('tutorial-styles')) {return;}
 
         const style = document.createElement('style');
         style.id = 'tutorial-styles';

@@ -54,7 +54,7 @@ class WebhookService {
     // Update webhook
     updateWebhook(id, updates) {
         const webhook = this.webhooks.find(w => w.id === id);
-        if (!webhook) return { success: false, error: 'Webhook not found' };
+        if (!webhook) {return { success: false, error: 'Webhook not found' };}
 
         Object.assign(webhook, updates, { updatedAt: new Date().toISOString() });
         this.save();
@@ -274,7 +274,7 @@ class WebhookService {
     // Test webhook
     async testWebhook(id) {
         const webhook = this.webhooks.find(w => w.id === id);
-        if (!webhook) return { success: false, error: 'Webhook not found' };
+        if (!webhook) {return { success: false, error: 'Webhook not found' };}
 
         return await this.sendWebhook(webhook, 'test.ping', {
             message: 'Test webhook from MHS Workflow',

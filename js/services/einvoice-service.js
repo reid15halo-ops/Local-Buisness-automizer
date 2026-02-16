@@ -368,7 +368,7 @@ ${positionen.map((pos, i) => `
     // Download XML file
     downloadXml(recordId) {
         const record = this.generatedInvoices.find(r => r.id === recordId);
-        if (!record) return { success: false, error: 'Record not found' };
+        if (!record) {return { success: false, error: 'Record not found' };}
 
         const blob = new Blob([record.xml], { type: 'application/xml' });
         const url = URL.createObjectURL(blob);
@@ -386,7 +386,7 @@ ${positionen.map((pos, i) => `
     // Submit to Peppol (demo)
     async submitToPeppol(recordId) {
         const record = this.generatedInvoices.find(r => r.id === recordId);
-        if (!record) return { success: false, error: 'Record not found' };
+        if (!record) {return { success: false, error: 'Record not found' };}
 
         // In production: Call Peppol access point API
         console.log(`📤 Peppol submission for ${record.invoiceId}`);

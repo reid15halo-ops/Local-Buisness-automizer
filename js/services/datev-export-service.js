@@ -9,10 +9,10 @@ class DatevExportService {
         this.settings = JSON.parse(localStorage.getItem('mhs_datev_settings') || '{}');
 
         // Default DATEV settings
-        if (!this.settings.beraterNummer) this.settings.beraterNummer = '12345';
-        if (!this.settings.mandantenNummer) this.settings.mandantenNummer = '67890';
-        if (!this.settings.wirtschaftsjahr) this.settings.wirtschaftsjahr = new Date().getFullYear();
-        if (!this.settings.sachkontenlaenge) this.settings.sachkontenlaenge = 4;
+        if (!this.settings.beraterNummer) {this.settings.beraterNummer = '12345';}
+        if (!this.settings.mandantenNummer) {this.settings.mandantenNummer = '67890';}
+        if (!this.settings.wirtschaftsjahr) {this.settings.wirtschaftsjahr = new Date().getFullYear();}
+        if (!this.settings.sachkontenlaenge) {this.settings.sachkontenlaenge = 4;}
     }
 
     // DATEV Buchungssatz format
@@ -152,7 +152,7 @@ class DatevExportService {
 
     // Format date for DATEV (DDMM)
     formatDatevDate(dateString) {
-        if (!dateString) return '';
+        if (!dateString) {return '';}
         const parts = dateString.split(/[-./]/);
         if (parts.length >= 2) {
             const day = parts[2] || parts[0];
@@ -209,7 +209,7 @@ class DatevExportService {
     // Download DATEV export as CSV file
     downloadExport(exportId) {
         const exp = this.exports.find(e => e.id === exportId);
-        if (!exp) return { success: false, error: 'Export nicht gefunden' };
+        if (!exp) {return { success: false, error: 'Export nicht gefunden' };}
 
         const blob = new Blob([exp.csvContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);

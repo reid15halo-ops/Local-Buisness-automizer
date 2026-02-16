@@ -18,7 +18,7 @@ class KeyboardShortcuts {
 
     init() {
         document.addEventListener('keydown', (e) => {
-            if (!this.enabled) return;
+            if (!this.enabled) {return;}
 
             // Check if user is typing in input/textarea
             const activeElement = document.activeElement;
@@ -51,9 +51,9 @@ class KeyboardShortcuts {
 
             // Build key combination string
             const parts = [];
-            if (e.ctrlKey || e.metaKey) parts.push('Ctrl');
-            if (e.altKey) parts.push('Alt');
-            if (e.shiftKey && e.key !== '/') parts.push('Shift');
+            if (e.ctrlKey || e.metaKey) {parts.push('Ctrl');}
+            if (e.altKey) {parts.push('Alt');}
+            if (e.shiftKey && e.key !== '/') {parts.push('Shift');}
             parts.push(e.key.toUpperCase());
             const combo = parts.join('+');
 
@@ -236,23 +236,23 @@ class KeyboardShortcuts {
         // Determine what to create based on active view
         if (viewId === 'view-anfragen') {
             const btn = document.getElementById('btn-neue-anfrage');
-            if (btn) btn.click();
+            if (btn) {btn.click();}
         } else if (viewId === 'view-angebote') {
             const btn = document.getElementById('btn-neues-angebot');
-            if (btn) btn.click();
+            if (btn) {btn.click();}
         } else if (viewId === 'view-auftraege') {
             const btn = document.getElementById('btn-neuer-auftrag');
-            if (btn) btn.click();
+            if (btn) {btn.click();}
         } else if (viewId === 'view-rechnungen') {
             const btn = document.getElementById('btn-neue-rechnung');
-            if (btn) btn.click();
+            if (btn) {btn.click();}
         } else if (viewId === 'view-kunden') {
             const btn = document.getElementById('btn-neuer-kunde');
-            if (btn) btn.click();
+            if (btn) {btn.click();}
         } else {
             // Default: new Anfrage
             const btn = document.getElementById('btn-neue-anfrage');
-            if (btn) btn.click();
+            if (btn) {btn.click();}
         }
     }
 

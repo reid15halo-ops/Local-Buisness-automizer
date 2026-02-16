@@ -11,11 +11,11 @@ class SmsReminderService {
         this.noShowTracking = JSON.parse(localStorage.getItem('mhs_noshow_tracking') || '[]');
 
         // Default settings
-        if (!this.settings.enabled) this.settings.enabled = true;
-        if (!this.settings.reminder24h) this.settings.reminder24h = true;
-        if (!this.settings.reminder1h) this.settings.reminder1h = true;
-        if (!this.settings.confirmationRequired) this.settings.confirmationRequired = true;
-        if (!this.settings.senderName) this.settings.senderName = 'MHS Service';
+        if (!this.settings.enabled) {this.settings.enabled = true;}
+        if (!this.settings.reminder24h) {this.settings.reminder24h = true;}
+        if (!this.settings.reminder1h) {this.settings.reminder1h = true;}
+        if (!this.settings.confirmationRequired) {this.settings.confirmationRequired = true;}
+        if (!this.settings.senderName) {this.settings.senderName = 'MHS Service';}
 
         // Templates
         this.templates = {

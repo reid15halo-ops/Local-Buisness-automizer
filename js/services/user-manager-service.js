@@ -238,7 +238,7 @@ class UserManagerService {
      * Logs out the current user.
      */
     logout() {
-        if (!this.currentUser) return;
+        if (!this.currentUser) {return;}
 
         const userName = this.currentUser.name;
         this.currentUser = null;
@@ -272,8 +272,8 @@ class UserManagerService {
         }
 
         // Update fields
-        if (updates.name) user.name = updates.name.trim();
-        if (updates.avatar) user.avatar = updates.avatar;
+        if (updates.name) {user.name = updates.name.trim();}
+        if (updates.avatar) {user.avatar = updates.avatar;}
 
         // Save
         await window.dbService.saveUser(user);

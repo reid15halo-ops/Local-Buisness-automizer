@@ -26,7 +26,7 @@ class DashboardChartsService {
      */
     renderRevenueChart(rechnungen, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {return;}
 
         // Get last 6 months of paid invoices
         const last6Months = this._getLast6MonthsData(rechnungen);
@@ -95,7 +95,7 @@ class DashboardChartsService {
      */
     renderPipelineFunnel(anfragen, angebote, auftraege, rechnungen, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {return;}
 
         const stages = [
             { label: 'Anfragen', count: anfragen.length, color: this.colors.blue },
@@ -156,7 +156,7 @@ class DashboardChartsService {
      */
     renderOverdueTracker(rechnungen, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {return;}
 
         const now = new Date();
         const inSevenDays = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -261,7 +261,7 @@ class DashboardChartsService {
      */
     renderMonthlyComparison(buchungen, containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {return;}
 
         const last6Months = this._getLast6MonthsComparison(buchungen);
 
@@ -416,7 +416,7 @@ class DashboardChartsService {
 
     _ensureChartContainers() {
         const dashboard = document.getElementById('view-dashboard');
-        if (!dashboard) return;
+        if (!dashboard) {return;}
 
         // Check if charts section exists
         let chartsSection = dashboard.querySelector('.dashboard-charts');
@@ -576,7 +576,7 @@ class DashboardChartsService {
     }
 
     _formatCurrency(value) {
-        if (typeof value !== 'number') return '0 €';
+        if (typeof value !== 'number') {return '0 €';}
         return new Intl.NumberFormat('de-DE', {
             style: 'currency',
             currency: 'EUR',
@@ -586,7 +586,7 @@ class DashboardChartsService {
     }
 
     _formatCurrencyShort(value) {
-        if (typeof value !== 'number') return '0€';
+        if (typeof value !== 'number') {return '0€';}
         if (value >= 1000) {
             return (value / 1000).toFixed(1) + 'k€';
         }

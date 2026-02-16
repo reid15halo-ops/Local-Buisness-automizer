@@ -84,7 +84,7 @@ class SecurityService {
      * @returns {boolean}
      */
     validateIBAN(iban) {
-        if (typeof iban !== 'string') return false;
+        if (typeof iban !== 'string') {return false;}
 
         const cleaned = iban.replace(/\s/g, '').toUpperCase();
 
@@ -114,7 +114,7 @@ class SecurityService {
      * @returns {boolean}
      */
     validateTaxId(id) {
-        if (typeof id !== 'string') return false;
+        if (typeof id !== 'string') {return false;}
 
         const cleaned = id.replace(/[\s\/\-]/g, '');
 
@@ -137,7 +137,7 @@ class SecurityService {
      * @returns {string}
      */
     sanitizeInput(str) {
-        if (typeof str !== 'string') return String(str ?? '');
+        if (typeof str !== 'string') {return String(str ?? '');}
 
         // Remove HTML tags and script tags
         let sanitized = str.replace(/<[^>]*>/g, '');
@@ -306,7 +306,7 @@ class SecurityService {
      * @returns {string}
      */
     escapeHtml(str) {
-        if (typeof str !== 'string') return String(str ?? '');
+        if (typeof str !== 'string') {return String(str ?? '');}
 
         const map = {
             '&': '&amp;',
@@ -327,7 +327,7 @@ class SecurityService {
      * @returns {boolean}
      */
     isValidURL(url) {
-        if (typeof url !== 'string') return false;
+        if (typeof url !== 'string') {return false;}
 
         try {
             const parsed = new URL(url);

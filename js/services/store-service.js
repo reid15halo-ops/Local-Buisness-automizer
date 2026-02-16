@@ -226,7 +226,7 @@ class StoreService {
         this.store.angebote.push(angebot);
         // Update linked Anfrage
         const anfrage = this.store.anfragen.find(a => a.id === angebot.anfrageId);
-        if (anfrage) anfrage.status = 'angebot-erstellt';
+        if (anfrage) {anfrage.status = 'angebot-erstellt';}
 
         this.save();
         this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde.name} erstellt`);
@@ -239,7 +239,7 @@ class StoreService {
      */
     acceptAngebot(angebotId) {
         const angebot = this.store.angebote.find(a => a.id === angebotId);
-        if (!angebot) return null;
+        if (!angebot) {return null;}
 
         angebot.status = 'angenommen';
 
@@ -272,12 +272,12 @@ class StoreService {
 
     updateAuftrag(auftragId, updates) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
-        if (!auftrag) return null;
+        if (!auftrag) {return null;}
 
         const oldStatus = auftrag.status;
         Object.assign(auftrag, updates);
 
-        if (!auftrag.historie) auftrag.historie = [];
+        if (!auftrag.historie) {auftrag.historie = [];}
         if (updates.status && updates.status !== oldStatus) {
             auftrag.historie.push({
                 aktion: 'status',
@@ -292,9 +292,9 @@ class StoreService {
 
     addAuftragComment(auftragId, text, autor) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
-        if (!auftrag) return null;
+        if (!auftrag) {return null;}
 
-        if (!auftrag.kommentare) auftrag.kommentare = [];
+        if (!auftrag.kommentare) {auftrag.kommentare = [];}
         const kommentar = {
             id: 'kom-' + Date.now(),
             text,
@@ -303,7 +303,7 @@ class StoreService {
         };
         auftrag.kommentare.push(kommentar);
 
-        if (!auftrag.historie) auftrag.historie = [];
+        if (!auftrag.historie) {auftrag.historie = [];}
         auftrag.historie.push({ aktion: 'kommentar', datum: kommentar.datum, details: text.substring(0, 50) });
 
         this.save();
@@ -312,7 +312,7 @@ class StoreService {
 
     updateAuftragCheckliste(auftragId, checkliste) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
-        if (!auftrag) return null;
+        if (!auftrag) {return null;}
 
         auftrag.checkliste = checkliste;
         // Auto-calculate progress from checklist
@@ -326,7 +326,7 @@ class StoreService {
 
     async completeAuftrag(auftragId, completionData = {}) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
-        if (!auftrag) return null;
+        if (!auftrag) {return null;}
 
         Object.assign(auftrag, {
             status: 'abgeschlossen',

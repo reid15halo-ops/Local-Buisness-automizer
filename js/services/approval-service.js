@@ -109,14 +109,14 @@ class ApprovalService {
             switch (trigger.type) {
                 case 'amount':
                     const amount = documentData.betrag || documentData.amount || 0;
-                    if (amount >= trigger.threshold) return template;
+                    if (amount >= trigger.threshold) {return template;}
                     break;
                 case 'discount':
                     const discount = documentData.rabatt || documentData.discount || 0;
-                    if (discount >= trigger.threshold) return template;
+                    if (discount >= trigger.threshold) {return template;}
                     break;
                 case 'action':
-                    if (documentData.action === trigger.action) return template;
+                    if (documentData.action === trigger.action) {return template;}
                     break;
             }
         }
@@ -126,11 +126,11 @@ class ApprovalService {
     // Approve a step
     approve(requestId, stepIndex, approverName, comment = '') {
         const request = this.requests.find(r => r.id === requestId);
-        if (!request) return { success: false, error: 'Request not found' };
+        if (!request) {return { success: false, error: 'Request not found' };}
 
         const step = request.steps[stepIndex];
-        if (!step) return { success: false, error: 'Step not found' };
-        if (step.status !== 'pending') return { success: false, error: 'Step not pending' };
+        if (!step) {return { success: false, error: 'Step not found' };}
+        if (step.status !== 'pending') {return { success: false, error: 'Step not pending' };}
 
         // Approve this step
         step.status = 'approved';
@@ -159,7 +159,7 @@ class ApprovalService {
     // Reject a step
     reject(requestId, stepIndex, approverName, comment = '') {
         const request = this.requests.find(r => r.id === requestId);
-        if (!request) return { success: false, error: 'Request not found' };
+        if (!request) {return { success: false, error: 'Request not found' };}
 
         const step = request.steps[stepIndex];
         if (!step || step.status !== 'pending') {
@@ -192,7 +192,7 @@ class ApprovalService {
             .filter(r => r.status === 'pending')
             .forEach(request => {
                 const currentStep = request.steps[request.currentStep];
-                if (!currentStep || currentStep.status !== 'pending') return;
+                if (!currentStep || currentStep.status !== 'pending') {return;}
 
                 const stepStart = new Date(currentStep.status === 'pending'
                     ? (request.currentStep === 0 ? request.createdAt : request.steps[request.currentStep - 1].approvedAt)
@@ -213,7 +213,7 @@ class ApprovalService {
     // Escalate a request
     escalate(requestId) {
         const request = this.requests.find(r => r.id === requestId);
-        if (!request) return null;
+        if (!request) {return null;}
 
         request.status = 'escalated';
         request.escalatedAt = new Date().toISOString();
@@ -275,7 +275,7 @@ class ApprovalService {
     // Get pending requests for a role
     getPendingForRole(role) {
         return this.requests.filter(r => {
-            if (r.status !== 'pending') return false;
+            if (r.status !== 'pending') {return false;}
             const currentStep = r.steps[r.currentStep];
             return currentStep && currentStep.status === 'pending' && currentStep.role === role;
         });
@@ -303,7 +303,7 @@ class ApprovalService {
 
     // Add custom workflow template
     addTemplate(template) {
-        if (!template.id) template.id = 'custom-' + Date.now();
+        if (!template.id) {template.id = 'custom-' + Date.now();}
         this.templates.push(template);
         this.saveTemplates();
         return template;

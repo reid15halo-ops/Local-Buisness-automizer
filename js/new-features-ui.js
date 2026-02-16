@@ -9,9 +9,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.nav-item').forEach(item => {
         item.addEventListener('click', function () {
             const view = this.dataset.view;
-            if (view === 'workflows') initWorkflowsView();
-            if (view === 'scanner') initScannerView();
-            if (view === 'backup') initBackupView();
+            if (view === 'workflows') {initWorkflowsView();}
+            if (view === 'scanner') {initScannerView();}
+            if (view === 'backup') {initBackupView();}
         });
     });
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateWorkflowStats() {
-        if (!window.workflowService) return;
+        if (!window.workflowService) {return;}
         const stats = window.workflowService.getStatistics();
         document.getElementById('workflow-total').textContent = stats.totalWorkflows;
         document.getElementById('workflow-active').textContent = stats.activeWorkflows;
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderWorkflowTemplates() {
-        if (!window.workflowService) return;
+        if (!window.workflowService) {return;}
         const container = document.getElementById('workflow-templates');
         const templates = window.workflowService.getTemplates();
 
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderWorkflows() {
-        if (!window.workflowService) return;
+        if (!window.workflowService) {return;}
         const container = document.getElementById('workflows-list');
         const workflows = window.workflowService.getWorkflows();
 
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('btn-new-workflow')?.addEventListener('click', openNewWorkflowModal);
 
     function openNewWorkflowModal() {
-        if (!window.workflowService) return;
+        if (!window.workflowService) {return;}
 
         const triggers = window.workflowService.triggerTypes;
         const actions = window.workflowService.actionTypes;
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const actionParams = {};
             modal.querySelectorAll('#wf-action-params input').forEach(input => {
                 const paramName = input.name.replace('ap-', '');
-                if (input.value.trim()) actionParams[paramName] = input.value.trim();
+                if (input.value.trim()) {actionParams[paramName] = input.value.trim();}
             });
 
             const result = window.workflowService.createWorkflow({
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderWorkflowLog() {
-        if (!window.workflowService) return;
+        if (!window.workflowService) {return;}
         const container = document.getElementById('workflow-log');
         const log = window.workflowService.getExecutionLog(null, 20);
 
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateScannerStats() {
-        if (!window.ocrScannerService) return;
+        if (!window.ocrScannerService) {return;}
         const stats = window.ocrScannerService.getStatistics();
         document.getElementById('scanner-total').textContent = stats.totalDocuments;
         document.getElementById('scanner-amount').textContent = stats.totalAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderScannedDocs() {
-        if (!window.ocrScannerService) return;
+        if (!window.ocrScannerService) {return;}
         const container = document.getElementById('scanned-docs-list');
         const filter = document.getElementById('scanner-filter')?.value || '';
         const docs = window.ocrScannerService.getDocuments({ category: filter || undefined });
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('datev-to').value = now.toISOString().split('T')[0];
 
         document.getElementById('btn-datev-export')?.addEventListener('click', function () {
-            if (!window.datevExportService) return;
+            if (!window.datevExportService) {return;}
             const from = document.getElementById('datev-from').value;
             const to = document.getElementById('datev-to').value;
 
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         document.getElementById('btn-euer-report')?.addEventListener('click', function () {
-            if (!window.datevExportService) return;
+            if (!window.datevExportService) {return;}
             const year = new Date().getFullYear();
             const report = window.datevExportService.generateEuerText(year);
             document.getElementById('datev-result').textContent = report;
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateBackupStats() {
-        if (!window.securityBackupService) return;
+        if (!window.securityBackupService) {return;}
         const usage = window.securityBackupService.getStorageUsage();
         const backups = window.securityBackupService.getBackupHistory();
         const log = window.securityBackupService.getActivityLog(100);
@@ -394,7 +394,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderAutoBackups() {
-        if (!window.securityBackupService) return;
+        if (!window.securityBackupService) {return;}
         const container = document.getElementById('auto-backups-list');
         const backups = window.securityBackupService.getAutoBackups();
 
@@ -412,7 +412,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function renderActivityLog() {
-        if (!window.securityBackupService) return;
+        if (!window.securityBackupService) {return;}
         const container = document.getElementById('security-activity-log');
         const log = window.securityBackupService.getActivityLog(20);
 
@@ -479,8 +479,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const gdprExport = document.getElementById('gdpr-customer-select');
         const gdprDelete = document.getElementById('gdpr-delete-select');
 
-        if (gdprExport) gdprExport.innerHTML = '<option value="">Kunde wählen...</option>' + options;
-        if (gdprDelete) gdprDelete.innerHTML = '<option value="">Kunde wählen...</option>' + options;
+        if (gdprExport) {gdprExport.innerHTML = '<option value="">Kunde wählen...</option>' + options;}
+        if (gdprDelete) {gdprDelete.innerHTML = '<option value="">Kunde wählen...</option>' + options;}
     }
 
     document.getElementById('btn-gdpr-export')?.addEventListener('click', function () {

@@ -10,9 +10,9 @@ class BarcodeService {
         this.settings = JSON.parse(localStorage.getItem('mhs_barcode_settings') || '{}');
 
         // Default settings
-        if (!this.settings.soundEnabled) this.settings.soundEnabled = true;
-        if (!this.settings.vibrationEnabled) this.settings.vibrationEnabled = true;
-        if (!this.settings.autoAddToInventory) this.settings.autoAddToInventory = true;
+        if (!this.settings.soundEnabled) {this.settings.soundEnabled = true;}
+        if (!this.settings.vibrationEnabled) {this.settings.vibrationEnabled = true;}
+        if (!this.settings.autoAddToInventory) {this.settings.autoAddToInventory = true;}
     }
 
     // Start camera-based barcode scanning
