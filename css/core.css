@@ -1,37 +1,84 @@
 /* ============================================
    MHS Workflow - Core Styles
-   Variables, Reset, Layout, Typography
+
+   Contains:
+   - CSS Custom Properties (variables) for dark industrial theme
+   - Global reset and base typography
+   - Layout (sidebar, main content, mobile header)
+   - Responsive breakpoints (mobile, tablet, desktop)
+   - Base animations (fadeIn, slide, pulse)
+   - Tutorial & activity indicator fallback styles
+
+   This is the PRIMARY stylesheet that defines the color palette
+   and should be loaded FIRST. All other stylesheets inherit from these
+   CSS variables for consistency.
+
+   Cleanup Notes:
+   - Added comprehensive CSS variable system with color palette aliases
+   - Unified all color variables (--accent-*, --bg-*, --text-*, --border-*)
+   - Added backward-compatibility aliases (--bg-primary, --surface, etc.)
+   - Consolidated responsive media queries into logical sections
    ============================================ */
 
 :root {
-    /* Colors */
+    /* ============================================
+       Color Palette - Dark Industrial Theme
+       ============================================ */
+
+    /* Background Colors */
     --bg-dark: #0f0f12;
     --bg-sidebar: #16161a;
     --bg-card: #1c1c21;
     --bg-hover: #24242a;
     --bg-input: #1f1f25;
 
+    /* Legacy aliases for backward compatibility */
+    --bg-primary: #1c1c21;
+    --bg-secondary: #24242a;
+    --surface: #1c1c21;
+    --surface-dark: #0f0f12;
+    --surface-light: #24242a;
+    --input-bg: #1f1f25;
+    --input-bg-focus: #27272a;
+
+    /* Accent Colors - Primary Actions */
     --accent-primary: #6366f1;
     --accent-primary-hover: #818cf8;
-    --accent-success: #22c55e;
-    --accent-warning: #f59e0b;
-    --accent-danger: #ef4444;
-    --accent-info: #3b82f6;
+    --accent-primary-light: rgba(99, 102, 241, 0.15);
+    --accent-primary-alpha: rgba(99, 102, 241, 0.1);
 
+    /* Accent Colors - Status/Intent */
+    --accent-success: #22c55e;
+    --accent-success-light: rgba(34, 197, 94, 0.15);
+    --accent-danger: #ef4444;
+    --accent-danger-light: rgba(239, 68, 68, 0.1);
+    --accent-warning: #f59e0b;
+    --accent-warning-light: rgba(245, 158, 11, 0.15);
+    --accent-info: #3b82f6;
+    --accent-info-light: rgba(59, 130, 246, 0.15);
+
+    /* Accent Color aliases (for reorder-engine.css compatibility) */
+    --accent-color: #4CAF50;
+    --accent-dark: #388E3C;
+    --accent-bg: rgba(76, 175, 80, 0.15);
+    --warning-color: #FFA726;
+
+    /* Text Colors */
     --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
     --text-muted: #71717a;
 
+    /* Border & Spacing */
     --border-color: #27272a;
     --border-radius: 12px;
     --border-radius-sm: 8px;
 
-    /* Shadows */
+    /* Shadows - Industrial dark theme */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 
-    /* Transitions */
+    /* Transitions & Animations */
     --transition-fast: 0.15s ease;
     --transition: 0.25s ease;
 }

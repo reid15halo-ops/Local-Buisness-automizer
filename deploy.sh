@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================
 # Production Deployment Script
-# Local-Business-Automizer v2.0
+# Local-Business-Automizer v3.0
 # ============================================
 
 set -e  # Exit on error
@@ -21,14 +21,28 @@ echo "📦 Step 2: Creating production build..."
 rm -rf dist
 mkdir -p dist
 
-# Copy files
+# Copy entire directories (more robust than individual files)
 cp -r css dist/
 cp -r js dist/
+cp -r config dist/
+cp -r supabase dist/
+
+# Copy HTML files
 cp index.html dist/
+cp auth.html dist/
+cp landing.html dist/
+cp offline.html dist/
+
+# Copy configuration and manifest files
 cp manifest.json dist/
 cp service-worker.js dist/
 cp .htaccess dist/
 cp netlify.toml dist/
+
+# Copy fonts directory if it exists
+if [ -d "fonts" ]; then
+    cp -r fonts dist/
+fi
 
 echo "✅ Production build created in ./dist"
 
@@ -45,14 +59,25 @@ if [ ! -f "dist/index.html" ]; then
 fi
 echo "✅ Production build verified"
 
-# 5. Create deployment package
-echo "📦 Step 5: Creating deployment package..."
+# 5. Verify file count
+echo "📊 Step 5: Verifying file counts..."
+echo "   CSS files: $(find dist/css -name '*.css' 2>/dev/null | wc -l)"
+echo "   JS service files: $(find dist/js/services -name '*.js' 2>/dev/null | wc -l)"
+echo "   JS module files: $(find dist/js/modules -name '*.js' 2>/dev/null | wc -l)"
+echo "   JS UI files: $(find dist/js/ui -name '*.js' 2>/dev/null | wc -l)"
+echo "   JS i18n files: $(find dist/js/i18n -name '*.js' 2>/dev/null | wc -l)"
+echo "   Supabase functions: $(find dist/supabase/functions -type d -mindepth 1 2>/dev/null | wc -l)"
+TOTAL_FILES=$(find dist -type f | wc -l)
+echo "   Total files in build: $TOTAL_FILES"
+
+# 6. Create deployment package
+echo "📦 Step 6: Creating deployment package..."
 cd dist
 zip -r ../mhs-production-$(date +%Y%m%d-%H%M%S).zip . -x "*.git*"
 cd ..
 echo "✅ Deployment package created"
 
-# 6. Display deployment info
+# 7. Display deployment info
 echo ""
 echo "✅ Production Deployment Ready!"
 echo ""

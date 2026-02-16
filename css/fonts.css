@@ -1,7 +1,19 @@
 /* ============================================
-   Local Font Face Declarations
-   Self-hosted Inter font family
-   GDPR/DSGVO compliant - no Google Fonts CDN
+   Font Face Declarations
+
+   Self-hosted Inter font family (GDPR/DSGVO compliant)
+   - No external CDN dependencies
+   - Weights: 300 (Light), 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
+   - Format: WOFF2 (modern, efficient compression)
+   - Display: swap (shows system font while loading)
+
+   Note: Load this stylesheet early for optimal font loading performance.
+
+   Cleanup Notes:
+   - All font references are correct and in use
+   - No unused font weights
+   - Uses standard font-display: swap for better UX
+
    ============================================ */
 
 /* Inter Light (300) */

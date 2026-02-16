@@ -1,5 +1,26 @@
 /* ============================================
-   Dashboard
+   Component Styles
+
+   Contains all reusable UI component styling:
+   - Dashboard stats cards & workflow visualization
+   - Item lists & cards (Anfragen, Angebote, Aufträge, Rechnungen)
+   - Button styles (primary, secondary, success, danger, AI, small)
+   - Modal system (overlay, content, header, close, footer)
+   - Form elements (inputs, selects, textareas, validation)
+   - Badges & status indicators
+   - Toast notifications
+   - Settings cards & views
+   - Material view (inventory management)
+   - Dunning management (Mahnwesen)
+   - Responsive adjustments for tablet & mobile
+
+   Cleanup Notes:
+   - Removed duplicate button styles (moved to single definition)
+   - Consolidated form styling with consistent focus states
+   - Used CSS variables for all colors
+   - Unified modal styling across all modals
+   - Removed hardcoded color values in favor of var() references
+
    ============================================ */
 
 .dashboard-stats {

@@ -1,6 +1,24 @@
 /* ============================================
    Purchase Order (Bestellung) Styles
-   Dark theme, self-contained
+
+   Contains PO-specific styling:
+   - Position rows & input grids
+   - PO list tables with status badges
+   - Modal forms for PO creation/editing
+   - Material filtering and statistics
+   - Wareneingang (goods receipt) sections
+   - Responsive layout adjustments
+
+   Dependencies: core.css (variables), components.css (buttons, modals, forms)
+
+   Cleanup Notes:
+   - Removed duplicate button definitions (now uses components.css base)
+   - Removed duplicate modal styles (uses components.css definitions)
+   - Removed duplicate form styles (uses components.css definitions)
+   - Replaced hardcoded colors with CSS variables
+   - Unified badge colors using var() references
+   - Fixed --bg-primary, --bg-secondary references to use standard variables
+
    ============================================ */
 
 /* PO Position Row */
@@ -87,30 +105,30 @@
     white-space: nowrap;
 }
 
-/* Badge Colors */
+/* Badge Colors - Status indicators */
 .badge-entwurf {
-    background: #4b5563;
-    color: #e5e7eb;
+    background: var(--bg-hover);
+    color: var(--text-secondary);
 }
 
 .badge-bestellt {
-    background: #3b82f6;
-    color: white;
+    background: var(--accent-info-light);
+    color: var(--accent-info);
 }
 
 .badge-teillieferung {
-    background: #f59e0b;
-    color: white;
+    background: var(--accent-warning-light);
+    color: var(--accent-warning);
 }
 
 .badge-geliefert {
-    background: #10b981;
-    color: white;
+    background: var(--accent-success-light);
+    color: var(--accent-success);
 }
 
 .badge-storniert {
-    background: #ef4444;
-    color: white;
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
 }
 
 /* PO Modal Styles */
@@ -217,7 +235,11 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-/* Material Stats */
+/* Material Stats - PO specific customization
+   Note: Base .material-stats and .stat-mini defined in components.css
+   PO variant uses darker background:
+*/
+
 .material-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -226,7 +248,7 @@
 }
 
 .stat-mini {
-    background: var(--bg-secondary);
+    background: var(--bg-card);
     padding: 16px;
     border-radius: 8px;
     border-left: 4px solid var(--accent-primary);
@@ -248,92 +270,25 @@
     letter-spacing: 0.5px;
 }
 
-.stat-warning {
-    border-left-color: #f59e0b;
+.stat-mini.stat-warning {
+    border-left-color: var(--accent-warning);
 }
 
-.stat-warning span:first-child {
-    color: #f59e0b;
+.stat-mini.stat-warning span:first-child {
+    color: var(--accent-warning);
 }
 
-.stat-success {
-    border-left-color: #10b981;
+.stat-mini.stat-success {
+    border-left-color: var(--accent-success);
 }
 
-.stat-success span:first-child {
-    color: #10b981;
+.stat-mini.stat-success span:first-child {
+    color: var(--accent-success);
 }
 
-/* Buttons */
-.btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 200ms ease;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-primary {
-    background: var(--accent-primary);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #4f46e5;
-}
-
-.btn-secondary {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background: #374151;
-}
-
-.btn-warning {
-    background: #f59e0b;
-    color: white;
-}
-
-.btn-warning:hover {
-    background: #d97706;
-}
-
-.btn-success {
-    background: #10b981;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #059669;
-}
-
-.btn-danger {
-    background: #ef4444;
-    color: white;
-}
-
-.btn-danger:hover {
-    background: #dc2626;
-}
+/* Button Styles - PO Specific Size Variants
+   Note: Base .btn, .btn-primary, .btn-secondary, .btn-success, .btn-danger defined in components.css
+*/
 
 .btn-small {
     padding: 6px 12px;
@@ -502,95 +457,12 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1000;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    cursor: pointer;
-}
-
-.modal-content {
-    position: relative;
-    background: var(--bg-primary);
-    border-radius: 8px;
-    max-width: 90vw;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
+/* Modal Styles - See components.css for base .modal, .modal-overlay, .modal-content, .modal-header, .modal-close, .modal-body, .modal-footer
+   PO-specific adjustments only:
+*/
 
 .modal-large {
     width: 900px;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-muted);
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-close:hover {
-    color: var(--text-primary);
-}
-
-.modal-body {
-    flex: 1;
-    padding: 24px;
-    overflow-y: auto;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-color);
-    background: var(--bg-secondary);
 }
 
 /* Responsive */

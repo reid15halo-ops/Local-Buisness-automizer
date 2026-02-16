@@ -3,17 +3,21 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'mhs-workflow-v4';
+const CACHE_NAME = 'mhs-workflow-v5';
 const OFFLINE_URL = 'offline.html';
 
 // Files to cache for offline use
 const STATIC_ASSETS = [
     '/',
     '/index.html',
+    '/auth.html',
+    '/landing.html',
     '/offline.html',
     '/css/core.css',
     '/css/components.css',
     '/css/fonts.css',
+    '/css/purchase-orders.css',
+    '/css/reorder-engine.css',
     '/js/app-new.js',
     '/js/features-integration.js',
     '/js/new-features-ui.js',
@@ -29,6 +33,8 @@ const STATIC_ASSETS = [
     '/js/modules/rechnungen.js',
     '/js/modules/event-handlers.js',
     '/js/modules/error-boundary.js',
+    '/js/modules/invoice-payment-integration.js',
+    '/js/modules/material-picker.js',
     '/js/services/error-handler.js',
     '/js/services/db-service.js',
     '/js/services/demo-guard-service.js',
@@ -57,6 +63,7 @@ const STATIC_ASSETS = [
     '/js/services/booking-service.js',
     '/js/services/timetracking-service.js',
     '/js/services/communication-service.js',
+    '/js/services/communication-hub-controller.js',
     '/js/services/phone-service.js',
     '/js/services/report-service.js',
     '/js/services/chatbot-service.js',
@@ -70,11 +77,27 @@ const STATIC_ASSETS = [
     '/js/services/voice-command-service.js',
     '/js/services/einvoice-service.js',
     '/js/services/supabase-config.js',
+    '/js/services/purchase-order-service.js',
+    '/js/services/reorder-engine-service.js',
+    '/js/services/unified-comm-service.js',
+    '/js/services/calendar-ui-service.js',
+    '/js/services/dashboard-charts-service.js',
+    '/js/services/notification-service.js',
+    '/js/services/pwa-install-service.js',
+    '/js/services/email-template-service.js',
+    '/js/services/data-export-service.js',
+    '/js/services/security-service.js',
+    '/js/services/sync-service.js',
     '/js/ui/ui-helpers.js',
     '/js/ui/excel-import-wizard.js',
     '/js/ui/setup-wizard-ui.js',
     '/js/ui/navigation.js',
     '/js/ui/keyboard-shortcuts.js',
+    '/js/ui/purchase-order-ui.js',
+    '/js/ui/reorder-engine-ui.js',
+    '/js/i18n/de.js',
+    '/js/i18n/en.js',
+    '/js/i18n/i18n-ui.js',
     '/manifest.json'
 ];
 
