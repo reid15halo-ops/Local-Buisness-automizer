@@ -66,6 +66,34 @@ class CustomerService {
     }
 
     deleteCustomer(id) {
+        const customer = this.getCustomer(id);
+        if (!customer) { return; }
+
+        // Use trash service for soft-delete + undo if available
+        if (window.trashService) {
+            const result = window.trashService.softDelete('kunde', customer);
+            if (result && result.blocked) {
+                // Orphan protection: show warning, don't delete
+                if (window.confirmDialogService) {
+                    window.confirmDialogService.showConfirmDialog({
+                        title: 'Kunde kann nicht gelöscht werden',
+                        message: result.reason,
+                        confirmText: 'Verstanden',
+                        cancelText: '',
+                        onConfirm: () => {}
+                    });
+                } else if (window.ErrorDisplay) {
+                    window.ErrorDisplay.showWarning(result.reason);
+                }
+                return;
+            }
+            // trashService already removed from this.customers and saved
+            // Reload from localStorage to stay in sync
+            this.customers = JSON.parse(localStorage.getItem('mhs_customers') || '[]');
+            return;
+        }
+
+        // Fallback: hard delete (only if trashService not loaded)
         this.customers = this.customers.filter(c => c.id !== id);
         this.save();
     }

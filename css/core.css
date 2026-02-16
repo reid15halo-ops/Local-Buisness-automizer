@@ -2326,3 +2326,120 @@ body:has(.demo-mode-banner) {
     }
 }
 }
+
+/* ============================================
+   Undo Toast (Trash Service)
+   ============================================ */
+.toast-undo {
+    background: var(--bg-card, #1e1e2e);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: slideInRight 0.3s ease-out;
+    min-width: 320px;
+    max-width: 480px;
+}
+
+.toast-undo .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+}
+
+.toast-undo .toast-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.toast-undo .toast-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toast-undo .toast-text strong {
+    font-size: 0.95rem;
+    color: var(--text-primary, #e0e0e0);
+}
+
+.toast-undo .toast-text span {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #999);
+}
+
+.toast-undo .btn-undo {
+    background: var(--color-primary, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 44px;
+    transition: background 0.2s;
+}
+
+.toast-undo .btn-undo:hover {
+    background: var(--color-primary-hover, #1d4ed8);
+}
+
+.toast-undo .toast-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #999);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 8px;
+    line-height: 1;
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-undo .toast-close:hover {
+    color: var(--text-primary, #e0e0e0);
+}
+
+.undo-progress {
+    height: 3px;
+    background: var(--bg-muted, #2a2a3a);
+}
+
+.undo-progress-bar {
+    height: 100%;
+    width: 100%;
+    background: var(--color-primary, #2563eb);
+    transition: width 10s linear;
+}
+
+.toast-exit {
+    animation: slideOutRight 0.3s ease-in forwards;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+
+@media (max-width: 640px) {
+    .toast-undo {
+        min-width: auto;
+        max-width: none;
+        width: calc(100% - 32px);
+        margin: 0 16px 8px;
+    }
+}
