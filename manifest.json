@@ -44,7 +44,22 @@
             "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📅</text></svg>", "sizes": "96x96" }]
         }
     ],
-    "screenshots": [],
+    "screenshots": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%230f172a' width='540' height='720'/><text x='270' y='360' font-size='120' text-anchor='middle' fill='%236366f1' font-family='Arial'>⚙️</text></svg>",
+            "sizes": "540x720",
+            "type": "image/svg+xml",
+            "form_factor": "narrow",
+            "purpose": "any"
+        },
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'><rect fill='%230f172a' width='1280' height='720'/><text x='640' y='360' font-size='200' text-anchor='middle' fill='%236366f1' font-family='Arial'>⚙️</text></svg>",
+            "sizes": "1280x720",
+            "type": "image/svg+xml",
+            "form_factor": "wide",
+            "purpose": "any"
+        }
+    ],
     "related_applications": [],
     "prefer_related_applications": false
 }

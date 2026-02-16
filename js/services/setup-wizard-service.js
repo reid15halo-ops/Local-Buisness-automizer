@@ -104,6 +104,50 @@ class SetupWizardService {
                 ]
             },
             {
+                id: 'stripe',
+                title: 'Stripe Zahlungen',
+                description: 'Online-Zahlungen für Rechnungen mit Kreditkarte, SEPA-Lastschrift und mehr (optional)',
+                required: false,
+                fields: [
+                    {
+                        name: 'stripe_publishable_key',
+                        label: 'Publishable Key',
+                        placeholder: 'pk_live_...',
+                        type: 'password'
+                    }
+                ],
+                links: [
+                    {
+                        text: 'Stripe Account erstellen',
+                        url: 'https://dashboard.stripe.com/register',
+                        icon: '💳'
+                    },
+                    {
+                        text: 'API Keys finden',
+                        url: 'https://dashboard.stripe.com/apikeys',
+                        icon: '🔑'
+                    },
+                    {
+                        text: 'Webhook konfigurieren',
+                        url: 'https://dashboard.stripe.com/webhooks',
+                        icon: '🔗'
+                    }
+                ],
+                instructions: [
+                    'Erstelle ein kostenloses Stripe-Konto',
+                    'Gehe zu Developers → API Keys',
+                    'Kopiere deinen "Publishable key"',
+                    'Installiere deine Secret Key als Umgebungsvariable in Supabase:',
+                    '  • Supabase Dashboard → Projekt → Settings → Environment',
+                    '  • Setze: STRIPE_SECRET_KEY = dein secret key',
+                    '  • Setze: STRIPE_WEBHOOK_SECRET = webhook signing secret',
+                    'Configuriere Webhook-Endpoint:',
+                    '  • Stripe Dashboard → Webhooks → Add endpoint',
+                    '  • URL: https://dein-domain.com/functions/v1/stripe-webhook',
+                    '  • Events: checkout.session.completed, payment_intent.succeeded, payment_intent.payment_failed'
+                ]
+            },
+            {
                 id: 'complete',
                 title: 'Setup abgeschlossen! 🎉',
                 description: 'Alle APIs sind konfiguriert. Die App ist jetzt einsatzbereit.',
@@ -134,14 +178,15 @@ class SetupWizardService {
 
     /**
      * Get missing API keys
-     * Note: gemini_api_key is optional
+     * Note: gemini_api_key and stripe_publishable_key are optional
      */
     getMissingKeys() {
         const allKeys = [
             { key: 'supabase_url', name: 'Supabase URL', required: true },
             { key: 'supabase_anon_key', name: 'Supabase Anon Key', required: true },
             { key: 'gemini_api_key', name: 'Gemini API Key', required: false },
-            { key: 'resend_api_key', name: 'Resend API Key', required: true }
+            { key: 'resend_api_key', name: 'Resend API Key', required: true },
+            { key: 'stripe_publishable_key', name: 'Stripe Publishable Key', required: false }
         ];
 
         return allKeys.filter(({ key, required }) => {
@@ -204,12 +249,18 @@ class SetupWizardService {
         for (const field of step.fields) {
             const value = localStorage.getItem(field.name);
 
-            // Gemini is now optional
-            if (field.name === 'gemini_api_key') {
-                if (value && value.trim() !== '' && !value.startsWith('AIzaSy')) {
-                    errors.push('Gemini API Key sollte mit "AIzaSy" beginnen (wenn angegeben)');
+            // Optional fields
+            if (field.name === 'gemini_api_key' || field.name === 'stripe_publishable_key') {
+                if (value && value.trim() !== '') {
+                    // Validate format if provided
+                    if (field.name === 'gemini_api_key' && !value.startsWith('AIzaSy')) {
+                        errors.push('Gemini API Key sollte mit "AIzaSy" beginnen (wenn angegeben)');
+                    }
+                    if (field.name === 'stripe_publishable_key' && !value.startsWith('pk_')) {
+                        errors.push('Stripe Publishable Key sollte mit "pk_" beginnen');
+                    }
                 }
-                continue; // Optional field
+                continue; // Skip required check for optional fields
             }
 
             if (!value || value.trim() === '') {
@@ -249,6 +300,14 @@ class SetupWizardService {
             const key = localStorage.getItem('supabase_anon_key');
             if (url && key && window.supabaseConfig) {
                 window.supabaseConfig.update(url, key);
+            }
+        }
+
+        // Trigger Stripe config update if needed
+        if (fieldName === 'stripe_publishable_key') {
+            if (window.stripeService) {
+                window.stripeService.publishableKey = value.trim();
+                window.stripeService.init();
             }
         }
     }

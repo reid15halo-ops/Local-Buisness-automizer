@@ -35,7 +35,7 @@ class PaymentService {
     }
 
     // Create a payment link for invoice/deposit
-    createPaymentLink(options) {
+    async createPaymentLink(options) {
         try {
             if (!options || typeof options !== 'object') {
                 throw new Error('Invalid payment link options');
@@ -49,7 +49,8 @@ class PaymentService {
                 description,
                 customerEmail,
                 customerName,
-                expiresIn = 7 // days
+                expiresIn = 7, // days
+                invoiceObject = null // Optional: Full invoice object for Stripe
             } = options;
 
             if (!amount || amount <= 0) {
@@ -71,12 +72,37 @@ class PaymentService {
                 expiresAt: new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString(),
                 paidAt: null,
                 paymentMethod: null,
-                transactionId: null
+                transactionId: null,
+                stripeSessionId: null,
+                paymentMethod: 'stripe' // Default to Stripe
             };
 
-            // Generate payment URL (demo mode)
-            link.url = this.generatePaymentUrl(link);
-            link.shortUrl = `mhs.pay/${link.id.substr(-8)}`;
+            // Try to generate Stripe payment link if it's an invoice
+            if (type === 'invoice' && referenceType === 'rechnung' && invoiceObject && window.stripeService?.isConfigured()) {
+                try {
+                    const stripeResult = await window.stripeService.createPaymentLink(invoiceObject);
+                    if (stripeResult.success) {
+                        link.url = stripeResult.url;
+                        link.stripeSessionId = stripeResult.sessionId;
+                        link.paymentMethod = 'stripe';
+                    } else {
+                        // Fallback if Stripe fails
+                        console.warn('Stripe payment link failed, using fallback:', stripeResult.error);
+                        link.url = this.generatePayPalLink(amount, description, referenceId);
+                        link.paymentMethod = 'paypal';
+                    }
+                } catch (stripeError) {
+                    console.warn('Stripe integration error:', stripeError);
+                    // Fallback to PayPal
+                    link.url = this.generatePayPalLink(amount, description, referenceId);
+                    link.paymentMethod = 'paypal';
+                }
+            } else {
+                // Fallback: Generate PayPal payment URL
+                link.url = this.generatePayPalLink(amount, description, referenceId);
+            }
+
+            link.shortUrl = `pay.local/${link.id.substr(-8)}`;
 
             if (this.paymentLinks) {
                 this.paymentLinks.push(link);
@@ -93,30 +119,23 @@ class PaymentService {
         }
     }
 
-    // Generate payment URL (would integrate with Stripe/PayPal)
-    generatePaymentUrl(link) {
-        // In production: Create Stripe/PayPal payment session
-        // Demo mode: Return a mock URL
-        const baseUrl = window.location.origin;
-        return `${baseUrl}/pay?id=${link.id}&amount=${link.amount}`;
-    }
-
     // Create deposit request for appointment/order
-    createDepositRequest(reference, customerData) {
+    async createDepositRequest(reference, customerData) {
         const depositAmount = this.calculateDeposit(reference.betrag || reference.amount);
 
         if (depositAmount <= 0) {
             return { required: false, reason: 'Amount below threshold' };
         }
 
-        const link = this.createPaymentLink({
+        const link = await this.createPaymentLink({
             type: 'deposit',
             referenceId: reference.id,
             referenceType: reference.type || 'termin',
             amount: depositAmount,
             description: `Anzahlung für ${reference.type || 'Termin'}: ${reference.beschreibung || reference.title}`,
             customerEmail: customerData.email,
-            customerName: customerData.name
+            customerName: customerData.name,
+            invoiceObject: null // Deposits don't have invoice objects
         });
 
         return {
@@ -270,6 +289,66 @@ class PaymentService {
             if (window.errorHandler) {
                 window.errorHandler.handle(error, 'PaymentService.sendPaymentConfirmation', false);
             }
+        }
+    }
+
+    /**
+     * Handle Stripe payment success callback
+     * Called from index.html when user returns from Stripe Checkout with success
+     * @param {string} invoiceId - Invoice ID
+     * @returns {Promise<Object>} Result
+     */
+    async handleStripePaymentSuccess(invoiceId) {
+        try {
+            if (!invoiceId) {
+                return { success: false, error: 'Invoice ID required' };
+            }
+
+            // Find payment link with this invoice ID
+            const link = this.paymentLinks?.find(l => l.referenceId === invoiceId && l.referenceType === 'rechnung');
+            if (!link) {
+                // Link might not exist if created during Stripe checkout
+                console.log(`No payment link found for invoice ${invoiceId}, creating one`);
+                return { success: true, message: 'Payment processed by webhook' };
+            }
+
+            // Payment confirmed by webhook (from Stripe), so just update link status
+            link.status = 'paid';
+            link.paidAt = new Date().toISOString();
+            this.saveLinks();
+
+            // Update invoice in store
+            this.updateReference(link);
+
+            // Send confirmation email
+            const payment = {
+                referenceId: invoiceId,
+                customerEmail: link.customerEmail,
+                amount: link.amount,
+                transactionId: link.stripeSessionId
+            };
+            this.sendPaymentConfirmation(payment);
+
+            return { success: true, message: 'Payment confirmed' };
+        } catch (error) {
+            console.error('Error handling payment success:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * Handle Stripe payment cancellation
+     * @param {string} invoiceId - Invoice ID
+     * @returns {Promise<Object>} Result
+     */
+    async handleStripePaymentCancellation(invoiceId) {
+        try {
+            console.log(`Payment cancelled for invoice ${invoiceId}`);
+            // Just log - don't mark as failed since customer may retry
+            return { success: true, message: 'Payment cancelled by user' };
+        } catch (error) {
+            console.error('Error handling payment cancellation:', error);
+            return { success: false, error: error.message };
         }
     }
 

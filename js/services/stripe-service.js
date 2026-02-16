@@ -1,17 +1,18 @@
 /* ============================================
    Stripe Payment Service
-   SaaS-Abonnements: Starter, Professional, Enterprise
+   - SaaS-Abonnements: Starter, Professional, Enterprise
+   - Invoice/Rechnung Payment Links via Checkout
 
    Setup:
    1. Stripe-Konto erstellen: https://dashboard.stripe.com
-   2. Produkte & Preise anlegen (siehe Kommentare unten)
-   3. Publishable Key in Einstellungen eintragen
-   4. Webhook-Endpoint einrichten für Subscription-Events
+   2. Publishable Key in Einstellungen eintragen (Setup Wizard)
+   3. Secret Key in Supabase (Environment Variables)
+   4. Webhook-Endpoint einrichten: https://your-domain/functions/v1/stripe-webhook
    ============================================ */
 
 class StripeService {
     constructor() {
-        // Pricing Tiers - Stripe Price IDs hier eintragen
+        // Pricing Tiers for Subscriptions - Stripe Price IDs
         this.plans = {
             starter: {
                 name: 'Starter',
@@ -219,6 +220,139 @@ class StripeService {
                 </button>
             </div>
         `).join('');
+    }
+
+    // ========== INVOICE PAYMENT METHODS ==========
+
+    /**
+     * Create payment link for an invoice (Rechnung)
+     * @param {Object} invoice - Invoice object with id, betrag/amount, kunde
+     * @returns {Promise<Object>} Payment link object with url
+     */
+    async createPaymentLink(invoice) {
+        if (!this.publishableKey) {
+            throw new Error('Stripe not configured. Please add your publishable key in setup wizard.');
+        }
+
+        const supabase = window.supabaseConfig?.get();
+        if (!supabase) {
+            throw new Error('Supabase not configured');
+        }
+
+        const user = window.authService?.getUser();
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+
+        try {
+            // Get customer email
+            const customerEmail = invoice.kunde?.email || invoice.customerEmail || user.email;
+            if (!customerEmail) {
+                throw new Error('Customer email not found in invoice');
+            }
+
+            // Calculate amount in cents (EUR)
+            const amount = Math.round((invoice.betrag || invoice.amount || 0) * 100);
+            if (amount < 50) {
+                throw new Error('Invoice amount must be at least €0.50');
+            }
+
+            // Build description
+            const description = `Invoice ${invoice.nummer || invoice.id}`;
+
+            // Build redirect URLs
+            const baseUrl = window.location.origin;
+            const successUrl = `${baseUrl}/index.html?payment=success&invoice=${invoice.id}`;
+            const cancelUrl = `${baseUrl}/index.html?payment=cancelled&invoice=${invoice.id}`;
+
+            // Call Supabase Edge Function to create Stripe Checkout session
+            const { data, error } = await supabase.functions.invoke('create-checkout', {
+                body: {
+                    invoice_id: invoice.id,
+                    amount: amount,
+                    customer_email: customerEmail,
+                    description: description,
+                    success_url: successUrl,
+                    cancel_url: cancelUrl
+                }
+            });
+
+            if (error) {
+                throw new Error(`Stripe error: ${error.message}`);
+            }
+
+            if (!data || !data.url) {
+                throw new Error('No checkout URL returned from Stripe');
+            }
+
+            return {
+                success: true,
+                url: data.url,
+                sessionId: data.sessionId,
+                invoiceId: invoice.id
+            };
+        } catch (err) {
+            console.error('Payment link creation failed:', err);
+            return {
+                success: false,
+                error: err.message
+            };
+        }
+    }
+
+    /**
+     * Get payment status for an invoice
+     * @param {string} invoiceId - Invoice ID
+     * @returns {Promise<Object>} Payment status
+     */
+    async getPaymentStatus(invoiceId) {
+        const supabase = window.supabaseConfig?.get();
+        if (!supabase) {
+            return { status: 'unknown', error: 'Supabase not configured' };
+        }
+
+        try {
+            // Try to query payment records (optional - depends on database setup)
+            const { data, error } = await supabase
+                .from('stripe_payments')
+                .select('payment_status, created_at, amount')
+                .eq('invoice_id', invoiceId)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .catch(() => ({ data: null, error: null })); // Handle if table doesn't exist
+
+            if (data && data.length > 0) {
+                return {
+                    status: data[0].payment_status,
+                    paidAt: data[0].created_at,
+                    amount: data[0].amount / 100 // Convert cents to EUR
+                };
+            }
+
+            return { status: 'pending' };
+        } catch (err) {
+            console.warn('Payment status check failed:', err);
+            return { status: 'unknown', error: err.message };
+        }
+    }
+
+    /**
+     * Open invoice payment in a new window
+     * @param {Object} invoice - Invoice object
+     */
+    async openPaymentCheckout(invoice) {
+        try {
+            const result = await this.createPaymentLink(invoice);
+            if (result.success && result.url) {
+                window.open(result.url, '_blank');
+                return result;
+            } else {
+                throw new Error(result.error || 'Failed to create payment link');
+            }
+        } catch (err) {
+            console.error('Checkout error:', err);
+            throw err;
+        }
     }
 }
 
