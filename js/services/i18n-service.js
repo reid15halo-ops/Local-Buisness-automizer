@@ -8,114 +8,12 @@ class I18nService {
         this.settings = JSON.parse(localStorage.getItem('mhs_i18n_settings') || '{}');
         this.currentLocale = this.settings.locale || 'de';
 
-        // Translations
+        // Translations - Load from nested key structure
         this.translations = {
-            de: {
-                // Navigation
-                'nav.dashboard': 'Dashboard',
-                'nav.inquiries': 'Anfragen',
-                'nav.quotes': 'Angebote',
-                'nav.orders': 'Aufträge',
-                'nav.invoices': 'Rechnungen',
-                'nav.dunning': 'Mahnwesen',
-                'nav.customers': 'Kunden',
-                'nav.calendar': 'Kalender',
-                'nav.tasks': 'Aufgaben',
-                'nav.documents': 'Dokumente',
-                'nav.timetracking': 'Zeiterfassung',
-                'nav.settings': 'Einstellungen',
-
-                // Common actions
-                'action.save': 'Speichern',
-                'action.cancel': 'Abbrechen',
-                'action.delete': 'Löschen',
-                'action.edit': 'Bearbeiten',
-                'action.add': 'Hinzufügen',
-                'action.search': 'Suchen',
-                'action.filter': 'Filtern',
-                'action.export': 'Exportieren',
-                'action.import': 'Importieren',
-                'action.print': 'Drucken',
-                'action.send': 'Senden',
-                'action.confirm': 'Bestätigen',
-
-                // Status
-                'status.open': 'Offen',
-                'status.pending': 'Ausstehend',
-                'status.completed': 'Abgeschlossen',
-                'status.paid': 'Bezahlt',
-                'status.overdue': 'Überfällig',
-                'status.cancelled': 'Storniert',
-
-                // Time
-                'time.today': 'Heute',
-                'time.yesterday': 'Gestern',
-                'time.thisWeek': 'Diese Woche',
-                'time.thisMonth': 'Dieser Monat',
-                'time.thisYear': 'Dieses Jahr',
-
-                // Messages
-                'msg.success': 'Erfolgreich',
-                'msg.error': 'Fehler',
-                'msg.loading': 'Wird geladen...',
-                'msg.noData': 'Keine Daten vorhanden',
-                'msg.confirmDelete': 'Möchten Sie wirklich löschen?'
-            },
-
-            en: {
-                // Navigation
-                'nav.dashboard': 'Dashboard',
-                'nav.inquiries': 'Inquiries',
-                'nav.quotes': 'Quotes',
-                'nav.orders': 'Orders',
-                'nav.invoices': 'Invoices',
-                'nav.dunning': 'Dunning',
-                'nav.customers': 'Customers',
-                'nav.calendar': 'Calendar',
-                'nav.tasks': 'Tasks',
-                'nav.documents': 'Documents',
-                'nav.timetracking': 'Time Tracking',
-                'nav.settings': 'Settings',
-
-                // Common actions
-                'action.save': 'Save',
-                'action.cancel': 'Cancel',
-                'action.delete': 'Delete',
-                'action.edit': 'Edit',
-                'action.add': 'Add',
-                'action.search': 'Search',
-                'action.filter': 'Filter',
-                'action.export': 'Export',
-                'action.import': 'Import',
-                'action.print': 'Print',
-                'action.send': 'Send',
-                'action.confirm': 'Confirm',
-
-                // Status
-                'status.open': 'Open',
-                'status.pending': 'Pending',
-                'status.completed': 'Completed',
-                'status.paid': 'Paid',
-                'status.overdue': 'Overdue',
-                'status.cancelled': 'Cancelled',
-
-                // Time
-                'time.today': 'Today',
-                'time.yesterday': 'Yesterday',
-                'time.thisWeek': 'This Week',
-                'time.thisMonth': 'This Month',
-                'time.thisYear': 'This Year',
-
-                // Messages
-                'msg.success': 'Success',
-                'msg.error': 'Error',
-                'msg.loading': 'Loading...',
-                'msg.noData': 'No data available',
-                'msg.confirmDelete': 'Are you sure you want to delete?'
-            },
-
+            de: this.flattenTranslations(window.i18nDE || {}),
+            en: this.flattenTranslations(window.i18nEN || {}),
             tr: {
-                // Navigation
+                // Turkish translations (legacy format - kept for compatibility)
                 'nav.dashboard': 'Gösterge Paneli',
                 'nav.inquiries': 'Sorular',
                 'nav.quotes': 'Teklifler',
@@ -128,8 +26,6 @@ class I18nService {
                 'nav.documents': 'Belgeler',
                 'nav.timetracking': 'Zaman Takibi',
                 'nav.settings': 'Ayarlar',
-
-                // Common actions
                 'action.save': 'Kaydet',
                 'action.cancel': 'İptal',
                 'action.delete': 'Sil',
@@ -142,23 +38,17 @@ class I18nService {
                 'action.print': 'Yazdır',
                 'action.send': 'Gönder',
                 'action.confirm': 'Onayla',
-
-                // Status
                 'status.open': 'Açık',
                 'status.pending': 'Beklemede',
                 'status.completed': 'Tamamlandı',
                 'status.paid': 'Ödendi',
                 'status.overdue': 'Vadesi Geçmiş',
                 'status.cancelled': 'İptal Edildi',
-
-                // Time
                 'time.today': 'Bugün',
                 'time.yesterday': 'Dün',
                 'time.thisWeek': 'Bu Hafta',
                 'time.thisMonth': 'Bu Ay',
                 'time.thisYear': 'Bu Yıl',
-
-                // Messages
                 'msg.success': 'Başarılı',
                 'msg.error': 'Hata',
                 'msg.loading': 'Yükleniyor...',
@@ -166,6 +56,21 @@ class I18nService {
                 'msg.confirmDelete': 'Silmek istediğinizden emin misiniz?'
             }
         };
+    }
+
+    // Flatten nested translation objects into dot-notation keys
+    flattenTranslations(obj, parent = '', res = {}) {
+        for (let key in obj) {
+            const value = obj[key];
+            const newKey = parent ? `${parent}.${key}` : key;
+
+            if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+                this.flattenTranslations(value, newKey, res);
+            } else {
+                res[newKey] = value;
+            }
+        }
+        return res;
     }
 
     // Translate key

@@ -524,6 +524,18 @@
                 </header>
                 <div class="settings-grid">
                     <div class="settings-card">
+                        <h3>🌍 Sprache</h3>
+                        <p>Wähle die Sprache der Anwendung</p>
+                        <div class="form-group">
+                            <label for="language-select">Sprache</label>
+                            <select id="language-select">
+                                <option value="de">🇩🇪 Deutsch</option>
+                                <option value="en">🇬🇧 English</option>
+                            </select>
+                        </div>
+                        <small>Die Anwendung wird neu geladen, wenn die Sprache geändert wird.</small>
+                    </div>
+                    <div class="settings-card">
                         <h3>🤖 Gemini API</h3>
                         <p>Für echte KI-Textgenerierung</p>
                         <div class="form-group">
@@ -2008,9 +2020,18 @@ Email: max.mustermann@example.com</textarea>
     </div>
 
     <!-- =====================================
+         Internationalization (i18n)
+         ===================================== -->
+    <script src="js/i18n/de.js"></script>
+    <script src="js/i18n/en.js"></script>
+    <script src="js/services/i18n-service.js"></script>
+    <script src="js/i18n/i18n-ui.js"></script>
+
+    <!-- =====================================
          Core Infrastructure (Always Loaded)
          ===================================== -->
     <script src="js/services/error-handler.js"></script>
+    <script src="js/services/security-service.js"></script>
     <script src="js/services/db-service.js"></script>
     <script src="js/services/demo-guard-service.js"></script>
     <script src="js/services/demo-data-service.js"></script>
@@ -2040,6 +2061,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/search-service.js"></script>
     <script src="js/services/theme-manager.js"></script>
     <script src="js/services/activity-indicator-service.js"></script>
+    <script src="js/services/dashboard-charts-service.js"></script>
 
     <!-- App Integration -->
     <script src="js/services/automation-api.js"></script>

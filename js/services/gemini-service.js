@@ -15,6 +15,11 @@ class GeminiService {
         this.useProxy = false;
         this.proxyUrl = null;
 
+        // Rate limiting: max 10 calls per minute
+        this.rateLimitKey = 'gemini_api_calls';
+        this.maxCalls = 10;
+        this.windowMs = 60000; // 1 minute
+
         // Check if Supabase is configured and edge function is available
         if (window.supabaseConfig?.isConfigured?.() && window.supabaseClient) {
             const supabaseUrl = localStorage.getItem('supabase_url');
@@ -29,6 +34,21 @@ class GeminiService {
      * Helper method to call Gemini API through proxy or direct
      */
     async _callGeminiAPI(payload) {
+        // Check rate limit before making API call
+        if (window.securityService) {
+            const rateLimitCheck = window.securityService.checkRateLimit(
+                this.rateLimitKey,
+                this.maxCalls,
+                this.windowMs
+            );
+
+            if (!rateLimitCheck.allowed) {
+                const error = new Error(`Rate limit exceeded. Retry after ${rateLimitCheck.retryAfter} seconds`);
+                error.retryAfter = rateLimitCheck.retryAfter;
+                throw error;
+            }
+        }
+
         const headers = {
             'Content-Type': 'application/json',
         };

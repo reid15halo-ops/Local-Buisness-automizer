@@ -27,9 +27,23 @@ function updateDashboard() {
     document.getElementById('rechnungen-badge').textContent = offeneRechnungen;
 
     renderActivities();
+
+    // Initialize and refresh dashboard charts
+    if (window.dashboardChartsService) {
+        try {
+            window.dashboardChartsService.initDashboardCharts();
+        } catch (error) {
+            console.warn('Failed to initialize dashboard charts:', error);
+        }
+    }
 }
 
 // Export dashboard functions
 window.DashboardModule = {
-    updateDashboard
+    updateDashboard,
+    refreshCharts: () => {
+        if (window.dashboardChartsService) {
+            window.dashboardChartsService.refreshCharts();
+        }
+    }
 };

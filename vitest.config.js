@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     // Global test environment setup
     globals: true,
-    environment: 'node',
+    environment: 'jsdom',
 
     // Test files matching pattern
     include: ['tests/**/*.test.js'],

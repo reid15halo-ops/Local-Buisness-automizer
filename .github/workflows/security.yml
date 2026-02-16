@@ -1,0 +1,67 @@
+name: Security Checks
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday at midnight UTC
+
+jobs:
+  audit:
+    name: NPM Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+
+  sri-check:
+    name: SRI Integrity Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for SRI TBD placeholders
+        run: |
+          echo "🔍 Scanning for SRI integrity=\"sha384-TBD\" placeholders..."
+
+          # Search for any integrity="sha384-TBD" patterns in HTML files
+          if grep -r 'integrity="sha384-TBD"' . --include="*.html" --include="*.md"; then
+            echo ""
+            echo "❌ Found SRI placeholder values! Please replace all sha384-TBD with actual integrity hashes."
+            echo "   Run: npm run build to generate proper integrity hashes"
+            exit 1
+          else
+            echo "✅ No SRI TBD placeholders found"
+          fi
+
+      - name: Verify SRI format
+        run: |
+          echo "🔍 Verifying SRI hash format..."
+
+          # Check that any integrity attributes use proper format
+          if grep -r 'integrity=' . --include="*.html" | grep -v 'sha384-' && grep -v 'sha512-' && grep -v 'sha256-'; then
+            echo "⚠️  Warning: Found integrity attributes with non-standard hash algorithms"
+          else
+            echo "✅ SRI hashes appear to use standard algorithms"
+          fi
