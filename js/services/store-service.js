@@ -1,10 +1,35 @@
-/* ============================================
-   Store Service
-   Centralized state management
-   ============================================ */
+/* ============================================================
+   FreyAI Core — Store Service (Supabase Cloud-First)
+   ============================================================
+   Centralized state management backed by Supabase PostgreSQL.
+   Replaces the legacy IndexedDB/localStorage persistence layer.
+
+   Public API (backward-compatible with app.js):
+     .state              — in-memory store object
+     .load()             — fetch all data from Supabase into .state
+     .save()             — upsert dirty data back to Supabase
+     .login(email, pw)   — Supabase Auth sign-in
+     .logout()           — Supabase Auth sign-out
+     .getUser()          — current Supabase user or null
+     .addAnfrage(obj)    — insert inquiry
+     .addAngebot(obj)    — insert quote
+     .acceptAngebot(id)  — convert quote → order
+     .updateAuftrag(…)   — patch order
+     .completeAuftrag(…) — close order → create invoice
+     .addActivity(…)     — push activity log entry
+     .generateId(prefix) — local ID generator
+     .subscribe(cb)      — register change listener
+   ============================================================ */
 
 class StoreService {
     constructor() {
+        /** @type {boolean} Whether the Supabase client is available */
+        this._supabaseReady = !!window.freyaiSupabase;
+
+        /**
+         * In-memory store — same shape the UI expects.
+         * Populated by load(), mutated by actions, synced by save().
+         */
         this.store = {
             anfragen: [],
             angebote: [],
@@ -12,94 +37,141 @@ class StoreService {
             rechnungen: [],
             activities: [],
             settings: {
-                companyName: 'MHS Metallbau Hydraulik Service',
-                owner: 'Max Mustermann',
-                address: 'Handwerkerring 38a, 12345 Musterstadt',
-                taxId: '12/345/67890',
-                vatId: 'DE123456789',
+                companyName: '',
+                owner: '',
+                address: '',
+                taxId: '',
+                vatId: '',
                 theme: 'dark'
             },
             currentAnfrageId: null,
             currentAuftragId: null,
             currentRechnungId: null
         };
-        this.STORAGE_KEY = 'mhs-workflow-store';
-        this.subscribers = [];
-        this.currentUserId = null; // Track which user's data is loaded
 
-        // Subscribe to user changes
-        if (window.userManager) {
-            window.userManager.onUserChange(async (user) => {
-                if (user) {
-                    await this.loadForUser(user.id);
-                } else {
-                    this._clearStore();
-                }
-            });
-        }
-        // Note: load() or loadForUser() must be called explicitly and awaited in app.js
+        /** @type {Function[]} */
+        this.subscribers = [];
+
+        /** @type {string|null} */
+        this.currentUserId = null;
+
+        /**
+         * Tables that are synced between the in-memory store and Supabase.
+         * Key = store property name, Value = Supabase table name.
+         * @type {Record<string, string>}
+         */
+        this._tableMap = {
+            anfragen: 'anfragen',
+            angebote: 'angebote',
+            auftraege: 'auftraege',
+            rechnungen: 'rechnungen'
+        };
+    }
+
+    /* ==========================================================
+       Supabase helpers
+       ========================================================== */
+
+    /**
+     * Returns the Supabase client or null.
+     * @returns {import('@supabase/supabase-js').SupabaseClient | null}
+     */
+    _sb() {
+        return window.freyaiSupabase || null;
     }
 
     /**
-     * Loads the store state for a specific user from IndexedDB.
-     * @param {string} userId - User ID to load data for
+     * Returns true when the Supabase client is initialised AND a user
+     * session exists (required for RLS).
+     * @returns {boolean}
      */
-    async loadForUser(userId) {
-        if (!userId) {
-            throw new Error('User ID is required');
+    _isOnline() {
+        return !!(this._sb() && this.currentUserId);
+    }
+
+    /* ==========================================================
+       Auth
+       ========================================================== */
+
+    /**
+     * Sign in with email + password via Supabase Auth.
+     * On success, populates the store for that user.
+     *
+     * @param {string} email
+     * @param {string} password
+     * @returns {Promise<{user: object|null, error: string|null}>}
+     */
+    async login(email, password) {
+        const sb = this._sb();
+        if (!sb) {
+            return { user: null, error: 'Supabase not configured.' };
         }
 
-        console.log(`Loading data for user: ${userId}`);
-        this.currentUserId = userId;
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
-        // 1. Try to get user-specific data from IndexedDB
-        let data = await window.dbService.getUserData(userId, this.STORAGE_KEY);
+        if (error) {
+            console.error('[FreyAI] Login failed:', error.message);
+            return { user: null, error: error.message };
+        }
 
-        // 2. Migration: If no user data exists, check old app_state store (v1 → v2 migration)
-        if (!data) {
-            const legacyData = await window.dbService.get(this.STORAGE_KEY);
-            if (legacyData && userId === 'default') {
-                console.log('Migrating legacy data to user_default_data...');
-                data = legacyData;
-                await window.dbService.setUserData(userId, this.STORAGE_KEY, data);
+        this.currentUserId = data.user.id;
+        await this.load();
+        console.info('[FreyAI] Logged in as', email);
+        return { user: data.user, error: null };
+    }
+
+    /**
+     * Sign out the current user and clear the in-memory store.
+     * @returns {Promise<void>}
+     */
+    async logout() {
+        const sb = this._sb();
+        if (sb) {
+            await sb.auth.signOut();
+        }
+        this.currentUserId = null;
+        this._clearStore();
+        this.notify();
+        console.info('[FreyAI] Logged out.');
+    }
+
+    /**
+     * Returns the current Supabase user object, or null.
+     * @returns {Promise<object|null>}
+     */
+    async getUser() {
+        const sb = this._sb();
+        if (!sb) return null;
+        const { data } = await sb.auth.getUser();
+        return data?.user || null;
+    }
+
+    /* ==========================================================
+       Load — Supabase → in-memory store
+       ========================================================== */
+
+    /**
+     * Main load entry-point.
+     * Tries to restore an existing Supabase session first, then
+     * fetches all relevant tables into the in-memory store.
+     * Falls back to demo data when no Supabase connection exists.
+     */
+    async load() {
+        const sb = this._sb();
+
+        // Try to restore an existing session
+        if (sb && !this.currentUserId) {
+            const { data } = await sb.auth.getSession();
+            if (data?.session?.user) {
+                this.currentUserId = data.session.user.id;
             }
         }
 
-        // 3. Migration: Check if data still exists in localStorage (very old version)
-        if (!data) {
-            const legacyLocalStorage = localStorage.getItem(this.STORAGE_KEY);
-            if (legacyLocalStorage && userId === 'default') {
-                console.log('Migrating data from localStorage to user-specific IndexedDB...');
-                try {
-                    data = JSON.parse(legacyLocalStorage);
-                    await window.dbService.setUserData(userId, this.STORAGE_KEY, data);
-                    localStorage.removeItem(this.STORAGE_KEY);
-                } catch (e) {
-                    console.error('Migration failed:', e);
-                }
-            }
-        }
-
-        if (data) {
-            try {
-                // Clear current store
-                this._clearStore();
-                // Merge to ensure structure integrity
-                Object.assign(this.store, data);
-                this.checkStorageUsage();
-
-                // If store exists but is effectively empty, load demo data
-                if (this.store.anfragen.length === 0 &&
-                    this.store.angebote.length === 0 &&
-                    this.store.auftraege.length === 0) {
-                    await this.resetToDemo();
-                }
-            } catch (e) {
-                console.error('Failed to parse store data:', e);
-                await this.resetToDemo();
-            }
+        if (this._isOnline()) {
+            await this._fetchAllFromSupabase();
         } else {
-            // No data saved yet -> Initial Demo Load
+            // No Supabase connection — load demo data so the UI isn't empty
+            console.warn('[FreyAI] No Supabase session. Loading demo data.');
             await this.resetToDemo();
         }
 
@@ -107,18 +179,334 @@ class StoreService {
     }
 
     /**
-     * Legacy load method (backward compatibility).
-     * Loads data for the current user or 'default' user if not logged in.
-     * @deprecated Use loadForUser() instead
+     * Alias kept for backward compatibility with app.js callers.
+     * @param {string} userId
      */
-    async load() {
-        const currentUser = window.userManager?.getCurrentUser();
-        const userId = currentUser ? currentUser.id : 'default';
-        return await this.loadForUser(userId);
+    async loadForUser(userId) {
+        this.currentUserId = userId;
+        await this.load();
     }
 
     /**
-     * Clears the in-memory store to default state.
+     * Fetches all Supabase tables into the in-memory store.
+     * @private
+     */
+    async _fetchAllFromSupabase() {
+        const sb = this._sb();
+
+        // Fetch core business tables in parallel
+        const [anfragenRes, angeboteRes, auftraegeRes, rechnungenRes, profileRes] =
+            await Promise.all([
+                sb.from('anfragen').select('*').order('created_at', { ascending: false }),
+                sb.from('angebote').select('*').order('created_at', { ascending: false }),
+                sb.from('auftraege').select('*').order('created_at', { ascending: false }),
+                sb.from('rechnungen').select('*').order('created_at', { ascending: false }),
+                sb.from('profiles').select('*').eq('id', this.currentUserId).single()
+            ]);
+
+        // Map DB rows → store arrays (snake_case → camelCase where needed)
+        this.store.anfragen = (anfragenRes.data || []).map(r => this._mapAnfrageFromDB(r));
+        this.store.angebote = (angeboteRes.data || []).map(r => this._mapAngebotFromDB(r));
+        this.store.auftraege = (auftraegeRes.data || []).map(r => this._mapAuftragFromDB(r));
+        this.store.rechnungen = (rechnungenRes.data || []).map(r => this._mapRechnungFromDB(r));
+
+        // Profile → settings
+        if (profileRes.data) {
+            const p = profileRes.data;
+            const extra = p.settings_json || {};
+            this.store.settings = {
+                companyName: p.business_name || p.company_name || '',
+                owner: p.full_name || '',
+                address: p.address || '',
+                taxId: p.tax_id || '',
+                vatId: p.vat_id || extra.vatId || '',
+                phone: p.phone || '',
+                email: extra.email || '',
+                theme: extra.theme || 'dark'
+            };
+        }
+
+        // Activities are kept client-side only (lightweight, non-critical)
+        // They will be empty on a fresh session; the UI handles that gracefully.
+
+        console.info(
+            `[FreyAI] Loaded from Supabase — ` +
+            `${this.store.anfragen.length} anfragen, ` +
+            `${this.store.angebote.length} angebote, ` +
+            `${this.store.auftraege.length} auftraege, ` +
+            `${this.store.rechnungen.length} rechnungen`
+        );
+    }
+
+    /* ==========================================================
+       Save — in-memory store → Supabase
+       ========================================================== */
+
+    /**
+     * Persists the current in-memory store back to Supabase.
+     * Called after every mutation (same contract as the old IndexedDB save).
+     */
+    async save() {
+        if (!this._isOnline()) {
+            // Not connected — changes stay in memory only
+            this.notify();
+            return;
+        }
+
+        try {
+            const sb = this._sb();
+
+            // Upsert each table's data
+            const upsertOps = Object.entries(this._tableMap).map(([storeKey, tableName]) => {
+                const rows = this.store[storeKey].map(item =>
+                    this._mapToDB(storeKey, item)
+                );
+                if (rows.length === 0) return Promise.resolve();
+                return sb.from(tableName).upsert(rows, { onConflict: 'id' });
+            });
+
+            // Upsert profile/settings
+            upsertOps.push(
+                sb.from('profiles').upsert({
+                    id: this.currentUserId,
+                    business_name: this.store.settings.companyName,
+                    full_name: this.store.settings.owner,
+                    address: this.store.settings.address,
+                    tax_id: this.store.settings.taxId,
+                    vat_id: this.store.settings.vatId,
+                    phone: this.store.settings.phone || '',
+                    settings_json: {
+                        email: this.store.settings.email || '',
+                        theme: this.store.settings.theme || 'dark',
+                        vatId: this.store.settings.vatId || ''
+                    }
+                }, { onConflict: 'id' })
+            );
+
+            await Promise.all(upsertOps);
+            this.notify();
+        } catch (e) {
+            console.error('[FreyAI] Save failed:', e);
+            if (window.errorHandler) {
+                window.errorHandler.error('Fehler beim Speichern der Daten.');
+            }
+            // Still notify so the UI stays in sync with in-memory state
+            this.notify();
+        }
+    }
+
+    /* ==========================================================
+       Row mapping helpers (DB ↔ JS)
+       ========================================================== */
+
+    /**
+     * Maps a DB anfrage row to the JS object shape the UI expects.
+     * @param {Object} row - Supabase row
+     * @returns {Object}
+     */
+    _mapAnfrageFromDB(row) {
+        return {
+            id: row.id,
+            kunde: {
+                name: row.kunde_name || '',
+                email: row.kunde_email || '',
+                telefon: row.kunde_telefon || ''
+            },
+            leistungsart: row.leistungsart || '',
+            beschreibung: row.beschreibung || '',
+            budget: parseFloat(row.budget) || 0,
+            termin: row.termin || '',
+            status: row.status || 'neu',
+            createdAt: row.created_at
+        };
+    }
+
+    /**
+     * Maps a DB angebot row to JS.
+     * @param {Object} row
+     * @returns {Object}
+     */
+    _mapAngebotFromDB(row) {
+        return {
+            id: row.id,
+            anfrageId: row.anfrage_id || null,
+            kunde: {
+                name: row.kunde_name || '',
+                email: row.kunde_email || '',
+                telefon: row.kunde_telefon || ''
+            },
+            leistungsart: row.leistungsart || '',
+            positionen: row.positionen || [],
+            angebotsText: row.angebots_text || '',
+            netto: parseFloat(row.netto) || 0,
+            mwst: parseFloat(row.mwst) || 0,
+            brutto: parseFloat(row.brutto) || 0,
+            status: row.status || 'offen',
+            gueltigBis: row.gueltig_bis || '',
+            createdAt: row.created_at
+        };
+    }
+
+    /**
+     * Maps a DB auftrag row to JS.
+     * @param {Object} row
+     * @returns {Object}
+     */
+    _mapAuftragFromDB(row) {
+        return {
+            id: row.id,
+            angebotId: row.angebot_id || null,
+            kunde: {
+                name: row.kunde_name || '',
+                email: row.kunde_email || '',
+                telefon: row.kunde_telefon || ''
+            },
+            leistungsart: row.leistungsart || '',
+            positionen: row.positionen || [],
+            angebotsWert: parseFloat(row.angebots_wert) || 0,
+            netto: parseFloat(row.netto) || 0,
+            mwst: parseFloat(row.mwst) || 0,
+            arbeitszeit: parseFloat(row.arbeitszeit) || 0,
+            materialKosten: parseFloat(row.material_kosten) || 0,
+            notizen: row.notizen || '',
+            status: row.status || 'aktiv',
+            createdAt: row.created_at,
+            completedAt: row.completed_at || null,
+            // Client-side-only fields (not persisted in DB columns)
+            fortschritt: 0,
+            mitarbeiter: [],
+            startDatum: null,
+            endDatum: null,
+            checkliste: [],
+            kommentare: [],
+            historie: []
+        };
+    }
+
+    /**
+     * Maps a DB rechnung row to JS.
+     * @param {Object} row
+     * @returns {Object}
+     */
+    _mapRechnungFromDB(row) {
+        return {
+            id: row.id,
+            auftragId: row.auftrag_id || null,
+            kunde: {
+                name: row.kunde_name || '',
+                email: row.kunde_email || '',
+                telefon: row.kunde_telefon || ''
+            },
+            leistungsart: row.leistungsart || '',
+            positionen: row.positionen || [],
+            arbeitszeit: parseFloat(row.arbeitszeit) || 0,
+            materialKosten: parseFloat(row.material_kosten) || 0,
+            netto: parseFloat(row.netto) || 0,
+            mwst: parseFloat(row.mwst) || 0,
+            brutto: parseFloat(row.brutto) || 0,
+            status: row.status || 'offen',
+            datum: row.created_at,
+            faelligkeitsdatum: row.zahlungsziel_tage
+                ? new Date(new Date(row.created_at).getTime() + row.zahlungsziel_tage * 86400000).toISOString()
+                : '',
+            createdAt: row.created_at,
+            paidAt: row.paid_at || null
+        };
+    }
+
+    /**
+     * Maps a JS store object back to a DB row for upsert.
+     * @param {string} storeKey - e.g. 'anfragen'
+     * @param {Object} item     - JS object
+     * @returns {Object} DB-shaped row
+     */
+    _mapToDB(storeKey, item) {
+        const base = { id: item.id, user_id: this.currentUserId };
+
+        switch (storeKey) {
+            case 'anfragen':
+                return {
+                    ...base,
+                    kunde_name: item.kunde?.name || '',
+                    kunde_email: item.kunde?.email || '',
+                    kunde_telefon: item.kunde?.telefon || '',
+                    leistungsart: item.leistungsart || '',
+                    beschreibung: item.beschreibung || '',
+                    budget: item.budget || 0,
+                    termin: item.termin || null,
+                    status: item.status || 'neu'
+                };
+
+            case 'angebote':
+                return {
+                    ...base,
+                    anfrage_id: item.anfrageId || null,
+                    kunde_name: item.kunde?.name || '',
+                    kunde_email: item.kunde?.email || '',
+                    kunde_telefon: item.kunde?.telefon || '',
+                    leistungsart: item.leistungsart || '',
+                    positionen: item.positionen || [],
+                    angebots_text: item.angebotsText || '',
+                    netto: item.netto || 0,
+                    mwst: item.mwst || 0,
+                    brutto: item.brutto || 0,
+                    status: item.status || 'offen',
+                    gueltig_bis: item.gueltigBis || null
+                };
+
+            case 'auftraege':
+                return {
+                    ...base,
+                    angebot_id: item.angebotId || null,
+                    kunde_name: item.kunde?.name || '',
+                    kunde_email: item.kunde?.email || '',
+                    kunde_telefon: item.kunde?.telefon || '',
+                    leistungsart: item.leistungsart || '',
+                    positionen: item.positionen || [],
+                    angebots_wert: item.angebotsWert || 0,
+                    netto: item.netto || 0,
+                    mwst: item.mwst || 0,
+                    arbeitszeit: item.arbeitszeit || null,
+                    material_kosten: item.materialKosten || null,
+                    notizen: item.notizen || '',
+                    status: item.status || 'aktiv',
+                    completed_at: item.completedAt || null
+                };
+
+            case 'rechnungen':
+                return {
+                    ...base,
+                    auftrag_id: item.auftragId || null,
+                    kunde_name: item.kunde?.name || '',
+                    kunde_email: item.kunde?.email || '',
+                    kunde_telefon: item.kunde?.telefon || '',
+                    leistungsart: item.leistungsart || '',
+                    positionen: item.positionen || [],
+                    arbeitszeit: item.arbeitszeit || null,
+                    material_kosten: item.materialKosten || null,
+                    netto: item.netto || 0,
+                    mwst: item.mwst || 0,
+                    brutto: item.brutto || 0,
+                    status: item.status || 'offen',
+                    paid_at: item.paidAt || null
+                };
+
+            default:
+                return { ...base, ...item };
+        }
+    }
+
+    /* ==========================================================
+       Store management
+       ========================================================== */
+
+    /** @returns {Object} The in-memory store (read-only recommended). */
+    get state() {
+        return this.store;
+    }
+
+    /**
+     * Clears the in-memory store arrays to defaults.
      * @private
      */
     _clearStore() {
@@ -130,28 +518,19 @@ class StoreService {
         this.store.currentAnfrageId = null;
         this.store.currentAuftragId = null;
         this.store.currentRechnungId = null;
-        // Keep settings (theme, etc.)
     }
 
     /**
-     * Hard reset of the application data to demo state (user-specific).
+     * Hard reset to demo data (offline fallback).
      */
     async resetToDemo() {
         if (!window.demoDataService) {
-            console.error('DemoDataService not loaded!');
+            console.error('[FreyAI] DemoDataService not loaded!');
             return;
         }
 
         const demoData = window.demoDataService.getDemoData();
 
-        // Determine user ID
-        const userId = this.currentUserId || 'default';
-
-        // Clear user-specific storage
-        await window.dbService.clearUserData(userId);
-        localStorage.removeItem('mhs_customer_presets');
-
-        // Populate store in-place to preserve references in app.js
         Object.keys(this.store).forEach(key => {
             if (Array.isArray(this.store[key])) {
                 this.store[key] = [];
@@ -164,84 +543,51 @@ class StoreService {
             currentRechnungId: null
         });
 
-        await this.save();
-        console.log(`App reset to demo state for user: ${userId} (Reference preserved).`);
+        console.info('[FreyAI] Store reset to demo data.');
     }
 
-    checkStorageUsage() {
-        // Estimation for IndexedDB is harder, but we can check the total store object size in memory
-        const json = JSON.stringify(this.store);
-        const sizeInMB = (json.length * 2) / (1024 * 1024); // UTF-16 estimation
-
-        // New limit: 1GB (1024 MB), Warning at 800MB
-        if (sizeInMB > 800.0) {
-            console.warn(`Storage High Usage: ${sizeInMB.toFixed(2)} MB`);
-            if (window.errorHandler) {
-                window.errorHandler.warning(`⚠️ Speicherplatz fast erschöpft: ${sizeInMB.toFixed(2)} MB belegt (Max 1024 MB).`);
-            }
-        }
-    }
+    /* ==========================================================
+       Actions (same public API as legacy StoreService)
+       ========================================================== */
 
     /**
-     * Saves the current store state to IndexedDB (user-specific).
-     */
-    async save() {
-        try {
-            // Determine user ID
-            const userId = this.currentUserId || 'default';
-
-            // Save to user-specific store
-            await window.dbService.setUserData(userId, this.STORAGE_KEY, this.store);
-            this.notify();
-        } catch (e) {
-            console.error('Save failed:', e);
-            if (window.errorHandler) {
-                window.errorHandler.error('Fehler beim Speichern der Daten.');
-            }
-        }
-    }
-
-    // Get simplified state reference (read-only recommended)
-    get state() {
-        return this.store;
-    }
-
-    // --- Actions ---
-
-    /**
-     * Adds a new Inquiry to the store.
-     * @param {Object} anfrage - The inquiry object to add
+     * Adds a new Inquiry.
+     * @param {Object} anfrage
      */
     addAnfrage(anfrage) {
         this.store.anfragen.push(anfrage);
-        this.save();
+        this._insertRow('anfragen', anfrage);
         this.addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
     }
 
     /**
-     * Adds a new Offer to the store and updates the related Inquiry status.
-     * @param {Object} angebot - The offer object
+     * Adds a new Quote and updates the linked Inquiry status.
+     * @param {Object} angebot
      */
     addAngebot(angebot) {
         this.store.angebote.push(angebot);
-        // Update linked Anfrage
-        const anfrage = this.store.anfragen.find(a => a.id === angebot.anfrageId);
-        if (anfrage) anfrage.status = 'angebot-erstellt';
 
-        this.save();
+        const anfrage = this.store.anfragen.find(a => a.id === angebot.anfrageId);
+        if (anfrage) {
+            anfrage.status = 'angebot-erstellt';
+            this._updateRow('anfragen', anfrage.id, { status: 'angebot-erstellt' });
+        }
+
+        this._insertRow('angebote', angebot);
         this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde.name} erstellt`);
     }
 
     /**
-     * Accepts an Offer and converts it into a new Order (Auftrag).
-     * @param {string} angebotId - The ID of the offer to accept
-     * @returns {Object|null} The created order object or null if failed
+     * Accepts a Quote → creates an Order.
+     * @param {string} angebotId
+     * @returns {Object|null}
      */
     acceptAngebot(angebotId) {
         const angebot = this.store.angebote.find(a => a.id === angebotId);
         if (!angebot) return null;
 
         angebot.status = 'angenommen';
+        this._updateRow('angebote', angebotId, { status: 'angenommen' });
 
         const auftrag = {
             id: this.generateId('AUF'),
@@ -264,12 +610,18 @@ class StoreService {
         };
 
         this.store.auftraege.push(auftrag);
-        this.save();
+        this._insertRow('auftraege', auftrag);
         this.addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
 
         return auftrag;
     }
 
+    /**
+     * Updates an order in-place.
+     * @param {string} auftragId
+     * @param {Object} updates
+     * @returns {Object|null}
+     */
     updateAuftrag(auftragId, updates) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) return null;
@@ -286,10 +638,18 @@ class StoreService {
             });
         }
 
-        this.save();
+        this._updateRow('auftraege', auftragId, this._mapToDB('auftraege', auftrag));
+        this.notify();
         return auftrag;
     }
 
+    /**
+     * Adds a comment to an order.
+     * @param {string} auftragId
+     * @param {string} text
+     * @param {string} [autor]
+     * @returns {Object|null}
+     */
     addAuftragComment(auftragId, text, autor) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) return null;
@@ -310,20 +670,33 @@ class StoreService {
         return kommentar;
     }
 
+    /**
+     * Updates the checklist for an order.
+     * @param {string} auftragId
+     * @param {Array} checkliste
+     * @returns {Object|null}
+     */
     updateAuftragCheckliste(auftragId, checkliste) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) return null;
 
         auftrag.checkliste = checkliste;
-        // Auto-calculate progress from checklist
         if (checkliste.length > 0) {
-            auftrag.fortschritt = Math.round((checkliste.filter(c => c.erledigt).length / checkliste.length) * 100);
+            auftrag.fortschritt = Math.round(
+                (checkliste.filter(c => c.erledigt).length / checkliste.length) * 100
+            );
         }
 
         this.save();
         return auftrag;
     }
 
+    /**
+     * Completes an order and creates an invoice.
+     * @param {string} auftragId
+     * @param {Object} [completionData]
+     * @returns {Promise<Object|null>}
+     */
     async completeAuftrag(auftragId, completionData = {}) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) return null;
@@ -334,123 +707,173 @@ class StoreService {
             ...completionData
         });
 
-        this.save();
+        this._updateRow('auftraege', auftragId, this._mapToDB('auftraege', auftrag));
 
-        // Create Invoice using InvoiceService
         try {
-            if (!window.invoiceService) {
-                console.error('InvoiceService not available, falling back to enhanced invoice creation');
-
-                // Fallback: Enhanced invoice creation with Stückliste support
-                // Build invoice positions: original positions + Stückliste + extra costs
-                const rechnungsPositionen = [...(auftrag.positionen || [])];
-                const stueckliste = auftrag.stueckliste || [];
-
-                stueckliste.forEach(item => {
-                    rechnungsPositionen.push({
-                        beschreibung: `Material: ${item.bezeichnung}`,
-                        menge: item.menge,
-                        einheit: item.einheit,
-                        preis: item.vkPreis,
-                        isMaterial: true,
-                        artikelnummer: item.artikelnummer,
-                        ekPreis: item.ekPreis
-                    });
-                });
-
-                if ((auftrag.extraMaterialKosten || 0) > 0) {
-                    rechnungsPositionen.push({
-                        beschreibung: 'Sonstige Materialkosten',
-                        menge: 1,
-                        einheit: 'pauschal',
-                        preis: auftrag.extraMaterialKosten,
-                        isMaterial: true
-                    });
-                }
-
-                const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-
-                const rechnung = {
-                    id: this.generateId('RE'),
-                    nummer: this.generateId('RE'), // Simple fallback number
-                    auftragId,
-                    angebotId: auftrag.angebotId,
-                    kunde: auftrag.kunde,
-                    leistungsart: auftrag.leistungsart,
-                    positionen: rechnungsPositionen,
-                    stueckliste: stueckliste,
-                    arbeitszeit: auftrag.arbeitszeit,
-                    materialKosten: auftrag.materialKosten || 0,
-                    extraMaterialKosten: auftrag.extraMaterialKosten || 0,
-                    stuecklisteVK: auftrag.stuecklisteVK || 0,
-                    stuecklisteEK: auftrag.stuecklisteEK || 0,
-                    notizen: auftrag.notizen,
-                    netto: netto,
-                    mwst: netto * 0.19,
-                    brutto: netto * 1.19,
-                    status: 'offen',
-                    datum: new Date().toISOString(),
-                    faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-                    createdAt: new Date().toISOString()
+            if (window.invoiceService) {
+                const invoiceOptions = {
+                    generatePDF: completionData.generatePDF || false,
+                    openPDF: completionData.openPDF || false,
+                    downloadPDF: completionData.downloadPDF || false,
+                    generateEInvoice: completionData.generateEInvoice || false,
+                    paymentTermDays: completionData.paymentTermDays || 14,
+                    templateId: completionData.templateId || 'standard-de'
                 };
-
-                this.store.rechnungen.push(rechnung);
-                this.save();
-                this.addActivity('💰', `Rechnung ${rechnung.nummer} erstellt`);
-
-                return rechnung;
+                return await window.invoiceService.createInvoice(auftrag, invoiceOptions);
             }
 
-            // Use InvoiceService for GoBD-compliant invoice creation
-            const invoiceOptions = {
-                generatePDF: completionData.generatePDF || false,
-                openPDF: completionData.openPDF || false,
-                downloadPDF: completionData.downloadPDF || false,
-                generateEInvoice: completionData.generateEInvoice || false,
-                paymentTermDays: completionData.paymentTermDays || 14,
-                templateId: completionData.templateId || 'standard-de'
+            // Fallback: manual invoice creation
+            const rechnungsPositionen = [...(auftrag.positionen || [])];
+            const stueckliste = auftrag.stueckliste || [];
+
+            stueckliste.forEach(item => {
+                rechnungsPositionen.push({
+                    beschreibung: `Material: ${item.bezeichnung}`,
+                    menge: item.menge,
+                    einheit: item.einheit,
+                    preis: item.vkPreis,
+                    isMaterial: true,
+                    artikelnummer: item.artikelnummer,
+                    ekPreis: item.ekPreis
+                });
+            });
+
+            if ((auftrag.extraMaterialKosten || 0) > 0) {
+                rechnungsPositionen.push({
+                    beschreibung: 'Sonstige Materialkosten',
+                    menge: 1,
+                    einheit: 'pauschal',
+                    preis: auftrag.extraMaterialKosten,
+                    isMaterial: true
+                });
+            }
+
+            const netto = rechnungsPositionen.reduce(
+                (sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0
+            );
+
+            const rechnung = {
+                id: this.generateId('RE'),
+                nummer: this.generateId('RE'),
+                auftragId,
+                angebotId: auftrag.angebotId,
+                kunde: auftrag.kunde,
+                leistungsart: auftrag.leistungsart,
+                positionen: rechnungsPositionen,
+                stueckliste,
+                arbeitszeit: auftrag.arbeitszeit,
+                materialKosten: auftrag.materialKosten || 0,
+                extraMaterialKosten: auftrag.extraMaterialKosten || 0,
+                stuecklisteVK: auftrag.stuecklisteVK || 0,
+                stuecklisteEK: auftrag.stuecklisteEK || 0,
+                notizen: auftrag.notizen,
+                netto,
+                mwst: netto * 0.19,
+                brutto: netto * 1.19,
+                status: 'offen',
+                datum: new Date().toISOString(),
+                faelligkeitsdatum: new Date(Date.now() + 14 * 86400000).toISOString(),
+                createdAt: new Date().toISOString()
             };
 
-            const rechnung = await window.invoiceService.createInvoice(auftrag, invoiceOptions);
-
+            this.store.rechnungen.push(rechnung);
+            this._insertRow('rechnungen', rechnung);
+            this.addActivity('💰', `Rechnung ${rechnung.nummer} erstellt`);
             return rechnung;
 
         } catch (error) {
-            console.error('Error creating invoice:', error);
-            // Still return something if invoice creation fails
+            console.error('[FreyAI] Error creating invoice:', error);
             return null;
         }
     }
 
+    /**
+     * Pushes an activity log entry (client-side only).
+     * @param {string} icon
+     * @param {string} title
+     */
     addActivity(icon, title) {
         this.store.activities.unshift({
             icon,
             title,
             time: new Date().toISOString()
         });
-        if (this.store.activities.length > 50) { // Increased limit
+        if (this.store.activities.length > 50) {
             this.store.activities = this.store.activities.slice(0, 50);
         }
-        this.save(); // Save triggers notify
+        this.notify();
     }
 
-    // --- Helpers ---
+    /* ==========================================================
+       Fine-grained Supabase operations (fire-and-forget)
+       ========================================================== */
 
+    /**
+     * Inserts a single row into a Supabase table.
+     * Falls back silently if offline.
+     * @param {string} storeKey
+     * @param {Object} item
+     * @private
+     */
+    _insertRow(storeKey, item) {
+        if (!this._isOnline()) return;
+        const tableName = this._tableMap[storeKey];
+        if (!tableName) return;
+
+        const row = this._mapToDB(storeKey, item);
+        this._sb().from(tableName).insert([row]).then(({ error }) => {
+            if (error) console.error(`[FreyAI] Insert ${tableName} failed:`, error.message);
+        });
+    }
+
+    /**
+     * Updates a single row in a Supabase table.
+     * @param {string} storeKey
+     * @param {string} id
+     * @param {Object} updates - DB-shaped partial row
+     * @private
+     */
+    _updateRow(storeKey, id, updates) {
+        if (!this._isOnline()) return;
+        const tableName = this._tableMap[storeKey];
+        if (!tableName) return;
+
+        // Remove id and user_id from the update payload (they are in the WHERE clause)
+        const { id: _id, user_id: _uid, ...patch } = updates;
+        this._sb().from(tableName).update(patch).eq('id', id).then(({ error }) => {
+            if (error) console.error(`[FreyAI] Update ${tableName}/${id} failed:`, error.message);
+        });
+    }
+
+    /* ==========================================================
+       Helpers
+       ========================================================== */
+
+    /**
+     * Generates a prefixed unique ID.
+     * @param {string} prefix - e.g. 'ANF', 'ANG', 'AUF', 'RE'
+     * @returns {string}
+     */
     generateId(prefix) {
         const timestamp = Date.now().toString(36);
         const random = Math.random().toString(36).substr(2, 5);
         return `${prefix}-${timestamp}-${random}`.toUpperCase();
     }
 
+    /**
+     * Registers a subscriber that is called on every store change.
+     * @param {Function} callback
+     */
     subscribe(callback) {
         this.subscribers.push(callback);
     }
 
+    /** Notifies all subscribers with the current store. */
     notifySubscribers() {
         this.subscribers.forEach(cb => cb(this.store));
     }
 
-    // Alias for notifySubscribers (for consistency)
+    /** Alias for notifySubscribers (backward compat). */
     notify() {
         this.notifySubscribers();
     }

@@ -17,6 +17,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- SheetJS for Excel import -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Supabase JS SDK v2 (Cloud-First) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 
 <body>
@@ -1926,6 +1928,11 @@ Email: max.mustermann@example.com</textarea>
     </div>
 
     <!-- =====================================
+         Supabase Client (must load before services)
+         ===================================== -->
+    <script src="js/config/supabase-client.js"></script>
+
+    <!-- =====================================
          Core Infrastructure (Always Loaded)
          ===================================== -->
     <script src="js/services/error-handler.js"></script>
@@ -1959,16 +1966,7 @@ Email: max.mustermann@example.com</textarea>
 
     <!-- Initialize lazy-loaded services after app init -->
     <script src="js/init-lazy-services.js"></script>
-    <!-- PWA Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(reg => console.log('✅ Service Worker registered'))
-                    .catch(err => console.log('Service Worker registration failed:', err));
-            });
-        }
-    </script>
+    <!-- Service Worker removed: cloud-first architecture (FreyAI Core) -->
 </body>
 
 </html>
