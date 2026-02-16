@@ -1,7 +1,35 @@
-.gemini/
-.git/
+# Dependencies
 node_modules/
+__pycache__/
+*.pyc
+.venv/
+
+# Build output
 dist/
-temp/
-*.log
+build/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+*.pem
+
+# OS junk
 .DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Temp
+temp/
+.temp/
+
+# Legacy
+.gemini/

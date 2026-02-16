@@ -94,4 +94,50 @@
     };
 
     console.info('[FreyAI] Supabase client initialized:', SUPABASE_URL);
+
+    /* ----- Backward-compat shims ----- */
+
+    // Legacy services (auth-service, stripe-service, automation-api,
+    // setup-wizard-service) reference window.supabaseConfig.
+    window.supabaseConfig = {
+        init: () => client,
+        get: () => client,
+        isConfigured: () => isConfigured,
+        update: window.freyaiUpdateSupabaseConfig,
+        config: { url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY }
+    };
+
+    // Legacy window.supabaseDB shim (was supabase-db-service.js).
+    // Provides a no-op surface so lazy-loaded consumers don't crash.
+    if (!window.supabaseDB) {
+        window.supabaseDB = {
+            getAll: async () => [],
+            getById: async () => null,
+            create: async (_t, r) => r,
+            update: async (_t, _id, u) => u,
+            delete: async () => {},
+            syncAll: async () => ({ synced: 0, errors: 0 }),
+            getSyncQueueSize: () => 0
+        };
+    }
 })();
+
+// Legacy window.dbService shim (was db-service.js / IndexedDB).
+// Provides a no-op surface so any remaining lazy-loaded consumers
+// (e.g. invoice-numbering-service) don't throw at runtime.
+if (!window.dbService) {
+    window.dbService = {
+        init: async () => null,
+        get: async () => null,
+        set: async () => {},
+        clear: async () => {},
+        getUserData: async () => null,
+        setUserData: async () => {},
+        clearUserData: async () => {},
+        getAllUsers: async () => [],
+        getUser: async () => null,
+        saveUser: async () => {},
+        deleteUser: async () => {},
+        createUserStore: async () => {}
+    };
+}
