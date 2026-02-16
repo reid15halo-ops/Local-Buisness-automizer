@@ -5,9 +5,16 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_ORIGINS = Deno.env.get('ALLOWED_ORIGINS')?.split(',') ?? ['http://localhost:3000'];
+
+function corsHeaders(req: Request): Record<string, string> {
+    const origin = req.headers.get('Origin') ?? '';
+    const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    return {
+        'Access-Control-Allow-Origin': allowed,
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    };
 }
 
 // ============================================
@@ -65,10 +72,22 @@ interface GeminiAnalysisResult {
 // ============================================
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+        return new Response('ok', { headers: corsHeaders(req) })
     }
 
     try {
+        // Verify webhook secret
+        const webhookSecret = Deno.env.get('INBOUND_EMAIL_WEBHOOK_SECRET');
+        if (webhookSecret) {
+            const authHeader = req.headers.get('x-webhook-secret') || req.headers.get('authorization');
+            if (authHeader !== `Bearer ${webhookSecret}` && authHeader !== webhookSecret) {
+                return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+                    status: 401,
+                    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+                });
+            }
+        }
+
         const email: InboundEmail = await req.json()
 
         console.log('📧 Inbound email received:', {
@@ -82,10 +101,25 @@ serve(async (req) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
         )
 
+        // Look up the user who owns this email configuration
+        const recipientEmail = email.to
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('settings_json->>inbound_email', recipientEmail)
+            .single()
+
+        const userId: string | null = profile?.id ?? null
+
+        if (!userId) {
+            console.warn('No user found for recipient email:', recipientEmail)
+        }
+
         // Store raw email first
         const { data: emailRecord, error: emailError } = await supabase
             .from('inbound_emails')
             .insert({
+                user_id: userId,
                 from_email: email.from.email,
                 from_name: email.from.name,
                 subject: email.subject,
@@ -137,11 +171,11 @@ serve(async (req) => {
                         missing_info: analysis.fehlende_infos,
                         message: 'Rückfragen gesendet'
                     }),
-                    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
                 )
             } else {
                 // Vollständige Anfrage - erstelle Angebot
-                const result = await processWithGemini(supabase, email, analysis, emailRecord.id)
+                const result = await processWithGemini(supabase, email, analysis, emailRecord.id, userId)
 
                 return new Response(
                     JSON.stringify({
@@ -149,7 +183,7 @@ serve(async (req) => {
                         automated: true,
                         ...result
                     }),
-                    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
                 )
             }
         } else {
@@ -170,14 +204,14 @@ serve(async (req) => {
                     automated: false,
                     message: 'Confirmation sent, manual review required'
                 }),
-                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                { headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
             )
         }
     } catch (err: any) {
         console.error('Error processing inbound email:', err)
         return new Response(
             JSON.stringify({ error: err.message }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 500, headers: { ...corsHeaders(req), 'Content-Type': 'application/json' } }
         )
     }
 })
@@ -291,7 +325,8 @@ async function processWithGemini(
     supabase: any,
     email: InboundEmail,
     analysis: GeminiAnalysisResult,
-    emailRecordId: string
+    emailRecordId: string,
+    userId: string | null
 ) {
     // 1. Create or find customer
     const { data: existingCustomer } = await supabase
@@ -317,6 +352,7 @@ async function processWithGemini(
         const { data: newCustomer } = await supabase
             .from('kunden')
             .insert({
+                user_id: userId,
                 name: analysis.kunde.name,
                 firma: analysis.kunde.firma,
                 email: email.from.email,
@@ -334,6 +370,7 @@ async function processWithGemini(
     const { data: anfrage } = await supabase
         .from('anfragen')
         .insert({
+            user_id: userId,
             nummer: anfrageNummer,
             kunde_id: kundeId,
             leistungsart: analysis.anfrage.leistungsart,
@@ -371,6 +408,7 @@ async function processWithGemini(
     const { data: angebot } = await supabase
         .from('angebote')
         .insert({
+            user_id: userId,
             nummer: angebotNummer,
             anfrage_id: anfrage.id,
             kunde_id: kundeId,
@@ -410,6 +448,7 @@ async function processWithGemini(
 
     // 7. Log automation
     await supabase.from('automation_log').insert({
+        user_id: userId,
         action: 'email.auto_process',
         target: email.from.email,
         metadata: {

@@ -41,8 +41,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         container.innerHTML = templates.map((t, i) => `
             <div class="template-card" data-template="${i}">
-                <h4>⚡ ${t.name}</h4>
-                <p>${t.description}</p>
+                <h4>⚡ ${window.UI?.sanitize(t.name) || t.name}</h4>
+                <p>${window.UI?.sanitize(t.description) || t.description}</p>
             </div>
         `).join('');
 
@@ -73,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="workflow-item-info">
                     <span style="font-size:24px">${w.active ? '✅' : '⏸️'}</span>
                     <div>
-                        <h4>${w.name}</h4>
-                        <p>Trigger: ${window.workflowService.triggerTypes[w.trigger.type]?.name || w.trigger.type} | Läufe: ${w.runCount}</p>
+                        <h4>${window.UI?.sanitize(w.name) || w.name}</h4>
+                        <p>Trigger: ${window.UI?.sanitize(window.workflowService.triggerTypes[w.trigger.type]?.name || w.trigger.type) || (window.workflowService.triggerTypes[w.trigger.type]?.name || w.trigger.type)} | Läufe: ${w.runCount}</p>
                     </div>
                 </div>
                 <div class="workflow-item-actions">
@@ -179,8 +179,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             paramsDiv.innerHTML = actionDef.params.map(p => `
                 <div class="form-group" style="margin-bottom:8px;">
-                    <label style="font-size:13px;text-transform:capitalize;">${p}</label>
-                    <input type="text" name="ap-${p}" placeholder="${p}" style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:13px;">
+                    <label style="font-size:13px;text-transform:capitalize;">${window.UI?.sanitize(p) || p}</label>
+                    <input type="text" name="ap-${window.UI?.sanitize(p) || p}" placeholder="${window.UI?.sanitize(p) || p}" style="width:100%;padding:8px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:13px;">
                 </div>
             `).join('');
         });
@@ -235,8 +235,8 @@ document.addEventListener('DOMContentLoaded', function () {
         container.innerHTML = log.map(l => `
             <div class="log-entry">
                 <span class="log-time">${new Date(l.timestamp).toLocaleTimeString('de-DE')}</span>
-                <span class="log-type ${l.type}">${l.type}</span>
-                <span class="log-message">${l.message}</span>
+                <span class="log-type ${window.UI?.sanitize(l.type) || l.type}">${window.UI?.sanitize(l.type) || l.type}</span>
+                <span class="log-message">${window.UI?.sanitize(l.message) || l.message}</span>
             </div>
         `).join('');
     }
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function () {
         container.innerHTML = docs.map(doc => `
             <div class="scanned-doc-card" data-id="${doc.id}">
                 ${doc.imageData ? `<img src="${doc.imageData}" class="doc-preview" alt="Preview">` : '<div class="doc-preview"></div>'}
-                <h4>${doc.filename}</h4>
+                <h4>${window.UI?.sanitize(doc.filename) || doc.filename}</h4>
                 <span class="doc-category">${window.ocrScannerService.getCategoryName(doc.category)}</span>
                 ${doc.extractedData?.totalAmount ? `<div class="doc-amount">${doc.extractedData.totalAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</div>` : ''}
                 <div class="doc-date">${new Date(doc.createdAt).toLocaleDateString('de-DE')}</div>
@@ -424,8 +424,8 @@ document.addEventListener('DOMContentLoaded', function () {
         container.innerHTML = log.map(l => `
             <div class="activity-log-item">
                 <span class="log-time">${new Date(l.timestamp).toLocaleTimeString('de-DE')}</span>
-                <span>${l.action}</span>
-                <span style="color:var(--text-muted)">${JSON.stringify(l.details).slice(0, 50)}</span>
+                <span>${window.UI?.sanitize(l.action) || l.action}</span>
+                <span style="color:var(--text-muted)">${window.UI?.sanitize(JSON.stringify(l.details).slice(0, 50)) || JSON.stringify(l.details).slice(0, 50)}</span>
             </div>
         `).join('');
     }
@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function populateCustomerSelects() {
         const customers = window.customerService?.getCustomers() || [];
-        const options = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        const options = customers.map(c => `<option value="${c.id}">${window.UI?.sanitize(c.name) || c.name}</option>`).join('');
 
         const gdprExport = document.getElementById('gdpr-customer-select');
         const gdprDelete = document.getElementById('gdpr-delete-select');

@@ -1,13 +1,41 @@
 /* ============================================
    Gemini API Service
-   Real AI Integration for Text Generation
+   Routes AI requests through Supabase Edge Function (ai-proxy)
+   — no API key stored or used in the browser.
    ============================================ */
 
 class GeminiService {
-    constructor(apiKey) {
-        this.apiKey = apiKey;
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-        this.isConfigured = !!apiKey;
+    constructor() {
+        // The service is considered "configured" when we have a valid
+        // Supabase connection (the Edge Function holds the real key).
+        this.isConfigured = !!window.freyaiSupabase;
+    }
+
+    /**
+     * Call the ai-proxy Edge Function.
+     * Returns the raw Gemini response JSON, or null on failure.
+     */
+    async _callProxy(prompt, model) {
+        const sb = window.freyaiSupabase;
+        if (!sb) return null;
+
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session?.access_token) return null;
+
+        const supabaseUrl = localStorage.getItem('freyai_supabase_url');
+        if (!supabaseUrl) return null;
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ prompt, model: model || 'gemini-2.0-flash' }),
+        });
+
+        if (!response.ok) return null;
+        return response.json();
     }
 
     async generateAngebotText(anfrage) {
@@ -35,32 +63,10 @@ Der Text soll:
 Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
 
         try {
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 500,
-                    }
-                })
-            });
+            const data = await this._callProxy(prompt);
+            if (!data) return this.getFallbackText(anfrage);
 
-            if (!response.ok) {
-                console.error('Gemini API Error:', response.status);
-                return this.getFallbackText(anfrage);
-            }
-
-            const data = await response.json();
             const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
             if (generatedText) {
                 return generatedText;
             }
@@ -102,29 +108,9 @@ Antworte im JSON-Format:
 }`;
 
         try {
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.3,
-                        maxOutputTokens: 500,
-                    }
-                })
-            });
+            const data = await this._callProxy(prompt);
+            if (!data) return this.calculatePriceFallback(positionen, materialBestand);
 
-            if (!response.ok) {
-                return this.calculatePriceFallback(positionen, materialBestand);
-            }
-
-            const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
             // Try to parse JSON from response
@@ -163,17 +149,8 @@ Kunde: "${message}"
 Antwort:`;
 
         try {
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.4, maxOutputTokens: 300 }
-                })
-            });
-
-            if (!response.ok) return null;
-            const data = await response.json();
+            const data = await this._callProxy(prompt);
+            if (!data) return null;
             return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
         } catch (e) {
             console.error('Gemini Chat Error:', e);
@@ -275,5 +252,5 @@ MHS Metallbau Hydraulik Service`
     }
 }
 
-// Create global instance
-window.geminiService = new GeminiService(localStorage.getItem('gemini_api_key'));
+// Create global instance — no API key needed; the Edge Function holds it
+window.geminiService = new GeminiService();

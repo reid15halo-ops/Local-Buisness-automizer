@@ -2315,13 +2315,12 @@ function renderMaterialList(materials) {
 // Settings / Einstellungen
 // ============================================
 function initSettings() {
-    // Load saved values
-    const geminiKey = localStorage.getItem('gemini_api_key');
+    // Load saved values (server-side secrets like gemini_api_key are no longer
+    // stored in localStorage — they live as Supabase Edge Function env vars)
     const stundensatz = localStorage.getItem('stundensatz') || '65';
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
 
-    if (document.getElementById('gemini-api-key')) {
-        document.getElementById('gemini-api-key').value = geminiKey || '';
+    if (document.getElementById('stundensatz')) {
         document.getElementById('stundensatz').value = stundensatz;
         document.getElementById('n8n-webhook-url').value = webhookUrl || '';
 
@@ -2329,13 +2328,10 @@ function initSettings() {
         updateSettingsStatus();
     }
 
-    // Save Gemini API Key
+    // Gemini API Key is now configured as GEMINI_API_KEY on the Supabase
+    // Edge Function (ai-proxy).  The save button informs the user.
     document.getElementById('btn-save-gemini')?.addEventListener('click', () => {
-        const key = document.getElementById('gemini-api-key').value.trim();
-        localStorage.setItem('gemini_api_key', key);
-        window.geminiService = new GeminiService(key);
-        updateSettingsStatus();
-        showToast('✅ Gemini API Key gespeichert!', 'success');
+        showToast('Gemini API Key muss als GEMINI_API_KEY Supabase Secret konfiguriert werden (Dashboard > Edge Functions > Secrets).', 'info');
     });
 
     // Save Stundensatz
@@ -2458,22 +2454,13 @@ function generateSenderEmail() {
 
 function initAutomationSettings() {
     // Load saved values
-    const relayUrl = localStorage.getItem('email_relay_url');
-    const relaySecret = localStorage.getItem('email_relay_secret');
+    // NOTE: Server-side secrets (email_relay_secret, twilio_token) are NO
+    // LONGER stored in localStorage.  They live as Supabase Edge Function
+    // env vars (EMAIL_RELAY_SECRET, TWILIO_AUTH_TOKEN, etc.).
     const senderEmail = localStorage.getItem('sender_email');
-    const twilioSid = localStorage.getItem('twilio_sid');
-    const twilioToken = localStorage.getItem('twilio_token');
-    const twilioFrom = localStorage.getItem('twilio_from');
 
-    if (document.getElementById('email-relay-url')) {
-        document.getElementById('email-relay-url').value = relayUrl || '';
-        document.getElementById('email-relay-secret').value = relaySecret || '';
+    if (document.getElementById('sender-email')) {
         document.getElementById('sender-email').value = senderEmail || '';
-    }
-    if (document.getElementById('twilio-sid')) {
-        document.getElementById('twilio-sid').value = twilioSid || '';
-        document.getElementById('twilio-token').value = twilioToken || '';
-        document.getElementById('twilio-from').value = twilioFrom || '';
     }
 
     // Auto-generate sender email on first launch
@@ -2481,14 +2468,9 @@ function initAutomationSettings() {
         generateSenderEmail();
     }
 
-    // Save Email config
+    // Save Email config — secrets are now set via Supabase Dashboard
     document.getElementById('btn-save-email-config')?.addEventListener('click', () => {
-        const url = document.getElementById('email-relay-url').value.trim();
-        const secret = document.getElementById('email-relay-secret').value.trim();
-        localStorage.setItem('email_relay_url', url);
-        localStorage.setItem('email_relay_secret', secret);
-        updateSettingsStatus();
-        showToast('E-Mail-Konfiguration gespeichert', 'success');
+        showToast('E-Mail-Relay-Konfiguration (URL & Secret) muss als Supabase Secret konfiguriert werden (Dashboard > Edge Functions > Secrets: EMAIL_RELAY_URL, EMAIL_RELAY_SECRET).', 'info');
     });
 
     // Test Email
@@ -2509,13 +2491,9 @@ function initAutomationSettings() {
         showToast(result.success ? 'Test-E-Mail gesendet!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
     });
 
-    // Save SMS config
+    // Save SMS config — secrets are now set via Supabase Dashboard
     document.getElementById('btn-save-sms-config')?.addEventListener('click', () => {
-        localStorage.setItem('twilio_sid', document.getElementById('twilio-sid').value.trim());
-        localStorage.setItem('twilio_token', document.getElementById('twilio-token').value.trim());
-        localStorage.setItem('twilio_from', document.getElementById('twilio-from').value.trim());
-        updateSettingsStatus();
-        showToast('SMS-Konfiguration gespeichert', 'success');
+        showToast('Twilio-Konfiguration (SID, Token, From-Number) muss als Supabase Secrets konfiguriert werden (Dashboard > Edge Functions > Secrets: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER).', 'info');
     });
 
     // Email Automation Config
@@ -2696,12 +2674,11 @@ weber@example.de
 }
 
 function updateSettingsStatus() {
-    const geminiKey = localStorage.getItem('gemini_api_key');
+    // Server-side secrets (gemini_api_key, email_relay_secret, twilio_token)
+    // are no longer in localStorage.  Status now reflects whether the Supabase
+    // backend is connected (the Edge Functions hold the actual keys).
+    const supabaseOk = window.supabaseConfig?.isConfigured();
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
-    const relayUrl = localStorage.getItem('email_relay_url');
-    const relaySecret = localStorage.getItem('email_relay_secret');
-    const emailConfigured = relayUrl && relaySecret;
-    const twilioSid = localStorage.getItem('twilio_sid');
 
     const geminiStatus = document.getElementById('gemini-status');
     const webhookStatus = document.getElementById('webhook-status');
@@ -2715,10 +2692,12 @@ function updateSettingsStatus() {
         el.className = 'status-indicator' + (configured ? ' connected' : '');
     };
 
-    setStatus(geminiStatus, geminiKey);
+    // Gemini, Email, SMS are now considered configured when Supabase is connected
+    // (the actual API keys live as Supabase Edge Function secrets)
+    setStatus(geminiStatus, supabaseOk);
     setStatus(webhookStatus, webhookUrl);
-    setStatus(emailStatus, emailConfigured);
-    setStatus(smsStatus, twilioSid);
+    setStatus(emailStatus, supabaseOk);
+    setStatus(smsStatus, supabaseOk);
 
     // Email Automation Status
     if (window.emailAutomationService) {
@@ -2731,7 +2710,6 @@ function updateSettingsStatus() {
     }
 
     // Automation status panel
-    const supabaseOk = window.supabaseConfig?.isConfigured();
     const setAutoStatus = (id, ok, label) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -2740,9 +2718,9 @@ function updateSettingsStatus() {
     };
 
     setAutoStatus('auto-status-supabase', supabaseOk, 'Verbunden');
-    setAutoStatus('auto-status-email', supabaseOk && emailConfigured, 'Proton Mail Bereit');
-    setAutoStatus('auto-status-sms', supabaseOk && twilioSid, 'Bereit');
-    setAutoStatus('auto-status-overdue', supabaseOk && emailConfigured, 'Automatisch (tägl. 08:00)');
+    setAutoStatus('auto-status-email', supabaseOk, 'Proton Mail Bereit');
+    setAutoStatus('auto-status-sms', supabaseOk, 'Bereit');
+    setAutoStatus('auto-status-overdue', supabaseOk, 'Automatisch (tägl. 08:00)');
     setAutoStatus('auto-status-webhook', webhookUrl, 'Konfiguriert');
 }
 

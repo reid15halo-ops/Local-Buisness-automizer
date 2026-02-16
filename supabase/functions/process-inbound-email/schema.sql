@@ -5,6 +5,7 @@
 -- Inbound Emails Tabelle
 CREATE TABLE IF NOT EXISTS inbound_emails (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     from_email TEXT NOT NULL,
     from_name TEXT,
     subject TEXT,
@@ -86,6 +87,7 @@ CREATE TABLE IF NOT EXISTS angebote (
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_processed ON inbound_emails(processed);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_received_at ON inbound_emails(received_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_from_email ON inbound_emails(from_email);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_user_id ON inbound_emails(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_automation_log_created_at ON automation_log(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_automation_log_action ON automation_log(action);
@@ -109,11 +111,16 @@ ALTER TABLE kunden ENABLE ROW LEVEL SECURITY;
 ALTER TABLE anfragen ENABLE ROW LEVEL SECURITY;
 ALTER TABLE angebote ENABLE ROW LEVEL SECURITY;
 
--- Policies für inbound_emails (nur Service Role)
+-- Policies für inbound_emails (Service Role + authenticated users)
 CREATE POLICY "Service role can manage inbound_emails"
     ON inbound_emails
     FOR ALL
     USING (auth.role() = 'service_role');
+
+CREATE POLICY "inbound_emails_select_own"
+    ON inbound_emails
+    FOR SELECT
+    USING (auth.uid() = user_id);
 
 -- Policies für automation_log
 CREATE POLICY "Users can view their own automation logs"
@@ -236,7 +243,7 @@ BEGIN
     FROM inbound_emails ie
     LEFT JOIN angebote a ON ie.angebot_id::UUID = a.id
     WHERE ie.received_at >= NOW() - (days || ' days')::INTERVAL
-        AND (user_uuid IS NULL OR a.user_id = user_uuid);
+        AND (user_uuid IS NULL OR ie.user_id = user_uuid);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
