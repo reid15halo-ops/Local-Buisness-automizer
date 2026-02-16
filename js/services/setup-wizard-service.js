@@ -47,12 +47,12 @@ class SetupWizardService {
             {
                 id: 'gemini',
                 title: 'Google Gemini AI',
-                description: 'KI für automatische Analyse von Kundenanfragen',
-                required: true,
+                description: 'KI für automatische Analyse von Kundenanfragen (optional - wird auf Server-Seite gehostet)',
+                required: false,
                 fields: [
                     {
                         name: 'gemini_api_key',
-                        label: 'API Key',
+                        label: 'API Key (optional für local dev)',
                         placeholder: 'AIzaSy...',
                         type: 'password'
                     }
@@ -65,10 +65,14 @@ class SetupWizardService {
                     }
                 ],
                 instructions: [
-                    'Melde dich mit Google-Account an',
-                    'Klicke "Create API Key"',
-                    'Wähle "Create API key in new project"',
-                    'Kopiere den generierten Key'
+                    'WICHTIG: In der Produktion wird der API Key auf der Supabase-Seite gehostet.',
+                    'Diese Eingabe ist nur für die lokale Entwicklung erforderlich.',
+                    'Für Supabase Edge Functions: GEMINI_API_KEY als Umgebungsvariable setzen',
+                    'Optionale Schritte (nur für local dev):',
+                    '  • Melde dich mit Google-Account an',
+                    '  • Klicke "Create API Key"',
+                    '  • Wähle "Create API key in new project"',
+                    '  • Kopiere den generierten Key'
                 ]
             },
             {
@@ -113,12 +117,12 @@ class SetupWizardService {
 
     /**
      * Check if setup is complete
+     * Note: gemini_api_key is now optional (can be configured server-side in Supabase)
      */
     isSetupComplete() {
         const requiredKeys = [
             'supabase_url',
             'supabase_anon_key',
-            'gemini_api_key',
             'resend_api_key'
         ];
 
@@ -130,16 +134,18 @@ class SetupWizardService {
 
     /**
      * Get missing API keys
+     * Note: gemini_api_key is optional
      */
     getMissingKeys() {
         const allKeys = [
-            { key: 'supabase_url', name: 'Supabase URL' },
-            { key: 'supabase_anon_key', name: 'Supabase Anon Key' },
-            { key: 'gemini_api_key', name: 'Gemini API Key' },
-            { key: 'resend_api_key', name: 'Resend API Key' }
+            { key: 'supabase_url', name: 'Supabase URL', required: true },
+            { key: 'supabase_anon_key', name: 'Supabase Anon Key', required: true },
+            { key: 'gemini_api_key', name: 'Gemini API Key', required: false },
+            { key: 'resend_api_key', name: 'Resend API Key', required: true }
         ];
 
-        return allKeys.filter(({ key }) => {
+        return allKeys.filter(({ key, required }) => {
+            if (!required) return false; // Skip optional keys
             const value = localStorage.getItem(key);
             return !value || value.trim() === '';
         });
@@ -198,6 +204,14 @@ class SetupWizardService {
         for (const field of step.fields) {
             const value = localStorage.getItem(field.name);
 
+            // Gemini is now optional
+            if (field.name === 'gemini_api_key') {
+                if (value && value.trim() !== '' && !value.startsWith('AIzaSy')) {
+                    errors.push('Gemini API Key sollte mit "AIzaSy" beginnen (wenn angegeben)');
+                }
+                continue; // Optional field
+            }
+
             if (!value || value.trim() === '') {
                 errors.push(`${field.label} ist erforderlich`);
                 continue;
@@ -211,9 +225,6 @@ class SetupWizardService {
             // Basic format checks
             if (field.name === 'supabase_anon_key' && !value.startsWith('eyJ')) {
                 errors.push('Supabase Anon Key sollte mit "eyJ" beginnen');
-            }
-            if (field.name === 'gemini_api_key' && !value.startsWith('AIzaSy')) {
-                errors.push('Gemini API Key sollte mit "AIzaSy" beginnen');
             }
             if (field.name === 'resend_api_key' && !value.startsWith('re_')) {
                 errors.push('Resend API Key sollte mit "re_" beginnen');
@@ -330,11 +341,13 @@ class SetupWizardService {
 
     /**
      * Export configuration (for backup)
+     * Note: Does not export sensitive keys - only exports non-secret config values
      */
     exportConfig() {
         return {
             supabase_url: localStorage.getItem('supabase_url'),
             supabase_anon_key: localStorage.getItem('supabase_anon_key'),
+            // Gemini API key is optional and can be server-side
             gemini_api_key: localStorage.getItem('gemini_api_key'),
             resend_api_key: localStorage.getItem('resend_api_key'),
             exported_at: new Date().toISOString()

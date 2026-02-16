@@ -1,6 +1,10 @@
 /* ============================================
    Gemini API Service
    Real AI Integration for Text Generation
+
+   SECURITY NOTE: API key is now handled server-side through Supabase Edge Functions.
+   If Supabase is configured, requests go through ai-proxy function.
+   Local dev mode still supports direct API key for backward compatibility.
    ============================================ */
 
 class GeminiService {
@@ -8,6 +12,67 @@ class GeminiService {
         this.apiKey = apiKey;
         this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
         this.isConfigured = !!apiKey;
+        this.useProxy = false;
+        this.proxyUrl = null;
+
+        // Check if Supabase is configured and edge function is available
+        if (window.supabaseConfig?.isConfigured?.() && window.supabaseClient) {
+            const supabaseUrl = localStorage.getItem('supabase_url');
+            if (supabaseUrl) {
+                this.proxyUrl = `${supabaseUrl}/functions/v1/ai-proxy`;
+                this.useProxy = true;
+            }
+        }
+    }
+
+    /**
+     * Helper method to call Gemini API through proxy or direct
+     */
+    async _callGeminiAPI(payload) {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+
+        let url = this.baseUrl;
+        let body = payload;
+
+        if (this.useProxy && window.supabaseClient) {
+            // Use proxy through Supabase Edge Function
+            url = this.proxyUrl;
+            // Get auth token from Supabase
+            const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+            if (error || !session) {
+                console.warn('Supabase session not available, falling back to direct API (if key configured)');
+                if (!this.apiKey) {
+                    throw new Error('No authentication available and no API key configured');
+                }
+                // Fallback to direct
+                url = `${this.baseUrl}?key=${this.apiKey}`;
+            } else {
+                headers['Authorization'] = `Bearer ${session.access_token}`;
+            }
+        } else if (this.apiKey) {
+            // Direct API call (local dev mode)
+            url = `${this.baseUrl}?key=${this.apiKey}`;
+            if (!this.proxyUrl) {
+                console.warn('[Gemini] Using direct API key - consider configuring Supabase for production');
+            }
+        } else {
+            throw new Error('Gemini not configured: neither proxy nor API key available');
+        }
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Gemini API error ${response.status}: ${errorData.error || 'Unknown error'}`);
+        }
+
+        return response.json();
     }
 
     async generateAngebotText(anfrage) {
@@ -35,30 +100,18 @@ Der Text soll:
 Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
 
         try {
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 500,
-                    }
-                })
+            const data = await this._callGeminiAPI({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 500,
+                }
             });
 
-            if (!response.ok) {
-                console.error('Gemini API Error:', response.status);
-                return this.getFallbackText(anfrage);
-            }
-
-            const data = await response.json();
             const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
             if (generatedText) {
@@ -102,29 +155,18 @@ Antworte im JSON-Format:
 }`;
 
         try {
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.3,
-                        maxOutputTokens: 500,
-                    }
-                })
+            const data = await this._callGeminiAPI({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 500,
+                }
             });
 
-            if (!response.ok) {
-                return this.calculatePriceFallback(positionen, materialBestand);
-            }
-
-            const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
             // Try to parse JSON from response
@@ -163,17 +205,11 @@ Kunde: "${message}"
 Antwort:`;
 
         try {
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.4, maxOutputTokens: 300 }
-                })
+            const data = await this._callGeminiAPI({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.4, maxOutputTokens: 300 }
             });
 
-            if (!response.ok) return null;
-            const data = await response.json();
             return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
         } catch (e) {
             console.error('Gemini Chat Error:', e);

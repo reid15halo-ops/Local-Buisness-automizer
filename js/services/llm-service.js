@@ -1,6 +1,9 @@
 /* ============================================
    LLM Service
-   Unified AI Handler for Gemini (Cloud) and Ollama/Mistral (Local)
+   Unified AI Handler for Gemini (Cloud via proxy) and Ollama/Mistral (Local)
+
+   SECURITY NOTE: Gemini API key is now proxied through Supabase Edge Functions.
+   Direct API key usage only available for local development fallback.
    ============================================ */
 
 class LLMService {
@@ -10,6 +13,17 @@ class LLMService {
         if (!this.config.provider) this.config.provider = 'gemini';
         if (!this.config.ollamaUrl) this.config.ollamaUrl = 'http://localhost:11434';
         if (!this.config.ollamaModel) this.config.ollamaModel = 'mistral';
+
+        // Setup Gemini proxy
+        this.geminiProxyUrl = null;
+        this.useGeminiProxy = false;
+        if (window.supabaseConfig?.isConfigured?.() && window.supabaseClient) {
+            const supabaseUrl = localStorage.getItem('supabase_url');
+            if (supabaseUrl) {
+                this.geminiProxyUrl = `${supabaseUrl}/functions/v1/ai-proxy`;
+                this.useGeminiProxy = true;
+            }
+        }
     }
 
     async getAvailableModels() {
@@ -111,8 +125,6 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
 
     // --- GEMINI IMPLEMENTATION ---
     async _chatGemini(message, history, systemPrompt) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.config.apiKey}`;
-
         // Gemini structure
         const contents = history.map(h => ({
             role: h.role,
@@ -122,8 +134,8 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
         // Add current message
         contents.push({ role: 'user', parts: [{ text: message }] });
 
-        // Add system instruction (Gemini 1.5/2.0 supports systemInstruction, but 2.0-flash might vary via REST. 
-        // Safer to prepend to first message or use systemInstruction field if supported. 
+        // Add system instruction (Gemini 1.5/2.0 supports systemInstruction, but 2.0-flash might vary via REST.
+        // Safer to prepend to first message or use systemInstruction field if supported.
         // We'll use system_instruction for valid models)
 
         const payload = {
@@ -132,9 +144,39 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
             generationConfig: { temperature: 0.4, maxOutputTokens: 300 }
         };
 
+        // Determine URL and headers based on proxy availability
+        let url, headers = { 'Content-Type': 'application/json' };
+
+        if (this.useGeminiProxy && window.supabaseClient) {
+            // Use proxy through Supabase Edge Function
+            url = this.geminiProxyUrl;
+            try {
+                const { data: { session } } = await window.supabaseClient.auth.getSession();
+                if (session) {
+                    headers['Authorization'] = `Bearer ${session.access_token}`;
+                } else {
+                    throw new Error('No Supabase session');
+                }
+            } catch (e) {
+                console.warn('Supabase session not available for Gemini proxy, falling back to direct API');
+                if (!this.config.apiKey) {
+                    throw new Error('No Gemini API key configured');
+                }
+                url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.config.apiKey}`;
+            }
+        } else if (this.config.apiKey) {
+            // Direct API call (local dev mode)
+            url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.config.apiKey}`;
+            if (!this.useGeminiProxy) {
+                console.warn('[LLM] Using direct Gemini API key - consider configuring Supabase for production');
+            }
+        } else {
+            throw new Error('Gemini not configured: neither proxy nor API key available');
+        }
+
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify(payload)
         });
 

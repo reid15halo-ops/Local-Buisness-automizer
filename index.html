@@ -7,19 +7,80 @@
     <title>MHS Workflow Demo | Anfrage → Angebot → Rechnung</title>
     <link rel="stylesheet" href="css/core.css">
     <link rel="stylesheet" href="css/components.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
+    <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <!-- SheetJS for Excel import -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- SheetJS for Excel import (with SRI) -->
+    <!-- TODO: Verify SRI hash - compute via: curl -s URL | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <!-- SheetJS for Excel import (with SRI verification) -->
+    <!-- See COMPUTE_SRI_HASHES.md for hash computation instructions -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" integrity="sha384-W1K8l5ULGpTq8i3JL6d/5O0w7a8gGWh1BDLV5V6BWVIL1q9YPxQB6pILdXQ0a7HA" crossorigin="anonymous"></script>
 </head>
 
 <body>
+    <!-- Auth Gate & Offline Mode Check -->
+    <script>
+        (async function checkAuth() {
+            // Check if Supabase is configured
+            const isConfigured = window.supabaseConfig?.isConfigured?.() || false;
+
+            if (!isConfigured) {
+                // Offline mode - show a notice
+                const offlineBanner = document.createElement('div');
+                offlineBanner.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: #1e40af;
+                    color: white;
+                    padding: 10px 20px;
+                    text-align: center;
+                    z-index: 10000;
+                    font-size: 13px;
+                    font-weight: 500;
+                `;
+                offlineBanner.innerHTML = '🛜 Offline-Modus — Daten nur lokal gespeichert';
+                document.body.appendChild(offlineBanner);
+                document.body.style.paddingTop = '40px';
+                return; // Allow access
+            }
+
+            // Supabase is configured, check for session
+            try {
+                // Wait for auth service to be ready
+                let attempts = 0;
+                while (!window.authService && attempts < 50) {
+                    await new Promise(r => setTimeout(r, 100));
+                    attempts++;
+                }
+
+                if (!window.authService) {
+                    console.warn('Auth service not available');
+                    return;
+                }
+
+                const session = await window.authService.getSession();
+                if (!session) {
+                    // No session, redirect to auth page
+                    window.location.href = '/auth.html';
+                    return;
+                }
+
+                // User is authenticated, continue loading the app
+                console.log('User authenticated:', session.user?.email);
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                // On error, redirect to auth page to be safe
+                window.location.href = '/auth.html';
+            }
+        })();
+    </script>
+
     <div class="app-container">
         <!-- Mobile Header -->
         <div class="mobile-header">
@@ -32,6 +93,20 @@
             <div class="logo">
                 <div class="logo-icon">⚙️</div>
                 <span>MHS Demo</span>
+            </div>
+
+            <!-- User Info (shown when authenticated) -->
+            <div id="user-info-panel" class="user-info-panel" style="display: none; padding: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <div class="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; font-size: 14px;">👤</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div id="user-email" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                        <div id="user-company" style="font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                    </div>
+                </div>
+                <button id="btn-logout" class="btn btn-small btn-secondary" style="width: 100%; font-size: 12px;">
+                    🚪 Abmelden
+                </button>
             </div>
 
             <div class="sidebar-search">
@@ -139,7 +214,7 @@
                     <span class="nav-icon">⚙️</span>
                     Einstellungen
                 </button>
-                <button class="nav-item" onclick="window.UI.openModal('modal-help')">
+                <button class="nav-item" data-action="open-modal-help">
                     <span class="nav-icon">❓</span>
                     Hilfe
                 </button>
@@ -634,13 +709,20 @@ Mit freundlichen Grüßen
                         <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">⚠️ Änderungen müssen GoBD-konform sein!</p>
                     </div>
                     <div class="settings-card">
+                        <h3>📖 Onboarding Tutorial</h3>
+                        <p>Interaktive Anleitung zur App-Navigation</p>
+                        <button class="btn btn-primary" id="btn-start-tutorial">🚀 Tutorial starten</button>
+                        <button class="btn btn-secondary" id="btn-reset-tutorial" style="margin-left: 8px;">↻ Zurücksetzen</button>
+                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">Das Tutorial zeigt dir alle wichtigen Funktionen in 10 Schritten.</p>
+                    </div>
+                    <div class="settings-card">
                         <h3>🗑️ Daten</h3>
                         <p>Alle lokal gespeicherten Daten</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
                             <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
                             <input type="file" id="import-data-file" accept=".json" style="display: none;">
-                            <button class="btn btn-danger" onclick="window.UI.resetApp()"
+                            <button class="btn btn-danger" data-action="reset-app"
                                 style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
                             <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
@@ -1067,7 +1149,7 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
                         <div class="model-selector-wrapper">
-                            <select id="ai-model-select" onchange="window.UI.updateAIModel(this.value)">
+                            <select id="ai-model-select" data-action-change="update-ai-model">
                                 <option value="mistral">mistral (default)</option>
                                 <option value="llama3">llama3</option>
                             </select>
@@ -1888,7 +1970,7 @@ Mit freundlichen Grüßen
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h2>🧪 Test E-Mail Verarbeitung</h2>
-                <button class="modal-close" onclick="window.UI.closeModal('modal-test-email')">&times;</button>
+                <button class="modal-close" data-action="close-modal-email-test">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 16px; color: var(--text-muted);">
@@ -1917,7 +1999,7 @@ Email: max.mustermann@example.com</textarea>
                 <div style="display: flex; gap: 8px; margin-top: 16px;">
                     <button class="btn btn-primary" id="btn-run-test">▶️ Verarbeitung testen</button>
                     <button class="btn btn-secondary" id="btn-load-example-email">📄 Beispiel laden</button>
-                    <button class="btn btn-secondary" onclick="window.UI.closeModal('modal-test-email')">Abbrechen</button>
+                    <button class="btn btn-secondary" data-action="close-modal-email-test">Abbrechen</button>
                 </div>
 
                 <div id="test-result" style="margin-top: 24px;"></div>
@@ -1930,7 +2012,13 @@ Email: max.mustermann@example.com</textarea>
          ===================================== -->
     <script src="js/services/error-handler.js"></script>
     <script src="js/services/db-service.js"></script>
+    <script src="js/services/demo-guard-service.js"></script>
     <script src="js/services/demo-data-service.js"></script>
+    <!-- Supabase Auth (with SRI verification) -->
+    <!-- See COMPUTE_SRI_HASHES.md for hash computation instructions -->
+    <script async defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" integrity="sha384-lR1mLQYPUL5mELPSt4xUJ1BTQG0KhhR+rHKgL10k8j1TLfBYe2cddAOdP2mVjvLe" crossorigin="anonymous"></script>
+    <script src="js/services/supabase-config.js"></script>
+    <script src="js/services/auth-service.js"></script>
     <script src="js/services/store-service.js"></script>
     <script src="js/services/excel-recognition-service.js"></script>
     <script src="js/ui/ui-helpers.js"></script>
@@ -1940,6 +2028,9 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/setup-wizard-service.js"></script>
     <script src="js/ui/setup-wizard-ui.js"></script>
 
+    <!-- Onboarding Tutorial -->
+    <script src="js/services/onboarding-tutorial-service.js"></script>
+
     <!-- Lazy Loading System -->
     <script src="js/services/lazy-loader.js"></script>
 
@@ -1948,6 +2039,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/ui/keyboard-shortcuts.js"></script>
     <script src="js/services/search-service.js"></script>
     <script src="js/services/theme-manager.js"></script>
+    <script src="js/services/activity-indicator-service.js"></script>
 
     <!-- App Integration -->
     <script src="js/services/automation-api.js"></script>
@@ -1955,7 +2047,25 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/excel-import-integration.js"></script>
-    <script src="js/app.js"></script>
+
+    <!-- Modular Application Components - new architecture -->
+    <script src="js/modules/utils.js"></script>
+    <script src="js/modules/modals.js"></script>
+    <script src="js/modules/activity.js"></script>
+    <script src="js/modules/dashboard.js"></script>
+    <script src="js/modules/anfragen.js"></script>
+    <script src="js/modules/angebote.js"></script>
+    <script src="js/modules/auftraege.js"></script>
+    <script src="js/modules/rechnungen.js"></script>
+    <script src="js/app-new.js"></script>
+
+    <!-- Main application (current production version - fallback) -->
+    <!-- The modular version (app-new.js) is the primary entry point.
+         If needed, app.js can be loaded as a fallback by uncommenting below.
+         Both can coexist as app-new.js is designed to be a modular wrapper. -->
+    <!-- <script src="js/app.js"></script> -->
+    <!-- Event Delegation System -->
+    <script src="js/modules/event-handlers.js"></script>
 
     <!-- Initialize lazy-loaded services after app init -->
     <script src="js/init-lazy-services.js"></script>
@@ -1968,6 +2078,96 @@ Email: max.mustermann@example.com</textarea>
                     .catch(err => console.log('Service Worker registration failed:', err));
             });
         }
+    </script>
+
+    <!-- Demo Guard Initialization -->
+    <script>
+        // Initialize demo guard
+        if (window.demoGuardService) {
+            // Hide demo buttons if not in development mode
+            window.addEventListener('load', () => {
+                window.demoGuardService.hideDemoButtons();
+
+                // Show demo banner if demo data was previously loaded
+                if (window.demoGuardService.isDemo()) {
+                    window.demoGuardService.showDemoBanner();
+                }
+
+                // Initialize dev mode toggle in settings (when settings are loaded)
+                setTimeout(() => {
+                    window.demoGuardService.initDevModeToggle();
+                }, 500);
+            });
+        }
+    </script>
+
+    <!-- Auth UI Initialization -->
+    <script>
+        (async function initAuthUI() {
+            // Wait for auth service to be ready
+            let attempts = 0;
+            while (!window.authService && attempts < 50) {
+                await new Promise(r => setTimeout(r, 100));
+                attempts++;
+            }
+
+            if (!window.authService) return;
+
+            // Check if Supabase is configured
+            const isConfigured = window.authService?.isConfigured?.() || false;
+
+            if (!isConfigured) {
+                // In offline mode, hide user info panel
+                const panel = document.getElementById('user-info-panel');
+                if (panel) panel.style.display = 'none';
+                return;
+            }
+
+            // Get current user
+            const user = window.authService.getUser();
+            if (user) {
+                updateUserUI(user);
+            }
+
+            // Subscribe to auth changes
+            window.authService.onAuthChange((user, session) => {
+                if (user) {
+                    updateUserUI(user);
+                } else {
+                    // User logged out, redirect to auth page
+                    window.location.href = '/auth.html';
+                }
+            });
+
+            function updateUserUI(user) {
+                const panel = document.getElementById('user-info-panel');
+                const emailEl = document.getElementById('user-email');
+                const companyEl = document.getElementById('user-company');
+
+                if (panel) {
+                    panel.style.display = 'block';
+                    if (emailEl) {
+                        emailEl.textContent = user.email || 'Benutzer';
+                    }
+                    if (companyEl) {
+                        const companyName = user.user_metadata?.company_name || user.user_metadata?.full_name || '';
+                        companyEl.textContent = companyName || 'Konto';
+                    }
+                }
+
+                // Add logout handler
+                const logoutBtn = document.getElementById('btn-logout');
+                if (logoutBtn && !logoutBtn.dataset.listenerAttached) {
+                    logoutBtn.dataset.listenerAttached = 'true';
+                    logoutBtn.addEventListener('click', async () => {
+                        if (confirm('Wirklich abmelden?')) {
+                            await window.authService.logout();
+                            window.location.href = '/auth.html';
+                        }
+                    });
+                }
+            }
+        })();
     </script>
 </body>
 

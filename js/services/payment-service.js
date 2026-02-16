@@ -5,57 +5,92 @@
 
 class PaymentService {
     constructor() {
-        this.payments = JSON.parse(localStorage.getItem('mhs_payments') || '[]');
-        this.paymentLinks = JSON.parse(localStorage.getItem('mhs_payment_links') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_payment_settings') || '{}');
+        try {
+            this.payments = JSON.parse(localStorage.getItem('mhs_payments') || '[]');
+            this.paymentLinks = JSON.parse(localStorage.getItem('mhs_payment_links') || '[]');
+            this.settings = JSON.parse(localStorage.getItem('mhs_payment_settings') || '{}');
 
-        // Default settings
-        if (!this.settings.depositPercentage) this.settings.depositPercentage = 30;
-        if (!this.settings.depositRequired) this.settings.depositRequired = false;
-        if (!this.settings.depositThreshold) this.settings.depositThreshold = 1000; // Require deposit over €1000
-        if (!this.settings.paymentMethods) this.settings.paymentMethods = ['bank', 'paypal'];
-        if (!this.settings.businessName) this.settings.businessName = 'MHS Service';
+            // Default settings
+            if (!this.settings.depositPercentage) this.settings.depositPercentage = 30;
+            if (!this.settings.depositRequired) this.settings.depositRequired = false;
+            if (!this.settings.depositThreshold) this.settings.depositThreshold = 1000; // Require deposit over €1000
+            if (!this.settings.paymentMethods) this.settings.paymentMethods = ['bank', 'paypal'];
+            if (!this.settings.businessName) this.settings.businessName = 'MHS Service';
+        } catch (error) {
+            console.error('PaymentService initialization error:', error);
+            if (window.errorHandler) {
+                window.errorHandler.handle(error, 'PaymentService.constructor', false);
+            }
+            // Fallback to defaults
+            this.payments = [];
+            this.paymentLinks = [];
+            this.settings = {
+                depositPercentage: 30,
+                depositRequired: false,
+                depositThreshold: 1000,
+                paymentMethods: ['bank', 'paypal'],
+                businessName: 'MHS Service'
+            };
+        }
     }
 
     // Create a payment link for invoice/deposit
     createPaymentLink(options) {
-        const {
-            type = 'invoice', // 'invoice', 'deposit', 'custom'
-            referenceId,
-            referenceType,
-            amount,
-            description,
-            customerEmail,
-            customerName,
-            expiresIn = 7 // days
-        } = options;
+        try {
+            if (!options || typeof options !== 'object') {
+                throw new Error('Invalid payment link options');
+            }
 
-        const link = {
-            id: 'pay-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
-            type: type,
-            referenceId: referenceId,
-            referenceType: referenceType, // 'rechnung', 'angebot', 'termin'
-            amount: amount,
-            currency: 'EUR',
-            description: description || `Zahlung für ${referenceType} ${referenceId}`,
-            customerEmail: customerEmail,
-            customerName: customerName,
-            status: 'pending', // pending, paid, expired, cancelled
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString(),
-            paidAt: null,
-            paymentMethod: null,
-            transactionId: null
-        };
+            const {
+                type = 'invoice', // 'invoice', 'deposit', 'custom'
+                referenceId,
+                referenceType,
+                amount,
+                description,
+                customerEmail,
+                customerName,
+                expiresIn = 7 // days
+            } = options;
 
-        // Generate payment URL (demo mode)
-        link.url = this.generatePaymentUrl(link);
-        link.shortUrl = `mhs.pay/${link.id.substr(-8)}`;
+            if (!amount || amount <= 0) {
+                throw new Error('Invalid payment amount');
+            }
 
-        this.paymentLinks.push(link);
-        this.saveLinks();
+            const link = {
+                id: 'pay-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+                type: type,
+                referenceId: referenceId,
+                referenceType: referenceType, // 'rechnung', 'angebot', 'termin'
+                amount: amount,
+                currency: 'EUR',
+                description: description || `Zahlung für ${referenceType} ${referenceId}`,
+                customerEmail: customerEmail,
+                customerName: customerName,
+                status: 'pending', // pending, paid, expired, cancelled
+                createdAt: new Date().toISOString(),
+                expiresAt: new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString(),
+                paidAt: null,
+                paymentMethod: null,
+                transactionId: null
+            };
 
-        return link;
+            // Generate payment URL (demo mode)
+            link.url = this.generatePaymentUrl(link);
+            link.shortUrl = `mhs.pay/${link.id.substr(-8)}`;
+
+            if (this.paymentLinks) {
+                this.paymentLinks.push(link);
+                this.saveLinks();
+            }
+
+            return link;
+        } catch (error) {
+            console.error('Error creating payment link:', error);
+            if (window.errorHandler) {
+                window.errorHandler.handle(error, 'PaymentService.createPaymentLink', false);
+            }
+            throw error;
+        }
     }
 
     // Generate payment URL (would integrate with Stripe/PayPal)
@@ -102,91 +137,139 @@ class PaymentService {
 
     // Process payment (demo mode - would be webhook in production)
     processPayment(linkId, paymentData) {
-        const link = this.paymentLinks.find(l => l.id === linkId);
-        if (!link) return { success: false, error: 'Link not found' };
-        if (link.status !== 'pending') return { success: false, error: 'Link not active' };
+        try {
+            if (!linkId) {
+                throw new Error('Payment link ID required');
+            }
 
-        // Record payment
-        const payment = {
-            id: 'pmt-' + Date.now(),
-            paymentLinkId: linkId,
-            amount: link.amount,
-            currency: link.currency,
-            method: paymentData.method || 'card',
-            transactionId: paymentData.transactionId || 'tx-' + Date.now(),
-            customerEmail: link.customerEmail,
-            referenceId: link.referenceId,
-            referenceType: link.referenceType,
-            status: 'completed',
-            paidAt: new Date().toISOString(),
-            metadata: paymentData.metadata || {}
-        };
+            const link = this.paymentLinks?.find(l => l.id === linkId);
+            if (!link) {
+                return { success: false, error: 'Link not found' };
+            }
+            if (link.status !== 'pending') {
+                return { success: false, error: 'Link not active' };
+            }
 
-        this.payments.push(payment);
+            // Record payment
+            const payment = {
+                id: 'pmt-' + Date.now(),
+                paymentLinkId: linkId,
+                amount: link.amount,
+                currency: link.currency,
+                method: paymentData?.method || 'card',
+                transactionId: paymentData?.transactionId || 'tx-' + Date.now(),
+                customerEmail: link.customerEmail,
+                referenceId: link.referenceId,
+                referenceType: link.referenceType,
+                status: 'completed',
+                paidAt: new Date().toISOString(),
+                metadata: paymentData?.metadata || {}
+            };
 
-        // Update link status
-        link.status = 'paid';
-        link.paidAt = payment.paidAt;
-        link.paymentMethod = payment.method;
-        link.transactionId = payment.transactionId;
+            if (this.payments) {
+                this.payments.push(payment);
+            }
 
-        this.saveLinks();
-        this.savePayments();
+            // Update link status
+            link.status = 'paid';
+            link.paidAt = payment.paidAt;
+            link.paymentMethod = payment.method;
+            link.transactionId = payment.transactionId;
 
-        // Update related invoice/booking
-        this.updateReference(link);
+            this.saveLinks();
+            this.savePayments();
 
-        // Send confirmation
-        this.sendPaymentConfirmation(payment);
+            // Update related invoice/booking
+            this.updateReference(link);
 
-        return { success: true, payment };
+            // Send confirmation
+            this.sendPaymentConfirmation(payment);
+
+            return { success: true, payment };
+        } catch (error) {
+            console.error('Error processing payment:', error);
+            if (window.errorHandler) {
+                window.errorHandler.handle(error, 'PaymentService.processPayment', true);
+            }
+            return { success: false, error: error.message };
+        }
     }
 
     // Update the referenced document
     updateReference(link) {
-        if (link.referenceType === 'rechnung') {
-            // Update invoice
-            if (typeof store !== 'undefined' && store.rechnungen) {
-                const invoice = store.rechnungen.find(r => r.id === link.referenceId);
-                if (invoice) {
-                    if (link.type === 'deposit') {
-                        invoice.anzahlung = link.amount;
-                        invoice.anzahlungDatum = link.paidAt;
-                        invoice.restbetrag = (invoice.betrag || 0) - link.amount;
-                    } else {
-                        invoice.status = 'bezahlt';
-                        invoice.bezahltAm = link.paidAt;
+        try {
+            if (!link) return;
+
+            if (link.referenceType === 'rechnung') {
+                // Update invoice
+                if (typeof store !== 'undefined' && store?.rechnungen) {
+                    try {
+                        const invoice = store.rechnungen.find(r => r.id === link.referenceId);
+                        if (invoice) {
+                            if (link.type === 'deposit') {
+                                invoice.anzahlung = link.amount;
+                                invoice.anzahlungDatum = link.paidAt;
+                                invoice.restbetrag = (invoice.betrag || 0) - link.amount;
+                            } else {
+                                invoice.status = 'bezahlt';
+                                invoice.bezahltAm = link.paidAt;
+                            }
+                            if (typeof saveStore === 'function') saveStore();
+                        }
+                    } catch (invoiceError) {
+                        console.error('Error updating invoice:', invoiceError);
                     }
-                    if (typeof saveStore === 'function') saveStore();
                 }
             }
-        }
 
-        if (link.referenceType === 'termin') {
-            // Update appointment
-            if (window.calendarService) {
-                window.calendarService.updateAppointment(link.referenceId, {
-                    depositPaid: true,
-                    depositAmount: link.amount,
-                    depositPaidAt: link.paidAt
-                });
+            if (link.referenceType === 'termin') {
+                // Update appointment
+                try {
+                    if (window.calendarService) {
+                        window.calendarService.updateAppointment(link.referenceId, {
+                            depositPaid: true,
+                            depositAmount: link.amount,
+                            depositPaidAt: link.paidAt
+                        });
+                    }
+                } catch (appointmentError) {
+                    console.error('Error updating appointment:', appointmentError);
+                }
+            }
+        } catch (error) {
+            console.error('Error updating reference:', error);
+            if (window.errorHandler) {
+                window.errorHandler.handle(error, 'PaymentService.updateReference', false);
             }
         }
     }
 
     // Send payment confirmation
     sendPaymentConfirmation(payment) {
-        console.log(`💳 Zahlungsbestätigung: ${this.formatCurrency(payment.amount)} von ${payment.customerEmail}`);
+        try {
+            if (!payment) return;
 
-        if (window.communicationService) {
-            window.communicationService.logMessage({
-                type: 'email',
-                direction: 'outbound',
-                to: payment.customerEmail,
-                subject: `Zahlungsbestätigung - ${payment.referenceId}`,
-                content: `Vielen Dank für Ihre Zahlung von ${this.formatCurrency(payment.amount)}. Transaktions-ID: ${payment.transactionId}`,
-                status: 'sent'
-            });
+            console.log(`💳 Zahlungsbestätigung: ${this.formatCurrency(payment.amount)} von ${payment.customerEmail}`);
+
+            if (window.communicationService) {
+                try {
+                    window.communicationService.logMessage({
+                        type: 'email',
+                        direction: 'outbound',
+                        to: payment.customerEmail,
+                        subject: `Zahlungsbestätigung - ${payment.referenceId}`,
+                        content: `Vielen Dank für Ihre Zahlung von ${this.formatCurrency(payment.amount)}. Transaktions-ID: ${payment.transactionId}`,
+                        status: 'sent'
+                    });
+                } catch (commError) {
+                    console.error('Error logging payment confirmation:', commError);
+                }
+            }
+        } catch (error) {
+            console.error('Error sending payment confirmation:', error);
+            if (window.errorHandler) {
+                window.errorHandler.handle(error, 'PaymentService.sendPaymentConfirmation', false);
+            }
         }
     }
 

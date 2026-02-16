@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'mhs-workflow-v3';
+const CACHE_NAME = 'mhs-workflow-v4';
 const OFFLINE_URL = 'offline.html';
 
 // Files to cache for offline use
@@ -13,8 +13,37 @@ const STATIC_ASSETS = [
     '/offline.html',
     '/css/core.css',
     '/css/components.css',
-    '/js/app.js',
+    '/css/fonts.css',
+    '/js/app-new.js',
     '/js/features-integration.js',
+    '/js/new-features-ui.js',
+    '/js/excel-import-integration.js',
+    '/js/init-lazy-services.js',
+    '/js/modules/utils.js',
+    '/js/modules/modals.js',
+    '/js/modules/activity.js',
+    '/js/modules/dashboard.js',
+    '/js/modules/anfragen.js',
+    '/js/modules/angebote.js',
+    '/js/modules/auftraege.js',
+    '/js/modules/rechnungen.js',
+    '/js/modules/event-handlers.js',
+    '/js/modules/error-boundary.js',
+    '/js/services/error-handler.js',
+    '/js/services/db-service.js',
+    '/js/services/demo-guard-service.js',
+    '/js/services/demo-data-service.js',
+    '/js/services/auth-service.js',
+    '/js/services/store-service.js',
+    '/js/services/excel-recognition-service.js',
+    '/js/services/setup-wizard-service.js',
+    '/js/services/onboarding-tutorial-service.js',
+    '/js/services/lazy-loader.js',
+    '/js/services/search-service.js',
+    '/js/services/theme-manager.js',
+    '/js/services/activity-indicator-service.js',
+    '/js/services/automation-api.js',
+    '/js/services/pdf-service.js',
     '/js/services/gemini-service.js',
     '/js/services/bookkeeping-service.js',
     '/js/services/dunning-service.js',
@@ -40,6 +69,12 @@ const STATIC_ASSETS = [
     '/js/services/sms-reminder-service.js',
     '/js/services/voice-command-service.js',
     '/js/services/einvoice-service.js',
+    '/js/services/supabase-config.js',
+    '/js/ui/ui-helpers.js',
+    '/js/ui/excel-import-wizard.js',
+    '/js/ui/setup-wizard-ui.js',
+    '/js/ui/navigation.js',
+    '/js/ui/keyboard-shortcuts.js',
     '/manifest.json'
 ];
 

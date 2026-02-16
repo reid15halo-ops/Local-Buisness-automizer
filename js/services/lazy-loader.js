@@ -10,43 +10,76 @@ class LazyLoader {
 
         // Service groups - load on demand
         this.serviceGroups = {
-            // Core - loaded via <script> tags in index.html (not lazy-loaded)
-            // error-handler, db-service, demo-data-service, store-service,
-            // ui-helpers (js/ui/), navigation (js/ui/) are all eagerly loaded
-            core: [],
-
-            // Basic workflow - load on dashboard/init
-            workflow: [
-                'gemini-service',
-                'material-service',
-                'dunning-service',
-                'bookkeeping-service',
-                'work-estimation-service'
+            // Core Infrastructure - essential services (loaded eagerly or on critical path)
+            core: [
+                'auth-service',
+                'supabase-config',
+                'supabase-db-service',
+                'sanitize-service'
             ],
 
-            // CRM & Communication - load when Kunden view opened
+            // CRM & Customer Management - load when Kunden view opened
             crm: [
                 'customer-service',
+                'lead-service',
                 'communication-service',
                 'phone-service',
                 'email-service',
+                'email-automation-service'
+            ],
+
+            // Finance & Accounting - load when Buchhaltung/Rechnungen view opened
+            finance: [
+                'invoice-service',
+                'invoice-numbering-service',
+                'invoice-template-service',
+                'payment-service',
+                'bookkeeping-service',
+                'cashflow-service',
+                'profitability-service',
+                'banking-service',
+                'stripe-service',
+                'datev-export-service'
+            ],
+
+            // Automation & Workflows - load when automation features needed
+            automation: [
+                'email-service',
                 'email-automation-service',
-                'lead-service'
+                'webhook-service',
+                'automation-api',
+                'workflow-service',
+                'recurring-task-service',
+                'approval-service',
+                'task-service'
+            ],
+
+            // AI & Intelligence - load when AI assistant opened
+            ai: [
+                'gemini-service',
+                'ai-assistant-service',
+                'llm-service',
+                'work-estimation-service',
+                'chatbot-service',
+                'voice-command-service'
             ],
 
             // Documents & Scanning - load when Dokumente view opened
             documents: [
                 'document-service',
+                'pdf-generation-service',
+                'einvoice-service',
                 'ocr-scanner-service',
-                'version-control-service',
                 'photo-service',
                 'barcode-service',
-                'qrcode-service'
+                'qrcode-service',
+                'print-digital-service'
             ],
 
-            // Calendar & Time - load when Termine/Kalender view opened
+            // Calendar & Task Management - load when Termine/Kalender/Aufgaben opened
             calendar: [
                 'calendar-service',
+                'task-service',
                 'booking-service',
                 'timetracking-service',
                 'recurring-task-service'
@@ -59,66 +92,57 @@ class LazyLoader {
                 'profitability-service'
             ],
 
-            // Workflow Automation - load when needed
-            automation: [
-                'workflow-service',
-                'approval-service',
-                'task-service',
-                'webhook-service'
+            // Settings & Configuration - load when Einstellungen opened
+            settings: [
+                'theme-manager',
+                'theme-service',
+                'i18n-service',
+                'version-control-service',
+                'security-backup-service',
+                'onboarding-tutorial-service'
             ],
 
-            // AI Features - load when AI assistant opened
-            ai: [
-                'ai-assistant-service',
-                'chatbot-service',
-                'llm-service',
-                'voice-command-service'
-            ],
-
-            // Finance & Banking - load when Buchhaltung view opened
-            finance: [
-                'banking-service',
-                'payment-service',
-                'datev-export-service',
-                'einvoice-service',
-                'invoice-numbering-service',
-                'invoice-template-service',
-                'pdf-generation-service',
-                'invoice-service'
+            // Basic Workflow - load on dashboard/init
+            workflow: [
+                'gemini-service',
+                'dunning-service',
+                'bookkeeping-service',
+                'work-estimation-service',
+                'material-service'
             ],
 
             // Advanced Features - load on demand
             advanced: [
-                'sms-reminder-service',
                 'contract-service',
-                'route-service',
+                'dunning-service',
                 'warranty-service',
-                'print-digital-service',
-                'security-backup-service',
-                'theme-service',
-                'i18n-service'
+                'sms-reminder-service',
+                'user-manager-service',
+                'route-service'
             ]
         };
 
         // View to service group mapping
         this.viewToGroups = {
-            'dashboard': ['workflow'],
-            'anfragen': ['workflow'],
-            'angebote': ['workflow'],
-            'auftraege': ['workflow'],
-            'rechnungen': ['workflow', 'finance'],
-            'mahnwesen': ['workflow'],
-            'buchhaltung': ['workflow', 'finance'],
-            'kunden': ['crm'],
-            'emails': ['crm'],
-            'email-automation': ['crm'],
-            'termine': ['calendar'],
-            'kalender': ['calendar'],
-            'aufgaben': ['automation'],
-            'dokumente': ['documents'],
-            'berichte': ['reports'],
-            'einstellungen': ['advanced', 'crm'],
-            'ai-assistent': ['ai']
+            'dashboard': ['workflow', 'crm', 'ai'],
+            'anfragen': ['workflow', 'crm', 'automation'],
+            'angebote': ['workflow', 'crm', 'ai'],
+            'auftraege': ['workflow', 'crm', 'automation', 'ai'],
+            'rechnungen': ['workflow', 'finance', 'documents', 'automation'],
+            'mahnwesen': ['workflow', 'finance', 'automation'],
+            'buchhaltung': ['workflow', 'finance', 'reports', 'automation'],
+            'kunden': ['crm', 'communication', 'calendar'],
+            'emails': ['crm', 'communication', 'automation'],
+            'email-automation': ['crm', 'automation', 'ai'],
+            'termine': ['calendar', 'automation', 'crm'],
+            'kalender': ['calendar', 'automation'],
+            'aufgaben': ['automation', 'calendar'],
+            'dokumente': ['documents', 'automation', 'ai'],
+            'berichte': ['reports', 'finance', 'automation'],
+            'einstellungen': ['settings', 'advanced'],
+            'ai-assistent': ['ai', 'automation', 'crm'],
+            'material': ['workflow'],
+            'material-list': ['workflow']
         };
     }
 
@@ -223,6 +247,16 @@ class LazyLoader {
     }
 
     /**
+     * Register critical services that should be eagerly loaded
+     * These services are essential for core app functionality
+     * @param {string[]} serviceNames - Array of service names to mark as critical
+     */
+    registerCriticalServices(serviceNames) {
+        serviceNames.forEach(name => this.loaded.add('js/services/' + name));
+        console.log(`✅ Registered ${serviceNames.length} critical services as pre-loaded`);
+    }
+
+    /**
      * Get loading stats for debugging
      */
     getStats() {
@@ -230,7 +264,8 @@ class LazyLoader {
             loaded: this.loaded.size,
             loading: this.loading.size,
             total: Object.values(this.serviceGroups).flat().length,
-            loadedServices: Array.from(this.loaded)
+            loadedServices: Array.from(this.loaded),
+            serviceGroups: Object.keys(this.serviceGroups)
         };
     }
 }

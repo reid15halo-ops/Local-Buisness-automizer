@@ -80,11 +80,23 @@ function createAnfrageFromEmail(emailId) {
 }
 
 function initEmails() {
-    document.getElementById('btn-load-demo-emails')?.addEventListener('click', () => {
+    document.getElementById('btn-load-demo-emails')?.addEventListener('click', async () => {
+        // Guard: Require confirmation in production mode
+        if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
+            const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-E-Mails laden');
+            if (!confirmed) return;
+        }
+
         const demoEmails = window.emailService.getDemoEmails();
         demoEmails.forEach(email => window.emailService.addEmail(email));
         renderEmails();
         showToast('Demo-Mails geladen', 'info');
+
+        // Show demo mode banner
+        if (window.demoGuardService) {
+            window.demoGuardService.showDemoBanner();
+            window.demoGuardService.markDemoLoaded();
+        }
     });
 
     document.getElementById('btn-refresh-emails')?.addEventListener('click', () => {
@@ -660,7 +672,7 @@ async function generateReport() {
     }
 
     html += '<div style="margin-top:20px;display:flex;gap:12px;">';
-    html += '<button class="btn btn-secondary" onclick="exportReportCSV()">CSV exportieren</button>';
+    html += '<button class="btn btn-secondary" data-action="export-report-csv">CSV exportieren</button>';
     html += '</div>';
 
     output.innerHTML = html;

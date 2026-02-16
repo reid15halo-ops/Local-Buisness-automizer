@@ -25,131 +25,200 @@ window.init = init;
 window.updateDashboard = updateDashboard;
 
 function renderActivities() {
-    const container = document.getElementById('activity-list');
-    const activities = window.storeService.state.activities || [];
+    try {
+        const container = document.getElementById('activity-list');
+        if (!container) return;
 
-    if (activities.length === 0) {
-        container.innerHTML = '<p class="empty-state">Noch keine Aktivitäten.</p>';
-        return;
-    }
+        const activities = window.storeService?.state?.activities || [];
 
-    container.innerHTML = activities.slice(0, 10).map(activity => `
-        <div class="activity-item">
-            <span class="activity-icon">${activity.icon}</span>
-            <div class="activity-content">
-                <div class="activity-title">${activity.title}</div>
-                <div class="activity-time">${window.UI.getRelativeTime(activity.time)}</div>
+        if (activities.length === 0) {
+            container.innerHTML = '<p class="empty-state">Noch keine Aktivitäten.</p>';
+            return;
+        }
+
+        container.innerHTML = activities.slice(0, 10).map(activity => `
+            <div class="activity-item">
+                <span class="activity-icon">${activity.icon}</span>
+                <div class="activity-content">
+                    <div class="activity-title">${activity.title}</div>
+                    <div class="activity-time">${window.UI?.getRelativeTime?.(activity.time) || ''}</div>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'renderActivities', false);
+        } else {
+            console.error('renderActivities failed:', error);
+        }
+    }
 }
 
 // ============================================
 // Dashboard
 // ============================================
 function updateDashboard() {
-    const offeneAnfragen = store.anfragen.filter(a => a.status === 'neu').length;
-    const wartendeAngebote = store.angebote.filter(a => a.status === 'offen').length;
-    const aktiveAuftraege = store.auftraege.filter(a => a.status !== 'abgeschlossen').length;
-    const offeneRechnungen = store.rechnungen.filter(r => r.status === 'offen').length;
+    try {
+        const offeneAnfragen = store?.anfragen?.filter(a => a.status === 'neu').length || 0;
+        const wartendeAngebote = store?.angebote?.filter(a => a.status === 'offen').length || 0;
+        const aktiveAuftraege = store?.auftraege?.filter(a => a.status !== 'abgeschlossen').length || 0;
+        const offeneRechnungen = store?.rechnungen?.filter(r => r.status === 'offen').length || 0;
 
-    document.getElementById('stat-anfragen').textContent = offeneAnfragen;
-    document.getElementById('stat-angebote').textContent = wartendeAngebote;
-    document.getElementById('stat-auftraege').textContent = aktiveAuftraege;
-    document.getElementById('stat-rechnungen').textContent = offeneRechnungen;
+        const statAnfragen = document.getElementById('stat-anfragen');
+        const statAngebote = document.getElementById('stat-angebote');
+        const statAuftraege = document.getElementById('stat-auftraege');
+        const statRechnungen = document.getElementById('stat-rechnungen');
 
-    // Update badges
-    document.getElementById('anfragen-badge').textContent = offeneAnfragen;
-    document.getElementById('angebote-badge').textContent = wartendeAngebote;
-    document.getElementById('auftraege-badge').textContent = aktiveAuftraege;
-    document.getElementById('rechnungen-badge').textContent = offeneRechnungen;
+        if (statAnfragen) statAnfragen.textContent = offeneAnfragen;
+        if (statAngebote) statAngebote.textContent = wartendeAngebote;
+        if (statAuftraege) statAuftraege.textContent = aktiveAuftraege;
+        if (statRechnungen) statRechnungen.textContent = offeneRechnungen;
 
-    renderActivities();
+        // Update badges
+        const anfragenBadge = document.getElementById('anfragen-badge');
+        const angeboteBadge = document.getElementById('angebote-badge');
+        const auftraegeBadge = document.getElementById('auftraege-badge');
+        const rechnungenBadge = document.getElementById('rechnungen-badge');
+
+        if (anfragenBadge) anfragenBadge.textContent = offeneAnfragen;
+        if (angeboteBadge) angeboteBadge.textContent = wartendeAngebote;
+        if (auftraegeBadge) auftraegeBadge.textContent = aktiveAuftraege;
+        if (rechnungenBadge) rechnungenBadge.textContent = offeneRechnungen;
+
+        renderActivities();
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'updateDashboard', false);
+        } else {
+            console.error('updateDashboard failed:', error);
+        }
+    }
 }
 
 // ============================================
 // Anfragen (Requests)
 // ============================================
 function initAnfrageForm() {
-    const btn = document.getElementById('btn-neue-anfrage');
-    const modal = document.getElementById('modal-anfrage');
-    const form = document.getElementById('form-anfrage');
+    try {
+        const btn = document.getElementById('btn-neue-anfrage');
+        const modal = document.getElementById('modal-anfrage');
+        const form = document.getElementById('form-anfrage');
 
-    btn.addEventListener('click', () => openModal('modal-anfrage'));
+        if (!btn || !form) return;
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
+        btn.addEventListener('click', () => openModal('modal-anfrage'));
 
-        const anfrage = {
-            id: generateId('ANF'),
-            kunde: {
-                name: document.getElementById('kunde-name').value,
-                email: document.getElementById('kunde-email').value,
-                telefon: document.getElementById('kunde-telefon').value
-            },
-            leistungsart: document.getElementById('leistungsart').value,
-            beschreibung: document.getElementById('beschreibung').value,
-            budget: parseFloat(document.getElementById('budget').value) || 0,
-            termin: document.getElementById('termin').value,
-            status: 'neu',
-            createdAt: new Date().toISOString()
-        };
+        form.addEventListener('submit', (e) => {
+            try {
+                e.preventDefault();
 
-        store.anfragen.push(anfrage);
-        saveStore();
+                const kundenNameEl = document.getElementById('kunde-name');
+                const kundenEmailEl = document.getElementById('kunde-email');
+                const kundenTelefonEl = document.getElementById('kunde-telefon');
+                const leistungsartEl = document.getElementById('leistungsart');
+                const beschreibungEl = document.getElementById('beschreibung');
+                const budgetEl = document.getElementById('budget');
+                const terminEl = document.getElementById('termin');
 
-        addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
+                if (!kundenNameEl || !leistungsartEl || !beschreibungEl) {
+                    throw new Error('Erforderliche Formularfelder nicht gefunden');
+                }
 
-        form.reset();
-        closeModal('modal-anfrage');
-        switchView('anfragen');
-        document.querySelector('[data-view="anfragen"]').click();
-    });
+                const anfrage = {
+                    id: generateId('ANF'),
+                    kunde: {
+                        name: kundenNameEl.value,
+                        email: kundenEmailEl?.value || '',
+                        telefon: kundenTelefonEl?.value || ''
+                    },
+                    leistungsart: leistungsartEl.value,
+                    beschreibung: beschreibungEl.value,
+                    budget: parseFloat(budgetEl?.value) || 0,
+                    termin: terminEl?.value || '',
+                    status: 'neu',
+                    createdAt: new Date().toISOString()
+                };
+
+                if (store?.anfragen) {
+                    store.anfragen.push(anfrage);
+                    saveStore();
+                    addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
+                    form.reset();
+                    closeModal('modal-anfrage');
+                    switchView('anfragen');
+                    const anfragenBtn = document.querySelector('[data-view="anfragen"]');
+                    if (anfragenBtn) anfragenBtn.click();
+                }
+            } catch (error) {
+                if (window.errorHandler) {
+                    window.errorHandler.handle(error, 'initAnfrageForm - submit', true);
+                } else {
+                    console.error('Form submission failed:', error);
+                }
+            }
+        });
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'initAnfrageForm', false);
+        } else {
+            console.error('initAnfrageForm failed:', error);
+        }
+    }
 }
 
 function renderAnfragen() {
-    const container = document.getElementById('anfragen-list');
-    const anfragen = store.anfragen.filter(a => a.status === 'neu');
+    try {
+        const container = document.getElementById('anfragen-list');
+        if (!container) return;
 
-    if (anfragen.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-                <h3 style="margin-bottom: 8px;">Keine Anfragen vorhanden</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 24px;">
-                    Erstelle deine erste Kundenanfrage um loszulegen.
+        const anfragen = store?.anfragen?.filter(a => a.status === 'neu') || [];
+
+        if (anfragen.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                    <h3 style="margin-bottom: 8px;">Keine Anfragen vorhanden</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                        Erstelle deine erste Kundenanfrage um loszulegen.
+                    </p>
+                    <button class="btn btn-primary" data-action="trigger-new-request">
+                        ➕ Neue Anfrage erstellen
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = anfragen.map(a => `
+            <div class="item-card">
+                <div class="item-header">
+                    <h3 class="item-title">${window.UI?.sanitize?.(a.kunde?.name) || 'Unbekannt'}</h3>
+                    <span class="item-id">${a.id || ''}</span>
+                </div>
+                <div class="item-meta">
+                    <span>📧 ${window.UI?.sanitize?.(a.kunde?.email) || '-'}</span>
+                    <span>📞 ${window.UI?.sanitize?.(a.kunde?.telefon) || '-'}</span>
+                    <span>📅 ${formatDate(a.termin)}</span>
+                </div>
+                <p class="item-description">
+                    <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${window.UI?.sanitize?.(a.beschreibung) || ''}
                 </p>
-                <button class="btn btn-primary" onclick="document.getElementById('btn-neue-anfrage').click()">
-                    ➕ Neue Anfrage erstellen
-                </button>
+                ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
+                <div class="item-actions">
+                    <span class="status-badge status-neu">● Neu</span>
+                    <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${a.id}')">
+                        📝 Angebot erstellen
+                    </button>
+                </div>
             </div>
-        `;
-        return;
+        `).join('');
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'renderAnfragen', false);
+        } else {
+            console.error('renderAnfragen failed:', error);
+        }
     }
-
-    container.innerHTML = anfragen.map(a => `
-        <div class="item-card">
-            <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
-                <span class="item-id">${a.id}</span>
-            </div>
-            <div class="item-meta">
-                <span>📧 ${window.UI.sanitize(a.kunde.email) || '-'}</span>
-                <span>📞 ${window.UI.sanitize(a.kunde.telefon) || '-'}</span>
-                <span>📅 ${formatDate(a.termin)}</span>
-            </div>
-            <p class="item-description">
-                <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${window.UI.sanitize(a.beschreibung)}
-            </p>
-            ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
-            <div class="item-actions">
-                <span class="status-badge status-neu">● Neu</span>
-                <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${a.id}')">
-                    📝 Angebot erstellen
-                </button>
-            </div>
-        </div>
-    `).join('');
 }
 
 function getLeistungsartLabel(key) {
@@ -169,27 +238,47 @@ function getLeistungsartLabel(key) {
 // Angebote (Quotes)
 // ============================================
 function createAngebotFromAnfrage(anfrageId) {
-    const anfrage = store.anfragen.find(a => a.id === anfrageId);
-    if (!anfrage) return;
+    try {
+        if (!anfrageId || !store?.anfragen) return;
 
-    store.currentAnfrageId = anfrageId;
+        const anfrage = store.anfragen.find(a => a.id === anfrageId);
+        if (!anfrage) {
+            throw new Error(`Anfrage mit ID ${anfrageId} nicht gefunden`);
+        }
 
-    // Fill modal info
-    document.getElementById('angebot-anfrage-id').value = anfrageId;
-    document.getElementById('angebot-kunde-info').innerHTML = `
-        <strong>${window.UI.sanitize(anfrage.kunde.name)}</strong><br>
-        ${getLeistungsartLabel(anfrage.leistungsart)}<br>
-        <small>${window.UI.sanitize(anfrage.beschreibung.substring(0, 100))}...</small>
-    `;
+        store.currentAnfrageId = anfrageId;
 
-    // Clear positions
-    document.getElementById('positionen-list').innerHTML = '';
-    addPosition();
+        // Fill modal info
+        const angebotAnfrageIdEl = document.getElementById('angebot-anfrage-id');
+        const angebotKundeInfoEl = document.getElementById('angebot-kunde-info');
+        const positionenListEl = document.getElementById('positionen-list');
+        const angebotTextEl = document.getElementById('angebot-text');
 
-    // Clear text
-    document.getElementById('angebot-text').value = '';
+        if (angebotAnfrageIdEl) angebotAnfrageIdEl.value = anfrageId;
 
-    openModal('modal-angebot');
+        if (angebotKundeInfoEl) {
+            angebotKundeInfoEl.innerHTML = `
+                <strong>${window.UI?.sanitize?.(anfrage.kunde?.name) || 'Unbekannt'}</strong><br>
+                ${getLeistungsartLabel(anfrage.leistungsart)}<br>
+                <small>${window.UI?.sanitize?.(anfrage.beschreibung?.substring(0, 100)) || ''}...</small>
+            `;
+        }
+
+        // Clear positions
+        if (positionenListEl) positionenListEl.innerHTML = '';
+        addPosition();
+
+        // Clear text
+        if (angebotTextEl) angebotTextEl.value = '';
+
+        openModal('modal-angebot');
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'createAngebotFromAnfrage', true);
+        } else {
+            console.error('createAngebotFromAnfrage failed:', error);
+        }
+    }
 }
 
 function initAngebotForm() {
@@ -251,91 +340,133 @@ function initAngebotForm() {
 }
 
 function addPosition(prefill = null) {
-    const container = document.getElementById('positionen-list');
-    const row = document.createElement('div');
-    row.className = 'position-row';
+    try {
+        const container = document.getElementById('positionen-list');
+        if (!container) return;
 
-    const uniqueId = Date.now();
+        const row = document.createElement('div');
+        row.className = 'position-row';
 
-    row.innerHTML = `
-        <div class="pos-beschreibung-wrapper">
-            <input type="text" class="pos-beschreibung" placeholder="Beschreibung tippen..." 
-                   data-suggest-id="${uniqueId}"
-                   value="${prefill?.beschreibung || ''}"
-                   autocomplete="off">
-            <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
-        </div>
-        <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" oninput="updateAngebotSummary()">
-        <input type="text" class="pos-einheit" placeholder="Einheit" value="${prefill?.einheit || 'Stk.'}">
-        <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" oninput="updateAngebotSummary()">
-        <button type="button" class="position-remove" onclick="this.parentElement.remove(); updateAngebotSummary();">×</button>
-    `;
-    container.appendChild(row);
+        const uniqueId = Date.now();
 
-    // Setup autocomplete
-    const input = row.querySelector('.pos-beschreibung');
-    const suggestBox = row.querySelector('.material-suggest');
-
-    input.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase().trim();
-        if (query.length < 2) {
-            suggestBox.style.display = 'none';
-            return;
-        }
-
-        const materials = window.materialService?.searchMaterials(query) || [];
-        if (materials.length === 0) {
-            suggestBox.style.display = 'none';
-            return;
-        }
-
-        suggestBox.innerHTML = materials.slice(0, 5).map(m => `
-            <div class="material-suggest-item" data-material='${JSON.stringify(m)}'>
-                <span class="material-suggest-name">${m.bezeichnung}</span>
-                <span class="material-suggest-meta">
-                    <span class="price">${formatCurrency(m.vkPreis || m.preis)}</span>
-                    <span class="stock">${m.bestand} ${m.einheit}</span>
-                </span>
+        row.innerHTML = `
+            <div class="pos-beschreibung-wrapper">
+                <input type="text" class="pos-beschreibung" placeholder="Beschreibung tippen..."
+                       data-suggest-id="${uniqueId}"
+                       value="${prefill?.beschreibung || ''}"
+                       autocomplete="off">
+                <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
             </div>
-        `).join('');
-        suggestBox.style.display = 'block';
+            <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" data-action-input="update-angebot-summary">
+            <input type="text" class="pos-einheit" placeholder="Einheit" value="${prefill?.einheit || 'Stk.'}">
+            <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" data-action-input="update-angebot-summary">
+            <button type="button" class="position-remove" data-action="remove-position">×</button>
+        `;
+        container.appendChild(row);
 
-        // Handle selection
-        suggestBox.querySelectorAll('.material-suggest-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const material = JSON.parse(item.dataset.material);
-                row.querySelector('.pos-beschreibung').value = material.bezeichnung;
-                row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
-                row.querySelector('.pos-einheit').value = material.einheit;
-                suggestBox.style.display = 'none';
-                updateAngebotSummary();
+        // Setup autocomplete
+        const input = row.querySelector('.pos-beschreibung');
+        const suggestBox = row.querySelector('.material-suggest');
+
+        if (input && suggestBox) {
+            input.addEventListener('input', (e) => {
+                try {
+                    const query = e.target.value.toLowerCase().trim();
+                    if (query.length < 2) {
+                        suggestBox.style.display = 'none';
+                        return;
+                    }
+
+                    const materials = window.materialService?.searchMaterials(query) || [];
+                    if (materials.length === 0) {
+                        suggestBox.style.display = 'none';
+                        return;
+                    }
+
+                    suggestBox.innerHTML = materials.slice(0, 5).map(m => `
+                        <div class="material-suggest-item" data-material='${JSON.stringify(m)}'>
+                            <span class="material-suggest-name">${m.bezeichnung}</span>
+                            <span class="material-suggest-meta">
+                                <span class="price">${formatCurrency(m.vkPreis || m.preis)}</span>
+                                <span class="stock">${m.bestand} ${m.einheit}</span>
+                            </span>
+                        </div>
+                    `).join('');
+                    suggestBox.style.display = 'block';
+
+                    // Handle selection
+                    suggestBox.querySelectorAll('.material-suggest-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            try {
+                                const material = JSON.parse(item.dataset.material);
+                                const descInput = row.querySelector('.pos-beschreibung');
+                                const priceInput = row.querySelector('.pos-preis');
+                                const einheitInput = row.querySelector('.pos-einheit');
+
+                                if (descInput) descInput.value = material.bezeichnung;
+                                if (priceInput) priceInput.value = material.vkPreis || material.preis;
+                                if (einheitInput) einheitInput.value = material.einheit;
+                                suggestBox.style.display = 'none';
+                                updateAngebotSummary();
+                            } catch (error) {
+                                console.error('Material selection failed:', error);
+                            }
+                        });
+                    });
+                } catch (error) {
+                    console.error('Material autocomplete failed:', error);
+                }
             });
-        });
-    });
 
-    // Hide on blur (with delay for click)
-    input.addEventListener('blur', () => {
-        setTimeout(() => suggestBox.style.display = 'none', 200);
-    });
+            // Hide on blur (with delay for click)
+            input.addEventListener('blur', () => {
+                setTimeout(() => suggestBox.style.display = 'none', 200);
+            });
+        }
 
-    updateAngebotSummary();
+        updateAngebotSummary();
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'addPosition', false);
+        } else {
+            console.error('addPosition failed:', error);
+        }
+    }
 }
 
 
 function updateAngebotSummary() {
-    let netto = 0;
-    document.querySelectorAll('.position-row').forEach(row => {
-        const menge = parseFloat(row.querySelector('.pos-menge').value) || 0;
-        const preis = parseFloat(row.querySelector('.pos-preis').value) || 0;
-        netto += menge * preis;
-    });
+    try {
+        let netto = 0;
+        document.querySelectorAll('.position-row').forEach(row => {
+            try {
+                const mengeEl = row.querySelector('.pos-menge');
+                const preisEl = row.querySelector('.pos-preis');
+                const menge = parseFloat(mengeEl?.value) || 0;
+                const preis = parseFloat(preisEl?.value) || 0;
+                netto += menge * preis;
+            } catch (rowError) {
+                console.error('Error calculating position:', rowError);
+            }
+        });
 
-    const mwst = netto * 0.19;
-    const brutto = netto + mwst;
+        const mwst = netto * 0.19;
+        const brutto = netto + mwst;
 
-    document.getElementById('angebot-netto').textContent = formatCurrency(netto);
-    document.getElementById('angebot-mwst').textContent = formatCurrency(mwst);
-    document.getElementById('angebot-brutto').textContent = formatCurrency(brutto);
+        const nettoEl = document.getElementById('angebot-netto');
+        const mwstEl = document.getElementById('angebot-mwst');
+        const bruttoEl = document.getElementById('angebot-brutto');
+
+        if (nettoEl) nettoEl.textContent = formatCurrency(netto);
+        if (mwstEl) mwstEl.textContent = formatCurrency(mwst);
+        if (bruttoEl) bruttoEl.textContent = formatCurrency(brutto);
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'updateAngebotSummary', false);
+        } else {
+            console.error('updateAngebotSummary failed:', error);
+        }
+    }
 }
 
 function generateAIText() {
@@ -406,7 +537,7 @@ function renderAngebote() {
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
                     Erstelle Angebote aus offenen Anfragen.
                 </p>
-                <button class="btn btn-primary" onclick="window.navigationController.navigateTo('anfragen')">
+                <button class="btn btn-primary" data-action="navigate-anfragen">
                     👀 Anfragen ansehen
                 </button>
             </div>
@@ -683,7 +814,7 @@ function renderAuftraege() {
         statsGrid.innerHTML = mainStatuses.map(key => {
             const cfg = AUFTRAG_STATUS_CONFIG[key];
             return `
-                <div class="stat-card-mini" style="cursor:pointer;" onclick="document.querySelector('.filter-btn[data-filter=${key}]')?.click()">
+                <div class="stat-card-mini" style="cursor:pointer;" data-action="toggle-status-filter" data-value="${key}">
                     <span class="stat-icon-mini">${cfg.icon}</span>
                     <div class="stat-content-mini">
                         <span class="stat-value-mini">${counts[key] || 0}</span>
@@ -1048,7 +1179,7 @@ window.handleStatusChange = function(newStatus) {
         // Add confirm button if not already there
         if (!document.getElementById('ad-btn-confirm-status')) {
             grundWrapper.insertAdjacentHTML('beforeend',
-                `<button class="btn btn-small btn-primary" id="ad-btn-confirm-status" style="margin-top:8px;" onclick="confirmStatusChange()">Bestätigen</button>`
+                `<button class="btn btn-small btn-primary" id="ad-btn-confirm-status" style="margin-top:8px;" data-action="confirm-status-change">Bestätigen</button>`
             );
         }
         return;
@@ -1100,7 +1231,7 @@ function renderDetailMitarbeiter(auftrag) {
         list.innerHTML = '<span style="font-size:12px;color:var(--text-muted);">Keine Mitarbeiter zugewiesen</span>';
     } else {
         list.innerHTML = mitarbeiter.map((m, i) =>
-            `<span class="mitarbeiter-chip">${h(m)} <span class="remove-worker" onclick="removeAuftragMitarbeiter(${i})">&times;</span></span>`
+            `<span class="mitarbeiter-chip">${h(m)} <span class="remove-worker" data-action="remove-worker" data-index="${i}">&times;</span></span>`
         ).join('');
     }
 }
@@ -1124,9 +1255,9 @@ function renderDetailCheckliste(auftrag) {
     }
     container.innerHTML = items.map((item, i) => `
         <div class="checkliste-item ${item.erledigt ? 'erledigt' : ''}">
-            <input type="checkbox" ${item.erledigt ? 'checked' : ''} onchange="toggleChecklistItem(${i})">
+            <input type="checkbox" ${item.erledigt ? 'checked' : ''} data-action-change="toggle-checklist-item" data-index="${i}">
             <span class="checkliste-text">${h(item.text)}</span>
-            <span class="checkliste-remove" onclick="removeChecklistItem(${i})">&times;</span>
+            <span class="checkliste-remove" data-action="remove-checklist-item" data-index="${i}">&times;</span>
         </div>
     `).join('');
 }
@@ -1904,7 +2035,7 @@ function renderRechnungen() {
                 <div style="font-size: 48px; margin-bottom: 16px">📄</div>
                 <h3>Keine Rechnungen</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px">Erstellen Sie erst einen Auftrag, um eine Rechnung zu generieren.</p>
-                <button class="btn btn-secondary" onclick="document.querySelector('.nav-item[data-view=\\'auftraege\\']').click()">
+                <button class="btn btn-secondary" data-action="navigate-auftraege">
                     Zu den Aufträgen
                 </button>
             </div>`;
@@ -2199,10 +2330,10 @@ function renderMaterial() {
                     Importiere deine Materialliste aus Excel oder lade Demo-Daten.
                 </p>
                 <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button class="btn btn-secondary" onclick="window.materialService.loadDemoData(); renderMaterial();">
+                    <button class="btn btn-secondary" data-action="load-demo-materials">
                         🎲 Demo-Daten laden
                     </button>
-                    <button class="btn btn-primary" onclick="document.getElementById('material-import').click()">
+                    <button class="btn btn-primary" data-action="trigger-material-import">
                         📊 Excel importieren
                     </button>
                 </div>
@@ -2260,11 +2391,23 @@ function initMaterial() {
     // Demo Materials Button
     const demoBtn = document.getElementById('btn-demo-materials');
     if (demoBtn) {
-        demoBtn.addEventListener('click', () => {
+        demoBtn.addEventListener('click', async () => {
+            // Guard: Require confirmation in production mode
+            if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
+                const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-Materialien laden');
+                if (!confirmed) return;
+            }
+
             window.materialService.loadDemoMaterials();
             renderMaterial();
             showToast('✅ Demo-Materialien geladen!', 'success');
             addActivity('📦', 'Demo-Materialbestand geladen (10 Artikel)');
+
+            // Show demo mode banner
+            if (window.demoGuardService) {
+                window.demoGuardService.showDemoBanner();
+                window.demoGuardService.markDemoLoaded();
+            }
         });
     }
 
@@ -3182,7 +3325,19 @@ function initQuickActions() {
 // Demo Workflow - One Click Complete Demo
 // ============================================
 async function runDemoWorkflow() {
+    // Guard: Require confirmation in production mode
+    if (window.demoGuardService && !window.demoGuardService.isDeveloperMode) {
+        const confirmed = await window.demoGuardService.confirmDemoLoad('Demo-Workflow');
+        if (!confirmed) return;
+    }
+
     showToast('🚀 Demo-Workflow startet...', 'info');
+
+    // Show demo mode banner
+    if (window.demoGuardService) {
+        window.demoGuardService.showDemoBanner();
+        window.demoGuardService.markDemoLoaded();
+    }
 
     // 1. Load demo materials if empty
     if (window.materialService?.getAllMaterials().length === 0) {

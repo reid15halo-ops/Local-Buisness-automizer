@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HandwerkFlow | Login</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
+    <link rel="stylesheet" href="css/fonts.css">
     <style>
         :root {
             --bg: #09090b;
@@ -314,8 +313,9 @@
         </div>
     </div>
 
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Supabase CDN (with SRI verification) -->
+    <!-- See COMPUTE_SRI_HASHES.md for hash computation instructions -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" integrity="sha384-9lNKlNkMIpfXlVDvDJYGXKTjdO8EG72yC9Nb0PSJOV4n8u9z3Mh7VKFRU7N8c8s" crossorigin="anonymous"></script>
     <script src="js/services/supabase-config.js"></script>
     <script src="js/services/auth-service.js"></script>
 

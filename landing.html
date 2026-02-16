@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HandwerkFlow | Die All-in-One Plattform für Handwerksbetriebe</title>
     <meta name="description" content="Anfrage, Angebot, Auftrag, Rechnung – alles in einer App. Speziell für deutsche Handwerksbetriebe. DATEV-Export, KI-Textgenerierung, Buchhaltung.">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
+    <link rel="stylesheet" href="css/fonts.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#6366f1">
     <style>
@@ -618,13 +617,13 @@
 <body>
     <!-- Navigation -->
     <nav class="nav">
-        <a href="#" class="nav-brand">HandwerkFlow</a>
+        <a href="landing.html" class="nav-brand">HandwerkFlow</a>
         <div class="nav-links">
             <a href="#workflow">Workflow</a>
-            <a href="#features">Features</a>
+            <a href="#features">Funktionen</a>
             <a href="#pricing">Preise</a>
             <a href="index.html" class="btn btn-outline">Demo testen</a>
-            <a href="#waitlist" class="btn btn-primary">Kostenlos starten</a>
+            <a href="auth.html" class="btn btn-primary">Jetzt starten</a>
         </div>
     </nav>
 
@@ -636,16 +635,16 @@
         </div>
         <h1>
             Dein Handwerksbetrieb.<br>
-            <span class="gradient">Komplett automatisiert.</span>
+            <span class="gradient">Apple-Einfachheit, Rolex-Qualit&auml;t.</span>
         </h1>
         <p>
             Von der Anfrage bis zur Rechnung &ndash; alles in einer App.
             DATEV-Export, KI-Angebote, Buchhaltung &amp; mehr.
-            Speziell f&uuml;r deutsche Handwerksbetriebe.
+            Speziell f&uuml;r deutsche Handwerksbetriebe. Gebaut nach Apple-Prinzipien, robust wie ein Schweizer Uhrwerk.
         </p>
         <div class="hero-actions">
-            <a href="#waitlist" class="btn btn-primary btn-large">Jetzt Platz sichern</a>
-            <a href="index.html" class="btn btn-outline btn-large">Live-Demo ansehen</a>
+            <a href="auth.html" class="btn btn-primary btn-large">Jetzt starten</a>
+            <a href="index.html" class="btn btn-outline btn-large">Demo testen</a>
         </div>
         <div class="hero-stats">
             <div class="hero-stat">
@@ -669,11 +668,11 @@
 
     <!-- Workflow -->
     <section class="workflow-section fade-in" id="workflow">
-        <div class="section-label">So funktioniert&apos;s</div>
+        <div class="section-label">Der Handwerker-Workflow</div>
         <h2 class="section-title">Ein Workflow. Null Papierkram.</h2>
         <p class="section-subtitle">
-            Vom Erstkontakt bis zur bezahlten Rechnung &ndash;
-            alles automatisch, alles nachverfolgbar.
+            Vom Erstkontakt bis zur bezahlten Rechnung &ndash; alles automatisch nachverfolgbar.
+            Fließender als der perfekteste Schweißnaht.
         </p>
         <div class="workflow-steps">
             <div class="workflow-step">
@@ -705,10 +704,10 @@
 
     <!-- Features -->
     <section class="features-section fade-in" id="features">
-        <div class="section-label" style="text-align:center;">Features</div>
-        <h2 class="section-title" style="text-align:center;">Alles, was dein Betrieb braucht</h2>
+        <div class="section-label" style="text-align:center;">Die wichtigsten Funktionen</div>
+        <h2 class="section-title" style="text-align:center;">21+ Module. Ein System. Unbegrenzte M&ouml;glichkeiten.</h2>
         <p class="section-subtitle" style="text-align:center;">
-            21+ Module in einer Plattform. Kein Zusammenstückeln von 10 verschiedenen Tools.
+            Anfragen, Angebote, Auftr&auml;ge, Rechnungen und Buchhaltung &ndash; alles integriert. Kein Zusammenstückeln von 10 verschiedenen Tools. Dein Handwerksbetrieb verdient besseres.
         </p>
         <div class="features-grid">
             <div class="feature-card">
@@ -812,7 +811,7 @@
                     <li><span class="check">&#x2713;</span> E-Mail Support</li>
                     <li><span class="check">&#x2713;</span> KI-Angebots-Assistent</li>
                 </ul>
-                <a href="#waitlist" class="btn btn-outline btn-large pricing-cta">Kostenlos testen</a>
+                <a href="auth.html" class="btn btn-outline btn-large pricing-cta">Jetzt kostenlos starten</a>
             </div>
 
             <!-- Professional -->
@@ -833,7 +832,7 @@
                     <li><span class="check">&#x2713;</span> Mahnwesen automatisiert</li>
                     <li><span class="check">&#x2713;</span> Priorit&auml;ts-Support</li>
                 </ul>
-                <a href="#waitlist" class="btn btn-primary btn-large pricing-cta">Jetzt Platz sichern</a>
+                <a href="auth.html" class="btn btn-primary btn-large pricing-cta">30 Tage kostenlos testen</a>
             </div>
 
             <!-- Enterprise -->
@@ -854,7 +853,7 @@
                     <li><span class="check">&#x2713;</span> Custom Integrationen</li>
                     <li><span class="check">&#x2713;</span> SLA &amp; On-Premise Option</li>
                 </ul>
-                <a href="#waitlist" class="btn btn-outline btn-large pricing-cta">Kontakt aufnehmen</a>
+                <a href="mailto:enterprise@handwerkflow.de" class="btn btn-outline btn-large pricing-cta">Enterprise-Demo vereinbaren</a>
             </div>
         </div>
     </section>
@@ -863,29 +862,34 @@
     <section class="cta-section" id="waitlist">
         <div class="cta-box fade-in">
             <h2>Bereit loszulegen?</h2>
-            <p>Sichere dir jetzt deinen Platz in der Beta. Keine Kreditkarte erforderlich.</p>
-            <form class="waitlist-form" id="waitlist-form">
+            <p>Starten Sie kostenlos oder testen Sie die Live-Demo. Keine Kreditkarte erforderlich.</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a href="auth.html" class="btn btn-primary btn-large">Kostenlos registrieren</a>
+                <a href="index.html" class="btn btn-outline btn-large">Demo-Version ausprobieren</a>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 24px;">
+                Oder tragen Sie sich in unsere Warteliste ein f&uuml;r Early-Access-Angebote:
+            </p>
+            <form class="waitlist-form" id="waitlist-form" style="margin-top: 16px;">
                 <input type="email" placeholder="deine@email.de" required id="waitlist-email" autocomplete="email">
-                <button type="submit" class="btn btn-primary">Platz sichern</button>
+                <button type="submit" class="btn btn-primary">Eintragen</button>
             </form>
             <div class="waitlist-success" id="waitlist-success">
                 &#x2705; Du bist auf der Warteliste! Wir melden uns bald bei dir.
             </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 16px;">
-                Kostenlos. Keine Kreditkarte. Jederzeit k&uuml;ndbar.
-            </p>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-links">
-            <a href="#">Impressum</a>
-            <a href="#">Datenschutz</a>
-            <a href="#">AGB</a>
-            <a href="#">Kontakt</a>
+            <a href="impressum.html" title="Impressum">Impressum</a>
+            <a href="datenschutz.html" title="Datenschutzerkl&auml;rung">Datenschutz</a>
+            <a href="agb.html" title="Allgemeine Gesch&auml;ftsbedingungen">AGB</a>
+            <a href="mailto:support@handwerkflow.de" title="Kontakt per E-Mail">Kontakt</a>
+            <a href="https://github.com/yourorg/handwerkflow" title="GitHub Repository" target="_blank">GitHub</a>
         </div>
-        <p class="footer-copy">&copy; 2026 HandwerkFlow. Alle Rechte vorbehalten.</p>
+        <p class="footer-copy">&copy; 2026 HandwerkFlow &mdash; Gebaut f&uuml;r Handwerker von Handwerkern. Mit &hearts; in Deutschland.</p>
     </footer>
 
     <!-- Scripts -->

@@ -1,0 +1,32 @@
+{
+  "name": "local-business-automizer",
+  "version": "1.0.0",
+  "description": "Local Business Automation System - CRM, Invoicing, Bookkeeping & Workflow Management",
+  "type": "module",
+  "author": "MHS Development Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourorg/local-business-automizer"
+  },
+  "keywords": [
+    "CRM",
+    "invoicing",
+    "bookkeeping",
+    "automation",
+    "workflow",
+    "PWA",
+    "offline-first"
+  ],
+  "scripts": {
+    "dev": "npx serve . -l 3000",
+    "build": "bash deploy.sh",
+    "lint": "npx eslint js/ --ext .js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "npx serve dist/ -l 8080"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
+  }
+}
