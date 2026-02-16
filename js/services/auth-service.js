@@ -1,29 +1,66 @@
 /* ============================================
-   Auth Service - Supabase Authentication
+   Auth Service — FreyAI Core Authentication
    Login, Register, Password Reset, Session
+   ============================================
+   Thin facade over Supabase Auth that delegates
+   login / logout to StoreService so session and
+   in-memory store stay in sync automatically.
    ============================================ */
 
 class AuthService {
     constructor() {
-        this.user = null;
-        this.session = null;
+        /** @type {Function[]} Auth-change listeners registered via onAuthChange(). */
         this.listeners = [];
+
+        /** @type {Function|null} Supabase subscription teardown handle. */
+        this._unsubscribe = null;
     }
 
-    getClient() {
-        return window.supabaseConfig?.get();
+    /* ==========================================================
+       Supabase client helpers
+       ========================================================== */
+
+    /**
+     * Returns the global Supabase client, or null when not configured.
+     * @returns {import('@supabase/supabase-js').SupabaseClient | null}
+     */
+    _sb() {
+        return window.freyaiSupabase || null;
     }
 
+    /**
+     * Whether the Supabase client has been initialised and is ready.
+     * @returns {boolean}
+     */
     isConfigured() {
-        return window.supabaseConfig?.isConfigured() || false;
+        return !!window.freyaiSupabase;
     }
 
-    // Register new user
-    async register(email, password, metadata = {}) {
-        const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+    /* ==========================================================
+       Registration
+       ========================================================== */
 
-        const { data, error } = await client.auth.signUp({
+    /**
+     * Register a new user with Supabase Auth.
+     *
+     * Registration is intentionally NOT delegated to StoreService
+     * because it requires sign-up metadata that StoreService.login()
+     * does not accept.
+     *
+     * @param {string} email    - User email address.
+     * @param {string} password - Chosen password.
+     * @param {Object} [metadata={}] - Optional profile metadata.
+     * @param {string} [metadata.companyName] - Business / company name.
+     * @param {string} [metadata.fullName]    - Full name of the owner.
+     * @param {string} [metadata.phone]       - Phone number.
+     * @returns {Promise<{user: object, session: object}>} Supabase auth data.
+     * @throws {Error} When Supabase is not configured or Supabase returns an error.
+     */
+    async register(email, password, metadata = {}) {
+        const sb = this._sb();
+        if (!sb) throw new Error('Supabase nicht konfiguriert');
+
+        const { data, error } = await sb.auth.signUp({
             email,
             password,
             options: {
@@ -38,102 +75,183 @@ class AuthService {
 
         if (error) throw error;
 
-        this.user = data.user;
-        this.session = data.session;
-        this._notify();
+        console.log('[FreyAI] User registered:', email);
+        this._notify(data.user, data.session);
         return data;
     }
 
-    // Login
+    /* ==========================================================
+       Login — delegated to StoreService
+       ========================================================== */
+
+    /**
+     * Authenticate a user with email and password.
+     *
+     * Delegates to {@link StoreService#login} which performs the
+     * Supabase sign-in **and** loads the user's data into the
+     * in-memory store in a single call.
+     *
+     * @param {string} email    - User email address.
+     * @param {string} password - User password.
+     * @returns {Promise<{user: object|null, error: string|null}>}
+     *   Result object from StoreService.login().
+     */
     async login(email, password) {
-        const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+        if (!this.isConfigured()) {
+            console.warn('[FreyAI] Login aborted — Supabase not configured.');
+            return { user: null, error: 'Supabase nicht konfiguriert' };
+        }
 
-        const { data, error } = await client.auth.signInWithPassword({
-            email,
-            password
-        });
+        const result = await window.storeService.login(email, password);
 
-        if (error) throw error;
+        if (result.error) {
+            console.error('[FreyAI] Login failed:', result.error);
+        } else {
+            console.log('[FreyAI] Login succeeded for', email);
+            const session = await this._getCurrentSession();
+            this._notify(result.user, session);
+        }
 
-        this.user = data.user;
-        this.session = data.session;
-        this._notify();
-        return data;
+        return result;
     }
 
-    // Logout
+    /* ==========================================================
+       Logout — delegated to StoreService
+       ========================================================== */
+
+    /**
+     * Sign out the current user.
+     *
+     * Delegates to {@link StoreService#logout} which signs out via
+     * Supabase Auth and clears the in-memory store.
+     *
+     * @returns {Promise<void>}
+     */
     async logout() {
-        const client = this.getClient();
-        if (!client) return;
+        if (!this.isConfigured()) return;
 
-        await client.auth.signOut();
-        this.user = null;
-        this.session = null;
-        this._notify();
+        await window.storeService.logout();
+        console.log('[FreyAI] User signed out.');
+        this._notify(null, null);
     }
 
-    // Password reset
-    async resetPassword(email) {
-        const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+    /* ==========================================================
+       Password management
+       ========================================================== */
 
-        const { error } = await client.auth.resetPasswordForEmail(email, {
+    /**
+     * Send a password-reset email via Supabase Auth.
+     *
+     * @param {string} email - The email address to send the reset link to.
+     * @returns {Promise<void>}
+     * @throws {Error} When Supabase is not configured or the request fails.
+     */
+    async resetPassword(email) {
+        const sb = this._sb();
+        if (!sb) throw new Error('Supabase nicht konfiguriert');
+
+        const { error } = await sb.auth.resetPasswordForEmail(email, {
             redirectTo: window.location.origin + '/index.html'
         });
 
         if (error) throw error;
+        console.log('[FreyAI] Password reset email sent to', email);
     }
 
-    // Update password
+    /**
+     * Update the password for the currently signed-in user.
+     *
+     * @param {string} newPassword - The new password.
+     * @returns {Promise<void>}
+     * @throws {Error} When Supabase is not configured or the update fails.
+     */
     async updatePassword(newPassword) {
-        const client = this.getClient();
-        if (!client) throw new Error('Supabase nicht konfiguriert');
+        const sb = this._sb();
+        if (!sb) throw new Error('Supabase nicht konfiguriert');
 
-        const { error } = await client.auth.updateUser({
+        const { error } = await sb.auth.updateUser({
             password: newPassword
         });
 
         if (error) throw error;
+        console.log('[FreyAI] Password updated successfully.');
     }
 
-    // Get current session
+    /* ==========================================================
+       Session / user helpers
+       ========================================================== */
+
+    /**
+     * Retrieve the current Supabase session (if any).
+     *
+     * @returns {Promise<object|null>} The session object, or null.
+     */
     async getSession() {
-        const client = this.getClient();
-        if (!client) return null;
-
-        const { data: { session } } = await client.auth.getSession();
-        this.session = session;
-        this.user = session?.user || null;
-        return session;
+        return this._getCurrentSession();
     }
 
-    // Get current user
-    getUser() {
-        return this.user;
+    /**
+     * Return the currently authenticated user, or null.
+     *
+     * Delegates to {@link StoreService#getUser} so there is a single
+     * source of truth for the user object.
+     *
+     * @returns {Promise<object|null>} Supabase user object.
+     */
+    async getUser() {
+        if (!this.isConfigured()) return null;
+        return window.storeService.getUser();
     }
 
-    // Check if logged in
+    /**
+     * Synchronous check whether a user is currently logged in.
+     *
+     * Uses the StoreService's currentUserId which is set on login
+     * and cleared on logout.
+     *
+     * @returns {boolean}
+     */
     isLoggedIn() {
-        return !!this.user;
+        return !!window.storeService?.currentUserId;
     }
 
-    // Get user's plan
-    getPlan() {
-        return this.user?.user_metadata?.plan || 'starter';
+    /**
+     * Return the subscription plan stored in the user's metadata.
+     *
+     * @returns {Promise<string>} Plan identifier (defaults to 'starter').
+     */
+    async getPlan() {
+        const user = await this.getUser();
+        return user?.user_metadata?.plan || 'starter';
     }
 
-    // Subscribe to auth changes
+    /* ==========================================================
+       Auth-change listener
+       ========================================================== */
+
+    /**
+     * Subscribe to authentication state changes.
+     *
+     * The callback receives `(user, session)` whenever the auth
+     * state changes (login, logout, token refresh, etc.).
+     *
+     * @param {Function} callback - `(user: object|null, session: object|null) => void`
+     * @returns {Function} Unsubscribe function — call it to remove the listener.
+     */
     onAuthChange(callback) {
         this.listeners.push(callback);
 
-        const client = this.getClient();
-        if (client) {
-            client.auth.onAuthStateChange((event, session) => {
-                this.session = session;
-                this.user = session?.user || null;
-                this._notify();
-            });
+        // Set up the Supabase onAuthStateChange listener once
+        if (!this._unsubscribe) {
+            const sb = this._sb();
+            if (sb) {
+                const { data } = sb.auth.onAuthStateChange((event, session) => {
+                    const user = session?.user || null;
+                    console.log('[FreyAI] Auth state changed:', event);
+                    this._notify(user, session);
+                });
+                this._unsubscribe = data?.subscription?.unsubscribe || null;
+            }
         }
 
         return () => {
@@ -141,8 +259,44 @@ class AuthService {
         };
     }
 
-    _notify() {
-        this.listeners.forEach(cb => cb(this.user, this.session));
+    /* ==========================================================
+       Internal helpers
+       ========================================================== */
+
+    /**
+     * Notify all registered auth-change listeners.
+     *
+     * @param {object|null} user    - Current user object.
+     * @param {object|null} session - Current session object.
+     * @private
+     */
+    _notify(user, session) {
+        this.listeners.forEach(cb => {
+            try {
+                cb(user, session);
+            } catch (err) {
+                console.error('[FreyAI] Auth listener threw:', err);
+            }
+        });
+    }
+
+    /**
+     * Fetch the current session from Supabase Auth.
+     *
+     * @returns {Promise<object|null>}
+     * @private
+     */
+    async _getCurrentSession() {
+        const sb = this._sb();
+        if (!sb) return null;
+
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            return session;
+        } catch (err) {
+            console.error('[FreyAI] Failed to retrieve session:', err);
+            return null;
+        }
     }
 }
 

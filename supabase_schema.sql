@@ -130,6 +130,9 @@ CREATE TABLE IF NOT EXISTS invoices (
 COMMENT ON COLUMN invoices.items_json IS
     'Array of {description, quantity, unit, price_net, tax_rate, total}';
 
+COMMENT ON COLUMN profiles.settings_json IS
+    'User-level settings and preferences, e.g. {"locale":"de","currency":"EUR","invoice_prefix":"RE-"}';
+
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "invoices_all_own" ON invoices

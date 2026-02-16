@@ -654,7 +654,10 @@ async function generateReport() {
         html += '<h4 style="margin-top:20px;">Top-Kunden nach Umsatz</h4>';
         html += '<table class="report-table"><thead><tr><th>Kunde</th><th>Rechnungen</th><th class="text-right">Umsatz</th></tr></thead><tbody>';
         report.topCustomers.forEach(c => {
-            html += `<tr><td>${c.name}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
+            const safeName = typeof window.UI?.sanitize === 'function'
+                ? window.UI.sanitize(c.name)
+                : (c.name || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            html += `<tr><td>${safeName}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
         });
         html += '</tbody></table>';
     }
@@ -909,7 +912,14 @@ function appendAiMessage(role, content) {
     const container = document.getElementById('ai-chat-messages');
     const msgDiv = document.createElement('div');
     msgDiv.className = `ai-message ${role}`;
-    msgDiv.innerHTML = content.replace(/\n/g, '<br>');
+    if (role === 'user') {
+        msgDiv.textContent = content;
+    } else {
+        const safe = typeof window.UI?.sanitize === 'function'
+            ? window.UI.sanitize(content)
+            : content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        msgDiv.innerHTML = safe.replace(/\n/g, '<br>');
+    }
     container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;
 }

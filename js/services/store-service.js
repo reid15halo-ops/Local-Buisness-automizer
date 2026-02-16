@@ -666,7 +666,8 @@ class StoreService {
         if (!auftrag.historie) auftrag.historie = [];
         auftrag.historie.push({ aktion: 'kommentar', datum: kommentar.datum, details: text.substring(0, 50) });
 
-        this.save();
+        this._updateRow('auftraege', auftragId, this._mapToDB('auftraege', auftrag));
+        this.notify();
         return kommentar;
     }
 
@@ -687,7 +688,8 @@ class StoreService {
             );
         }
 
-        this.save();
+        this._updateRow('auftraege', auftragId, this._mapToDB('auftraege', auftrag));
+        this.notify();
         return auftrag;
     }
 
