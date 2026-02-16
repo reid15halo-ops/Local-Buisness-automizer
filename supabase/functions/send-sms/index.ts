@@ -93,7 +93,12 @@ serve(async (req) => {
         }).throwOnError().catch(() => {})
 
         return new Response(
-            JSON.stringify({ success: true, sid: twilioData.sid }),
+            JSON.stringify({
+                success: true,
+                messageId: twilioData.sid,
+                status: twilioData.status,
+                segments: Math.ceil(message.length / (message.length <= 160 ? 160 : 153))
+            }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     } catch (err) {

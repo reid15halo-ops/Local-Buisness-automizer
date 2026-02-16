@@ -1,0 +1,45 @@
+{
+  "type": "angebot",
+  "number": "ANG-2024-001",
+  "date": "2026-02-16T10:00:00",
+  "company": {
+    "name": "MHS Metallbau Hydraulik Service",
+    "street": "Musterstraße 123",
+    "postal_code": "63843",
+    "city": "Musterstadt",
+    "phone": "+49 6029 9922964",
+    "email": "info@mhs-service.de",
+    "tax_id": "12 345 678 901",
+    "vat_id": "DE123456789",
+    "iban": "DE89 3704 0044 0532 0130 00",
+    "bic": "COBADEFFXXX",
+    "bank_name": "Commerzbank"
+  },
+  "customer": {
+    "company": "Musterfirma GmbH",
+    "name": "Max Mustermann",
+    "street": "Kundenstraße 42",
+    "postal_code": "60311",
+    "city": "Frankfurt am Main"
+  },
+  "positions": [
+    {
+      "description": "Montage Hydraulikanlage inkl. Material",
+      "quantity": 16,
+      "unit": "Std.",
+      "unit_price": 75.00
+    },
+    {
+      "description": "Hydrauliköl (Typ HL46) 205 Liter Fass",
+      "quantity": 2,
+      "unit": "Stück",
+      "unit_price": 145.50
+    },
+    {
+      "description": "Dichtungen und Verschleißteile",
+      "quantity": 1,
+      "unit": "Paket",
+      "unit_price": 320.00
+    }
+  ]
+}
