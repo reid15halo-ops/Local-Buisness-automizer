@@ -2046,109 +2046,121 @@ function initAuftragForm() {
         const auftrag = store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) {return;}
 
-        const arbeitszeit = parseFloat(document.getElementById('arbeitszeit').value) || 0;
-        const extraMaterialKosten = parseFloat(document.getElementById('material-kosten-extra').value) || 0;
-        const notizen = document.getElementById('notizen').value;
+        // Show confirmation dialog
+        window.confirmDialogService?.confirmCompleteAuftrag(
+            auftrag.id,
+            window.UI?.sanitize?.(auftrag.kunde?.name) || 'Unbekannt',
+            () => {
+                // Confirmed - proceed with completion
+                proceedWithAuftragCompletion(auftrag);
+            }
+        );
+    });
+}
 
-        // Collect Stückliste data
-        const stueckliste = stuecklisteItems.filter(i => i.bezeichnung).map(item => ({
-            materialId: item.materialId,
-            artikelnummer: item.artikelnummer,
-            bezeichnung: item.bezeichnung,
+function proceedWithAuftragCompletion(auftrag) {
+    const arbeitszeit = parseFloat(document.getElementById('arbeitszeit').value) || 0;
+    const extraMaterialKosten = parseFloat(document.getElementById('material-kosten-extra').value) || 0;
+    const notizen = document.getElementById('notizen').value;
+
+    // Collect Stückliste data
+    const stueckliste = stuecklisteItems.filter(i => i.bezeichnung).map(item => ({
+        materialId: item.materialId,
+        artikelnummer: item.artikelnummer,
+        bezeichnung: item.bezeichnung,
+        menge: item.menge,
+        einheit: item.einheit,
+        ekPreis: item.ekPreis,
+        vkPreis: item.vkPreis
+    }));
+
+    // Calculate totals
+    const stuecklisteVK = stueckliste.reduce((sum, i) => sum + (i.menge * i.vkPreis), 0);
+    const stuecklisteEK = stueckliste.reduce((sum, i) => sum + (i.menge * i.ekPreis), 0);
+    const totalMaterialKosten = stuecklisteVK + extraMaterialKosten;
+
+    // Update Auftrag
+    auftrag.status = 'abgeschlossen';
+    auftrag.arbeitszeit = arbeitszeit;
+    auftrag.stueckliste = stueckliste;
+    auftrag.stuecklisteVK = stuecklisteVK;
+    auftrag.stuecklisteEK = stuecklisteEK;
+    auftrag.extraMaterialKosten = extraMaterialKosten;
+    auftrag.materialKosten = totalMaterialKosten;
+    auftrag.notizen = notizen;
+    auftrag.completedAt = new Date().toISOString();
+
+    // Consume reserved materials (convert reserved → consumed in stock)
+    if (window.materialService) {
+        const consumed = window.materialService.consumeReserved(auftrag.id);
+        if (consumed.length > 0) {
+            auftrag.consumedMaterials = consumed;
+        }
+    }
+
+    // Create invoice with Stückliste as individual positions
+    const rechnungsPositionen = [...(auftrag.positionen || [])];
+
+    // Add Stückliste items as separate invoice positions
+    stueckliste.forEach(item => {
+        rechnungsPositionen.push({
+            beschreibung: `Material: ${item.bezeichnung}`,
             menge: item.menge,
             einheit: item.einheit,
-            ekPreis: item.ekPreis,
-            vkPreis: item.vkPreis
-        }));
-
-        // Calculate totals
-        const stuecklisteVK = stueckliste.reduce((sum, i) => sum + (i.menge * i.vkPreis), 0);
-        const stuecklisteEK = stueckliste.reduce((sum, i) => sum + (i.menge * i.ekPreis), 0);
-        const totalMaterialKosten = stuecklisteVK + extraMaterialKosten;
-
-        // Update Auftrag
-        auftrag.status = 'abgeschlossen';
-        auftrag.arbeitszeit = arbeitszeit;
-        auftrag.stueckliste = stueckliste;
-        auftrag.stuecklisteVK = stuecklisteVK;
-        auftrag.stuecklisteEK = stuecklisteEK;
-        auftrag.extraMaterialKosten = extraMaterialKosten;
-        auftrag.materialKosten = totalMaterialKosten;
-        auftrag.notizen = notizen;
-        auftrag.completedAt = new Date().toISOString();
-
-        // Consume reserved materials (convert reserved → consumed in stock)
-        if (window.materialService) {
-            const consumed = window.materialService.consumeReserved(auftrag.id);
-            if (consumed.length > 0) {
-                auftrag.consumedMaterials = consumed;
-            }
-        }
-
-        // Create invoice with Stückliste as individual positions
-        const rechnungsPositionen = [...(auftrag.positionen || [])];
-
-        // Add Stückliste items as separate invoice positions
-        stueckliste.forEach(item => {
-            rechnungsPositionen.push({
-                beschreibung: `Material: ${item.bezeichnung}`,
-                menge: item.menge,
-                einheit: item.einheit,
-                preis: item.vkPreis,
-                isMaterial: true,
-                artikelnummer: item.artikelnummer,
-                ekPreis: item.ekPreis
-            });
+            preis: item.vkPreis,
+            isMaterial: true,
+            artikelnummer: item.artikelnummer,
+            ekPreis: item.ekPreis
         });
-
-        // Add extra material costs as position if > 0
-        if (extraMaterialKosten > 0) {
-            rechnungsPositionen.push({
-                beschreibung: 'Sonstige Materialkosten',
-                menge: 1,
-                einheit: 'pauschal',
-                preis: extraMaterialKosten,
-                isMaterial: true
-            });
-        }
-
-        const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-
-        const rechnung = {
-            id: generateId('RE'),
-            auftragId,
-            angebotId: auftrag.angebotId,
-            kunde: auftrag.kunde,
-            leistungsart: auftrag.leistungsart,
-            positionen: rechnungsPositionen,
-            stueckliste: stueckliste,
-            arbeitszeit: arbeitszeit,
-            materialKosten: totalMaterialKosten,
-            extraMaterialKosten: extraMaterialKosten,
-            stuecklisteVK: stuecklisteVK,
-            stuecklisteEK: stuecklisteEK,
-            notizen: notizen,
-            netto: netto,
-            mwst: netto * 0.19,
-            brutto: netto * 1.19,
-            status: 'offen',
-            createdAt: new Date().toISOString()
-        };
-
-        store.rechnungen.push(rechnung);
-        saveStore();
-
-        // Activity log with Stückliste info
-        const slInfo = stueckliste.length > 0 ? ` (${stueckliste.length} Materialien)` : '';
-        addActivity('💰', `Rechnung ${rechnung.id} erstellt (${formatCurrency(rechnung.brutto)})${slInfo}`);
-
-        // Update material view if visible
-        if (typeof renderMaterial === 'function') {renderMaterial();}
-
-        closeModal('modal-auftrag');
-        switchView('rechnungen');
-        document.querySelector('[data-view="rechnungen"]').click();
     });
+
+    // Add extra material costs as position if > 0
+    if (extraMaterialKosten > 0) {
+        rechnungsPositionen.push({
+            beschreibung: 'Sonstige Materialkosten',
+            menge: 1,
+            einheit: 'pauschal',
+            preis: extraMaterialKosten,
+            isMaterial: true
+        });
+    }
+
+    const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
+
+    const rechnung = {
+        id: generateId('RE'),
+        auftragId: auftrag.id,
+        angebotId: auftrag.angebotId,
+        kunde: auftrag.kunde,
+        leistungsart: auftrag.leistungsart,
+        positionen: rechnungsPositionen,
+        stueckliste: stueckliste,
+        arbeitszeit: arbeitszeit,
+        materialKosten: totalMaterialKosten,
+        extraMaterialKosten: extraMaterialKosten,
+        stuecklisteVK: stuecklisteVK,
+        stuecklisteEK: stuecklisteEK,
+        notizen: notizen,
+        netto: netto,
+        mwst: netto * 0.19,
+        brutto: netto * 1.19,
+        status: 'offen',
+        createdAt: new Date().toISOString()
+    };
+
+    store.rechnungen.push(rechnung);
+    saveStore();
+
+    // Activity log with Stückliste info
+    const slInfo = stueckliste.length > 0 ? ` (${stueckliste.length} Materialien)` : '';
+    addActivity('💰', `Rechnung ${rechnung.id} erstellt (${formatCurrency(rechnung.brutto)})${slInfo}`);
+
+    // Update material view if visible
+    if (typeof renderMaterial === 'function') {renderMaterial();}
+
+    closeModal('modal-auftrag');
+    switchView('rechnungen');
+    document.querySelector('[data-view="rechnungen"]').click();
 }
 
 // ============================================
@@ -2681,10 +2693,14 @@ function initSettings() {
 
     // Clear Data
     document.getElementById('btn-clear-data')?.addEventListener('click', () => {
-        if (confirm('Wirklich ALLE Daten löschen? Dies kann nicht rückgängig gemacht werden!')) {
-            localStorage.clear();
-            location.reload();
-        }
+        window.confirmDialogService?.confirmDelete(
+            'Alle Daten',
+            'Alle gespeicherten Daten (Kunden, Anfragen, Angebote, Aufträge, Rechnungen) werden gelöscht',
+            () => {
+                localStorage.clear();
+                location.reload();
+            }
+        );
     });
 }
 
@@ -3082,6 +3098,7 @@ function switchViewExtended(viewId) {
 
     // Refresh content
     switch (viewId) {
+        case 'quick-actions': window.QuickActionsModule?.init?.(); break;
         case 'dashboard': updateDashboard(); break;
         case 'anfragen': renderAnfragen(); break;
         case 'angebote': renderAngebote(); break;
@@ -3387,6 +3404,10 @@ async function init() {
 // Quick Actions
 // ============================================
 function initQuickActions() {
+    // Initialize Quick Actions Home Screen (new feature)
+    window.QuickActionsModule?.init?.();
+
+    // Dashboard Quick Action Buttons (legacy dashboard buttons)
     // New Anfrage
     document.getElementById('qa-new-anfrage')?.addEventListener('click', () => {
         openModal('modal-anfrage');
@@ -4347,24 +4368,40 @@ async function generateEInvoice(invoiceId) {
  */
 async function markInvoiceAsPaid(invoiceId) {
     try {
-        const confirmed = confirm('Rechnung als bezahlt markieren?');
-        if (!confirmed) {return;}
-
-        if (!window.invoiceService) {
-            showToast('❌ Invoice Service nicht verfügbar', 'error');
+        const invoice = store.rechnungen?.find(r => r.id === invoiceId);
+        if (!invoice) {
+            showToast('❌ Rechnung nicht gefunden', 'error');
             return;
         }
 
-        const invoice = await window.invoiceService.markAsPaid(invoiceId, {
-            method: 'Überweisung',
-            note: ''
-        });
+        // Show confirmation dialog
+        window.confirmDialogService?.confirmMarkAsPaid(
+            invoice.nummer || invoice.id,
+            invoice.brutto || 0,
+            async () => {
+                // Confirmed - proceed with marking as paid
+                if (!window.invoiceService) {
+                    showToast('❌ Invoice Service nicht verfügbar', 'error');
+                    return;
+                }
 
-        showToast('✅ Rechnung als bezahlt markiert!', 'success');
-        renderRechnungen();
-        updateDashboard();
+                try {
+                    const result = await window.invoiceService.markAsPaid(invoiceId, {
+                        method: 'Überweisung',
+                        note: ''
+                    });
+
+                    showToast('✅ Rechnung als bezahlt markiert!', 'success');
+                    renderRechnungen();
+                    updateDashboard();
+                } catch (error) {
+                    console.error('Mark as paid error:', error);
+                    showToast('❌ Fehler: ' + error.message, 'error');
+                }
+            }
+        );
     } catch (error) {
-        console.error('Mark as paid error:', error);
+        console.error('markInvoiceAsPaid error:', error);
         showToast('❌ Fehler: ' + error.message, 'error');
     }
 }

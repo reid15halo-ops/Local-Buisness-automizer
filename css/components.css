@@ -5046,6 +5046,544 @@ textarea {
     line-height: 1.6;
 }
 
+/* ============================================
+   User Onboarding Wizard (Boomer-Friendly)
+   ============================================ */
+
+.setup-wizard-user .modal-content {
+    max-width: 600px;
+}
+
+.wizard-header-user {
+    padding: 40px 32px 24px 32px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+}
+
+.wizard-title-user {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.wizard-subtitle-user {
+    margin: 0;
+    opacity: 0.95;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.wizard-body-user {
+    padding: 40px 32px;
+    background: var(--bg-primary);
+}
+
+.wizard-step-user {
+    animation: wizard-fade-in 0.3s ease;
+}
+
+.wizard-form-user {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.wizard-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wizard-field-label {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.wizard-input-user {
+    width: 100%;
+    padding: 16px 18px;
+    font-size: 18px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    min-height: 48px;
+}
+
+.wizard-input-user:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+.wizard-input-user::placeholder {
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+.wizard-input-user.required {
+    border-color: var(--border-color);
+}
+
+/* File upload (logo) */
+.wizard-file-upload {
+    position: relative;
+}
+
+.wizard-file-input {
+    display: none;
+}
+
+.logo-upload-area {
+    padding: 32px 24px;
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-secondary);
+}
+
+.logo-upload-area:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-bg);
+}
+
+.wizard-logo-dropzone.dragging .logo-upload-area {
+    border-color: var(--accent-primary);
+    background: var(--accent-bg);
+    transform: scale(1.02);
+}
+
+.logo-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.logo-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.logo-hint {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.logo-preview-container {
+    text-align: center;
+    padding: 24px;
+}
+
+.logo-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Error messages */
+.wizard-errors-user {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.error-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 16px;
+    color: #dc2626;
+}
+
+.error-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+/* Completion step */
+.wizard-step-complete {
+    text-align: center;
+    animation: wizard-fade-in 0.3s ease;
+}
+
+.wizard-success-check {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: white;
+    animation: wizard-success-pulse 0.5s ease;
+}
+
+.wizard-step-complete h2 {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    color: var(--text-primary);
+}
+
+.wizard-complete-description {
+    margin: 0 0 32px 0;
+    font-size: 18px;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.wizard-company-summary {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 32px;
+    text-align: left;
+}
+
+.summary-item {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.summary-value {
+    color: var(--text-secondary);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.summary-logo {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 6px;
+}
+
+.wizard-welcome-message {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+}
+
+.wizard-welcome-message p {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.wizard-welcome-message p:last-child {
+    margin-bottom: 0;
+}
+
+/* Buttons */
+.btn-large {
+    padding: 14px 32px;
+    font-size: 16px;
+    min-height: 50px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary.btn-large {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    min-width: 140px;
+}
+
+.btn-primary.btn-large:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary.btn-large {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary.btn-large:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-bg);
+}
+
+.wizard-footer-user {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    padding: 28px 32px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+/* Admin step message */
+.wizard-step-admin {
+    padding: 40px 20px;
+    text-align: center;
+    background: var(--accent-bg);
+    border-radius: 8px;
+}
+
+.wizard-admin-message {
+    font-size: 16px;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+/* ============================================
+   Admin Technical Settings Modal
+   ============================================ */
+
+.admin-pin-modal {
+    z-index: 10001;
+}
+
+.admin-pin-content {
+    max-width: 400px;
+}
+
+.admin-pin-header {
+    padding: 32px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.admin-pin-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+}
+
+.admin-pin-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 16px;
+}
+
+.admin-pin-body {
+    padding: 32px;
+}
+
+.pin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.pin-field label {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.admin-pin-input {
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.admin-pin-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.pin-error {
+    color: #dc2626;
+    font-size: 14px;
+    padding: 8px 12px;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 4px;
+    margin-bottom: 16px;
+}
+
+.admin-pin-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 32px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+/* Admin settings modal */
+.admin-settings-modal {
+    z-index: 10001;
+}
+
+.admin-settings-content {
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-settings-header {
+    padding: 32px;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.admin-settings-header h2 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+}
+
+.admin-warning {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.admin-settings-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+}
+
+#admin-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.admin-settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.admin-settings-section h3 {
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    color: var(--text-primary);
+    font-weight: 600;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.admin-field label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.admin-input,
+.admin-checkbox {
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.admin-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.admin-input[type="password"] {
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+.admin-hint {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.admin-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    min-height: auto;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-errors {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.2);
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 24px;
+}
+
+.admin-settings-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 32px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
 /* Mobile responsive */
 @media (max-width: 640px) {
     .setup-wizard-modal .modal-content {
@@ -5084,6 +5622,61 @@ textarea {
 
     #wizard-prev-btn {
         width: 100%;
+    }
+
+    /* User onboarding mobile */
+    .wizard-header-user {
+        padding: 32px 20px 20px 20px;
+    }
+
+    .wizard-title-user {
+        font-size: 28px;
+    }
+
+    .wizard-subtitle-user {
+        font-size: 16px;
+    }
+
+    .wizard-body-user {
+        padding: 24px 20px;
+    }
+
+    .wizard-form-user {
+        gap: 20px;
+    }
+
+    .wizard-field-label {
+        font-size: 16px;
+    }
+
+    .wizard-input-user {
+        font-size: 16px;
+        padding: 14px 16px;
+        min-height: 44px;
+    }
+
+    .wizard-footer-user {
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px;
+    }
+
+    .btn-large {
+        width: 100%;
+        padding: 12px 24px;
+    }
+
+    .btn-primary.btn-large {
+        min-width: unset;
+    }
+
+    .summary-item {
+        grid-template-columns: 100px 1fr;
+        gap: 12px;
+    }
+
+    .wizard-company-summary {
+        padding: 16px;
     }
 }
 

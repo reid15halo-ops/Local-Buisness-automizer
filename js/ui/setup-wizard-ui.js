@@ -1,12 +1,14 @@
 /* ============================================
    Setup Wizard UI
-   Interactive setup wizard for API configuration
+   User-friendly onboarding for Handwerker
+   (German-language, non-technical, boomer-friendly)
    ============================================ */
 
 class SetupWizardUI {
     constructor() {
         this.modal = null;
         this.service = window.setupWizard;
+        this.logoPreview = null;
     }
 
     /**
@@ -48,34 +50,25 @@ class SetupWizardUI {
 
         const modal = document.createElement('div');
         modal.id = 'setup-wizard-modal';
-        modal.className = 'modal setup-wizard-modal';
+        modal.className = 'modal setup-wizard-modal setup-wizard-user';
         modal.innerHTML = `
-            <div class="modal-content wizard-content">
-                <div class="wizard-header">
-                    <h2>🚀 App Setup</h2>
-                    <p class="wizard-subtitle">Konfiguriere die benötigten APIs (100% kostenlos)</p>
-                    <div class="wizard-progress">
-                        <div class="wizard-progress-bar">
-                            <div class="wizard-progress-fill" id="wizard-progress-fill"></div>
-                        </div>
-                        <span class="wizard-progress-text" id="wizard-progress-text">Schritt 1 von 4</span>
-                    </div>
+            <div class="modal-content wizard-content wizard-content-user">
+                <div class="wizard-header wizard-header-user">
+                    <h1 class="wizard-title-user">MHS Workflow</h1>
+                    <p class="wizard-subtitle-user" id="wizard-subtitle"></p>
                 </div>
 
-                <div class="wizard-body" id="wizard-body">
+                <div class="wizard-body wizard-body-user" id="wizard-body">
                     <!-- Dynamic content -->
                 </div>
 
-                <div class="wizard-footer">
-                    <button type="button" class="btn-secondary" id="wizard-prev-btn" style="display: none;">
+                <div class="wizard-footer wizard-footer-user">
+                    <button type="button" class="btn-secondary btn-large" id="wizard-prev-btn" style="display: none;">
                         ← Zurück
                     </button>
                     <div class="wizard-footer-actions">
-                        <button type="button" class="btn-text" id="wizard-skip-btn">
-                            Setup später
-                        </button>
-                        <button type="button" class="btn-primary" id="wizard-next-btn">
-                            Weiter →
+                        <button type="button" class="btn-primary btn-large" id="wizard-next-btn">
+                            Weiter
                         </button>
                     </div>
                 </div>
@@ -83,7 +76,7 @@ class SetupWizardUI {
         `;
 
         document.body.appendChild(modal);
-        this.modal = modal; // Set modal reference before attaching listeners
+        this.modal = modal;
         this.attachEventListeners();
     }
 
@@ -93,33 +86,29 @@ class SetupWizardUI {
     updateStepContent() {
         const step = this.service.getCurrentStep();
         const body = document.getElementById('wizard-body');
+        const subtitle = document.getElementById('wizard-subtitle');
 
-        // Update progress
-        const progress = ((this.service.currentStep) / (this.service.steps.length - 1)) * 100;
-        document.getElementById('wizard-progress-fill').style.width = `${progress}%`;
-        document.getElementById('wizard-progress-text').textContent =
-            `Schritt ${this.service.currentStep + 1} von ${this.service.steps.length}`;
+        subtitle.textContent = step.description;
 
         // Update buttons
         const prevBtn = document.getElementById('wizard-prev-btn');
         const nextBtn = document.getElementById('wizard-next-btn');
-        const skipBtn = document.getElementById('wizard-skip-btn');
 
         prevBtn.style.display = this.service.currentStep > 0 ? 'block' : 'none';
 
         if (step.id === 'complete') {
-            nextBtn.textContent = 'App starten 🎉';
-            skipBtn.style.display = 'none';
+            nextBtn.textContent = 'Los geht\'s!';
         } else {
-            nextBtn.textContent = 'Weiter →';
-            skipBtn.style.display = 'block';
+            nextBtn.textContent = 'Weiter';
         }
 
         // Render step content
         if (step.id === 'complete') {
             body.innerHTML = this.renderCompleteStep(step);
+        } else if (step.type === 'user') {
+            body.innerHTML = this.renderUserOnboardingStep(step);
         } else {
-            body.innerHTML = this.renderConfigStep(step);
+            body.innerHTML = this.renderAdminStep(step);
         }
 
         // Attach step-specific event listeners
@@ -127,72 +116,82 @@ class SetupWizardUI {
     }
 
     /**
-     * Render configuration step
+     * Render user-friendly onboarding step
      */
-    renderConfigStep(step) {
+    renderUserOnboardingStep(step) {
         const fieldsHTML = step.fields.map(field => {
             const currentValue = localStorage.getItem(field.name) || '';
+
+            if (field.type === 'file') {
+                return `
+                    <div class="wizard-field-group">
+                        <label for="wizard-${field.name}" class="wizard-field-label">
+                            ${field.label}
+                        </label>
+                        <div class="wizard-file-upload" id="wizard-logo-dropzone">
+                            <input
+                                type="file"
+                                id="wizard-${field.name}"
+                                name="${field.name}"
+                                accept="${field.accept || '*'}"
+                                class="wizard-file-input"
+                                style="display: none;"
+                            />
+                            <div class="logo-upload-area">
+                                <div class="logo-icon">🖼️</div>
+                                <p class="logo-text">Bild hochladen oder hierher ziehen</p>
+                                <p class="logo-hint">(PNG, JPG, GIF)</p>
+                            </div>
+                            <div class="logo-preview-container" id="logo-preview-container" style="display: none;">
+                                <img id="logo-preview-img" alt="Logo Preview" class="logo-preview">
+                                <button type="button" class="btn-sm btn-secondary" id="btn-remove-logo">
+                                    Logo entfernen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             return `
-                <div class="wizard-field">
-                    <label for="wizard-${field.name}">${field.label}</label>
+                <div class="wizard-field-group">
+                    <label for="wizard-${field.name}" class="wizard-field-label">
+                        ${field.label}
+                    </label>
                     <input
                         type="${field.type}"
                         id="wizard-${field.name}"
                         name="${field.name}"
                         placeholder="${field.placeholder}"
                         value="${currentValue}"
-                        class="wizard-input"
+                        class="wizard-input-user ${field.required ? 'required' : ''}"
+                        ${field.required ? 'required' : ''}
                     />
                 </div>
             `;
         }).join('');
 
-        const linksHTML = step.links.map(link => `
-            <a href="${link.url}" target="_blank" rel="noopener" class="wizard-link">
-                <span class="wizard-link-icon">${link.icon}</span>
-                <span>${link.text}</span>
-                <span class="wizard-link-arrow">→</span>
-            </a>
-        `).join('');
-
-        const instructionsHTML = step.instructions.map((instruction, i) => `
-            <li>
-                <span class="instruction-number">${i + 1}</span>
-                <span>${instruction}</span>
-            </li>
-        `).join('');
-
         return `
-            <div class="wizard-step">
-                <div class="wizard-step-header">
-                    <h3>${step.title}</h3>
-                    <p>${step.description}</p>
+            <div class="wizard-step-user">
+                <div class="wizard-form-user">
+                    ${fieldsHTML}
+                    <div class="wizard-errors" id="wizard-errors" style="display: none;"></div>
                 </div>
+            </div>
+        `;
+    }
 
-                ${step.links.length > 0 ? `
-                    <div class="wizard-links">
-                        <h4>📖 Hilfreiche Links:</h4>
-                        ${linksHTML}
-                    </div>
-                ` : ''}
-
-                ${step.instructions.length > 0 ? `
-                    <div class="wizard-instructions">
-                        <h4>📝 Anleitung:</h4>
-                        <ol>${instructionsHTML}</ol>
-                    </div>
-                ` : ''}
-
-                ${step.fields.length > 0 ? `
-                    <div class="wizard-form">
-                        <h4>🔑 Konfiguration:</h4>
-                        ${fieldsHTML}
-                        <button type="button" class="btn-secondary btn-sm" id="wizard-test-btn">
-                            🧪 Verbindung testen
-                        </button>
-                        <div class="wizard-test-result" id="wizard-test-result"></div>
-                    </div>
-                ` : ''}
+    /**
+     * Render admin/technical settings step (not used in first-run, but available)
+     */
+    renderAdminStep(step) {
+        return `
+            <div class="wizard-step-admin">
+                <div class="wizard-admin-message">
+                    Diese Seite ist nicht Teil der Einrichtung für normale Benutzer.
+                    <br><br>
+                    Technische Einstellungen finden Sie unter: Einstellungen → Technische Einstellungen
+                </div>
             </div>
         `;
     }
@@ -201,47 +200,45 @@ class SetupWizardUI {
      * Render completion step
      */
     renderCompleteStep(step) {
-        const config = this.service.exportConfig();
-        const configPreview = Object.entries(config)
-            .filter(([key]) => key !== 'exported_at')
-            .map(([key, value]) => {
-                const maskedValue = value ? value.substring(0, 10) + '...' : 'nicht gesetzt';
-                return `
-                    <div class="config-item">
-                        <span class="config-key">${key}:</span>
-                        <span class="config-value">${maskedValue}</span>
-                    </div>
-                `;
-            }).join('');
+        const profile = this.service.getCompanyProfile();
 
         return `
-            <div class="wizard-step wizard-complete">
-                <div class="wizard-success-icon">✓</div>
-                <h3>${step.title}</h3>
-                <p>${step.description}</p>
+            <div class="wizard-step-complete">
+                <div class="wizard-success-check">✓</div>
+                <h2>${step.title}</h2>
+                <p class="wizard-complete-description">${step.description}</p>
 
-                <div class="wizard-config-summary">
-                    <h4>📋 Konfiguration:</h4>
-                    ${configPreview}
+                <div class="wizard-company-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Firma:</span>
+                        <span class="summary-value">${profile.company_name}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Ansprechpartner:</span>
+                        <span class="summary-value">${profile.owner_name}</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Adresse:</span>
+                        <span class="summary-value">
+                            ${profile.address_street}<br>
+                            ${profile.address_postal} ${profile.address_city}
+                        </span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Steuernummer:</span>
+                        <span class="summary-value">${profile.tax_number}</span>
+                    </div>
+                    ${profile.company_logo ? `
+                        <div class="summary-item">
+                            <span class="summary-label">Logo:</span>
+                            <img src="${profile.company_logo}" alt="Unternehmenslogo" class="summary-logo">
+                        </div>
+                    ` : ''}
                 </div>
 
-                <div class="wizard-actions">
-                    <button type="button" class="btn-secondary" id="wizard-export-btn">
-                        💾 Config exportieren
-                    </button>
-                    <button type="button" class="btn-secondary" id="wizard-reconfigure-btn">
-                        ⚙️ Neu konfigurieren
-                    </button>
-                </div>
-
-                <div class="wizard-next-steps">
-                    <h4>🎯 Nächste Schritte:</h4>
-                    <ul>
-                        <li>Die App ist jetzt voll funktionsfähig</li>
-                        <li>Email-Automation ist aktiviert</li>
-                        <li>KI-Analyse läuft automatisch</li>
-                        <li>Teste die Features im Dashboard!</li>
-                    </ul>
+                <div class="wizard-welcome-message">
+                    <p><strong>Herzlich willkommen!</strong></p>
+                    <p>Sie können jetzt direkt anfangen, Ihre Angebote und Rechnungen zu verwalten.</p>
                 </div>
             </div>
         `;
@@ -253,17 +250,15 @@ class SetupWizardUI {
     attachEventListeners() {
         const nextBtn = document.getElementById('wizard-next-btn');
         const prevBtn = document.getElementById('wizard-prev-btn');
-        const skipBtn = document.getElementById('wizard-skip-btn');
 
         nextBtn.addEventListener('click', () => this.handleNext());
         prevBtn.addEventListener('click', () => this.handlePrevious());
-        skipBtn.addEventListener('click', () => this.handleSkip());
 
         // Prevent closing modal by clicking outside
         this.modal.addEventListener('click', (e) => {
             if (e.target === this.modal && !this.service.isSetupComplete()) {
                 // Show warning
-                this.showWarning('Bitte schließe das Setup ab oder wähle "Setup später"');
+                this.showWarning('Bitte füllen Sie die erforderlichen Felder aus.');
             }
         });
     }
@@ -272,8 +267,12 @@ class SetupWizardUI {
      * Attach step-specific event listeners
      */
     attachStepEventListeners(step) {
-        // Save field values on input
+        if (step.type !== 'user') {return;}
+
+        // Save text field values on input
         step.fields.forEach(field => {
+            if (field.type === 'file') {return;}
+
             const input = document.getElementById(`wizard-${field.name}`);
             if (input) {
                 input.addEventListener('input', (e) => {
@@ -282,22 +281,104 @@ class SetupWizardUI {
             }
         });
 
-        // Test button
-        const testBtn = document.getElementById('wizard-test-btn');
-        if (testBtn) {
-            testBtn.addEventListener('click', () => this.handleTest(step.id));
+        // Handle logo upload
+        const logoInput = document.getElementById('wizard-company_logo');
+        const dropzone = document.getElementById('wizard-logo-dropzone');
+
+        if (logoInput && dropzone) {
+            // File input change
+            logoInput.addEventListener('change', (e) => this.handleLogoUpload(e));
+
+            // Drag and drop
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragging');
+            });
+
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('dragging');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragging');
+                if (e.dataTransfer.files.length) {
+                    logoInput.files = e.dataTransfer.files;
+                    this.handleLogoUpload({ target: logoInput });
+                }
+            });
+
+            dropzone.addEventListener('click', () => logoInput.click());
+
+            // Remove logo button
+            const removeBtn = document.getElementById('btn-remove-logo');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => this.handleRemoveLogo());
+            }
+
+            // Show preview if logo exists
+            const logo = localStorage.getItem('company_logo');
+            if (logo) {
+                this.displayLogoPreview(logo);
+            }
+        }
+    }
+
+    /**
+     * Handle logo file upload
+     */
+    handleLogoUpload(e) {
+        const file = e.target.files?.[0];
+        if (!file) {return;}
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            this.showError('Bitte wählen Sie eine Bilddatei (PNG, JPG, GIF).');
+            return;
         }
 
-        // Export button (complete step)
-        const exportBtn = document.getElementById('wizard-export-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => this.handleExport());
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            this.showError('Die Datei ist zu groß. Maximum: 5 MB.');
+            return;
         }
 
-        // Reconfigure button (complete step)
-        const reconfigureBtn = document.getElementById('wizard-reconfigure-btn');
-        if (reconfigureBtn) {
-            reconfigureBtn.addEventListener('click', () => this.handleReconfigure());
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target.result;
+            this.service.saveField('company_logo', base64);
+            this.displayLogoPreview(base64);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /**
+     * Display logo preview
+     */
+    displayLogoPreview(base64) {
+        const img = document.getElementById('logo-preview-img');
+        const container = document.getElementById('logo-preview-container');
+        const uploadArea = document.querySelector('.logo-upload-area');
+
+        if (img && container && uploadArea) {
+            img.src = base64;
+            container.style.display = 'block';
+            uploadArea.style.display = 'none';
+        }
+    }
+
+    /**
+     * Handle logo removal
+     */
+    handleRemoveLogo() {
+        localStorage.removeItem('company_logo');
+        const input = document.getElementById('wizard-company_logo');
+        if (input) {input.value = '';}
+        const container = document.getElementById('logo-preview-container');
+        const uploadArea = document.querySelector('.logo-upload-area');
+        if (container && uploadArea) {
+            container.style.display = 'none';
+            uploadArea.style.display = 'block';
         }
     }
 
@@ -323,6 +404,13 @@ class SetupWizardUI {
             return;
         }
 
+        // Clear errors before moving on
+        const errorsDiv = document.getElementById('wizard-errors');
+        if (errorsDiv) {
+            errorsDiv.style.display = 'none';
+            errorsDiv.innerHTML = '';
+        }
+
         // Move to next step
         this.service.nextStep();
         this.updateStepContent();
@@ -337,77 +425,29 @@ class SetupWizardUI {
     }
 
     /**
-     * Handle skip button
-     */
-    handleSkip() {
-        const confirmed = confirm(
-            'Möchtest du das Setup wirklich überspringen?\n\n' +
-            'Die App funktioniert ohne API-Keys nur eingeschränkt.'
-        );
-
-        if (confirmed) {
-            this.hide();
-            if (window.app && window.app.init) {
-                window.app.init();
-            }
-        }
-    }
-
-    /**
-     * Handle test connection
-     */
-    async handleTest(stepId) {
-        const testBtn = document.getElementById('wizard-test-btn');
-        const resultDiv = document.getElementById('wizard-test-result');
-
-        testBtn.disabled = true;
-        testBtn.textContent = '🔄 Teste...';
-        resultDiv.className = 'wizard-test-result';
-        resultDiv.textContent = '';
-
-        const result = await this.service.testConnection(stepId);
-
-        testBtn.disabled = false;
-        testBtn.textContent = '🧪 Verbindung testen';
-
-        resultDiv.className = `wizard-test-result ${result.success ? 'success' : 'error'}`;
-        resultDiv.textContent = result.message;
-    }
-
-    /**
-     * Handle export config
-     */
-    handleExport() {
-        const config = this.service.exportConfig();
-        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `business-automizer-config-${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    /**
-     * Handle reconfigure
-     */
-    handleReconfigure() {
-        const confirmed = confirm('Möchtest du die Konfiguration wirklich zurücksetzen?');
-        if (confirmed) {
-            this.service.resetSetup();
-            this.updateStepContent();
-        }
-    }
-
-    /**
      * Show errors
      */
     showErrors(errors) {
-        const resultDiv = document.getElementById('wizard-test-result');
-        if (resultDiv) {
-            resultDiv.className = 'wizard-test-result error';
-            resultDiv.innerHTML = errors.map(err => `<div>⚠️ ${err}</div>`).join('');
+        const errorsDiv = document.getElementById('wizard-errors');
+        if (errorsDiv) {
+            errorsDiv.className = 'wizard-errors-user';
+            errorsDiv.innerHTML = errors.map(err => `
+                <div class="error-message">
+                    <span class="error-icon">⚠️</span>
+                    <span>${err}</span>
+                </div>
+            `).join('');
+            errorsDiv.style.display = 'block';
+            // Scroll to errors
+            errorsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
+    }
+
+    /**
+     * Show single error (for logo upload, etc)
+     */
+    showError(message) {
+        alert(message);
     }
 
     /**

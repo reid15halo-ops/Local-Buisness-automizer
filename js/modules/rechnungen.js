@@ -108,13 +108,21 @@ function showRechnung(rechnungId) {
         const markPaidBtn = modal.querySelector('#btn-mark-paid');
         if (markPaidBtn) {
             markPaidBtn.addEventListener('click', () => {
-                rechnung.status = 'bezahlt';
-                rechnung.paidAt = new Date().toISOString();
-                saveStore();
-                addActivity('✅', `Rechnung ${rechnung.id} als bezahlt markiert`);
-                closeModal('modal-rechnung');
-                renderRechnungen();
-                window.DashboardModule?.updateDashboard?.();
+                // Show confirmation dialog
+                window.confirmDialogService?.confirmMarkAsPaid(
+                    rechnung.id,
+                    rechnung.brutto || 0,
+                    () => {
+                        // Confirmed - mark as paid
+                        rechnung.status = 'bezahlt';
+                        rechnung.paidAt = new Date().toISOString();
+                        saveStore();
+                        addActivity('✅', `Rechnung ${rechnung.id} als bezahlt markiert`);
+                        closeModal('modal-rechnung');
+                        renderRechnungen();
+                        window.DashboardModule?.updateDashboard?.();
+                    }
+                );
             });
         }
     }

@@ -352,51 +352,59 @@ function acceptAngebot(angebotId) {
     const angebot = store.angebote.find(a => a.id === angebotId);
     if (!angebot) {return;}
 
-    angebot.status = 'angenommen';
+    // Show confirmation dialog
+    window.confirmDialogService?.confirmAcceptAngebot(
+        angebot.id,
+        window.UI?.sanitize?.(angebot.kunde?.name) || 'Unbekannt',
+        () => {
+            // Confirmed - proceed with accepting the quote
+            angebot.status = 'angenommen';
 
-    // Build stueckliste from positionen with materialId
-    const stueckliste = angebot.positionen
-        .filter(pos => pos.materialId)
-        .map(pos => ({
-            materialId: pos.materialId,
-            artikelnummer: pos.artikelnummer,
-            beschreibung: pos.beschreibung,
-            menge: pos.menge,
-            einheit: pos.einheit,
-            ekPreis: pos.ekPreis,
-            vkPreis: pos.preis,
-            bestandBenötigt: pos.menge,
-            bestandVerfügbar: pos.bestandVerfuegbar
-        }));
+            // Build stueckliste from positionen with materialId
+            const stueckliste = angebot.positionen
+                .filter(pos => pos.materialId)
+                .map(pos => ({
+                    materialId: pos.materialId,
+                    artikelnummer: pos.artikelnummer,
+                    beschreibung: pos.beschreibung,
+                    menge: pos.menge,
+                    einheit: pos.einheit,
+                    ekPreis: pos.ekPreis,
+                    vkPreis: pos.preis,
+                    bestandBenötigt: pos.menge,
+                    bestandVerfügbar: pos.bestandVerfuegbar
+                }));
 
-    const auftrag = {
-        id: generateId('AUF'),
-        angebotId,
-        kunde: angebot.kunde,
-        leistungsart: angebot.leistungsart,
-        positionen: angebot.positionen,
-        stueckliste: stueckliste,  // NEW: Material list from positionen
-        angebotsWert: angebot.brutto,
-        netto: angebot.netto,
-        mwst: angebot.mwst,
-        status: 'geplant',
-        fortschritt: 0,
-        mitarbeiter: [],
-        startDatum: null,
-        endDatum: null,
-        checkliste: [],
-        kommentare: [],
-        historie: [{ aktion: 'erstellt', datum: new Date().toISOString(), details: `Aus Angebot ${angebotId}` }],
-        createdAt: new Date().toISOString()
-    };
+            const auftrag = {
+                id: generateId('AUF'),
+                angebotId,
+                kunde: angebot.kunde,
+                leistungsart: angebot.leistungsart,
+                positionen: angebot.positionen,
+                stueckliste: stueckliste,  // NEW: Material list from positionen
+                angebotsWert: angebot.brutto,
+                netto: angebot.netto,
+                mwst: angebot.mwst,
+                status: 'geplant',
+                fortschritt: 0,
+                mitarbeiter: [],
+                startDatum: null,
+                endDatum: null,
+                checkliste: [],
+                kommentare: [],
+                historie: [{ aktion: 'erstellt', datum: new Date().toISOString(), details: `Aus Angebot ${angebotId}` }],
+                createdAt: new Date().toISOString()
+            };
 
-    store.auftraege.push(auftrag);
-    saveStore();
+            store.auftraege.push(auftrag);
+            saveStore();
 
-    addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
+            addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
 
-    switchView('auftraege');
-    document.querySelector('[data-view="auftraege"]').click();
+            switchView('auftraege');
+            document.querySelector('[data-view="auftraege"]').click();
+        }
+    );
 }
 
 // Export angebote functions

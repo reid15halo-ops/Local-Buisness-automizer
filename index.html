@@ -124,113 +124,136 @@
             </div>
 
             <nav class="nav-menu">
-                <button class="nav-item active" data-view="dashboard">
-                    <span class="nav-icon">📊</span>
-                    Dashboard
+                <!-- Simple Mode Items (always visible) -->
+                <button class="nav-item active" data-view="quick-actions" data-mode="simple">
+                    <span class="nav-icon">🏠</span>
+                    Startseite
                 </button>
-                <button class="nav-item" data-view="anfragen">
+
+                <!-- Pro Mode Items (hidden in Simple mode) -->
+                <button class="nav-item" data-view="dashboard" data-mode="pro">
+                    <span class="nav-icon">📊</span>
+                    Auswertungen
+                </button>
+
+                <!-- Simple Mode Items -->
+                <button class="nav-item" data-view="anfragen" data-mode="simple">
                     <span class="nav-icon">📥</span>
                     Anfragen
                     <span class="badge" id="anfragen-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="angebote">
+                <button class="nav-item" data-view="angebote" data-mode="simple">
                     <span class="nav-icon">📝</span>
                     Angebote
                     <span class="badge" id="angebote-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="auftraege">
+                <button class="nav-item" data-view="auftraege" data-mode="simple">
                     <span class="nav-icon">🔧</span>
                     Aufträge
                     <span class="badge" id="auftraege-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="rechnungen">
+                <button class="nav-item" data-view="rechnungen" data-mode="simple">
                     <span class="nav-icon">💰</span>
                     Rechnungen
                     <span class="badge" id="rechnungen-badge">0</span>
                 </button>
-                <div class="nav-divider"></div>
-                <button class="nav-item" data-view="aufgaben">
+
+                <!-- Pro Mode Section -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="aufgaben" data-mode="pro">
                     <span class="nav-icon">📋</span>
                     Aufgaben
                     <span class="badge" id="aufgaben-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="kunden">
+
+                <!-- Simple Mode Items -->
+                <button class="nav-item" data-view="kunden" data-mode="simple">
                     <span class="nav-icon">👥</span>
                     Kunden
                     <span class="badge" id="kunden-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="kommunikation">
+
+                <!-- Pro Mode Items -->
+                <button class="nav-item" data-view="kommunikation" data-mode="pro">
                     <span class="nav-icon">💬</span>
                     Kommunikation
                     <span class="badge" id="kommunikation-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="kalender">
+                <button class="nav-item" data-view="kalender" data-mode="pro">
                     <span class="nav-icon">📅</span>
                     Kalender
                 </button>
-                <button class="nav-item" data-view="zeiterfassung">
+                <button class="nav-item" data-view="zeiterfassung" data-mode="pro">
                     <span class="nav-icon">⏱️</span>
                     Zeiterfassung
                 </button>
-                <div class="nav-divider"></div>
-                <button class="nav-item" data-view="emails">
+
+                <!-- Email & Communication Section (Pro) -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="emails" data-mode="pro">
                     <span class="nav-icon">📧</span>
                     E-Mails
                     <span class="badge" id="emails-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="email-automation">
+                <button class="nav-item" data-view="email-automation" data-mode="pro">
                     <span class="nav-icon">🤖</span>
                     E-Mail Automation
                     <span class="badge" id="email-automation-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="dokumente">
+                <button class="nav-item" data-view="dokumente" data-mode="pro">
                     <span class="nav-icon">📄</span>
                     Dokumente
                 </button>
-                <button class="nav-item" data-view="chatbot">
+                <button class="nav-item" data-view="chatbot" data-mode="pro">
                     <span class="nav-icon">🤖</span>
                     KI-Chatbot
                     <span class="badge badge-success" id="chatbot-badge">0</span>
                 </button>
-                <div class="nav-divider"></div>
-                <button class="nav-item" data-view="material">
+
+                <!-- Inventory & Orders Section (Pro) -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="material" data-mode="pro">
                     <span class="nav-icon">📦</span>
-                    Material
+                    Lager
                     <span class="badge" id="material-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="bestellungen">
+                <button class="nav-item" data-view="bestellungen" data-mode="pro">
                     <span class="nav-icon">🛒</span>
                     Bestellungen
                     <span class="badge" id="bestellungen-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="mahnwesen">
+                <button class="nav-item" data-view="mahnwesen" data-mode="pro">
                     <span class="nav-icon">⚠️</span>
                     Mahnwesen
                     <span class="badge badge-warning" id="mahnwesen-badge">0</span>
                 </button>
-                <button class="nav-item" data-view="buchhaltung">
+                <button class="nav-item" data-view="buchhaltung" data-mode="pro">
                     <span class="nav-icon">💰</span>
                     Buchhaltung
                 </button>
-                <button class="nav-item" data-view="berichte">
+                <button class="nav-item" data-view="berichte" data-mode="pro">
                     <span class="nav-icon">📊</span>
                     Berichte
                 </button>
-                <div class="nav-divider"></div>
-                <button class="nav-item" data-view="workflows">
+
+                <!-- Advanced Tools Section (Pro) -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="workflows" data-mode="pro">
                     <span class="nav-icon">⚡</span>
                     Workflows
                     <span class="badge badge-new" id="workflows-badge">NEU</span>
                 </button>
-                <button class="nav-item" data-view="scanner">
+                <button class="nav-item" data-view="scanner" data-mode="pro">
                     <span class="nav-icon">📷</span>
                     Scanner
                 </button>
-                <button class="nav-item" data-view="backup">
+                <button class="nav-item" data-view="backup" data-mode="pro">
                     <span class="nav-icon">🔒</span>
-                    Backup
+                    Daten verwalten
                 </button>
-                <button class="nav-item" data-view="einstellungen">
+
+                <!-- Settings (Simple Mode) -->
+                <button class="nav-item" data-view="einstellungen" data-mode="simple">
                     <span class="nav-icon">⚙️</span>
                     Einstellungen
                 </button>
@@ -267,8 +290,13 @@
                 </div>
             </div>
 
-            <!-- Dashboard View -->
-            <section class="view active" id="view-dashboard">
+            <!-- Quick Actions Home View (NEW DEFAULT HOME SCREEN) -->
+            <section class="view active" id="view-quick-actions">
+                <div id="quick-actions-container"></div>
+            </section>
+
+            <!-- Dashboard View (now secondary, accessed via "Auswertungen") -->
+            <section class="view" id="view-dashboard">
                 <header class="view-header">
                     <h1>Dashboard</h1>
                     <p class="subtitle">Übersicht aller Vorgänge</p>
@@ -2696,13 +2724,22 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/sync-service.js"></script>
     <script src="js/services/auth-service.js"></script>
     <script src="js/services/store-service.js"></script>
+
+    <!-- Confirmation Dialog Service (for destructive actions) -->
+    <script src="js/services/confirm-dialog-service.js"></script>
+
+    <!-- User Mode Service (Progressive Disclosure - Simple vs Pro mode) -->
+    <script src="js/services/user-mode-service.js"></script>
+    <script src="js/ui/mode-toggle-ui.js"></script>
+
     <script src="js/services/excel-recognition-service.js"></script>
     <script src="js/ui/ui-helpers.js"></script>
     <script src="js/ui/excel-import-wizard.js"></script>
 
-    <!-- Setup Wizard -->
+    <!-- Setup Wizard & Admin Settings -->
     <script src="js/services/setup-wizard-service.js"></script>
     <script src="js/ui/setup-wizard-ui.js"></script>
+    <script src="js/ui/admin-settings-ui.js"></script>
 
     <!-- Onboarding Tutorial -->
     <script src="js/services/onboarding-tutorial-service.js"></script>
@@ -2743,6 +2780,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/modules/modals.js"></script>
     <script src="js/modules/activity.js"></script>
     <script src="js/modules/dashboard.js"></script>
+    <script src="js/modules/quick-actions.js"></script>
     <script src="js/modules/anfragen.js"></script>
     <script src="js/modules/material-picker.js"></script>
     <script src="js/modules/angebote.js"></script>

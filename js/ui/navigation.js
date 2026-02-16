@@ -5,7 +5,7 @@
 
 class NavigationController {
     constructor() {
-        this.currentView = 'dashboard';
+        this.currentView = 'quick-actions';
         this.views = document.querySelectorAll('.view');
         this.navItems = document.querySelectorAll('.nav-item');
 
@@ -107,6 +107,9 @@ class NavigationController {
         // Call global render functions (legacy support until fully refactored)
         // Ideally these should listen to the 'viewchange' event instead
         switch (viewId) {
+            case 'quick-actions':
+                if (window.QuickActionsModule?.init) {window.QuickActionsModule.init();}
+                break;
             case 'dashboard':
                 if (window.updateDashboard) {window.updateDashboard();}
                 break;
