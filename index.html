@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/purchase-orders.css">
     <link rel="stylesheet" href="css/reorder-engine.css">
     <link rel="stylesheet" href="css/admin-panel.css">
+    <link rel="stylesheet" href="css/boomer-guide.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
@@ -2936,6 +2937,9 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/activity-indicator-service.js"></script>
     <script src="js/services/dashboard-charts-service.js"></script>
     <script src="js/services/notification-service.js"></script>
+    <script src="js/services/push-messenger-service.js"></script>
+    <script src="js/services/boomer-guide-service.js"></script>
+    <script src="js/ui/boomer-guide-ui.js"></script>
     <script src="js/services/data-export-service.js"></script>
     <script src="js/services/email-template-service.js"></script>
     <script src="js/services/pwa-install-service.js"></script>
@@ -3099,6 +3103,20 @@ Email: max.mustermann@example.com</textarea>
                     });
                 }
             }
+        })();
+    </script>
+
+    <!-- Boomer Guide Initialization -->
+    <script>
+        (function initBoomerGuide() {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    if (window.boomerGuideUI) {
+                        window.boomerGuideUI.init();
+                        console.log('✅ Boomer Guide initialized');
+                    }
+                }, 800);
+            });
         })();
     </script>
 </body>

@@ -1,0 +1,531 @@
+/* ============================================
+   Boomer Guide — Visual Guidance System
+   Bouncing arrows, glow highlights, stop signs,
+   greyed-out sections, welcome splash
+   ============================================ */
+
+/* ===== BOUNCING ARROW INDICATOR ===== */
+.boomer-arrow {
+    position: absolute;
+    right: -32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    animation: boomer-bounce 1s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 100;
+    filter: drop-shadow(0 0 6px var(--accent-primary));
+    line-height: 1;
+}
+
+.boomer-arrow.arrow-urgent {
+    filter: drop-shadow(0 0 8px var(--accent-danger));
+}
+
+.boomer-arrow.arrow-warning {
+    filter: drop-shadow(0 0 8px var(--accent-warning));
+}
+
+.boomer-arrow.arrow-info {
+    filter: drop-shadow(0 0 6px var(--accent-info));
+}
+
+@keyframes boomer-bounce {
+    0%, 100% { transform: translateY(-50%) translateX(0); }
+    50% { transform: translateY(-50%) translateX(-8px); }
+}
+
+/* Arrow pulse ring */
+.boomer-arrow::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: transparent;
+    animation: arrow-ring 2s ease-out infinite;
+}
+
+.boomer-arrow.arrow-urgent::after {
+    border: 2px solid var(--accent-danger);
+}
+
+.boomer-arrow.arrow-warning::after {
+    border: 2px solid var(--accent-warning);
+}
+
+.boomer-arrow.arrow-info::after {
+    border: 2px solid var(--accent-info);
+}
+
+@keyframes arrow-ring {
+    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+/* ===== NAV ITEM GLOW EFFECT ===== */
+.nav-item.boomer-glow {
+    animation: boomer-glow-pulse 2s ease-in-out infinite;
+    border: 1px solid rgba(99, 102, 241, 0.4) !important;
+    border-radius: 8px;
+}
+
+.nav-item.boomer-glow-urgent {
+    animation: boomer-glow-urgent 1.5s ease-in-out infinite;
+    border: 1px solid rgba(239, 68, 68, 0.5) !important;
+    border-radius: 8px;
+}
+
+.nav-item.boomer-glow-warning {
+    animation: boomer-glow-warning 1.8s ease-in-out infinite;
+    border: 1px solid rgba(245, 158, 11, 0.5) !important;
+    border-radius: 8px;
+}
+
+@keyframes boomer-glow-pulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(99, 102, 241, 0.2),
+                    inset 0 0 5px rgba(99, 102, 241, 0.05);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4),
+                    inset 0 0 10px rgba(99, 102, 241, 0.1);
+    }
+}
+
+@keyframes boomer-glow-urgent {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(239, 68, 68, 0.3),
+                    inset 0 0 5px rgba(239, 68, 68, 0.05);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.5),
+                    inset 0 0 10px rgba(239, 68, 68, 0.1);
+    }
+}
+
+@keyframes boomer-glow-warning {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.3),
+                    inset 0 0 5px rgba(245, 158, 11, 0.05);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.4),
+                    inset 0 0 10px rgba(245, 158, 11, 0.1);
+    }
+}
+
+/* ===== GREYED OUT / NO-ACTION NAV ITEMS ===== */
+.nav-item.boomer-inactive {
+    opacity: 0.35;
+    filter: grayscale(0.8);
+    transition: opacity 0.3s, filter 0.3s;
+}
+
+.nav-item.boomer-inactive:hover {
+    opacity: 0.7;
+    filter: grayscale(0.3);
+}
+
+/* Small checkmark badge for "all done" sections */
+.boomer-done-badge {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--accent-success);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* ===== WELCOME SPLASH OVERLAY ===== */
+.boomer-splash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: splash-fade-in 0.3s ease;
+}
+
+@keyframes splash-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.boomer-splash-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: splash-slide-up 0.4s ease;
+}
+
+@keyframes splash-slide-up {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.boomer-splash-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.boomer-splash-greeting {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.boomer-splash-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.boomer-splash-summary {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ===== ACTIVITY FEED ITEMS ===== */
+.boomer-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.boomer-feed-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--bg-hover);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.boomer-feed-item:hover {
+    background: #2a2a32;
+    transform: translateX(4px);
+}
+
+.boomer-feed-item.feed-urgent {
+    border-left-color: var(--accent-danger);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.boomer-feed-item.feed-urgent:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.boomer-feed-item.feed-warning {
+    border-left-color: var(--accent-warning);
+    background: rgba(245, 158, 11, 0.06);
+}
+
+.boomer-feed-item.feed-warning:hover {
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.boomer-feed-item.feed-success {
+    border-left-color: var(--accent-success);
+    background: rgba(34, 197, 94, 0.06);
+}
+
+.boomer-feed-item.feed-info {
+    border-left-color: var(--accent-info);
+}
+
+.boomer-feed-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+}
+
+.boomer-feed-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.boomer-feed-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.boomer-feed-detail {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.boomer-feed-arrow {
+    font-size: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    animation: feed-arrow-bounce 1s ease-in-out infinite;
+}
+
+@keyframes feed-arrow-bounce {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+}
+
+/* ===== NOTHING HAPPENED STATE ===== */
+.boomer-all-good {
+    text-align: center;
+    padding: 24px;
+}
+
+.boomer-all-good-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.boomer-all-good-text {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* ===== SPLASH ACTION BUTTONS ===== */
+.boomer-splash-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.boomer-splash-btn {
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.boomer-splash-btn-primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.boomer-splash-btn-primary:hover {
+    background: #5558e6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.boomer-splash-btn-secondary {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.boomer-splash-btn-secondary:hover {
+    background: #2a2a32;
+    color: var(--text-primary);
+}
+
+/* ===== FLOATING GUIDE BUTTON ===== */
+.boomer-guide-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.boomer-guide-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+}
+
+.boomer-guide-fab.has-updates {
+    animation: fab-attention 2s ease-in-out infinite;
+}
+
+@keyframes fab-attention {
+    0%, 100% { box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4); }
+    50% { box-shadow: 0 4px 30px rgba(99, 102, 241, 0.7), 0 0 0 8px rgba(99, 102, 241, 0.15); }
+}
+
+.boomer-guide-fab-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--accent-danger);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-dark);
+}
+
+/* ===== QUICK-ACTIONS GUIDED FEED (Startseite replacement) ===== */
+.boomer-home-feed {
+    padding: 24px;
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+.boomer-home-header {
+    margin-bottom: 28px;
+}
+
+.boomer-home-greeting {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.boomer-home-date {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.boomer-home-section {
+    margin-bottom: 28px;
+}
+
+.boomer-home-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.boomer-home-section-title .section-count {
+    background: var(--accent-primary);
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.boomer-home-section-title .section-count.count-urgent {
+    background: var(--accent-danger);
+}
+
+.boomer-home-section-title .section-count.count-warning {
+    background: var(--accent-warning);
+}
+
+/* "Alles erledigt" empty state per section */
+.boomer-section-done {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+    background: var(--bg-hover);
+    border-radius: 12px;
+    border: 1px dashed var(--border-color);
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .boomer-splash-card {
+        padding: 24px 20px;
+        border-radius: 12px;
+        max-width: 95%;
+    }
+
+    .boomer-splash-greeting {
+        font-size: 20px;
+    }
+
+    .boomer-feed-item {
+        padding: 12px;
+    }
+
+    .boomer-feed-icon {
+        font-size: 24px;
+        width: 32px;
+    }
+
+    .boomer-feed-title {
+        font-size: 14px;
+    }
+
+    .boomer-home-feed {
+        padding: 16px;
+    }
+
+    .boomer-home-greeting {
+        font-size: 22px;
+    }
+
+    .boomer-guide-fab {
+        bottom: 16px;
+        right: 16px;
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    /* On mobile, arrows go above nav items instead of to the right */
+    .boomer-arrow {
+        right: auto;
+        left: 50%;
+        top: -20px;
+        transform: translateX(-50%) rotate(90deg);
+    }
+
+    @keyframes boomer-bounce {
+        0%, 100% { transform: translateX(-50%) rotate(90deg) translateX(0); }
+        50% { transform: translateX(-50%) rotate(90deg) translateX(-6px); }
+    }
+}

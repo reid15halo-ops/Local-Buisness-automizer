@@ -807,6 +807,60 @@ class AdminPanelUI {
             </div>
 
             <div class="admin-panel-section">
+                <h3>📱 Push-Benachrichtigungen (Telegram / WhatsApp)</h3>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                    Erhalten Sie dringende Meldungen (überfällige Rechnungen, alte Anfragen) direkt auf Ihr Handy.
+                </p>
+                <div class="admin-panel-form-grid">
+                    <div class="admin-panel-field" style="grid-column: 1 / -1;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="ap-telegram-enabled" ${window.pushMessengerService?.getConfig()?.telegram?.enabled ? 'checked' : ''} />
+                            <strong>Telegram aktivieren</strong>
+                        </label>
+                    </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-telegram-token">Telegram Bot Token</label>
+                        <input type="password" id="ap-telegram-token" class="admin-panel-input" value="${this._esc(window.pushMessengerService?.getConfig()?.telegram?.botToken)}" placeholder="123456:ABC-DEF..." />
+                    </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-telegram-chatid">Telegram Chat ID</label>
+                        <input type="text" id="ap-telegram-chatid" class="admin-panel-input" value="${this._esc(window.pushMessengerService?.getConfig()?.telegram?.chatId)}" placeholder="123456789" />
+                    </div>
+                    <div class="admin-panel-field" style="grid-column: 1 / -1;">
+                        <button class="btn btn-small btn-secondary" id="ap-test-telegram">📨 Test-Nachricht senden</button>
+                        <span id="ap-telegram-test-status" style="margin-left: 8px; font-size: 13px;"></span>
+                    </div>
+
+                    <div class="admin-panel-field" style="grid-column: 1 / -1; margin-top: 16px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="ap-whatsapp-enabled" ${window.pushMessengerService?.getConfig()?.whatsapp?.enabled ? 'checked' : ''} />
+                            <strong>WhatsApp via Twilio aktivieren</strong>
+                        </label>
+                    </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-twilio-sid">Twilio Account SID</label>
+                        <input type="password" id="ap-twilio-sid" class="admin-panel-input" value="${this._esc(window.pushMessengerService?.getConfig()?.whatsapp?.accountSid)}" placeholder="AC..." />
+                    </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-twilio-token">Twilio Auth Token</label>
+                        <input type="password" id="ap-twilio-token" class="admin-panel-input" value="${this._esc(window.pushMessengerService?.getConfig()?.whatsapp?.authToken)}" placeholder="Auth Token..." />
+                    </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-twilio-from">WhatsApp Absender-Nr.</label>
+                        <input type="text" id="ap-twilio-from" class="admin-panel-input" value="${this._esc(window.pushMessengerService?.getConfig()?.whatsapp?.fromNumber)}" placeholder="+14155238886" />
+                    </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-twilio-to">Ihre WhatsApp-Nr.</label>
+                        <input type="text" id="ap-twilio-to" class="admin-panel-input" value="${this._esc(window.pushMessengerService?.getConfig()?.whatsapp?.toNumber)}" placeholder="+49170..." />
+                    </div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <button class="btn btn-primary btn-small" id="ap-save-push">Push-Einstellungen speichern</button>
+                    <span id="ap-push-status" style="margin-left: 8px; font-size: 13px;"></span>
+                </div>
+            </div>
+
+            <div class="admin-panel-section">
                 <h3>📊 Systemstatus</h3>
                 <div class="admin-panel-system-info">
                     <div class="admin-panel-info-row">
@@ -828,6 +882,14 @@ class AdminPanelUI {
                     <div class="admin-panel-info-row">
                         <span>Webhook (n8n)</span>
                         <span class="admin-panel-status-indicator ${settings.n8n_webhook_url ? 'status-ok' : 'status-off'}">${settings.n8n_webhook_url ? '● Konfiguriert' : '○ Nicht konfiguriert'}</span>
+                    </div>
+                    <div class="admin-panel-info-row">
+                        <span>Telegram Push</span>
+                        <span class="admin-panel-status-indicator ${window.pushMessengerService?.getConfig()?.telegram?.enabled ? 'status-ok' : 'status-off'}">${window.pushMessengerService?.getConfig()?.telegram?.enabled ? '● Aktiv' : '○ Nicht aktiv'}</span>
+                    </div>
+                    <div class="admin-panel-info-row">
+                        <span>WhatsApp Push</span>
+                        <span class="admin-panel-status-indicator ${window.pushMessengerService?.getConfig()?.whatsapp?.enabled ? 'status-ok' : 'status-off'}">${window.pushMessengerService?.getConfig()?.whatsapp?.enabled ? '● Aktiv' : '○ Nicht aktiv'}</span>
                     </div>
                     <div class="admin-panel-info-row">
                         <span>localStorage Einträge</span>
@@ -865,6 +927,53 @@ class AdminPanelUI {
                 setTimeout(() => { status.textContent = ''; }, 3000);
             }
         });
+
+        // Push messenger save handler
+        const savePushBtn = document.getElementById('ap-save-push');
+        if (savePushBtn) {
+            savePushBtn.addEventListener('click', () => {
+                if (!window.pushMessengerService) { return; }
+                window.pushMessengerService.saveConfig({
+                    telegram: {
+                        enabled: document.getElementById('ap-telegram-enabled')?.checked || false,
+                        botToken: document.getElementById('ap-telegram-token')?.value || '',
+                        chatId: document.getElementById('ap-telegram-chatid')?.value || ''
+                    },
+                    whatsapp: {
+                        enabled: document.getElementById('ap-whatsapp-enabled')?.checked || false,
+                        accountSid: document.getElementById('ap-twilio-sid')?.value || '',
+                        authToken: document.getElementById('ap-twilio-token')?.value || '',
+                        fromNumber: document.getElementById('ap-twilio-from')?.value || '',
+                        toNumber: document.getElementById('ap-twilio-to')?.value || ''
+                    }
+                });
+                const st = document.getElementById('ap-push-status');
+                if (st) {
+                    st.textContent = '✅ Push-Einstellungen gespeichert!';
+                    st.style.color = 'var(--accent-success)';
+                    setTimeout(() => { st.textContent = ''; }, 3000);
+                }
+            });
+        }
+
+        // Telegram test handler
+        const testTgBtn = document.getElementById('ap-test-telegram');
+        if (testTgBtn) {
+            testTgBtn.addEventListener('click', async () => {
+                if (!window.pushMessengerService) { return; }
+                const st = document.getElementById('ap-telegram-test-status');
+                if (st) { st.textContent = '⏳ Sende...'; st.style.color = 'var(--text-secondary)'; }
+                // Save first
+                document.getElementById('ap-save-push')?.click();
+                await new Promise(r => setTimeout(r, 200));
+                const result = await window.pushMessengerService.testConnection('telegram');
+                if (st) {
+                    st.textContent = result.success ? '✅ Erfolgreich gesendet!' : `❌ ${result.error || 'Fehler'}`;
+                    st.style.color = result.success ? 'var(--accent-success)' : 'var(--accent-danger)';
+                    setTimeout(() => { st.textContent = ''; }, 5000);
+                }
+            });
+        }
     }
 
     // ============================================

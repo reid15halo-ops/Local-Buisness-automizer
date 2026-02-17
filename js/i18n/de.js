@@ -568,5 +568,47 @@ window.i18nDE = {
         saveError: 'Fehler beim Speichern',
         sessionExpired: 'Sitzung abgelaufen. Bitte erneut anmelden.',
         wrongCredentials: 'Benutzername oder Passwort falsch.'
+    },
+
+    // ===== Boomer Guide =====
+    boomerGuide: {
+        splashGreeting: 'Willkommen zurück!',
+        splashUrgent: 'braucht Ihre Aufmerksamkeit',
+        splashAction: 'Dringendes zuerst ansehen',
+        splashDismiss: 'Verstanden, zur Startseite',
+        sectionUrgent: 'Sofort erledigen',
+        sectionWarning: 'Bald fällig',
+        sectionInfo: 'Aktueller Stand',
+        sectionNewAction: 'Neue Aktion starten',
+        allDone: 'Alles erledigt! Keine offenen Aufgaben.',
+        overdueInvoices: 'Rechnung(en) überfällig!',
+        oldInquiries: 'Anfrage(n) warten seit >48h!',
+        nearDeadline: 'Auftrag(e) — Deadline bald!',
+        dueTasks: 'Aufgabe(n) fällig!',
+        newInquiries: 'neue Anfrage(n)',
+        draftQuotes: 'Angebot(e) im Entwurf',
+        activeOrders: 'aktive(r) Auftrag/Aufträge',
+        recentPayments: 'Zahlung(en) eingegangen!',
+        fabTitle: 'Was steht an?'
+    },
+
+    // ===== Push Messenger =====
+    pushMessenger: {
+        sectionTitle: 'Push-Benachrichtigungen (Telegram / WhatsApp)',
+        sectionDesc: 'Erhalten Sie dringende Meldungen direkt auf Ihr Handy.',
+        telegramEnable: 'Telegram aktivieren',
+        telegramToken: 'Telegram Bot Token',
+        telegramChatId: 'Telegram Chat ID',
+        telegramTest: 'Test-Nachricht senden',
+        whatsappEnable: 'WhatsApp via Twilio aktivieren',
+        twilioSid: 'Twilio Account SID',
+        twilioToken: 'Twilio Auth Token',
+        fromNumber: 'WhatsApp Absender-Nr.',
+        toNumber: 'Ihre WhatsApp-Nr.',
+        savePush: 'Push-Einstellungen speichern',
+        saved: 'Push-Einstellungen gespeichert!',
+        testSuccess: 'Erfolgreich gesendet!',
+        testFailed: 'Fehler beim Senden',
+        sending: 'Sende...'
     }
 };
