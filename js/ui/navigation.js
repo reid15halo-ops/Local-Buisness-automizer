@@ -125,6 +125,9 @@ class NavigationController {
             case 'rechnungen':
                 if (window.renderRechnungen) {window.renderRechnungen();}
                 break;
+            case 'admin-panel':
+                if (window.adminPanelUI) {window.adminPanelUI.init();}
+                break;
             // New features (Self-initializing via their own listeners, but good to ensure)
             case 'workflows':
             case 'scanner':

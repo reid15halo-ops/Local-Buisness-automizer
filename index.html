@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/purchase-orders.css">
     <link rel="stylesheet" href="css/reorder-engine.css">
+    <link rel="stylesheet" href="css/admin-panel.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
@@ -255,6 +256,13 @@
                 <button class="nav-item" data-view="backup" data-mode="pro">
                     <span class="nav-icon">🔒</span>
                     Daten verwalten
+                </button>
+
+                <!-- Admin Panel (Pro Mode) -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="admin-panel" data-mode="pro">
+                    <span class="nav-icon">🔐</span>
+                    Verwaltung
                 </button>
 
                 <!-- Settings (Simple Mode) -->
@@ -792,6 +800,17 @@
                 <!-- PO List -->
                 <div class="po-list" id="po-list">
                     <p class="empty-state">Keine Bestellungen vorhanden. Erstelle eine neue Bestellung oder lade Demo-Daten.</p>
+                </div>
+            </section>
+
+            <!-- Admin Panel View -->
+            <section class="view" id="view-admin-panel">
+                <header class="view-header">
+                    <h1>🔐 Verwaltung</h1>
+                    <p class="subtitle">Systemkonfiguration &mdash; Admin &amp; Developer</p>
+                </header>
+                <div id="admin-panel-content">
+                    <!-- Rendered dynamically by AdminPanelUI -->
                 </div>
             </section>
 
@@ -2898,6 +2917,10 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/setup-wizard-service.js"></script>
     <script src="js/ui/setup-wizard-ui.js"></script>
     <script src="js/ui/admin-settings-ui.js"></script>
+
+    <!-- Admin Panel (Two-Tier: Admin & Developer) -->
+    <script src="js/services/admin-panel-service.js"></script>
+    <script src="js/ui/admin-panel-ui.js"></script>
 
     <!-- Onboarding Tutorial -->
     <script src="js/services/onboarding-tutorial-service.js"></script>

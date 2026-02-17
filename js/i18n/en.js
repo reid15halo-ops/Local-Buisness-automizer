@@ -20,7 +20,8 @@ window.i18nEN = {
         material: 'Material',
         reports: 'Reports',
         buchhaltung: 'Accounting',
-        workflows: 'Workflows'
+        workflows: 'Workflows',
+        adminPanel: 'Administration'
     },
 
     // ========== Common Actions ==========
@@ -528,5 +529,44 @@ window.i18nEN = {
     offline: {
         banner: '🛜 Offline Mode — Data saved locally only',
         description: 'You are working in offline mode. Changes are saved locally.'
+    },
+
+    // ========== Admin Panel ==========
+    adminPanel: {
+        title: 'Administration',
+        subtitle: 'System Configuration — Admin & Developer',
+        loginTitle: 'Admin Area',
+        loginSubtitle: 'Please log in to access the administration panel.',
+        loginHint: 'This area contains the core structure of the application. Changes may affect the software.',
+        username: 'Username',
+        password: 'Password',
+        login: 'Login',
+        logout: 'Logout',
+        forgotCredentials: 'Forgot credentials?',
+        forgotHint: 'Contact your system administrator or developer to reset your credentials.',
+        warningTitle: 'Warning — System Configuration',
+        warningText: 'This is the core structure of the application. Changes in this area may impair the software or cause features to stop working correctly.',
+        roleAdmin: 'Administrator',
+        roleDeveloper: 'Developer',
+        loggedInAs: 'Logged in as',
+        tabBusiness: 'Company Data',
+        tabFinancial: 'Finance & Taxes',
+        tabCredentials: 'Credentials',
+        tabTechnical: 'Technical Configuration',
+        tabDatabase: 'Database & APIs',
+        companyData: 'Company Data',
+        companyDataDesc: 'Basic information about your company.',
+        taxFinance: 'Tax & Finance',
+        taxFinanceDesc: 'Tax and payment settings for invoices and accounting.',
+        bankDetails: 'Bank Details',
+        bankDetailsDesc: 'Your bank details for invoices and payment information.',
+        credentialsAdmin: 'Change Admin Credentials',
+        credentialsDev: 'Change Developer Credentials',
+        devWarning: 'This area contains technical configurations that affect the core structure of the app.',
+        dbWarning: 'Incorrect Supabase configurations can lead to data loss.',
+        saved: 'Saved!',
+        saveError: 'Error saving',
+        sessionExpired: 'Session expired. Please log in again.',
+        wrongCredentials: 'Incorrect username or password.'
     }
 };
