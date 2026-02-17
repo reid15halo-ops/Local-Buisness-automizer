@@ -305,7 +305,8 @@ MHS Metallbau Hydraulik Service`
 
 function renderAngebote() {
     const container = document.getElementById('angebote-list');
-    const angebote = store.angebote.filter(a => a.status === 'offen');
+    if (!container) {return;}
+    const angebote = store?.angebote?.filter(a => a.status === 'offen') || [];
 
     if (angebote.length === 0) {
         container.innerHTML = `

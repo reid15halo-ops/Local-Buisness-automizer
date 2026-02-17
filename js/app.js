@@ -3761,7 +3761,7 @@ function initCustomerPresets() {
         if (!presetSelect) {return;}
         const emails = Object.keys(customerPresets);
         presetSelect.innerHTML = '<option value="">-- Keine Vorlage --</option>' +
-            emails.map(email => `<option value="${email}">${email} (${customerPresets[email].length} Pos.)</option>`).join('');
+            emails.map(email => `<option value="${h(email)}">${h(email)} (${customerPresets[email].length} Pos.)</option>`).join('');
     }
 
     // Load preset

@@ -7,7 +7,8 @@ const { store, saveStore, addActivity, formatDate, formatCurrency, getLeistungsa
 
 function renderRechnungen() {
     const container = document.getElementById('rechnungen-list');
-    const rechnungen = store.rechnungen || [];
+    if (!container) {return;}
+    const rechnungen = store?.rechnungen || [];
 
     if (rechnungen.length === 0) {
         container.innerHTML = `

@@ -45,7 +45,8 @@ function initAnfrageForm() {
 
 function renderAnfragen() {
     const container = document.getElementById('anfragen-list');
-    const anfragen = store.anfragen.filter(a => a.status === 'neu');
+    if (!container) {return;}
+    const anfragen = store?.anfragen?.filter(a => a.status === 'neu') || [];
 
     if (anfragen.length === 0) {
         container.innerHTML = `

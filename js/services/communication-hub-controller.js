@@ -5,14 +5,30 @@
 
 class CommunicationHubController {
     constructor() {
+        // Guard against duplicate initialization (event listener leak prevention)
+        if (CommunicationHubController._instance) {
+            return CommunicationHubController._instance;
+        }
+        CommunicationHubController._instance = this;
+
         this.currentConversation = null;
         this.selectedChannel = 'sms';
+        this._boundHandlers = {};
         this.init();
     }
 
     init() {
         this.setupEventListeners();
         this.loadConversations();
+    }
+
+    destroy() {
+        // Clean up event listeners to prevent memory leaks
+        Object.entries(this._boundHandlers).forEach(([event, handler]) => {
+            document.removeEventListener(event, handler);
+        });
+        this._boundHandlers = {};
+        CommunicationHubController._instance = null;
     }
 
     setupEventListeners() {

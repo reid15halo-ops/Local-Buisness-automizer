@@ -55,6 +55,8 @@
 /* PO List */
 .po-list {
     margin-top: 16px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .po-list table {

@@ -265,7 +265,8 @@ function updateSettingsStatus() {
 // ============================================
 function renderMahnwesen() {
     const container = document.getElementById('mahnwesen-list');
-    const rechnungen = store.rechnungen.filter(r => r.status === 'offen');
+    if (!container) {return;}
+    const rechnungen = store?.rechnungen?.filter(r => r.status === 'offen') || [];
 
     if (rechnungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine offenen Rechnungen</p>';
@@ -327,6 +328,7 @@ function renderBuchhaltung() {
     const Jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value) || new Date().getFullYear();
     const buchungen = window.bookkeepingService?.getBuchungenForJahr(Jahr) || [];
     const container = document.getElementById('buchungen-list');
+    if (!container) {return;}
 
     if (buchungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Noch keine Buchungen. Rechnungen werden automatisch erfasst.</p>';
