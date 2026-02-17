@@ -46,6 +46,7 @@ async function init() {
     initBuchhaltung();
     initQuickActions();
     window.ModalsModule?.initModals?.();
+    window.WareneingangModule?.initWareneingang?.();
 
     // Initialize automation API
     window.automationAPI?.init();

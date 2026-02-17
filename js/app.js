@@ -3150,6 +3150,7 @@ function switchViewExtended(viewId) {
         case 'auftraege': renderAuftraege(); break;
         case 'rechnungen': renderRechnungen(); break;
         case 'material': renderMaterial(); break;
+        case 'wareneingang': window.WareneingangModule?.renderWareneingang?.(); break;
         case 'mahnwesen': renderMahnwesen(); break;
         case 'buchhaltung': renderBuchhaltung(); break;
         case 'einstellungen':

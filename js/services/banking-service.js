@@ -148,14 +148,41 @@ class BankingService {
         });
     }
 
+    // Known material supplier patterns for auto-detection
+    static MATERIAL_SUPPLIERS = [
+        { pattern: /w[üu]rth/i, name: 'Würth', type: 'wuerth' },
+        { pattern: /kl[öo]ckner/i, name: 'Klöckner', type: 'kloeckner' },
+        { pattern: /obi[\s-]/i, name: 'OBI', type: 'baumarkt' },
+        { pattern: /hornbach/i, name: 'Hornbach', type: 'baumarkt' },
+        { pattern: /bauhaus/i, name: 'Bauhaus', type: 'baumarkt' },
+        { pattern: /toom/i, name: 'Toom', type: 'baumarkt' },
+        { pattern: /hagebau/i, name: 'Hagebau', type: 'baumarkt' },
+        { pattern: /hellweg/i, name: 'Hellweg', type: 'baumarkt' },
+        { pattern: /globus[\s-]?bau/i, name: 'Globus Baumarkt', type: 'baumarkt' },
+        { pattern: /baywa/i, name: 'BayWa', type: 'baumarkt' },
+        { pattern: /stahl/i, name: 'Stahlhandel', type: 'stahl' },
+        { pattern: /schrauben/i, name: 'Schraubenhandel', type: 'verbindung' },
+        { pattern: /hydraulik/i, name: 'Hydraulikhandel', type: 'hydraulik' },
+        { pattern: /schweiß|schweiss/i, name: 'Schweißbedarf', type: 'schweiss' },
+        { pattern: /farben|lack/i, name: 'Farbenhandel', type: 'farben' }
+    ];
+
     // Auto-categorize transaction using AI/rules
     categorizeTransaction(transaction) {
         const purpose = (transaction.purpose || '').toLowerCase();
+        const name = (transaction.name || '').toLowerCase();
+        const combined = purpose + ' ' + name;
         const amount = transaction.amount;
 
         // Rule-based categorization
         if (purpose.includes('rechnung') || purpose.includes('zahlung')) {return 'einnahme_kunde';}
-        if (purpose.includes('material') || purpose.includes('würth') || purpose.includes('klöckner')) {return 'material';}
+
+        // Enhanced material detection: check supplier patterns
+        for (const sup of BankingService.MATERIAL_SUPPLIERS) {
+            if (sup.pattern.test(combined)) {return 'material';}
+        }
+        if (purpose.includes('material') || purpose.includes('werkzeug') || purpose.includes('baumaterial')) {return 'material';}
+
         if (purpose.includes('diesel') || purpose.includes('tanken') || purpose.includes('benzin')) {return 'fahrzeug';}
         if (purpose.includes('miete') || purpose.includes('pacht')) {return 'miete';}
         if (purpose.includes('versicherung')) {return 'versicherung';}
@@ -166,6 +193,48 @@ class BankingService {
         // Amount-based guessing
         if (amount > 0) {return 'sonstige_einnahme';}
         return 'sonstige_ausgabe';
+    }
+
+    /**
+     * Detect unprocessed material purchases from bank transactions
+     * @returns {Array} Transactions categorized as material that haven't been linked to a Wareneingang
+     */
+    getUnprocessedMaterialPurchases() {
+        return this.transactions.filter(t =>
+            t.type === 'debit' &&
+            !t.wareneingangProcessed &&
+            (t.category === 'material' || this.categorizeTransaction(t) === 'material')
+        );
+    }
+
+    /**
+     * Identify the supplier from a transaction
+     * @param {Object} tx - Bank transaction
+     * @returns {Object|null} {name, type} of matched supplier
+     */
+    identifySupplier(tx) {
+        const combined = ((tx.purpose || '') + ' ' + (tx.name || '')).toLowerCase();
+        for (const sup of BankingService.MATERIAL_SUPPLIERS) {
+            if (sup.pattern.test(combined)) {
+                return { name: sup.name, type: sup.type };
+            }
+        }
+        return { name: tx.name || 'Unbekannt', type: 'generic' };
+    }
+
+    /**
+     * Mark a transaction as processed by Wareneingang
+     * @param {string} transactionId
+     * @param {string} wareneingangId
+     */
+    markAsWareneingangProcessed(transactionId, wareneingangId) {
+        const tx = this.transactions.find(t => t.id === transactionId);
+        if (tx) {
+            tx.wareneingangProcessed = true;
+            tx.wareneingangId = wareneingangId;
+            tx.wareneingangAt = new Date().toISOString();
+            this.saveTransactions();
+        }
     }
 
     // Auto-match incoming payments to open invoices

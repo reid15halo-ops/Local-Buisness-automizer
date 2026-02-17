@@ -217,6 +217,11 @@
                     Lager
                     <span class="badge" id="material-badge">0</span>
                 </button>
+                <button class="nav-item" data-view="wareneingang" data-mode="pro">
+                    <span class="nav-icon">📋</span>
+                    Wareneingang
+                    <span class="badge" id="wareneingang-badge">0</span>
+                </button>
                 <button class="nav-item" data-view="bestellungen" data-mode="pro">
                     <span class="nav-icon">🛒</span>
                     Bestellungen
@@ -601,6 +606,125 @@
                 <div class="items-list" id="material-list">
                     <p class="empty-state">Kein Material vorhanden. Importiere eine Excel-Datei oder lade Demo-Daten.
                     </p>
+                </div>
+            </section>
+
+            <!-- Wareneingang View -->
+            <section class="view" id="view-wareneingang">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Wareneingang</h1>
+                            <p class="subtitle">Bon scannen, Bank-Einkäufe erkennen, Lieferanten-CSV importieren</p>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Wareneingang Stats -->
+                <div class="material-stats">
+                    <div class="stat-mini">
+                        <span id="we-count">0</span>
+                        <span>Eingänge</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="we-value">0 &euro;</span>
+                        <span>Gesamtwert</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="we-last">–</span>
+                        <span>Letzter Eingang</span>
+                    </div>
+                    <div class="stat-mini stat-warning">
+                        <span id="we-bank-pending">0</span>
+                        <span>Offene Bank-Einkäufe</span>
+                    </div>
+                </div>
+
+                <!-- Input Method Tabs -->
+                <div class="we-tabs" role="tablist" aria-label="Wareneingang Eingabemethode">
+                    <button class="we-tab active" data-we-tab="bon" role="tab" aria-selected="true">
+                        <span class="we-tab-icon">📷</span> Bon scannen
+                    </button>
+                    <button class="we-tab" data-we-tab="bank" role="tab" aria-selected="false">
+                        <span class="we-tab-icon">🏦</span> Bank-Erkennung
+                    </button>
+                    <button class="we-tab" data-we-tab="csv" role="tab" aria-selected="false">
+                        <span class="we-tab-icon">📄</span> Lieferanten-Import
+                    </button>
+                </div>
+
+                <!-- Tab 1: Bon Scannen -->
+                <div class="we-tab-content active" id="we-tab-bon" role="tabpanel">
+                    <div class="we-dropzone" id="we-dropzone">
+                        <div class="we-dropzone-content">
+                            <span class="we-dropzone-icon">📷</span>
+                            <p class="we-dropzone-text">Bon-Foto hierher ziehen oder klicken</p>
+                            <p class="we-dropzone-hint">JPG, PNG — Baumarkt-Kassenbon, Quittung, Lieferschein</p>
+                            <div class="we-dropzone-actions">
+                                <label class="btn btn-primary" for="we-file-input">
+                                    Datei auswählen
+                                </label>
+                                <input type="file" id="we-file-input" accept="image/*" class="u-file-input-hidden">
+                                <button class="btn btn-secondary" id="we-camera-btn">
+                                    Kamera öffnen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Camera preview (hidden until activated) -->
+                    <div class="we-camera-preview" id="we-camera-preview" style="display:none;">
+                        <video id="we-camera-video" autoplay playsinline></video>
+                        <div class="we-camera-controls">
+                            <button class="btn btn-primary" id="we-camera-capture">Foto aufnehmen</button>
+                            <button class="btn btn-secondary" id="we-camera-cancel">Abbrechen</button>
+                        </div>
+                    </div>
+                    <!-- OCR processing state -->
+                    <div class="we-processing" id="we-processing" style="display:none;">
+                        <div class="we-spinner"></div>
+                        <p>Bon wird gelesen...</p>
+                    </div>
+                    <!-- Parsed results (hidden until scan complete) -->
+                    <div class="we-results" id="we-bon-results" style="display:none;"></div>
+                </div>
+
+                <!-- Tab 2: Bank-Erkennung -->
+                <div class="we-tab-content" id="we-tab-bank" role="tabpanel">
+                    <div class="we-bank-info">
+                        <p>Erkannte Material-Einkäufe aus Bank-Transaktionen.
+                           Erfasse die gekauften Positionen um den Lagerbestand zu aktualisieren.</p>
+                    </div>
+                    <div class="items-list" id="we-bank-list">
+                        <p class="empty-state">Keine offenen Material-Einkäufe erkannt. Verbinde dein Bankkonto unter Buchhaltung.</p>
+                    </div>
+                    <!-- Bank quick-entry form (hidden until user clicks a transaction) -->
+                    <div class="we-results" id="we-bank-results" style="display:none;"></div>
+                </div>
+
+                <!-- Tab 3: Lieferanten-Import -->
+                <div class="we-tab-content" id="we-tab-csv" role="tabpanel">
+                    <div class="we-csv-controls">
+                        <select id="we-supplier-type" class="form-select" aria-label="Lieferanten-Typ wählen">
+                            <option value="wuerth">Würth</option>
+                            <option value="kloeckner">Klöckner</option>
+                            <option value="hornbach">Hornbach</option>
+                            <option value="generic">Andere / Generisch</option>
+                        </select>
+                        <label class="btn btn-primary" for="we-csv-input">
+                            CSV / Excel hochladen
+                        </label>
+                        <input type="file" id="we-csv-input" accept=".csv,.xlsx,.xls,.tsv" class="u-file-input-hidden">
+                    </div>
+                    <!-- Parsed CSV results -->
+                    <div class="we-results" id="we-csv-results" style="display:none;"></div>
+                </div>
+
+                <!-- History -->
+                <div class="we-history-section">
+                    <h2>Letzte Wareneingänge</h2>
+                    <div class="items-list" id="we-history-list">
+                        <p class="empty-state">Noch keine Wareneingänge erfasst.</p>
+                    </div>
                 </div>
             </section>
 
@@ -2813,6 +2937,8 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/modules/angebote.js"></script>
     <script src="js/modules/auftraege.js"></script>
     <script src="js/modules/rechnungen.js"></script>
+    <script src="js/services/bon-scanner-service.js"></script>
+    <script src="js/modules/wareneingang.js"></script>
     <script src="js/app-new.js"></script>
 
     <!-- Main application (current production version - fallback) -->

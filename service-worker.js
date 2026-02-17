@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'mhs-workflow-v6';
+const CACHE_NAME = 'mhs-workflow-v7';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -54,6 +54,7 @@ const STATIC_ASSETS = [
     '/js/modules/modals.js',
     '/js/modules/quick-actions.js',
     '/js/modules/rechnungen.js',
+    '/js/modules/wareneingang.js',
     '/js/modules/utils.js',
 
     // --- JS Services ---
@@ -99,6 +100,7 @@ const STATIC_ASSETS = [
     '/js/services/lazy-loader.js',
     '/js/services/lead-service.js',
     '/js/services/llm-service.js',
+    '/js/services/bon-scanner-service.js',
     '/js/services/material-service.js',
     '/js/services/notification-service.js',
     '/js/services/ocr-scanner-service.js',
