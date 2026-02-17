@@ -340,6 +340,20 @@ MHS Metallbau Hydraulik Service`
         const text = templates[anfrage.leistungsart] || templates['default'];
         document.getElementById('angebot-text').value = text;
 
+        // KI-Transparenz: Vorschlag klar kennzeichnen und Nutzer entscheiden lassen
+        if (window.kiTransparencyUI) {
+            window.kiTransparencyUI.wrapAIContent('angebot-text', {
+                type: 'angebot-text',
+                onConfirm: () => {
+                    window.AppUtils.showToast('KI-Text übernommen', 'success');
+                },
+                onReject: () => {
+                    document.getElementById('angebot-text').value = '';
+                    window.AppUtils.showToast('KI-Text verworfen', 'info');
+                }
+            });
+        }
+
         aiBtn.innerHTML = '🤖 KI-Vorschlag generieren';
         aiBtn.disabled = false;
     }, 1500);
@@ -405,7 +419,7 @@ function renderAngebote() {
     // Apply status filter
     let filtered = [...allAngebote];
     if (currentAngeboteFilter !== 'alle') {
-        filtered = filtered.filter(a => (a.status || 'offen') === currentAngeboteFilter);
+        filtered = filtered.filter(a => (a.status || 'entwurf') === currentAngeboteFilter);
     }
 
     // Apply search filter
@@ -1050,7 +1064,10 @@ window.AngeboteModule = {
     renderAngebote,
     editAngebot,
     deleteAngebot,
-    acceptAngebot
+    acceptAngebot,
+    previewAngebot,
+    closeAngebotPreview,
+    freigebenAngebot
 };
 
 // Make globally available
@@ -1062,3 +1079,6 @@ window.updateAngebotSummary = updateAngebotSummary;
 window.acceptAngebot = acceptAngebot;
 window.editAngebot = editAngebot;
 window.deleteAngebot = deleteAngebot;
+window.previewAngebot = previewAngebot;
+window.closeAngebotPreview = closeAngebotPreview;
+window.freigebenAngebot = freigebenAngebot;
