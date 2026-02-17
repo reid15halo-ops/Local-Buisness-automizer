@@ -15,7 +15,11 @@ class LazyLoader {
                 'auth-service',
                 'supabase-config',
                 'supabase-db-service',
-                'sanitize-service'
+                'sanitize-service',
+                'sync-service',
+                'confirm-dialog-service',
+                'error-display-service',
+                'user-mode-service'
             ],
 
             // CRM & Customer Management - load when Kunden view opened
@@ -23,9 +27,12 @@ class LazyLoader {
                 'customer-service',
                 'lead-service',
                 'communication-service',
+                'unified-comm-service',
+                'communication-hub-controller',
                 'phone-service',
                 'email-service',
-                'email-automation-service'
+                'email-automation-service',
+                'email-template-service'
             ],
 
             // Finance & Accounting - load when Buchhaltung/Rechnungen view opened
@@ -39,7 +46,8 @@ class LazyLoader {
                 'profitability-service',
                 'banking-service',
                 'stripe-service',
-                'datev-export-service'
+                'datev-export-service',
+                'purchase-order-service'
             ],
 
             // Automation & Workflows - load when automation features needed
@@ -79,6 +87,7 @@ class LazyLoader {
             // Calendar & Task Management - load when Termine/Kalender/Aufgaben opened
             calendar: [
                 'calendar-service',
+                'calendar-ui-service',
                 'task-service',
                 'booking-service',
                 'timetracking-service',
@@ -108,7 +117,8 @@ class LazyLoader {
                 'dunning-service',
                 'bookkeeping-service',
                 'work-estimation-service',
-                'material-service'
+                'material-service',
+                'reorder-engine-service'
             ],
 
             // Advanced Features - load on demand
@@ -118,7 +128,17 @@ class LazyLoader {
                 'warranty-service',
                 'sms-reminder-service',
                 'user-manager-service',
-                'route-service'
+                'route-service',
+                'trash-service',
+                'security-service',
+                'security-backup-service',
+                'pwa-install-service'
+            ],
+
+            // Reports & Charts - load when dashboards/charts needed
+            charts: [
+                'dashboard-charts-service',
+                'data-export-service'
             ]
         };
 
@@ -138,11 +158,13 @@ class LazyLoader {
             'kalender': ['calendar', 'automation'],
             'aufgaben': ['automation', 'calendar'],
             'dokumente': ['documents', 'automation', 'ai'],
-            'berichte': ['reports', 'finance', 'automation'],
+            'berichte': ['reports', 'finance', 'automation', 'charts'],
             'einstellungen': ['settings', 'advanced'],
             'ai-assistent': ['ai', 'automation', 'crm'],
             'material': ['workflow'],
-            'material-list': ['workflow']
+            'material-list': ['workflow'],
+            'kommunikation': ['crm'],
+            'trash': ['advanced']
         };
     }
 

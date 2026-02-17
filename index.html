@@ -86,32 +86,32 @@
 
     <div class="app-container">
         <!-- Mobile Header -->
-        <div class="mobile-header">
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Hauptmenü öffnen">☰</button>
+        <header class="mobile-header" role="banner">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Hauptmenü öffnen" aria-expanded="false" aria-controls="sidebar">☰</button>
             <div class="mobile-logo">MHS Demo</div>
             <!-- Notification Bell -->
             <div class="notification-bell-container">
                 <button id="notification-bell" class="notification-bell" aria-label="Benachrichtigungen anzeigen">
                     🔔
-                    <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                    <span id="notification-badge" class="notification-badge" style="display: none;" aria-live="polite">0</span>
                 </button>
             </div>
-        </div>
+        </header>
 
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar" role="complementary" aria-label="Seitenleiste">
             <div class="logo">
                 <div class="logo-icon">⚙️</div>
                 <span>MHS Demo</span>
             </div>
 
             <!-- User Info (shown when authenticated) -->
-            <div id="user-info-panel" class="user-info-panel" style="display: none; padding: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div class="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; font-size: 14px;">👤</div>
-                    <div style="flex: 1; min-width: 0;">
-                        <div id="user-email" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-                        <div id="user-company" style="font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+            <div id="user-info-panel" class="user-info-panel" style="display: none;">
+                <div class="user-info-row">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <div id="user-email" class="user-email"></div>
+                        <div id="user-company" class="user-company"></div>
                     </div>
                 </div>
                 <button id="btn-logout" class="btn btn-small btn-secondary" style="width: 100%; font-size: 12px;">
@@ -123,7 +123,7 @@
                 <input type="text" id="global-search" placeholder="Suche... (Ctrl+K)" aria-label="Globale Suche">
             </div>
 
-            <nav class="nav-menu">
+            <nav class="nav-menu" aria-label="Hauptnavigation">
                 <!-- Simple Mode Items (always visible) -->
                 <button class="nav-item active" data-view="quick-actions" data-mode="simple">
                     <span class="nav-icon">🏠</span>
@@ -217,6 +217,11 @@
                     Lager
                     <span class="badge" id="material-badge">0</span>
                 </button>
+                <button class="nav-item" data-view="wareneingang" data-mode="pro">
+                    <span class="nav-icon">📋</span>
+                    Wareneingang
+                    <span class="badge" id="wareneingang-badge">0</span>
+                </button>
                 <button class="nav-item" data-view="bestellungen" data-mode="pro">
                     <span class="nav-icon">🛒</span>
                     Bestellungen
@@ -262,22 +267,22 @@
                     Hilfe
                 </button>
             </nav>
-            <div class="sidebar-footer">
+            <footer class="sidebar-footer">
                 <button class="btn-new-anfrage" id="btn-neue-anfrage">
                     <span>+</span> Neue Anfrage
                 </button>
                 <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 12px;">v1.0.0
                 </div>
-            </div>
+            </footer>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Notification Panel -->
-            <div id="notification-panel" class="notification-panel" style="display: none;">
+            <div id="notification-panel" class="notification-panel" style="display: none;" role="region" aria-label="Benachrichtigungen">
                 <div class="notification-panel-header">
                     <h3>Benachrichtigungen</h3>
-                    <button id="notification-close" class="notification-close" aria-label="Schließen">✕</button>
+                    <button id="notification-close" class="notification-close" aria-label="Benachrichtigungen schließen">✕</button>
                 </div>
                 <div id="notification-list" class="notification-list"></div>
                 <div class="notification-panel-footer">
@@ -450,6 +455,18 @@
                         </div>
                     </div>
                 </header>
+                <div class="view-toolbar">
+                    <div class="filter-tabs" id="angebote-filter-tabs">
+                        <button class="filter-btn active" data-filter="alle">Alle</button>
+                        <button class="filter-btn" data-filter="entwurf">Entwurf</button>
+                        <button class="filter-btn" data-filter="offen">Offen</button>
+                        <button class="filter-btn" data-filter="angenommen">Angenommen</button>
+                        <button class="filter-btn" data-filter="abgelehnt">Abgelehnt</button>
+                    </div>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="angebote-search" class="search-input" placeholder="Angebot suchen..." aria-label="Angebote durchsuchen">
+                    </div>
+                </div>
                 <div class="items-list" id="angebote-list">
                     <p class="empty-state">Keine Angebote vorhanden</p>
                 </div>
@@ -467,6 +484,7 @@
                         <div class="header-actions">
                             <button class="btn btn-secondary" id="btn-auftrag-list-view">Liste</button>
                             <button class="btn btn-primary" id="btn-auftrag-kanban-view">Kanban</button>
+                            <button class="btn btn-secondary" id="btn-auftrag-timeline-view">Zeitleiste</button>
                         </div>
                     </div>
                 </header>
@@ -492,7 +510,7 @@
                     <button class="filter-btn" data-filter="pausiert">⏸️ Pausiert</button>
                     <button class="filter-btn" data-filter="abgeschlossen">✅ Fertig</button>
                     <button class="filter-btn" data-filter="storniert">❌ Storniert</button>
-                    <input type="text" id="auftrag-search" placeholder="Auftrag suchen..." style="margin-left:auto;padding:6px 12px;border-radius:20px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:13px;width:200px;">
+                    <input type="text" id="auftrag-search" class="auftrag-search-input" placeholder="Auftrag suchen..." aria-label="Auftrag suchen">
                 </div>
 
                 <!-- Kanban Board (dynamisch generiert) -->
@@ -503,6 +521,11 @@
                 <!-- List View (hidden by default) -->
                 <div class="items-list" id="auftraege-list" style="display:none;">
                     <p class="empty-state">Keine Aufträge</p>
+                </div>
+
+                <!-- Timeline/Gantt View (hidden by default) -->
+                <div id="auftrag-timeline-mount" style="display:none;">
+                    <!-- GanttTimelineUI will mount here -->
                 </div>
             </section>
 
@@ -520,12 +543,24 @@
                             </button>
                             <label class="btn btn-secondary" for="bank-csv-import">
                                 🏦 Bank-CSV importieren
-                                <input type="file" id="bank-csv-import" accept=".csv" style="display:none;">
+                                <input type="file" id="bank-csv-import" accept=".csv" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-primary" id="btn-match-payments">✓ Zahlungen abgleichen</button>
                         </div>
                     </div>
                 </header>
+                <div class="view-toolbar">
+                    <div class="filter-tabs" id="rechnungen-filter-tabs">
+                        <button class="filter-btn active" data-filter="alle">Alle</button>
+                        <button class="filter-btn" data-filter="offen">Offen</button>
+                        <button class="filter-btn" data-filter="bezahlt">Bezahlt</button>
+                        <button class="filter-btn" data-filter="ueberfaellig">Überfällig</button>
+                        <button class="filter-btn" data-filter="storniert">Storniert</button>
+                    </div>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="rechnungen-search" class="search-input" placeholder="Rechnung suchen..." aria-label="Rechnungen durchsuchen">
+                    </div>
+                </div>
                 <div class="items-list" id="rechnungen-list">
                     <p class="empty-state">Keine Rechnungen vorhanden</p>
                 </div>
@@ -548,7 +583,7 @@
                             <button class="btn btn-primary" id="btn-import-wizard-material">📥 Excel/CSV Import</button>
                             <label class="btn btn-secondary" for="excel-import" style="display:none;">
                                 📥 Excel Import
-                                <input type="file" id="excel-import" accept=".xlsx,.xls" style="display:none">
+                                <input type="file" id="excel-import" accept=".xlsx,.xls" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-secondary" id="btn-demo-materials">Demo-Daten laden</button>
                         </div>
@@ -570,14 +605,133 @@
                     </div>
                 </div>
                 <div class="material-filter">
-                    <input type="text" id="material-search" placeholder="🔍 Material suchen...">
-                    <select id="material-kategorie-filter">
+                    <input type="text" id="material-search" placeholder="Material suchen..." aria-label="Material suchen">
+                    <select id="material-kategorie-filter" aria-label="Material nach Kategorie filtern">
                         <option value="">Alle Kategorien</option>
                     </select>
                 </div>
                 <div class="items-list" id="material-list">
                     <p class="empty-state">Kein Material vorhanden. Importiere eine Excel-Datei oder lade Demo-Daten.
                     </p>
+                </div>
+            </section>
+
+            <!-- Wareneingang View -->
+            <section class="view" id="view-wareneingang">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Wareneingang</h1>
+                            <p class="subtitle">Bon scannen, Bank-Einkäufe erkennen, Lieferanten-CSV importieren</p>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Wareneingang Stats -->
+                <div class="material-stats">
+                    <div class="stat-mini">
+                        <span id="we-count">0</span>
+                        <span>Eingänge</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="we-value">0 &euro;</span>
+                        <span>Gesamtwert</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span id="we-last">–</span>
+                        <span>Letzter Eingang</span>
+                    </div>
+                    <div class="stat-mini stat-warning">
+                        <span id="we-bank-pending">0</span>
+                        <span>Offene Bank-Einkäufe</span>
+                    </div>
+                </div>
+
+                <!-- Input Method Tabs -->
+                <div class="we-tabs" role="tablist" aria-label="Wareneingang Eingabemethode">
+                    <button class="we-tab active" data-we-tab="bon" role="tab" aria-selected="true">
+                        <span class="we-tab-icon">📷</span> Bon scannen
+                    </button>
+                    <button class="we-tab" data-we-tab="bank" role="tab" aria-selected="false">
+                        <span class="we-tab-icon">🏦</span> Bank-Erkennung
+                    </button>
+                    <button class="we-tab" data-we-tab="csv" role="tab" aria-selected="false">
+                        <span class="we-tab-icon">📄</span> Lieferanten-Import
+                    </button>
+                </div>
+
+                <!-- Tab 1: Bon Scannen -->
+                <div class="we-tab-content active" id="we-tab-bon" role="tabpanel">
+                    <div class="we-dropzone" id="we-dropzone">
+                        <div class="we-dropzone-content">
+                            <span class="we-dropzone-icon">📷</span>
+                            <p class="we-dropzone-text">Bon-Foto hierher ziehen oder klicken</p>
+                            <p class="we-dropzone-hint">JPG, PNG — Baumarkt-Kassenbon, Quittung, Lieferschein</p>
+                            <div class="we-dropzone-actions">
+                                <label class="btn btn-primary" for="we-file-input">
+                                    Datei auswählen
+                                </label>
+                                <input type="file" id="we-file-input" accept="image/*" class="u-file-input-hidden">
+                                <button class="btn btn-secondary" id="we-camera-btn">
+                                    Kamera öffnen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Camera preview (hidden until activated) -->
+                    <div class="we-camera-preview" id="we-camera-preview" style="display:none;">
+                        <video id="we-camera-video" autoplay playsinline></video>
+                        <div class="we-camera-controls">
+                            <button class="btn btn-primary" id="we-camera-capture">Foto aufnehmen</button>
+                            <button class="btn btn-secondary" id="we-camera-cancel">Abbrechen</button>
+                        </div>
+                    </div>
+                    <!-- OCR processing state -->
+                    <div class="we-processing" id="we-processing" style="display:none;">
+                        <div class="we-spinner"></div>
+                        <p>Bon wird gelesen...</p>
+                    </div>
+                    <!-- Parsed results (hidden until scan complete) -->
+                    <div class="we-results" id="we-bon-results" style="display:none;"></div>
+                </div>
+
+                <!-- Tab 2: Bank-Erkennung -->
+                <div class="we-tab-content" id="we-tab-bank" role="tabpanel">
+                    <div class="we-bank-info">
+                        <p>Erkannte Material-Einkäufe aus Bank-Transaktionen.
+                           Erfasse die gekauften Positionen um den Lagerbestand zu aktualisieren.</p>
+                    </div>
+                    <div class="items-list" id="we-bank-list">
+                        <p class="empty-state">Keine offenen Material-Einkäufe erkannt. Verbinde dein Bankkonto unter Buchhaltung.</p>
+                    </div>
+                    <!-- Bank quick-entry form (hidden until user clicks a transaction) -->
+                    <div class="we-results" id="we-bank-results" style="display:none;"></div>
+                </div>
+
+                <!-- Tab 3: Lieferanten-Import -->
+                <div class="we-tab-content" id="we-tab-csv" role="tabpanel">
+                    <div class="we-csv-controls">
+                        <select id="we-supplier-type" class="form-select" aria-label="Lieferanten-Typ wählen">
+                            <option value="wuerth">Würth</option>
+                            <option value="kloeckner">Klöckner</option>
+                            <option value="hornbach">Hornbach</option>
+                            <option value="generic">Andere / Generisch</option>
+                        </select>
+                        <label class="btn btn-primary" for="we-csv-input">
+                            CSV / Excel hochladen
+                        </label>
+                        <input type="file" id="we-csv-input" accept=".csv,.xlsx,.xls,.tsv" class="u-file-input-hidden">
+                    </div>
+                    <!-- Parsed CSV results -->
+                    <div class="we-results" id="we-csv-results" style="display:none;"></div>
+                </div>
+
+                <!-- History -->
+                <div class="we-history-section">
+                    <h2>Letzte Wareneingänge</h2>
+                    <div class="items-list" id="we-history-list">
+                        <p class="empty-state">Noch keine Wareneingänge erfasst.</p>
+                    </div>
                 </div>
             </section>
 
@@ -621,8 +775,8 @@
 
                 <!-- Status Filters -->
                 <div class="material-filter">
-                    <input type="text" id="po-search" placeholder="🔍 Bestellung suchen...">
-                    <select id="po-status-filter">
+                    <input type="text" id="po-search" placeholder="Bestellung suchen..." aria-label="Bestellung suchen">
+                    <select id="po-status-filter" aria-label="Bestellungen nach Status filtern">
                         <option value="">Alle Status</option>
                         <option value="entwurf">Entwurf</option>
                         <option value="bestellt">Bestellt</option>
@@ -630,7 +784,7 @@
                         <option value="geliefert">Geliefert</option>
                         <option value="storniert">Storniert</option>
                     </select>
-                    <select id="po-supplier-filter">
+                    <select id="po-supplier-filter" aria-label="Bestellungen nach Lieferant filtern">
                         <option value="">Alle Lieferanten</option>
                     </select>
                 </div>
@@ -781,23 +935,23 @@ Mit freundlichen Grüßen
                         <h3>⚡ Automations-Status</h3>
                         <p>Übersicht der konfigurierten Automatisierungen</p>
                         <div id="automation-status-list" style="font-size:14px;">
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>Supabase Backend</span>
                                 <span id="auto-status-supabase" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>E-Mail (Proton Mail)</span>
                                 <span id="auto-status-email" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>SMS (Twilio)</span>
                                 <span id="auto-status-sms" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>Auto-Mahnungen</span>
                                 <span id="auto-status-overdue" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                            <div class="automation-status-item">
                                 <span>Webhook</span>
                                 <span id="auto-status-webhook" style="color:var(--text-muted);">—</span>
                             </div>
@@ -832,7 +986,7 @@ Mit freundlichen Grüßen
                         </div>
                         <div class="form-group">
                             <label>Nächste Nummer (Vorschau)</label>
-                            <div id="invoice-number-preview" style="padding: 8px; background: var(--card-bg); border-radius: 4px; font-family: monospace;">
+                            <div id="invoice-number-preview" style="padding: 8px; background: var(--bg-card); border-radius: 4px; font-family: monospace;">
                                 Lade...
                             </div>
                         </div>
@@ -843,14 +997,14 @@ Mit freundlichen Grüßen
                             </label>
                         </div>
                         <button class="btn btn-primary" id="btn-save-invoice-numbering">Speichern</button>
-                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">⚠️ Änderungen müssen GoBD-konform sein!</p>
+                        <p class="text-note">⚠️ Änderungen müssen GoBD-konform sein!</p>
                     </div>
                     <div class="settings-card">
                         <h3>📖 Onboarding Tutorial</h3>
                         <p>Interaktive Anleitung zur App-Navigation</p>
                         <button class="btn btn-primary" id="btn-start-tutorial">🚀 Tutorial starten</button>
                         <button class="btn btn-secondary" id="btn-reset-tutorial" style="margin-left: 8px;">↻ Zurücksetzen</button>
-                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">Das Tutorial zeigt dir alle wichtigen Funktionen in 10 Schritten.</p>
+                        <p class="text-note">Das Tutorial zeigt dir alle wichtigen Funktionen in 10 Schritten.</p>
                     </div>
                     <div class="settings-card">
                         <h3>🗑️ Daten</h3>
@@ -858,13 +1012,13 @@ Mit freundlichen Grüßen
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
                             <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
-                            <input type="file" id="import-data-file" accept=".json" style="display: none;">
+                            <input type="file" id="import-data-file" accept=".json" class="u-file-input-hidden" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
                                 style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
                             <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
                         </div>
-                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">App-Reset stellt den Werkszustand
+                        <p class="text-note">App-Reset stellt den Werkszustand
                             mit Demo-Daten wieder her.</p>
                     </div>
                 </div>
@@ -890,7 +1044,7 @@ Mit freundlichen Grüßen
                         <span>Inkasso-Fälle</span>
                     </div>
                 </div>
-                <h3 style="margin: 24px 0 16px;">Eskalationsstufen</h3>
+                <h3 class="section-heading-spaced">Eskalationsstufen</h3>
                 <div class="escalation-timeline">
                     <div class="escalation-step">
                         <div class="step-day">Tag 0</div>
@@ -917,7 +1071,7 @@ Mit freundlichen Grüßen
                         <div class="step-name">Inkasso</div>
                     </div>
                 </div>
-                <h3 style="margin: 24px 0 16px;">Offene Fälle</h3>
+                <h3 class="section-heading-spaced">Offene Fälle</h3>
                 <div class="items-list" id="dunning-list">
                     <p class="empty-state">Keine überfälligen Rechnungen 🎉</p>
                 </div>
@@ -932,13 +1086,13 @@ Mit freundlichen Grüßen
                             <p class="subtitle">EÜR & Steuerübersicht</p>
                         </div>
                         <div class="header-actions">
-                            <select id="buchhaltung-jahr">
+                            <select id="buchhaltung-jahr" aria-label="Buchhaltungsjahr auswählen">
                                 <option value="2026">2026</option>
                                 <option value="2025">2025</option>
                             </select>
                             <label class="btn btn-secondary" for="buchung-csv-import">
                                 📤 CSV Import
-                                <input type="file" id="buchung-csv-import" accept=".csv" style="display:none;">
+                                <input type="file" id="buchung-csv-import" accept=".csv" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-secondary" id="btn-export-csv">📥 CSV Export</button>
                             <button class="btn btn-primary" id="btn-export-datev">📤 DATEV Export</button>
@@ -977,7 +1131,7 @@ Mit freundlichen Grüßen
                     <button class="btn btn-secondary" id="btn-add-ausgabe">+ Ausgabe erfassen</button>
                 </div>
 
-                <h3 style="margin: 24px 0 16px;">Buchungen</h3>
+                <h3 class="section-heading-spaced">Buchungen</h3>
                 <div class="items-list" id="buchungen-list">
                     <p class="empty-state">Noch keine Buchungen. Rechnungen werden automatisch erfasst.</p>
                 </div>
@@ -1034,7 +1188,7 @@ Mit freundlichen Grüßen
                             <button class="btn btn-secondary" id="btn-import-wizard-kunden">📥 Excel/CSV Import</button>
                             <label class="btn btn-secondary" for="customer-csv-import" style="display:none;">
                                 📥 CSV Import
-                                <input type="file" id="customer-csv-import" accept=".csv,.vcf" style="display:none">
+                                <input type="file" id="customer-csv-import" accept=".csv,.vcf" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-primary" id="btn-neuer-kunde">+ Neuer Kunde</button>
                         </div>
@@ -1045,7 +1199,7 @@ Mit freundlichen Grüßen
                     <div class="stat-mini"><span id="customers-active">0</span><span>Aktiv</span></div>
                 </div>
                 <div class="customer-filter">
-                    <input type="text" id="customer-search" placeholder="🔍 Kunde suchen...">
+                    <input type="text" id="customer-search" placeholder="Kunde suchen..." aria-label="Kunde suchen">
                 </div>
                 <div class="items-list customer-grid" id="customers-list">
                     <p class="empty-state">Keine Kunden vorhanden</p>
@@ -1059,7 +1213,7 @@ Mit freundlichen Grüßen
                     <div class="comm-sidebar">
                         <div class="comm-header">
                             <h2>Kommunikation</h2>
-                            <input type="text" id="comm-search" placeholder="🔍 Suche..." class="comm-search">
+                            <input type="text" id="comm-search" placeholder="Suche..." aria-label="Kommunikation durchsuchen" class="comm-search">
                         </div>
                         <div class="comm-list" id="comm-conversations-list">
                             <p class="empty-state">Keine Gespräche</p>
@@ -1076,7 +1230,8 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
 
-                        <div id="comm-chat-view" style="display: none; height: 100%; display: flex; flex-direction: column;">
+                        <div id="comm-chat-view" style="display: none; height: 100%; flex-direction: column;">
+                        <!-- Note: display:none initially, JS sets display:flex on conversation select -->
                             <!-- Chat Header -->
                             <div class="comm-chat-header">
                                 <div id="comm-chat-title">Gespräch</div>
@@ -1095,7 +1250,7 @@ Mit freundlichen Grüßen
                             <div class="comm-input-area">
                                 <!-- Template Selector -->
                                 <div class="comm-template-selector">
-                                    <select id="comm-template-select" class="form-control">
+                                    <select id="comm-template-select" class="form-control" aria-label="Nachrichtenvorlage auswählen">
                                         <option value="">Vorlage auswählen...</option>
                                         <option value="terminbestaetigung">Terminbestätigung</option>
                                         <option value="angebotsversand">Angebotsversand</option>
@@ -1107,7 +1262,7 @@ Mit freundlichen Grüßen
 
                                 <!-- Message Input -->
                                 <div class="comm-input-wrapper">
-                                    <textarea id="comm-message-input" placeholder="Nachricht eingeben..." class="comm-textarea" rows="3"></textarea>
+                                    <textarea id="comm-message-input" placeholder="Nachricht eingeben..." class="comm-textarea" rows="3" aria-label="Nachricht eingeben"></textarea>
                                     <div class="comm-char-count">
                                         <span id="comm-char-count">0</span><span>/160</span>
                                         <span id="comm-sms-segments" style="color: var(--text-muted); font-size: 12px;"></span>
@@ -1143,7 +1298,7 @@ Mit freundlichen Grüßen
 
                     .comm-sidebar {
                         width: 300px;
-                        background: var(--card-bg);
+                        background: var(--bg-card);
                         display: flex;
                         flex-direction: column;
                         border-right: 1px solid var(--border-color);
@@ -1253,7 +1408,7 @@ Mit freundlichen Grüßen
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        background: var(--card-bg);
+                        background: var(--bg-card);
                     }
 
                     .comm-chat-title {
@@ -1329,7 +1484,7 @@ Mit freundlichen Grüßen
                     .comm-input-area {
                         padding: 16px;
                         border-top: 1px solid var(--border-color);
-                        background: var(--card-bg);
+                        background: var(--bg-card);
                     }
 
                     .comm-template-selector {
@@ -1482,7 +1637,7 @@ Mit freundlichen Grüßen
                     <div class="stat-mini"><span id="time-week">0:00</span><span>Diese Woche</span></div>
                     <div class="stat-mini"><span id="time-month">0:00</span><span>Dieser Monat</span></div>
                 </div>
-                <h3 style="margin: 24px 0 16px;">Zeiteinträge</h3>
+                <h3 class="section-heading-spaced">Zeiteinträge</h3>
                 <div class="items-list" id="time-entries-list">
                     <p class="empty-state">Keine Zeiteinträge vorhanden</p>
                 </div>
@@ -1553,7 +1708,7 @@ Mit freundlichen Grüßen
                     <div class="panel-header-row">
                         <h3>Verarbeitete E-Mails</h3>
                         <div style="display: flex; gap: 8px;">
-                            <select id="email-history-filter" class="filter-select">
+                            <select id="email-history-filter" class="filter-select" aria-label="E-Mail-Verlauf filtern">
                                 <option value="">Alle</option>
                                 <option value="success">Erfolgreich</option>
                                 <option value="pending">Ausstehend</option>
@@ -1588,8 +1743,8 @@ Mit freundlichen Grüßen
                     <div class="stat-mini"><span id="docs-receipts">0</span><span>Quittungen</span></div>
                 </div>
                 <div class="document-filter">
-                    <input type="text" id="document-search" placeholder="🔍 Dokumente durchsuchen...">
-                    <select id="document-category-filter">
+                    <input type="text" id="document-search" placeholder="Dokumente durchsuchen..." aria-label="Dokumente durchsuchen">
+                    <select id="document-category-filter" aria-label="Dokumente nach Kategorie filtern">
                         <option value="">Alle Kategorien</option>
                         <option value="rechnung">Rechnungen</option>
                         <option value="quittung">Quittungen</option>
@@ -1638,18 +1793,18 @@ Mit freundlichen Grüßen
                 <div class="report-filters" id="report-filters">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Von</label>
+                            <label for="report-start-date">Von</label>
                             <input type="date" id="report-start-date">
                         </div>
                         <div class="form-group">
-                            <label>Bis</label>
+                            <label for="report-end-date">Bis</label>
                             <input type="date" id="report-end-date">
                         </div>
                         <button class="btn btn-primary" id="btn-generate-report">Bericht erstellen</button>
                     </div>
                 </div>
                 <div class="report-chart-container" id="report-chart-container" style="display:none;">
-                    <canvas id="report-chart" height="280"></canvas>
+                    <canvas id="report-chart" height="280" aria-label="Berichtsdiagramm" role="img"></canvas>
                 </div>
                 <div class="report-output" id="report-output">
                     <p class="empty-state">Wähle einen Berichtstyp und klicke "Bericht erstellen"</p>
@@ -1668,7 +1823,7 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
                         <div class="model-selector-wrapper">
-                            <select id="ai-model-select" data-action-change="update-ai-model">
+                            <select id="ai-model-select" data-action-change="update-ai-model" aria-label="KI-Modell auswählen">
                                 <option value="mistral">mistral (default)</option>
                                 <option value="llama3">llama3</option>
                             </select>
@@ -1687,9 +1842,9 @@ Mit freundlichen Grüßen
                         <div class="ai-input-container">
                             <span style="font-size: 20px; opacity: 0.5;">📎</span>
                             <input type="text" id="ai-chat-input" placeholder="Fragen Sie den MHS Assistenten..."
-                                autocomplete="off">
+                                autocomplete="off" aria-label="Nachricht an KI-Assistent">
                             <button class="btn btn-primary" id="btn-send-ai"
-                                style="padding: 8px 12px; border-radius: 8px;">
+                                style="padding: 8px 12px; border-radius: 8px;" aria-label="Nachricht senden">
                                 <span>↑</span>
                             </button>
                         </div>
@@ -1704,22 +1859,21 @@ Mit freundlichen Grüßen
                 <h3>⚙️ Chatbot-Einstellungen</h3>
                 <div class="settings-grid-inline">
                     <div class="form-group">
-                        <label>Geschäftszeiten Start</label>
+                        <label for="chatbot-hours-start">Geschäftszeiten Start</label>
                         <input type="time" id="chatbot-hours-start" value="08:00">
                     </div>
                     <div class="form-group">
-                        <label>Geschäftszeiten Ende</label>
+                        <label for="chatbot-hours-end">Geschäftszeiten Ende</label>
                         <input type="time" id="chatbot-hours-end" value="18:00">
                     </div>
                     <div class="form-group">
-                        <label>Antwort-Verzögerung (ms)</label>
+                        <label for="chatbot-delay">Antwort-Verzögerung (ms)</label>
                         <input type="number" id="chatbot-delay" value="2000" step="500">
                     </div>
                 </div>
                 <p class="settings-note">⚠️ Für echte WhatsApp-Integration wird die WhatsApp Business API benötigt.
                 </p>
             </div>
-            </section>
 
             <!-- Workflows View -->
             <section class="view" id="view-workflows">
@@ -1830,7 +1984,7 @@ Mit freundlichen Grüßen
 
                 <!-- Camera Preview (hidden by default) -->
                 <div class="panel scanner-camera-panel" id="scanner-camera-panel" style="display:none">
-                    <video id="scanner-video" autoplay playsinline></video>
+                    <video id="scanner-video" autoplay playsinline aria-label="Kamera-Vorschau für Dokumenten-Scanner"></video>
                     <div class="camera-controls">
                         <button class="btn btn-primary" id="btn-capture">📸 Aufnehmen</button>
                         <button class="btn btn-secondary" id="btn-cancel-camera">Abbrechen</button>
@@ -1841,7 +1995,7 @@ Mit freundlichen Grüßen
                 <div class="panel">
                     <div class="panel-header-row">
                         <h3>Gescannte Dokumente</h3>
-                        <select id="scanner-filter" class="filter-select">
+                        <select id="scanner-filter" class="filter-select" aria-label="Gescannte Dokumente filtern">
                             <option value="">Alle Kategorien</option>
                             <option value="rechnung">Rechnungen</option>
                             <option value="quittung">Quittungen</option>
@@ -1861,11 +2015,11 @@ Mit freundlichen Grüßen
                     <div class="datev-controls">
                         <div class="form-row-inline">
                             <div class="form-group">
-                                <label>Von</label>
+                                <label for="datev-from">Von</label>
                                 <input type="date" id="datev-from" value="">
                             </div>
                             <div class="form-group">
-                                <label>Bis</label>
+                                <label for="datev-to">Bis</label>
                                 <input type="date" id="datev-to" value="">
                             </div>
                             <button class="btn btn-primary" id="btn-datev-export">📥 DATEV Export</button>
@@ -1917,7 +2071,7 @@ Mit freundlichen Grüßen
                             <p>Erstelle ein verschlüsseltes Backup aller Daten.</p>
                             <div class="form-row-inline">
                                 <input type="password" id="backup-password"
-                                    placeholder="Passwort für Verschlüsselung (optional)">
+                                    placeholder="Passwort für Verschlüsselung (optional)" aria-label="Backup-Passwort">
                                 <button class="btn btn-primary" id="btn-create-backup">📥 Backup erstellen</button>
                             </div>
                         </div>
@@ -1925,8 +2079,8 @@ Mit freundlichen Grüßen
                             <h4>Backup wiederherstellen</h4>
                             <p>Lade ein vorhandenes Backup hoch.</p>
                             <div class="form-row-inline">
-                                <input type="file" id="backup-file-input" accept=".json">
-                                <input type="password" id="restore-password" placeholder="Passwort">
+                                <input type="file" id="backup-file-input" accept=".json" aria-label="Backup-Datei auswählen">
+                                <input type="password" id="restore-password" placeholder="Passwort" aria-label="Wiederherstellungs-Passwort">
                                 <button class="btn btn-warning" id="btn-restore-backup">🔄 Wiederherstellen</button>
                             </div>
                         </div>
@@ -1944,7 +2098,7 @@ Mit freundlichen Grüßen
                             </label>
                         </div>
                         <div class="form-group">
-                            <label>Intervall</label>
+                            <label for="backup-interval">Intervall</label>
                             <select id="backup-interval">
                                 <option value="hourly">Stündlich</option>
                                 <option value="daily" selected>Täglich</option>
@@ -1965,7 +2119,7 @@ Mit freundlichen Grüßen
                             <h4>Kundendaten exportieren</h4>
                             <p>Exportiere alle Daten eines Kunden (Art. 20 DSGVO).</p>
                             <div class="form-row-inline">
-                                <select id="gdpr-customer-select">
+                                <select id="gdpr-customer-select" aria-label="Kunde für Datenexport auswählen">
                                     <option value="">Kunde wählen...</option>
                                 </select>
                                 <button class="btn btn-secondary" id="btn-gdpr-export">📤 Daten exportieren</button>
@@ -1975,7 +2129,7 @@ Mit freundlichen Grüßen
                             <h4>Kundendaten löschen</h4>
                             <p>Lösche alle Daten eines Kunden unwiderruflich (Art. 17 DSGVO).</p>
                             <div class="form-row-inline">
-                                <select id="gdpr-delete-select">
+                                <select id="gdpr-delete-select" aria-label="Kunde für Datenlöschung auswählen">
                                     <option value="">Kunde wählen...</option>
                                 </select>
                                 <button class="btn btn-danger" id="btn-gdpr-delete">🗑️ Daten löschen</button>
@@ -1998,12 +2152,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Ausgabe erfassen -->
-    <div class="modal" id="modal-ausgabe">
+    <div class="modal" id="modal-ausgabe" role="dialog" aria-labelledby="modal-ausgabe-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Ausgabe erfassen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-ausgabe-title">Ausgabe erfassen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-ausgabe" class="modal-form">
                 <div class="form-group">
@@ -2049,12 +2203,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Mahnung erstellen -->
-    <div class="modal" id="modal-mahnung">
+    <div class="modal" id="modal-mahnung" role="dialog" aria-labelledby="modal-mahnung-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Mahnung erstellen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-mahnung-title">Mahnung erstellen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="mahnung-preview" id="mahnung-preview">
                 <!-- Dynamically generated -->
@@ -2068,12 +2222,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Neue Anfrage -->
-    <div class="modal" id="modal-anfrage">
+    <div class="modal" id="modal-anfrage" role="dialog" aria-labelledby="modal-anfrage-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Neue Anfrage erfassen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-anfrage-title">Neue Anfrage erfassen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-anfrage" class="modal-form">
                 <div class="form-group">
@@ -2127,12 +2281,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Angebot erstellen -->
-    <div class="modal" id="modal-angebot">
+    <div class="modal" id="modal-angebot" role="dialog" aria-labelledby="modal-angebot-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Angebot erstellen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-angebot-title">Angebot erstellen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-angebot" class="modal-form">
                 <input type="hidden" id="angebot-anfrage-id">
@@ -2140,7 +2294,7 @@ Mit freundlichen Grüßen
 
                 <!-- Customer Presets -->
                 <div class="form-group">
-                    <label>Kundenvorlage laden</label>
+                    <label for="customer-preset">Kundenvorlage laden</label>
                     <div class="preset-row">
                         <select id="customer-preset" class="preset-select">
                             <option value="">-- Keine Vorlage --</option>
@@ -2200,12 +2354,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Auftrag Detail (Management) -->
-    <div class="modal" id="modal-auftrag-detail">
+    <div class="modal" id="modal-auftrag-detail" role="dialog" aria-labelledby="auftrag-detail-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="auftrag-detail-title">Auftrag</h2>
-                <button class="modal-close">&times;</button>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
 
             <!-- Tabs -->
@@ -2224,12 +2378,12 @@ Mit freundlichen Grüßen
                     <div class="auftrag-info-block">
                         <h5>Kunde</h5>
                         <p id="ad-kunde-name"></p>
-                        <p id="ad-kunde-kontakt" style="font-size:12px;color:var(--text-secondary);"></p>
+                        <p id="ad-kunde-kontakt" class="text-secondary-sm"></p>
                     </div>
                     <div class="auftrag-info-block">
                         <h5>Leistung</h5>
                         <p id="ad-leistungsart"></p>
-                        <p id="ad-angebotswert" style="font-size:12px;color:var(--text-secondary);"></p>
+                        <p id="ad-angebotswert" class="text-secondary-sm"></p>
                     </div>
                     <div class="auftrag-info-block" style="grid-column:1/-1;">
                         <h5>Status-Pipeline</h5>
@@ -2243,30 +2397,30 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
                         <div id="ad-status-grund-wrapper" style="display:none;margin-top:8px;">
-                            <select id="ad-status-grund" class="auftrag-status-select" style="width:100%;">
+                            <select id="ad-status-grund" class="auftrag-status-select" style="width:100%;" aria-label="Statusgrund auswählen">
                                 <option value="">Grund auswählen...</option>
                             </select>
-                            <input type="text" id="ad-status-grund-custom" placeholder="Eigener Grund..." style="display:none;margin-top:6px;width:100%;padding:6px 10px;border-radius:var(--border-radius-sm);border:1px solid var(--border-color);background:var(--bg-dark);color:var(--text-primary);font-size:13px;">
+                            <input type="text" id="ad-status-grund-custom" placeholder="Eigener Grund..." aria-label="Eigener Statusgrund" style="display:none;margin-top:6px;width:100%;padding:6px 10px;border-radius:var(--border-radius-sm);border:1px solid var(--border-color);background:var(--bg-dark);color:var(--text-primary);font-size:13px;">
                         </div>
                         <div id="ad-status-zeit-info" style="margin-top:8px;font-size:11px;color:var(--text-muted);"></div>
                     </div>
                     <div class="auftrag-info-block">
                         <h5>Fortschritt</h5>
                         <div class="auftrag-fortschritt-wrapper">
-                            <input type="range" id="ad-fortschritt" min="0" max="100" step="5" value="0">
+                            <input type="range" id="ad-fortschritt" min="0" max="100" step="5" value="0" aria-label="Fortschritt">
                             <span class="auftrag-fortschritt-label" id="ad-fortschritt-label">0%</span>
                         </div>
                     </div>
                     <div class="auftrag-info-block">
                         <h5>Terminplanung</h5>
                         <div class="form-row" style="gap:8px;">
-                            <div class="form-group" style="margin:0;flex:1;">
-                                <label style="font-size:11px;">Start</label>
-                                <input type="date" id="ad-start-datum" style="font-size:12px;">
+                            <div class="form-group form-group-compact">
+                                <label for="ad-start-datum">Start</label>
+                                <input type="date" id="ad-start-datum">
                             </div>
-                            <div class="form-group" style="margin:0;flex:1;">
-                                <label style="font-size:11px;">Ende</label>
-                                <input type="date" id="ad-end-datum" style="font-size:12px;">
+                            <div class="form-group form-group-compact">
+                                <label for="ad-end-datum">Ende</label>
+                                <input type="date" id="ad-end-datum">
                             </div>
                         </div>
                     </div>
@@ -2274,8 +2428,8 @@ Mit freundlichen Grüßen
                         <h5>Mitarbeiter</h5>
                         <div class="mitarbeiter-list" id="ad-mitarbeiter-list"></div>
                         <div class="mitarbeiter-add-row">
-                            <input type="text" id="ad-mitarbeiter-input" placeholder="Name eingeben...">
-                            <button class="btn btn-small" id="ad-btn-add-mitarbeiter">+</button>
+                            <input type="text" id="ad-mitarbeiter-input" placeholder="Name eingeben..." aria-label="Mitarbeiter hinzufügen">
+                            <button class="btn btn-small" id="ad-btn-add-mitarbeiter" aria-label="Mitarbeiter hinzufügen">+</button>
                         </div>
                     </div>
                 </div>
@@ -2284,10 +2438,10 @@ Mit freundlichen Grüßen
             <!-- Tab: Checkliste -->
             <div class="auftrag-tab-content" data-tab="checkliste">
                 <div class="checkliste-items" id="ad-checkliste-items">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Noch keine Aufgaben</p>
+                    <p class="empty-state empty-state-centered">Noch keine Aufgaben</p>
                 </div>
                 <div class="checkliste-add-row">
-                    <input type="text" id="ad-checkliste-input" placeholder="Neue Aufgabe...">
+                    <input type="text" id="ad-checkliste-input" placeholder="Neue Aufgabe..." aria-label="Neue Checklistenaufgabe">
                     <button class="btn btn-small btn-primary" id="ad-btn-add-checkliste">+ Hinzufügen</button>
                 </div>
             </div>
@@ -2298,22 +2452,22 @@ Mit freundlichen Grüßen
                     <span>Gesamt</span>
                     <span>0:00 h</span>
                 </div>
-                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <div class="action-row">
                     <button class="btn btn-success" id="ad-btn-zeit-start">Stempeln</button>
                     <button class="btn btn-secondary" id="ad-btn-zeit-manuell">+ Manuell</button>
                 </div>
                 <div class="zeit-entries-list" id="ad-zeit-entries">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Zeiteinträge</p>
+                    <p class="empty-state empty-state-centered">Keine Zeiteinträge</p>
                 </div>
             </div>
 
             <!-- Tab: Fotos -->
             <div class="auftrag-tab-content" data-tab="fotos">
-                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <div class="action-row">
                     <button class="btn btn-primary" id="ad-btn-foto-capture">Foto aufnehmen</button>
                     <label class="btn btn-secondary">
                         Foto hochladen
-                        <input type="file" id="ad-foto-upload" accept="image/*" style="display:none;" multiple>
+                        <input type="file" id="ad-foto-upload" accept="image/*" class="u-file-input-hidden" multiple>
                     </label>
                 </div>
                 <div class="foto-gallery" id="ad-foto-gallery">
@@ -2324,10 +2478,10 @@ Mit freundlichen Grüßen
             <!-- Tab: Kommentare -->
             <div class="auftrag-tab-content" data-tab="kommentare">
                 <div class="kommentar-list" id="ad-kommentar-list">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Kommentare</p>
+                    <p class="empty-state empty-state-centered">Keine Kommentare</p>
                 </div>
                 <div class="kommentar-add-row">
-                    <textarea id="ad-kommentar-input" placeholder="Kommentar schreiben..." rows="2"></textarea>
+                    <textarea id="ad-kommentar-input" placeholder="Kommentar schreiben..." rows="2" aria-label="Kommentar schreiben"></textarea>
                     <button class="btn btn-primary" id="ad-btn-add-kommentar" style="align-self:flex-end;">Senden</button>
                 </div>
             </div>
@@ -2335,7 +2489,7 @@ Mit freundlichen Grüßen
             <!-- Tab: Historie -->
             <div class="auftrag-tab-content" data-tab="historie">
                 <div class="historie-timeline" id="ad-historie-timeline">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Einträge</p>
+                    <p class="empty-state empty-state-centered">Keine Einträge</p>
                 </div>
             </div>
 
@@ -2349,12 +2503,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Auftrag Abschluss (Completion) -->
-    <div class="modal" id="modal-auftrag">
+    <div class="modal" id="modal-auftrag" role="dialog" aria-labelledby="modal-auftrag-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Auftrag abschließen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-auftrag-title">Auftrag abschließen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-auftrag" class="modal-form">
                 <input type="hidden" id="auftrag-id">
@@ -2437,12 +2591,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Rechnung anzeigen -->
-    <div class="modal" id="modal-rechnung">
+    <div class="modal" id="modal-rechnung" role="dialog" aria-labelledby="modal-rechnung-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Rechnung</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-rechnung-title">Rechnung</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="rechnung-preview" id="rechnung-preview">
                 <!-- Dynamically generated -->
@@ -2456,12 +2610,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Hilfe -->
-    <div class="modal" id="modal-help">
+    <div class="modal" id="modal-help" role="dialog" aria-labelledby="modal-help-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Hilfe & Dokumentation</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-help-title">Hilfe & Dokumentation</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="help-content" style="padding: 24px;">
                 <h3>Willkommen!</h3>
@@ -2480,16 +2634,17 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Excel Import Wizard (wird dynamisch erstellt) -->
-    <div class="modal" id="modal-excel-import">
+    <div class="modal" id="modal-excel-import" role="dialog" aria-label="Excel Import" aria-modal="true">
         <!-- Wird von excel-import-wizard.js erstellt -->
     </div>
 
     <!-- Test Email Processing Modal -->
-    <div class="modal" id="modal-test-email">
+    <div class="modal" id="modal-test-email" role="dialog" aria-labelledby="modal-test-email-title" aria-modal="true">
+        <div class="modal-overlay"></div>
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
-                <h2>🧪 Test E-Mail Verarbeitung</h2>
-                <button class="modal-close" data-action="close-modal-email-test">&times;</button>
+                <h2 id="modal-test-email-title">Test E-Mail Verarbeitung</h2>
+                <button class="modal-close" data-action="close-modal-email-test" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 16px; color: var(--text-muted);">
@@ -2527,12 +2682,12 @@ Email: max.mustermann@example.com</textarea>
     </div>
 
     <!-- Bestellung Modal -->
-    <div class="modal" id="modal-bestellung">
+    <div class="modal" id="modal-bestellung" role="dialog" aria-labelledby="modal-bestellung-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="modal-bestellung-title">Neue Bestellung</h2>
-                <button class="modal-close" data-action="close-modal-bestellung">&times;</button>
+                <button class="modal-close" data-action="close-modal-bestellung" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -2561,10 +2716,10 @@ Email: max.mustermann@example.com</textarea>
                     <input type="text" id="po-lieferant-ansprechpartner" placeholder="z.B. Herr Müller">
                 </div>
 
-                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <hr class="hr-separator">
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0;">Positionen</h3>
+                <div class="panel-header-row">
+                    <h3>Positionen</h3>
                     <button class="btn btn-small btn-secondary" id="btn-add-po-position">+ Position</button>
                 </div>
 
@@ -2572,7 +2727,7 @@ Email: max.mustermann@example.com</textarea>
                     <!-- Positions added here -->
                 </div>
 
-                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <hr class="hr-separator">
 
                 <div class="form-group">
                     <label for="po-lieferdatum">Erwartetes Lieferdatum</label>
@@ -2585,7 +2740,7 @@ Email: max.mustermann@example.com</textarea>
                 </div>
 
                 <!-- Summary -->
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                <div class="card-section">
                     <div class="summary-row">
                         <span>Netto:</span>
                         <span id="po-summary-netto">0,00 €</span>
@@ -2594,7 +2749,7 @@ Email: max.mustermann@example.com</textarea>
                         <span>MwSt. (19%):</span>
                         <span id="po-summary-mwst">0,00 €</span>
                     </div>
-                    <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; font-weight: bold;">
+                    <div class="summary-row summary-row-bold">
                         <span>Brutto:</span>
                         <span id="po-summary-brutto">0,00 €</span>
                     </div>
@@ -2608,12 +2763,12 @@ Email: max.mustermann@example.com</textarea>
     </div>
 
     <!-- PO Detail Modal -->
-    <div class="modal" id="modal-po-detail">
+    <div class="modal" id="modal-po-detail" role="dialog" aria-labelledby="po-detail-nummer" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="po-detail-nummer">Bestellung PO-2026-001</h2>
-                <button class="modal-close" data-action="close-modal-po-detail">&times;</button>
+                <button class="modal-close" data-action="close-modal-po-detail" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <!-- Status and dates -->
@@ -2635,25 +2790,25 @@ Email: max.mustermann@example.com</textarea>
                 </div>
 
                 <!-- Supplier info -->
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin: 16px 0;">
-                    <h3 style="margin-top: 0;">Lieferant</h3>
-                    <p style="margin: 4px 0;"><strong id="po-detail-lieferant-name">-</strong></p>
-                    <p style="margin: 4px 0;">📧 <span id="po-detail-lieferant-email">-</span></p>
-                    <p style="margin: 4px 0;">📞 <span id="po-detail-lieferant-telefon">-</span></p>
-                    <p style="margin: 4px 0;">👤 <span id="po-detail-lieferant-ansprechpartner">-</span></p>
+                <div class="card-section" style="margin: 16px 0;">
+                    <h3>Lieferant</h3>
+                    <p><strong id="po-detail-lieferant-name">-</strong></p>
+                    <p>📧 <span id="po-detail-lieferant-email">-</span></p>
+                    <p>📞 <span id="po-detail-lieferant-telefon">-</span></p>
+                    <p>👤 <span id="po-detail-lieferant-ansprechpartner">-</span></p>
                 </div>
 
                 <!-- Positions -->
                 <div style="margin-top: 24px;">
                     <h3>Positionen</h3>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+                    <table class="po-detail-table">
                         <thead>
-                            <tr style="border-bottom: 2px solid var(--border-color);">
-                                <th style="text-align: left; padding: 8px;">Material</th>
-                                <th style="text-align: right; padding: 8px; width: 80px;">Menge</th>
-                                <th style="text-align: right; padding: 8px; width: 80px;">EK-Preis</th>
-                                <th style="text-align: right; padding: 8px; width: 100px;">Geliefert</th>
-                                <th style="text-align: right; padding: 8px; width: 100px;">Gesamt</th>
+                            <tr class="table-header">
+                                <th>Material</th>
+                                <th class="text-right" style="width: 80px;">Menge</th>
+                                <th class="text-right" style="width: 80px;">EK-Preis</th>
+                                <th class="text-right" style="width: 100px;">Geliefert</th>
+                                <th class="text-right" style="width: 100px;">Gesamt</th>
                             </tr>
                         </thead>
                         <tbody id="po-detail-positionen">
@@ -2663,7 +2818,7 @@ Email: max.mustermann@example.com</textarea>
                 </div>
 
                 <!-- Summary -->
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-top: 24px;">
+                <div class="card-section" style="margin-top: 24px;">
                     <div class="summary-row">
                         <span>Netto:</span>
                         <span id="po-detail-netto">0,00 €</span>
@@ -2672,7 +2827,7 @@ Email: max.mustermann@example.com</textarea>
                         <span>MwSt. (19%):</span>
                         <span id="po-detail-mwst">0,00 €</span>
                     </div>
-                    <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; font-weight: bold;">
+                    <div class="summary-row summary-row-bold">
                         <span>Brutto:</span>
                         <span id="po-detail-brutto">0,00 €</span>
                     </div>
@@ -2686,7 +2841,7 @@ Email: max.mustermann@example.com</textarea>
 
                 <!-- Wareneingang Recording -->
                 <div id="po-wareneingang-section" style="margin-top: 24px; display: none;">
-                    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
+                    <hr class="hr-separator">
                     <h3>Wareneingang buchen</h3>
                     <div id="po-wareneingang-form">
                         <!-- Form added dynamically -->
@@ -2774,6 +2929,9 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/reorder-engine-service.js"></script>
     <script src="js/ui/purchase-order-ui.js"></script>
     <script src="js/ui/reorder-engine-ui.js"></script>
+    <script src="js/ui/work-estimation-ui.js"></script>
+    <script src="js/ui/ki-transparency-ui.js"></script>
+    <script src="js/ui/gantt-timeline-ui.js"></script>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/excel-import-integration.js"></script>
@@ -2789,6 +2947,8 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/modules/angebote.js"></script>
     <script src="js/modules/auftraege.js"></script>
     <script src="js/modules/rechnungen.js"></script>
+    <script src="js/services/bon-scanner-service.js"></script>
+    <script src="js/modules/wareneingang.js"></script>
     <script src="js/app-new.js"></script>
 
     <!-- Main application (current production version - fallback) -->

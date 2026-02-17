@@ -10,21 +10,31 @@ const { store, renderActivities } = (() => {
 })();
 
 function updateDashboard() {
-    const offeneAnfragen = store.anfragen.filter(a => a.status === 'neu').length;
-    const wartendeAngebote = store.angebote.filter(a => a.status === 'offen').length;
-    const aktiveAuftraege = store.auftraege.filter(a => a.status !== 'abgeschlossen').length;
-    const offeneRechnungen = store.rechnungen.filter(r => r.status === 'offen').length;
+    const offeneAnfragen = store?.anfragen?.filter(a => a.status === 'neu').length || 0;
+    const wartendeAngebote = store?.angebote?.filter(a => a.status === 'offen').length || 0;
+    const aktiveAuftraege = store?.auftraege?.filter(a => a.status !== 'abgeschlossen').length || 0;
+    const offeneRechnungen = store?.rechnungen?.filter(r => r.status === 'offen').length || 0;
 
-    document.getElementById('stat-anfragen').textContent = offeneAnfragen;
-    document.getElementById('stat-angebote').textContent = wartendeAngebote;
-    document.getElementById('stat-auftraege').textContent = aktiveAuftraege;
-    document.getElementById('stat-rechnungen').textContent = offeneRechnungen;
+    const statAnfragen = document.getElementById('stat-anfragen');
+    const statAngebote = document.getElementById('stat-angebote');
+    const statAuftraege = document.getElementById('stat-auftraege');
+    const statRechnungen = document.getElementById('stat-rechnungen');
+
+    if (statAnfragen) {statAnfragen.textContent = offeneAnfragen;}
+    if (statAngebote) {statAngebote.textContent = wartendeAngebote;}
+    if (statAuftraege) {statAuftraege.textContent = aktiveAuftraege;}
+    if (statRechnungen) {statRechnungen.textContent = offeneRechnungen;}
 
     // Update badges
-    document.getElementById('anfragen-badge').textContent = offeneAnfragen;
-    document.getElementById('angebote-badge').textContent = wartendeAngebote;
-    document.getElementById('auftraege-badge').textContent = aktiveAuftraege;
-    document.getElementById('rechnungen-badge').textContent = offeneRechnungen;
+    const anfragenBadge = document.getElementById('anfragen-badge');
+    const angeboteBadge = document.getElementById('angebote-badge');
+    const auftraegeBadge = document.getElementById('auftraege-badge');
+    const rechnungenBadge = document.getElementById('rechnungen-badge');
+
+    if (anfragenBadge) {anfragenBadge.textContent = offeneAnfragen;}
+    if (angeboteBadge) {angeboteBadge.textContent = wartendeAngebote;}
+    if (auftraegeBadge) {auftraegeBadge.textContent = aktiveAuftraege;}
+    if (rechnungenBadge) {rechnungenBadge.textContent = offeneRechnungen;}
 
     renderActivities();
 

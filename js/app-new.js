@@ -31,24 +31,27 @@ async function init() {
     // Await store service load
     await window.storeService.load();
 
-    // Initialize modules
-    window.AnfragenModule.initAnfrageForm();
-    window.AngeboteModule.initAngebotForm();
-    window.AuftraegeModule.initAuftragForm();
-    window.AuftraegeModule.initAuftragDetailHandlers();
-    window.RechnungenModule.initRechnungActions();
+    // Initialize modules (with null guards for load-order safety)
+    window.AnfragenModule?.initAnfrageForm?.();
+    window.AngeboteModule?.initAngebotForm?.();
+    window.AngeboteModule?.initAngeboteFilters?.();
+    window.AuftraegeModule?.initAuftragForm?.();
+    window.AuftraegeModule?.initAuftragDetailHandlers?.();
+    window.RechnungenModule?.initRechnungActions?.();
+    window.RechnungenModule?.initRechnungenFilters?.();
     initMaterial();
     initSettings();
     initAutomationSettings();
     initMahnwesen();
     initBuchhaltung();
     initQuickActions();
-    window.ModalsModule.initModals();
+    window.ModalsModule?.initModals?.();
+    window.WareneingangModule?.initWareneingang?.();
 
     // Initialize automation API
     window.automationAPI?.init();
 
-    window.DashboardModule.updateDashboard();
+    window.DashboardModule?.updateDashboard?.();
 }
 
 // ============================================
@@ -58,18 +61,22 @@ function renderMaterial() {
     const materials = window.materialService?.getAllMaterials() || [];
     const container = document.getElementById('material-list');
 
-    document.getElementById('material-count').textContent = materials.length;
+    const matCountEl = document.getElementById('material-count');
+    if (matCountEl) {matCountEl.textContent = materials.length;}
     const lagerwert = materials.reduce((sum, m) => sum + (m.bestand * m.preis), 0);
-    document.getElementById('material-value').textContent = formatCurrency(lagerwert);
+    const matValueEl = document.getElementById('material-value');
+    if (matValueEl) {matValueEl.textContent = formatCurrency(lagerwert);}
     const lowStock = window.materialService?.getLowStockItems() || [];
-    document.getElementById('material-low').textContent = lowStock.length;
-    document.getElementById('material-badge').textContent = materials.length;
+    const matLowEl = document.getElementById('material-low');
+    if (matLowEl) {matLowEl.textContent = lowStock.length;}
+    const matBadgeEl = document.getElementById('material-badge');
+    if (matBadgeEl) {matBadgeEl.textContent = materials.length;}
 
     const kategorien = window.materialService?.getKategorien() || [];
     const filterSelect = document.getElementById('material-kategorie-filter');
     if (filterSelect) {
         filterSelect.innerHTML = '<option value="">Alle Kategorien</option>' +
-            kategorien.map(k => `<option value="${k}">${k}</option>`).join('');
+            kategorien.map(k => `<option value="${h(k)}">${h(k)}</option>`).join('');
     }
 
     if (materials.length === 0) {
@@ -99,17 +106,17 @@ function renderMaterial() {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
-                        <span class="material-sku">${m.artikelnummer}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
+                        <span class="material-sku">${h(m.artikelnummer)}</span>
                     </div>
-                    <span class="material-kategorie">${m.kategorie}</span>
+                    <span class="material-kategorie">${h(m.kategorie)}</span>
                     <div class="material-preis">
                         <div class="vk">${formatCurrency(m.vkPreis || m.preis)}</div>
                         <div class="ek">EK: ${formatCurrency(m.preis)}</div>
                     </div>
                     <div class="material-bestand ${isLow ? 'low' : ''}">
                         <div class="count">${m.bestand}</div>
-                        <div class="unit">${m.einheit}</div>
+                        <div class="unit">${h(m.einheit)}</div>
                     </div>
                 </div>
             </div>
@@ -172,17 +179,17 @@ function renderMaterialList(materials) {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
-                        <span class="material-sku">${m.artikelnummer}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
+                        <span class="material-sku">${h(m.artikelnummer)}</span>
                     </div>
-                    <span class="material-kategorie">${m.kategorie}</span>
+                    <span class="material-kategorie">${h(m.kategorie)}</span>
                     <div class="material-preis">
                         <div class="vk">${formatCurrency(m.vkPreis || m.preis)}</div>
                         <div class="ek">EK: ${formatCurrency(m.preis)}</div>
                     </div>
                     <div class="material-bestand ${isLow ? 'low' : ''}">
                         <div class="count">${m.bestand}</div>
-                        <div class="unit">${m.einheit}</div>
+                        <div class="unit">${h(m.einheit)}</div>
                     </div>
                 </div>
             </div>
@@ -261,7 +268,8 @@ function updateSettingsStatus() {
 // ============================================
 function renderMahnwesen() {
     const container = document.getElementById('mahnwesen-list');
-    const rechnungen = store.rechnungen.filter(r => r.status === 'offen');
+    if (!container) {return;}
+    const rechnungen = store?.rechnungen?.filter(r => r.status === 'offen') || [];
 
     if (rechnungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine offenen Rechnungen</p>';
@@ -323,6 +331,7 @@ function renderBuchhaltung() {
     const Jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value) || new Date().getFullYear();
     const buchungen = window.bookkeepingService?.getBuchungenForJahr(Jahr) || [];
     const container = document.getElementById('buchungen-list');
+    if (!container) {return;}
 
     if (buchungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Noch keine Buchungen. Rechnungen werden automatisch erfasst.</p>';
@@ -333,10 +342,10 @@ function renderBuchhaltung() {
         <div class="buchung-item">
             <div class="buchung-datum">${formatDate(b.datum)}</div>
             <div class="buchung-beschreibung">
-                ${b.beschreibung}
-                <small>${b.belegnummer || b.id}</small>
+                ${h(b.beschreibung)}
+                <small>${h(b.belegnummer || b.id)}</small>
             </div>
-            <div class="buchung-kategorie">${b.kategorie}</div>
+            <div class="buchung-kategorie">${h(b.kategorie)}</div>
             <div class="buchung-betrag ${b.typ}">
                 ${b.typ === 'einnahme' ? '+' : '-'}${formatCurrency(b.brutto)}
             </div>
@@ -479,10 +488,31 @@ async function runDemoWorkflow() {
     saveStore();
     addActivity('💰', `Rechnung ${demoRechnung.id} erstellt`);
 
-    window.DashboardModule.updateDashboard();
+    window.DashboardModule?.updateDashboard?.();
     showToast('🎉 Demo-Workflow abgeschlossen!', 'success');
 
-    setTimeout(() => window.RechnungenModule.showRechnung(demoRechnung.id), 800);
+    setTimeout(() => window.RechnungenModule?.showRechnung?.(demoRechnung.id), 800);
+}
+
+// ============================================
+// Automation initialization (migrated from app.js)
+// ============================================
+function initAutomations() {
+    try {
+        // These functions may not exist if automation modules are not loaded
+        if (typeof initPaymentMatching === 'function') {initPaymentMatching();}
+        if (typeof initFollowUp === 'function') {initFollowUp();}
+        if (typeof initLowStockAlerts === 'function') {initLowStockAlerts();}
+
+        // Update badges on load
+        setTimeout(() => {
+            if (typeof updateFollowUpBadge === 'function') {updateFollowUpBadge();}
+            if (typeof updateLowStockBadge === 'function') {updateLowStockBadge();}
+            if (typeof updateEmailAutomationBadge === 'function') {updateEmailAutomationBadge();}
+        }, 500);
+    } catch (error) {
+        console.warn('initAutomations: Some automation modules not yet available:', error.message);
+    }
 }
 
 // ============================================
@@ -498,13 +528,13 @@ window.app = {
 };
 
 // Expose all render functions for NavigationController
-window.renderAnfragen = window.AnfragenModule.renderAnfragen;
-window.renderAngebote = window.AngeboteModule.renderAngebote;
-window.renderAuftraege = window.AuftraegeModule.renderAuftraege;
-window.renderRechnungen = window.RechnungenModule.renderRechnungen;
+window.renderAnfragen = window.AnfragenModule?.renderAnfragen;
+window.renderAngebote = window.AngeboteModule?.renderAngebote;
+window.renderAuftraege = window.AuftraegeModule?.renderAuftraege;
+window.renderRechnungen = window.RechnungenModule?.renderRechnungen;
 window.renderMahnwesen = renderMahnwesen;
 window.renderBuchhaltung = renderBuchhaltung;
-window.updateDashboard = window.DashboardModule.updateDashboard;
+window.updateDashboard = window.DashboardModule?.updateDashboard;
 
 // ============================================
 // Auto-initialization

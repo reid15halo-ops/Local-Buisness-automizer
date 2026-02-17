@@ -89,11 +89,12 @@
 
     function showSuccessNotification(message) {
         // Erstelle Benachrichtigung
+        const s = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         const notification = document.createElement('div');
         notification.className = 'toast-notification success';
         notification.innerHTML = `
             <div class="toast-icon">✓</div>
-            <div class="toast-message">${message}</div>
+            <div class="toast-message">${s(message)}</div>
         `;
 
         notification.style.cssText = `
@@ -205,15 +206,16 @@
     }
 
     function createMaterialCard(material) {
+        const s = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         const card = document.createElement('div');
         card.className = 'item-card';
         card.innerHTML = `
             <div class="item-header">
                 <div>
-                    <strong>${material.bezeichnung}</strong>
-                    <span class="item-meta">${material.artikelnummer}</span>
+                    <strong>${s(material.bezeichnung)}</strong>
+                    <span class="item-meta">${s(material.artikelnummer)}</span>
                 </div>
-                <span class="badge">${material.kategorie}</span>
+                <span class="badge">${s(material.kategorie)}</span>
             </div>
             <div class="item-details">
                 <div class="detail-row">
@@ -234,16 +236,17 @@
     }
 
     function createCustomerCard(customer) {
+        const s = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         const card = document.createElement('div');
         card.className = 'customer-card';
         card.innerHTML = `
             <div class="customer-header">
-                <h3>${customer.name}</h3>
-                ${customer.firma ? `<p class="customer-firma">${customer.firma}</p>` : ''}
+                <h3>${s(customer.name)}</h3>
+                ${customer.firma ? `<p class="customer-firma">${s(customer.firma)}</p>` : ''}
             </div>
             <div class="customer-contact">
-                ${customer.email ? `<div>📧 ${customer.email}</div>` : ''}
-                ${customer.telefon ? `<div>📞 ${customer.telefon}</div>` : ''}
+                ${customer.email ? `<div>📧 ${s(customer.email)}</div>` : ''}
+                ${customer.telefon ? `<div>📞 ${s(customer.telefon)}</div>` : ''}
             </div>
             <div class="customer-stats-inline">
                 <div>Umsatz: <strong>${(customer.umsatzGesamt || 0).toFixed(2)} €</strong></div>

@@ -39,7 +39,24 @@
         'theme-manager',
         'pdf-service',
         'lazy-loader',
-        'automation-api'
+        'automation-api',
+        // Services loaded eagerly via <script> tags in index.html
+        'i18n-service',
+        'security-service',
+        'sync-service',
+        'confirm-dialog-service',
+        'trash-service',
+        'user-mode-service',
+        'dashboard-charts-service',
+        'notification-service',
+        'data-export-service',
+        'email-template-service',
+        'pwa-install-service',
+        'calendar-service',
+        'booking-service',
+        'calendar-ui-service',
+        'purchase-order-service',
+        'reorder-engine-service'
     ];
 
     window.lazyLoader.registerCriticalServices(criticalServices);

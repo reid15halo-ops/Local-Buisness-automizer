@@ -275,7 +275,9 @@ class SearchService {
 
         // Highlight item (optional - could scroll to it)
         setTimeout(() => {
-            const element = document.querySelector(`[data-id="${id}"]`);
+            // Sanitize id to prevent CSS selector injection
+            const safeId = CSS.escape ? CSS.escape(id) : id.replace(/[^\w-]/g, '');
+            const element = document.querySelector(`[data-id="${safeId}"]`);
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 element.style.animation = 'highlight 1s';
