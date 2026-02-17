@@ -139,6 +139,22 @@ class LazyLoader {
             charts: [
                 'dashboard-charts-service',
                 'data-export-service'
+            ],
+
+            // Handwerker Operations - trade-specific features
+            handwerker: [
+                'bautagebuch-service',
+                'route-planning-service',
+                'team-service',
+                'trade-calculator-service',
+                'marketing-service',
+                'apprentice-service',
+                'warranty-maintenance-service',
+                'dashboard-widget-service',
+                'supplier-service',
+                'job-media-service',
+                'sync-conflict-service',
+                'voice-command-service'
             ]
         };
 
@@ -164,7 +180,15 @@ class LazyLoader {
             'material': ['workflow'],
             'material-list': ['workflow'],
             'kommunikation': ['crm'],
-            'trash': ['advanced']
+            'trash': ['advanced'],
+            'bautagebuch': ['handwerker'],
+            'routenplanung': ['handwerker'],
+            'team': ['handwerker'],
+            'kalkulation': ['handwerker'],
+            'marketing': ['handwerker', 'crm'],
+            'ausbildung': ['handwerker'],
+            'gewaehrleistung': ['handwerker'],
+            'lieferanten': ['handwerker', 'workflow']
         };
     }
 

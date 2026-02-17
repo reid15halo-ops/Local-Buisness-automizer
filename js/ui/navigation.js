@@ -143,7 +143,91 @@ class NavigationController {
             case 'backup':
                 // Handled by new-features-ui.js
                 break;
+
+            // Handwerker Operations
+            case 'bautagebuch':
+                if (window.bautagebuchUI) { window.bautagebuchUI.init(); }
+                break;
+            case 'routenplanung':
+                if (window.routePlanningUI) { window.routePlanningUI.mount('route-planning-container'); }
+                break;
+            case 'team':
+                if (window.teamUI) { window.teamUI.render('team-container'); }
+                break;
+            case 'kalkulation':
+                if (window.tradeCalculatorUI) { window.tradeCalculatorUI.render('#trade-calculator-container'); }
+                break;
+            case 'marketing':
+                if (window.marketingUI) { window.marketingUI.render('marketing-container'); }
+                break;
+            case 'ausbildung':
+                if (window.apprenticeUI) { window.apprenticeUI.mount('apprentice-container'); }
+                break;
+            case 'gewaehrleistung':
+                if (window.warrantyMaintenanceUI) { window.warrantyMaintenanceUI.init('warranty-maintenance-container'); }
+                break;
+            case 'lieferanten':
+                this.renderSupplierView();
+                break;
         }
+    }
+    renderSupplierView() {
+        const sc = document.getElementById('supplier-container');
+        if (!sc || sc.dataset.initialized === 'true') return;
+        sc.dataset.initialized = 'true';
+
+        const svc = window.supplierService;
+        if (!svc) {
+            sc.innerHTML = '<p style="padding:20px;color:var(--text-muted);">Lieferanten-Service wird geladen...</p>';
+            return;
+        }
+
+        const suppliers = svc.getSuppliers();
+        const products = svc.getAllProductNames();
+
+        let html = '<div style="max-width:1000px;margin:0 auto;padding:16px;">';
+
+        // Summary cards
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;">';
+        html += `<div class="stat-card-mini"><span class="stat-icon-mini">🏭</span><div class="stat-content-mini"><span class="stat-value-mini">${suppliers.length}</span><span class="stat-label-mini">Lieferanten</span></div></div>`;
+        html += `<div class="stat-card-mini"><span class="stat-icon-mini">📦</span><div class="stat-content-mini"><span class="stat-value-mini">${products.length}</span><span class="stat-label-mini">Produkte</span></div></div>`;
+        html += `<div class="stat-card-mini"><span class="stat-icon-mini">⭐</span><div class="stat-content-mini"><span class="stat-value-mini">${svc.getCategories().length}</span><span class="stat-label-mini">Kategorien</span></div></div>`;
+        html += '</div>';
+
+        // Supplier list
+        html += '<div class="panel"><h3>Lieferanten</h3>';
+        if (suppliers.length === 0) {
+            html += '<p class="empty-state">Keine Lieferanten vorhanden. Nutzen Sie den Service, um Lieferanten hinzuzufügen.</p>';
+        } else {
+            html += '<div class="table-container"><table class="data-table"><thead><tr><th>Name</th><th>Kategorie</th><th>Bewertung</th><th>Status</th></tr></thead><tbody>';
+            suppliers.forEach(s => {
+                html += `<tr><td>${s.name || '-'}</td><td>${s.category || '-'}</td><td>${s.rating ? s.rating + '/5' : '-'}</td><td>${s.active !== false ? 'Aktiv' : 'Inaktiv'}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+        }
+        html += '</div>';
+
+        // Product comparison
+        if (products.length > 0) {
+            html += '<div class="panel"><h3>Preisvergleich</h3>';
+            html += '<p style="color:var(--text-muted);font-size:13px;">Vergleichen Sie Preise verschiedener Lieferanten pro Produkt.</p>';
+            const topProducts = products.slice(0, 10);
+            topProducts.forEach(name => {
+                const comparison = svc.compareProduct(name);
+                if (comparison && comparison.length > 0) {
+                    html += `<details style="margin-bottom:8px;"><summary style="cursor:pointer;font-weight:600;">${name} (${comparison.length} Angebote)</summary>`;
+                    html += '<ul style="margin:8px 0 0 16px;">';
+                    comparison.forEach(c => {
+                        html += `<li>${c.supplierName || 'Unbekannt'}: ${(c.price || 0).toFixed(2)} EUR</li>`;
+                    });
+                    html += '</ul></details>';
+                }
+            });
+            html += '</div>';
+        }
+
+        html += '</div>';
+        sc.innerHTML = html;
     }
 }
 

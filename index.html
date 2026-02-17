@@ -259,6 +259,41 @@
                     Daten verwalten
                 </button>
 
+                <!-- Handwerker Operations Section (Pro) -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="bautagebuch" data-mode="pro">
+                    <span class="nav-icon">📓</span>
+                    Bautagebuch
+                </button>
+                <button class="nav-item" data-view="routenplanung" data-mode="pro">
+                    <span class="nav-icon">🗺️</span>
+                    Routenplanung
+                </button>
+                <button class="nav-item" data-view="team" data-mode="pro">
+                    <span class="nav-icon">👷</span>
+                    Team
+                </button>
+                <button class="nav-item" data-view="kalkulation" data-mode="pro">
+                    <span class="nav-icon">🧮</span>
+                    Kalkulation
+                </button>
+                <button class="nav-item" data-view="marketing" data-mode="pro">
+                    <span class="nav-icon">📣</span>
+                    Marketing
+                </button>
+                <button class="nav-item" data-view="ausbildung" data-mode="pro">
+                    <span class="nav-icon">🎓</span>
+                    Ausbildung
+                </button>
+                <button class="nav-item" data-view="gewaehrleistung" data-mode="pro">
+                    <span class="nav-icon">🛡️</span>
+                    Gewährleistung
+                </button>
+                <button class="nav-item" data-view="lieferanten" data-mode="pro">
+                    <span class="nav-icon">🏭</span>
+                    Lieferanten
+                </button>
+
                 <!-- Admin Panel (Pro Mode) -->
                 <div class="nav-divider" data-mode="pro"></div>
                 <button class="nav-item" data-view="admin-panel" data-mode="pro">
@@ -2167,6 +2202,82 @@ Mit freundlichen Grüßen
                 </div>
             </section>
 
+            <!-- ============================================ -->
+            <!-- Handwerker Operations Views                  -->
+            <!-- ============================================ -->
+
+            <!-- Bautagebuch (Construction Diary) -->
+            <section class="view" id="view-bautagebuch">
+                <header class="view-header">
+                    <h1>📓 Bautagebuch</h1>
+                    <p class="subtitle">Digitales Bautagebuch &mdash; tägliche Berichte &amp; Dokumentation</p>
+                </header>
+                <div id="bautagebuch-content"></div>
+            </section>
+
+            <!-- Route Planning & Dispatch -->
+            <section class="view" id="view-routenplanung">
+                <header class="view-header">
+                    <h1>🗺️ Routenplanung</h1>
+                    <p class="subtitle">Einsatzplanung, Routenoptimierung &amp; Disposition</p>
+                </header>
+                <div id="route-planning-container"></div>
+            </section>
+
+            <!-- Team / Subcontractor Management -->
+            <section class="view" id="view-team">
+                <header class="view-header">
+                    <h1>👷 Team &amp; Subunternehmer</h1>
+                    <p class="subtitle">Mitarbeiter, Subunternehmer &amp; Verfügbarkeit</p>
+                </header>
+                <div id="team-container"></div>
+            </section>
+
+            <!-- Trade-specific Calculators -->
+            <section class="view" id="view-kalkulation">
+                <header class="view-header">
+                    <h1>🧮 Gewerke-Kalkulation</h1>
+                    <p class="subtitle">SHK, Elektro, Maler &mdash; branchenspezifische Vorlagen</p>
+                </header>
+                <div id="trade-calculator-container"></div>
+            </section>
+
+            <!-- Automated Marketing -->
+            <section class="view" id="view-marketing">
+                <header class="view-header">
+                    <h1>📣 Marketing</h1>
+                    <p class="subtitle">Bewertungsanfragen, Erinnerungen &amp; Kundenaktionen</p>
+                </header>
+                <div id="marketing-container"></div>
+            </section>
+
+            <!-- Apprentice Training Tracker -->
+            <section class="view" id="view-ausbildung">
+                <header class="view-header">
+                    <h1>🎓 Ausbildung &amp; Berichtsheft</h1>
+                    <p class="subtitle">Azubi-Verwaltung, Wochenberichte &amp; Meister-Bewertung</p>
+                </header>
+                <div id="apprentice-container"></div>
+            </section>
+
+            <!-- Warranty & Maintenance -->
+            <section class="view" id="view-gewaehrleistung">
+                <header class="view-header">
+                    <h1>🛡️ Gewährleistung &amp; Wartung</h1>
+                    <p class="subtitle">Garantie-Tracking, Wartungsverträge &amp; Protokolle</p>
+                </header>
+                <div id="warranty-maintenance-container"></div>
+            </section>
+
+            <!-- Supplier Price Comparison -->
+            <section class="view" id="view-lieferanten">
+                <header class="view-header">
+                    <h1>🏭 Lieferanten-Vergleich</h1>
+                    <p class="subtitle">Preisvergleich, Bewertungen &amp; Bestellübersicht</p>
+                </header>
+                <div id="supplier-container"></div>
+            </section>
+
 
         </main>
     </div>
@@ -2963,6 +3074,30 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/new-features-ui.js"></script>
     <script src="js/excel-import-integration.js"></script>
 
+    <!-- Handwerker Operations - Services -->
+    <script src="js/services/voice-command-service.js"></script>
+    <script src="js/services/bautagebuch-service.js"></script>
+    <script src="js/services/route-planning-service.js"></script>
+    <script src="js/services/team-service.js"></script>
+    <script src="js/services/trade-calculator-service.js"></script>
+    <script src="js/services/marketing-service.js"></script>
+    <script src="js/services/apprentice-service.js"></script>
+    <script src="js/services/warranty-maintenance-service.js"></script>
+    <script src="js/services/dashboard-widget-service.js"></script>
+    <script src="js/services/supplier-service.js"></script>
+    <script src="js/services/job-media-service.js"></script>
+    <script src="js/services/sync-conflict-service.js"></script>
+
+    <!-- Handwerker Operations - UIs -->
+    <script src="js/ui/voice-command-ui.js"></script>
+    <script src="js/ui/bautagebuch-ui.js"></script>
+    <script src="js/ui/route-planning-ui.js"></script>
+    <script src="js/ui/team-ui.js"></script>
+    <script src="js/ui/trade-calculator-ui.js"></script>
+    <script src="js/ui/marketing-ui.js"></script>
+    <script src="js/ui/apprentice-ui.js"></script>
+    <script src="js/ui/warranty-maintenance-ui.js"></script>
+
     <!-- Modular Application Components - new architecture -->
     <script src="js/modules/utils.js"></script>
     <script src="js/modules/modals.js"></script>
@@ -3116,6 +3251,19 @@ Email: max.mustermann@example.com</textarea>
                         console.log('✅ Boomer Guide initialized');
                     }
                 }, 800);
+            });
+        })();
+    </script>
+
+    <!-- Voice Command UI Initialization (floating mic button) -->
+    <script>
+        (function initVoiceCommandUI() {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    if (window.voiceCommandUI && window.voiceCommandUI._init) {
+                        console.log('✅ Voice Command UI initialized');
+                    }
+                }, 1000);
             });
         })();
     </script>

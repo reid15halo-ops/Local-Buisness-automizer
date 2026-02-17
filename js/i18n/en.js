@@ -21,7 +21,15 @@ window.i18nEN = {
         reports: 'Reports',
         buchhaltung: 'Accounting',
         workflows: 'Workflows',
-        adminPanel: 'Administration'
+        adminPanel: 'Administration',
+        bautagebuch: 'Construction Diary',
+        routenplanung: 'Route Planning',
+        team: 'Team',
+        kalkulation: 'Calculators',
+        marketing: 'Marketing',
+        ausbildung: 'Apprentices',
+        gewaehrleistung: 'Warranty',
+        lieferanten: 'Suppliers'
     },
 
     // ========== Common Actions ==========
@@ -590,6 +598,34 @@ window.i18nEN = {
         activeOrders: 'active order(s)',
         recentPayments: 'payment(s) received!',
         fabTitle: 'What\'s next?'
+    },
+
+    // ===== Handwerker Operations =====
+    handwerker: {
+        bautagebuch: 'Construction Diary',
+        bautagebuchDesc: 'Digital construction diary — daily reports & documentation',
+        routenplanung: 'Route Planning',
+        routenplanungDesc: 'Dispatch planning, route optimization & scheduling',
+        team: 'Team & Subcontractors',
+        teamDesc: 'Employees, subcontractors & availability',
+        kalkulation: 'Trade Calculators',
+        kalkulationDesc: 'HVAC, Electrical, Painting — trade-specific templates',
+        marketing: 'Marketing',
+        marketingDesc: 'Review requests, reminders & customer campaigns',
+        ausbildung: 'Apprentice Training',
+        ausbildungDesc: 'Apprentice management, weekly reports & master review',
+        gewaehrleistung: 'Warranty & Maintenance',
+        gewaehrleistungDesc: 'Warranty tracking, maintenance contracts & logs',
+        lieferanten: 'Supplier Comparison',
+        lieferantenDesc: 'Price comparison, ratings & order overview',
+        sprachsteuerung: 'Voice Commands',
+        sprachsteuerungDesc: 'Voice input & dictation',
+        fotos: 'Photos & Documents',
+        fotosDesc: 'Image and document management per job',
+        syncKonflikt: 'Sync Conflicts',
+        syncKonfliktDesc: 'Offline sync & conflict resolution',
+        dashboardWidgets: 'Dashboard Widgets',
+        dashboardWidgetsDesc: 'Customizable dashboard view'
     },
 
     // ===== Push Messenger =====

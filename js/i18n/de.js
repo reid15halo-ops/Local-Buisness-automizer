@@ -21,7 +21,15 @@ window.i18nDE = {
         reports: 'Berichte',
         buchhaltung: 'Buchhaltung',
         workflows: 'Workflows',
-        adminPanel: 'Verwaltung'
+        adminPanel: 'Verwaltung',
+        bautagebuch: 'Bautagebuch',
+        routenplanung: 'Routenplanung',
+        team: 'Team',
+        kalkulation: 'Kalkulation',
+        marketing: 'Marketing',
+        ausbildung: 'Ausbildung',
+        gewaehrleistung: 'Gewährleistung',
+        lieferanten: 'Lieferanten'
     },
 
     // ========== Common Actions ==========
@@ -590,6 +598,34 @@ window.i18nDE = {
         activeOrders: 'aktive(r) Auftrag/Aufträge',
         recentPayments: 'Zahlung(en) eingegangen!',
         fabTitle: 'Was steht an?'
+    },
+
+    // ===== Handwerker Operations =====
+    handwerker: {
+        bautagebuch: 'Bautagebuch',
+        bautagebuchDesc: 'Digitales Bautagebuch — tägliche Berichte & Dokumentation',
+        routenplanung: 'Routenplanung',
+        routenplanungDesc: 'Einsatzplanung, Routenoptimierung & Disposition',
+        team: 'Team & Subunternehmer',
+        teamDesc: 'Mitarbeiter, Subunternehmer & Verfügbarkeit',
+        kalkulation: 'Gewerke-Kalkulation',
+        kalkulationDesc: 'SHK, Elektro, Maler — branchenspezifische Vorlagen',
+        marketing: 'Marketing',
+        marketingDesc: 'Bewertungsanfragen, Erinnerungen & Kundenaktionen',
+        ausbildung: 'Ausbildung & Berichtsheft',
+        ausbildungDesc: 'Azubi-Verwaltung, Wochenberichte & Meister-Bewertung',
+        gewaehrleistung: 'Gewährleistung & Wartung',
+        gewaehrleistungDesc: 'Garantie-Tracking, Wartungsverträge & Protokolle',
+        lieferanten: 'Lieferanten-Vergleich',
+        lieferantenDesc: 'Preisvergleich, Bewertungen & Bestellübersicht',
+        sprachsteuerung: 'Sprachsteuerung',
+        sprachsteuerungDesc: 'Spracheingabe & Diktieren',
+        fotos: 'Fotos & Dokumente',
+        fotosDesc: 'Bild- und Dokumentenverwaltung pro Auftrag',
+        syncKonflikt: 'Sync-Konflikte',
+        syncKonfliktDesc: 'Offline-Synchronisation & Konfliktauflösung',
+        dashboardWidgets: 'Dashboard-Widgets',
+        dashboardWidgetsDesc: 'Anpassbare Dashboard-Ansicht'
     },
 
     // ===== Push Messenger =====

@@ -56,7 +56,20 @@
         'booking-service',
         'calendar-ui-service',
         'purchase-order-service',
-        'reorder-engine-service'
+        'reorder-engine-service',
+        // Handwerker operations (loaded eagerly via <script> tags)
+        'voice-command-service',
+        'bautagebuch-service',
+        'route-planning-service',
+        'team-service',
+        'trade-calculator-service',
+        'marketing-service',
+        'apprentice-service',
+        'warranty-maintenance-service',
+        'dashboard-widget-service',
+        'supplier-service',
+        'job-media-service',
+        'sync-conflict-service'
     ];
 
     window.lazyLoader.registerCriticalServices(criticalServices);
