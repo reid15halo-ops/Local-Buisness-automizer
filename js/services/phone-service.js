@@ -5,8 +5,8 @@
 
 class PhoneService {
     constructor() {
-        this.callHistory = JSON.parse(localStorage.getItem('mhs_phone_history') || '[]');
-        this.quickDials = JSON.parse(localStorage.getItem('mhs_quick_dials') || '[]');
+        this.callHistory = JSON.parse(localStorage.getItem('freyai_phone_history') || '[]');
+        this.quickDials = JSON.parse(localStorage.getItem('freyai_quick_dials') || '[]');
 
         // Add default quick dials if empty
         if (this.quickDials.length === 0) {
@@ -246,8 +246,8 @@ class PhoneService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_phone_history', JSON.stringify(this.callHistory)); }
-    saveQuickDials() { localStorage.setItem('mhs_quick_dials', JSON.stringify(this.quickDials)); }
+    save() { localStorage.setItem('freyai_phone_history', JSON.stringify(this.callHistory)); }
+    saveQuickDials() { localStorage.setItem('freyai_quick_dials', JSON.stringify(this.quickDials)); }
 }
 
 window.phoneService = new PhoneService();

@@ -80,7 +80,7 @@ class StoreService {
       rechnungen: [],
       activities: [],
       settings: {
-        companyName: 'MHS Metallbau Hydraulik Service',
+        companyName: 'FreyAI Visions',
         owner: 'Max Mustermann',
         address: 'Handwerkerring 38a, 12345 Musterstadt',
         taxId: '12/345/67890',
@@ -91,7 +91,7 @@ class StoreService {
       currentAuftragId: null,
       currentRechnungId: null
     };
-    this.STORAGE_KEY = 'mhs-workflow-store';
+    this.STORAGE_KEY = 'freyai-workflow-store';
     this.subscribers = [];
     this.currentUserId = null;
   }
@@ -584,14 +584,14 @@ class MaterialService {
 // ============================================
 class BookkeepingService {
   constructor() {
-    this.buchungen = JSON.parse(localStorage.getItem('mhs_buchungen') || '[]');
-    this.einstellungen = JSON.parse(localStorage.getItem('mhs_buchhaltung_settings') || '{}');
+    this.buchungen = JSON.parse(localStorage.getItem('freyai_buchungen') || '[]');
+    this.einstellungen = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings') || '{}');
 
     if (!this.einstellungen.kleinunternehmer) {
       this.einstellungen = {
         kleinunternehmer: false,
         umsatzsteuersatz: 19,
-        firmenName: 'MHS Metallbau Hydraulik Service',
+        firmenName: 'FreyAI Visions',
         steuernummer: '',
         ustIdNr: '',
         finanzamt: '',
@@ -720,11 +720,11 @@ class BookkeepingService {
   }
 
   save() {
-    localStorage.setItem('mhs_buchungen', JSON.stringify(this.buchungen));
+    localStorage.setItem('freyai_buchungen', JSON.stringify(this.buchungen));
   }
 
   saveSettings() {
-    localStorage.setItem('mhs_buchhaltung_settings', JSON.stringify(this.einstellungen));
+    localStorage.setItem('freyai_buchhaltung_settings', JSON.stringify(this.einstellungen));
   }
 
   updateEinstellungen(settings) {

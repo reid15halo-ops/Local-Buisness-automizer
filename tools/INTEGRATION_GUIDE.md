@@ -217,12 +217,12 @@ class PDFGenerationService {
 
         // Fallback to defaults
         return {
-            name: 'MHS Metallbau Hydraulik Service',
+            name: 'FreyAI Visions',
             street: 'Musterstraße 123',
             postal_code: '63843',
             city: 'Musterstadt',
             phone: '+49 6029 9922964',
-            email: 'info@mhs-service.de',
+            email: 'info@freyai-visions.de',
             tax_id: '12 345 678 901',
             vat_id: 'DE123456789',
             iban: 'DE89 3704 0044 0532 0130 00',

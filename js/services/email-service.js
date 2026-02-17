@@ -5,8 +5,8 @@
 
 class EmailService {
     constructor() {
-        this.emails = JSON.parse(localStorage.getItem('mhs_emails') || '[]');
-        this.emailConfig = JSON.parse(localStorage.getItem('mhs_email_config') || '{}');
+        this.emails = JSON.parse(localStorage.getItem('freyai_emails') || '[]');
+        this.emailConfig = JSON.parse(localStorage.getItem('freyai_email_config') || '{}');
         this.templates = this.loadDefaultTemplates();
         
         // Email categorization keywords
@@ -400,7 +400,7 @@ vor einigen Tagen haben wir Ihnen unser Angebot {{angebotId}} zugesendet.
 Haben Sie noch Fragen zu unserem Angebot? Gerne stehen wir Ihnen für ein persönliches Gespräch zur Verfügung.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
             },
             termin_bestaetigung: {
                 name: 'Terminbestätigung',
@@ -415,7 +415,7 @@ Ansprechpartner: {{mitarbeiter}}
 Bei Fragen erreichen Sie uns unter +49 6029 99 22 96 4.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
             },
             rechnung_erinnerung: {
                 name: 'Zahlungserinnerung',
@@ -427,7 +427,7 @@ bei der Durchsicht unserer Buchhaltung ist uns aufgefallen, dass die Rechnung {{
 Wir bitten Sie, den Betrag in den nächsten Tagen zu überweisen.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
             }
         };
     }
@@ -495,11 +495,11 @@ MHS Metallbau Hydraulik Service`
     // Persistence
     // ============================================
     save() {
-        localStorage.setItem('mhs_emails', JSON.stringify(this.emails));
+        localStorage.setItem('freyai_emails', JSON.stringify(this.emails));
     }
 
     saveConfig() {
-        localStorage.setItem('mhs_email_config', JSON.stringify(this.emailConfig));
+        localStorage.setItem('freyai_email_config', JSON.stringify(this.emailConfig));
     }
 
     generateId() {

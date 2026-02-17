@@ -1,6 +1,6 @@
 # Confirmation Dialog Integration Guide
 
-This guide shows how to add confirmation dialogs to new destructive/irreversible actions in the MHS Workflow app.
+This guide shows how to add confirmation dialogs to new destructive/irreversible actions in the FreyAI Visions app.
 
 ## Quick Start
 

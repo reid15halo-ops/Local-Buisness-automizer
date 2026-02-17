@@ -4,8 +4,8 @@
 
 class CashFlowService {
     constructor() {
-        this.forecasts = JSON.parse(localStorage.getItem('mhs_cashflow_forecasts') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_cashflow_settings') || '{}');
+        this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}');
 
         // Default settings
         if (!this.settings.monthsToForecast) {this.settings.monthsToForecast = 6;}
@@ -335,8 +335,8 @@ class CashFlowService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_cashflow_forecasts', JSON.stringify(this.forecasts));
-        localStorage.setItem('mhs_cashflow_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_cashflow_forecasts', JSON.stringify(this.forecasts));
+        localStorage.setItem('freyai_cashflow_settings', JSON.stringify(this.settings));
     }
 }
 

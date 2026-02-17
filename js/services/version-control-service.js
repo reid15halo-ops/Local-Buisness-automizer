@@ -5,7 +5,7 @@
 
 class VersionControlService {
     constructor() {
-        this.versions = JSON.parse(localStorage.getItem('mhs_document_versions') || '{}');
+        this.versions = JSON.parse(localStorage.getItem('freyai_document_versions') || '{}');
     }
 
     // Create a new version of a document
@@ -256,7 +256,7 @@ class VersionControlService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_document_versions', JSON.stringify(this.versions));
+        localStorage.setItem('freyai_document_versions', JSON.stringify(this.versions));
     }
 }
 

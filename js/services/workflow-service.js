@@ -6,8 +6,8 @@
 
 class WorkflowService {
     constructor() {
-        this.workflows = JSON.parse(localStorage.getItem('mhs_workflows') || '[]');
-        this.executionLog = JSON.parse(localStorage.getItem('mhs_workflow_log') || '[]');
+        this.workflows = JSON.parse(localStorage.getItem('freyai_workflows') || '[]');
+        this.executionLog = JSON.parse(localStorage.getItem('freyai_workflow_log') || '[]');
         this.isRunning = true;
 
         // Available trigger types
@@ -370,7 +370,7 @@ class WorkflowService {
                     {
                         type: 'email.send', params: {
                             to: '{{email}}',
-                            subject: 'Willkommen bei MHS!',
+                            subject: 'Willkommen bei FreyAI Visions!',
                             body: 'Sehr geehrte/r {{name}},\n\nvielen Dank für Ihr Vertrauen...'
                         }
                     },
@@ -390,7 +390,7 @@ class WorkflowService {
                     {
                         type: 'sms.send', params: {
                             to: '{{customer.telefon}}',
-                            message: 'Erinnerung: Ihr Termin bei MHS morgen um {{time}} Uhr. Bei Fragen: 06029-9922964'
+                            message: 'Erinnerung: Ihr Termin bei FreyAI Visions morgen um {{time}} Uhr. Bei Fragen: 06029-9922964'
                         }
                     }
                 ]
@@ -448,7 +448,7 @@ class WorkflowService {
         if (this.executionLog.length > 500) {
             this.executionLog = this.executionLog.slice(-500);
         }
-        localStorage.setItem('mhs_workflow_log', JSON.stringify(this.executionLog));
+        localStorage.setItem('freyai_workflow_log', JSON.stringify(this.executionLog));
     }
 
     // Get statistics
@@ -465,7 +465,7 @@ class WorkflowService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_workflows', JSON.stringify(this.workflows));
+        localStorage.setItem('freyai_workflows', JSON.stringify(this.workflows));
     }
 }
 

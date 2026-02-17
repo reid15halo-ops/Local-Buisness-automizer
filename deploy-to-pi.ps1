@@ -10,7 +10,7 @@ Write-Host ""
 $PI_HOST = "raspberrypi.local"
 $PI_USER = "pi"
 $DIST_DIR = ".\dist"
-$REMOTE_DIR = "/tmp/mhs-deploy"
+$REMOTE_DIR = "/tmp/freyai-deploy"
 $WEB_DIR = "/var/www/html"
 
 # Check if dist exists

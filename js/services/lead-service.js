@@ -4,7 +4,7 @@
 
 class LeadService {
     constructor() {
-        this.leads = JSON.parse(localStorage.getItem('mhs_leads') || '[]');
+        this.leads = JSON.parse(localStorage.getItem('freyai_leads') || '[]');
         this.pipelineStages = [
             { id: 'neu', name: 'Neu', color: '#3b82f6' },
             { id: 'kontaktiert', name: 'Kontaktiert', color: '#8b5cf6' },
@@ -338,7 +338,7 @@ class LeadService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_leads', JSON.stringify(this.leads));
+        localStorage.setItem('freyai_leads', JSON.stringify(this.leads));
     }
 }
 

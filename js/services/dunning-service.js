@@ -5,8 +5,8 @@
 
 class DunningService {
     constructor() {
-        this.mahnungen = JSON.parse(localStorage.getItem('mhs_mahnungen') || '[]');
-        this.inkassoFaelle = JSON.parse(localStorage.getItem('mhs_inkasso') || '[]');
+        this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]');
+        this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]');
 
         // Eskalationsstufen (Tage nach Rechnungsdatum)
         this.eskalationsStufen = [
@@ -107,7 +107,7 @@ Sollte sich Ihre Zahlung mit diesem Schreiben überschnitten haben, betrachten S
 Wir bitten um Überweisung innerhalb der nächsten 14 Tage.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'mahnung1': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -122,7 +122,7 @@ Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + 5.00)}
 Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von 14 Tagen zu begleichen.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'mahnung2': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -138,7 +138,7 @@ Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehre
 Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, weitere rechtliche Schritte einzuleiten.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'mahnung3': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -163,7 +163,7 @@ Bank: Sparkasse Aschaffenburg
 IBAN: DE00 0000 0000 0000 0000 00
 Verwendungszweck: ${rechnung.id}
 
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'inkasso': `ÜBERGABE AN INKASSO
 
@@ -237,11 +237,11 @@ Nächste Schritte:
     // Persistence
     // ============================================
     save() {
-        localStorage.setItem('mhs_mahnungen', JSON.stringify(this.mahnungen));
+        localStorage.setItem('freyai_mahnungen', JSON.stringify(this.mahnungen));
     }
 
     saveInkasso() {
-        localStorage.setItem('mhs_inkasso', JSON.stringify(this.inkassoFaelle));
+        localStorage.setItem('freyai_inkasso', JSON.stringify(this.inkassoFaelle));
     }
 
     // ============================================

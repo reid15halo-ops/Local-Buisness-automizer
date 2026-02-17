@@ -51,8 +51,8 @@ cd C:\Users\reid1\Documents\Local-Buisness-automizer
 2. XAMPP installieren
 3. Apache starten im Control Panel
 4. Dateien kopieren:
-   xcopy /E /I C:\Users\reid1\Documents\Local-Buisness-automizer\dist C:\xampp\htdocs\mhs
-5. Browser: http://localhost/mhs
+   xcopy /E /I C:\Users\reid1\Documents\Local-Buisness-automizer\dist C:\xampp\htdocs\freyai
+5. Browser: http://localhost/freyai
 
 ═══════════════════════════════════════════════════════════════════
 📊 WAS IST FERTIG

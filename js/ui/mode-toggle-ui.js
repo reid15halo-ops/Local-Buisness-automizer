@@ -16,7 +16,7 @@ class ModeToggleUI {
         this.firstProModeActivation = true;
 
         // Listen for mode changes
-        document.addEventListener('mhs:mode-changed', (e) => {
+        document.addEventListener('freyai:mode-changed', (e) => {
             this.onModeChanged(e.detail);
         });
 

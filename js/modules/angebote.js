@@ -334,7 +334,7 @@ Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
         };
 
         const text = templates[anfrage.leistungsart] || templates['default'];

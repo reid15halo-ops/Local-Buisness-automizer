@@ -1,9 +1,9 @@
 ---
-name: MHS Workflow Development
-description: Guidelines for developing the MHS small business automation tool
+name: FreyAI Visions Development
+description: Guidelines for developing the FreyAI Visions small business automation tool
 ---
 
-# MHS Workflow Development Skill
+# FreyAI Visions Development Skill
 
 ## Quick Start
 
@@ -19,7 +19,7 @@ This is a **German small business automation tool** with 21 service modules. Key
 
 1. **Always German UI** - Use German text, `de-DE` formatting
 2. **Service pattern** - Extend `window.xxxService` classes
-3. **localStorage** - Prefix with `mhs_`, call `save()` after mutations
+3. **localStorage** - Prefix with `freyai_`, call `save()` after mutations
 4. **CSS variables** - Use existing theme variables
 5. **Script order** - Services before `features-integration.js` before `app.js`
 

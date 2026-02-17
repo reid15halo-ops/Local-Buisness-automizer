@@ -5,9 +5,9 @@
 
 class PrintDigitalService {
     constructor() {
-        this.printQueue = JSON.parse(localStorage.getItem('mhs_print_queue') || '[]');
-        this.faxInbox = JSON.parse(localStorage.getItem('mhs_fax_inbox') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_print_settings') || '{}');
+        this.printQueue = JSON.parse(localStorage.getItem('freyai_print_queue') || '[]');
+        this.faxInbox = JSON.parse(localStorage.getItem('freyai_fax_inbox') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_print_settings') || '{}');
 
         // Default settings
         if (!this.settings.preferDigital) {this.settings.preferDigital = true;}
@@ -273,16 +273,16 @@ class PrintDigitalService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_print_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_print_settings', JSON.stringify(this.settings));
     }
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_print_queue', JSON.stringify(this.printQueue));
+        localStorage.setItem('freyai_print_queue', JSON.stringify(this.printQueue));
     }
 
     saveFaxes() {
-        localStorage.setItem('mhs_fax_inbox', JSON.stringify(this.faxInbox));
+        localStorage.setItem('freyai_fax_inbox', JSON.stringify(this.faxInbox));
     }
 }
 

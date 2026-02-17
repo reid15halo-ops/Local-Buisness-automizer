@@ -5,7 +5,7 @@
 
 class WorkEstimationService {
     constructor() {
-        this.historischeArbeiten = JSON.parse(localStorage.getItem('mhs_historische_arbeiten') || '[]');
+        this.historischeArbeiten = JSON.parse(localStorage.getItem('freyai_historische_arbeiten') || '[]');
 
         // Basis-Richtwerte pro Leistungsart (Stunden)
         this.basisRichtwerte = {
@@ -209,7 +209,7 @@ Antworte NUR im JSON-Format:
         if (this.historischeArbeiten.length > 100) {
             this.historischeArbeiten = this.historischeArbeiten.slice(-100);
         }
-        localStorage.setItem('mhs_historische_arbeiten', JSON.stringify(this.historischeArbeiten));
+        localStorage.setItem('freyai_historische_arbeiten', JSON.stringify(this.historischeArbeiten));
     }
 
     findeAehnlicheArbeiten(anfrage) {

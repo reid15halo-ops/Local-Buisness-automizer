@@ -8,13 +8,13 @@ class VoiceCommandService {
         this.isListening = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        this.settings = JSON.parse(localStorage.getItem('mhs_voice_settings') || '{}');
-        this.commandHistory = JSON.parse(localStorage.getItem('mhs_voice_history') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_voice_settings') || '{}');
+        this.commandHistory = JSON.parse(localStorage.getItem('freyai_voice_history') || '[]');
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'de-DE';}
         if (!this.settings.speakResponses) {this.settings.speakResponses = true;}
-        if (!this.settings.wakeWord) {this.settings.wakeWord = 'okay mhs';}
+        if (!this.settings.wakeWord) {this.settings.wakeWord = 'okay freyai';}
         if (!this.settings.continuousListening) {this.settings.continuousListening = false;}
 
         // Initialize speech recognition
@@ -442,7 +442,7 @@ class VoiceCommandService {
             this.commandHistory = this.commandHistory.slice(-100);
         }
 
-        localStorage.setItem('mhs_voice_history', JSON.stringify(this.commandHistory));
+        localStorage.setItem('freyai_voice_history', JSON.stringify(this.commandHistory));
     }
 
     // Get command history
@@ -458,7 +458,7 @@ class VoiceCommandService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_voice_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_voice_settings', JSON.stringify(this.settings));
 
         if (this.recognition) {
             this.recognition.lang = this.settings.language;

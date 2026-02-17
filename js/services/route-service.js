@@ -5,8 +5,8 @@
 
 class RouteService {
     constructor() {
-        this.routes = JSON.parse(localStorage.getItem('mhs_routes') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_route_settings') || '{}');
+        this.routes = JSON.parse(localStorage.getItem('freyai_routes') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_route_settings') || '{}');
 
         // Default settings
         if (!this.settings.startAddress) {this.settings.startAddress = 'Musterstraße 1, 63843 Niedernberg';}
@@ -266,7 +266,7 @@ class RouteService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_route_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_route_settings', JSON.stringify(this.settings));
     }
 
     // Get all routes
@@ -282,7 +282,7 @@ class RouteService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_routes', JSON.stringify(this.routes));
+        localStorage.setItem('freyai_routes', JSON.stringify(this.routes));
     }
 }
 

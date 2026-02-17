@@ -6,16 +6,16 @@
 class PaymentService {
     constructor() {
         try {
-            this.payments = JSON.parse(localStorage.getItem('mhs_payments') || '[]');
-            this.paymentLinks = JSON.parse(localStorage.getItem('mhs_payment_links') || '[]');
-            this.settings = JSON.parse(localStorage.getItem('mhs_payment_settings') || '{}');
+            this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]');
+            this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]');
+            this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}');
 
             // Default settings
             if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
             if (!this.settings.depositRequired) {this.settings.depositRequired = false;}
             if (!this.settings.depositThreshold) {this.settings.depositThreshold = 1000;} // Require deposit over €1000
             if (!this.settings.paymentMethods) {this.settings.paymentMethods = ['bank', 'paypal'];}
-            if (!this.settings.businessName) {this.settings.businessName = 'MHS Service';}
+            if (!this.settings.businessName) {this.settings.businessName = 'FreyAI Visions';}
         } catch (error) {
             console.error('PaymentService initialization error:', error);
             if (window.errorHandler) {
@@ -29,7 +29,7 @@ class PaymentService {
                 depositRequired: false,
                 depositThreshold: 1000,
                 paymentMethods: ['bank', 'paypal'],
-                businessName: 'MHS Service'
+                businessName: 'FreyAI Visions'
             };
         }
     }
@@ -355,7 +355,7 @@ class PaymentService {
     // Generate PayPal payment link
     generatePayPalLink(amount, description, invoiceId) {
         // PayPal.me link format
-        const paypalUser = this.settings.paypalUser || 'mhs-service';
+        const paypalUser = this.settings.paypalUser || 'freyai-service';
         return `https://paypal.me/${paypalUser}/${amount}EUR?memo=${encodeURIComponent(description)}`;
     }
 
@@ -455,12 +455,12 @@ class PaymentService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_payment_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_payment_settings', JSON.stringify(this.settings));
     }
 
     // Persistence
-    saveLinks() { localStorage.setItem('mhs_payment_links', JSON.stringify(this.paymentLinks)); }
-    savePayments() { localStorage.setItem('mhs_payments', JSON.stringify(this.payments)); }
+    saveLinks() { localStorage.setItem('freyai_payment_links', JSON.stringify(this.paymentLinks)); }
+    savePayments() { localStorage.setItem('freyai_payments', JSON.stringify(this.payments)); }
 }
 
 window.paymentService = new PaymentService();

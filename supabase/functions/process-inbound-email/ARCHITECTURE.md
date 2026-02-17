@@ -162,7 +162,7 @@
 │  📧 Empfängt Antwort-E-Mail                                    │
 │                                                                 │
 │  ┌───────────────────────────────────────────────────────────┐ │
-│  │ Betreff: Ihr Angebot ANG-1234567890 - MHS Metallbau     │ │
+│  │ Betreff: Ihr Angebot ANG-1234567890 - FreyAI Visions     │ │
 │  │                                                           │ │
 │  │ Sehr geehrter Max Mustermann,                           │ │
 │  │                                                           │ │
@@ -189,7 +189,7 @@
 │  │ Gültigkeitsdauer: 30 Tage                               │ │
 │  │                                                           │ │
 │  │ Mit freundlichen Grüßen                                  │ │
-│  │ Ihr Team von MHS Metallbau Hydraulik Service            │ │
+│  │ Ihr Team von FreyAI Visions            │ │
 │  └───────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -244,7 +244,7 @@ GEMINI_API_KEY=AIzaSyxxxxx
 SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGxxxxx
 SENDER_EMAIL=angebote@handwerkflow.de
-SENDER_NAME=MHS Angebote
+SENDER_NAME=FreyAI Visions Angebote
 ```
 
 **Performance**:

@@ -13,8 +13,8 @@
 
 class AdminPanelService {
     constructor() {
-        this.STORAGE_PREFIX = 'mhs_admin_panel_';
-        this.SETUP_COMPLETE_KEY = 'mhs_admin_panel_setup_complete';
+        this.STORAGE_PREFIX = 'freyai_admin_panel_';
+        this.SETUP_COMPLETE_KEY = 'freyai_admin_panel_setup_complete';
         this.ROLES = {
             ADMIN: 'admin',
             DEVELOPER: 'developer'
@@ -181,7 +181,7 @@ class AdminPanelService {
         this.sessionTimeout = setTimeout(() => {
             this.logout();
             // Dispatch event so UI can react
-            document.dispatchEvent(new CustomEvent('mhs:admin-session-expired'));
+            document.dispatchEvent(new CustomEvent('freyai:admin-session-expired'));
         }, this.SESSION_DURATION);
     }
 
@@ -246,15 +246,15 @@ class AdminPanelService {
             address_city: localStorage.getItem('address_city') || '',
             tax_number: localStorage.getItem('tax_number') || '',
             company_logo: localStorage.getItem('company_logo') || null,
-            bank_name: localStorage.getItem('mhs_bank_name') || '',
-            bank_iban: localStorage.getItem('mhs_bank_iban') || '',
-            bank_bic: localStorage.getItem('mhs_bank_bic') || '',
-            default_vat_rate: localStorage.getItem('mhs_default_vat_rate') || '19',
-            payment_terms_days: localStorage.getItem('mhs_payment_terms_days') || '14',
+            bank_name: localStorage.getItem('freyai_bank_name') || '',
+            bank_iban: localStorage.getItem('freyai_bank_iban') || '',
+            bank_bic: localStorage.getItem('freyai_bank_bic') || '',
+            default_vat_rate: localStorage.getItem('freyai_default_vat_rate') || '19',
+            payment_terms_days: localStorage.getItem('freyai_payment_terms_days') || '14',
             kleinunternehmer: localStorage.getItem('kleinunternehmer') === 'true',
-            company_email: localStorage.getItem('mhs_company_email') || '',
-            company_phone: localStorage.getItem('mhs_company_phone') || '',
-            company_website: localStorage.getItem('mhs_company_website') || ''
+            company_email: localStorage.getItem('freyai_company_email') || '',
+            company_phone: localStorage.getItem('freyai_company_phone') || '',
+            company_website: localStorage.getItem('freyai_company_website') || ''
         };
     }
 
@@ -277,7 +277,7 @@ class AdminPanelService {
         } else if (directKeys.includes(key)) {
             localStorage.setItem(key, typeof value === 'string' ? value.trim() : value);
         } else if (prefixedKeys.includes(key)) {
-            localStorage.setItem(`mhs_${key}`, typeof value === 'string' ? value.trim() : value);
+            localStorage.setItem(`freyai_${key}`, typeof value === 'string' ? value.trim() : value);
         }
 
         return true;

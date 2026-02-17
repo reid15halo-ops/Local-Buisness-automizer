@@ -5,8 +5,8 @@
 
 class QrCodeService {
     constructor() {
-        this.generatedCodes = JSON.parse(localStorage.getItem('mhs_qrcodes') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_qr_settings') || '{}');
+        this.generatedCodes = JSON.parse(localStorage.getItem('freyai_qrcodes') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_qr_settings') || '{}');
 
         // Default settings
         if (!this.settings.size) {this.settings.size = 200;}
@@ -61,7 +61,7 @@ class QrCodeService {
         const amount = invoice.betrag || 0;
         const iban = this.settings.iban || 'DE89370400440532013000';
         const bic = this.settings.bic || 'COBADEFFXXX';
-        const recipient = this.settings.recipientName || 'MHS Metallbau Hydraulik Service';
+        const recipient = this.settings.recipientName || 'FreyAI Visions';
         const reference = invoice.nummer || invoice.id;
 
         // EPC QR Code format
@@ -224,7 +224,7 @@ class QrCodeService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_qr_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_qr_settings', JSON.stringify(this.settings));
     }
 
     // Persistence
@@ -233,7 +233,7 @@ class QrCodeService {
         if (this.generatedCodes.length > 100) {
             this.generatedCodes = this.generatedCodes.slice(-100);
         }
-        localStorage.setItem('mhs_qrcodes', JSON.stringify(this.generatedCodes));
+        localStorage.setItem('freyai_qrcodes', JSON.stringify(this.generatedCodes));
     }
 }
 

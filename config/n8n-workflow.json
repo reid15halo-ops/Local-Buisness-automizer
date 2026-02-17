@@ -1,10 +1,10 @@
 {
-  "name": "MHS Workflow - Email Automatisierung",
+  "name": "FreyAI Visions - Email Automatisierung",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "mhs-angebot",
+        "path": "freyai-angebot",
         "options": {}
       },
       "id": "webhook-angebot",
@@ -16,7 +16,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "mhs-rechnung",
+        "path": "freyai-rechnung",
         "options": {}
       },
       "id": "webhook-rechnung",
@@ -27,11 +27,11 @@
     },
     {
       "parameters": {
-        "fromEmail": "angebot@mhs-technik.de",
+        "fromEmail": "angebot@freyai-visions.de",
         "toEmail": "={{ $json.kunde.email }}",
-        "subject": "Angebot {{ $json.angebotId }} von MHS Metallbau",
+        "subject": "Angebot {{ $json.angebotId }} von FreyAI Visions",
         "emailType": "html",
-        "message": "<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 30px; }\n.content { padding: 30px; }\n.footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; }\n.btn { display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; }\n.amount { font-size: 24px; font-weight: bold; color: #6366f1; }\n</style>\n</head>\n<body>\n<div class=\"header\">\n<h1>⚙️ MHS Metallbau Hydraulik Service</h1>\n<p>Ihr Partner für Metallbau und mehr</p>\n</div>\n<div class=\"content\">\n<p>Sehr geehrte(r) {{ $json.kunde.name }},</p>\n<p>vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser Angebot.</p>\n<p><strong>Angebots-Nr.:</strong> {{ $json.angebotId }}</p>\n<p><strong>Leistung:</strong> {{ $json.leistungsart }}</p>\n<p class=\"amount\">Gesamtbetrag: {{ $json.brutto }} €</p>\n<p>{{ $json.angebotText }}</p>\n<p>Das Angebot ist 30 Tage gültig.</p>\n<p><a href=\"mailto:info@mhs-technik.de?subject=Auftrag zu {{ $json.angebotId }}\" class=\"btn\">Jetzt beauftragen</a></p>\n</div>\n<div class=\"footer\">\n<p>MHS Metallbau Hydraulik Service<br>\nHandwerkerring 38a, 63776 Mömbris-Rothengrund<br>\nTel: +49 6029 99 22 96 4 | info@mhs-technik.de</p>\n</div>\n</body>\n</html>"
+        "message": "<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 30px; }\n.content { padding: 30px; }\n.footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; }\n.btn { display: inline-block; background: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; }\n.amount { font-size: 24px; font-weight: bold; color: #6366f1; }\n</style>\n</head>\n<body>\n<div class=\"header\">\n<h1>⚙️ FreyAI Visions</h1>\n<p>Ihr Partner für Metallbau und mehr</p>\n</div>\n<div class=\"content\">\n<p>Sehr geehrte(r) {{ $json.kunde.name }},</p>\n<p>vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser Angebot.</p>\n<p><strong>Angebots-Nr.:</strong> {{ $json.angebotId }}</p>\n<p><strong>Leistung:</strong> {{ $json.leistungsart }}</p>\n<p class=\"amount\">Gesamtbetrag: {{ $json.brutto }} €</p>\n<p>{{ $json.angebotText }}</p>\n<p>Das Angebot ist 30 Tage gültig.</p>\n<p><a href=\"mailto:info@freyai-visions.de?subject=Auftrag zu {{ $json.angebotId }}\" class=\"btn\">Jetzt beauftragen</a></p>\n</div>\n<div class=\"footer\">\n<p>FreyAI Visions<br>\nHandwerkerring 38a, 63776 Mömbris-Rothengrund<br>\nTel: +49 6029 99 22 96 4 | info@freyai-visions.de</p>\n</div>\n</body>\n</html>"
       },
       "id": "send-angebot-email",
       "name": "Email: Angebot senden",
@@ -47,11 +47,11 @@
     },
     {
       "parameters": {
-        "fromEmail": "rechnung@mhs-technik.de",
+        "fromEmail": "rechnung@freyai-visions.de",
         "toEmail": "={{ $json.kunde.email }}",
-        "subject": "Rechnung {{ $json.rechnungId }} von MHS Metallbau",
+        "subject": "Rechnung {{ $json.rechnungId }} von FreyAI Visions",
         "emailType": "html",
-        "message": "<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 30px; }\n.content { padding: 30px; }\n.footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; }\n.amount { font-size: 24px; font-weight: bold; color: #22c55e; }\n.payment { background: #f0fdf4; border: 1px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0; }\n</style>\n</head>\n<body>\n<div class=\"header\">\n<h1>⚙️ MHS Metallbau Hydraulik Service</h1>\n<p>Rechnung</p>\n</div>\n<div class=\"content\">\n<p>Sehr geehrte(r) {{ $json.kunde.name }},</p>\n<p>anbei erhalten Sie die Rechnung für die durchgeführten Arbeiten.</p>\n<p><strong>Rechnungs-Nr.:</strong> {{ $json.rechnungId }}</p>\n<p><strong>Rechnungsdatum:</strong> {{ $json.datum }}</p>\n<p class=\"amount\">Rechnungsbetrag: {{ $json.brutto }} €</p>\n<div class=\"payment\">\n<p><strong>Zahlungsinformationen:</strong></p>\n<p>Empfänger: MHS Metallbau Hydraulik Service<br>\nBank: Sparkasse Aschaffenburg<br>\nIBAN: DE00 0000 0000 0000 0000 00<br>\nVerwendungszweck: {{ $json.rechnungId }}</p>\n<p><strong>Zahlungsziel:</strong> 14 Tage ohne Abzug</p>\n</div>\n<p>Vielen Dank für Ihren Auftrag!</p>\n</div>\n<div class=\"footer\">\n<p>MHS Metallbau Hydraulik Service<br>\nHandwerkerring 38a, 63776 Mömbris-Rothengrund<br>\nTel: +49 6029 99 22 96 4 | info@mhs-technik.de</p>\n</div>\n</body>\n</html>",
+        "message": "<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 30px; }\n.content { padding: 30px; }\n.footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; }\n.amount { font-size: 24px; font-weight: bold; color: #22c55e; }\n.payment { background: #f0fdf4; border: 1px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0; }\n</style>\n</head>\n<body>\n<div class=\"header\">\n<h1>⚙️ FreyAI Visions</h1>\n<p>Rechnung</p>\n</div>\n<div class=\"content\">\n<p>Sehr geehrte(r) {{ $json.kunde.name }},</p>\n<p>anbei erhalten Sie die Rechnung für die durchgeführten Arbeiten.</p>\n<p><strong>Rechnungs-Nr.:</strong> {{ $json.rechnungId }}</p>\n<p><strong>Rechnungsdatum:</strong> {{ $json.datum }}</p>\n<p class=\"amount\">Rechnungsbetrag: {{ $json.brutto }} €</p>\n<div class=\"payment\">\n<p><strong>Zahlungsinformationen:</strong></p>\n<p>Empfänger: FreyAI Visions<br>\nBank: Sparkasse Aschaffenburg<br>\nIBAN: DE00 0000 0000 0000 0000 00<br>\nVerwendungszweck: {{ $json.rechnungId }}</p>\n<p><strong>Zahlungsziel:</strong> 14 Tage ohne Abzug</p>\n</div>\n<p>Vielen Dank für Ihren Auftrag!</p>\n</div>\n<div class=\"footer\">\n<p>FreyAI Visions<br>\nHandwerkerring 38a, 63776 Mömbris-Rothengrund<br>\nTel: +49 6029 99 22 96 4 | info@freyai-visions.de</p>\n</div>\n</body>\n</html>",
         "attachments": "={{ $json.pdfBase64 }}"
       },
       "id": "send-rechnung-email",
@@ -91,7 +91,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "mhs-material-import",
+        "path": "freyai-material-import",
         "options": {}
       },
       "id": "webhook-material",
@@ -212,12 +212,12 @@
   "staticData": null,
   "tags": [
     {
-      "name": "MHS Workflow",
+      "name": "FreyAI Visions",
       "createdAt": "2026-01-14T00:00:00.000Z",
       "updatedAt": "2026-01-14T00:00:00.000Z"
     }
   ],
   "meta": {
-    "instanceId": "MHS-Demo"
+    "instanceId": "FreyAI-Demo"
   }
 }

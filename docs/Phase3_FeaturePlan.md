@@ -1,4 +1,4 @@
-# 🚀 MHS Workflow - Phase 3 Feature Plan
+# 🚀 FreyAI Visions - Phase 3 Feature Plan
 
 **Next Generation Features for Small Business Automation**
 
@@ -108,7 +108,7 @@ class EInvoiceService {
 **Goal:** Hands-free operation for field workers
 
 **Features:**
-- "Okay MHS, zeige mir offene Mahnungen"
+- "Okay FreyAI, zeige mir offene Mahnungen"
 - "Erstelle Rechnung für Kunde Müller"
 - "Wie viel Umsatz diese Woche?"
 - "Starte Timer für Projekt Schmitt"
@@ -346,7 +346,7 @@ Take photos per job, attach to Aufträge.
 Self-service portal for customers to view invoices, book.
 **Effort:** 5-7 days
 
-### F3.19 - AI Chat Assistant ("Ask MHS")
+### F3.19 - AI Chat Assistant ("Ask FreyAI")
 "What was our revenue last quarter?" natural language queries.
 **Effort:** 4-5 days
 

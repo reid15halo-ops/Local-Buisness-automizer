@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const backups = window.securityBackupService.getBackupHistory();
         const log = window.securityBackupService.getActivityLog(100);
 
-        document.getElementById('storage-used').textContent = usage.mhsMB + ' MB';
+        document.getElementById('storage-used').textContent = usage.freyaiMB + ' MB';
         document.getElementById('backup-count').textContent = backups.length;
         document.getElementById('activity-count').textContent = log.length;
     }

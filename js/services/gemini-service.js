@@ -100,7 +100,7 @@ class GeminiService {
             return this.getFallbackText(anfrage);
         }
 
-        const prompt = `Du bist ein professioneller Angebots-Schreiber für einen Metallbau-Betrieb (MHS Metallbau Hydraulik Service).
+        const prompt = `Du bist ein professioneller Angebots-Schreiber für einen Metallbau-Betrieb (FreyAI Visions).
 
 Erstelle einen professionellen, deutschsprachigen Angebots-Text basierend auf folgender Kundenanfrage:
 
@@ -207,7 +207,7 @@ Antworte im JSON-Format:
 
         const context = history.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${m.content}`).join('\n');
 
-        const prompt = `Du bist ein erfahrener Fachberater für die Firma MHS Metallbau Hydraulik Service (MHS).
+        const prompt = `Du bist ein erfahrener Fachberater für die Firma FreyAI Visions (FreyAI Visions).
 Deine Expertise umfasst:
 - Metallbau (Geländer, Treppen, Tore, Carports)
 - Hydraulik (Schlauchservice, Zylinderreparatur, Aggregate)
@@ -252,7 +252,7 @@ Die Arbeiten können nach Auftragserteilung innerhalb von 2-3 Wochen durchgefüh
 Dieses Angebot ist 30 Tage gültig. Wir freuen uns auf Ihren Auftrag!
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'schweissen': `Sehr geehrte Damen und Herren,
 
@@ -265,7 +265,7 @@ Materialien und Schweißzusätze sind im Angebot enthalten. Bei Arbeiten vor Ort
 Gültigkeitsdauer: 30 Tage.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'rohrleitungsbau': `Sehr geehrte Damen und Herren,
 
@@ -278,7 +278,7 @@ Das Angebot beinhaltet Material, Montage und Druckprüfung.
 Gültigkeit: 30 Tage
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`,
+FreyAI Visions`,
 
             'default': `Sehr geehrte Damen und Herren,
 
@@ -291,7 +291,7 @@ Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
         };
 
         return templates[anfrage.leistungsart] || templates['default'];

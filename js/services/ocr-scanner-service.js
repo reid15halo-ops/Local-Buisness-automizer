@@ -5,8 +5,8 @@
 
 class OcrScannerService {
     constructor() {
-        this.scannedDocuments = JSON.parse(localStorage.getItem('mhs_scanned_docs') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_ocr_settings') || '{}');
+        this.scannedDocuments = JSON.parse(localStorage.getItem('freyai_scanned_docs') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_ocr_settings') || '{}');
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'deu';} // German
@@ -286,12 +286,12 @@ class OcrScannerService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_ocr_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_ocr_settings', JSON.stringify(this.settings));
     }
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_scanned_docs', JSON.stringify(this.scannedDocuments));
+        localStorage.setItem('freyai_scanned_docs', JSON.stringify(this.scannedDocuments));
     }
 }
 

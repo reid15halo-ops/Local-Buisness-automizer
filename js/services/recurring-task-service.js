@@ -5,9 +5,9 @@
 
 class RecurringTaskService {
     constructor() {
-        this.recurringTasks = JSON.parse(localStorage.getItem('mhs_recurring_tasks') || '[]');
-        this.generatedTasks = JSON.parse(localStorage.getItem('mhs_generated_tasks') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_recurring_settings') || '{}');
+        this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]');
+        this.generatedTasks = JSON.parse(localStorage.getItem('freyai_generated_tasks') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_recurring_settings') || '{}');
 
         // German holidays (static for now, could be dynamic)
         this.holidays = this.getGermanHolidays(new Date().getFullYear());
@@ -398,8 +398,8 @@ class RecurringTaskService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_recurring_tasks', JSON.stringify(this.recurringTasks));
-        localStorage.setItem('mhs_generated_tasks', JSON.stringify(this.generatedTasks));
+        localStorage.setItem('freyai_recurring_tasks', JSON.stringify(this.recurringTasks));
+        localStorage.setItem('freyai_generated_tasks', JSON.stringify(this.generatedTasks));
     }
 }
 

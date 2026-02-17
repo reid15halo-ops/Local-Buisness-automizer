@@ -7,9 +7,9 @@
 
 class BoomerGuideService {
     constructor() {
-        this.STORAGE_KEY = 'mhs_boomer_guide';
-        this.LAST_VISIT_KEY = 'mhs_last_visit';
-        this.SPLASH_DISMISSED_KEY = 'mhs_splash_dismissed_session';
+        this.STORAGE_KEY = 'freyai_boomer_guide';
+        this.LAST_VISIT_KEY = 'freyai_last_visit';
+        this.SPLASH_DISMISSED_KEY = 'freyai_splash_dismissed_session';
 
         this.listeners = [];
         this.feedItems = [];

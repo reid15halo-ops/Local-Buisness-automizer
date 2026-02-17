@@ -5,9 +5,9 @@
 
 class ChatbotService {
     constructor() {
-        this.conversations = JSON.parse(localStorage.getItem('mhs_chatbot_conversations') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_chatbot_settings') || '{}');
-        this.messageQueue = JSON.parse(localStorage.getItem('mhs_chatbot_queue') || '[]');
+        this.conversations = JSON.parse(localStorage.getItem('freyai_chatbot_conversations') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_chatbot_settings') || '{}');
+        this.messageQueue = JSON.parse(localStorage.getItem('freyai_chatbot_queue') || '[]');
         this.kb = this.initKnowledgeBase();
 
         // Default settings
@@ -20,13 +20,13 @@ class ChatbotService {
     }
 
     // =====================================================
-    // EXPERT KNOWLEDGE BASE - MHS Business Master
+    // EXPERT KNOWLEDGE BASE - FreyAI Visions Business Master
     // =====================================================
     initKnowledgeBase() {
         return {
             // COMPANY INFO
             company: {
-                name: 'MHS Metallbau Hydraulik Service',
+                name: 'FreyAI Visions',
                 owner: 'Inhaber geführter Meisterbetrieb',
                 experience: '15+ Jahre Erfahrung',
                 team: '5 Fachkräfte inkl. Meister und Gesellen',
@@ -34,7 +34,7 @@ class ChatbotService {
                 serviceArea: 'Main-Kinzig-Kreis, Aschaffenburg, Miltenberg, Frankfurt Umland (50km Radius)',
                 address: 'Hauptstraße 1, 63820 Elsenfeld',
                 phone: '06029-9922964',
-                email: 'info@mhs-technik.de',
+                email: 'info@freyai-visions.de',
                 hours: { weekday: '08:00-18:00', saturday: 'nach Vereinbarung', emergency: '24/7 Notdienst' }
             },
 
@@ -212,14 +212,14 @@ class ChatbotService {
         const businessKeywords = [
             'metall', 'stahl', 'hydraulik', 'schweiß', 'geländer', 'treppe', 'tor', 'carport',
             'schlauch', 'zylinder', 'reparatur', 'montage', 'angebot', 'preis', 'kosten',
-            'termin', 'anfrage', 'mhs', 'kunde', 'service', 'beratung', 'rohrleitung', 'industriemontage'
+            'termin', 'anfrage', 'freyai', 'kunde', 'service', 'beratung', 'rohrleitung', 'industriemontage'
         ];
 
         const isBusinessRelated = businessKeywords.some(kw => lowerMsg.includes(kw)) ||
             /^(hallo|hi|guten tag|moin)/i.test(lowerMsg);
 
         if (!isBusinessRelated) {
-            return "Entschuldigung, als Fachberater von MHS kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?";
+            return "Entschuldigung, als Fachberater von FreyAI Visions kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?";
         }
 
         // 2. Try LLM (Ollama/Gemini)
@@ -349,7 +349,7 @@ class ChatbotService {
             if (lowerMsg.match(/\bmig\b|\bmag\b/)) {
                 return `🔥 **MIG/MAG-Schweißen**\n\n**MAG (CO2/Mischgas):**\n• Für Baustahl, Edelstahl\n• Schnell, wirtschaftlich\n\n**MIG (Argon):**\n• Für Aluminium\n• Sauberes Nahtbild\n\n**Vorteile:**\n✅ Hohe Abschmelzleistung\n✅ Wirtschaftlich für Serien\n✅ Bis zu 30mm Materialstärke\n\n**Typische Arbeiten:**\n• Stahlkonstruktionen\n• Treppen, Geländer\n• Behälter, Tanks\n• Fahrzeugbau\n\nFür welches Material/Projekt benötigen Sie Schweißarbeiten?`;
             }
-            return `🔥 **Schweißtechnik bei MHS**\n\n**Verfahren:**\n• **WIG/TIG:** Edelstahl, Alu, Sichtnaht (höchste Qualität)\n• **MIG/MAG:** Baustahl, Edelstahl (schnell, wirtschaftlich)\n• **E-Hand:** Outdoor, Reparatur (flexibel)\n• **Autogen:** Brennschneiden, Löten\n\n**Materialien:**\nStahl, Edelstahl, Aluminium, Gusseisen\n\n**Zertifizierung:**\n✅ ${kb.company.certifications[0]}\n✅ DVS-zertifizierte Schweißer\n\n**Stundensatz:** ${kb.pricing.hourlyRates.schweissen.min}-${kb.pricing.hourlyRates.schweissen.max} €/Std\n\nFür welche Arbeit benötigen Sie Schweißen?`;
+            return `🔥 **Schweißtechnik bei FreyAI Visions**\n\n**Verfahren:**\n• **WIG/TIG:** Edelstahl, Alu, Sichtnaht (höchste Qualität)\n• **MIG/MAG:** Baustahl, Edelstahl (schnell, wirtschaftlich)\n• **E-Hand:** Outdoor, Reparatur (flexibel)\n• **Autogen:** Brennschneiden, Löten\n\n**Materialien:**\nStahl, Edelstahl, Aluminium, Gusseisen\n\n**Zertifizierung:**\n✅ ${kb.company.certifications[0]}\n✅ DVS-zertifizierte Schweißer\n\n**Stundensatz:** ${kb.pricing.hourlyRates.schweissen.min}-${kb.pricing.hourlyRates.schweissen.max} €/Std\n\nFür welche Arbeit benötigen Sie Schweißen?`;
         }
 
         // === MATERIALBERATUNG ===
@@ -366,7 +366,7 @@ class ChatbotService {
         // === PREISE ALLGEMEIN ===
         if (lowerMsg.match(/preis|kosten|was kostet|teuer|günstig|budget|€|euro/)) {
             const hr = kb.pricing.hourlyRates;
-            return `💰 **Preisübersicht MHS**\n\n**Stundensätze:**\n• Metallbau: ${hr.metallbau.min}-${hr.metallbau.max} €/Std\n• Schweißen: ${hr.schweissen.min}-${hr.schweissen.max} €/Std\n• Hydraulik: ${hr.hydraulik.min}-${hr.hydraulik.max} €/Std\n• Montage: ${hr.montage.min}-${hr.montage.max} €/Std\n\n**Produkte (Richtwerte):**\n• Geländer: ab 150 €/lfm\n• Treppen: ab 3.500€\n• Tore: ab 1.200€\n• Carports: ab 2.500€\n• Hydraulikschläuche: ab 25€\n\n✅ **Kostenlose Beratung + Aufmaß!**\n\n_Endpreise nach Aufmaß vor Ort._\n\nFür welches Projekt brauchen Sie Preise?`;
+            return `💰 **Preisübersicht FreyAI Visions**\n\n**Stundensätze:**\n• Metallbau: ${hr.metallbau.min}-${hr.metallbau.max} €/Std\n• Schweißen: ${hr.schweissen.min}-${hr.schweissen.max} €/Std\n• Hydraulik: ${hr.hydraulik.min}-${hr.hydraulik.max} €/Std\n• Montage: ${hr.montage.min}-${hr.montage.max} €/Std\n\n**Produkte (Richtwerte):**\n• Geländer: ab 150 €/lfm\n• Treppen: ab 3.500€\n• Tore: ab 1.200€\n• Carports: ab 2.500€\n• Hydraulikschläuche: ab 25€\n\n✅ **Kostenlose Beratung + Aufmaß!**\n\n_Endpreise nach Aufmaß vor Ort._\n\nFür welches Projekt brauchen Sie Preise?`;
         }
 
         // === ÖFFNUNGSZEITEN ===
@@ -403,7 +403,7 @@ class ChatbotService {
 
         // === TSCHÜSS ===
         if (lowerMsg.match(/tschüss|auf wiedersehen|bye|ciao|bis bald/)) {
-            return `Auf Wiedersehen! 👋\n\n**Ihre Vorteile bei MHS:**\n✅ Meisterbetrieb mit ${kb.company.experience}\n✅ Faire Preise\n✅ Zuverlässig & pünktlich\n\n📞 ${kb.company.phone}\n📧 ${kb.company.email}\n\nWir freuen uns auf Ihren Auftrag!`;
+            return `Auf Wiedersehen! 👋\n\n**Ihre Vorteile bei FreyAI Visions:**\n✅ Meisterbetrieb mit ${kb.company.experience}\n✅ Faire Preise\n✅ Zuverlässig & pünktlich\n\n📞 ${kb.company.phone}\n📧 ${kb.company.email}\n\nWir freuen uns auf Ihren Auftrag!`;
         }
 
         // === JA/NEIN ===
@@ -568,9 +568,9 @@ class ChatbotService {
     updateSettings(updates) { this.settings = { ...this.settings, ...updates }; this.saveSettings(); }
     getSettings() { return this.settings; }
 
-    saveConversations() { localStorage.setItem('mhs_chatbot_conversations', JSON.stringify(this.conversations)); }
-    saveQueue() { localStorage.setItem('mhs_chatbot_queue', JSON.stringify(this.messageQueue)); }
-    saveSettings() { localStorage.setItem('mhs_chatbot_settings', JSON.stringify(this.settings)); }
+    saveConversations() { localStorage.setItem('freyai_chatbot_conversations', JSON.stringify(this.conversations)); }
+    saveQueue() { localStorage.setItem('freyai_chatbot_queue', JSON.stringify(this.messageQueue)); }
+    saveSettings() { localStorage.setItem('freyai_chatbot_settings', JSON.stringify(this.settings)); }
 }
 
 window.chatbotService = new ChatbotService();

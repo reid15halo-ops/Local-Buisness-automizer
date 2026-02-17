@@ -5,10 +5,10 @@
 
 class WebhookService {
     constructor() {
-        this.webhooks = JSON.parse(localStorage.getItem('mhs_webhooks') || '[]');
-        this.webhookLog = JSON.parse(localStorage.getItem('mhs_webhook_log') || '[]');
-        this.apiKeys = JSON.parse(localStorage.getItem('mhs_api_keys') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_webhook_settings') || '{}');
+        this.webhooks = JSON.parse(localStorage.getItem('freyai_webhooks') || '[]');
+        this.webhookLog = JSON.parse(localStorage.getItem('freyai_webhook_log') || '[]');
+        this.apiKeys = JSON.parse(localStorage.getItem('freyai_api_keys') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_webhook_settings') || '{}');
 
         // Event types that can trigger webhooks
         this.eventTypes = [
@@ -113,8 +113,8 @@ class WebhookService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-MHS-Signature': signature,
-                    'X-MHS-Event': eventType,
+                    'X-FreyAI-Signature': signature,
+                    'X-FreyAI-Event': eventType,
                     ...webhook.headers
                 },
                 body: JSON.stringify(requestBody)
@@ -191,7 +191,7 @@ class WebhookService {
     createApiKey(name, permissions = []) {
         const apiKey = {
             id: 'key-' + Date.now(),
-            key: 'mhs_' + this.generateSecret(),
+            key: 'freyai_' + this.generateSecret(),
             name: name,
             permissions: permissions, // ['read:invoices', 'write:customers', etc.]
             active: true,
@@ -277,21 +277,21 @@ class WebhookService {
         if (!webhook) {return { success: false, error: 'Webhook not found' };}
 
         return await this.sendWebhook(webhook, 'test.ping', {
-            message: 'Test webhook from MHS Workflow',
+            message: 'Test webhook from FreyAI Visions',
             timestamp: new Date().toISOString()
         });
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_webhooks', JSON.stringify(this.webhooks)); }
+    save() { localStorage.setItem('freyai_webhooks', JSON.stringify(this.webhooks)); }
     saveLog() {
         // Keep last 500 log entries
         if (this.webhookLog.length > 500) {
             this.webhookLog = this.webhookLog.slice(-500);
         }
-        localStorage.setItem('mhs_webhook_log', JSON.stringify(this.webhookLog));
+        localStorage.setItem('freyai_webhook_log', JSON.stringify(this.webhookLog));
     }
-    saveApiKeys() { localStorage.setItem('mhs_api_keys', JSON.stringify(this.apiKeys)); }
+    saveApiKeys() { localStorage.setItem('freyai_api_keys', JSON.stringify(this.apiKeys)); }
 }
 
 window.webhookService = new WebhookService();

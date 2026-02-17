@@ -53,7 +53,7 @@ GEMINI_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxx
 SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGxxxxxxxxxxxxxxxxxx
 SENDER_EMAIL=angebote@handwerkflow.de
-SENDER_NAME=MHS Angebote
+SENDER_NAME=FreyAI Visions Angebote
 ```
 
 ### 3. Deployment
@@ -119,7 +119,7 @@ Tel: 0123/456789
 
 3. **E-Mail versendet**:
    - An: Max Mustermann
-   - Betreff: "Ihr Angebot ANG-... - MHS Metallbau"
+   - Betreff: "Ihr Angebot ANG-... - FreyAI Visions"
    - Inhalt: Angebot mit allen Positionen
    - Anhang: PDF (wenn implementiert)
 

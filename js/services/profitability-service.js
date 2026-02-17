@@ -5,8 +5,8 @@
 
 class ProfitabilityService {
     constructor() {
-        this.jobAnalytics = JSON.parse(localStorage.getItem('mhs_job_analytics') || '[]');
-        this.overheadSettings = JSON.parse(localStorage.getItem('mhs_overhead_settings') || '{}');
+        this.jobAnalytics = JSON.parse(localStorage.getItem('freyai_job_analytics') || '[]');
+        this.overheadSettings = JSON.parse(localStorage.getItem('freyai_overhead_settings') || '{}');
 
         // Default overhead settings
         if (!this.overheadSettings.hourlyOverhead) {this.overheadSettings.hourlyOverhead = 25;} // €/hour
@@ -369,7 +369,7 @@ class ProfitabilityService {
     // Update overhead settings
     updateOverheadSettings(settings) {
         this.overheadSettings = { ...this.overheadSettings, ...settings };
-        localStorage.setItem('mhs_overhead_settings', JSON.stringify(this.overheadSettings));
+        localStorage.setItem('freyai_overhead_settings', JSON.stringify(this.overheadSettings));
     }
 
     // Get all analytics
@@ -389,7 +389,7 @@ class ProfitabilityService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_job_analytics', JSON.stringify(this.jobAnalytics));
+        localStorage.setItem('freyai_job_analytics', JSON.stringify(this.jobAnalytics));
     }
 }
 

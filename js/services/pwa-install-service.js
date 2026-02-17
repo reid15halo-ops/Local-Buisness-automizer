@@ -36,14 +36,14 @@ class PWAInstallService {
         }
 
         // Check localStorage for installation status
-        const installed = localStorage.getItem('mhs_pwa_installed');
+        const installed = localStorage.getItem('freyai_pwa_installed');
         if (installed === 'true') {
             this.isInstalled = true;
             return;
         }
 
         // Check if recently dismissed
-        const dismissalTime = localStorage.getItem('mhs_pwa_dismissal_time');
+        const dismissalTime = localStorage.getItem('freyai_pwa_dismissal_time');
         if (dismissalTime) {
             const now = Date.now();
             const dismissedDays = (now - parseInt(dismissalTime)) / (1000 * 60 * 60 * 24);
@@ -54,7 +54,7 @@ class PWAInstallService {
                 return;
             } else {
                 // Clear old dismissal time after timeout
-                localStorage.removeItem('mhs_pwa_dismissal_time');
+                localStorage.removeItem('freyai_pwa_dismissal_time');
             }
         }
     }
@@ -81,7 +81,7 @@ class PWAInstallService {
         window.addEventListener('appinstalled', () => {
             console.log('PWA app installed successfully');
             this.isInstalled = true;
-            localStorage.setItem('mhs_pwa_installed', 'true');
+            localStorage.setItem('freyai_pwa_installed', 'true');
             this.hideInstallBanner();
             this.showSuccessToast();
         });
@@ -90,7 +90,7 @@ class PWAInstallService {
         window.matchMedia('(display-mode: standalone)').addEventListener('change', (event) => {
             if (event.matches) {
                 this.isInstalled = true;
-                localStorage.setItem('mhs_pwa_installed', 'true');
+                localStorage.setItem('freyai_pwa_installed', 'true');
                 this.hideInstallBanner();
             }
         });
@@ -107,7 +107,7 @@ class PWAInstallService {
 
         // Create banner container
         this.bannerElement = document.createElement('div');
-        this.bannerElement.id = 'mhs-pwa-install-banner';
+        this.bannerElement.id = 'freyai-pwa-install-banner';
         this.bannerElement.setAttribute('role', 'dialog');
         this.bannerElement.setAttribute('aria-label', 'App installieren');
 
@@ -143,7 +143,7 @@ class PWAInstallService {
                             font-weight: 600;
                             font-size: 14px;
                             margin-bottom: 2px;
-                        ">MHS Workflow</div>
+                        ">FreyAI Visions</div>
                         <div style="
                             font-size: 12px;
                             color: #cbd5e1;
@@ -154,7 +154,7 @@ class PWAInstallService {
 
                 <!-- Right: Buttons -->
                 <div style="display: flex; gap: 8px; flex-shrink: 0;">
-                    <button id="mhs-pwa-install-btn" style="
+                    <button id="freyai-pwa-install-btn" style="
                         background-color: #6366f1;
                         color: white;
                         border: none;
@@ -168,7 +168,7 @@ class PWAInstallService {
                     " onmouseover="this.style.backgroundColor='#4f46e5'" onmouseout="this.style.backgroundColor='#6366f1'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
                         Installieren
                     </button>
-                    <button id="mhs-pwa-dismiss-btn" style="
+                    <button id="freyai-pwa-dismiss-btn" style="
                         background-color: transparent;
                         color: #cbd5e1;
                         border: 1px solid #475569;
@@ -198,24 +198,24 @@ class PWAInstallService {
                 }
 
                 @media (max-width: 480px) {
-                    #mhs-pwa-install-banner > div {
+                    #freyai-pwa-install-banner > div {
                         flex-direction: column;
                         gap: 12px !important;
                         padding: 12px 16px !important;
                     }
 
-                    #mhs-pwa-install-banner > div > div:last-child {
+                    #freyai-pwa-install-banner > div > div:last-child {
                         width: 100%;
                         display: flex !important;
                     }
 
-                    #mhs-pwa-install-banner button {
+                    #freyai-pwa-install-banner button {
                         flex: 1;
                     }
                 }
 
                 /* Prevent layout shift when banner appears */
-                body.mhs-pwa-banner-shown {
+                body.freyai-pwa-banner-shown {
                     padding-bottom: 70px;
                 }
             </style>
@@ -223,11 +223,11 @@ class PWAInstallService {
 
         // Add to body
         document.body.appendChild(this.bannerElement);
-        document.body.classList.add('mhs-pwa-banner-shown');
+        document.body.classList.add('freyai-pwa-banner-shown');
 
         // Attach event listeners
-        const installBtn = document.getElementById('mhs-pwa-install-btn');
-        const dismissBtn = document.getElementById('mhs-pwa-dismiss-btn');
+        const installBtn = document.getElementById('freyai-pwa-install-btn');
+        const dismissBtn = document.getElementById('freyai-pwa-dismiss-btn');
 
         if (installBtn) {
             installBtn.addEventListener('click', () => this.installApp());
@@ -251,7 +251,7 @@ class PWAInstallService {
                     if (this.bannerElement && this.bannerElement.parentNode) {
                         this.bannerElement.parentNode.removeChild(this.bannerElement);
                     }
-                    document.body.classList.remove('mhs-pwa-banner-shown');
+                    document.body.classList.remove('freyai-pwa-banner-shown');
                     this.bannerElement = null;
                 }, 300);
             }
@@ -277,7 +277,7 @@ class PWAInstallService {
             if (outcome === 'accepted') {
                 console.log('App installation accepted');
                 this.isInstalled = true;
-                localStorage.setItem('mhs_pwa_installed', 'true');
+                localStorage.setItem('freyai_pwa_installed', 'true');
                 this.hideInstallBanner();
                 this.showSuccessToast();
             } else {
@@ -296,7 +296,7 @@ class PWAInstallService {
      * Dismiss the banner for 7 days
      */
     dismissBanner() {
-        localStorage.setItem('mhs_pwa_dismissal_time', Date.now().toString());
+        localStorage.setItem('freyai_pwa_dismissal_time', Date.now().toString());
         this.lastDismissalTime = Date.now();
         this.hideInstallBanner();
     }
@@ -306,7 +306,7 @@ class PWAInstallService {
      */
     showSuccessToast() {
         const toast = document.createElement('div');
-        toast.id = 'mhs-pwa-success-toast';
+        toast.id = 'freyai-pwa-success-toast';
         toast.setAttribute('role', 'status');
         toast.setAttribute('aria-live', 'polite');
 
@@ -349,7 +349,7 @@ class PWAInstallService {
                 }
 
                 @media (max-width: 480px) {
-                    #mhs-pwa-success-toast > div {
+                    #freyai-pwa-success-toast > div {
                         bottom: 60px !important;
                         left: 10px !important;
                         right: 10px !important;
@@ -385,8 +385,8 @@ class PWAInstallService {
      * Force show banner (for testing)
      */
     forceShowBanner() {
-        localStorage.removeItem('mhs_pwa_dismissal_time');
-        localStorage.removeItem('mhs_pwa_installed');
+        localStorage.removeItem('freyai_pwa_dismissal_time');
+        localStorage.removeItem('freyai_pwa_installed');
         this.isInstalled = false;
         this.lastDismissalTime = null;
         this.showInstallBanner();
@@ -396,8 +396,8 @@ class PWAInstallService {
      * Reset installation state (for development)
      */
     resetInstallationState() {
-        localStorage.removeItem('mhs_pwa_installed');
-        localStorage.removeItem('mhs_pwa_dismissal_time');
+        localStorage.removeItem('freyai_pwa_installed');
+        localStorage.removeItem('freyai_pwa_dismissal_time');
         this.isInstalled = false;
         this.lastDismissalTime = null;
         this.hideInstallBanner();

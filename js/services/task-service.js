@@ -4,8 +4,8 @@
 
 class TaskService {
     constructor() {
-        this.tasks = JSON.parse(localStorage.getItem('mhs_tasks') || '[]');
-        this.recurringTasks = JSON.parse(localStorage.getItem('mhs_recurring_tasks') || '[]');
+        this.tasks = JSON.parse(localStorage.getItem('freyai_tasks') || '[]');
+        this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]');
         this.processRecurringTasks();
     }
 
@@ -197,8 +197,8 @@ class TaskService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_tasks', JSON.stringify(this.tasks)); }
-    saveRecurring() { localStorage.setItem('mhs_recurring_tasks', JSON.stringify(this.recurringTasks)); }
+    save() { localStorage.setItem('freyai_tasks', JSON.stringify(this.tasks)); }
+    saveRecurring() { localStorage.setItem('freyai_recurring_tasks', JSON.stringify(this.recurringTasks)); }
 }
 
 window.taskService = new TaskService();

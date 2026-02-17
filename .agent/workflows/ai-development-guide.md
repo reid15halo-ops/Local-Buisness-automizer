@@ -1,8 +1,8 @@
-# MHS Workflow Automation Tool - AI Development Guide
+# FreyAI Visions Automation Tool - AI Development Guide
 
 ## Project Overview
 
-**MHS Workflow Demo** is a comprehensive small business automation tool for German craftsmen and service providers (Handwerker). It automates the complete quote-to-invoice workflow and provides 21+ service modules for business operations.
+**FreyAI Visions Demo** is a comprehensive small business automation tool for German craftsmen and service providers (Handwerker). It automates the complete quote-to-invoice workflow and provides 21+ service modules for business operations.
 
 ---
 
@@ -53,7 +53,7 @@
 |-------|------------|
 | Frontend | Vanilla HTML5, CSS3, JavaScript ES6+ |
 | Styling | Custom CSS with CSS variables (dark theme) |
-| Storage | localStorage with `mhs_` prefix |
+| Storage | localStorage with `freyai_` prefix |
 | AI | Google Gemini 2.0 Flash API |
 | OCR | Tesseract.js (via CDN) |
 | Excel | SheetJS (via CDN) |
@@ -70,7 +70,7 @@ All services follow this structure:
 class ExampleService {
     constructor() {
         // Load from localStorage
-        this.data = JSON.parse(localStorage.getItem('mhs_example') || '[]');
+        this.data = JSON.parse(localStorage.getItem('freyai_example') || '[]');
         // Initialize settings/defaults
     }
 
@@ -87,7 +87,7 @@ class ExampleService {
     
     // Persistence
     save() {
-        localStorage.setItem('mhs_example', JSON.stringify(this.data));
+        localStorage.setItem('freyai_example', JSON.stringify(this.data));
     }
 }
 
@@ -127,10 +127,10 @@ generateId() {
 // js/services/new-feature-service.js
 class NewFeatureService {
     constructor() {
-        this.data = JSON.parse(localStorage.getItem('mhs_newfeature') || '[]');
+        this.data = JSON.parse(localStorage.getItem('freyai_newfeature') || '[]');
     }
     // ... methods
-    save() { localStorage.setItem('mhs_newfeature', JSON.stringify(this.data)); }
+    save() { localStorage.setItem('freyai_newfeature', JSON.stringify(this.data)); }
 }
 window.newFeatureService = new NewFeatureService();
 ```

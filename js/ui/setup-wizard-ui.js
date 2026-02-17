@@ -54,7 +54,7 @@ class SetupWizardUI {
         modal.innerHTML = `
             <div class="modal-content wizard-content wizard-content-user">
                 <div class="wizard-header wizard-header-user">
-                    <h1 class="wizard-title-user">MHS Workflow</h1>
+                    <h1 class="wizard-title-user">FreyAI Visions</h1>
                     <p class="wizard-subtitle-user" id="wizard-subtitle"></p>
                 </div>
 

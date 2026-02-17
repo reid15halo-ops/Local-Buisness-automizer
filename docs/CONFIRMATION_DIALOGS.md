@@ -1,6 +1,6 @@
 # Confirmation Dialogs Implementation
 
-This document describes the confirmation dialogs that have been added to the MHS Workflow app for all destructive and irreversible business actions.
+This document describes the confirmation dialogs that have been added to the FreyAI Visions app for all destructive and irreversible business actions.
 
 ## Overview
 

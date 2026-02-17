@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the implementation of the "Einfacher Modus" (Simple Mode) vs "Profi-Modus" (Pro Mode) progressive disclosure system for the MHS Workflow PWA. This system prevents non-technical German craftsmen (Handwerker) from being overwhelmed by advanced features.
+This document describes the implementation of the "Einfacher Modus" (Simple Mode) vs "Profi-Modus" (Pro Mode) progressive disclosure system for the FreyAI Visions PWA. This system prevents non-technical German craftsmen (Handwerker) from being overwhelmed by advanced features.
 
 ## Architecture
 
@@ -35,12 +35,12 @@ window.userModeService.getVisibilityRules()
 ```
 
 **Storage:**
-- Uses `localStorage` under key: `mhs_user_mode`
+- Uses `localStorage` under key: `freyai_user_mode`
 - Default mode for new users: `'simple'`
 - Persists across page reloads and browser sessions
 
 **Events:**
-- Fires custom event `mhs:mode-changed` whenever mode changes
+- Fires custom event `freyai:mode-changed` whenever mode changes
 - Event detail includes: `{ mode, isProMode, isSimpleMode, timestamp }`
 
 #### 2. **Mode Toggle UI** (`js/ui/mode-toggle-ui.js`)
@@ -132,7 +132,7 @@ When the page loads, the system:
 When a user clicks the mode toggle button:
 1. `UserModeService.toggleMode()` is called
 2. Mode is saved to `localStorage`
-3. Custom event `mhs:mode-changed` is fired
+3. Custom event `freyai:mode-changed` is fired
 4. `ModeToggleUI` listens for the event and:
    - Shows/hides sidebar items with smooth animation
    - Updates the toggle button label
@@ -174,12 +174,12 @@ When a user clicks the mode toggle button:
 
 ### localStorage Key
 ```javascript
-const STORAGE_KEY = 'mhs_user_mode'  // Value: 'simple' or 'pro'
+const STORAGE_KEY = 'freyai_user_mode'  // Value: 'simple' or 'pro'
 ```
 
 ### Custom Event Format
 ```javascript
-document.addEventListener('mhs:mode-changed', (event) => {
+document.addEventListener('freyai:mode-changed', (event) => {
     const { mode, isProMode, isSimpleMode, timestamp } = event.detail
     console.log('Mode changed to:', mode)
 })
@@ -307,7 +307,7 @@ Following the Boomer UX rules from `.skills/boomer-ux/SKILL.md`:
 
 ### Mode not persisting
 - Check if localStorage is enabled in browser
-- Verify `localStorage.getItem('mhs_user_mode')` returns value
+- Verify `localStorage.getItem('freyai_user_mode')` returns value
 - Check browser's private/incognito mode restrictions
 
 ### Items not hiding properly

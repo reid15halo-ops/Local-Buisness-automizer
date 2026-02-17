@@ -73,7 +73,7 @@ echo "   Total files in build: $TOTAL_FILES"
 # 6. Create deployment package
 echo "📦 Step 6: Creating deployment package..."
 cd dist
-zip -r ../mhs-production-$(date +%Y%m%d-%H%M%S).zip . -x "*.git*"
+zip -r ../freyai-production-$(date +%Y%m%d-%H%M%S).zip . -x "*.git*"
 cd ..
 echo "✅ Deployment package created"
 
@@ -82,12 +82,12 @@ echo ""
 echo "✅ Production Deployment Ready!"
 echo ""
 echo "📁 Build Directory: ./dist"
-echo "📦 Package: mhs-production-*.zip"
+echo "📦 Package: freyai-production-*.zip"
 echo ""
 echo "🌐 Deployment Options:"
 echo "  1. Netlify: Drag & drop ./dist folder to netlify.app"
 echo "  2. Apache: Copy ./dist/* to /var/www/html"
-echo "  3. XAMPP: Copy ./dist/* to C:/xampp/htdocs/mhs"
+echo "  3. XAMPP: Copy ./dist/* to C:/xampp/htdocs/freyai"
 echo "  4. Raspberry Pi: scp -r ./dist/* pi@raspberrypi:/var/www/html"
 echo ""
 echo "🔒 Security Headers:"

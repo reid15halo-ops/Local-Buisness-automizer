@@ -1,8 +1,8 @@
-# Contributing to MHS Workflow
+# Contributing to FreyAI Visions
 
-Vielen Dank für Ihr Interesse an MHS Workflow! Beiträge sind willkommen.
+Vielen Dank für Ihr Interesse an FreyAI Visions! Beiträge sind willkommen.
 
-Thank you for your interest in contributing to MHS Workflow! Contributions are welcome.
+Thank you for your interest in contributing to FreyAI Visions! Contributions are welcome.
 
 ## Getting Started
 

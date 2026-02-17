@@ -5,17 +5,17 @@
 
 class SmsReminderService {
     constructor() {
-        this.reminders = JSON.parse(localStorage.getItem('mhs_sms_reminders') || '[]');
-        this.sentMessages = JSON.parse(localStorage.getItem('mhs_sms_sent') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_sms_settings') || '{}');
-        this.noShowTracking = JSON.parse(localStorage.getItem('mhs_noshow_tracking') || '[]');
+        this.reminders = JSON.parse(localStorage.getItem('freyai_sms_reminders') || '[]');
+        this.sentMessages = JSON.parse(localStorage.getItem('freyai_sms_sent') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_sms_settings') || '{}');
+        this.noShowTracking = JSON.parse(localStorage.getItem('freyai_noshow_tracking') || '[]');
 
         // Default settings
         if (!this.settings.enabled) {this.settings.enabled = true;}
         if (!this.settings.reminder24h) {this.settings.reminder24h = true;}
         if (!this.settings.reminder1h) {this.settings.reminder1h = true;}
         if (!this.settings.confirmationRequired) {this.settings.confirmationRequired = true;}
-        if (!this.settings.senderName) {this.settings.senderName = 'MHS Service';}
+        if (!this.settings.senderName) {this.settings.senderName = 'FreyAI Visions';}
 
         // Templates
         this.templates = {
@@ -297,7 +297,7 @@ class SmsReminderService {
             }
         }
 
-        localStorage.setItem('mhs_noshow_tracking', JSON.stringify(this.noShowTracking));
+        localStorage.setItem('freyai_noshow_tracking', JSON.stringify(this.noShowTracking));
     }
 
     // Format message with placeholders
@@ -363,7 +363,7 @@ class SmsReminderService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_sms_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_sms_settings', JSON.stringify(this.settings));
     }
 
     // Start periodic reminder check
@@ -380,8 +380,8 @@ class SmsReminderService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_sms_reminders', JSON.stringify(this.reminders)); }
-    saveSentMessages() { localStorage.setItem('mhs_sms_sent', JSON.stringify(this.sentMessages)); }
+    save() { localStorage.setItem('freyai_sms_reminders', JSON.stringify(this.reminders)); }
+    saveSentMessages() { localStorage.setItem('freyai_sms_sent', JSON.stringify(this.sentMessages)); }
 }
 
 window.smsReminderService = new SmsReminderService();

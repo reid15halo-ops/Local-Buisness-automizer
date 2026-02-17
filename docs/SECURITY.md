@@ -1,4 +1,4 @@
-# Security Configuration - MHS Business Automizer
+# Security Configuration - FreyAI Visions Business Automizer
 
 ## Table of Contents
 1. [API Key Management](#api-key-management)
@@ -141,7 +141,7 @@ The application monitors LocalStorage usage and warns the user when it exceeds 4
 **Safe to store (public keys):**
 - supabase_url
 - supabase_anon_key
-- mhs_llm_config (local development settings)
+- freyai_llm_config (local development settings)
 
 **Never store in localStorage:**
 - gemini_api_key (for production - use Supabase proxy instead)

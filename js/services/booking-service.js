@@ -5,8 +5,8 @@
 
 class BookingService {
     constructor() {
-        this.bookings = JSON.parse(localStorage.getItem('mhs_bookings') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_booking_settings') || '{}');
+        this.bookings = JSON.parse(localStorage.getItem('freyai_bookings') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_booking_settings') || '{}');
 
         // Default settings
         if (!this.settings.serviceTypes) {
@@ -212,10 +212,10 @@ Details:
 
 Bei Fragen oder zur Stornierung erreichen Sie uns unter:
 Tel: +49 6029 99 22 96 4
-E-Mail: info@mhs-technik.de
+E-Mail: info@freyai-visions.de
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
         };
     }
 
@@ -234,7 +234,7 @@ dies ist eine Erinnerung an Ihren morgigen Termin:
 Wir freuen uns auf Sie!
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
         };
     }
 
@@ -257,7 +257,7 @@ MHS Metallbau Hydraulik Service`
     generateId() { return 'book-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
 
     generateConfirmationCode() {
-        return 'MHS-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        return 'FREY-' + Math.random().toString(36).substr(2, 6).toUpperCase();
     }
 
     addMinutes(time, minutes) {
@@ -296,8 +296,8 @@ MHS Metallbau Hydraulik Service`
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_bookings', JSON.stringify(this.bookings)); }
-    saveSettings() { localStorage.setItem('mhs_booking_settings', JSON.stringify(this.settings)); }
+    save() { localStorage.setItem('freyai_bookings', JSON.stringify(this.bookings)); }
+    saveSettings() { localStorage.setItem('freyai_booking_settings', JSON.stringify(this.settings)); }
 }
 
 window.bookingService = new BookingService();

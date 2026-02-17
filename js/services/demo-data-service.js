@@ -1,6 +1,6 @@
 /* ============================================
    Demo Data Service
-   Provides rich initial state for the MHS application
+   Provides rich initial state for the FreyAI Visions application
    ============================================ */
 
 class DemoDataService {
@@ -153,13 +153,13 @@ class DemoDataService {
                 { icon: '⚙️', title: 'System-Initialisierung abgeschlossen', time: tenDaysAgo }
             ],
             settings: {
-                companyName: 'MHS Metallbau Hydraulik Service',
+                companyName: 'FreyAI Visions',
                 owner: 'Max Mustermann',
                 address: 'Handwerkerring 38a, 63776 Mömbris',
                 taxId: '12/345/67890',
                 vatId: 'DE123456789',
                 phone: '+49 6029 9922964',
-                email: 'info@mhs-metallbau.de',
+                email: 'info@freyai-visions.de',
                 theme: 'dark'
             }
         };
