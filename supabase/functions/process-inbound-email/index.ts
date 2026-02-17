@@ -495,7 +495,7 @@ async function sendAngebotEmail(
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>MHS Metallbau Hydraulik Service</h1>
+                    <h1>FreyAI Visions</h1>
                     <p>Ihr Angebot ${angebotNummer}</p>
                 </div>
 
@@ -535,13 +535,13 @@ async function sendAngebotEmail(
                     <p>Bei Fragen oder für weitere Informationen stehen wir Ihnen gerne zur Verfügung.</p>
 
                     <p>Mit freundlichen Grüßen<br>
-                    Ihr Team von MHS Metallbau Hydraulik Service</p>
+                    Ihr Team von FreyAI Visions</p>
                 </div>
 
                 <div class="footer">
                     <p>
-                        MHS Metallbau Hydraulik Service<br>
-                        Tel: +49 (0) xxx xxx xxx | Email: info@mhs-metallbau.de<br>
+                        FreyAI Visions<br>
+                        Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de<br>
                         Zertifiziert nach DIN EN 1090
                     </p>
                 </div>
@@ -557,9 +557,9 @@ async function sendAngebotEmail(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `MHS Angebote <${senderEmail}>`,
+            from: `FreyAI Visions Angebote <${senderEmail}>`,
             to: [to],
-            subject: `Ihr Angebot ${angebotNummer} - MHS Metallbau`,
+            subject: `Ihr Angebot ${angebotNummer} - FreyAI Visions`,
             html: htmlBody,
             reply_to: 'info@handwerkflow.de'
         }),
@@ -607,13 +607,13 @@ async function sendFollowUpQuestions(
                 <p>Bei dringenden Fragen erreichen Sie uns auch telefonisch.</p>
 
                 <p>Mit freundlichen Grüßen<br>
-                Ihr Team von MHS Metallbau Hydraulik Service</p>
+                Ihr Team von FreyAI Visions</p>
 
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
-                    MHS Metallbau Hydraulik Service<br>
-                    Tel: +49 (0) xxx xxx xxx | Email: info@mhs-metallbau.de
+                    FreyAI Visions<br>
+                    Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de
                 </p>
             </div>
         </body>
@@ -627,7 +627,7 @@ async function sendFollowUpQuestions(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `MHS Info <${senderEmail}>`,
+            from: `FreyAI Visions Info <${senderEmail}>`,
             to: [to],
             subject: 'Rückfrage zu Ihrer Anfrage',
             html: htmlBody
@@ -660,13 +660,13 @@ async function sendSimpleConfirmation(to: string, name: string) {
                 <p>Ein Mitarbeiter wird sich in Kürze bei Ihnen melden.</p>
 
                 <p>Mit freundlichen Grüßen<br>
-                Ihr Team von MHS Metallbau Hydraulik Service</p>
+                Ihr Team von FreyAI Visions</p>
 
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
-                    MHS Metallbau Hydraulik Service<br>
-                    Tel: +49 (0) xxx xxx xxx | Email: info@mhs-metallbau.de
+                    FreyAI Visions<br>
+                    Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de
                 </p>
             </div>
         </body>
@@ -680,9 +680,9 @@ async function sendSimpleConfirmation(to: string, name: string) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `MHS Info <${senderEmail}>`,
+            from: `FreyAI Visions Info <${senderEmail}>`,
             to: [to],
-            subject: 'Ihre Anfrage bei MHS Metallbau',
+            subject: 'Ihre Anfrage bei FreyAI Visions',
             html: htmlBody
         }),
     })

@@ -138,7 +138,7 @@ window.themeManager.getTheme();
 **Export (bereits da):**
 - Button: `btn-export-data`
 - Format: JSON
-- Dateiname: `mhs-backup-YYYY-MM-DD.json`
+- Dateiname: `freyai-backup-YYYY-MM-DD.json`
 - Inhalt: Store + Materials
 - Toast Notification
 

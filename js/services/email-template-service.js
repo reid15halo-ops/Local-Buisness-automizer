@@ -17,12 +17,12 @@ class EmailTemplateService {
         if (window.eInvoiceService && window.eInvoiceService.settings.businessData) {
             const bd = window.eInvoiceService.settings.businessData;
             return {
-                name: bd.name || 'MHS Metallbau Hydraulik Service',
+                name: bd.name || 'FreyAI Visions',
                 street: bd.street || 'Musterstraße 123',
                 city: bd.city || 'Musterstadt',
                 postalCode: bd.postalCode || '63843',
                 phone: bd.phone || '+49 6029 9922964',
-                email: bd.email || 'info@mhs-service.de',
+                email: bd.email || 'info@freyai-visions.de',
                 vatId: bd.vatId || 'DE123456789',
                 iban: bd.iban || 'DE89 3704 0044 0532 0130 00',
                 bic: bd.bic || 'COBADEFFXXX',
@@ -31,14 +31,14 @@ class EmailTemplateService {
         }
 
         // Fallback to localStorage
-        const stored = JSON.parse(localStorage.getItem('mhs_company_info') || '{}');
+        const stored = JSON.parse(localStorage.getItem('freyai_company_info') || '{}');
         return {
-            name: stored.name || 'MHS Metallbau Hydraulik Service',
+            name: stored.name || 'FreyAI Visions',
             street: stored.street || 'Musterstraße 123',
             city: stored.city || 'Musterstadt',
             postalCode: stored.postalCode || '63843',
             phone: stored.phone || '+49 6029 9922964',
-            email: stored.email || 'info@mhs-service.de',
+            email: stored.email || 'info@freyai-visions.de',
             vatId: stored.vatId || 'DE123456789',
             iban: stored.iban || 'DE89 3704 0044 0532 0130 00',
             bic: stored.bic || 'COBADEFFXXX',

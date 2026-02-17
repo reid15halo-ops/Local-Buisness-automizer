@@ -5,10 +5,10 @@
 
 class BankingService {
     constructor() {
-        this.accounts = JSON.parse(localStorage.getItem('mhs_bank_accounts') || '[]');
-        this.transactions = JSON.parse(localStorage.getItem('mhs_bank_transactions') || '[]');
-        this.matchedPayments = JSON.parse(localStorage.getItem('mhs_matched_payments') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_banking_settings') || '{}');
+        this.accounts = JSON.parse(localStorage.getItem('freyai_bank_accounts') || '[]');
+        this.transactions = JSON.parse(localStorage.getItem('freyai_bank_transactions') || '[]');
+        this.matchedPayments = JSON.parse(localStorage.getItem('freyai_matched_payments') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_banking_settings') || '{}');
 
         // Demo bank data
         this.demoBanks = [
@@ -436,9 +436,9 @@ class BankingService {
     }
 
     // Persistence
-    saveAccounts() { localStorage.setItem('mhs_bank_accounts', JSON.stringify(this.accounts)); }
-    saveTransactions() { localStorage.setItem('mhs_bank_transactions', JSON.stringify(this.transactions)); }
-    saveMatchedPayments() { localStorage.setItem('mhs_matched_payments', JSON.stringify(this.matchedPayments)); }
+    saveAccounts() { localStorage.setItem('freyai_bank_accounts', JSON.stringify(this.accounts)); }
+    saveTransactions() { localStorage.setItem('freyai_bank_transactions', JSON.stringify(this.transactions)); }
+    saveMatchedPayments() { localStorage.setItem('freyai_matched_payments', JSON.stringify(this.matchedPayments)); }
 }
 
 window.bankingService = new BankingService();

@@ -39,8 +39,8 @@ describe('CashFlowService', () => {
         // Load and instantiate the actual CashFlowService
         class CashFlowService {
             constructor() {
-                this.forecasts = JSON.parse(localStorage.getItem('mhs_cashflow_forecasts') || '[]');
-                this.settings = JSON.parse(localStorage.getItem('mhs_cashflow_settings') || '{}');
+                this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]');
+                this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}');
 
                 if (!this.settings.monthsToForecast) this.settings.monthsToForecast = 6;
                 if (!this.settings.safetyBuffer) this.settings.safetyBuffer = 5000;
@@ -338,8 +338,8 @@ describe('CashFlowService', () => {
             }
 
             save() {
-                localStorage.setItem('mhs_cashflow_forecasts', JSON.stringify(this.forecasts));
-                localStorage.setItem('mhs_cashflow_settings', JSON.stringify(this.settings));
+                localStorage.setItem('freyai_cashflow_forecasts', JSON.stringify(this.forecasts));
+                localStorage.setItem('freyai_cashflow_settings', JSON.stringify(this.settings));
             }
         }
 
@@ -711,13 +711,13 @@ describe('CashFlowService', () => {
         it('should save forecasts to localStorage', () => {
             cashFlowService.generateForecast(3);
 
-            expect(localStorage.setItem).toHaveBeenCalledWith('mhs_cashflow_forecasts', expect.any(String));
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai_cashflow_forecasts', expect.any(String));
         });
 
         it('should save settings to localStorage', () => {
             cashFlowService.save();
 
-            expect(localStorage.setItem).toHaveBeenCalledWith('mhs_cashflow_settings', expect.any(String));
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai_cashflow_settings', expect.any(String));
         });
     });
 });

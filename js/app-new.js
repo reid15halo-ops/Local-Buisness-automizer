@@ -1,5 +1,5 @@
 /* ============================================
-   MHS Workflow Demo - Application Orchestrator
+   FreyAI Visions Demo - Application Orchestrator
    Complete Quote-to-Invoice Workflow
    Modular Architecture Entry Point
    ============================================ */
@@ -245,7 +245,7 @@ function initSettings() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `mhs-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `freyai-backup-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         showToast('📥 Daten exportiert!', 'success');
     });

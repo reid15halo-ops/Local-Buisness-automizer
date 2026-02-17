@@ -447,7 +447,7 @@ Potential improvements for future versions:
 
 ## License & Attribution
 
-This PDF generator was built specifically for the MHS (Metallbau Hydraulik Service) business management application as a professional German business document generator.
+This PDF generator was built specifically for the FreyAI Visions business management application as a professional German business document generator.
 
 ### Dependencies
 - **ReportLab**: Open source PDF generation library

@@ -12,7 +12,7 @@ class SetupWizardService {
             {
                 id: 'welcome',
                 type: 'user',
-                title: 'Willkommen bei MHS Workflow!',
+                title: 'Willkommen bei FreyAI Visions!',
                 description: 'Bevor es losgeht, brauchen wir ein paar Angaben für Ihre Angebote und Rechnungen.',
                 required: true,
                 fields: [
@@ -71,7 +71,7 @@ class SetupWizardService {
                 id: 'complete',
                 type: 'user',
                 title: 'Fertig! ✓',
-                description: 'Ihre Firmendaten wurden gespeichert. Sie können jetzt direkt mit MHS Workflow arbeiten.',
+                description: 'Ihre Firmendaten wurden gespeichert. Sie können jetzt direkt mit FreyAI Visions arbeiten.',
                 required: false,
                 fields: []
             }

@@ -5,19 +5,19 @@
 
 class EInvoiceService {
     constructor() {
-        this.settings = JSON.parse(localStorage.getItem('mhs_einvoice_settings') || '{}');
-        this.generatedInvoices = JSON.parse(localStorage.getItem('mhs_einvoice_generated') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_einvoice_settings') || '{}');
+        this.generatedInvoices = JSON.parse(localStorage.getItem('freyai_einvoice_generated') || '[]');
 
         // Default business data
         if (!this.settings.businessData) {
             this.settings.businessData = {
-                name: 'MHS Metallbau Hydraulik Service',
+                name: 'FreyAI Visions',
                 street: 'Musterstraße 123',
                 city: 'Musterstadt',
                 postalCode: '63843',
                 country: 'DE',
                 vatId: 'DE123456789',
-                email: 'info@mhs-service.de',
+                email: 'info@freyai-visions.de',
                 phone: '+49 6029 9922964',
                 iban: 'DE89 3704 0044 0532 0130 00',
                 bic: 'COBADEFFXXX',
@@ -422,12 +422,12 @@ ${positionen.map((pos, i) => `
     // Update business data
     updateBusinessData(data) {
         this.settings.businessData = { ...this.settings.businessData, ...data };
-        localStorage.setItem('mhs_einvoice_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_einvoice_settings', JSON.stringify(this.settings));
     }
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_einvoice_generated', JSON.stringify(this.generatedInvoices));
+        localStorage.setItem('freyai_einvoice_generated', JSON.stringify(this.generatedInvoices));
     }
 }
 

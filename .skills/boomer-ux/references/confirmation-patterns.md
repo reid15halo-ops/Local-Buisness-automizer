@@ -1,6 +1,6 @@
 # Confirmation Dialog Patterns
 
-Reusable confirmation dialog implementations for the MHS Workflow app.
+Reusable confirmation dialog implementations for the FreyAI Visions app.
 
 ## Base Pattern: `showConfirmDialog(options)`
 

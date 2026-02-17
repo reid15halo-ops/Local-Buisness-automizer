@@ -1,4 +1,4 @@
-# MHS Workflow — Local Business Automizer
+# FreyAI Visions — Local Business Automizer
 
 > AI-powered business suite for German craftsmen (Handwerker)
 
@@ -59,8 +59,8 @@ ssh pi@raspberrypi.local 'bash -s' < raspberry-pi-auto-install.sh
 
 **XAMPP (Windows):**
 1. Install XAMPP
-2. Copy `dist/*` to `C:\xampp\htdocs\mhs`
-3. Open http://localhost/mhs
+2. Copy `dist/*` to `C:\xampp\htdocs\freyai`
+3. Open http://localhost/freyai
 
 ## Project Structure
 
@@ -119,7 +119,7 @@ npm run build   # Production build
 # Create production package
 bash deploy.sh
 
-# Output: ./dist/ directory and mhs-production-*.zip
+# Output: ./dist/ directory and freyai-production-*.zip
 ```
 
 ### Keyboard Shortcuts

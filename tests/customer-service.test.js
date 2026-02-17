@@ -21,8 +21,8 @@ global.localStorage = localStorageMock;
 
 class CustomerService {
   constructor() {
-    this.customers = JSON.parse(localStorage.getItem('mhs_customers') || '[]');
-    this.interactions = JSON.parse(localStorage.getItem('mhs_interactions') || '[]');
+    this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]');
+    this.interactions = JSON.parse(localStorage.getItem('freyai_interactions') || '[]');
   }
 
   addCustomer(customer) {
@@ -245,11 +245,11 @@ class CustomerService {
   }
 
   save() {
-    localStorage.setItem('mhs_customers', JSON.stringify(this.customers));
+    localStorage.setItem('freyai_customers', JSON.stringify(this.customers));
   }
 
   saveInteractions() {
-    localStorage.setItem('mhs_interactions', JSON.stringify(this.interactions));
+    localStorage.setItem('freyai_interactions', JSON.stringify(this.interactions));
   }
 }
 
@@ -758,7 +758,7 @@ describe('CustomerService', () => {
         email: 'test@example.com'
       });
 
-      const stored = JSON.parse(localStorage.getItem('mhs_customers'));
+      const stored = JSON.parse(localStorage.getItem('freyai_customers'));
       expect(stored.length).toBe(1);
       expect(stored[0].name).toBe('Test Customer');
     });
@@ -774,7 +774,7 @@ describe('CustomerService', () => {
       const customer = service.addCustomer({ name: 'Test' });
       service.addInteraction(customer.id, { type: 'email' });
 
-      const stored = JSON.parse(localStorage.getItem('mhs_interactions'));
+      const stored = JSON.parse(localStorage.getItem('freyai_interactions'));
       expect(stored.length).toBe(1);
     });
   });

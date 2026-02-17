@@ -1,6 +1,6 @@
 {
-    "name": "MHS Workflow",
-    "short_name": "MHS",
+    "name": "FreyAI Visions",
+    "short_name": "FreyAI",
     "description": "Small Business Automation Tool - Anfrage bis Rechnung",
     "id": "/index.html",
     "start_url": "/index.html",

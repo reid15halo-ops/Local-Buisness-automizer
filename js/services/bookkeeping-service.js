@@ -5,15 +5,15 @@
 
 class BookkeepingService {
     constructor() {
-        this.buchungen = JSON.parse(localStorage.getItem('mhs_buchungen') || '[]');
-        this.einstellungen = JSON.parse(localStorage.getItem('mhs_buchhaltung_settings') || '{}');
+        this.buchungen = JSON.parse(localStorage.getItem('freyai_buchungen') || '[]');
+        this.einstellungen = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings') || '{}');
 
         // Default settings
         if (!this.einstellungen.kleinunternehmer) {
             this.einstellungen = {
                 kleinunternehmer: false,          // § 19 UStG
                 umsatzsteuersatz: 19,              // Standard 19%
-                firmenName: 'MHS Metallbau Hydraulik Service',
+                firmenName: 'FreyAI Visions',
                 steuernummer: '',
                 ustIdNr: '',
                 finanzamt: '',
@@ -560,11 +560,11 @@ class BookkeepingService {
     // Persistence
     // ============================================
     save() {
-        localStorage.setItem('mhs_buchungen', JSON.stringify(this.buchungen));
+        localStorage.setItem('freyai_buchungen', JSON.stringify(this.buchungen));
     }
 
     saveSettings() {
-        localStorage.setItem('mhs_buchhaltung_settings', JSON.stringify(this.einstellungen));
+        localStorage.setItem('freyai_buchhaltung_settings', JSON.stringify(this.einstellungen));
     }
 
     // ============================================

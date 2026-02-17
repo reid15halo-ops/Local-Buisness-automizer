@@ -5,8 +5,8 @@
 
 class PhotoService {
     constructor() {
-        this.photos = JSON.parse(localStorage.getItem('mhs_photos') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_photo_settings') || '{}');
+        this.photos = JSON.parse(localStorage.getItem('freyai_photos') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_photo_settings') || '{}');
 
         // Default settings
         if (!this.settings.maxPhotoSize) {this.settings.maxPhotoSize = 1024 * 1024;} // 1MB
@@ -279,12 +279,12 @@ class PhotoService {
     // Persistence
     save() {
         try {
-            localStorage.setItem('mhs_photos', JSON.stringify(this.photos));
+            localStorage.setItem('freyai_photos', JSON.stringify(this.photos));
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
                 console.error('Storage quota exceeded. Clearing old photos...');
                 this.clearOldPhotos(30);
-                localStorage.setItem('mhs_photos', JSON.stringify(this.photos));
+                localStorage.setItem('freyai_photos', JSON.stringify(this.photos));
             }
         }
     }

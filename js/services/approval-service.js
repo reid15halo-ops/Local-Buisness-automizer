@@ -5,8 +5,8 @@
 
 class ApprovalService {
     constructor() {
-        this.workflows = JSON.parse(localStorage.getItem('mhs_approval_workflows') || '[]');
-        this.requests = JSON.parse(localStorage.getItem('mhs_approval_requests') || '[]');
+        this.workflows = JSON.parse(localStorage.getItem('freyai_approval_workflows') || '[]');
+        this.requests = JSON.parse(localStorage.getItem('freyai_approval_requests') || '[]');
         this.templates = this.initDefaultTemplates();
     }
 
@@ -341,11 +341,11 @@ class ApprovalService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_approval_requests', JSON.stringify(this.requests));
+        localStorage.setItem('freyai_approval_requests', JSON.stringify(this.requests));
     }
 
     saveTemplates() {
-        localStorage.setItem('mhs_approval_templates', JSON.stringify(this.templates));
+        localStorage.setItem('freyai_approval_templates', JSON.stringify(this.templates));
     }
 }
 

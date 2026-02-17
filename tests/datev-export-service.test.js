@@ -28,8 +28,8 @@ describe('DatevExportService', () => {
 
         class DatevExportService {
             constructor() {
-                this.exports = JSON.parse(localStorage.getItem('mhs_datev_exports') || '[]');
-                this.settings = JSON.parse(localStorage.getItem('mhs_datev_settings') || '{}');
+                this.exports = JSON.parse(localStorage.getItem('freyai_datev_exports') || '[]');
+                this.settings = JSON.parse(localStorage.getItem('freyai_datev_settings') || '{}');
 
                 if (!this.settings.beraterNummer) this.settings.beraterNummer = '12345';
                 if (!this.settings.mandantenNummer) this.settings.mandantenNummer = '67890';
@@ -323,11 +323,11 @@ describe('DatevExportService', () => {
 
             updateSettings(newSettings) {
                 this.settings = { ...this.settings, ...newSettings };
-                localStorage.setItem('mhs_datev_settings', JSON.stringify(this.settings));
+                localStorage.setItem('freyai_datev_settings', JSON.stringify(this.settings));
             }
 
             save() {
-                localStorage.setItem('mhs_datev_exports', JSON.stringify(this.exports));
+                localStorage.setItem('freyai_datev_exports', JSON.stringify(this.exports));
             }
         }
 
@@ -745,13 +745,13 @@ describe('DatevExportService', () => {
 
             datevService.generateExport('2026-01-01', '2026-01-31');
 
-            expect(localStorage.setItem).toHaveBeenCalledWith('mhs_datev_exports', expect.any(String));
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai_datev_exports', expect.any(String));
         });
 
         it('should save settings to localStorage', () => {
             datevService.updateSettings({ beraterNummer: '55555' });
 
-            expect(localStorage.setItem).toHaveBeenCalledWith('mhs_datev_settings', expect.any(String));
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai_datev_settings', expect.any(String));
         });
     });
 });

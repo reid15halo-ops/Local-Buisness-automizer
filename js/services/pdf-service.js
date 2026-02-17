@@ -34,13 +34,13 @@ class PDFService {
     getSettings() {
         const store = window.storeService?.state?.settings || {};
         return {
-            companyName: store.companyName || 'MHS Metallbau Hydraulik Service',
+            companyName: store.companyName || 'FreyAI Visions',
             owner: store.owner || 'Max Mustermann',
             address: store.address || 'Handwerkerring 38a, 63776 Mömbris-Rothengrund',
             taxId: store.taxId || '12/345/67890',
             vatId: store.vatId || 'DE123456789',
             phone: store.phone || '+49 6029 99 22 96 4',
-            email: store.email || 'info@mhs-metallbau.de',
+            email: store.email || 'info@freyai-visions.de',
             iban: store.iban || 'DE00 0000 0000 0000 0000 00',
             bank: store.bank || 'Sparkasse Aschaffenburg'
         };

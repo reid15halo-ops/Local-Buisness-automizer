@@ -7,8 +7,8 @@
 
 class PushMessengerService {
     constructor() {
-        this.STORAGE_KEY = 'mhs_push_messenger';
-        this.SENT_LOG_KEY = 'mhs_push_sent_log';
+        this.STORAGE_KEY = 'freyai_push_messenger';
+        this.SENT_LOG_KEY = 'freyai_push_sent_log';
         this.config = this._loadConfig();
         this.sentLog = this._loadSentLog();
     }
@@ -55,7 +55,7 @@ class PushMessengerService {
      * @returns {Promise<Object>} { success: boolean, error?: string }
      */
     async testConnection(channel) {
-        const testMsg = '✅ MHS Workflow — Test-Nachricht erfolgreich!\n\nIhre Benachrichtigungen sind aktiv.';
+        const testMsg = '✅ FreyAI Visions — Test-Nachricht erfolgreich!\n\nIhre Benachrichtigungen sind aktiv.';
 
         if (channel === 'telegram') {
             return this._sendTelegram(testMsg);

@@ -5,7 +5,7 @@
 
 class ThemeService {
     constructor() {
-        this.settings = JSON.parse(localStorage.getItem('mhs_theme_settings') || '{}');
+        this.settings = JSON.parse(localStorage.getItem('freyai_theme_settings') || '{}');
 
         // Default settings
         if (!this.settings.theme) {
@@ -173,7 +173,7 @@ class ThemeService {
 
     // Persistence
     save() {
-        localStorage.setItem('mhs_theme_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_theme_settings', JSON.stringify(this.settings));
     }
 }
 

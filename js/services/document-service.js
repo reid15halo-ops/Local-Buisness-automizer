@@ -5,7 +5,7 @@
 
 class DocumentService {
     constructor() {
-        this.documents = JSON.parse(localStorage.getItem('mhs_documents') || '[]');
+        this.documents = JSON.parse(localStorage.getItem('freyai_documents') || '[]');
         this.categories = ['rechnung', 'quittung', 'vertrag', 'angebot', 'lieferschein', 'sonstiges'];
         this.ocrLibLoaded = false;
     }
@@ -307,7 +307,7 @@ class DocumentService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_documents', JSON.stringify(this.documents)); }
+    save() { localStorage.setItem('freyai_documents', JSON.stringify(this.documents)); }
 }
 
 window.documentService = new DocumentService();

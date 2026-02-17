@@ -89,7 +89,7 @@ class InvoiceTemplateService {
      * Load custom templates from localStorage
      */
     loadCustomTemplates() {
-        const custom = localStorage.getItem('mhs_invoice_templates');
+        const custom = localStorage.getItem('freyai_invoice_templates');
         if (custom) {
             try {
                 const parsed = JSON.parse(custom);
@@ -110,7 +110,7 @@ class InvoiceTemplateService {
                 custom[key] = this.templates[key];
             }
         });
-        localStorage.setItem('mhs_invoice_templates', JSON.stringify(custom));
+        localStorage.setItem('freyai_invoice_templates', JSON.stringify(custom));
     }
 
     /**
@@ -191,12 +191,12 @@ class InvoiceTemplateService {
 
         // Fallback to defaults
         return {
-            name: 'MHS Metallbau Hydraulik Service',
+            name: 'FreyAI Visions',
             strasse: 'Musterstraße 123',
             ort: 'Musterstadt',
             plz: '63843',
             telefon: '+49 6029 9922964',
-            email: 'info@mhs-service.de',
+            email: 'info@freyai-visions.de',
             ustId: 'DE123456789',
             iban: 'DE89 3704 0044 0532 0130 00',
             bic: 'COBADEFFXXX',

@@ -7,7 +7,7 @@ class UserManagerService {
     constructor() {
         this.currentUser = null;
         this.listeners = [];
-        this.SESSION_KEY = 'mhs_current_user_session';
+        this.SESSION_KEY = 'freyai_current_user_session';
         this.SALT_LENGTH = 16; // bytes
         this.ITERATIONS = 100000; // PBKDF2 iterations
         this.KEY_LENGTH = 32; // bytes (256 bits)

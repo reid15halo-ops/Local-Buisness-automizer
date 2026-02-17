@@ -5,10 +5,10 @@
 
 class TimeTrackingService {
     constructor() {
-        this.entries = JSON.parse(localStorage.getItem('mhs_time_entries') || '[]');
-        this.employees = JSON.parse(localStorage.getItem('mhs_employees') || '[]');
-        this.activeTimers = JSON.parse(localStorage.getItem('mhs_active_timers') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('mhs_time_settings') || '{}');
+        this.entries = JSON.parse(localStorage.getItem('freyai_time_entries') || '[]');
+        this.employees = JSON.parse(localStorage.getItem('freyai_employees') || '[]');
+        this.activeTimers = JSON.parse(localStorage.getItem('freyai_active_timers') || '{}');
+        this.settings = JSON.parse(localStorage.getItem('freyai_time_settings') || '{}');
 
         // Default settings
         if (!this.settings.dailyHours) {this.settings.dailyHours = 8;}
@@ -317,10 +317,10 @@ class TimeTrackingService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_time_entries', JSON.stringify(this.entries)); }
-    saveTimers() { localStorage.setItem('mhs_active_timers', JSON.stringify(this.activeTimers)); }
-    saveEmployees() { localStorage.setItem('mhs_employees', JSON.stringify(this.employees)); }
-    saveSettings() { localStorage.setItem('mhs_time_settings', JSON.stringify(this.settings)); }
+    save() { localStorage.setItem('freyai_time_entries', JSON.stringify(this.entries)); }
+    saveTimers() { localStorage.setItem('freyai_active_timers', JSON.stringify(this.activeTimers)); }
+    saveEmployees() { localStorage.setItem('freyai_employees', JSON.stringify(this.employees)); }
+    saveSettings() { localStorage.setItem('freyai_time_settings', JSON.stringify(this.settings)); }
 }
 
 window.timeTrackingService = new TimeTrackingService();

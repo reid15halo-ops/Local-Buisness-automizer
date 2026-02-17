@@ -6,7 +6,7 @@
 class ThemeManager {
     constructor() {
         this.currentTheme = 'dark';
-        this.storageKey = 'mhs-theme';
+        this.storageKey = 'freyai-theme';
 
         this.init();
     }

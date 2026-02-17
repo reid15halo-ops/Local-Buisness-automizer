@@ -5,7 +5,7 @@
 
 class DBService {
     constructor() {
-        this.dbName = 'mhs_app_db';
+        this.dbName = 'freyai_app_db';
         this.storeName = 'app_state'; // Legacy, kept for backward compatibility
         this.version = 2; // ⬆️ Upgraded to v2
         this.db = null;

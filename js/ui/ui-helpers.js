@@ -125,7 +125,7 @@ window.UI = {
     },
 
     exportAllData() {
-        const data = localStorage.getItem('mhs-workflow-store');
+        const data = localStorage.getItem('freyai-workflow-store');
         if (!data) {
             this.showToast('Keine Daten vorhanden', 'warning');
             return;
@@ -135,7 +135,7 @@ window.UI = {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `mhs-backup-full-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `freyai-backup-full-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
         this.showToast('Daten exportiert!', 'success');

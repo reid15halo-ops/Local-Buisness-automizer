@@ -1,8 +1,8 @@
-# 📊 Feature Comparison: Current MHS Tool vs. 30-Feature Plan
+# 📊 Feature Comparison: Current FreyAI Visions Tool vs. 30-Feature Plan
 
 ## Overview
 
-This document compares the **existing MHS Workflow Demo** functionality with the proposed **30-Feature Plan** for small business automation.
+This document compares the **existing FreyAI Visions Demo** functionality with the proposed **30-Feature Plan** for small business automation.
 
 ---
 
@@ -181,7 +181,7 @@ class EmailService {
 ### Current State
 ```
 ┌─────────────────────────────────────────────────┐
-│                    MHS Tool                     │
+│                    FreyAI Visions Tool                     │
 ├─────────────────────────────────────────────────┤
 │  📥 Anfragen  │  📋 Angebote  │  📦 Aufträge   │
 │  💰 Rechnungen │  ⚠️ Mahnwesen │  📊 Buchhaltung │
@@ -215,4 +215,4 @@ class EmailService {
 ---
 
 *Generated: 2026-01-15*
-*Comparison between existing MHS Workflow Demo and proposed 30-Feature Plan*
+*Comparison between existing FreyAI Visions Demo and proposed 30-Feature Plan*

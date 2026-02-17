@@ -1433,7 +1433,7 @@ class CalendarUIService {
 
         let icsContent = 'BEGIN:VCALENDAR\n';
         icsContent += 'VERSION:2.0\n';
-        icsContent += 'PRODID:-//MHS Workflow//Calendar Export//EN\n';
+        icsContent += 'PRODID:-//FreyAI Visions//Calendar Export//EN\n';
         icsContent += 'CALSCALE:GREGORIAN\n';
         icsContent += 'METHOD:PUBLISH\n';
 
@@ -1445,7 +1445,7 @@ class CalendarUIService {
             const endTime = event.endTime.replace(/:/g, '');
 
             icsContent += 'BEGIN:VEVENT\n';
-            icsContent += `UID:${event.id}@mhs-workflow.local\n`;
+            icsContent += `UID:${event.id}@freyai-visions.local\n`;
             icsContent += `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z\n`;
             icsContent += `DTSTART:${startDate}T${startTime}00\n`;
             icsContent += `DTEND:${startDate}T${endTime}00\n`;

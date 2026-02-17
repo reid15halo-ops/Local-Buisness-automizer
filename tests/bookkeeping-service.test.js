@@ -21,14 +21,14 @@ global.localStorage = localStorageMock;
 
 class BookkeepingService {
   constructor() {
-    this.buchungen = JSON.parse(localStorage.getItem('mhs_buchungen') || '[]');
-    this.einstellungen = JSON.parse(localStorage.getItem('mhs_buchhaltung_settings') || '{}');
+    this.buchungen = JSON.parse(localStorage.getItem('freyai_buchungen') || '[]');
+    this.einstellungen = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings') || '{}');
 
     if (!this.einstellungen.kleinunternehmer) {
       this.einstellungen = {
         kleinunternehmer: false,
         umsatzsteuersatz: 19,
-        firmenName: 'MHS Metallbau Hydraulik Service',
+        firmenName: 'FreyAI Visions',
         steuernummer: '',
         ustIdNr: '',
         finanzamt: '',
@@ -223,11 +223,11 @@ class BookkeepingService {
   }
 
   save() {
-    localStorage.setItem('mhs_buchungen', JSON.stringify(this.buchungen));
+    localStorage.setItem('freyai_buchungen', JSON.stringify(this.buchungen));
   }
 
   saveSettings() {
-    localStorage.setItem('mhs_buchhaltung_settings', JSON.stringify(this.einstellungen));
+    localStorage.setItem('freyai_buchhaltung_settings', JSON.stringify(this.einstellungen));
   }
 }
 
@@ -647,7 +647,7 @@ describe('BookkeepingService', () => {
         brutto: 100
       });
 
-      const stored = JSON.parse(localStorage.getItem('mhs_buchungen'));
+      const stored = JSON.parse(localStorage.getItem('freyai_buchungen'));
       expect(stored.length).toBe(1);
     });
 
@@ -666,7 +666,7 @@ describe('BookkeepingService', () => {
     it('should persist settings to localStorage', () => {
       service.updateEinstellungen({ kleinunternehmer: true });
 
-      const stored = JSON.parse(localStorage.getItem('mhs_buchhaltung_settings'));
+      const stored = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings'));
       expect(stored.kleinunternehmer).toBe(true);
     });
   });

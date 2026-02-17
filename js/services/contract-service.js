@@ -5,8 +5,8 @@
 
 class ContractService {
     constructor() {
-        this.contracts = JSON.parse(localStorage.getItem('mhs_contracts') || '[]');
-        this.invoiceHistory = JSON.parse(localStorage.getItem('mhs_contract_invoices') || '[]');
+        this.contracts = JSON.parse(localStorage.getItem('freyai_contracts') || '[]');
+        this.invoiceHistory = JSON.parse(localStorage.getItem('freyai_contract_invoices') || '[]');
 
         // Contract templates
         this.templates = [
@@ -369,8 +369,8 @@ class ContractService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_contracts', JSON.stringify(this.contracts)); }
-    saveInvoiceHistory() { localStorage.setItem('mhs_contract_invoices', JSON.stringify(this.invoiceHistory)); }
+    save() { localStorage.setItem('freyai_contracts', JSON.stringify(this.contracts)); }
+    saveInvoiceHistory() { localStorage.setItem('freyai_contract_invoices', JSON.stringify(this.invoiceHistory)); }
 }
 
 window.contractService = new ContractService();

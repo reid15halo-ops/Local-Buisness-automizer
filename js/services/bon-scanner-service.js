@@ -6,7 +6,7 @@
 
 class BonScannerService {
     constructor() {
-        this.wareneingaenge = JSON.parse(localStorage.getItem('mhs_wareneingaenge') || '[]');
+        this.wareneingaenge = JSON.parse(localStorage.getItem('freyai_wareneingaenge') || '[]');
 
         // Regex-Muster für bekannte Baumarkt-/Lieferanten-Bons
         this.supplierPatterns = {
@@ -1705,7 +1705,7 @@ class BonScannerService {
      */
     _save() {
         try {
-            localStorage.setItem('mhs_wareneingaenge', JSON.stringify(this.wareneingaenge));
+            localStorage.setItem('freyai_wareneingaenge', JSON.stringify(this.wareneingaenge));
         } catch (error) {
             console.error('Fehler beim Speichern der Wareneingänge:', error);
         }

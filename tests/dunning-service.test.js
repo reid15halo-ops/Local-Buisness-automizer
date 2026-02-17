@@ -23,8 +23,8 @@ describe('DunningService', () => {
 
         const DunningServiceClass = class DunningService {
             constructor() {
-                this.mahnungen = JSON.parse(localStorage.getItem('mhs_mahnungen') || '[]');
-                this.inkassoFaelle = JSON.parse(localStorage.getItem('mhs_inkasso') || '[]');
+                this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]');
+                this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]');
 
                 this.eskalationsStufen = [
                     { tag: 0, typ: 'rechnung', name: 'Rechnung erstellt', gebuehr: 0 },
@@ -167,11 +167,11 @@ Rechnung: ${rechnung.id}`
             }
 
             save() {
-                localStorage.setItem('mhs_mahnungen', JSON.stringify(this.mahnungen));
+                localStorage.setItem('freyai_mahnungen', JSON.stringify(this.mahnungen));
             }
 
             saveInkasso() {
-                localStorage.setItem('mhs_inkasso', JSON.stringify(this.inkassoFaelle));
+                localStorage.setItem('freyai_inkasso', JSON.stringify(this.inkassoFaelle));
             }
 
             formatCurrency(amount) {
@@ -595,7 +595,7 @@ Rechnung: ${rechnung.id}`
 
             dunningService.erstelleMahnung(rechnung, dunningService.eskalationsStufen[2]);
 
-            expect(localStorage.setItem).toHaveBeenCalledWith('mhs_mahnungen', expect.any(String));
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai_mahnungen', expect.any(String));
         });
 
         it('should save inkasso cases to localStorage', () => {
@@ -609,7 +609,7 @@ Rechnung: ${rechnung.id}`
 
             dunningService.erstelleInkassoFall(rechnung);
 
-            expect(localStorage.setItem).toHaveBeenCalledWith('mhs_inkasso', expect.any(String));
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai_inkasso', expect.any(String));
         });
     });
 });

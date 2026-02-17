@@ -1,7 +1,7 @@
 ---
 name: boomer-ux
 description: |
-  UX patterns and rules for making the MHS Workflow app usable by non-technical German Handwerker (craftsmen) aged 45-65+ with zero IT skills. Use this skill ANY time you are modifying UI, adding features, creating new views, editing HTML/CSS/JS that affects user interaction, or reviewing the app for usability. Also trigger when the user mentions: accessibility, usability, "easy to use", "simple", "Handwerker", "non-technical", "boomer", user-friendly, onboarding, tooltips, confirmations, or error messages. This is the most important skill for this project — the target user is NOT a developer.
+  UX patterns and rules for making the FreyAI Visions app usable by non-technical German Handwerker (craftsmen) aged 45-65+ with zero IT skills. Use this skill ANY time you are modifying UI, adding features, creating new views, editing HTML/CSS/JS that affects user interaction, or reviewing the app for usability. Also trigger when the user mentions: accessibility, usability, "easy to use", "simple", "Handwerker", "non-technical", "boomer", user-friendly, onboarding, tooltips, confirmations, or error messages. This is the most important skill for this project — the target user is NOT a developer.
 ---
 
 # Boomer UX — Design Rules for Non-Technical Handwerker

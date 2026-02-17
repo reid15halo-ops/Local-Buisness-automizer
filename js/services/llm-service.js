@@ -8,7 +8,7 @@
 
 class LLMService {
     constructor() {
-        this.config = JSON.parse(localStorage.getItem('mhs_llm_config') || '{"provider":"gemini"}');
+        this.config = JSON.parse(localStorage.getItem('freyai_llm_config') || '{"provider":"gemini"}');
         // Default configs
         if (!this.config.provider) {this.config.provider = 'gemini';}
         if (!this.config.ollamaUrl) {this.config.ollamaUrl = 'http://localhost:11434';}
@@ -41,7 +41,7 @@ class LLMService {
 
     saveConfig(newConfig) {
         this.config = { ...this.config, ...newConfig };
-        localStorage.setItem('mhs_llm_config', JSON.stringify(this.config));
+        localStorage.setItem('freyai_llm_config', JSON.stringify(this.config));
     }
 
     get isConfigured() {
@@ -53,8 +53,8 @@ class LLMService {
     async chat(message, history) {
         if (!this.isConfigured) {return null;}
 
-        const systemPrompt = `Du bist ein erfahrener Fachberater für die Firma MHS Metallbau Hydraulik Service (MHS).
-WICHTIG: Antworte AUSSCHLIESSLICH auf Fragen, die einen direkten Bezug zum Unternehmen MHS oder den angebotenen Dienstleistungen (Metallbau, Hydraulik, Schweißen, Rohrleitungsbau) haben.
+        const systemPrompt = `Du bist ein erfahrener Fachberater für die Firma FreyAI Visions (FreyAI Visions).
+WICHTIG: Antworte AUSSCHLIESSLICH auf Fragen, die einen direkten Bezug zum Unternehmen FreyAI Visions oder den angebotenen Dienstleistungen (Metallbau, Hydraulik, Schweißen, Rohrleitungsbau) haben.
 
 Deine Expertise umfasst:
 - Metallbau (Geländer, Treppen, Tore, Carports)
@@ -65,7 +65,7 @@ Deine Expertise umfasst:
 RESTRIKTIONEN:
 - Beantworte keine privaten Fragen.
 - Beantworte keine Fragen zu allgemeinem Wissen, Witzen, Wetter oder Politik.
-- Wenn eine Frage keinen Bezug zu MHS oder Technik hat, antworte höflich: "Entschuldigung, als Fachberater von MHS kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?"
+- Wenn eine Frage keinen Bezug zu FreyAI Visions oder Technik hat, antworte höflich: "Entschuldigung, als Fachberater von FreyAI Visions kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?"
 
 Verhalte dich professionell, höflich und lösungsorientiert.
 Antworte präzise auf die Kundenfrage. Wenn technische Details fehlen (z.B. Maße, Material), frage gezielt danach.

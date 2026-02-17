@@ -4,8 +4,8 @@
 
 class CalendarService {
     constructor() {
-        this.appointments = JSON.parse(localStorage.getItem('mhs_appointments') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_calendar_settings') || '{}');
+        this.appointments = JSON.parse(localStorage.getItem('freyai_appointments') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_calendar_settings') || '{}');
 
         // Default working hours
         if (!this.settings.workingHours) {
@@ -266,8 +266,8 @@ class CalendarService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_appointments', JSON.stringify(this.appointments)); }
-    saveSettings() { localStorage.setItem('mhs_calendar_settings', JSON.stringify(this.settings)); }
+    save() { localStorage.setItem('freyai_appointments', JSON.stringify(this.appointments)); }
+    saveSettings() { localStorage.setItem('freyai_calendar_settings', JSON.stringify(this.settings)); }
 }
 
 window.calendarService = new CalendarService();

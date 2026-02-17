@@ -1,5 +1,5 @@
 /* ============================================
-   MHS Workflow Demo - Application Logic
+   FreyAI Visions Demo - Application Logic
    Complete Quote-to-Invoice Workflow
    ============================================ */
 
@@ -611,7 +611,7 @@ Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
 
 Mit freundlichen Grüßen
-MHS Metallbau Hydraulik Service`
+FreyAI Visions`
         };
 
         const text = templates[anfrage.leistungsart] || templates['default'];
@@ -2267,7 +2267,7 @@ function showRechnung(rechnungId) {
     preview.innerHTML = `
         <div class="rechnung-header">
             <div class="rechnung-firma">
-                ⚙️ MHS Metallbau<br>
+                ⚙️ FreyAI Visions<br>
                 <small style="font-weight: 400; font-size: 14px;">Hydraulik Service</small>
             </div>
             <div class="rechnung-nummer">
@@ -2280,7 +2280,7 @@ function showRechnung(rechnungId) {
             <div>
                 <div class="rechnung-label">Absender</div>
                 <p>
-                    MHS Metallbau Hydraulik Service<br>
+                    FreyAI Visions<br>
                     Handwerkerring 38a<br>
                     63776 Mömbris-Rothengrund<br>
                     Tel: +49 6029 99 22 96 4
@@ -2693,7 +2693,7 @@ function initSettings() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `mhs-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `freyai-backup-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         showToast('📥 Daten exportiert!', 'success');
     });
@@ -3748,10 +3748,10 @@ function addToRecentCustomers(kunde) {
 // ============================================
 // Customer Presets (Position Templates by Email)
 // ============================================
-const customerPresets = JSON.parse(localStorage.getItem('mhs_customer_presets') || '{}');
+const customerPresets = JSON.parse(localStorage.getItem('freyai_customer_presets') || '{}');
 
 function saveCustomerPresets() {
-    localStorage.setItem('mhs_customer_presets', JSON.stringify(customerPresets));
+    localStorage.setItem('freyai_customer_presets', JSON.stringify(customerPresets));
 }
 
 function initCustomerPresets() {

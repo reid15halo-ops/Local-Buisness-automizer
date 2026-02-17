@@ -1,12 +1,12 @@
 /* ============================================
-   AI Chat Assistant Service ("Ask MHS")
+   AI Chat Assistant Service ("Ask FreyAI")
    Natural language queries about business data
    ============================================ */
 
 class AiAssistantService {
     constructor() {
-        this.conversationHistory = JSON.parse(localStorage.getItem('mhs_ai_history') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_ai_settings') || '{}');
+        this.conversationHistory = JSON.parse(localStorage.getItem('freyai_ai_history') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_ai_settings') || '{}');
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'de';}
@@ -180,7 +180,7 @@ class AiAssistantService {
 
     // Generate AI response using Gemini
     async generateAiResponse(question, data, analysis) {
-        const systemPrompt = `Du bist ein hilfreicher Business-Assistent für einen deutschen Handwerksbetrieb (MHS Metallbau Hydraulik Service).
+        const systemPrompt = `Du bist ein hilfreicher Business-Assistent für einen deutschen Handwerksbetrieb (FreyAI Visions).
 Antworte kurz und präzise in deutscher Sprache.
 Nutze die bereitgestellten Daten für deine Antwort.
 Formatiere Geldbeträge als Euro (€).
@@ -326,7 +326,7 @@ Antworte direkt und hilfreich:`;
             this.conversationHistory = this.conversationHistory.slice(-100);
         }
 
-        localStorage.setItem('mhs_ai_history', JSON.stringify(this.conversationHistory));
+        localStorage.setItem('freyai_ai_history', JSON.stringify(this.conversationHistory));
     }
 
     // Get conversation history
@@ -337,7 +337,7 @@ Antworte direkt und hilfreich:`;
     // Clear history
     clearHistory() {
         this.conversationHistory = [];
-        localStorage.setItem('mhs_ai_history', JSON.stringify([]));
+        localStorage.setItem('freyai_ai_history', JSON.stringify([]));
     }
 }
 

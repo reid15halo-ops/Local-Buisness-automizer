@@ -25,8 +25,8 @@ describe('EmailService', () => {
         // Create EmailService class
         const EmailServiceClass = class EmailService {
             constructor() {
-                this.emails = JSON.parse(localStorage.getItem('mhs_emails') || '[]');
-                this.emailConfig = JSON.parse(localStorage.getItem('mhs_email_config') || '{}');
+                this.emails = JSON.parse(localStorage.getItem('freyai_emails') || '[]');
+                this.emailConfig = JSON.parse(localStorage.getItem('freyai_email_config') || '{}');
                 this.templates = this.loadDefaultTemplates();
 
                 this.categoryKeywords = {
@@ -365,11 +365,11 @@ describe('EmailService', () => {
             }
 
             save() {
-                localStorage.setItem('mhs_emails', JSON.stringify(this.emails));
+                localStorage.setItem('freyai_emails', JSON.stringify(this.emails));
             }
 
             saveConfig() {
-                localStorage.setItem('mhs_email_config', JSON.stringify(this.emailConfig));
+                localStorage.setItem('freyai_email_config', JSON.stringify(this.emailConfig));
             }
 
             generateId() {

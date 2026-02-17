@@ -12,7 +12,7 @@ class StoreService {
             rechnungen: [],
             activities: [],
             settings: {
-                companyName: 'MHS Metallbau Hydraulik Service',
+                companyName: 'FreyAI Visions',
                 owner: 'Max Mustermann',
                 address: 'Handwerkerring 38a, 12345 Musterstadt',
                 taxId: '12/345/67890',
@@ -23,7 +23,7 @@ class StoreService {
             currentAuftragId: null,
             currentRechnungId: null
         };
-        this.STORAGE_KEY = 'mhs-workflow-store';
+        this.STORAGE_KEY = 'freyai-workflow-store';
         this.subscribers = [];
         this.currentUserId = null; // Track which user's data is loaded
 
@@ -149,7 +149,7 @@ class StoreService {
 
         // Clear user-specific storage
         await window.dbService.clearUserData(userId);
-        localStorage.removeItem('mhs_customer_presets');
+        localStorage.removeItem('freyai_customer_presets');
 
         // Populate store in-place to preserve references in app.js
         Object.keys(this.store).forEach(key => {

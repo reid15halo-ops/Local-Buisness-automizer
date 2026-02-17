@@ -82,11 +82,11 @@ cd C:\Users\reid1\Documents\Local-Buisness-automizer
 bash deploy.sh
 
 # Upload zum Pi
-scp -r dist/* pi@raspberrypi.local:/tmp/mhs
+scp -r dist/* pi@raspberrypi.local:/tmp/freyai
 
 # Auf Pi installieren (SSH verbinden)
 ssh pi@raspberrypi.local
-sudo mv /tmp/mhs/* /var/www/html/
+sudo mv /tmp/freyai/* /var/www/html/
 sudo chown -R www-data:www-data /var/www/html
 ```
 
@@ -112,13 +112,13 @@ sudo umount /mnt/usb
 
 ### Virtual Host (optional)
 ```bash
-sudo nano /etc/apache2/sites-available/mhs.conf
+sudo nano /etc/apache2/sites-available/freyai.conf
 ```
 
 ```apache
 <VirtualHost *:80>
     ServerName raspberrypi.local
-    ServerAlias mhs.local
+    ServerAlias freyai.local
     DocumentRoot /var/www/html
 
     <Directory /var/www/html>
@@ -127,14 +127,14 @@ sudo nano /etc/apache2/sites-available/mhs.conf
         Require all granted
     </Directory>
 
-    ErrorLog ${APACHE_LOG_DIR}/mhs-error.log
-    CustomLog ${APACHE_LOG_DIR}/mhs-access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/freyai-error.log
+    CustomLog ${APACHE_LOG_DIR}/freyai-access.log combined
 </VirtualHost>
 ```
 
 ```bash
 # Site aktivieren
-sudo a2ensite mhs.conf
+sudo a2ensite freyai.conf
 sudo systemctl reload apache2
 ```
 
@@ -209,8 +209,8 @@ sudo certbot renew --dry-run
 ```bash
 # Self-Signed Zertifikat
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/ssl/private/mhs.key \
-    -out /etc/ssl/certs/mhs.crt
+    -keyout /etc/ssl/private/freyai.key \
+    -out /etc/ssl/certs/freyai.crt
 
 # Apache SSL aktivieren
 sudo a2enmod ssl
@@ -248,7 +248,7 @@ curl http://localhost/server-status
 ### Automatisches Backup
 ```bash
 # Backup Script erstellen
-sudo nano /usr/local/bin/mhs-backup.sh
+sudo nano /usr/local/bin/freyai-backup.sh
 ```
 
 ```bash
@@ -257,18 +257,18 @@ BACKUP_DIR="/home/pi/backups"
 DATE=$(date +%Y%m%d-%H%M%S)
 
 mkdir -p $BACKUP_DIR
-tar -czf $BACKUP_DIR/mhs-$DATE.tar.gz /var/www/html
+tar -czf $BACKUP_DIR/freyai-$DATE.tar.gz /var/www/html
 find $BACKUP_DIR -mtime +7 -delete  # Alte Backups löschen
 ```
 
 ```bash
 # Ausführbar machen
-sudo chmod +x /usr/local/bin/mhs-backup.sh
+sudo chmod +x /usr/local/bin/freyai-backup.sh
 
 # Cronjob einrichten (täglich 2 Uhr)
 crontab -e
 # Zeile hinzufügen:
-0 2 * * * /usr/local/bin/mhs-backup.sh
+0 2 * * * /usr/local/bin/freyai-backup.sh
 ```
 
 ### Log Rotation

@@ -23,7 +23,7 @@ class AdminPanelUI {
         if (!this.container) {return;}
 
         // Listen for session expiry
-        document.addEventListener('mhs:admin-session-expired', () => {
+        document.addEventListener('freyai:admin-session-expired', () => {
             this.renderLogin();
         });
 
@@ -253,7 +253,7 @@ class AdminPanelUI {
                             <summary>Zugangsdaten vergessen?</summary>
                             <p>Kontaktieren Sie Ihren Systemadministrator oder Developer.
                             Im Notfall können die Zugangsdaten über die Browser-Konsole mit
-                            <code>localStorage.removeItem('mhs_admin_panel_setup_complete')</code>
+                            <code>localStorage.removeItem('freyai_admin_panel_setup_complete')</code>
                             zurückgesetzt werden (erfordert Neueinrichtung).</p>
                         </details>
                     </div>
@@ -625,7 +625,7 @@ class AdminPanelUI {
                 <div class="admin-panel-warning-box admin-panel-warning-danger">
                     <div class="admin-panel-warning-icon">⚠️</div>
                     <div>Wenn Sie diese Zugangsdaten vergessen, können sie nur über die Browser-Konsole mit
-                    <code>localStorage.removeItem('mhs_admin_panel_setup_complete')</code> zurückgesetzt werden.</div>
+                    <code>localStorage.removeItem('freyai_admin_panel_setup_complete')</code> zurückgesetzt werden.</div>
                 </div>
 
                 <div class="admin-panel-form-grid">

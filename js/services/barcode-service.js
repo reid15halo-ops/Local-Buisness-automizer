@@ -5,9 +5,9 @@
 
 class BarcodeService {
     constructor() {
-        this.scanHistory = JSON.parse(localStorage.getItem('mhs_scan_history') || '[]');
-        this.productDatabase = JSON.parse(localStorage.getItem('mhs_barcode_products') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('mhs_barcode_settings') || '{}');
+        this.scanHistory = JSON.parse(localStorage.getItem('freyai_scan_history') || '[]');
+        this.productDatabase = JSON.parse(localStorage.getItem('freyai_barcode_products') || '{}');
+        this.settings = JSON.parse(localStorage.getItem('freyai_barcode_settings') || '{}');
 
         // Default settings
         if (!this.settings.soundEnabled) {this.settings.soundEnabled = true;}
@@ -183,8 +183,8 @@ class BarcodeService {
 
     // Generate barcode for product
     generateBarcode(productId, type = 'custom') {
-        // Generate a custom barcode (MHS prefix + timestamp)
-        const code = `MHS${Date.now().toString().slice(-10)}`;
+        // Generate a custom barcode (FreyAI prefix + timestamp)
+        const code = `FREY${Date.now().toString().slice(-10)}`;
         return code;
     }
 
@@ -244,7 +244,7 @@ class BarcodeService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('mhs_barcode_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_barcode_settings', JSON.stringify(this.settings));
     }
 
     // Persistence
@@ -253,11 +253,11 @@ class BarcodeService {
         if (this.scanHistory.length > 500) {
             this.scanHistory = this.scanHistory.slice(-500);
         }
-        localStorage.setItem('mhs_scan_history', JSON.stringify(this.scanHistory));
+        localStorage.setItem('freyai_scan_history', JSON.stringify(this.scanHistory));
     }
 
     saveProductDatabase() {
-        localStorage.setItem('mhs_barcode_products', JSON.stringify(this.productDatabase));
+        localStorage.setItem('freyai_barcode_products', JSON.stringify(this.productDatabase));
     }
 }
 

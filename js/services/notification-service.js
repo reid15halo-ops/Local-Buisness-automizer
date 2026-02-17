@@ -17,7 +17,7 @@ class NotificationService {
             system: { icon: '⚙️', color: '#6b7280', label: 'System-Mitteilung' }
         };
 
-        this.storageKey = 'mhs-notifications';
+        this.storageKey = 'freyai-notifications';
         this.unreadCount = 0;
         this.listeners = [];
 

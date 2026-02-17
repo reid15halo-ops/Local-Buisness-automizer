@@ -6,13 +6,13 @@
  * - 'simple' (default): Shows only core features for non-technical users
  * - 'pro': Shows all advanced features
  *
- * Storage: localStorage under 'mhs_user_mode'
- * Events: Custom 'mhs:mode-changed' event fired when mode changes
+ * Storage: localStorage under 'freyai_user_mode'
+ * Events: Custom 'freyai:mode-changed' event fired when mode changes
  */
 
 class UserModeService {
     constructor() {
-        this.STORAGE_KEY = 'mhs_user_mode';
+        this.STORAGE_KEY = 'freyai_user_mode';
         this.SIMPLE_MODE = 'simple';
         this.PRO_MODE = 'pro';
         this.DEFAULT_MODE = this.SIMPLE_MODE;
@@ -65,7 +65,7 @@ class UserModeService {
 
     /**
      * Set the user mode and persist to localStorage
-     * Fires 'mhs:mode-changed' event for all components to react
+     * Fires 'freyai:mode-changed' event for all components to react
      * @param {string} mode - 'simple' or 'pro'
      */
     setMode(mode) {
@@ -107,12 +107,12 @@ class UserModeService {
 
     /**
      * Fire custom event when mode changes
-     * All components should listen to 'mhs:mode-changed' event
+     * All components should listen to 'freyai:mode-changed' event
      * @private
      */
     fireEvent(mode) {
         try {
-            const event = new CustomEvent('mhs:mode-changed', {
+            const event = new CustomEvent('freyai:mode-changed', {
                 detail: {
                     mode: mode,
                     isProMode: mode === this.PRO_MODE,
@@ -124,7 +124,7 @@ class UserModeService {
             });
             document.dispatchEvent(event);
         } catch (error) {
-            console.error('[UserModeService] Failed to dispatch mhs:mode-changed event:', error);
+            console.error('[UserModeService] Failed to dispatch freyai:mode-changed event:', error);
         }
     }
 

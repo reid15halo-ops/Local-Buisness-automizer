@@ -1,9 +1,9 @@
 /* ============================================
-   Service Worker for MHS Workflow PWA
+   Service Worker for FreyAI Visions PWA
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'mhs-workflow-v7';
+const CACHE_NAME = 'freyai-visions-v7';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -345,7 +345,7 @@ async function syncTimeEntries() {
 self.addEventListener('push', (event) => {
     console.log('[SW] Push notification received');
 
-    let data = { title: 'MHS Workflow', body: 'Neue Benachrichtigung' };
+    let data = { title: 'FreyAI Visions', body: 'Neue Benachrichtigung' };
 
     if (event.data) {
         try {
@@ -365,7 +365,7 @@ self.addEventListener('push', (event) => {
             { action: 'open', title: 'Öffnen' },
             { action: 'dismiss', title: 'Ignorieren' }
         ],
-        tag: data.tag || 'mhs-notification',
+        tag: data.tag || 'freyai-notification',
         renotify: true
     };
 

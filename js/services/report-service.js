@@ -5,7 +5,7 @@
 
 class ReportService {
     constructor() {
-        this.savedReports = JSON.parse(localStorage.getItem('mhs_saved_reports') || '[]');
+        this.savedReports = JSON.parse(localStorage.getItem('freyai_saved_reports') || '[]');
         this.reportTypes = [
             { id: 'sales', name: 'Umsatzbericht', icon: '💰' },
             { id: 'customer', name: 'Kundenbericht', icon: '👥' },
@@ -312,7 +312,7 @@ class ReportService {
     getReportTypes() { return this.reportTypes; }
 
     // Persistence
-    save() { localStorage.setItem('mhs_saved_reports', JSON.stringify(this.savedReports)); }
+    save() { localStorage.setItem('freyai_saved_reports', JSON.stringify(this.savedReports)); }
 }
 
 window.reportService = new ReportService();

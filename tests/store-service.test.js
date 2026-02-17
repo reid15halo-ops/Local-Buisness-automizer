@@ -68,7 +68,7 @@ class StoreService {
       rechnungen: [],
       activities: [],
       settings: {
-        companyName: 'MHS Metallbau Hydraulik Service',
+        companyName: 'FreyAI Visions',
         owner: 'Max Mustermann',
         address: 'Handwerkerring 38a, 12345 Musterstadt',
         taxId: '12/345/67890',
@@ -79,7 +79,7 @@ class StoreService {
       currentAuftragId: null,
       currentRechnungId: null
     };
-    this.STORAGE_KEY = 'mhs-workflow-store';
+    this.STORAGE_KEY = 'freyai-workflow-store';
     this.subscribers = [];
     this.currentUserId = null;
 
@@ -172,7 +172,7 @@ class StoreService {
     const userId = this.currentUserId || 'default';
 
     await window.dbService.clearUserData(userId);
-    localStorage.removeItem('mhs_customer_presets');
+    localStorage.removeItem('freyai_customer_presets');
 
     Object.keys(this.store).forEach(key => {
       if (Array.isArray(this.store[key])) {
@@ -369,7 +369,7 @@ describe('StoreService', () => {
     });
 
     it('should initialize with default settings', () => {
-      expect(service.store.settings.companyName).toBe('MHS Metallbau Hydraulik Service');
+      expect(service.store.settings.companyName).toBe('FreyAI Visions');
       expect(service.store.settings.theme).toBe('dark');
     });
 

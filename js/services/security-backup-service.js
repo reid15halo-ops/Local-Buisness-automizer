@@ -5,9 +5,9 @@
 
 class SecurityBackupService {
     constructor() {
-        this.backups = JSON.parse(localStorage.getItem('mhs_backup_log') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_security_settings') || '{}');
-        this.activityLog = JSON.parse(localStorage.getItem('mhs_activity_log') || '[]');
+        this.backups = JSON.parse(localStorage.getItem('freyai_backup_log') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_security_settings') || '{}');
+        this.activityLog = JSON.parse(localStorage.getItem('freyai_activity_log') || '[]');
 
         // Default settings
         if (!this.settings.autoBackup) {this.settings.autoBackup = true;}
@@ -38,7 +38,7 @@ class SecurityBackupService {
         return await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
-                salt: encoder.encode('mhs-salt-2024'),
+                salt: encoder.encode('freyai-salt-2024'),
                 iterations: 100000,
                 hash: 'SHA-256'
             },
@@ -105,10 +105,10 @@ class SecurityBackupService {
     // BACKUP SYSTEM
     // =====================================================
 
-    // Get all MHS data from localStorage
+    // Get all FreyAI Visions data from localStorage
     getAllData() {
         const data = {};
-        const keys = Object.keys(localStorage).filter(k => k.startsWith('mhs_'));
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('freyai_'));
 
         keys.forEach(key => {
             try {
@@ -177,7 +177,7 @@ class SecurityBackupService {
 
         const a = document.createElement('a');
         a.href = url;
-        a.download = `MHS_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `FreyAI_Backup_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -292,7 +292,7 @@ class SecurityBackupService {
         };
 
         // Store in IndexedDB if available, otherwise localStorage
-        const existingAutoBackups = JSON.parse(localStorage.getItem('mhs_auto_backups') || '[]');
+        const existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]');
         existingAutoBackups.push(backup);
 
         // Keep last 3 auto-backups
@@ -300,13 +300,13 @@ class SecurityBackupService {
             existingAutoBackups.shift();
         }
 
-        localStorage.setItem('mhs_auto_backups', JSON.stringify(existingAutoBackups));
+        localStorage.setItem('freyai_auto_backups', JSON.stringify(existingAutoBackups));
         console.log('Auto-backup created:', backup.id);
     }
 
     // Get auto backups
     getAutoBackups() {
-        return JSON.parse(localStorage.getItem('mhs_auto_backups') || '[]');
+        return JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]');
     }
 
     // =====================================================
@@ -327,27 +327,27 @@ class SecurityBackupService {
         };
 
         // Find customer
-        if (data.mhs_customers) {
-            customerData.customer = data.mhs_customers.find(c => c.id === customerId);
+        if (data.freyai_customers) {
+            customerData.customer = data.freyai_customers.find(c => c.id === customerId);
         }
 
         // Find related invoices
-        if (data.mhs_rechnungen) {
-            customerData.invoices = data.mhs_rechnungen.filter(r =>
+        if (data.freyai_rechnungen) {
+            customerData.invoices = data.freyai_rechnungen.filter(r =>
                 r.kundeId === customerId || r.kunde === customerId
             );
         }
 
         // Find appointments
-        if (data.mhs_appointments) {
-            customerData.appointments = data.mhs_appointments.filter(a =>
+        if (data.freyai_appointments) {
+            customerData.appointments = data.freyai_appointments.filter(a =>
                 a.customerId === customerId || a.kundeId === customerId
             );
         }
 
         // Find communications
-        if (data.mhs_communications) {
-            customerData.communications = data.mhs_communications.filter(c =>
+        if (data.freyai_communications) {
+            customerData.communications = data.freyai_communications.filter(c =>
                 c.customerId === customerId
             );
         }
@@ -358,12 +358,12 @@ class SecurityBackupService {
     // Delete all customer data (GDPR Article 17 - Right to Erasure)
     deleteCustomerData(customerId) {
         const keysToCheck = [
-            'mhs_customers',
-            'mhs_rechnungen',
-            'mhs_appointments',
-            'mhs_communications',
-            'mhs_leads',
-            'mhs_buchungen'
+            'freyai_customers',
+            'freyai_rechnungen',
+            'freyai_appointments',
+            'freyai_communications',
+            'freyai_leads',
+            'freyai_buchungen'
         ];
 
         let deletedCount = 0;
@@ -430,7 +430,7 @@ class SecurityBackupService {
             this.activityLog = this.activityLog.slice(-1000);
         }
 
-        localStorage.setItem('mhs_activity_log', JSON.stringify(this.activityLog));
+        localStorage.setItem('freyai_activity_log', JSON.stringify(this.activityLog));
     }
 
     getActivityLog(limit = 100, action = null) {
@@ -494,23 +494,23 @@ class SecurityBackupService {
     // Get storage usage
     getStorageUsage() {
         let total = 0;
-        let mhsTotal = 0;
+        let freyaiTotal = 0;
 
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             const value = localStorage.getItem(key);
             const size = (key.length + value.length) * 2; // UTF-16
             total += size;
-            if (key.startsWith('mhs_')) {
-                mhsTotal += size;
+            if (key.startsWith('freyai_')) {
+                freyaiTotal += size;
             }
         }
 
         return {
             totalBytes: total,
-            mhsBytes: mhsTotal,
+            freyaiBytes: freyaiTotal,
             totalMB: (total / 1024 / 1024).toFixed(2),
-            mhsMB: (mhsTotal / 1024 / 1024).toFixed(2),
+            freyaiMB: (freyaiTotal / 1024 / 1024).toFixed(2),
             percentUsed: ((total / (5 * 1024 * 1024)) * 100).toFixed(1) // Assuming 5MB limit
         };
     }
@@ -527,8 +527,8 @@ class SecurityBackupService {
     }
 
     saveSettings() {
-        localStorage.setItem('mhs_security_settings', JSON.stringify(this.settings));
-        localStorage.setItem('mhs_backup_log', JSON.stringify(this.backups));
+        localStorage.setItem('freyai_security_settings', JSON.stringify(this.settings));
+        localStorage.setItem('freyai_backup_log', JSON.stringify(this.backups));
     }
 }
 

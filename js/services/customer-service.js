@@ -4,8 +4,8 @@
 
 class CustomerService {
     constructor() {
-        this.customers = JSON.parse(localStorage.getItem('mhs_customers') || '[]');
-        this.interactions = JSON.parse(localStorage.getItem('mhs_interactions') || '[]');
+        this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]');
+        this.interactions = JSON.parse(localStorage.getItem('freyai_interactions') || '[]');
     }
 
     // Customer CRUD
@@ -89,7 +89,7 @@ class CustomerService {
             }
             // trashService already removed from this.customers and saved
             // Reload from localStorage to stay in sync
-            this.customers = JSON.parse(localStorage.getItem('mhs_customers') || '[]');
+            this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]');
             return;
         }
 
@@ -331,8 +331,8 @@ class CustomerService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_customers', JSON.stringify(this.customers)); }
-    saveInteractions() { localStorage.setItem('mhs_interactions', JSON.stringify(this.interactions)); }
+    save() { localStorage.setItem('freyai_customers', JSON.stringify(this.customers)); }
+    saveInteractions() { localStorage.setItem('freyai_interactions', JSON.stringify(this.interactions)); }
 }
 
 window.customerService = new CustomerService();

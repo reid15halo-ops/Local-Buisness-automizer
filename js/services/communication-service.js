@@ -5,9 +5,9 @@
 
 class CommunicationService {
     constructor() {
-        this.messages = JSON.parse(localStorage.getItem('mhs_messages') || '[]');
-        this.callLogs = JSON.parse(localStorage.getItem('mhs_call_logs') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('mhs_comm_settings') || '{}');
+        this.messages = JSON.parse(localStorage.getItem('freyai_messages') || '[]');
+        this.callLogs = JSON.parse(localStorage.getItem('freyai_call_logs') || '[]');
+        this.settings = JSON.parse(localStorage.getItem('freyai_comm_settings') || '{}');
     }
 
     // Unified Message Log
@@ -64,8 +64,8 @@ class CommunicationService {
         this.logMessage({
             type: 'call',
             direction: entry.direction,
-            from: entry.direction === 'inbound' ? entry.phoneNumber : 'MHS',
-            to: entry.direction === 'outbound' ? entry.phoneNumber : 'MHS',
+            from: entry.direction === 'inbound' ? entry.phoneNumber : 'FreyAI Visions',
+            to: entry.direction === 'outbound' ? entry.phoneNumber : 'FreyAI Visions',
             content: entry.notes || `Anruf ${entry.outcome === 'connected' ? 'verbunden' : entry.outcome}`,
             customerId: entry.customerId,
             customerName: entry.customerName
@@ -82,7 +82,7 @@ class CommunicationService {
         const smsEntry = this.logMessage({
             type: 'sms',
             direction: 'outbound',
-            from: 'MHS',
+            from: 'FreyAI Visions',
             to: to,
             content: message,
             customerId: customerId,
@@ -102,7 +102,7 @@ class CommunicationService {
         const waEntry = this.logMessage({
             type: 'whatsapp',
             direction: 'outbound',
-            from: 'MHS',
+            from: 'FreyAI Visions',
             to: to,
             content: message,
             customerId: customerId,
@@ -160,19 +160,19 @@ class CommunicationService {
         return {
             termin_bestaetigung: {
                 name: 'Terminbestätigung (SMS)',
-                content: 'Ihr Termin bei MHS: {{datum}} um {{uhrzeit}} Uhr. Bei Fragen: 06029-9922964'
+                content: 'Ihr Termin bei FreyAI Visions: {{datum}} um {{uhrzeit}} Uhr. Bei Fragen: 06029-9922964'
             },
             termin_erinnerung: {
                 name: 'Terminerinnerung (SMS)',
-                content: 'Erinnerung: Morgen {{datum}} um {{uhrzeit}} Uhr Termin bei MHS. Wir freuen uns auf Sie!'
+                content: 'Erinnerung: Morgen {{datum}} um {{uhrzeit}} Uhr Termin bei FreyAI Visions. Wir freuen uns auf Sie!'
             },
             rechnung_erinnerung: {
                 name: 'Zahlungserinnerung (SMS)',
-                content: 'Freundliche Erinnerung: Rechnung {{rechnungId}} über {{betrag}}€ ist noch offen. MHS'
+                content: 'Freundliche Erinnerung: Rechnung {{rechnungId}} über {{betrag}}€ ist noch offen. FreyAI Visions'
             },
             angebot_followup: {
                 name: 'Angebots-Nachfrage',
-                content: 'Guten Tag! Haben Sie Fragen zu unserem Angebot {{angebotId}}? Gerne stehen wir zur Verfügung. MHS'
+                content: 'Guten Tag! Haben Sie Fragen zu unserem Angebot {{angebotId}}? Gerne stehen wir zur Verfügung. FreyAI Visions'
             }
         };
     }
@@ -235,8 +235,8 @@ class CommunicationService {
     }
 
     // Persistence
-    save() { localStorage.setItem('mhs_messages', JSON.stringify(this.messages)); }
-    saveCallLogs() { localStorage.setItem('mhs_call_logs', JSON.stringify(this.callLogs)); }
+    save() { localStorage.setItem('freyai_messages', JSON.stringify(this.messages)); }
+    saveCallLogs() { localStorage.setItem('freyai_call_logs', JSON.stringify(this.callLogs)); }
 }
 
 window.communicationService = new CommunicationService();
