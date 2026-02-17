@@ -20,7 +20,8 @@ window.i18nDE = {
         material: 'Material',
         reports: 'Berichte',
         buchhaltung: 'Buchhaltung',
-        workflows: 'Workflows'
+        workflows: 'Workflows',
+        adminPanel: 'Verwaltung'
     },
 
     // ========== Common Actions ==========
@@ -528,5 +529,86 @@ window.i18nDE = {
     offline: {
         banner: '🛜 Offline-Modus — Daten nur lokal gespeichert',
         description: 'Sie arbeiten im Offline-Modus. Änderungen werden lokal gespeichert.'
+    },
+
+    // ========== Admin Panel ==========
+    adminPanel: {
+        title: 'Verwaltung',
+        subtitle: 'Systemkonfiguration — Admin & Developer',
+        loginTitle: 'Admin-Bereich',
+        loginSubtitle: 'Bitte melden Sie sich an, um auf die Verwaltung zuzugreifen.',
+        loginHint: 'Dieser Bereich enthält die Grundstruktur der Anwendung. Änderungen können die Software beeinträchtigen.',
+        username: 'Benutzername',
+        password: 'Passwort',
+        login: 'Anmelden',
+        logout: 'Abmelden',
+        forgotCredentials: 'Zugangsdaten vergessen?',
+        forgotHint: 'Kontaktieren Sie Ihren Systemadministrator oder Developer, um die Zugangsdaten zurückzusetzen.',
+        warningTitle: 'Achtung — Systemkonfiguration',
+        warningText: 'Dies ist die Grundstruktur der Anwendung. Änderungen in diesem Bereich können die Software beeinträchtigen oder dazu führen, dass Funktionen nicht mehr korrekt arbeiten.',
+        roleAdmin: 'Administrator',
+        roleDeveloper: 'Developer',
+        loggedInAs: 'Angemeldet als',
+        tabBusiness: 'Firmendaten',
+        tabFinancial: 'Finanzen & Steuern',
+        tabCredentials: 'Zugangsdaten',
+        tabTechnical: 'Technische Konfiguration',
+        tabDatabase: 'Datenbank & APIs',
+        companyData: 'Firmendaten',
+        companyDataDesc: 'Grundlegende Informationen über Ihr Unternehmen.',
+        taxFinance: 'Steuer & Finanzen',
+        taxFinanceDesc: 'Steuer- und Zahlungseinstellungen für Rechnungen und Buchhaltung.',
+        bankDetails: 'Bankverbindung',
+        bankDetailsDesc: 'Ihre Bankdaten für Rechnungen und Zahlungsinformationen.',
+        credentialsAdmin: 'Admin-Zugangsdaten ändern',
+        credentialsDev: 'Developer-Zugangsdaten ändern',
+        devWarning: 'Dieser Bereich enthält technische Konfigurationen, die die Grundstruktur der App betreffen.',
+        dbWarning: 'Falsche Supabase-Konfigurationen können zum Datenverlust führen.',
+        saved: 'Gespeichert!',
+        saveError: 'Fehler beim Speichern',
+        sessionExpired: 'Sitzung abgelaufen. Bitte erneut anmelden.',
+        wrongCredentials: 'Benutzername oder Passwort falsch.'
+    },
+
+    // ===== Boomer Guide =====
+    boomerGuide: {
+        splashGreeting: 'Willkommen zurück!',
+        splashUrgent: 'braucht Ihre Aufmerksamkeit',
+        splashAction: 'Dringendes zuerst ansehen',
+        splashDismiss: 'Verstanden, zur Startseite',
+        sectionUrgent: 'Sofort erledigen',
+        sectionWarning: 'Bald fällig',
+        sectionInfo: 'Aktueller Stand',
+        sectionNewAction: 'Neue Aktion starten',
+        allDone: 'Alles erledigt! Keine offenen Aufgaben.',
+        overdueInvoices: 'Rechnung(en) überfällig!',
+        oldInquiries: 'Anfrage(n) warten seit >48h!',
+        nearDeadline: 'Auftrag(e) — Deadline bald!',
+        dueTasks: 'Aufgabe(n) fällig!',
+        newInquiries: 'neue Anfrage(n)',
+        draftQuotes: 'Angebot(e) im Entwurf',
+        activeOrders: 'aktive(r) Auftrag/Aufträge',
+        recentPayments: 'Zahlung(en) eingegangen!',
+        fabTitle: 'Was steht an?'
+    },
+
+    // ===== Push Messenger =====
+    pushMessenger: {
+        sectionTitle: 'Push-Benachrichtigungen (Telegram / WhatsApp)',
+        sectionDesc: 'Erhalten Sie dringende Meldungen direkt auf Ihr Handy.',
+        telegramEnable: 'Telegram aktivieren',
+        telegramToken: 'Telegram Bot Token',
+        telegramChatId: 'Telegram Chat ID',
+        telegramTest: 'Test-Nachricht senden',
+        whatsappEnable: 'WhatsApp via Twilio aktivieren',
+        twilioSid: 'Twilio Account SID',
+        twilioToken: 'Twilio Auth Token',
+        fromNumber: 'WhatsApp Absender-Nr.',
+        toNumber: 'Ihre WhatsApp-Nr.',
+        savePush: 'Push-Einstellungen speichern',
+        saved: 'Push-Einstellungen gespeichert!',
+        testSuccess: 'Erfolgreich gesendet!',
+        testFailed: 'Fehler beim Senden',
+        sending: 'Sende...'
     }
 };

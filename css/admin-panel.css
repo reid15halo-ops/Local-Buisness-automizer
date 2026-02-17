@@ -1,0 +1,399 @@
+/* ============================================
+   Admin Panel Styles
+   Login gate + tabbed configuration panel
+   ============================================ */
+
+/* ---- Login Screen ---- */
+.admin-panel-login {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    min-height: 60vh;
+}
+
+.admin-panel-login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 40px 36px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+}
+
+.admin-panel-login-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.admin-panel-login-card h2 {
+    color: var(--text-primary);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.admin-panel-login-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-panel-login-form {
+    text-align: left;
+    margin-top: 16px;
+}
+
+.admin-panel-login-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    margin-top: 8px;
+}
+
+.admin-panel-login-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid var(--accent-danger);
+    color: var(--accent-danger);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.admin-panel-login-hint {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.admin-panel-login-hint details {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.admin-panel-login-hint summary {
+    cursor: pointer;
+    color: var(--accent-primary);
+}
+
+.admin-panel-login-hint p {
+    margin-top: 6px;
+    color: var(--text-secondary);
+}
+
+/* ---- Shared form elements ---- */
+.admin-panel-field {
+    margin-bottom: 14px;
+}
+
+.admin-panel-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.admin-panel-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: border-color var(--transition);
+    box-sizing: border-box;
+}
+
+.admin-panel-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.admin-panel-input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ---- Warning Boxes ---- */
+.admin-panel-warning-box {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.admin-panel-warning-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+.admin-panel-warning-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: var(--text-secondary);
+}
+
+.admin-panel-warning-danger {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--text-secondary);
+}
+
+.admin-panel-warning-danger strong {
+    color: var(--accent-danger);
+}
+
+/* ---- Session Bar ---- */
+.admin-panel-session-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 16px;
+}
+
+.admin-panel-session-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.admin-panel-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.role-admin {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-primary);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.role-developer {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.admin-panel-session-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+/* ---- Tabs ---- */
+.admin-panel-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.admin-panel-tab {
+    padding: 10px 18px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition);
+    white-space: nowrap;
+}
+
+.admin-panel-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.admin-panel-tab.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+.admin-panel-tab.tab-developer {
+    color: var(--accent-warning);
+}
+
+.admin-panel-tab.tab-developer.active {
+    color: var(--accent-warning);
+    border-bottom-color: var(--accent-warning);
+}
+
+/* ---- Tab Content Sections ---- */
+.admin-panel-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.admin-panel-section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.admin-panel-section-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.admin-panel-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.admin-panel-field-row {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 12px;
+}
+
+.admin-panel-checkbox-field {
+    grid-column: 1 / -1;
+}
+
+.admin-panel-checkbox-field label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.admin-panel-checkbox-field input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-primary);
+}
+
+.admin-panel-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    margin-left: 26px;
+}
+
+/* ---- Actions bar ---- */
+.admin-panel-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.admin-panel-save-status {
+    font-size: 13px;
+    font-weight: 600;
+    transition: opacity var(--transition);
+}
+
+.admin-panel-save-status.success {
+    color: var(--accent-success);
+}
+
+.admin-panel-save-status.error {
+    color: var(--accent-danger);
+}
+
+/* ---- System Info Table ---- */
+.admin-panel-system-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.admin-panel-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-input);
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.admin-panel-info-row span:first-child {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.admin-panel-status-indicator {
+    font-weight: 600;
+}
+
+.admin-panel-status-indicator.status-ok {
+    color: var(--accent-success);
+}
+
+.admin-panel-status-indicator.status-off {
+    color: var(--text-muted);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .admin-panel-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-panel-field-row {
+        flex-direction: column;
+    }
+
+    .admin-panel-field-row .admin-panel-field {
+        flex: 1 1 auto !important;
+    }
+
+    .admin-panel-session-bar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .admin-panel-tabs {
+        gap: 2px;
+    }
+
+    .admin-panel-tab {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .admin-panel-login-card {
+        padding: 28px 20px;
+    }
+
+    .admin-panel-section {
+        padding: 16px;
+    }
+}

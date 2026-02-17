@@ -104,11 +104,20 @@ class NavigationController {
         const event = new CustomEvent('viewchange', { detail: { view: viewId } });
         document.dispatchEvent(event);
 
+        // Refresh boomer guide nav visuals on every view change
+        if (window.boomerGuideUI) {
+            window.boomerGuideUI._applyNavVisuals();
+        }
+
         // Call global render functions (legacy support until fully refactored)
         // Ideally these should listen to the 'viewchange' event instead
         switch (viewId) {
             case 'quick-actions':
-                if (window.QuickActionsModule?.init) {window.QuickActionsModule.init();}
+                if (window.boomerGuideUI) {
+                    window.boomerGuideUI._renderHomeFeed();
+                } else if (window.QuickActionsModule?.init) {
+                    window.QuickActionsModule.init();
+                }
                 break;
             case 'dashboard':
                 if (window.updateDashboard) {window.updateDashboard();}
@@ -124,6 +133,9 @@ class NavigationController {
                 break;
             case 'rechnungen':
                 if (window.renderRechnungen) {window.renderRechnungen();}
+                break;
+            case 'admin-panel':
+                if (window.adminPanelUI) {window.adminPanelUI.init();}
                 break;
             // New features (Self-initializing via their own listeners, but good to ensure)
             case 'workflows':

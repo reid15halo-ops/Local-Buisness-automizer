@@ -170,6 +170,7 @@ class UserModeService {
                 'workflows',       // ⚡ Workflows
                 'scanner',         // 📷 Scanner
                 'backup',          // 🔒 Backup
+                'admin-panel',     // 🔐 Verwaltung (Admin/Developer)
             ]
         };
     }

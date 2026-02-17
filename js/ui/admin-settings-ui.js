@@ -1,7 +1,7 @@
 /* ============================================
    Admin Technical Settings UI
    Hidden settings for technical configuration
-   Protected by PIN (default: admin1234)
+   Protected by PIN (must be set via Admin Panel)
    ============================================ */
 
 class AdminSettingsUI {
@@ -222,7 +222,7 @@ class AdminSettingsUI {
                                     class="admin-input"
                                     placeholder="Neues Passwort (mind. 4 Zeichen)"
                                 />
-                                <p class="admin-hint">Lassen Sie leer, um nicht zu ändern. Standard: admin1234</p>
+                                <p class="admin-hint">Lassen Sie leer, um nicht zu ändern.</p>
                             </div>
                         </div>
 
