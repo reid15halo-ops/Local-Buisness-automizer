@@ -3719,6 +3719,9 @@ textarea {
     .stueckliste-summary {
         width: 100%;
     }
+}
+
+/* ============================================
    Excel Import Wizard - Datatype Selection
    ============================================ */
 
@@ -4484,7 +4487,9 @@ textarea {
         font-size: 9px;
     }
 }
-.status-abgeschlossen { color: #22c55e; }
+.status-abgeschlossen { color: var(--accent-success, #22c55e); }
+
+/* ============================================
    Email Automation
    ============================================ */
 

@@ -69,7 +69,7 @@ function renderMaterial() {
     const filterSelect = document.getElementById('material-kategorie-filter');
     if (filterSelect) {
         filterSelect.innerHTML = '<option value="">Alle Kategorien</option>' +
-            kategorien.map(k => `<option value="${k}">${k}</option>`).join('');
+            kategorien.map(k => `<option value="${h(k)}">${h(k)}</option>`).join('');
     }
 
     if (materials.length === 0) {
@@ -99,17 +99,17 @@ function renderMaterial() {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
-                        <span class="material-sku">${m.artikelnummer}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
+                        <span class="material-sku">${h(m.artikelnummer)}</span>
                     </div>
-                    <span class="material-kategorie">${m.kategorie}</span>
+                    <span class="material-kategorie">${h(m.kategorie)}</span>
                     <div class="material-preis">
                         <div class="vk">${formatCurrency(m.vkPreis || m.preis)}</div>
                         <div class="ek">EK: ${formatCurrency(m.preis)}</div>
                     </div>
                     <div class="material-bestand ${isLow ? 'low' : ''}">
                         <div class="count">${m.bestand}</div>
-                        <div class="unit">${m.einheit}</div>
+                        <div class="unit">${h(m.einheit)}</div>
                     </div>
                 </div>
             </div>
@@ -172,17 +172,17 @@ function renderMaterialList(materials) {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
-                        <span class="material-sku">${m.artikelnummer}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
+                        <span class="material-sku">${h(m.artikelnummer)}</span>
                     </div>
-                    <span class="material-kategorie">${m.kategorie}</span>
+                    <span class="material-kategorie">${h(m.kategorie)}</span>
                     <div class="material-preis">
                         <div class="vk">${formatCurrency(m.vkPreis || m.preis)}</div>
                         <div class="ek">EK: ${formatCurrency(m.preis)}</div>
                     </div>
                     <div class="material-bestand ${isLow ? 'low' : ''}">
                         <div class="count">${m.bestand}</div>
-                        <div class="unit">${m.einheit}</div>
+                        <div class="unit">${h(m.einheit)}</div>
                     </div>
                 </div>
             </div>
@@ -333,10 +333,10 @@ function renderBuchhaltung() {
         <div class="buchung-item">
             <div class="buchung-datum">${formatDate(b.datum)}</div>
             <div class="buchung-beschreibung">
-                ${b.beschreibung}
-                <small>${b.belegnummer || b.id}</small>
+                ${h(b.beschreibung)}
+                <small>${h(b.belegnummer || b.id)}</small>
             </div>
-            <div class="buchung-kategorie">${b.kategorie}</div>
+            <div class="buchung-kategorie">${h(b.kategorie)}</div>
             <div class="buchung-betrag ${b.typ}">
                 ${b.typ === 'einnahme' ? '+' : '-'}${formatCurrency(b.brutto)}
             </div>

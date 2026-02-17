@@ -2199,12 +2199,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Auftrag Detail (Management) -->
-    <div class="modal" id="modal-auftrag-detail">
+    <div class="modal" id="modal-auftrag-detail" role="dialog" aria-labelledby="auftrag-detail-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="auftrag-detail-title">Auftrag</h2>
-                <button class="modal-close">&times;</button>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
 
             <!-- Tabs -->
@@ -2348,12 +2348,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Auftrag Abschluss (Completion) -->
-    <div class="modal" id="modal-auftrag">
+    <div class="modal" id="modal-auftrag" role="dialog" aria-labelledby="modal-auftrag-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Auftrag abschließen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-auftrag-title">Auftrag abschließen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-auftrag" class="modal-form">
                 <input type="hidden" id="auftrag-id">
@@ -2436,12 +2436,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Rechnung anzeigen -->
-    <div class="modal" id="modal-rechnung">
+    <div class="modal" id="modal-rechnung" role="dialog" aria-labelledby="modal-rechnung-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Rechnung</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-rechnung-title">Rechnung</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="rechnung-preview" id="rechnung-preview">
                 <!-- Dynamically generated -->
@@ -2455,12 +2455,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Hilfe -->
-    <div class="modal" id="modal-help">
+    <div class="modal" id="modal-help" role="dialog" aria-labelledby="modal-help-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Hilfe & Dokumentation</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-help-title">Hilfe & Dokumentation</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="help-content" style="padding: 24px;">
                 <h3>Willkommen!</h3>
@@ -2479,7 +2479,7 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Excel Import Wizard (wird dynamisch erstellt) -->
-    <div class="modal" id="modal-excel-import">
+    <div class="modal" id="modal-excel-import" role="dialog" aria-label="Excel Import" aria-modal="true">
         <!-- Wird von excel-import-wizard.js erstellt -->
     </div>
 
@@ -2527,12 +2527,12 @@ Email: max.mustermann@example.com</textarea>
     </div>
 
     <!-- Bestellung Modal -->
-    <div class="modal" id="modal-bestellung">
+    <div class="modal" id="modal-bestellung" role="dialog" aria-labelledby="modal-bestellung-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="modal-bestellung-title">Neue Bestellung</h2>
-                <button class="modal-close" data-action="close-modal-bestellung">&times;</button>
+                <button class="modal-close" data-action="close-modal-bestellung" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
@@ -2608,12 +2608,12 @@ Email: max.mustermann@example.com</textarea>
     </div>
 
     <!-- PO Detail Modal -->
-    <div class="modal" id="modal-po-detail">
+    <div class="modal" id="modal-po-detail" role="dialog" aria-labelledby="po-detail-nummer" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="po-detail-nummer">Bestellung PO-2026-001</h2>
-                <button class="modal-close" data-action="close-modal-po-detail">&times;</button>
+                <button class="modal-close" data-action="close-modal-po-detail" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <!-- Status and dates -->

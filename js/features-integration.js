@@ -905,6 +905,7 @@ async function initAIModelSelector() {
 async function sendAiMessage() {
     const input = document.getElementById('ai-chat-input');
     const container = document.getElementById('ai-chat-messages');
+    if (!input || !container) {return;}
     const message = input.value.trim();
 
     if (!message) {return;}
