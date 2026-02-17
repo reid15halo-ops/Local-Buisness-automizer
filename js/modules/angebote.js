@@ -9,6 +9,15 @@ function createAngebotFromAnfrage(anfrageId) {
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
     if (!anfrage) {return;}
 
+    // Clear any previous editing state
+    store.editingAngebotId = null;
+
+    // Reset modal title to create mode
+    const modalTitle = document.getElementById('modal-angebot-title');
+    if (modalTitle) {
+        modalTitle.textContent = 'Angebot erstellen';
+    }
+
     store.currentAnfrageId = anfrageId;
 
     // Fill modal info
@@ -331,10 +340,23 @@ MHS Metallbau Hydraulik Service`
     }, 1500);
 }
 
+function getAngebotStatusBadge(status) {
+    switch (status) {
+    case 'offen':
+        return '<span class="status-badge status-offen">● Wartet auf Annahme</span>';
+    case 'angenommen':
+        return '<span class="status-badge status-angenommen">● Angenommen</span>';
+    case 'abgelehnt':
+        return '<span class="status-badge status-abgelehnt">● Abgelehnt</span>';
+    default:
+        return `<span class="status-badge">${window.UI.sanitize(status || 'offen')}</span>`;
+    }
+}
+
 function renderAngebote() {
     const container = document.getElementById('angebote-list');
     if (!container) {return;}
-    const angebote = store?.angebote?.filter(a => a.status === 'offen') || [];
+    const angebote = store?.angebote || [];
 
     if (angebote.length === 0) {
         container.innerHTML = `
@@ -345,36 +367,167 @@ function renderAngebote() {
                     Erstelle Angebote aus offenen Anfragen.
                 </p>
                 <button class="btn btn-primary" onclick="window.navigationController.navigateTo('anfragen')">
-                    👀 Anfragen ansehen
+                    Anfragen ansehen
                 </button>
             </div>
         `;
         return;
     }
 
-    container.innerHTML = angebote.map(a => `
+    container.innerHTML = angebote.map(a => {
+        const isOffen = a.status === 'offen';
+
+        // Build entity trail: Anfrage → Angebot (current)
+        const anfrage = a.anfrageId ? (store?.anfragen || []).find(anf => anf.id === a.anfrageId) : null;
+        let angebotTrailHTML = '';
+        if (anfrage) {
+            angebotTrailHTML = `
+                <div class="entity-trail">
+                    <span class="trail-item" onclick="event.stopPropagation(); switchView('anfragen');">📥 ${h(anfrage.id)}</span>
+                    <span class="trail-arrow">&rarr;</span>
+                    <span class="trail-item trail-current">📝 ${h(a.id)}</span>
+                </div>
+            `;
+        }
+
+        return `
         <div class="item-card">
             <div class="item-header">
                 <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
-                <span class="item-id">${a.id}</span>
+                <span class="item-id">${h(a.id)}</span>
             </div>
+            ${angebotTrailHTML}
             <div class="item-meta">
-                <span>📋 ${a.positionen.length} Positionen</span>
-                <span>💰 ${formatCurrency(a.brutto)}</span>
-                <span>📅 ${formatDate(a.createdAt)}</span>
+                <span>${a.positionen.length} Positionen</span>
+                <span>${formatCurrency(a.brutto)}</span>
+                <span>${formatDate(a.createdAt)}</span>
             </div>
             <p class="item-description">${getLeistungsartLabel(a.leistungsart)}</p>
             <div class="item-actions">
-                <span class="status-badge status-offen">● Wartet auf Annahme</span>
+                ${getAngebotStatusBadge(a.status)}
                 <button class="btn btn-secondary btn-small" onclick="exportAngebotPDF('${h(a.id)}')">
                     PDF
                 </button>
-                <button class="btn btn-success" onclick="acceptAngebot('${a.id}')">
-                    ✓ Auftrag erteilen
+                <button class="btn btn-secondary btn-small" onclick="editAngebot('${h(a.id)}')">
+                    Bearbeiten
                 </button>
+                <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
+                    L\u00f6schen
+                </button>
+                ${isOffen ? `<button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
+                    Auftrag erteilen
+                </button>` : ''}
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
+}
+
+function editAngebot(id) {
+    const angebot = store.angebote.find(a => a.id === id);
+    if (!angebot) {return;}
+
+    // Set the editing flag so the submit handler knows to update
+    store.editingAngebotId = id;
+
+    // Update modal title to indicate editing
+    const modalTitle = document.getElementById('modal-angebot-title');
+    if (modalTitle) {
+        modalTitle.textContent = 'Angebot bearbeiten';
+    }
+
+    // Fill the hidden anfrage ID field
+    document.getElementById('angebot-anfrage-id').value = angebot.anfrageId || '';
+
+    // Fill the kunde info section
+    const kundeInfoEl = document.getElementById('angebot-kunde-info');
+    if (kundeInfoEl && angebot.kunde) {
+        kundeInfoEl.innerHTML = `
+            <strong>${window.UI.sanitize(angebot.kunde.name)}</strong><br>
+            ${getLeistungsartLabel(angebot.leistungsart)}<br>
+            <small>Angebot ${window.UI.sanitize(angebot.id)} bearbeiten</small>
+        `;
+    }
+
+    // Clear existing positions and re-add from the angebot
+    const posContainer = document.getElementById('positionen-list');
+    posContainer.innerHTML = '';
+
+    if (angebot.positionen && angebot.positionen.length > 0) {
+        angebot.positionen.forEach(pos => {
+            addPosition({
+                beschreibung: pos.beschreibung,
+                menge: pos.menge,
+                einheit: pos.einheit,
+                preis: pos.preis,
+                materialId: pos.materialId || null
+            });
+        });
+    } else {
+        addPosition();
+    }
+
+    // Fill the angebot text
+    document.getElementById('angebot-text').value = angebot.text || '';
+
+    // Update the summary calculation
+    updateAngebotSummary();
+
+    // Open the modal
+    openModal('modal-angebot');
+}
+
+function deleteAngebot(id) {
+    const angebot = store.angebote.find(a => a.id === id);
+    if (!angebot) {return;}
+
+    // Use trash service for soft-delete with undo if available
+    if (window.trashService) {
+        const result = window.trashService.softDelete('angebot', angebot);
+        if (result && result.blocked) {
+            // Orphan protection: show warning, don't delete
+            if (window.confirmDialogService) {
+                window.confirmDialogService.showConfirmDialog({
+                    title: 'Angebot kann nicht gelöscht werden',
+                    message: result.reason,
+                    confirmText: 'Verstanden',
+                    cancelText: '',
+                    onConfirm: () => {}
+                });
+            }
+            return;
+        }
+
+        // trashService already removed from store and saved
+        // Reload angebote from store to stay in sync
+        showToast('Angebot gelöscht', 'info');
+        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+        renderAngebote();
+        return;
+    }
+
+    // Fallback: use confirmDialogService for confirmation, then hard delete
+    if (window.confirmDialogService) {
+        window.confirmDialogService.confirmDelete(
+            'Angebot',
+            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde.name)} (${formatCurrency(angebot.brutto)})`,
+            () => {
+                store.angebote = store.angebote.filter(a => a.id !== id);
+                saveStore();
+                showToast('Angebot gelöscht', 'info');
+                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+                renderAngebote();
+            }
+        );
+    } else {
+        // Last resort: simple confirm
+        if (confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
+            store.angebote = store.angebote.filter(a => a.id !== id);
+            saveStore();
+            showToast('Angebot gelöscht', 'info');
+            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+            renderAngebote();
+        }
+    }
 }
 
 function acceptAngebot(angebotId) {
@@ -444,6 +597,8 @@ window.AngeboteModule = {
     updateAngebotSummary,
     generateAIText,
     renderAngebote,
+    editAngebot,
+    deleteAngebot,
     acceptAngebot
 };
 
@@ -453,3 +608,5 @@ window.renderAngebote = renderAngebote;
 window.addPosition = addPosition;
 window.updateAngebotSummary = updateAngebotSummary;
 window.acceptAngebot = acceptAngebot;
+window.editAngebot = editAngebot;
+window.deleteAngebot = deleteAngebot;
