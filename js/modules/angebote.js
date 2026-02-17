@@ -472,36 +472,36 @@ function renderAngebote() {
         if (isEntwurf) {
             // Draft: show Bearbeiten + Vorschau & Freigabe + Löschen
             actionButtons = `
-                <button class="btn btn-secondary btn-small" onclick="editAngebot('${h(a.id)}')">
+                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); editAngebot('${h(a.id)}')">
                     Bearbeiten
                 </button>
-                <button class="btn btn-primary" onclick="previewAngebot('${h(a.id)}')">
+                <button class="btn btn-primary" onclick="event.stopPropagation(); previewAngebot('${h(a.id)}')">
                     Vorschau &amp; Freigabe
                 </button>
-                <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
+                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteAngebot('${h(a.id)}')">
                     Löschen
                 </button>
             `;
         } else {
             // Non-draft: standard buttons
             actionButtons = `
-                <button class="btn btn-secondary btn-small" onclick="exportAngebotPDF('${h(a.id)}')">
+                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); exportAngebotPDF('${h(a.id)}')">
                     PDF
                 </button>
-                <button class="btn btn-secondary btn-small" onclick="editAngebot('${h(a.id)}')">
+                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); editAngebot('${h(a.id)}')">
                     Bearbeiten
                 </button>
-                <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
+                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteAngebot('${h(a.id)}')">
                     Löschen
                 </button>
-                ${isOffen ? `<button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
+                ${isOffen ? `<button class="btn btn-success" onclick="event.stopPropagation(); acceptAngebot('${h(a.id)}')">
                     Auftrag erteilen
                 </button>` : ''}
             `;
         }
 
         return `
-        <div class="item-card">
+        <div class="item-card" onclick="showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
             <div class="item-header">
                 <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
                 <span class="item-id">${h(a.id)}</span>
@@ -1053,6 +1053,198 @@ function freigebenAngebot(id) {
     renderAngebote();
 }
 
+// ============================================
+// Angebot Detail View
+// ============================================
+
+function showAngebotDetail(angebotId) {
+    const angebot = store.angebote.find(a => a.id === angebotId);
+    if (!angebot) {return;}
+
+    // Linked documents
+    const anfrage = angebot.anfrageId ? store.anfragen.find(a => a.id === angebot.anfrageId) : null;
+    const auftrag = store.auftraege.find(a => a.angebotId === angebotId);
+    const rechnung = store.rechnungen.find(r => r.angebotId === angebotId || (auftrag && r.auftragId === auftrag.id));
+
+    // Customer enrichment
+    const customer = window.customerService?.getCustomerByEmail?.(angebot.kunde.email) || null;
+    const customerId = customer?.id || null;
+
+    // Calendar & Communication
+    const appointments = customerId && window.calendarService?.getAppointmentsForCustomer ? window.calendarService.getAppointmentsForCustomer(customerId) : [];
+    const messages = customerId && window.communicationService?.getMessagesByCustomer ? window.communicationService.getMessagesByCustomer(customerId) : [];
+
+    const st = getAngebotStatusBadge(angebot.status);
+
+    // Build linked document chain
+    let docChainHtml = '<div class="angebot-doc-chain">';
+    if (anfrage) {
+        docChainHtml += `<span class="doc-chain-item" onclick="event.stopPropagation(); switchView('anfragen');" title="Anfrage anzeigen">📥 ${h(anfrage.id)}</span><span class="doc-chain-arrow">&rarr;</span>`;
+    }
+    docChainHtml += `<span class="doc-chain-item doc-chain-active">📝 ${h(angebot.id)}</span>`;
+    if (auftrag) {
+        docChainHtml += `<span class="doc-chain-arrow">&rarr;</span><span class="doc-chain-item" onclick="event.stopPropagation(); switchView('auftraege');" title="Auftrag anzeigen">📋 ${h(auftrag.id)}</span>`;
+    }
+    if (rechnung) {
+        docChainHtml += `<span class="doc-chain-arrow">&rarr;</span><span class="doc-chain-item" onclick="event.stopPropagation(); window.showRechnung?.('${h(rechnung.id)}');" title="Rechnung anzeigen">💰 ${h(rechnung.id)}</span>`;
+    }
+    docChainHtml += '</div>';
+
+    // Customer card
+    const k = customer || angebot.kunde;
+    const customerHtml = `
+        <div class="angebot-detail-section">
+            <h4>Kunde</h4>
+            <div class="angebot-customer-card">
+                <div><strong>${window.UI.sanitize(k.name || '-')}</strong></div>
+                ${k.email ? `<div>${window.UI.sanitize(k.email)}</div>` : ''}
+                ${k.telefon || k.phone ? `<div>${window.UI.sanitize(k.telefon || k.phone)}</div>` : ''}
+                ${k.adresse || k.address ? `<div>${window.UI.sanitize(k.adresse || k.address)}</div>` : ''}
+            </div>
+        </div>`;
+
+    // Positionen / BOM table
+    const posHtml = `
+        <div class="angebot-detail-section">
+            <h4>Positionen</h4>
+            <table class="angebot-bom-table">
+                <thead>
+                    <tr>
+                        <th>Pos.</th>
+                        <th>Beschreibung</th>
+                        <th>Menge</th>
+                        <th>Einheit</th>
+                        <th class="text-right">Einzelpreis</th>
+                        <th class="text-right">Gesamt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${(angebot.positionen || []).map((p, i) => `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${window.UI.sanitize(p.beschreibung)}</td>
+                            <td>${p.menge}</td>
+                            <td>${window.UI.sanitize(p.einheit)}</td>
+                            <td class="text-right">${formatCurrency(p.preis)}</td>
+                            <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div class="angebot-summary">
+                <div class="summary-row"><span>Netto:</span><span>${formatCurrency(angebot.netto)}</span></div>
+                <div class="summary-row"><span>MwSt. 19%:</span><span>${formatCurrency(angebot.mwst)}</span></div>
+                <div class="summary-row total"><span>Brutto:</span><span>${formatCurrency(angebot.brutto)}</span></div>
+            </div>
+        </div>`;
+
+    // Angebots-Text
+    const textHtml = angebot.text ? `
+        <div class="angebot-detail-section">
+            <h4>Angebotstext</h4>
+            <div style="white-space:pre-wrap; font-size:13px; color:var(--text-secondary); line-height:1.6;">${window.UI.sanitize(angebot.text)}</div>
+        </div>` : '';
+
+    // Calendar
+    let calHtml = '';
+    if (appointments.length > 0) {
+        calHtml = `
+        <div class="angebot-detail-section">
+            <h4>Termine</h4>
+            ${appointments.slice(0, 5).map(apt => `
+                <div class="angebot-comm-item">
+                    <span>${formatDate(apt.date || apt.start)}</span>
+                    <span>${window.UI.sanitize(apt.title || apt.beschreibung || '-')}</span>
+                </div>
+            `).join('')}
+        </div>`;
+    }
+
+    // Communication
+    let commHtml = '';
+    if (messages.length > 0) {
+        commHtml = `
+        <div class="angebot-detail-section">
+            <h4>Kommunikation</h4>
+            ${messages.slice(0, 5).map(msg => `
+                <div class="angebot-comm-item">
+                    <span>${formatDate(msg.date || msg.createdAt)}</span>
+                    <span>${window.UI.sanitize(msg.subject || msg.text || '-')}</span>
+                </div>
+            `).join('')}
+        </div>`;
+    }
+
+    // Actions
+    const actionsHtml = `
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-angebot-detail')">Schliessen</button>
+            ${angebot.status === 'offen' ? `<button type="button" class="btn btn-success" onclick="acceptAngebot('${h(angebot.id)}'); closeModal('modal-angebot-detail');">Auftrag erteilen</button>` : ''}
+        </div>`;
+
+    // Render
+    document.getElementById('angebot-detail-content').innerHTML = `
+        <div style="padding:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <div>
+                    <span class="item-id" style="font-size:14px;">${h(angebot.id)}</span>
+                    <span style="margin-left:12px;">${st}</span>
+                </div>
+                <div style="color:var(--text-muted); font-size:13px;">
+                    ${formatDate(angebot.createdAt)}
+                </div>
+            </div>
+            ${docChainHtml}
+            ${customerHtml}
+            ${posHtml}
+            ${textHtml}
+            ${calHtml}
+            ${commHtml}
+            ${actionsHtml}
+        </div>`;
+
+    openModal('modal-angebot-detail');
+}
+
+function exportAngebotPDF(id) {
+    const angebot = store.angebote.find(a => a.id === id);
+    if (!angebot) {return;}
+
+    // Use PDF service if available
+    if (window.pdfService?.exportAngebot) {
+        window.pdfService.exportAngebot(angebot);
+        return;
+    }
+
+    // Fallback: show toast with info
+    showToast('PDF-Export wird vorbereitet...', 'info');
+
+    // Simple print-based PDF fallback
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        showToast('Popup-Blocker verhindert den PDF-Export', 'error');
+        return;
+    }
+
+    const posRows = (angebot.positionen || []).map((p, i) =>
+        `<tr><td>${i + 1}</td><td>${window.UI.sanitize(p.beschreibung)}</td><td>${p.menge}</td><td>${window.UI.sanitize(p.einheit)}</td><td style="text-align:right">${formatCurrency(p.preis)}</td><td style="text-align:right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td></tr>`
+    ).join('');
+
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Angebot ${window.UI.sanitize(angebot.id)}</title>
+        <style>body{font-family:Arial,sans-serif;padding:40px;color:#333}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{padding:8px 12px;border-bottom:1px solid #ddd;text-align:left}th{background:#f5f5f5;font-weight:600}.totals{text-align:right;margin-top:20px}.totals div{margin:4px 0}.totals .brutto{font-weight:700;font-size:18px;border-top:2px solid #333;padding-top:8px}</style>
+    </head><body>
+        <h1>Angebot ${window.UI.sanitize(angebot.id)}</h1>
+        <p><strong>Kunde:</strong> ${window.UI.sanitize(angebot.kunde?.name || '-')}</p>
+        <p><strong>Datum:</strong> ${formatDate(angebot.createdAt)}</p>
+        <p><strong>Leistungsart:</strong> ${getLeistungsartLabel(angebot.leistungsart)}</p>
+        <table><thead><tr><th>Nr.</th><th>Beschreibung</th><th>Menge</th><th>Einheit</th><th style="text-align:right">Einzelpreis</th><th style="text-align:right">Gesamt</th></tr></thead><tbody>${posRows}</tbody></table>
+        <div class="totals"><div>Netto: ${formatCurrency(angebot.netto)}</div><div>MwSt. 19%: ${formatCurrency(angebot.mwst)}</div><div class="brutto">Brutto: ${formatCurrency(angebot.brutto)}</div></div>
+        ${angebot.text ? `<h3>Angebotstext</h3><p style="white-space:pre-wrap">${window.UI.sanitize(angebot.text)}</p>` : ''}
+    </body></html>`);
+    printWindow.document.close();
+    printWindow.print();
+}
+
 // Export angebote functions
 window.AngeboteModule = {
     createAngebotFromAnfrage,
@@ -1067,7 +1259,9 @@ window.AngeboteModule = {
     acceptAngebot,
     previewAngebot,
     closeAngebotPreview,
-    freigebenAngebot
+    freigebenAngebot,
+    showAngebotDetail,
+    exportAngebotPDF
 };
 
 // Make globally available
@@ -1082,3 +1276,5 @@ window.deleteAngebot = deleteAngebot;
 window.previewAngebot = previewAngebot;
 window.closeAngebotPreview = closeAngebotPreview;
 window.freigebenAngebot = freigebenAngebot;
+window.showAngebotDetail = showAngebotDetail;
+window.exportAngebotPDF = exportAngebotPDF;

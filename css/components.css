@@ -7059,3 +7059,146 @@ textarea {
         width: 100%;
     }
 }
+
+/* ============================================
+   Angebot Detail View
+   ============================================ */
+
+.angebot-detail-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.angebot-detail-section:last-child {
+    border-bottom: none;
+}
+
+.angebot-detail-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.angebot-customer-card {
+    background: var(--bg-dark);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--text-secondary);
+}
+
+.angebot-customer-card strong {
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.angebot-doc-chain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border-radius: var(--border-radius-sm);
+}
+
+.doc-chain-item {
+    padding: 6px 12px;
+    background: var(--bg-hover);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: monospace;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: 1px solid var(--border-color);
+}
+
+.doc-chain-item:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.doc-chain-item.doc-chain-active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    cursor: default;
+}
+
+.doc-chain-arrow {
+    color: var(--text-muted);
+    font-size: 16px;
+}
+
+.angebot-bom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.angebot-bom-table th {
+    background: var(--bg-dark);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.angebot-bom-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
+
+.angebot-bom-table .text-right {
+    text-align: right;
+}
+
+.angebot-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.angebot-summary .summary-row {
+    display: flex;
+    gap: 20px;
+    min-width: 240px;
+    justify-content: space-between;
+}
+
+.angebot-summary .summary-row.total {
+    font-weight: 700;
+    font-size: 16px;
+    border-top: 2px solid var(--text-primary);
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.angebot-comm-item {
+    display: flex;
+    gap: 16px;
+    padding: 10px 12px;
+    background: var(--bg-dark);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.angebot-comm-item span:first-child {
+    white-space: nowrap;
+    color: var(--text-muted);
+}
