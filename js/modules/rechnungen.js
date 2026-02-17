@@ -3,7 +3,12 @@
    Rechnungen (invoices) CRUD and UI
    ============================================ */
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast } = window.AppUtils;
+const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h, switchView } = window.AppUtils;
+
+// Filter and search state
+let currentRechnungenFilter = 'alle';
+let currentRechnungenSearch = '';
+let rechnungenSearchDebounceTimer = null;
 
 /**
  * Determine the effective display status of an invoice.
@@ -74,12 +79,89 @@ function getStatusBadgeClass(effectiveStatus) {
     }
 }
 
+/**
+ * Build an entity trail HTML string for a Rechnung.
+ * Traces: Anfrage → Angebot → Auftrag → Rechnung
+ * Also shows "Korrektur von" link when applicable.
+ * @param {Object} rechnung - The invoice object
+ * @param {boolean} isCurrent - Whether the rechnung itself is the current (non-clickable) item
+ * @returns {string} HTML string for the trail
+ */
+function buildRechnungTrail(rechnung, isCurrent) {
+    const auftrag = rechnung.auftragId ? (store?.auftraege || []).find(a => a.id === rechnung.auftragId) : null;
+
+    // Try to find the Angebot: directly on rechnung, or via the auftrag
+    const angebotId = rechnung.angebotId || (auftrag ? auftrag.angebotId : null);
+    const angebot = angebotId ? (store?.angebote || []).find(a => a.id === angebotId) : null;
+
+    // Try to find the Anfrage via the Angebot
+    const anfrageId = angebot ? angebot.anfrageId : null;
+    const anfrage = anfrageId ? (store?.anfragen || []).find(a => a.id === anfrageId) : null;
+
+    // Only show trail if there's at least one ancestor to link
+    if (!auftrag && !angebot && !anfrage && !rechnung.korrekturVon) {
+        return '';
+    }
+
+    const parts = [];
+
+    if (anfrage) {
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('anfragen');">📥 ${h(anfrage.id)}</span>`);
+    }
+    if (angebot) {
+        if (parts.length > 0) parts.push('<span class="trail-arrow">&rarr;</span>');
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('angebote');">📝 ${h(angebot.id)}</span>`);
+    }
+    if (auftrag) {
+        if (parts.length > 0) parts.push('<span class="trail-arrow">&rarr;</span>');
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('auftraege');">🔧 ${h(auftrag.id)}</span>`);
+    }
+
+    // The Rechnung itself
+    if (parts.length > 0) parts.push('<span class="trail-arrow">&rarr;</span>');
+    if (isCurrent) {
+        parts.push(`<span class="trail-item trail-current">📄 ${h(rechnung.id)}</span>`);
+    } else {
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); showRechnung('${h(rechnung.id)}');">📄 ${h(rechnung.id)}</span>`);
+    }
+
+    let trailHTML = `<div class="entity-trail">${parts.join('')}</div>`;
+
+    // Show "Korrektur von" link if applicable
+    if (rechnung.korrekturVon) {
+        trailHTML += `<span class="trail-correction" onclick="event.stopPropagation(); showRechnung('${h(rechnung.korrekturVon)}');">↩️ Korrektur von ${h(rechnung.korrekturVon)}</span>`;
+    }
+
+    return trailHTML;
+}
+
+function updateRechnungenFilterBadges() {
+    const allRechnungen = store?.rechnungen || [];
+    const counts = { alle: allRechnungen.length, offen: 0, bezahlt: 0, ueberfaellig: 0, storniert: 0 };
+    allRechnungen.forEach(r => {
+        const s = getEffectiveStatus(r);
+        if (counts[s] !== undefined) { counts[s]++; }
+    });
+
+    const tabContainer = document.getElementById('rechnungen-filter-tabs');
+    if (!tabContainer) {return;}
+    tabContainer.querySelectorAll('.filter-btn').forEach(btn => {
+        const filter = btn.dataset.filter;
+        const count = counts[filter] !== undefined ? counts[filter] : 0;
+        const labelMap = { alle: 'Alle', offen: 'Offen', bezahlt: 'Bezahlt', ueberfaellig: '\u00DCberf\u00E4llig', storniert: 'Storniert' };
+        btn.textContent = `${labelMap[filter] || filter} (${count})`;
+    });
+}
+
 function renderRechnungen() {
     const container = document.getElementById('rechnungen-list');
     if (!container) {return;}
-    const rechnungen = store?.rechnungen || [];
+    const allRechnungen = store?.rechnungen || [];
 
-    if (rechnungen.length === 0) {
+    // Update badge counts on filter tabs
+    updateRechnungenFilterBadges();
+
+    if (allRechnungen.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="padding: 60px 20px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
@@ -92,7 +174,40 @@ function renderRechnungen() {
         return;
     }
 
-    container.innerHTML = rechnungen.map(r => {
+    // Apply status filter
+    let filtered = [...allRechnungen];
+    if (currentRechnungenFilter !== 'alle') {
+        filtered = filtered.filter(r => getEffectiveStatus(r) === currentRechnungenFilter);
+    }
+
+    // Apply search filter
+    const searchQuery = currentRechnungenSearch.toLowerCase().trim();
+    if (searchQuery) {
+        filtered = filtered.filter(r =>
+            (r.kunde?.name || '').toLowerCase().includes(searchQuery) ||
+            (r.id || '').toLowerCase().includes(searchQuery) ||
+            (r.leistungsart || '').toLowerCase().includes(searchQuery) ||
+            (r.auftragId || '').toLowerCase().includes(searchQuery)
+        );
+    }
+
+    if (filtered.length === 0) {
+        const labelMap = { offen: 'Offen', bezahlt: 'Bezahlt', ueberfaellig: '\u00DCberf\u00E4llig', storniert: 'Storniert' };
+        const filterLabel = currentRechnungenFilter !== 'alle' ? ` mit Status "${labelMap[currentRechnungenFilter] || currentRechnungenFilter}"` : '';
+        const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 40px 20px; text-align: center;">
+                <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
+                <h3 style="margin-bottom: 8px;">Keine Rechnungen gefunden</h3>
+                <p style="color: var(--text-secondary);">
+                    Keine Rechnungen${filterLabel}${searchLabel}.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.map(r => {
         const effectiveStatus = getEffectiveStatus(r);
         const borderColor = getStatusBorderColor(effectiveStatus);
         const statusIcon = getStatusIcon(effectiveStatus);
@@ -100,9 +215,9 @@ function renderRechnungen() {
         const statusBadgeClass = getStatusBadgeClass(effectiveStatus);
         const isStorniert = effectiveStatus === 'storniert';
         const textStyle = isStorniert ? 'text-decoration: line-through; opacity: 0.6;' : '';
-        const korrekturHint = r.korrekturVon
-            ? `<span style="font-size: 11px; color: var(--text-secondary); margin-left: 6px;">(Korrektur von ${window.UI.sanitize(r.korrekturVon)})</span>`
-            : '';
+
+        // Entity trail (Anfrage -> Angebot -> Auftrag -> Rechnung)
+        const rechnungTrailHTML = buildRechnungTrail(r, true);
 
         // Action buttons: Stornieren and Korrektur only for 'offen' (or ueberfaellig which is still technically offen)
         const canCancel = r.status === 'offen';
@@ -124,8 +239,9 @@ function renderRechnungen() {
             <div class="item-card" onclick="showRechnung('${r.id}')" style="cursor:pointer; border-left: 4px solid ${borderColor};">
                 <div class="item-header">
                     <h3 class="item-title" style="${textStyle}">${window.UI.sanitize(r.kunde.name)}</h3>
-                    <span class="item-id">${window.UI.sanitize(r.id)}${korrekturHint}</span>
+                    <span class="item-id">${window.UI.sanitize(r.id)}</span>
                 </div>
+                ${rechnungTrailHTML}
                 <div class="item-meta">
                     <span>${statusIcon} ${statusLabel}</span>
                     <span>💰 ${formatCurrency(r.brutto || 0)}</span>
@@ -263,9 +379,8 @@ function showRechnung(rechnungId) {
             break;
     }
 
-    const korrekturInfo = rechnung.korrekturVon
-        ? `<br><strong>Korrektur von:</strong> ${window.UI.sanitize(rechnung.korrekturVon)}`
-        : '';
+    // Entity trail for the modal (Anfrage → Angebot → Auftrag → Rechnung)
+    const modalTrailHTML = buildRechnungTrail(rechnung, true);
 
     const isStorniert = effectiveStatus === 'storniert';
     const textStyle = isStorniert ? 'text-decoration: line-through; opacity: 0.6;' : '';
@@ -292,11 +407,12 @@ function showRechnung(rechnungId) {
                 <button class="modal-close">×</button>
             </div>
 
+            ${modalTrailHTML}
+
             <div style="margin-bottom: 20px;">
                 <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde.name)}</span><br>
                 <strong>Leistungsart:</strong> <span style="${textStyle}">${getLeistungsartLabel(rechnung.leistungsart)}</span><br>
                 <strong>Status:</strong> ${statusHTML}
-                ${korrekturInfo}
             </div>
 
             <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; ${textStyle}">
@@ -385,11 +501,39 @@ function initRechnungActions() {
     // Implementation details would go here
 }
 
+function initRechnungenFilters() {
+    // Filter tab clicks
+    const tabContainer = document.getElementById('rechnungen-filter-tabs');
+    if (tabContainer) {
+        tabContainer.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentRechnungenFilter = btn.dataset.filter;
+                tabContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderRechnungen();
+            });
+        });
+    }
+
+    // Search input with 300ms debounce
+    const searchInput = document.getElementById('rechnungen-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(rechnungenSearchDebounceTimer);
+            rechnungenSearchDebounceTimer = setTimeout(() => {
+                currentRechnungenSearch = searchInput.value;
+                renderRechnungen();
+            }, 300);
+        });
+    }
+}
+
 // Export rechnungen functions
 window.RechnungenModule = {
     renderRechnungen,
     showRechnung,
     initRechnungActions,
+    initRechnungenFilters,
     cancelRechnung,
     duplicateRechnung
 };
@@ -397,5 +541,6 @@ window.RechnungenModule = {
 // Make globally available
 window.renderRechnungen = renderRechnungen;
 window.showRechnung = showRechnung;
+window.initRechnungenFilters = initRechnungenFilters;
 window.cancelRechnung = cancelRechnung;
 window.duplicateRechnung = duplicateRechnung;

@@ -34,9 +34,11 @@ async function init() {
     // Initialize modules (with null guards for load-order safety)
     window.AnfragenModule?.initAnfrageForm?.();
     window.AngeboteModule?.initAngebotForm?.();
+    window.AngeboteModule?.initAngeboteFilters?.();
     window.AuftraegeModule?.initAuftragForm?.();
     window.AuftraegeModule?.initAuftragDetailHandlers?.();
     window.RechnungenModule?.initRechnungActions?.();
+    window.RechnungenModule?.initRechnungenFilters?.();
     initMaterial();
     initSettings();
     initAutomationSettings();

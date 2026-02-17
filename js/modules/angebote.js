@@ -5,6 +5,11 @@
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h, showToast } = window.AppUtils;
 
+// Filter and search state
+let currentAngeboteFilter = 'alle';
+let currentAngeboteSearch = '';
+let angeboteSearchDebounceTimer = null;
+
 function createAngebotFromAnfrage(anfrageId) {
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
     if (!anfrage) {return;}
@@ -353,12 +358,33 @@ function getAngebotStatusBadge(status) {
     }
 }
 
+function updateAngeboteFilterBadges() {
+    const allAngebote = store?.angebote || [];
+    const counts = { alle: allAngebote.length, offen: 0, angenommen: 0, abgelehnt: 0 };
+    allAngebote.forEach(a => {
+        const s = a.status || 'offen';
+        if (counts[s] !== undefined) { counts[s]++; }
+    });
+
+    const tabContainer = document.getElementById('angebote-filter-tabs');
+    if (!tabContainer) {return;}
+    tabContainer.querySelectorAll('.filter-btn').forEach(btn => {
+        const filter = btn.dataset.filter;
+        const count = counts[filter] !== undefined ? counts[filter] : 0;
+        const labelMap = { alle: 'Alle', offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
+        btn.textContent = `${labelMap[filter] || filter} (${count})`;
+    });
+}
+
 function renderAngebote() {
     const container = document.getElementById('angebote-list');
     if (!container) {return;}
-    const angebote = store?.angebote || [];
+    const allAngebote = store?.angebote || [];
 
-    if (angebote.length === 0) {
+    // Update badge counts on filter tabs
+    updateAngeboteFilterBadges();
+
+    if (allAngebote.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="padding: 60px 20px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
@@ -374,10 +400,43 @@ function renderAngebote() {
         return;
     }
 
-    container.innerHTML = angebote.map(a => {
+    // Apply status filter
+    let filtered = [...allAngebote];
+    if (currentAngeboteFilter !== 'alle') {
+        filtered = filtered.filter(a => (a.status || 'offen') === currentAngeboteFilter);
+    }
+
+    // Apply search filter
+    const searchQuery = currentAngeboteSearch.toLowerCase().trim();
+    if (searchQuery) {
+        filtered = filtered.filter(a =>
+            (a.kunde?.name || '').toLowerCase().includes(searchQuery) ||
+            (a.id || '').toLowerCase().includes(searchQuery) ||
+            (a.leistungsart || '').toLowerCase().includes(searchQuery) ||
+            (a.text || '').toLowerCase().includes(searchQuery) ||
+            (a.positionen || []).some(p => (p.beschreibung || '').toLowerCase().includes(searchQuery))
+        );
+    }
+
+    if (filtered.length === 0) {
+        const filterLabel = currentAngeboteFilter !== 'alle' ? ` mit Status "${currentAngeboteFilter}"` : '';
+        const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 40px 20px; text-align: center;">
+                <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
+                <h3 style="margin-bottom: 8px;">Keine Angebote gefunden</h3>
+                <p style="color: var(--text-secondary);">
+                    Keine Angebote${filterLabel}${searchLabel}.
+                </p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filtered.map(a => {
         const isOffen = a.status === 'offen';
 
-        // Build entity trail: Anfrage → Angebot (current)
+        // Build entity trail: Anfrage -> Angebot (current)
         const anfrage = a.anfrageId ? (store?.anfragen || []).find(anf => anf.id === a.anfrageId) : null;
         let angebotTrailHTML = '';
         if (anfrage) {
@@ -412,7 +471,7 @@ function renderAngebote() {
                     Bearbeiten
                 </button>
                 <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
-                    L\u00f6schen
+                    Löschen
                 </button>
                 ${isOffen ? `<button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
                     Auftrag erteilen
@@ -589,10 +648,38 @@ function acceptAngebot(angebotId) {
     );
 }
 
+function initAngeboteFilters() {
+    // Filter tab clicks
+    const tabContainer = document.getElementById('angebote-filter-tabs');
+    if (tabContainer) {
+        tabContainer.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentAngeboteFilter = btn.dataset.filter;
+                tabContainer.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderAngebote();
+            });
+        });
+    }
+
+    // Search input with 300ms debounce
+    const searchInput = document.getElementById('angebote-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(angeboteSearchDebounceTimer);
+            angeboteSearchDebounceTimer = setTimeout(() => {
+                currentAngeboteSearch = searchInput.value;
+                renderAngebote();
+            }, 300);
+        });
+    }
+}
+
 // Export angebote functions
 window.AngeboteModule = {
     createAngebotFromAnfrage,
     initAngebotForm,
+    initAngeboteFilters,
     addPosition,
     updateAngebotSummary,
     generateAIText,
@@ -605,6 +692,7 @@ window.AngeboteModule = {
 // Make globally available
 window.createAngebotFromAnfrage = createAngebotFromAnfrage;
 window.renderAngebote = renderAngebote;
+window.initAngeboteFilters = initAngeboteFilters;
 window.addPosition = addPosition;
 window.updateAngebotSummary = updateAngebotSummary;
 window.acceptAngebot = acceptAngebot;
