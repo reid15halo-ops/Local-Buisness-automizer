@@ -104,6 +104,7 @@ class CommunicationHubController {
             return;
         }
 
+        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
         listContainer.innerHTML = conversations.map(conv => {
             const time = new Date(conv.lastMessageTime || conv.createdAt).toLocaleTimeString('de-DE', {
                 hour: '2-digit',
@@ -116,9 +117,9 @@ class CommunicationHubController {
 
             return `
                 <div class="comm-item ${this.currentConversation?.id === conv.id ? 'active' : ''}"
-                     data-conversation-id="${conv.id}">
-                    <div class="comm-item-name">${conv.customerName}</div>
-                    <div class="comm-item-preview">${conv.lastMessage || 'Keine Nachrichten'}</div>
+                     data-conversation-id="${san(conv.id)}">
+                    <div class="comm-item-name">${san(conv.customerName)}</div>
+                    <div class="comm-item-preview">${san(conv.lastMessage || 'Keine Nachrichten')}</div>
                     <div class="comm-item-time">${time}</div>
                     ${unreadBadge}
                 </div>
@@ -195,8 +196,10 @@ class CommunicationHubController {
     }
 
     linkify(text) {
-        // Simple URL detection and linking
-        return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: inherit; text-decoration: underline;">$1</a>');
+        // Sanitize text first, then linkify URLs
+        const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const safeText = sanitize(text);
+        return safeText.replace(/(https?:\/\/[^\s&]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">$1</a>');
     }
 
     updateCharCount(text) {

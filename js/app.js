@@ -282,76 +282,97 @@ function createAngebotFromAnfrage(anfrageId) {
 }
 
 function initAngebotForm() {
-    const form = document.getElementById('form-angebot');
-    const addBtn = document.getElementById('btn-add-position');
-    const aiBtn = document.getElementById('btn-ai-text');
+    try {
+        const form = document.getElementById('form-angebot');
+        const addBtn = document.getElementById('btn-add-position');
+        const aiBtn = document.getElementById('btn-ai-text');
 
-    addBtn.addEventListener('click', addPosition);
-    aiBtn.addEventListener('click', generateAIText);
+        if (!form) {return;}
+        if (addBtn) {addBtn.addEventListener('click', addPosition);}
+        if (aiBtn) {aiBtn.addEventListener('click', generateAIText);}
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
+        form.addEventListener('submit', (e) => {
+            try {
+                e.preventDefault();
 
-        const anfrageId = document.getElementById('angebot-anfrage-id').value;
-        const anfrage = store.anfragen.find(a => a.id === anfrageId);
-
-        const positionen = [];
-        document.querySelectorAll('.position-row').forEach(row => {
-            const beschreibungInput = row.querySelector('.pos-beschreibung');
-            const beschreibung = beschreibungInput.value;
-            const menge = parseFloat(row.querySelector('.pos-menge').value) || 0;
-            const einheit = row.querySelector('.pos-einheit').value;
-            const preis = parseFloat(row.querySelector('.pos-preis').value) || 0;
-            const materialId = beschreibungInput.dataset.materialId || null;
-
-            if (beschreibung && menge && preis) {
-                const position = { beschreibung, menge, einheit, preis };
-
-                // Add material-specific fields
-                if (materialId) {
-                    const material = window.materialService?.getMaterial(materialId);
-                    if (material) {
-                        position.materialId = materialId;
-                        position.ekPreis = material.preis;
-                        position.bestandVerfuegbar = material.bestand;
-                        position.artikelnummer = material.artikelnummer;
-                    }
+                const anfrageId = document.getElementById('angebot-anfrage-id')?.value;
+                const anfrage = store.anfragen.find(a => a.id === anfrageId);
+                if (!anfrage) {
+                    showToast('Anfrage nicht gefunden', 'error');
+                    return;
                 }
 
-                positionen.push(position);
+                const positionen = [];
+                document.querySelectorAll('.position-row').forEach(row => {
+                    const beschreibungInput = row.querySelector('.pos-beschreibung');
+                    const beschreibung = beschreibungInput?.value;
+                    const menge = parseFloat(row.querySelector('.pos-menge')?.value) || 0;
+                    const einheit = row.querySelector('.pos-einheit')?.value || 'Stk.';
+                    const preis = parseFloat(row.querySelector('.pos-preis')?.value) || 0;
+                    const materialId = beschreibungInput?.dataset?.materialId || null;
+
+                    if (beschreibung && menge && preis) {
+                        const position = { beschreibung, menge, einheit, preis };
+
+                        // Add material-specific fields
+                        if (materialId) {
+                            const material = window.materialService?.getMaterial(materialId);
+                            if (material) {
+                                position.materialId = materialId;
+                                position.ekPreis = material.preis;
+                                position.bestandVerfuegbar = material.bestand;
+                                position.artikelnummer = material.artikelnummer;
+                            }
+                        }
+
+                        positionen.push(position);
+                    }
+                });
+
+                const netto = positionen.reduce((sum, p) => sum + (p.menge * p.preis), 0);
+                const mwst = netto * 0.19;
+                const brutto = netto + mwst;
+
+                const angebot = {
+                    id: generateId('ANG'),
+                    anfrageId,
+                    kunde: anfrage.kunde,
+                    leistungsart: anfrage.leistungsart,
+                    positionen,
+                    text: document.getElementById('angebot-text')?.value || '',
+                    netto,
+                    mwst,
+                    brutto,
+                    status: 'offen',
+                    createdAt: new Date().toISOString()
+                };
+
+                store.angebote.push(angebot);
+
+                // Update Anfrage status
+                anfrage.status = 'angebot-erstellt';
+
+                saveStore();
+                addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
+
+                closeModal('modal-angebot');
+                switchView('angebote');
+                document.querySelector('[data-view="angebote"]')?.click();
+            } catch (error) {
+                if (window.errorHandler) {
+                    window.errorHandler.handle(error, 'initAngebotForm - submit', true);
+                } else {
+                    console.error('Angebot form submission failed:', error);
+                }
             }
         });
-
-        const netto = positionen.reduce((sum, p) => sum + (p.menge * p.preis), 0);
-        const mwst = netto * 0.19;
-        const brutto = netto + mwst;
-
-        const angebot = {
-            id: generateId('ANG'),
-            anfrageId,
-            kunde: anfrage.kunde,
-            leistungsart: anfrage.leistungsart,
-            positionen,
-            text: document.getElementById('angebot-text').value,
-            netto,
-            mwst,
-            brutto,
-            status: 'offen',
-            createdAt: new Date().toISOString()
-        };
-
-        store.angebote.push(angebot);
-
-        // Update Anfrage status
-        anfrage.status = 'angebot-erstellt';
-
-        saveStore();
-        addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
-
-        closeModal('modal-angebot');
-        switchView('angebote');
-        document.querySelector('[data-view="angebote"]').click();
-    });
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'initAngebotForm', false);
+        } else {
+            console.error('initAngebotForm failed:', error);
+        }
+    }
 }
 
 function addPosition(prefill = null) {
@@ -456,12 +477,14 @@ function addPosition(prefill = null) {
                         return;
                     }
 
-                    suggestBox.innerHTML = materials.slice(0, 5).map(m => `
-                        <div class="material-suggest-item" data-material='${JSON.stringify(m)}'>
-                            <span class="material-suggest-name">${m.bezeichnung}</span>
+                    // Store materials for safe access by index (avoids JSON in HTML attributes)
+                    suggestBox._materials = materials.slice(0, 5);
+                    suggestBox.innerHTML = materials.slice(0, 5).map((m, idx) => `
+                        <div class="material-suggest-item" data-material-idx="${idx}">
+                            <span class="material-suggest-name">${h(m.bezeichnung)}</span>
                             <span class="material-suggest-meta">
                                 <span class="price">${formatCurrency(m.vkPreis || m.preis)}</span>
-                                <span class="stock">${m.bestand} ${m.einheit}</span>
+                                <span class="stock">${m.bestand} ${h(m.einheit)}</span>
                             </span>
                         </div>
                     `).join('');
@@ -471,7 +494,8 @@ function addPosition(prefill = null) {
                     suggestBox.querySelectorAll('.material-suggest-item').forEach(item => {
                         item.addEventListener('click', () => {
                             try {
-                                const material = JSON.parse(item.dataset.material);
+                                const material = suggestBox._materials?.[parseInt(item.dataset.materialIdx)];
+                                if (!material) {return;}
                                 const descInput = row.querySelector('.pos-beschreibung');
                                 const priceInput = row.querySelector('.pos-preis');
                                 const einheitInput = row.querySelector('.pos-einheit');
@@ -599,8 +623,10 @@ MHS Metallbau Hydraulik Service`
 }
 
 function renderAngebote() {
+    try {
     const container = document.getElementById('angebote-list');
-    const angebote = store.angebote.filter(a => a.status === 'offen');
+    if (!container) {return;}
+    const angebote = store?.angebote?.filter(a => a.status === 'offen') || [];
 
     if (angebote.length === 0) {
         container.innerHTML = `
@@ -641,6 +667,13 @@ function renderAngebote() {
             </div>
         </div>
     `).join('');
+    } catch (error) {
+        if (window.errorHandler) {
+            window.errorHandler.handle(error, 'renderAngebote', false);
+        } else {
+            console.error('renderAngebote failed:', error);
+        }
+    }
 }
 
 function acceptAngebot(angebotId) {
@@ -723,7 +756,7 @@ function acceptAngebot(angebotId) {
     addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
 
     switchView('auftraege');
-    document.querySelector('[data-view="auftraege"]').click();
+    document.querySelector('[data-view="auftraege"]')?.click();
 }
 
 // ============================================
@@ -1729,18 +1762,24 @@ function openAuftragModal(auftragId) {
     if (!auftrag) {return;}
 
     store.currentAuftragId = auftragId;
-    document.getElementById('auftrag-id').value = auftragId;
+    const auftragIdEl = document.getElementById('auftrag-id');
+    if (auftragIdEl) {auftragIdEl.value = auftragId;}
 
-    document.getElementById('auftrag-info').innerHTML = `
+    const auftragInfoEl = document.getElementById('auftrag-info');
+    if (!auftragInfoEl) {return;}
+    auftragInfoEl.innerHTML = `
         <p><strong>${h(auftrag.kunde.name)}</strong></p>
         <p>${getLeistungsartLabel(auftrag.leistungsart)}</p>
         <p>Angebotswert: ${formatCurrency(auftrag.angebotsWert)}</p>
         <p style="font-size:12px; color:var(--text-muted);">Positionen: ${auftrag.positionen.map(p => h(p.beschreibung)).join(', ')}</p>
     `;
 
-    document.getElementById('arbeitszeit').value = '';
-    document.getElementById('material-kosten-extra').value = '0';
-    document.getElementById('notizen').value = '';
+    const arbeitszeitEl = document.getElementById('arbeitszeit');
+    if (arbeitszeitEl) {arbeitszeitEl.value = '';}
+    const materialKostenEl = document.getElementById('material-kosten-extra');
+    if (materialKostenEl) {materialKostenEl.value = '0';}
+    const notizenEl = document.getElementById('notizen');
+    if (notizenEl) {notizenEl.value = '';}
 
     // Reset Stückliste
     stuecklisteItems = [];
@@ -2160,7 +2199,7 @@ function proceedWithAuftragCompletion(auftrag) {
 
     closeModal('modal-auftrag');
     switchView('rechnungen');
-    document.querySelector('[data-view="rechnungen"]').click();
+    document.querySelector('[data-view="rechnungen"]')?.click();
 }
 
 // ============================================
@@ -2168,8 +2207,9 @@ function proceedWithAuftragCompletion(auftrag) {
 // ============================================
 function renderRechnungen() {
     const container = document.getElementById('rechnungen-list');
+    if (!container) {return;}
 
-    if (store.rechnungen.length === 0) {
+    if (!store?.rechnungen || store.rechnungen.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="padding: 40px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px">📄</div>
@@ -2223,6 +2263,7 @@ function showRechnung(rechnungId) {
     store.currentRechnungId = rechnungId;
 
     const preview = document.getElementById('rechnung-preview');
+    if (!preview) {return;}
     preview.innerHTML = `
         <div class="rechnung-header">
             <div class="rechnung-firma">
@@ -2445,20 +2486,24 @@ function renderMaterial() {
     const materials = window.materialService?.getAllMaterials() || [];
     const container = document.getElementById('material-list');
 
-    // Update stats
-    document.getElementById('material-count').textContent = materials.length;
+    // Update stats (with null guards)
+    const matCountEl = document.getElementById('material-count');
+    if (matCountEl) {matCountEl.textContent = materials.length;}
     const lagerwert = materials.reduce((sum, m) => sum + (m.bestand * m.preis), 0);
-    document.getElementById('material-value').textContent = formatCurrency(lagerwert);
+    const matValueEl = document.getElementById('material-value');
+    if (matValueEl) {matValueEl.textContent = formatCurrency(lagerwert);}
     const lowStock = window.materialService?.getLowStockItems() || [];
-    document.getElementById('material-low').textContent = lowStock.length;
-    document.getElementById('material-badge').textContent = materials.length;
+    const matLowEl = document.getElementById('material-low');
+    if (matLowEl) {matLowEl.textContent = lowStock.length;}
+    const matBadgeEl = document.getElementById('material-badge');
+    if (matBadgeEl) {matBadgeEl.textContent = materials.length;}
 
     // Update kategorie filter
     const kategorien = window.materialService?.getKategorien() || [];
     const filterSelect = document.getElementById('material-kategorie-filter');
     if (filterSelect) {
         filterSelect.innerHTML = '<option value="">Alle Kategorien</option>' +
-            kategorien.map(k => `<option value="${k}">${k}</option>`).join('');
+            kategorien.map(k => `<option value="${h(k)}">${h(k)}</option>`).join('');
     }
 
     if (materials.length === 0) {
@@ -2488,17 +2533,17 @@ function renderMaterial() {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
-                        <span class="material-sku">${m.artikelnummer}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
+                        <span class="material-sku">${h(m.artikelnummer)}</span>
                     </div>
-                    <span class="material-kategorie">${m.kategorie}</span>
+                    <span class="material-kategorie">${h(m.kategorie)}</span>
                     <div class="material-preis">
                         <div class="vk">${formatCurrency(m.vkPreis || m.preis)}</div>
                         <div class="ek">EK: ${formatCurrency(m.preis)}</div>
                     </div>
                     <div class="material-bestand ${isLow ? 'low' : ''}">
                         <div class="count">${m.bestand}</div>
-                        <div class="unit">${m.einheit}</div>
+                        <div class="unit">${h(m.einheit)}</div>
                     </div>
                 </div>
             </div>
@@ -2576,17 +2621,17 @@ function renderMaterialList(materials) {
             <div class="item-card">
                 <div class="material-card">
                     <div class="material-info">
-                        <span class="material-name">${m.bezeichnung}</span>
-                        <span class="material-sku">${m.artikelnummer}</span>
+                        <span class="material-name">${h(m.bezeichnung)}</span>
+                        <span class="material-sku">${h(m.artikelnummer)}</span>
                     </div>
-                    <span class="material-kategorie">${m.kategorie}</span>
+                    <span class="material-kategorie">${h(m.kategorie)}</span>
                     <div class="material-preis">
                         <div class="vk">${formatCurrency(m.vkPreis || m.preis)}</div>
                         <div class="ek">EK: ${formatCurrency(m.preis)}</div>
                     </div>
                     <div class="material-bestand ${isLow ? 'low' : ''}">
                         <div class="count">${m.bestand}</div>
-                        <div class="unit">${m.einheit}</div>
+                        <div class="unit">${h(m.einheit)}</div>
                     </div>
                 </div>
             </div>
@@ -3126,12 +3171,16 @@ function renderMahnwesen() {
     const overdueItems = window.dunningService?.checkAllOverdueInvoices(rechnungen) || [];
     const inkassoFaelle = window.dunningService?.getInkassoFaelle() || [];
 
-    // Update stats
-    document.getElementById('dunning-count').textContent = overdueItems.length;
+    // Update stats (with null guards)
+    const dunningCountEl = document.getElementById('dunning-count');
+    if (dunningCountEl) {dunningCountEl.textContent = overdueItems.length;}
     const totalSum = overdueItems.reduce((sum, item) => sum + item.rechnung.brutto, 0);
-    document.getElementById('dunning-total').textContent = formatCurrency(totalSum);
-    document.getElementById('dunning-inkasso').textContent = inkassoFaelle.length;
-    document.getElementById('mahnwesen-badge').textContent = overdueItems.length;
+    const dunningTotalEl = document.getElementById('dunning-total');
+    if (dunningTotalEl) {dunningTotalEl.textContent = formatCurrency(totalSum);}
+    const dunningInkassoEl = document.getElementById('dunning-inkasso');
+    if (dunningInkassoEl) {dunningInkassoEl.textContent = inkassoFaelle.length;}
+    const mahnwesenBadgeEl = document.getElementById('mahnwesen-badge');
+    if (mahnwesenBadgeEl) {mahnwesenBadgeEl.textContent = overdueItems.length;}
 
     const container = document.getElementById('dunning-list');
     if (overdueItems.length === 0) {
@@ -3146,7 +3195,7 @@ function renderMahnwesen() {
         return `
             <div class="dunning-card ${isCritical ? 'critical' : 'overdue'}">
                 <div class="dunning-info">
-                    <div class="dunning-kunde">${rechnung.kunde.name}</div>
+                    <div class="dunning-kunde">${h(rechnung.kunde.name)}</div>
                     <div class="dunning-status">
                         <span>📄 ${rechnung.id}</span>
                         <span>💰 ${formatCurrency(rechnung.brutto)}</span>
@@ -3216,17 +3265,25 @@ function renderBuchhaltung() {
     const jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value || new Date().getFullYear());
     const eur = window.bookkeepingService?.berechneEUR(jahr) || {};
 
-    // Update EÜR summary
-    document.getElementById('eur-einnahmen').textContent = formatCurrency(eur.einnahmen?.brutto || 0);
-    document.getElementById('eur-einnahmen-netto').textContent = formatCurrency(eur.einnahmen?.netto || 0);
-    document.getElementById('eur-ust').textContent = formatCurrency(eur.einnahmen?.ust || 0);
+    // Update EÜR summary (with null guards)
+    const eurEinnahmenEl = document.getElementById('eur-einnahmen');
+    if (eurEinnahmenEl) {eurEinnahmenEl.textContent = formatCurrency(eur.einnahmen?.brutto || 0);}
+    const eurEinnahmenNettoEl = document.getElementById('eur-einnahmen-netto');
+    if (eurEinnahmenNettoEl) {eurEinnahmenNettoEl.textContent = formatCurrency(eur.einnahmen?.netto || 0);}
+    const eurUstEl = document.getElementById('eur-ust');
+    if (eurUstEl) {eurUstEl.textContent = formatCurrency(eur.einnahmen?.ust || 0);}
 
-    document.getElementById('eur-ausgaben').textContent = formatCurrency(eur.ausgaben?.brutto || 0);
-    document.getElementById('eur-ausgaben-netto').textContent = formatCurrency(eur.ausgaben?.netto || 0);
-    document.getElementById('eur-vst').textContent = formatCurrency(eur.ausgaben?.vorsteuer || 0);
+    const eurAusgabenEl = document.getElementById('eur-ausgaben');
+    if (eurAusgabenEl) {eurAusgabenEl.textContent = formatCurrency(eur.ausgaben?.brutto || 0);}
+    const eurAusgabenNettoEl = document.getElementById('eur-ausgaben-netto');
+    if (eurAusgabenNettoEl) {eurAusgabenNettoEl.textContent = formatCurrency(eur.ausgaben?.netto || 0);}
+    const eurVstEl = document.getElementById('eur-vst');
+    if (eurVstEl) {eurVstEl.textContent = formatCurrency(eur.ausgaben?.vorsteuer || 0);}
 
-    document.getElementById('eur-gewinn').textContent = formatCurrency(eur.gewinn || 0);
-    document.getElementById('eur-zahllast').textContent = formatCurrency(eur.ustZahllast || 0);
+    const eurGewinnEl = document.getElementById('eur-gewinn');
+    if (eurGewinnEl) {eurGewinnEl.textContent = formatCurrency(eur.gewinn || 0);}
+    const eurZahllastEl = document.getElementById('eur-zahllast');
+    if (eurZahllastEl) {eurZahllastEl.textContent = formatCurrency(eur.ustZahllast || 0);}
 
     // Render buchungen
     const buchungen = window.bookkeepingService?.getBuchungenForJahr(jahr) || [];
@@ -3241,10 +3298,10 @@ function renderBuchhaltung() {
         <div class="buchung-item">
             <div class="buchung-datum">${formatDate(b.datum)}</div>
             <div class="buchung-beschreibung">
-                ${b.beschreibung}
-                <small>${b.belegnummer || b.id}</small>
+                ${h(b.beschreibung)}
+                <small>${h(b.belegnummer || b.id)}</small>
             </div>
-            <div class="buchung-kategorie">${b.kategorie}</div>
+            <div class="buchung-kategorie">${h(b.kategorie)}</div>
             <div class="buchung-betrag ${b.typ}">
                 ${b.typ === 'einnahme' ? '+' : '-'}${formatCurrency(b.brutto)}
             </div>

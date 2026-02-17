@@ -86,32 +86,32 @@
 
     <div class="app-container">
         <!-- Mobile Header -->
-        <div class="mobile-header">
-            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Hauptmenü öffnen">☰</button>
+        <header class="mobile-header" role="banner">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Hauptmenü öffnen" aria-expanded="false" aria-controls="sidebar">☰</button>
             <div class="mobile-logo">MHS Demo</div>
             <!-- Notification Bell -->
             <div class="notification-bell-container">
                 <button id="notification-bell" class="notification-bell" aria-label="Benachrichtigungen anzeigen">
                     🔔
-                    <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                    <span id="notification-badge" class="notification-badge" style="display: none;" aria-live="polite">0</span>
                 </button>
             </div>
-        </div>
+        </header>
 
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar" role="complementary" aria-label="Seitenleiste">
             <div class="logo">
                 <div class="logo-icon">⚙️</div>
                 <span>MHS Demo</span>
             </div>
 
             <!-- User Info (shown when authenticated) -->
-            <div id="user-info-panel" class="user-info-panel" style="display: none; padding: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <div class="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; font-size: 14px;">👤</div>
-                    <div style="flex: 1; min-width: 0;">
-                        <div id="user-email" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
-                        <div id="user-company" style="font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+            <div id="user-info-panel" class="user-info-panel" style="display: none;">
+                <div class="user-info-row">
+                    <div class="user-avatar">👤</div>
+                    <div class="user-details">
+                        <div id="user-email" class="user-email"></div>
+                        <div id="user-company" class="user-company"></div>
                     </div>
                 </div>
                 <button id="btn-logout" class="btn btn-small btn-secondary" style="width: 100%; font-size: 12px;">
@@ -123,7 +123,7 @@
                 <input type="text" id="global-search" placeholder="Suche... (Ctrl+K)" aria-label="Globale Suche">
             </div>
 
-            <nav class="nav-menu">
+            <nav class="nav-menu" aria-label="Hauptnavigation">
                 <!-- Simple Mode Items (always visible) -->
                 <button class="nav-item active" data-view="quick-actions" data-mode="simple">
                     <span class="nav-icon">🏠</span>
@@ -262,22 +262,22 @@
                     Hilfe
                 </button>
             </nav>
-            <div class="sidebar-footer">
+            <footer class="sidebar-footer">
                 <button class="btn-new-anfrage" id="btn-neue-anfrage">
                     <span>+</span> Neue Anfrage
                 </button>
                 <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 12px;">v1.0.0
                 </div>
-            </div>
+            </footer>
         </aside>
 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Notification Panel -->
-            <div id="notification-panel" class="notification-panel" style="display: none;">
+            <div id="notification-panel" class="notification-panel" style="display: none;" role="region" aria-label="Benachrichtigungen">
                 <div class="notification-panel-header">
                     <h3>Benachrichtigungen</h3>
-                    <button id="notification-close" class="notification-close" aria-label="Schließen">✕</button>
+                    <button id="notification-close" class="notification-close" aria-label="Benachrichtigungen schließen">✕</button>
                 </div>
                 <div id="notification-list" class="notification-list"></div>
                 <div class="notification-panel-footer">
@@ -492,7 +492,7 @@
                     <button class="filter-btn" data-filter="pausiert">⏸️ Pausiert</button>
                     <button class="filter-btn" data-filter="abgeschlossen">✅ Fertig</button>
                     <button class="filter-btn" data-filter="storniert">❌ Storniert</button>
-                    <input type="text" id="auftrag-search" placeholder="Auftrag suchen..." style="margin-left:auto;padding:6px 12px;border-radius:20px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:13px;width:200px;">
+                    <input type="text" id="auftrag-search" class="auftrag-search-input" placeholder="Auftrag suchen..." aria-label="Auftrag suchen">
                 </div>
 
                 <!-- Kanban Board (dynamisch generiert) -->
@@ -570,8 +570,8 @@
                     </div>
                 </div>
                 <div class="material-filter">
-                    <input type="text" id="material-search" placeholder="🔍 Material suchen...">
-                    <select id="material-kategorie-filter">
+                    <input type="text" id="material-search" placeholder="Material suchen..." aria-label="Material suchen">
+                    <select id="material-kategorie-filter" aria-label="Material nach Kategorie filtern">
                         <option value="">Alle Kategorien</option>
                     </select>
                 </div>
@@ -621,8 +621,8 @@
 
                 <!-- Status Filters -->
                 <div class="material-filter">
-                    <input type="text" id="po-search" placeholder="🔍 Bestellung suchen...">
-                    <select id="po-status-filter">
+                    <input type="text" id="po-search" placeholder="Bestellung suchen..." aria-label="Bestellung suchen">
+                    <select id="po-status-filter" aria-label="Bestellungen nach Status filtern">
                         <option value="">Alle Status</option>
                         <option value="entwurf">Entwurf</option>
                         <option value="bestellt">Bestellt</option>
@@ -630,7 +630,7 @@
                         <option value="geliefert">Geliefert</option>
                         <option value="storniert">Storniert</option>
                     </select>
-                    <select id="po-supplier-filter">
+                    <select id="po-supplier-filter" aria-label="Bestellungen nach Lieferant filtern">
                         <option value="">Alle Lieferanten</option>
                     </select>
                 </div>
@@ -781,23 +781,23 @@ Mit freundlichen Grüßen
                         <h3>⚡ Automations-Status</h3>
                         <p>Übersicht der konfigurierten Automatisierungen</p>
                         <div id="automation-status-list" style="font-size:14px;">
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>Supabase Backend</span>
                                 <span id="auto-status-supabase" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>E-Mail (Proton Mail)</span>
                                 <span id="auto-status-email" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>SMS (Twilio)</span>
                                 <span id="auto-status-sms" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                            <div class="automation-status-item">
                                 <span>Auto-Mahnungen</span>
                                 <span id="auto-status-overdue" style="color:var(--text-muted);">—</span>
                             </div>
-                            <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                            <div class="automation-status-item">
                                 <span>Webhook</span>
                                 <span id="auto-status-webhook" style="color:var(--text-muted);">—</span>
                             </div>
@@ -858,7 +858,7 @@ Mit freundlichen Grüßen
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
                             <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
-                            <input type="file" id="import-data-file" accept=".json" style="display: none;">
+                            <input type="file" id="import-data-file" accept=".json" style="display: none;" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
                                 style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
@@ -890,7 +890,7 @@ Mit freundlichen Grüßen
                         <span>Inkasso-Fälle</span>
                     </div>
                 </div>
-                <h3 style="margin: 24px 0 16px;">Eskalationsstufen</h3>
+                <h3 class="section-heading-spaced">Eskalationsstufen</h3>
                 <div class="escalation-timeline">
                     <div class="escalation-step">
                         <div class="step-day">Tag 0</div>
@@ -917,7 +917,7 @@ Mit freundlichen Grüßen
                         <div class="step-name">Inkasso</div>
                     </div>
                 </div>
-                <h3 style="margin: 24px 0 16px;">Offene Fälle</h3>
+                <h3 class="section-heading-spaced">Offene Fälle</h3>
                 <div class="items-list" id="dunning-list">
                     <p class="empty-state">Keine überfälligen Rechnungen 🎉</p>
                 </div>
@@ -932,7 +932,7 @@ Mit freundlichen Grüßen
                             <p class="subtitle">EÜR & Steuerübersicht</p>
                         </div>
                         <div class="header-actions">
-                            <select id="buchhaltung-jahr">
+                            <select id="buchhaltung-jahr" aria-label="Buchhaltungsjahr auswählen">
                                 <option value="2026">2026</option>
                                 <option value="2025">2025</option>
                             </select>
@@ -977,7 +977,7 @@ Mit freundlichen Grüßen
                     <button class="btn btn-secondary" id="btn-add-ausgabe">+ Ausgabe erfassen</button>
                 </div>
 
-                <h3 style="margin: 24px 0 16px;">Buchungen</h3>
+                <h3 class="section-heading-spaced">Buchungen</h3>
                 <div class="items-list" id="buchungen-list">
                     <p class="empty-state">Noch keine Buchungen. Rechnungen werden automatisch erfasst.</p>
                 </div>
@@ -1045,7 +1045,7 @@ Mit freundlichen Grüßen
                     <div class="stat-mini"><span id="customers-active">0</span><span>Aktiv</span></div>
                 </div>
                 <div class="customer-filter">
-                    <input type="text" id="customer-search" placeholder="🔍 Kunde suchen...">
+                    <input type="text" id="customer-search" placeholder="Kunde suchen..." aria-label="Kunde suchen">
                 </div>
                 <div class="items-list customer-grid" id="customers-list">
                     <p class="empty-state">Keine Kunden vorhanden</p>
@@ -1059,7 +1059,7 @@ Mit freundlichen Grüßen
                     <div class="comm-sidebar">
                         <div class="comm-header">
                             <h2>Kommunikation</h2>
-                            <input type="text" id="comm-search" placeholder="🔍 Suche..." class="comm-search">
+                            <input type="text" id="comm-search" placeholder="Suche..." aria-label="Kommunikation durchsuchen" class="comm-search">
                         </div>
                         <div class="comm-list" id="comm-conversations-list">
                             <p class="empty-state">Keine Gespräche</p>
@@ -1095,7 +1095,7 @@ Mit freundlichen Grüßen
                             <div class="comm-input-area">
                                 <!-- Template Selector -->
                                 <div class="comm-template-selector">
-                                    <select id="comm-template-select" class="form-control">
+                                    <select id="comm-template-select" class="form-control" aria-label="Nachrichtenvorlage auswählen">
                                         <option value="">Vorlage auswählen...</option>
                                         <option value="terminbestaetigung">Terminbestätigung</option>
                                         <option value="angebotsversand">Angebotsversand</option>
@@ -1107,7 +1107,7 @@ Mit freundlichen Grüßen
 
                                 <!-- Message Input -->
                                 <div class="comm-input-wrapper">
-                                    <textarea id="comm-message-input" placeholder="Nachricht eingeben..." class="comm-textarea" rows="3"></textarea>
+                                    <textarea id="comm-message-input" placeholder="Nachricht eingeben..." class="comm-textarea" rows="3" aria-label="Nachricht eingeben"></textarea>
                                     <div class="comm-char-count">
                                         <span id="comm-char-count">0</span><span>/160</span>
                                         <span id="comm-sms-segments" style="color: var(--text-muted); font-size: 12px;"></span>
@@ -1482,7 +1482,7 @@ Mit freundlichen Grüßen
                     <div class="stat-mini"><span id="time-week">0:00</span><span>Diese Woche</span></div>
                     <div class="stat-mini"><span id="time-month">0:00</span><span>Dieser Monat</span></div>
                 </div>
-                <h3 style="margin: 24px 0 16px;">Zeiteinträge</h3>
+                <h3 class="section-heading-spaced">Zeiteinträge</h3>
                 <div class="items-list" id="time-entries-list">
                     <p class="empty-state">Keine Zeiteinträge vorhanden</p>
                 </div>
@@ -1553,7 +1553,7 @@ Mit freundlichen Grüßen
                     <div class="panel-header-row">
                         <h3>Verarbeitete E-Mails</h3>
                         <div style="display: flex; gap: 8px;">
-                            <select id="email-history-filter" class="filter-select">
+                            <select id="email-history-filter" class="filter-select" aria-label="E-Mail-Verlauf filtern">
                                 <option value="">Alle</option>
                                 <option value="success">Erfolgreich</option>
                                 <option value="pending">Ausstehend</option>
@@ -1588,8 +1588,8 @@ Mit freundlichen Grüßen
                     <div class="stat-mini"><span id="docs-receipts">0</span><span>Quittungen</span></div>
                 </div>
                 <div class="document-filter">
-                    <input type="text" id="document-search" placeholder="🔍 Dokumente durchsuchen...">
-                    <select id="document-category-filter">
+                    <input type="text" id="document-search" placeholder="Dokumente durchsuchen..." aria-label="Dokumente durchsuchen">
+                    <select id="document-category-filter" aria-label="Dokumente nach Kategorie filtern">
                         <option value="">Alle Kategorien</option>
                         <option value="rechnung">Rechnungen</option>
                         <option value="quittung">Quittungen</option>
@@ -1638,18 +1638,18 @@ Mit freundlichen Grüßen
                 <div class="report-filters" id="report-filters">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Von</label>
+                            <label for="report-start-date">Von</label>
                             <input type="date" id="report-start-date">
                         </div>
                         <div class="form-group">
-                            <label>Bis</label>
+                            <label for="report-end-date">Bis</label>
                             <input type="date" id="report-end-date">
                         </div>
                         <button class="btn btn-primary" id="btn-generate-report">Bericht erstellen</button>
                     </div>
                 </div>
                 <div class="report-chart-container" id="report-chart-container" style="display:none;">
-                    <canvas id="report-chart" height="280"></canvas>
+                    <canvas id="report-chart" height="280" aria-label="Berichtsdiagramm" role="img"></canvas>
                 </div>
                 <div class="report-output" id="report-output">
                     <p class="empty-state">Wähle einen Berichtstyp und klicke "Bericht erstellen"</p>
@@ -1668,7 +1668,7 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
                         <div class="model-selector-wrapper">
-                            <select id="ai-model-select" data-action-change="update-ai-model">
+                            <select id="ai-model-select" data-action-change="update-ai-model" aria-label="KI-Modell auswählen">
                                 <option value="mistral">mistral (default)</option>
                                 <option value="llama3">llama3</option>
                             </select>
@@ -1687,9 +1687,9 @@ Mit freundlichen Grüßen
                         <div class="ai-input-container">
                             <span style="font-size: 20px; opacity: 0.5;">📎</span>
                             <input type="text" id="ai-chat-input" placeholder="Fragen Sie den MHS Assistenten..."
-                                autocomplete="off">
+                                autocomplete="off" aria-label="Nachricht an KI-Assistent">
                             <button class="btn btn-primary" id="btn-send-ai"
-                                style="padding: 8px 12px; border-radius: 8px;">
+                                style="padding: 8px 12px; border-radius: 8px;" aria-label="Nachricht senden">
                                 <span>↑</span>
                             </button>
                         </div>
@@ -1829,7 +1829,7 @@ Mit freundlichen Grüßen
 
                 <!-- Camera Preview (hidden by default) -->
                 <div class="panel scanner-camera-panel" id="scanner-camera-panel" style="display:none">
-                    <video id="scanner-video" autoplay playsinline></video>
+                    <video id="scanner-video" autoplay playsinline aria-label="Kamera-Vorschau für Dokumenten-Scanner"></video>
                     <div class="camera-controls">
                         <button class="btn btn-primary" id="btn-capture">📸 Aufnehmen</button>
                         <button class="btn btn-secondary" id="btn-cancel-camera">Abbrechen</button>
@@ -1840,7 +1840,7 @@ Mit freundlichen Grüßen
                 <div class="panel">
                     <div class="panel-header-row">
                         <h3>Gescannte Dokumente</h3>
-                        <select id="scanner-filter" class="filter-select">
+                        <select id="scanner-filter" class="filter-select" aria-label="Gescannte Dokumente filtern">
                             <option value="">Alle Kategorien</option>
                             <option value="rechnung">Rechnungen</option>
                             <option value="quittung">Quittungen</option>
@@ -1860,11 +1860,11 @@ Mit freundlichen Grüßen
                     <div class="datev-controls">
                         <div class="form-row-inline">
                             <div class="form-group">
-                                <label>Von</label>
+                                <label for="datev-from">Von</label>
                                 <input type="date" id="datev-from" value="">
                             </div>
                             <div class="form-group">
-                                <label>Bis</label>
+                                <label for="datev-to">Bis</label>
                                 <input type="date" id="datev-to" value="">
                             </div>
                             <button class="btn btn-primary" id="btn-datev-export">📥 DATEV Export</button>
@@ -1916,7 +1916,7 @@ Mit freundlichen Grüßen
                             <p>Erstelle ein verschlüsseltes Backup aller Daten.</p>
                             <div class="form-row-inline">
                                 <input type="password" id="backup-password"
-                                    placeholder="Passwort für Verschlüsselung (optional)">
+                                    placeholder="Passwort für Verschlüsselung (optional)" aria-label="Backup-Passwort">
                                 <button class="btn btn-primary" id="btn-create-backup">📥 Backup erstellen</button>
                             </div>
                         </div>
@@ -1924,8 +1924,8 @@ Mit freundlichen Grüßen
                             <h4>Backup wiederherstellen</h4>
                             <p>Lade ein vorhandenes Backup hoch.</p>
                             <div class="form-row-inline">
-                                <input type="file" id="backup-file-input" accept=".json">
-                                <input type="password" id="restore-password" placeholder="Passwort">
+                                <input type="file" id="backup-file-input" accept=".json" aria-label="Backup-Datei auswählen">
+                                <input type="password" id="restore-password" placeholder="Passwort" aria-label="Wiederherstellungs-Passwort">
                                 <button class="btn btn-warning" id="btn-restore-backup">🔄 Wiederherstellen</button>
                             </div>
                         </div>
@@ -1943,7 +1943,7 @@ Mit freundlichen Grüßen
                             </label>
                         </div>
                         <div class="form-group">
-                            <label>Intervall</label>
+                            <label for="backup-interval">Intervall</label>
                             <select id="backup-interval">
                                 <option value="hourly">Stündlich</option>
                                 <option value="daily" selected>Täglich</option>
@@ -1964,7 +1964,7 @@ Mit freundlichen Grüßen
                             <h4>Kundendaten exportieren</h4>
                             <p>Exportiere alle Daten eines Kunden (Art. 20 DSGVO).</p>
                             <div class="form-row-inline">
-                                <select id="gdpr-customer-select">
+                                <select id="gdpr-customer-select" aria-label="Kunde für Datenexport auswählen">
                                     <option value="">Kunde wählen...</option>
                                 </select>
                                 <button class="btn btn-secondary" id="btn-gdpr-export">📤 Daten exportieren</button>
@@ -1974,7 +1974,7 @@ Mit freundlichen Grüßen
                             <h4>Kundendaten löschen</h4>
                             <p>Lösche alle Daten eines Kunden unwiderruflich (Art. 17 DSGVO).</p>
                             <div class="form-row-inline">
-                                <select id="gdpr-delete-select">
+                                <select id="gdpr-delete-select" aria-label="Kunde für Datenlöschung auswählen">
                                     <option value="">Kunde wählen...</option>
                                 </select>
                                 <button class="btn btn-danger" id="btn-gdpr-delete">🗑️ Daten löschen</button>
@@ -2139,7 +2139,7 @@ Mit freundlichen Grüßen
 
                 <!-- Customer Presets -->
                 <div class="form-group">
-                    <label>Kundenvorlage laden</label>
+                    <label for="customer-preset">Kundenvorlage laden</label>
                     <div class="preset-row">
                         <select id="customer-preset" class="preset-select">
                             <option value="">-- Keine Vorlage --</option>
@@ -2242,17 +2242,17 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
                         <div id="ad-status-grund-wrapper" style="display:none;margin-top:8px;">
-                            <select id="ad-status-grund" class="auftrag-status-select" style="width:100%;">
+                            <select id="ad-status-grund" class="auftrag-status-select" style="width:100%;" aria-label="Statusgrund auswählen">
                                 <option value="">Grund auswählen...</option>
                             </select>
-                            <input type="text" id="ad-status-grund-custom" placeholder="Eigener Grund..." style="display:none;margin-top:6px;width:100%;padding:6px 10px;border-radius:var(--border-radius-sm);border:1px solid var(--border-color);background:var(--bg-dark);color:var(--text-primary);font-size:13px;">
+                            <input type="text" id="ad-status-grund-custom" placeholder="Eigener Grund..." aria-label="Eigener Statusgrund" style="display:none;margin-top:6px;width:100%;padding:6px 10px;border-radius:var(--border-radius-sm);border:1px solid var(--border-color);background:var(--bg-dark);color:var(--text-primary);font-size:13px;">
                         </div>
                         <div id="ad-status-zeit-info" style="margin-top:8px;font-size:11px;color:var(--text-muted);"></div>
                     </div>
                     <div class="auftrag-info-block">
                         <h5>Fortschritt</h5>
                         <div class="auftrag-fortschritt-wrapper">
-                            <input type="range" id="ad-fortschritt" min="0" max="100" step="5" value="0">
+                            <input type="range" id="ad-fortschritt" min="0" max="100" step="5" value="0" aria-label="Fortschritt">
                             <span class="auftrag-fortschritt-label" id="ad-fortschritt-label">0%</span>
                         </div>
                     </div>
@@ -2260,11 +2260,11 @@ Mit freundlichen Grüßen
                         <h5>Terminplanung</h5>
                         <div class="form-row" style="gap:8px;">
                             <div class="form-group" style="margin:0;flex:1;">
-                                <label style="font-size:11px;">Start</label>
+                                <label for="ad-start-datum" style="font-size:11px;">Start</label>
                                 <input type="date" id="ad-start-datum" style="font-size:12px;">
                             </div>
                             <div class="form-group" style="margin:0;flex:1;">
-                                <label style="font-size:11px;">Ende</label>
+                                <label for="ad-end-datum" style="font-size:11px;">Ende</label>
                                 <input type="date" id="ad-end-datum" style="font-size:12px;">
                             </div>
                         </div>
@@ -2273,8 +2273,8 @@ Mit freundlichen Grüßen
                         <h5>Mitarbeiter</h5>
                         <div class="mitarbeiter-list" id="ad-mitarbeiter-list"></div>
                         <div class="mitarbeiter-add-row">
-                            <input type="text" id="ad-mitarbeiter-input" placeholder="Name eingeben...">
-                            <button class="btn btn-small" id="ad-btn-add-mitarbeiter">+</button>
+                            <input type="text" id="ad-mitarbeiter-input" placeholder="Name eingeben..." aria-label="Mitarbeiter hinzufügen">
+                            <button class="btn btn-small" id="ad-btn-add-mitarbeiter" aria-label="Mitarbeiter hinzufügen">+</button>
                         </div>
                     </div>
                 </div>
@@ -2283,10 +2283,10 @@ Mit freundlichen Grüßen
             <!-- Tab: Checkliste -->
             <div class="auftrag-tab-content" data-tab="checkliste">
                 <div class="checkliste-items" id="ad-checkliste-items">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Noch keine Aufgaben</p>
+                    <p class="empty-state empty-state-centered">Noch keine Aufgaben</p>
                 </div>
                 <div class="checkliste-add-row">
-                    <input type="text" id="ad-checkliste-input" placeholder="Neue Aufgabe...">
+                    <input type="text" id="ad-checkliste-input" placeholder="Neue Aufgabe..." aria-label="Neue Checklistenaufgabe">
                     <button class="btn btn-small btn-primary" id="ad-btn-add-checkliste">+ Hinzufügen</button>
                 </div>
             </div>
@@ -2297,18 +2297,18 @@ Mit freundlichen Grüßen
                     <span>Gesamt</span>
                     <span>0:00 h</span>
                 </div>
-                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <div class="action-row">
                     <button class="btn btn-success" id="ad-btn-zeit-start">Stempeln</button>
                     <button class="btn btn-secondary" id="ad-btn-zeit-manuell">+ Manuell</button>
                 </div>
                 <div class="zeit-entries-list" id="ad-zeit-entries">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Zeiteinträge</p>
+                    <p class="empty-state empty-state-centered">Keine Zeiteinträge</p>
                 </div>
             </div>
 
             <!-- Tab: Fotos -->
             <div class="auftrag-tab-content" data-tab="fotos">
-                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <div class="action-row">
                     <button class="btn btn-primary" id="ad-btn-foto-capture">Foto aufnehmen</button>
                     <label class="btn btn-secondary">
                         Foto hochladen
@@ -2323,10 +2323,10 @@ Mit freundlichen Grüßen
             <!-- Tab: Kommentare -->
             <div class="auftrag-tab-content" data-tab="kommentare">
                 <div class="kommentar-list" id="ad-kommentar-list">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Kommentare</p>
+                    <p class="empty-state empty-state-centered">Keine Kommentare</p>
                 </div>
                 <div class="kommentar-add-row">
-                    <textarea id="ad-kommentar-input" placeholder="Kommentar schreiben..." rows="2"></textarea>
+                    <textarea id="ad-kommentar-input" placeholder="Kommentar schreiben..." rows="2" aria-label="Kommentar schreiben"></textarea>
                     <button class="btn btn-primary" id="ad-btn-add-kommentar" style="align-self:flex-end;">Senden</button>
                 </div>
             </div>
@@ -2334,7 +2334,7 @@ Mit freundlichen Grüßen
             <!-- Tab: Historie -->
             <div class="auftrag-tab-content" data-tab="historie">
                 <div class="historie-timeline" id="ad-historie-timeline">
-                    <p class="empty-state" style="padding:20px;text-align:center;">Keine Einträge</p>
+                    <p class="empty-state empty-state-centered">Keine Einträge</p>
                 </div>
             </div>
 

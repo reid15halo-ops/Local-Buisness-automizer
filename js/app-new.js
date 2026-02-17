@@ -58,12 +58,16 @@ function renderMaterial() {
     const materials = window.materialService?.getAllMaterials() || [];
     const container = document.getElementById('material-list');
 
-    document.getElementById('material-count').textContent = materials.length;
+    const matCountEl = document.getElementById('material-count');
+    if (matCountEl) {matCountEl.textContent = materials.length;}
     const lagerwert = materials.reduce((sum, m) => sum + (m.bestand * m.preis), 0);
-    document.getElementById('material-value').textContent = formatCurrency(lagerwert);
+    const matValueEl = document.getElementById('material-value');
+    if (matValueEl) {matValueEl.textContent = formatCurrency(lagerwert);}
     const lowStock = window.materialService?.getLowStockItems() || [];
-    document.getElementById('material-low').textContent = lowStock.length;
-    document.getElementById('material-badge').textContent = materials.length;
+    const matLowEl = document.getElementById('material-low');
+    if (matLowEl) {matLowEl.textContent = lowStock.length;}
+    const matBadgeEl = document.getElementById('material-badge');
+    if (matBadgeEl) {matBadgeEl.textContent = materials.length;}
 
     const kategorien = window.materialService?.getKategorien() || [];
     const filterSelect = document.getElementById('material-kategorie-filter');

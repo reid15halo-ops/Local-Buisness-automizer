@@ -29,9 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateWorkflowStats() {
         if (!window.workflowService) {return;}
         const stats = window.workflowService.getStatistics();
-        document.getElementById('workflow-total').textContent = stats.totalWorkflows;
-        document.getElementById('workflow-active').textContent = stats.activeWorkflows;
-        document.getElementById('workflow-runs').textContent = stats.todayExecutions;
+        const wfTotalEl = document.getElementById('workflow-total');
+        if (wfTotalEl) {wfTotalEl.textContent = stats.totalWorkflows;}
+        const wfActiveEl = document.getElementById('workflow-active');
+        if (wfActiveEl) {wfActiveEl.textContent = stats.activeWorkflows;}
+        const wfRunsEl = document.getElementById('workflow-runs');
+        if (wfRunsEl) {wfRunsEl.textContent = stats.todayExecutions;}
     }
 
     function renderWorkflowTemplates() {
@@ -39,10 +42,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('workflow-templates');
         const templates = window.workflowService.getTemplates();
 
+        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
         container.innerHTML = templates.map((t, i) => `
             <div class="template-card" data-template="${i}">
-                <h4>⚡ ${t.name}</h4>
-                <p>${t.description}</p>
+                <h4>⚡ ${san(t.name)}</h4>
+                <p>${san(t.description)}</p>
             </div>
         `).join('');
 
@@ -68,13 +72,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const wfSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
         container.innerHTML = workflows.map(w => `
-            <div class="workflow-item" data-id="${w.id}">
+            <div class="workflow-item" data-id="${wfSan(w.id)}">
                 <div class="workflow-item-info">
                     <span style="font-size:24px">${w.active ? '✅' : '⏸️'}</span>
                     <div>
-                        <h4>${w.name}</h4>
-                        <p>Trigger: ${window.workflowService.triggerTypes[w.trigger.type]?.name || w.trigger.type} | Läufe: ${w.runCount}</p>
+                        <h4>${wfSan(w.name)}</h4>
+                        <p>Trigger: ${wfSan(window.workflowService.triggerTypes[w.trigger.type]?.name || w.trigger.type)} | Läufe: ${w.runCount}</p>
                     </div>
                 </div>
                 <div class="workflow-item-actions">
@@ -232,11 +237,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const logSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
         container.innerHTML = log.map(l => `
             <div class="log-entry">
                 <span class="log-time">${new Date(l.timestamp).toLocaleTimeString('de-DE')}</span>
-                <span class="log-type ${l.type}">${l.type}</span>
-                <span class="log-message">${l.message}</span>
+                <span class="log-type ${logSan(l.type)}">${logSan(l.type)}</span>
+                <span class="log-message">${logSan(l.message)}</span>
             </div>
         `).join('');
     }
@@ -255,9 +261,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateScannerStats() {
         if (!window.ocrScannerService) {return;}
         const stats = window.ocrScannerService.getStatistics();
-        document.getElementById('scanner-total').textContent = stats.totalDocuments;
-        document.getElementById('scanner-amount').textContent = stats.totalAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-        document.getElementById('scanner-pending').textContent = stats.needsManualEntry;
+        const scanTotalEl = document.getElementById('scanner-total');
+        if (scanTotalEl) {scanTotalEl.textContent = stats.totalDocuments;}
+        const scanAmountEl = document.getElementById('scanner-amount');
+        if (scanAmountEl) {scanAmountEl.textContent = stats.totalAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });}
+        const scanPendingEl = document.getElementById('scanner-pending');
+        if (scanPendingEl) {scanPendingEl.textContent = stats.needsManualEntry;}
     }
 
     function renderScannedDocs() {
@@ -271,10 +280,11 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const scanSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
         container.innerHTML = docs.map(doc => `
-            <div class="scanned-doc-card" data-id="${doc.id}">
-                ${doc.imageData ? `<img src="${doc.imageData}" class="doc-preview" alt="Preview">` : '<div class="doc-preview"></div>'}
-                <h4>${doc.filename}</h4>
+            <div class="scanned-doc-card" data-id="${scanSan(doc.id)}">
+                ${doc.imageData ? `<img src="${scanSan(doc.imageData)}" class="doc-preview" alt="Preview">` : '<div class="doc-preview"></div>'}
+                <h4>${scanSan(doc.filename)}</h4>
                 <span class="doc-category">${window.ocrScannerService.getCategoryName(doc.category)}</span>
                 ${doc.extractedData?.totalAmount ? `<div class="doc-amount">${doc.extractedData.totalAmount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</div>` : ''}
                 <div class="doc-date">${new Date(doc.createdAt).toLocaleDateString('de-DE')}</div>
@@ -345,8 +355,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Set default dates
         const now = new Date();
         const year = now.getFullYear();
-        document.getElementById('datev-from').value = `${year}-01-01`;
-        document.getElementById('datev-to').value = now.toISOString().split('T')[0];
+        const datevFromEl = document.getElementById('datev-from');
+        if (datevFromEl) {datevFromEl.value = `${year}-01-01`;}
+        const datevToEl = document.getElementById('datev-to');
+        if (datevToEl) {datevToEl.value = now.toISOString().split('T')[0];}
 
         document.getElementById('btn-datev-export')?.addEventListener('click', function () {
             if (!window.datevExportService) {return;}
@@ -474,7 +486,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function populateCustomerSelects() {
         const customers = window.customerService?.getCustomers() || [];
-        const options = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        const gdprSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const options = customers.map(c => `<option value="${gdprSan(c.id)}">${gdprSan(c.name)}</option>`).join('');
 
         const gdprExport = document.getElementById('gdpr-customer-select');
         const gdprDelete = document.getElementById('gdpr-delete-select');

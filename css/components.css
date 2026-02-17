@@ -23,6 +23,184 @@
 
    ============================================ */
 
+/* ============================================
+   Utility Classes (extracted from inline styles)
+   ============================================ */
+
+/* Hidden file inputs */
+.u-file-input-hidden {
+    display: none;
+}
+
+/* Empty state centered text */
+.empty-state-centered {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Action button row (flex with gap) */
+.action-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+/* Section heading with spacing */
+.section-heading-spaced {
+    margin: 24px 0 16px;
+}
+
+/* Automation status list item */
+.automation-status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.automation-status-item:last-child {
+    border-bottom: none;
+}
+
+/* User info panel in sidebar */
+.user-info-panel .user-info-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.user-info-panel .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.user-info-panel .user-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-info-panel .user-email {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info-panel .user-company {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Info text secondary (small muted text) */
+.text-secondary-sm {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Compact form group for inline date inputs */
+.form-group-compact {
+    margin: 0;
+    flex: 1;
+}
+
+.form-group-compact label {
+    font-size: 11px;
+}
+
+.form-group-compact input {
+    font-size: 12px;
+}
+
+/* Auftrag search input */
+.auftrag-search-input {
+    margin-left: auto;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 13px;
+    width: 200px;
+    max-width: 100%;
+}
+
+.auftrag-search-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+/* Horizontal rule separator */
+.hr-separator {
+    margin: 24px 0;
+    border: none;
+    border-top: 1px solid var(--border-color);
+}
+
+/* PO detail table styles */
+.po-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+.po-detail-table th {
+    text-align: left;
+    padding: 8px;
+}
+
+.po-detail-table th.text-right {
+    text-align: right;
+}
+
+.po-detail-table tr.table-header {
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Card section (used in PO detail, supplier info) */
+.card-section {
+    background: var(--bg-secondary);
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.card-section h3 {
+    margin-top: 0;
+}
+
+.card-section p {
+    margin: 4px 0;
+}
+
+/* Summary row with top border */
+.summary-row-bold {
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+    margin-top: 8px;
+    font-weight: bold;
+}
+
+/* Small note text */
+.text-note {
+    font-size: 11px;
+    margin-top: 10px;
+    opacity: 0.6;
+}
+
 .dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -2521,11 +2699,7 @@ textarea {
     margin: 8px 0;
 }
 
-/* Button Large */
-.btn-large {
-    padding: 16px 32px;
-    font-size: 16px;
-}
+/* .btn-large defined in Onboarding Wizard section below */
 
 /* Badge warning */
 .badge-warning {
@@ -2904,7 +3078,7 @@ textarea {
 }
 
 .panel-header-row h3 {
-    margin-bottom: 0;
+    margin: 0;
 }
 
 /* Templates Grid */
@@ -3103,14 +3277,7 @@ textarea {
     color: var(--text-muted);
 }
 
-.filter-select {
-    padding: 8px 12px;
-    font-size: 13px;
-    background: var(--bg-dark);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-sm);
-    color: var(--text-primary);
-}
+/* .filter-select moved to Auftrag Management section to avoid duplication */
 
 /* DATEV Panel */
 .datev-panel .datev-controls {
@@ -3434,7 +3601,7 @@ textarea {
 .dot {
     width: 6px;
     height: 6px;
-    background: #94a3b8;
+    background: var(--text-muted);
     border-radius: 50%;
     animation: bounce 1.4s infinite ease-in-out;
 }
@@ -3979,9 +4146,9 @@ textarea {
     transition: width 0.3s ease;
 }
 
-.auftrag-progress-fill.low { background: #ef4444; }
-.auftrag-progress-fill.mid { background: #f59e0b; }
-.auftrag-progress-fill.high { background: #22c55e; }
+.auftrag-progress-fill.low { background: var(--accent-danger); }
+.auftrag-progress-fill.mid { background: var(--accent-warning); }
+.auftrag-progress-fill.high { background: var(--accent-success); }
 
 /* Auftrag Detail Modal */
 .auftrag-detail-tabs {
@@ -4176,7 +4343,7 @@ textarea {
 }
 
 .checkliste-remove:hover {
-    color: #ef4444;
+    color: var(--accent-danger);
 }
 
 .checkliste-add-row {
@@ -4366,14 +4533,14 @@ textarea {
 }
 
 /* Status badges for Aufträge */
-.status-geplant { color: #60a5fa; }
+.status-geplant { color: var(--accent-info, #60a5fa); }
 .status-material_bestellt { color: #a78bfa; }
-.status-in_bearbeitung { color: #f59e0b; }
+.status-in_bearbeitung { color: var(--accent-warning); }
 .status-qualitaetskontrolle { color: #06b6d4; }
 .status-abnahme { color: #8b5cf6; }
-.status-abgeschlossen { color: #22c55e; }
-.status-pausiert { color: #94a3b8; }
-.status-storniert { color: #ef4444; }
+.status-abgeschlossen { color: var(--accent-success); }
+.status-pausiert { color: var(--text-muted); }
+.status-storniert { color: var(--accent-danger); }
 
 /* Pipeline Visualization */
 .auftrag-pipeline {
@@ -4469,8 +4636,8 @@ textarea {
     top: -2px;
     right: -2px;
     font-size: 10px;
-    background: #22c55e;
-    color: #fff;
+    background: var(--accent-success);
+    color: white;
     border-radius: 50%;
     width: 14px;
     height: 14px;
@@ -4507,7 +4674,7 @@ textarea {
 }
 
 .email-history-item {
-    background: var(--card-bg);
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 16px;
@@ -4515,7 +4682,7 @@ textarea {
 }
 
 .email-history-item:hover {
-    border-color: var(--color-primary);
+    border-color: var(--accent-primary);
     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
 }
 
@@ -4544,23 +4711,23 @@ textarea {
 }
 
 .email-history-status.success {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
+    background: var(--accent-success-light);
+    color: var(--accent-success);
 }
 
 .email-history-status.pending {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
+    background: var(--accent-warning-light);
+    color: var(--accent-warning);
 }
 
 .email-history-status.failed {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
 }
 
 .email-history-status.test {
-    background: rgba(99, 102, 241, 0.1);
-    color: #6366f1;
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
 }
 
 .email-history-content {
@@ -4623,7 +4790,7 @@ textarea {
 #test-result.visible {
     display: block;
     padding: 16px;
-    background: var(--card-bg);
+    background: var(--bg-card);
     border-radius: 8px;
     border: 1px solid var(--border-color);
 }
@@ -4650,28 +4817,19 @@ textarea {
 
 .filter-select {
     padding: 8px 12px;
-    background: var(--input-bg);
+    background: var(--bg-input, var(--bg-dark));
     border: 1px solid var(--border-color);
-    border-radius: 6px;
+    border-radius: var(--border-radius-sm, 6px);
     color: var(--text-primary);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .filter-select:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: var(--accent-primary);
 }
 
-.panel-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-}
-
-.panel-header-row h3 {
-    margin: 0;
-}
+/* .panel-header-row defined in Email Templates section above */
 
 /* ============================================
    Setup Wizard
@@ -4688,7 +4846,8 @@ textarea {
     flex-direction: column;
 }
 
-.wizard-content {
+/* Scoped to setup wizard to avoid overriding Excel Import Wizard styles */
+.setup-wizard-modal .wizard-content {
     padding: 0;
 }
 
@@ -4711,7 +4870,8 @@ textarea {
     font-size: 15px;
 }
 
-.wizard-progress {
+/* Scoped to setup wizard to avoid overriding Excel Import Wizard styles */
+.setup-wizard-modal .wizard-progress {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -4745,7 +4905,7 @@ textarea {
     padding: 32px;
 }
 
-.wizard-step {
+.setup-wizard-modal .wizard-step {
     animation: wizard-fade-in 0.3s ease;
 }
 
@@ -4917,14 +5077,14 @@ textarea {
 }
 
 .wizard-test-result.success {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22c55e;
+    background: var(--accent-success-light);
+    color: var(--accent-success);
     border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .wizard-test-result.error {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
@@ -4953,7 +5113,7 @@ textarea {
     width: 80px;
     height: 80px;
     margin: 0 auto 20px;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
+    background: linear-gradient(135deg, var(--accent-success), #16a34a);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -5019,7 +5179,8 @@ textarea {
     font-weight: 500;
 }
 
-.wizard-actions {
+/* Scoped to setup wizard to avoid overriding Excel Import Wizard */
+.setup-wizard-modal .wizard-actions {
     display: flex;
     gap: 12px;
     justify-content: center;
@@ -5212,7 +5373,7 @@ textarea {
     align-items: flex-start;
     gap: 12px;
     font-size: 16px;
-    color: #dc2626;
+    color: var(--accent-danger);
 }
 
 .error-icon {
@@ -5230,7 +5391,7 @@ textarea {
     width: 80px;
     height: 80px;
     margin: 0 auto 24px;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
+    background: linear-gradient(135deg, var(--accent-success), #16a34a);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -5433,7 +5594,7 @@ textarea {
 }
 
 .pin-error {
-    color: #dc2626;
+    color: var(--accent-danger);
     font-size: 14px;
     padding: 8px 12px;
     background: rgba(220, 38, 38, 0.1);
@@ -5845,7 +6006,7 @@ textarea {
     position: absolute;
     top: 0;
     right: 0;
-    background: #ef4444;
+    background: var(--accent-danger);
     color: white;
     border-radius: 50%;
     width: 20px;
@@ -6037,7 +6198,7 @@ textarea {
 }
 
 .notification-item[data-type="rechnung_ueberfaellig"] {
-    border-left-color: #ef4444;
+    border-left-color: var(--accent-danger);
 }
 
 .notification-item[data-type="rechnung_bezahlt"] {
@@ -6045,11 +6206,11 @@ textarea {
 }
 
 .notification-item[data-type="termin_erinnerung"] {
-    border-left-color: #f59e0b;
+    border-left-color: var(--accent-warning);
 }
 
 .notification-item[data-type="aufgabe_faellig"] {
-    border-left-color: #f59e0b;
+    border-left-color: var(--accent-warning);
 }
 
 .notification-item[data-type="system"] {
@@ -6065,9 +6226,9 @@ textarea {
 }
 
 .position-material-picker {
-    background: #2a2a30;
-    border: 1px solid #444;
-    color: #fff;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
@@ -6076,14 +6237,15 @@ textarea {
     transition: all 0.2s;
 }
 
-.position-material-picker:hover {
-    background: #333;
-    border-color: #6366f1;
+.position-material-picker:hover,
+.position-material-picker:focus {
+    background: var(--bg-secondary);
+    border-color: var(--accent-primary);
 }
 
 .position-material-info {
     font-size: 12px;
-    color: #999;
+    color: var(--text-muted);
     flex: 1;
     min-width: 120px;
 }
@@ -6091,15 +6253,16 @@ textarea {
 .position-material-clear {
     background: none;
     border: none;
-    color: #666;
+    color: var(--text-muted);
     cursor: pointer;
     padding: 0 4px;
     font-size: 14px;
     transition: color 0.2s;
 }
 
-.position-material-clear:hover {
-    color: #f59e0b;
+.position-material-clear:hover,
+.position-material-clear:focus {
+    color: var(--accent-warning);
 }
 
 .position-stock-status {
@@ -6107,13 +6270,13 @@ textarea {
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #999;
+    color: var(--text-muted);
     margin-left: 8px;
 }
 
 .position-margin-info {
     font-size: 11px;
-    color: #6366f1;
+    color: var(--accent-primary);
     margin-top: 4px;
 }
 
