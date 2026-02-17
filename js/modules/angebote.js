@@ -3,7 +3,7 @@
    Angebote (quotes) CRUD and UI
    ============================================ */
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h } = window.AppUtils;
+const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h, showToast } = window.AppUtils;
 
 function createAngebotFromAnfrage(anfrageId) {
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
@@ -74,31 +74,59 @@ function initAngebotForm() {
         const mwst = netto * 0.19;
         const brutto = netto + mwst;
 
-        const angebot = {
-            id: generateId('ANG'),
-            anfrageId,
-            kunde: anfrage.kunde,
-            leistungsart: anfrage.leistungsart,
-            positionen,
-            text: document.getElementById('angebot-text').value,
-            netto,
-            mwst,
-            brutto,
-            status: 'offen',
-            createdAt: new Date().toISOString()
-        };
+        // Check if we are editing an existing Angebot
+        if (store.editingAngebotId) {
+            const existing = store.angebote.find(a => a.id === store.editingAngebotId);
+            if (existing) {
+                existing.positionen = positionen;
+                existing.text = document.getElementById('angebot-text').value;
+                existing.netto = netto;
+                existing.mwst = mwst;
+                existing.brutto = brutto;
+                existing.updatedAt = new Date().toISOString();
 
-        store.angebote.push(angebot);
+                saveStore();
+                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde.name} aktualisiert`);
+                showToast('Angebot erfolgreich aktualisiert', 'success');
+            }
 
-        // Update Anfrage status
-        anfrage.status = 'angebot-erstellt';
+            // Clear edit flag
+            store.editingAngebotId = null;
+        } else {
+            // Create new Angebot
+            const angebot = {
+                id: generateId('ANG'),
+                anfrageId,
+                kunde: anfrage.kunde,
+                leistungsart: anfrage.leistungsart,
+                positionen,
+                text: document.getElementById('angebot-text').value,
+                netto,
+                mwst,
+                brutto,
+                status: 'offen',
+                createdAt: new Date().toISOString()
+            };
 
-        saveStore();
-        addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
+            store.angebote.push(angebot);
+
+            // Update Anfrage status
+            anfrage.status = 'angebot-erstellt';
+
+            saveStore();
+            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
+            showToast('Angebot erfolgreich erstellt', 'success');
+        }
+
+        // Reset modal title back to create mode
+        const modalTitle = document.getElementById('modal-angebot-title');
+        if (modalTitle) {
+            modalTitle.textContent = 'Angebot erstellen';
+        }
 
         closeModal('modal-angebot');
         switchView('angebote');
-        document.querySelector('[data-view="angebote"]').click();
+        document.querySelector('[data-view="angebote"]')?.click();
     });
 }
 
