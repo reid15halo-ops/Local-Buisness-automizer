@@ -118,7 +118,7 @@ function initAngebotForm() {
                 netto,
                 mwst,
                 brutto,
-                status: 'offen',
+                status: 'entwurf',
                 createdAt: new Date().toISOString()
             };
 
@@ -347,6 +347,8 @@ MHS Metallbau Hydraulik Service`
 
 function getAngebotStatusBadge(status) {
     switch (status) {
+    case 'entwurf':
+        return '<span class="status-badge status-entwurf">● Entwurf</span>';
     case 'offen':
         return '<span class="status-badge status-offen">● Wartet auf Annahme</span>';
     case 'angenommen':
@@ -354,15 +356,15 @@ function getAngebotStatusBadge(status) {
     case 'abgelehnt':
         return '<span class="status-badge status-abgelehnt">● Abgelehnt</span>';
     default:
-        return `<span class="status-badge">${window.UI.sanitize(status || 'offen')}</span>`;
+        return `<span class="status-badge">${window.UI.sanitize(status || 'entwurf')}</span>`;
     }
 }
 
 function updateAngeboteFilterBadges() {
     const allAngebote = store?.angebote || [];
-    const counts = { alle: allAngebote.length, offen: 0, angenommen: 0, abgelehnt: 0 };
+    const counts = { alle: allAngebote.length, entwurf: 0, offen: 0, angenommen: 0, abgelehnt: 0 };
     allAngebote.forEach(a => {
-        const s = a.status || 'offen';
+        const s = a.status || 'entwurf';
         if (counts[s] !== undefined) { counts[s]++; }
     });
 
@@ -371,7 +373,7 @@ function updateAngeboteFilterBadges() {
     tabContainer.querySelectorAll('.filter-btn').forEach(btn => {
         const filter = btn.dataset.filter;
         const count = counts[filter] !== undefined ? counts[filter] : 0;
-        const labelMap = { alle: 'Alle', offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
+        const labelMap = { alle: 'Alle', entwurf: 'Entwurf', offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
         btn.textContent = `${labelMap[filter] || filter} (${count})`;
     });
 }
@@ -435,6 +437,7 @@ function renderAngebote() {
 
     container.innerHTML = filtered.map(a => {
         const isOffen = a.status === 'offen';
+        const isEntwurf = a.status === 'entwurf';
 
         // Build entity trail: Anfrage -> Angebot (current)
         const anfrage = a.anfrageId ? (store?.anfragen || []).find(anf => anf.id === a.anfrageId) : null;
@@ -446,6 +449,40 @@ function renderAngebote() {
                     <span class="trail-arrow">&rarr;</span>
                     <span class="trail-item trail-current">📝 ${h(a.id)}</span>
                 </div>
+            `;
+        }
+
+        // Build action buttons based on status
+        let actionButtons = '';
+
+        if (isEntwurf) {
+            // Draft: show Bearbeiten + Vorschau & Freigabe + Löschen
+            actionButtons = `
+                <button class="btn btn-secondary btn-small" onclick="editAngebot('${h(a.id)}')">
+                    Bearbeiten
+                </button>
+                <button class="btn btn-primary" onclick="previewAngebot('${h(a.id)}')">
+                    Vorschau &amp; Freigabe
+                </button>
+                <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
+                    Löschen
+                </button>
+            `;
+        } else {
+            // Non-draft: standard buttons
+            actionButtons = `
+                <button class="btn btn-secondary btn-small" onclick="exportAngebotPDF('${h(a.id)}')">
+                    PDF
+                </button>
+                <button class="btn btn-secondary btn-small" onclick="editAngebot('${h(a.id)}')">
+                    Bearbeiten
+                </button>
+                <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
+                    Löschen
+                </button>
+                ${isOffen ? `<button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
+                    Auftrag erteilen
+                </button>` : ''}
             `;
         }
 
@@ -464,18 +501,7 @@ function renderAngebote() {
             <p class="item-description">${getLeistungsartLabel(a.leistungsart)}</p>
             <div class="item-actions">
                 ${getAngebotStatusBadge(a.status)}
-                <button class="btn btn-secondary btn-small" onclick="exportAngebotPDF('${h(a.id)}')">
-                    PDF
-                </button>
-                <button class="btn btn-secondary btn-small" onclick="editAngebot('${h(a.id)}')">
-                    Bearbeiten
-                </button>
-                <button class="btn btn-danger btn-small" onclick="deleteAngebot('${h(a.id)}')">
-                    Löschen
-                </button>
-                ${isOffen ? `<button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
-                    Auftrag erteilen
-                </button>` : ''}
+                ${actionButtons}
             </div>
         </div>`;
     }).join('');
@@ -673,6 +699,344 @@ function initAngeboteFilters() {
             }, 300);
         });
     }
+}
+
+// ============================================
+// Preview & Freigabe (Draft Review Workflow)
+// ============================================
+
+// Inject CSS for entwurf status badge and preview modal
+(function injectEntwurfStyles() {
+    if (document.getElementById('entwurf-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'entwurf-styles';
+    style.textContent = `
+        .status-badge.status-entwurf {
+            background: rgba(107, 114, 128, 0.15);
+            color: #6b7280;
+        }
+
+        .angebot-preview-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .angebot-preview-modal {
+            background: var(--bg-primary, #fff);
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .angebot-preview-warning {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin: 20px 24px 0 24px;
+            color: #92400e;
+            font-weight: 600;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .angebot-preview-header {
+            padding: 24px 24px 0 24px;
+            border-bottom: none;
+        }
+
+        .angebot-preview-header h2 {
+            margin: 0 0 4px 0;
+            font-size: 22px;
+            color: var(--text-primary, #1f2937);
+        }
+
+        .angebot-preview-header .preview-subtitle {
+            color: var(--text-secondary, #6b7280);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .angebot-preview-body {
+            padding: 20px 24px;
+        }
+
+        .angebot-preview-section {
+            margin-bottom: 20px;
+        }
+
+        .angebot-preview-section h3 {
+            font-size: 15px;
+            color: var(--text-secondary, #6b7280);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color, #e5e7eb);
+        }
+
+        .angebot-preview-kunde {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .angebot-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .angebot-preview-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: var(--bg-secondary, #f9fafb);
+            border-bottom: 2px solid var(--border-color, #e5e7eb);
+            font-weight: 600;
+            color: var(--text-primary, #1f2937);
+        }
+
+        .angebot-preview-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color, #e5e7eb);
+            color: var(--text-primary, #374151);
+        }
+
+        .angebot-preview-table .text-right {
+            text-align: right;
+        }
+
+        .angebot-preview-totals {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            font-size: 15px;
+        }
+
+        .angebot-preview-totals .total-row {
+            display: flex;
+            gap: 20px;
+            min-width: 260px;
+            justify-content: space-between;
+        }
+
+        .angebot-preview-totals .total-row.total-brutto {
+            font-weight: 700;
+            font-size: 17px;
+            border-top: 2px solid var(--text-primary, #1f2937);
+            padding-top: 8px;
+            margin-top: 4px;
+        }
+
+        .angebot-preview-text {
+            background: var(--bg-secondary, #f9fafb);
+            border-radius: 8px;
+            padding: 16px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary, #374151);
+            border: 1px solid var(--border-color, #e5e7eb);
+        }
+
+        .angebot-preview-actions {
+            padding: 20px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            border-top: 1px solid var(--border-color, #e5e7eb);
+            flex-wrap: wrap;
+        }
+
+        .angebot-preview-actions .btn-freigabe {
+            background: #16a34a;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .angebot-preview-actions .btn-freigabe:hover {
+            background: #15803d;
+        }
+
+        .angebot-preview-actions .btn-zurueck {
+            background: var(--bg-secondary, #f3f4f6);
+            color: var(--text-primary, #374151);
+            border: 1px solid var(--border-color, #d1d5db);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .angebot-preview-actions .btn-zurueck:hover {
+            background: var(--border-color, #e5e7eb);
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+function previewAngebot(id) {
+    const angebot = store.angebote.find(a => a.id === id);
+    if (!angebot) { return; }
+
+    // Build positions table rows
+    const positionenRows = (angebot.positionen || []).map((pos, idx) => {
+        const gesamt = (pos.menge || 0) * (pos.preis || 0);
+        return `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${window.UI.sanitize(pos.beschreibung)}</td>
+                <td class="text-right">${pos.menge}</td>
+                <td>${window.UI.sanitize(pos.einheit || 'Stk.')}</td>
+                <td class="text-right">${formatCurrency(pos.preis)}</td>
+                <td class="text-right">${formatCurrency(gesamt)}</td>
+            </tr>
+        `;
+    }).join('');
+
+    // Build the preview modal HTML
+    const previewHTML = `
+        <div class="angebot-preview-overlay" id="angebot-preview-overlay" onclick="closeAngebotPreview(event)">
+            <div class="angebot-preview-modal" onclick="event.stopPropagation()">
+
+                <div class="angebot-preview-warning">
+                    ⚠ Bitte prüfen Sie alle Angaben sorgfältig, bevor Sie das Angebot freigeben.
+                </div>
+
+                <div class="angebot-preview-header">
+                    <h2>Angebot ${window.UI.sanitize(angebot.id)} — Vorschau</h2>
+                    <p class="preview-subtitle">Erstellt am ${formatDate(angebot.createdAt)}</p>
+                </div>
+
+                <div class="angebot-preview-body">
+
+                    <div class="angebot-preview-section">
+                        <h3>Kunde</h3>
+                        <div class="angebot-preview-kunde">
+                            <strong>${window.UI.sanitize(angebot.kunde?.name || 'Unbekannt')}</strong><br>
+                            ${angebot.kunde?.email ? window.UI.sanitize(angebot.kunde.email) + '<br>' : ''}
+                            ${angebot.kunde?.telefon ? window.UI.sanitize(angebot.kunde.telefon) + '<br>' : ''}
+                            ${angebot.kunde?.adresse ? window.UI.sanitize(angebot.kunde.adresse) : ''}
+                        </div>
+                    </div>
+
+                    <div class="angebot-preview-section">
+                        <h3>Leistungsart</h3>
+                        <p style="margin:0;">${getLeistungsartLabel(angebot.leistungsart)}</p>
+                    </div>
+
+                    <div class="angebot-preview-section">
+                        <h3>Positionen</h3>
+                        <table class="angebot-preview-table">
+                            <thead>
+                                <tr>
+                                    <th>Nr.</th>
+                                    <th>Beschreibung</th>
+                                    <th class="text-right">Menge</th>
+                                    <th>Einheit</th>
+                                    <th class="text-right">Einzelpreis</th>
+                                    <th class="text-right">Gesamt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${positionenRows}
+                            </tbody>
+                        </table>
+
+                        <div class="angebot-preview-totals">
+                            <div class="total-row">
+                                <span>Netto:</span>
+                                <span>${formatCurrency(angebot.netto)}</span>
+                            </div>
+                            <div class="total-row">
+                                <span>MwSt. (19%):</span>
+                                <span>${formatCurrency(angebot.mwst)}</span>
+                            </div>
+                            <div class="total-row total-brutto">
+                                <span>Brutto:</span>
+                                <span>${formatCurrency(angebot.brutto)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${angebot.text ? `
+                    <div class="angebot-preview-section">
+                        <h3>Angebotstext</h3>
+                        <div class="angebot-preview-text">${window.UI.sanitize(angebot.text)}</div>
+                    </div>
+                    ` : ''}
+
+                </div>
+
+                <div class="angebot-preview-actions">
+                    <button class="btn-zurueck" onclick="closeAngebotPreview()">
+                        Zurück zum Bearbeiten
+                    </button>
+                    <button class="btn-freigabe" onclick="freigebenAngebot('${window.UI.sanitize(angebot.id)}')">
+                        Angebot freigeben und senden
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    `;
+
+    // Remove any existing preview overlay
+    const existing = document.getElementById('angebot-preview-overlay');
+    if (existing) { existing.remove(); }
+
+    // Insert into DOM
+    document.body.insertAdjacentHTML('beforeend', previewHTML);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAngebotPreview(event) {
+    // If called from overlay click, only close if clicking the overlay itself
+    if (event && event.target && event.target.id !== 'angebot-preview-overlay') {
+        return;
+    }
+    const overlay = document.getElementById('angebot-preview-overlay');
+    if (overlay) {
+        overlay.remove();
+        document.body.style.overflow = '';
+    }
+}
+
+function freigebenAngebot(id) {
+    const angebot = store.angebote.find(a => a.id === id);
+    if (!angebot) { return; }
+
+    // Move status from 'entwurf' to 'offen'
+    angebot.status = 'offen';
+    angebot.freigegebenAt = new Date().toISOString();
+    saveStore();
+
+    // Close the preview modal
+    closeAngebotPreview();
+
+    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde.name} freigegeben und gesendet`);
+    showToast('Angebot wurde freigegeben und ist jetzt offen.', 'success');
+
+    // Re-render
+    renderAngebote();
 }
 
 // Export angebote functions
