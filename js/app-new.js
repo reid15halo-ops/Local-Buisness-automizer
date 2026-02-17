@@ -31,24 +31,24 @@ async function init() {
     // Await store service load
     await window.storeService.load();
 
-    // Initialize modules
-    window.AnfragenModule.initAnfrageForm();
-    window.AngeboteModule.initAngebotForm();
-    window.AuftraegeModule.initAuftragForm();
-    window.AuftraegeModule.initAuftragDetailHandlers();
-    window.RechnungenModule.initRechnungActions();
+    // Initialize modules (with null guards for load-order safety)
+    window.AnfragenModule?.initAnfrageForm?.();
+    window.AngeboteModule?.initAngebotForm?.();
+    window.AuftraegeModule?.initAuftragForm?.();
+    window.AuftraegeModule?.initAuftragDetailHandlers?.();
+    window.RechnungenModule?.initRechnungActions?.();
     initMaterial();
     initSettings();
     initAutomationSettings();
     initMahnwesen();
     initBuchhaltung();
     initQuickActions();
-    window.ModalsModule.initModals();
+    window.ModalsModule?.initModals?.();
 
     // Initialize automation API
     window.automationAPI?.init();
 
-    window.DashboardModule.updateDashboard();
+    window.DashboardModule?.updateDashboard?.();
 }
 
 // ============================================
@@ -483,10 +483,31 @@ async function runDemoWorkflow() {
     saveStore();
     addActivity('💰', `Rechnung ${demoRechnung.id} erstellt`);
 
-    window.DashboardModule.updateDashboard();
+    window.DashboardModule?.updateDashboard?.();
     showToast('🎉 Demo-Workflow abgeschlossen!', 'success');
 
-    setTimeout(() => window.RechnungenModule.showRechnung(demoRechnung.id), 800);
+    setTimeout(() => window.RechnungenModule?.showRechnung?.(demoRechnung.id), 800);
+}
+
+// ============================================
+// Automation initialization (migrated from app.js)
+// ============================================
+function initAutomations() {
+    try {
+        // These functions may not exist if automation modules are not loaded
+        if (typeof initPaymentMatching === 'function') {initPaymentMatching();}
+        if (typeof initFollowUp === 'function') {initFollowUp();}
+        if (typeof initLowStockAlerts === 'function') {initLowStockAlerts();}
+
+        // Update badges on load
+        setTimeout(() => {
+            if (typeof updateFollowUpBadge === 'function') {updateFollowUpBadge();}
+            if (typeof updateLowStockBadge === 'function') {updateLowStockBadge();}
+            if (typeof updateEmailAutomationBadge === 'function') {updateEmailAutomationBadge();}
+        }, 500);
+    } catch (error) {
+        console.warn('initAutomations: Some automation modules not yet available:', error.message);
+    }
 }
 
 // ============================================
@@ -502,13 +523,13 @@ window.app = {
 };
 
 // Expose all render functions for NavigationController
-window.renderAnfragen = window.AnfragenModule.renderAnfragen;
-window.renderAngebote = window.AngeboteModule.renderAngebote;
-window.renderAuftraege = window.AuftraegeModule.renderAuftraege;
-window.renderRechnungen = window.RechnungenModule.renderRechnungen;
+window.renderAnfragen = window.AnfragenModule?.renderAnfragen;
+window.renderAngebote = window.AngeboteModule?.renderAngebote;
+window.renderAuftraege = window.AuftraegeModule?.renderAuftraege;
+window.renderRechnungen = window.RechnungenModule?.renderRechnungen;
 window.renderMahnwesen = renderMahnwesen;
 window.renderBuchhaltung = renderBuchhaltung;
-window.updateDashboard = window.DashboardModule.updateDashboard;
+window.updateDashboard = window.DashboardModule?.updateDashboard;
 
 // ============================================
 // Auto-initialization

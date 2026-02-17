@@ -2561,10 +2561,10 @@ Email: max.mustermann@example.com</textarea>
                     <input type="text" id="po-lieferant-ansprechpartner" placeholder="z.B. Herr Müller">
                 </div>
 
-                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <hr class="hr-separator">
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="margin: 0;">Positionen</h3>
+                <div class="panel-header-row">
+                    <h3>Positionen</h3>
                     <button class="btn btn-small btn-secondary" id="btn-add-po-position">+ Position</button>
                 </div>
 
@@ -2572,7 +2572,7 @@ Email: max.mustermann@example.com</textarea>
                     <!-- Positions added here -->
                 </div>
 
-                <hr style="margin: 24px 0; border: none; border-top: 1px solid var(--border-color);">
+                <hr class="hr-separator">
 
                 <div class="form-group">
                     <label for="po-lieferdatum">Erwartetes Lieferdatum</label>
@@ -2585,7 +2585,7 @@ Email: max.mustermann@example.com</textarea>
                 </div>
 
                 <!-- Summary -->
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-top: 16px;">
+                <div class="card-section">
                     <div class="summary-row">
                         <span>Netto:</span>
                         <span id="po-summary-netto">0,00 €</span>
@@ -2594,7 +2594,7 @@ Email: max.mustermann@example.com</textarea>
                         <span>MwSt. (19%):</span>
                         <span id="po-summary-mwst">0,00 €</span>
                     </div>
-                    <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; font-weight: bold;">
+                    <div class="summary-row summary-row-bold">
                         <span>Brutto:</span>
                         <span id="po-summary-brutto">0,00 €</span>
                     </div>
