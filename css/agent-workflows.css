@@ -1,0 +1,1380 @@
+/* ============================================
+   Agent Workflows - KI-Autopilot Styles
+
+   Contains:
+   - Agent workflow wrapper & header
+   - Tab navigation for agent views
+   - Agent dashboard cards grid
+   - Morning briefing hero card & metrics
+   - Execution log timeline
+   - Agent configuration panel with toggles
+   - Dry run preview modal
+   - Loading overlay & spinner
+   - Status indicators & badges
+   - Pulse animation for active agents
+   - Responsive (mobile-friendly)
+
+   Dependencies: core.css (variables), components.css (buttons)
+
+   Uses existing CSS variable system:
+   --bg-card, --bg-dark, --bg-hover, --bg-input
+   --accent-primary, --accent-success, --accent-danger, --accent-warning, --accent-info
+   --text-primary, --text-secondary, --text-muted
+   --border-color, --border-radius, --border-radius-sm
+   --shadow-sm, --shadow-md, --shadow-lg
+   --transition, --transition-fast
+   ============================================ */
+
+/* ============================================
+   Wrapper & Header
+   ============================================ */
+
+.agent-workflow-wrapper {
+    position: relative;
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.agent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.agent-header-left {
+    flex: 1;
+    min-width: 200px;
+}
+
+.agent-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.agent-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.agent-header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.agent-btn-icon {
+    margin-right: 6px;
+}
+
+/* ============================================
+   Tab Navigation
+   ============================================ */
+
+.agent-tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 24px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.agent-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all var(--transition);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.agent-tab:hover,
+.agent-tab:focus-visible {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+    outline: none;
+}
+
+.agent-tab.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+}
+
+.agent-tab-icon {
+    font-size: 16px;
+}
+
+/* Tab Content */
+.agent-tab-pane {
+    display: none;
+    animation: agentFadeIn 0.3s ease;
+}
+
+.agent-tab-pane.active {
+    display: block;
+}
+
+@keyframes agentFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   Dashboard - Quick Stats
+   ============================================ */
+
+.agent-stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.agent-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px 16px;
+    text-align: center;
+}
+
+.agent-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.agent-stat-value.agent-stat-active {
+    color: var(--accent-success);
+}
+
+.agent-stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================
+   Dashboard - Agent Cards Grid
+   ============================================ */
+
+.agent-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.agent-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    transition: all var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.agent-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    border-radius: 4px 0 0 4px;
+    transition: background var(--transition);
+}
+
+.agent-card-active::before {
+    background: var(--accent-success);
+}
+
+.agent-card-error::before {
+    background: var(--accent-danger);
+}
+
+.agent-card-disabled::before {
+    background: var(--text-muted);
+}
+
+.agent-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.agent-card-disabled {
+    opacity: 0.6;
+}
+
+.agent-card-disabled:hover {
+    opacity: 0.8;
+}
+
+.agent-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.agent-card-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-primary-light);
+    border-radius: var(--border-radius-sm);
+}
+
+.agent-card-title-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agent-card-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.agent-card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+}
+
+.agent-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.agent-card-meta-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.agent-meta-label {
+    color: var(--text-muted);
+}
+
+.agent-meta-value {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.agent-card-summary {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.agent-card-summary .agent-meta-value {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 400;
+}
+
+.agent-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.agent-card-actions .btn {
+    flex: 1;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+/* ============================================
+   Badges
+   ============================================ */
+
+.agent-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.agent-badge-active {
+    background: var(--accent-success-light);
+    color: var(--accent-success);
+}
+
+.agent-badge-error {
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
+}
+
+.agent-badge-warning {
+    background: var(--accent-warning-light);
+    color: var(--accent-warning);
+}
+
+.agent-badge-disabled {
+    background: rgba(113, 113, 122, 0.15);
+    color: var(--text-muted);
+}
+
+.agent-badge-info {
+    background: var(--accent-info-light);
+    color: var(--accent-info);
+}
+
+/* ============================================
+   Status Pulse Animation
+   ============================================ */
+
+.agent-status-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-success);
+}
+
+.agent-status-pulse::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-success);
+    animation: agentPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes agentPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ============================================
+   Morning Briefing
+   ============================================ */
+
+.agent-briefing-empty {
+    text-align: center;
+    padding: 60px 24px;
+}
+
+.agent-briefing-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.agent-briefing-empty h2 {
+    font-size: 24px;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.agent-briefing-empty p {
+    color: var(--text-secondary);
+    margin: 0 0 24px 0;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.agent-briefing {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.agent-briefing-hero {
+    background: linear-gradient(135deg, var(--accent-primary-light), var(--bg-card));
+    border: 1px solid var(--accent-primary);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.agent-briefing-hero-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.agent-briefing-hero-icon {
+    font-size: 40px;
+}
+
+.agent-briefing-hero-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.agent-briefing-hero-date {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 2px 0 0 0;
+}
+
+/* Briefing Metrics */
+.agent-briefing-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.agent-briefing-metric {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    text-align: center;
+    transition: border-color var(--transition-fast);
+}
+
+.agent-briefing-metric:hover {
+    border-color: var(--accent-primary);
+}
+
+.agent-metric-danger {
+    border-color: var(--accent-danger) !important;
+    background: var(--accent-danger-light);
+}
+
+.agent-metric-warning {
+    border-color: var(--accent-warning) !important;
+    background: var(--accent-warning-light);
+}
+
+.agent-briefing-metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.agent-metric-danger .agent-briefing-metric-value {
+    color: var(--accent-danger);
+}
+
+.agent-metric-warning .agent-briefing-metric-value {
+    color: var(--accent-warning);
+}
+
+.agent-briefing-metric-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Briefing Sections */
+.agent-briefing-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+}
+
+.agent-briefing-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.agent-section-icon {
+    font-size: 18px;
+}
+
+/* Urgent Items */
+.agent-briefing-urgent {
+    border-color: var(--accent-danger);
+}
+
+.agent-urgent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.agent-urgent-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--border-radius-sm);
+    font-size: 13px;
+}
+
+.agent-urgent-hoch {
+    background: var(--accent-danger-light);
+}
+
+.agent-urgent-mittel {
+    background: var(--accent-warning-light);
+}
+
+.agent-urgent-niedrig {
+    background: var(--accent-info-light);
+}
+
+.agent-urgent-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.agent-urgent-hoch .agent-urgent-badge {
+    background: var(--accent-danger);
+    color: #fff;
+}
+
+.agent-urgent-mittel .agent-urgent-badge {
+    background: var(--accent-warning);
+    color: #000;
+}
+
+.agent-urgent-niedrig .agent-urgent-badge {
+    background: var(--accent-info);
+    color: #fff;
+}
+
+.agent-urgent-text {
+    color: var(--text-primary);
+}
+
+/* Cash Flow Row */
+.agent-cashflow-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.agent-cashflow-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+}
+
+.agent-cashflow-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.agent-cashflow-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.agent-cashflow-danger {
+    color: var(--accent-danger);
+}
+
+/* AI Summary */
+.agent-briefing-ai-summary {
+    border-color: var(--accent-primary);
+}
+
+.agent-ai-summary-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* Detail Lists (invoices, leads, orders) */
+.agent-detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.agent-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+    gap: 12px;
+}
+
+.agent-detail-main {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.agent-detail-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.agent-detail-amount {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.agent-detail-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* Small Progress Bar */
+.agent-progress-bar-sm {
+    width: 60px;
+    height: 6px;
+    background: var(--bg-dark);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.agent-progress-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    border-radius: 3px;
+    transition: width var(--transition);
+}
+
+/* ============================================
+   Execution Log
+   ============================================ */
+
+.agent-log-empty {
+    text-align: center;
+    padding: 60px 24px;
+}
+
+.agent-log-empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.agent-log-empty h3 {
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
+}
+
+.agent-log-empty p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.agent-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.agent-log-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.agent-log-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: relative;
+}
+
+/* Timeline vertical line */
+.agent-log-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.agent-log-entry {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    position: relative;
+}
+
+.agent-log-indicator {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 1;
+    border: 2px solid var(--bg-dark);
+}
+
+.agent-log-success .agent-log-indicator {
+    background: var(--accent-success-light);
+    color: var(--accent-success);
+}
+
+.agent-log-error .agent-log-indicator {
+    background: var(--accent-danger-light);
+    color: var(--accent-danger);
+}
+
+.agent-log-dot {
+    font-size: 14px;
+}
+
+.agent-log-body {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 12px 16px;
+    min-width: 0;
+}
+
+.agent-log-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.agent-log-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+.agent-log-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 4px 0;
+    line-height: 1.5;
+}
+
+.agent-log-error-msg {
+    font-size: 13px;
+    color: var(--accent-danger);
+    margin: 4px 0;
+}
+
+.agent-log-duration {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ============================================
+   Configuration Panel
+   ============================================ */
+
+.agent-config-header {
+    margin-bottom: 24px;
+}
+
+.agent-config-header h3 {
+    margin: 0 0 6px 0;
+    color: var(--text-primary);
+}
+
+.agent-config-desc {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0;
+}
+
+.agent-config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.agent-config-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    transition: border-color var(--transition-fast);
+}
+
+.agent-config-item:hover {
+    border-color: var(--accent-primary);
+}
+
+.agent-config-item-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+.agent-config-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-primary-light);
+    border-radius: var(--border-radius-sm);
+}
+
+.agent-config-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.agent-config-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.agent-config-item-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0 0 6px 0;
+    line-height: 1.4;
+}
+
+.agent-config-category {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--bg-hover);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.agent-config-item-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+.agent-config-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.agent-config-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.agent-config-time {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 6px 10px;
+    color: var(--text-primary);
+    font-size: 13px;
+    width: 100px;
+}
+
+.agent-config-time:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+/* Toggle Switch */
+.agent-config-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.agent-toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.agent-toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.agent-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--bg-hover);
+    border-radius: 13px;
+    border: 1px solid var(--border-color);
+    transition: all var(--transition);
+}
+
+.agent-toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: all var(--transition);
+}
+
+.agent-toggle-input:checked + .agent-toggle-slider {
+    background: var(--accent-primary-light);
+    border-color: var(--accent-primary);
+}
+
+.agent-toggle-input:checked + .agent-toggle-slider::before {
+    transform: translateX(22px);
+    background: var(--accent-primary);
+}
+
+.agent-toggle-input:focus-visible + .agent-toggle-slider {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+.agent-toggle-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* ============================================
+   Preview Modal
+   ============================================ */
+
+.agent-preview-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.agent-preview-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.agent-preview-content {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    width: 100%;
+    max-width: 700px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    animation: agentModalIn 0.25s ease;
+}
+
+@keyframes agentModalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.agent-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.agent-preview-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.agent-preview-close {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color var(--transition-fast);
+}
+
+.agent-preview-close:hover {
+    color: var(--text-primary);
+}
+
+.agent-preview-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.agent-preview-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Preview Content Styles */
+.agent-preview-section {
+    margin-bottom: 16px;
+}
+
+.agent-preview-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+}
+
+.agent-preview-summary {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+    padding: 10px 14px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+}
+
+.agent-preview-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.agent-preview-list li {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.agent-preview-list li:last-child {
+    border-bottom: none;
+}
+
+.agent-preview-card {
+    background: var(--bg-hover);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.agent-preview-text {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.agent-preview-error {
+    padding: 20px;
+    text-align: center;
+    color: var(--accent-danger);
+}
+
+/* ============================================
+   Loading Overlay
+   ============================================ */
+
+.agent-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 15, 18, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 50;
+    border-radius: var(--border-radius);
+}
+
+.agent-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: agentSpin 0.8s linear infinite;
+}
+
+@keyframes agentSpin {
+    to { transform: rotate(360deg); }
+}
+
+.agent-loading-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+
+.agent-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ============================================
+   Button Overrides (btn-sm, btn-lg)
+   ============================================ */
+
+.agent-workflow-wrapper .btn-sm {
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+.agent-workflow-wrapper .btn-lg {
+    padding: 14px 28px;
+    font-size: 16px;
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .agent-workflow-wrapper {
+        padding: 16px;
+    }
+
+    .agent-cards-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+
+    .agent-config-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .agent-config-item-right {
+        flex-direction: row;
+        justify-content: flex-end;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+    }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    .agent-workflow-wrapper {
+        padding: 12px;
+    }
+
+    .agent-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .agent-header-actions {
+        width: 100%;
+    }
+
+    .agent-header-actions .btn {
+        flex: 1;
+    }
+
+    .agent-title {
+        font-size: 22px;
+    }
+
+    .agent-tab-bar {
+        margin-left: -12px;
+        margin-right: -12px;
+        padding: 0 12px;
+    }
+
+    .agent-tab {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .agent-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .agent-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-briefing-hero {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .agent-briefing-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .agent-briefing-metric-value {
+        font-size: 22px;
+    }
+
+    .agent-cashflow-row {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .agent-detail-right {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .agent-log-timeline::before {
+        left: 15px;
+    }
+
+    .agent-log-body {
+        padding: 10px 12px;
+    }
+
+    .agent-log-entry-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .agent-log-time {
+        margin-left: 0;
+    }
+
+    .agent-config-item-right {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .agent-config-schedule {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .agent-config-toggle {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .agent-preview-modal {
+        padding: 12px;
+    }
+
+    .agent-preview-content {
+        max-height: 90vh;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 380px) {
+    .agent-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-briefing-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .agent-card-actions {
+        flex-direction: column;
+    }
+}
