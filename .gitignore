@@ -12,6 +12,9 @@ dist/
 .gemini/
 .git/
 
+# Supabase local temp (contains connection strings, project refs)
+supabase/.temp/
+
 # OS
 .DS_Store
 Thumbs.db
