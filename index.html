@@ -520,7 +520,7 @@
                             </button>
                             <label class="btn btn-secondary" for="bank-csv-import">
                                 🏦 Bank-CSV importieren
-                                <input type="file" id="bank-csv-import" accept=".csv" style="display:none;">
+                                <input type="file" id="bank-csv-import" accept=".csv" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-primary" id="btn-match-payments">✓ Zahlungen abgleichen</button>
                         </div>
@@ -548,7 +548,7 @@
                             <button class="btn btn-primary" id="btn-import-wizard-material">📥 Excel/CSV Import</button>
                             <label class="btn btn-secondary" for="excel-import" style="display:none;">
                                 📥 Excel Import
-                                <input type="file" id="excel-import" accept=".xlsx,.xls" style="display:none">
+                                <input type="file" id="excel-import" accept=".xlsx,.xls" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-secondary" id="btn-demo-materials">Demo-Daten laden</button>
                         </div>
@@ -843,14 +843,14 @@ Mit freundlichen Grüßen
                             </label>
                         </div>
                         <button class="btn btn-primary" id="btn-save-invoice-numbering">Speichern</button>
-                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">⚠️ Änderungen müssen GoBD-konform sein!</p>
+                        <p class="text-note">⚠️ Änderungen müssen GoBD-konform sein!</p>
                     </div>
                     <div class="settings-card">
                         <h3>📖 Onboarding Tutorial</h3>
                         <p>Interaktive Anleitung zur App-Navigation</p>
                         <button class="btn btn-primary" id="btn-start-tutorial">🚀 Tutorial starten</button>
                         <button class="btn btn-secondary" id="btn-reset-tutorial" style="margin-left: 8px;">↻ Zurücksetzen</button>
-                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">Das Tutorial zeigt dir alle wichtigen Funktionen in 10 Schritten.</p>
+                        <p class="text-note">Das Tutorial zeigt dir alle wichtigen Funktionen in 10 Schritten.</p>
                     </div>
                     <div class="settings-card">
                         <h3>🗑️ Daten</h3>
@@ -858,13 +858,13 @@ Mit freundlichen Grüßen
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                             <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
                             <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
-                            <input type="file" id="import-data-file" accept=".json" style="display: none;" aria-label="Daten importieren">
+                            <input type="file" id="import-data-file" accept=".json" class="u-file-input-hidden" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
                                 style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
                             <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
                         </div>
-                        <p style="font-size: 11px; margin-top: 10px; opacity: 0.6;">App-Reset stellt den Werkszustand
+                        <p class="text-note">App-Reset stellt den Werkszustand
                             mit Demo-Daten wieder her.</p>
                     </div>
                 </div>
@@ -938,7 +938,7 @@ Mit freundlichen Grüßen
                             </select>
                             <label class="btn btn-secondary" for="buchung-csv-import">
                                 📤 CSV Import
-                                <input type="file" id="buchung-csv-import" accept=".csv" style="display:none;">
+                                <input type="file" id="buchung-csv-import" accept=".csv" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-secondary" id="btn-export-csv">📥 CSV Export</button>
                             <button class="btn btn-primary" id="btn-export-datev">📤 DATEV Export</button>
@@ -1034,7 +1034,7 @@ Mit freundlichen Grüßen
                             <button class="btn btn-secondary" id="btn-import-wizard-kunden">📥 Excel/CSV Import</button>
                             <label class="btn btn-secondary" for="customer-csv-import" style="display:none;">
                                 📥 CSV Import
-                                <input type="file" id="customer-csv-import" accept=".csv,.vcf" style="display:none">
+                                <input type="file" id="customer-csv-import" accept=".csv,.vcf" class="u-file-input-hidden">
                             </label>
                             <button class="btn btn-primary" id="btn-neuer-kunde">+ Neuer Kunde</button>
                         </div>
@@ -2223,12 +2223,12 @@ Mit freundlichen Grüßen
                     <div class="auftrag-info-block">
                         <h5>Kunde</h5>
                         <p id="ad-kunde-name"></p>
-                        <p id="ad-kunde-kontakt" style="font-size:12px;color:var(--text-secondary);"></p>
+                        <p id="ad-kunde-kontakt" class="text-secondary-sm"></p>
                     </div>
                     <div class="auftrag-info-block">
                         <h5>Leistung</h5>
                         <p id="ad-leistungsart"></p>
-                        <p id="ad-angebotswert" style="font-size:12px;color:var(--text-secondary);"></p>
+                        <p id="ad-angebotswert" class="text-secondary-sm"></p>
                     </div>
                     <div class="auftrag-info-block" style="grid-column:1/-1;">
                         <h5>Status-Pipeline</h5>
@@ -2259,13 +2259,13 @@ Mit freundlichen Grüßen
                     <div class="auftrag-info-block">
                         <h5>Terminplanung</h5>
                         <div class="form-row" style="gap:8px;">
-                            <div class="form-group" style="margin:0;flex:1;">
-                                <label for="ad-start-datum" style="font-size:11px;">Start</label>
-                                <input type="date" id="ad-start-datum" style="font-size:12px;">
+                            <div class="form-group form-group-compact">
+                                <label for="ad-start-datum">Start</label>
+                                <input type="date" id="ad-start-datum">
                             </div>
-                            <div class="form-group" style="margin:0;flex:1;">
-                                <label for="ad-end-datum" style="font-size:11px;">Ende</label>
-                                <input type="date" id="ad-end-datum" style="font-size:12px;">
+                            <div class="form-group form-group-compact">
+                                <label for="ad-end-datum">Ende</label>
+                                <input type="date" id="ad-end-datum">
                             </div>
                         </div>
                     </div>
@@ -2312,7 +2312,7 @@ Mit freundlichen Grüßen
                     <button class="btn btn-primary" id="ad-btn-foto-capture">Foto aufnehmen</button>
                     <label class="btn btn-secondary">
                         Foto hochladen
-                        <input type="file" id="ad-foto-upload" accept="image/*" style="display:none;" multiple>
+                        <input type="file" id="ad-foto-upload" accept="image/*" class="u-file-input-hidden" multiple>
                     </label>
                 </div>
                 <div class="foto-gallery" id="ad-foto-gallery">
@@ -2635,25 +2635,25 @@ Email: max.mustermann@example.com</textarea>
                 </div>
 
                 <!-- Supplier info -->
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin: 16px 0;">
-                    <h3 style="margin-top: 0;">Lieferant</h3>
-                    <p style="margin: 4px 0;"><strong id="po-detail-lieferant-name">-</strong></p>
-                    <p style="margin: 4px 0;">📧 <span id="po-detail-lieferant-email">-</span></p>
-                    <p style="margin: 4px 0;">📞 <span id="po-detail-lieferant-telefon">-</span></p>
-                    <p style="margin: 4px 0;">👤 <span id="po-detail-lieferant-ansprechpartner">-</span></p>
+                <div class="card-section" style="margin: 16px 0;">
+                    <h3>Lieferant</h3>
+                    <p><strong id="po-detail-lieferant-name">-</strong></p>
+                    <p>📧 <span id="po-detail-lieferant-email">-</span></p>
+                    <p>📞 <span id="po-detail-lieferant-telefon">-</span></p>
+                    <p>👤 <span id="po-detail-lieferant-ansprechpartner">-</span></p>
                 </div>
 
                 <!-- Positions -->
                 <div style="margin-top: 24px;">
                     <h3>Positionen</h3>
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 12px;">
+                    <table class="po-detail-table">
                         <thead>
-                            <tr style="border-bottom: 2px solid var(--border-color);">
-                                <th style="text-align: left; padding: 8px;">Material</th>
-                                <th style="text-align: right; padding: 8px; width: 80px;">Menge</th>
-                                <th style="text-align: right; padding: 8px; width: 80px;">EK-Preis</th>
-                                <th style="text-align: right; padding: 8px; width: 100px;">Geliefert</th>
-                                <th style="text-align: right; padding: 8px; width: 100px;">Gesamt</th>
+                            <tr class="table-header">
+                                <th>Material</th>
+                                <th class="text-right" style="width: 80px;">Menge</th>
+                                <th class="text-right" style="width: 80px;">EK-Preis</th>
+                                <th class="text-right" style="width: 100px;">Geliefert</th>
+                                <th class="text-right" style="width: 100px;">Gesamt</th>
                             </tr>
                         </thead>
                         <tbody id="po-detail-positionen">
@@ -2663,7 +2663,7 @@ Email: max.mustermann@example.com</textarea>
                 </div>
 
                 <!-- Summary -->
-                <div style="background: var(--bg-secondary); padding: 16px; border-radius: 8px; margin-top: 24px;">
+                <div class="card-section" style="margin-top: 24px;">
                     <div class="summary-row">
                         <span>Netto:</span>
                         <span id="po-detail-netto">0,00 €</span>
@@ -2672,7 +2672,7 @@ Email: max.mustermann@example.com</textarea>
                         <span>MwSt. (19%):</span>
                         <span id="po-detail-mwst">0,00 €</span>
                     </div>
-                    <div class="summary-row" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 8px; font-weight: bold;">
+                    <div class="summary-row summary-row-bold">
                         <span>Brutto:</span>
                         <span id="po-detail-brutto">0,00 €</span>
                     </div>
@@ -2686,7 +2686,7 @@ Email: max.mustermann@example.com</textarea>
 
                 <!-- Wareneingang Recording -->
                 <div id="po-wareneingang-section" style="margin-top: 24px; display: none;">
-                    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 24px 0;">
+                    <hr class="hr-separator">
                     <h3>Wareneingang buchen</h3>
                     <div id="po-wareneingang-form">
                         <!-- Form added dynamically -->
