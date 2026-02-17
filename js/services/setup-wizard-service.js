@@ -252,10 +252,12 @@ class SetupWizardService {
     }
 
     /**
-     * Verify admin PIN (default: admin1234)
+     * Verify admin PIN
+     * Returns false if no PIN is set (forces setup via Admin Panel)
      */
     verifyAdminPin(pin) {
-        const storedPin = localStorage.getItem('admin_pin') || 'admin1234';
+        const storedPin = localStorage.getItem('admin_pin');
+        if (!storedPin) {return false;}
         return pin === storedPin;
     }
 
