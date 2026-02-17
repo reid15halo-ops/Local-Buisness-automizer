@@ -26,16 +26,17 @@ function renderEmails() {
         return;
     }
 
+    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
     container.innerHTML = emails.map(email => `
-        <div class="email-item ${email.read ? '' : 'unread'}" data-id="${email.id}">
+        <div class="email-item ${email.read ? '' : 'unread'}" data-id="${sanitize(email.id)}">
             <div class="email-category-icon">${window.emailService.getCategoryIcon(email.category)}</div>
             <div class="email-content">
-                <div class="email-sender">${email.fromName}</div>
-                <div class="email-subject">${email.subject}</div>
-                <div class="email-preview">${email.body.substring(0, 100)}...</div>
+                <div class="email-sender">${sanitize(email.fromName)}</div>
+                <div class="email-subject">${sanitize(email.subject)}</div>
+                <div class="email-preview">${sanitize(email.body.substring(0, 100))}...</div>
                 <div class="email-actions">
-                    <button class="btn btn-small btn-primary" onclick="createTaskFromEmail('${email.id}')">📋 Aufgabe erstellen</button>
-                    <button class="btn btn-small btn-secondary" onclick="createAnfrageFromEmail('${email.id}')">📥 Als Anfrage</button>
+                    <button class="btn btn-small btn-primary" onclick="createTaskFromEmail('${sanitize(email.id)}')">📋 Aufgabe erstellen</button>
+                    <button class="btn btn-small btn-secondary" onclick="createAnfrageFromEmail('${sanitize(email.id)}')">📥 Als Anfrage</button>
                 </div>
             </div>
             <div class="email-meta">
@@ -129,13 +130,14 @@ function renderTasks() {
         if (!container) {return;}
 
         const tasks = kanban[status] || [];
+        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
         container.innerHTML = tasks.map(task => `
-            <div class="kanban-task" data-id="${task.id}">
+            <div class="kanban-task" data-id="${san(task.id)}">
                 <div class="kanban-task-priority">${window.taskService.getPriorityIcon(task.priority)}</div>
-                <div class="kanban-task-title">${task.title}</div>
+                <div class="kanban-task-title">${san(task.title)}</div>
                 <div class="kanban-task-meta">
                     <span>${task.dueDate ? window.taskService.formatDate(task.dueDate) : ''}</span>
-                    ${task.customer?.name ? `<span>👤 ${task.customer.name}</span>` : ''}
+                    ${task.customer?.name ? `<span>👤 ${san(task.customer.name)}</span>` : ''}
                 </div>
             </div>
         `).join('');
@@ -194,14 +196,15 @@ function renderCustomers() {
         return;
     }
 
+    const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
     container.innerHTML = customers.map(c => `
-        <div class="customer-card" data-id="${c.id}">
-            <div class="customer-avatar">${(c.name || '?').charAt(0).toUpperCase()}</div>
-            <div class="customer-name">${c.name || 'Unbekannt'}</div>
-            <div class="customer-company">${c.firma || ''}</div>
+        <div class="customer-card" data-id="${esc(c.id)}">
+            <div class="customer-avatar">${esc((c.name || '?').charAt(0).toUpperCase())}</div>
+            <div class="customer-name">${esc(c.name || 'Unbekannt')}</div>
+            <div class="customer-company">${esc(c.firma || '')}</div>
             <div class="customer-contact">
-                ${c.email ? `<a href="mailto:${c.email}">📧 ${c.email}</a>` : ''}
-                ${c.telefon ? `<a href="tel:${c.telefon}" onclick="window.phoneService?.makeCall('${c.telefon}', {id:'${c.id}',name:'${c.name}'})">📞 ${c.telefon}</a>` : ''}
+                ${c.email ? `<a href="mailto:${esc(c.email)}">📧 ${esc(c.email)}</a>` : ''}
+                ${c.telefon ? `<a href="tel:${esc(c.telefon)}" data-phone="${esc(c.telefon)}" data-customer-id="${esc(c.id)}" data-customer-name="${esc(c.name)}" class="phone-call-link">📞 ${esc(c.telefon)}</a>` : ''}
             </div>
             <div class="customer-stats-inline">
                 <span>💰 ${formatCurrency(c.umsatzGesamt || 0)}</span>
@@ -209,6 +212,17 @@ function renderCustomers() {
             </div>
         </div>
     `).join('');
+
+    // Bind phone call handlers via data attributes instead of inline onclick
+    container.querySelectorAll('.phone-call-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const phone = link.dataset.phone;
+            const id = link.dataset.customerId;
+            const name = link.dataset.customerName;
+            window.phoneService?.makeCall(phone, {id, name});
+        });
+    });
 }
 
 function initCustomers() {
@@ -229,12 +243,13 @@ function initCustomers() {
             return;
         }
         const results = window.customerService.searchCustomers(query);
+        const s = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         // Re-render with filtered results
         container.innerHTML = results.map(c => `
             <div class="customer-card">
-                <div class="customer-avatar">${(c.name || '?').charAt(0).toUpperCase()}</div>
-                <div class="customer-name">${c.name}</div>
-                <div class="customer-company">${c.firma || ''}</div>
+                <div class="customer-avatar">${s((c.name || '?').charAt(0).toUpperCase())}</div>
+                <div class="customer-name">${s(c.name)}</div>
+                <div class="customer-company">${s(c.firma || '')}</div>
             </div>
         `).join('');
     });
@@ -295,9 +310,10 @@ function renderCalendar() {
     container.innerHTML = weekData.map(day => {
         const dayKey = day.date;
         const dayAuftraege = auftragEvents[dayKey] || [];
+        const calSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         const auftraegeHtml = dayAuftraege.map(a => `
-            <div class="calendar-event" style="border-color: #f59e0b; cursor:pointer;" onclick="window.openAuftragDetail && window.openAuftragDetail('${a.id}')">
-                <strong>🔧</strong> ${a.kunde?.name || 'Auftrag'}
+            <div class="calendar-event" style="border-color: #f59e0b; cursor:pointer;" onclick="window.openAuftragDetail && window.openAuftragDetail('${calSan(a.id)}')">
+                <strong>🔧</strong> ${calSan(a.kunde?.name || 'Auftrag')}
             </div>
         `).join('');
 
@@ -308,11 +324,12 @@ function renderCalendar() {
                     <span class="calendar-day-number">${day.dayNumber}</span>
                 </div>
                 <div class="calendar-events">
-                    ${day.appointments.map(apt => `
-                        <div class="calendar-event" style="border-color: ${apt.color || '#6366f1'}">
-                            <strong>${apt.startTime}</strong> ${apt.title}
-                        </div>
-                    `).join('')}
+                    ${day.appointments.map(apt => {
+                        const aptSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
+                        return `<div class="calendar-event" style="border-color: ${apt.color || '#6366f1'}">
+                            <strong>${aptSan(apt.startTime)}</strong> ${aptSan(apt.title)}
+                        </div>`;
+                    }).join('')}
                     ${auftraegeHtml}
                 </div>
             </div>
@@ -396,13 +413,14 @@ function renderTimeTracking() {
         if (entries.length === 0) {
             entriesList.innerHTML = '<p class="empty-state">Keine Zeiteinträge für heute</p>';
         } else {
+            const tSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
             entriesList.innerHTML = entries.map(e => `
                 <div class="item-card">
                     <div class="item-header">
-                        <span class="item-title">${e.startTime} - ${e.endTime}</span>
+                        <span class="item-title">${tSan(e.startTime)} - ${tSan(e.endTime)}</span>
                         <span class="status-badge">${e.durationHours}h</span>
                     </div>
-                    <div class="item-description">${e.description || 'Keine Beschreibung'}</div>
+                    <div class="item-description">${tSan(e.description || 'Keine Beschreibung')}</div>
                 </div>
             `).join('');
         }
@@ -461,12 +479,13 @@ function renderDocuments() {
         return;
     }
 
+    const docSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
     container.innerHTML = docs.map(doc => `
-        <div class="document-card" data-id="${doc.id}">
+        <div class="document-card" data-id="${docSan(doc.id)}">
             <div class="document-icon">${window.documentService.getCategoryIcon(doc.category)}</div>
-            <div class="document-name">${doc.name}</div>
+            <div class="document-name">${docSan(doc.name)}</div>
             <div class="document-meta">
-                ${window.documentService.getCategoryLabel(doc.category)} • 
+                ${window.documentService.getCategoryLabel(doc.category)} •
                 ${new Date(doc.createdAt).toLocaleDateString('de-DE')}
             </div>
         </div>
@@ -511,10 +530,11 @@ function initDocuments() {
         }
         const results = window.documentService.searchDocuments(query);
         const container = document.getElementById('documents-list');
+        const dsSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         container.innerHTML = results.map(doc => `
             <div class="document-card">
                 <div class="document-icon">${window.documentService.getCategoryIcon(doc.category)}</div>
-                <div class="document-name">${doc.name}</div>
+                <div class="document-name">${dsSan(doc.name)}</div>
             </div>
         `).join('');
     });
@@ -919,9 +939,11 @@ async function sendAiMessage() {
 
 function appendAiMessage(role, content) {
     const container = document.getElementById('ai-chat-messages');
+    if (!container) {return;}
     const msgDiv = document.createElement('div');
     msgDiv.className = `ai-message ${role}`;
-    msgDiv.innerHTML = content.replace(/\n/g, '<br>');
+    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+    msgDiv.innerHTML = sanitize(content).replace(/\n/g, '<br>');
     container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;
 }

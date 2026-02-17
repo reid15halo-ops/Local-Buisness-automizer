@@ -3,101 +3,163 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'mhs-workflow-v5';
+const CACHE_NAME = 'mhs-workflow-v6';
 const OFFLINE_URL = 'offline.html';
+
+// API URL patterns that should use network-first strategy
+const API_PATTERNS = [
+    /\/api\//,
+    /supabase\.co/,
+    /googleapis\.com\/(?!css)/,
+    /stripe\.com/,
+    /\/auth\//
+];
 
 // Files to cache for offline use
 const STATIC_ASSETS = [
+    // --- Core HTML ---
     '/',
     '/index.html',
     '/auth.html',
     '/landing.html',
     '/offline.html',
+    '/setup-credentials.html',
+    '/test-invoice-system.html',
+
+    // --- CSS files ---
     '/css/core.css',
     '/css/components.css',
     '/css/fonts.css',
     '/css/purchase-orders.css',
     '/css/reorder-engine.css',
+
+    // --- Core JS ---
+    '/js/app.js',
     '/js/app-new.js',
     '/js/features-integration.js',
     '/js/new-features-ui.js',
     '/js/excel-import-integration.js',
     '/js/init-lazy-services.js',
-    '/js/modules/utils.js',
-    '/js/modules/modals.js',
+
+    // --- JS Modules ---
     '/js/modules/activity.js',
-    '/js/modules/dashboard.js',
     '/js/modules/anfragen.js',
     '/js/modules/angebote.js',
     '/js/modules/auftraege.js',
-    '/js/modules/rechnungen.js',
-    '/js/modules/event-handlers.js',
+    '/js/modules/dashboard.js',
     '/js/modules/error-boundary.js',
+    '/js/modules/event-handlers.js',
     '/js/modules/invoice-payment-integration.js',
     '/js/modules/material-picker.js',
-    '/js/services/error-handler.js',
-    '/js/services/db-service.js',
-    '/js/services/demo-guard-service.js',
-    '/js/services/demo-data-service.js',
-    '/js/services/auth-service.js',
-    '/js/services/store-service.js',
-    '/js/services/excel-recognition-service.js',
-    '/js/services/setup-wizard-service.js',
-    '/js/services/onboarding-tutorial-service.js',
-    '/js/services/lazy-loader.js',
-    '/js/services/search-service.js',
-    '/js/services/theme-manager.js',
+    '/js/modules/modals.js',
+    '/js/modules/quick-actions.js',
+    '/js/modules/rechnungen.js',
+    '/js/modules/utils.js',
+
+    // --- JS Services ---
     '/js/services/activity-indicator-service.js',
-    '/js/services/automation-api.js',
-    '/js/services/pdf-service.js',
-    '/js/services/gemini-service.js',
-    '/js/services/bookkeeping-service.js',
-    '/js/services/dunning-service.js',
-    '/js/services/material-service.js',
-    '/js/services/work-estimation-service.js',
-    '/js/services/email-service.js',
-    '/js/services/task-service.js',
-    '/js/services/customer-service.js',
-    '/js/services/document-service.js',
-    '/js/services/calendar-service.js',
-    '/js/services/booking-service.js',
-    '/js/services/timetracking-service.js',
-    '/js/services/communication-service.js',
-    '/js/services/communication-hub-controller.js',
-    '/js/services/phone-service.js',
-    '/js/services/report-service.js',
-    '/js/services/chatbot-service.js',
-    '/js/services/cashflow-service.js',
-    '/js/services/lead-service.js',
-    '/js/services/version-control-service.js',
+    '/js/services/ai-assistant-service.js',
     '/js/services/approval-service.js',
-    '/js/services/print-digital-service.js',
+    '/js/services/auth-service.js',
+    '/js/services/automation-api.js',
     '/js/services/banking-service.js',
-    '/js/services/sms-reminder-service.js',
-    '/js/services/voice-command-service.js',
-    '/js/services/einvoice-service.js',
-    '/js/services/supabase-config.js',
-    '/js/services/purchase-order-service.js',
-    '/js/services/reorder-engine-service.js',
-    '/js/services/unified-comm-service.js',
+    '/js/services/barcode-service.js',
+    '/js/services/booking-service.js',
+    '/js/services/bookkeeping-service.js',
+    '/js/services/calendar-service.js',
     '/js/services/calendar-ui-service.js',
+    '/js/services/cashflow-service.js',
+    '/js/services/chatbot-service.js',
+    '/js/services/communication-hub-controller.js',
+    '/js/services/communication-service.js',
+    '/js/services/confirm-dialog-service.js',
+    '/js/services/contract-service.js',
+    '/js/services/customer-service.js',
     '/js/services/dashboard-charts-service.js',
-    '/js/services/notification-service.js',
-    '/js/services/pwa-install-service.js',
-    '/js/services/email-template-service.js',
     '/js/services/data-export-service.js',
+    '/js/services/datev-export-service.js',
+    '/js/services/db-service.js',
+    '/js/services/demo-data-service.js',
+    '/js/services/demo-guard-service.js',
+    '/js/services/document-service.js',
+    '/js/services/dunning-service.js',
+    '/js/services/einvoice-service.js',
+    '/js/services/email-automation-service.js',
+    '/js/services/email-service.js',
+    '/js/services/email-template-service.js',
+    '/js/services/error-display-service.js',
+    '/js/services/error-handler.js',
+    '/js/services/error-handler-utils.js',
+    '/js/services/excel-recognition-service.js',
+    '/js/services/gemini-service.js',
+    '/js/services/i18n-service.js',
+    '/js/services/invoice-numbering-service.js',
+    '/js/services/invoice-service.js',
+    '/js/services/invoice-template-service.js',
+    '/js/services/lazy-loader.js',
+    '/js/services/lead-service.js',
+    '/js/services/llm-service.js',
+    '/js/services/material-service.js',
+    '/js/services/notification-service.js',
+    '/js/services/ocr-scanner-service.js',
+    '/js/services/onboarding-tutorial-service.js',
+    '/js/services/payment-service.js',
+    '/js/services/pdf-generation-service.js',
+    '/js/services/pdf-service.js',
+    '/js/services/phone-service.js',
+    '/js/services/photo-service.js',
+    '/js/services/print-digital-service.js',
+    '/js/services/profitability-service.js',
+    '/js/services/purchase-order-service.js',
+    '/js/services/pwa-install-service.js',
+    '/js/services/qrcode-service.js',
+    '/js/services/recurring-task-service.js',
+    '/js/services/reorder-engine-service.js',
+    '/js/services/report-service.js',
+    '/js/services/route-service.js',
+    '/js/services/sanitize-service.js',
+    '/js/services/search-service.js',
+    '/js/services/security-backup-service.js',
     '/js/services/security-service.js',
+    '/js/services/setup-wizard-service.js',
+    '/js/services/sms-reminder-service.js',
+    '/js/services/store-service.js',
+    '/js/services/stripe-service.js',
+    '/js/services/supabase-config.js',
+    '/js/services/supabase-db-service.js',
     '/js/services/sync-service.js',
-    '/js/ui/ui-helpers.js',
+    '/js/services/task-service.js',
+    '/js/services/theme-manager.js',
+    '/js/services/theme-service.js',
+    '/js/services/timetracking-service.js',
+    '/js/services/trash-service.js',
+    '/js/services/unified-comm-service.js',
+    '/js/services/user-manager-service.js',
+    '/js/services/user-mode-service.js',
+    '/js/services/version-control-service.js',
+    '/js/services/voice-command-service.js',
+    '/js/services/warranty-service.js',
+    '/js/services/webhook-service.js',
+    '/js/services/work-estimation-service.js',
+    '/js/services/workflow-service.js',
+
+    // --- JS UI Components ---
+    '/js/ui/admin-settings-ui.js',
     '/js/ui/excel-import-wizard.js',
-    '/js/ui/setup-wizard-ui.js',
-    '/js/ui/navigation.js',
     '/js/ui/keyboard-shortcuts.js',
+    '/js/ui/mode-toggle-ui.js',
+    '/js/ui/navigation.js',
     '/js/ui/purchase-order-ui.js',
     '/js/ui/reorder-engine-ui.js',
+    '/js/ui/setup-wizard-ui.js',
+    '/js/ui/ui-helpers.js',
+
+    // --- i18n (Internationalization) ---
     '/js/i18n/de.js',
     '/js/i18n/en.js',
     '/js/i18n/i18n-ui.js',
+
+    // --- PWA Manifest ---
     '/manifest.json'
 ];
 
@@ -144,6 +206,11 @@ self.addEventListener('activate', (event) => {
     );
 });
 
+// Check if a URL matches an API pattern (network-first)
+function isApiRequest(url) {
+    return API_PATTERNS.some(pattern => pattern.test(url.href));
+}
+
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
     const { request } = event;
@@ -155,37 +222,65 @@ self.addEventListener('fetch', (event) => {
     // Skip chrome-extension and other non-http requests
     if (!url.protocol.startsWith('http')) return;
 
-    event.respondWith(
-        caches.match(request)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    // Return cached version, but update cache in background
-                    event.waitUntil(updateCache(request));
-                    return cachedResponse;
-                }
+    // Network-first strategy for API calls
+    if (isApiRequest(url)) {
+        event.respondWith(networkFirst(request));
+        return;
+    }
 
-                // Not in cache, fetch from network
-                return fetch(request)
-                    .then((networkResponse) => {
-                        // Cache successful responses
-                        if (networkResponse.ok) {
-                            const responseClone = networkResponse.clone();
-                            caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(request, responseClone);
-                            });
-                        }
-                        return networkResponse;
-                    })
-                    .catch(() => {
-                        // Network failed, return offline page for navigation requests
-                        if (request.mode === 'navigate') {
-                            return caches.match(OFFLINE_URL) || caches.match('/index.html');
-                        }
-                        return new Response('Offline', { status: 503 });
-                    });
-            })
-    );
+    // Cache-first (stale-while-revalidate) for static assets
+    event.respondWith(cacheFirst(request));
 });
+
+// Cache-first strategy: return cached version immediately, update in background
+async function cacheFirst(request) {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+        // Return cached version, but update cache in background
+        updateCache(request);
+        return cachedResponse;
+    }
+
+    // Not in cache, fetch from network
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch (e) {
+        // Network failed, return offline page for navigation requests
+        if (request.mode === 'navigate') {
+            const offlinePage = await caches.match(OFFLINE_URL);
+            return offlinePage || caches.match('/index.html');
+        }
+        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+    }
+}
+
+// Network-first strategy: try network, fall back to cache
+async function networkFirst(request) {
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch (e) {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        // No cache and no network for navigation - show offline page
+        if (request.mode === 'navigate') {
+            const offlinePage = await caches.match(OFFLINE_URL);
+            return offlinePage || caches.match('/index.html');
+        }
+        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+    }
+}
 
 // Update cache in background (stale-while-revalidate)
 async function updateCache(request) {

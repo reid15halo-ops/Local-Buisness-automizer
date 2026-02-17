@@ -1076,7 +1076,7 @@ Mit freundlichen Grüßen
                             </div>
                         </div>
 
-                        <div id="comm-chat-view" style="display: none; height: 100%; display: flex; flex-direction: column;">
+                        <div id="comm-chat-view" style="display: none; height: 100%; flex-direction: column;">
                             <!-- Chat Header -->
                             <div class="comm-chat-header">
                                 <div id="comm-chat-title">Gespräch</div>
@@ -1704,22 +1704,21 @@ Mit freundlichen Grüßen
                 <h3>⚙️ Chatbot-Einstellungen</h3>
                 <div class="settings-grid-inline">
                     <div class="form-group">
-                        <label>Geschäftszeiten Start</label>
+                        <label for="chatbot-hours-start">Geschäftszeiten Start</label>
                         <input type="time" id="chatbot-hours-start" value="08:00">
                     </div>
                     <div class="form-group">
-                        <label>Geschäftszeiten Ende</label>
+                        <label for="chatbot-hours-end">Geschäftszeiten Ende</label>
                         <input type="time" id="chatbot-hours-end" value="18:00">
                     </div>
                     <div class="form-group">
-                        <label>Antwort-Verzögerung (ms)</label>
+                        <label for="chatbot-delay">Antwort-Verzögerung (ms)</label>
                         <input type="number" id="chatbot-delay" value="2000" step="500">
                     </div>
                 </div>
                 <p class="settings-note">⚠️ Für echte WhatsApp-Integration wird die WhatsApp Business API benötigt.
                 </p>
             </div>
-            </section>
 
             <!-- Workflows View -->
             <section class="view" id="view-workflows">
@@ -1998,12 +1997,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Ausgabe erfassen -->
-    <div class="modal" id="modal-ausgabe">
+    <div class="modal" id="modal-ausgabe" role="dialog" aria-labelledby="modal-ausgabe-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Ausgabe erfassen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-ausgabe-title">Ausgabe erfassen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-ausgabe" class="modal-form">
                 <div class="form-group">
@@ -2049,12 +2048,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Mahnung erstellen -->
-    <div class="modal" id="modal-mahnung">
+    <div class="modal" id="modal-mahnung" role="dialog" aria-labelledby="modal-mahnung-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Mahnung erstellen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-mahnung-title">Mahnung erstellen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="mahnung-preview" id="mahnung-preview">
                 <!-- Dynamically generated -->
@@ -2068,12 +2067,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Neue Anfrage -->
-    <div class="modal" id="modal-anfrage">
+    <div class="modal" id="modal-anfrage" role="dialog" aria-labelledby="modal-anfrage-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Neue Anfrage erfassen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-anfrage-title">Neue Anfrage erfassen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-anfrage" class="modal-form">
                 <div class="form-group">
@@ -2127,12 +2126,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Modal: Angebot erstellen -->
-    <div class="modal" id="modal-angebot">
+    <div class="modal" id="modal-angebot" role="dialog" aria-labelledby="modal-angebot-title" aria-modal="true">
         <div class="modal-overlay"></div>
         <div class="modal-content modal-large">
             <div class="modal-header">
-                <h2>Angebot erstellen</h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-angebot-title">Angebot erstellen</h2>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <form id="form-angebot" class="modal-form">
                 <input type="hidden" id="angebot-anfrage-id">
@@ -2485,11 +2484,12 @@ Mit freundlichen Grüßen
     </div>
 
     <!-- Test Email Processing Modal -->
-    <div class="modal" id="modal-test-email">
+    <div class="modal" id="modal-test-email" role="dialog" aria-labelledby="modal-test-email-title" aria-modal="true">
+        <div class="modal-overlay"></div>
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
-                <h2>🧪 Test E-Mail Verarbeitung</h2>
-                <button class="modal-close" data-action="close-modal-email-test">&times;</button>
+                <h2 id="modal-test-email-title">Test E-Mail Verarbeitung</h2>
+                <button class="modal-close" data-action="close-modal-email-test" aria-label="Dialog schließen">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="margin-bottom: 16px; color: var(--text-muted);">
