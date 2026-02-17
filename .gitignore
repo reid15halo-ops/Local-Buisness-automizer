@@ -1,7 +1,28 @@
-.gemini/
-.git/
+# Dependencies
 node_modules/
 dist/
+
+# Environment & Secrets (NEVER commit real .env files)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# AI / IDE
+.gemini/
+.git/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp / Build
 temp/
 *.log
-.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/settings.json
+.idea/

@@ -3,11 +3,18 @@
    Two-tier access control: Admin & Developer
    Admin: Business settings (Firmendaten, Steuern, etc.)
    Developer: Technical settings (API Keys, DB, Webhooks)
+
+   OPEN SOURCE SECURITY NOTE:
+   This app is open source. Default credentials are only used
+   for the very first login. Users MUST set their own credentials
+   during the mandatory first-run setup. No default passwords
+   are stored or accepted after initial setup is complete.
    ============================================ */
 
 class AdminPanelService {
     constructor() {
         this.STORAGE_PREFIX = 'mhs_admin_panel_';
+        this.SETUP_COMPLETE_KEY = 'mhs_admin_panel_setup_complete';
         this.ROLES = {
             ADMIN: 'admin',
             DEVELOPER: 'developer'
@@ -18,36 +25,122 @@ class AdminPanelService {
         this.SESSION_DURATION = 30 * 60 * 1000; // 30 minutes
     }
 
+    // ============================================
+    // First-Run Setup (Open Source Security)
+    // ============================================
+
     /**
-     * Get stored credentials for a role
+     * Check if initial credential setup has been completed.
+     * On first run, users MUST set their own admin & developer passwords.
+     * This prevents open source default credentials from being used in production.
+     * @returns {boolean}
+     */
+    isFirstRunSetupComplete() {
+        return localStorage.getItem(this.SETUP_COMPLETE_KEY) === 'true';
+    }
+
+    /**
+     * Check if a specific role still uses default credentials
      * @param {string} role - 'admin' or 'developer'
-     * @returns {{ username: string, password: string }}
+     * @returns {boolean}
+     */
+    isUsingDefaultCredentials(role) {
+        const storedUser = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_username`);
+        const storedPass = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password`);
+        // If nothing stored, defaults would be used
+        return !storedUser || !storedPass;
+    }
+
+    /**
+     * Complete the first-run setup by saving custom credentials for both roles.
+     * @param {Object} adminCreds - { username, password }
+     * @param {Object} devCreds - { username, password }
+     * @returns {{ success: boolean, errors: string[] }}
+     */
+    completeFirstRunSetup(adminCreds, devCreds) {
+        const errors = [];
+
+        // Validate admin credentials
+        if (!adminCreds.username || adminCreds.username.trim().length < 3) {
+            errors.push('Admin-Benutzername muss mindestens 3 Zeichen lang sein.');
+        }
+        if (!adminCreds.password || adminCreds.password.trim().length < 6) {
+            errors.push('Admin-Passwort muss mindestens 6 Zeichen lang sein.');
+        }
+
+        // Validate developer credentials
+        if (!devCreds.username || devCreds.username.trim().length < 3) {
+            errors.push('Developer-Benutzername muss mindestens 3 Zeichen lang sein.');
+        }
+        if (!devCreds.password || devCreds.password.trim().length < 6) {
+            errors.push('Developer-Passwort muss mindestens 6 Zeichen lang sein.');
+        }
+
+        // Check admin and developer usernames are different
+        if (adminCreds.username && devCreds.username &&
+            adminCreds.username.trim().toLowerCase() === devCreds.username.trim().toLowerCase()) {
+            errors.push('Admin- und Developer-Benutzername müssen unterschiedlich sein.');
+        }
+
+        if (errors.length > 0) {
+            return { success: false, errors };
+        }
+
+        // Save credentials
+        localStorage.setItem(`${this.STORAGE_PREFIX}admin_username`, adminCreds.username.trim());
+        localStorage.setItem(`${this.STORAGE_PREFIX}admin_password`, adminCreds.password.trim());
+        localStorage.setItem(`${this.STORAGE_PREFIX}developer_username`, devCreds.username.trim());
+        localStorage.setItem(`${this.STORAGE_PREFIX}developer_password`, devCreds.password.trim());
+
+        // Mark setup as complete
+        localStorage.setItem(this.SETUP_COMPLETE_KEY, 'true');
+
+        return { success: true, errors: [] };
+    }
+
+    // ============================================
+    // Authentication
+    // ============================================
+
+    /**
+     * Get stored credentials for a role.
+     * Returns null if setup is not complete (no defaults exposed).
+     * @param {string} role - 'admin' or 'developer'
+     * @returns {{ username: string, password: string }|null}
      */
     _getCredentials(role) {
-        const defaults = {
-            admin: { username: 'admin', password: 'admin1234' },
-            developer: { username: 'developer', password: 'dev5678!' }
-        };
+        if (!this.isFirstRunSetupComplete()) {
+            return null;
+        }
 
         const storedUser = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_username`);
         const storedPass = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password`);
 
+        if (!storedUser || !storedPass) {
+            return null;
+        }
+
         return {
-            username: storedUser || defaults[role].username,
-            password: storedPass || defaults[role].password
+            username: storedUser,
+            password: storedPass
         };
     }
 
     /**
-     * Authenticate a user with username and password
+     * Authenticate a user with username and password.
+     * Requires first-run setup to be complete.
      * @param {string} username
      * @param {string} password
      * @returns {{ success: boolean, role: string|null, error: string|null }}
      */
     authenticate(username, password) {
+        if (!this.isFirstRunSetupComplete()) {
+            return { success: false, role: null, error: 'Ersteinrichtung erforderlich.' };
+        }
+
         // Check developer credentials first (higher privilege)
         const devCreds = this._getCredentials(this.ROLES.DEVELOPER);
-        if (username === devCreds.username && password === devCreds.password) {
+        if (devCreds && username === devCreds.username && password === devCreds.password) {
             this.currentRole = this.ROLES.DEVELOPER;
             this.sessionActive = true;
             this._startSessionTimer();
@@ -56,7 +149,7 @@ class AdminPanelService {
 
         // Check admin credentials
         const adminCreds = this._getCredentials(this.ROLES.ADMIN);
-        if (username === adminCreds.username && password === adminCreds.password) {
+        if (adminCreds && username === adminCreds.username && password === adminCreds.password) {
             this.currentRole = this.ROLES.ADMIN;
             this.sessionActive = true;
             this._startSessionTimer();

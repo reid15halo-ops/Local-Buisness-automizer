@@ -2,6 +2,10 @@
    Admin Panel UI
    Full-page admin panel with login gate
    Two tiers: Admin (business) & Developer (technical)
+
+   OPEN SOURCE: First-run setup forces users to
+   set their own credentials before any access.
+   No default passwords are ever accepted.
    ============================================ */
 
 class AdminPanelUI {
@@ -23,10 +27,175 @@ class AdminPanelUI {
             this.renderLogin();
         });
 
-        if (this.service.isAuthenticated()) {
+        // Route: First-run setup → Login → Panel
+        if (!this.service.isFirstRunSetupComplete()) {
+            this.renderFirstRunSetup();
+        } else if (this.service.isAuthenticated()) {
             this.renderPanel();
         } else {
             this.renderLogin();
+        }
+    }
+
+    // ============================================
+    // First-Run Setup (Open Source Security)
+    // ============================================
+
+    renderFirstRunSetup() {
+        if (!this.container) {return;}
+
+        this.container.innerHTML = `
+            <div class="admin-panel-login">
+                <div class="admin-panel-login-card" style="max-width: 560px;">
+                    <div class="admin-panel-login-icon">🛡️</div>
+                    <h2>Ersteinrichtung — Zugangsdaten festlegen</h2>
+                    <p class="admin-panel-login-subtitle">
+                        Diese App ist Open Source. Bevor Sie das Admin-Panel nutzen können,
+                        müssen Sie eigene Zugangsdaten für beide Rollen festlegen.
+                    </p>
+
+                    <div class="admin-panel-warning-box admin-panel-warning-danger">
+                        <div class="admin-panel-warning-icon">⚠️</div>
+                        <div>
+                            <strong>Sicherheitshinweis</strong><br>
+                            Da der Quellcode dieser Anwendung öffentlich ist, gibt es keine Standard-Passwörter.
+                            Sie müssen jetzt eigene, sichere Zugangsdaten für den Admin- und Developer-Zugang vergeben.
+                            Bitte notieren Sie sich diese Zugangsdaten sicher.
+                        </div>
+                    </div>
+
+                    <div class="admin-panel-warning-box admin-panel-warning-info">
+                        <div class="admin-panel-warning-icon">ℹ️</div>
+                        <div>
+                            <strong>Hinweis:</strong> Dieser Bereich enthält die Grundstruktur der Anwendung.
+                            Änderungen können die Software beeinträchtigen.
+                        </div>
+                    </div>
+
+                    <form id="admin-panel-setup-form" class="admin-panel-login-form">
+                        <!-- Admin Credentials -->
+                        <div class="admin-panel-setup-section">
+                            <h3 style="margin: 16px 0 8px; font-size: 15px; color: var(--accent-primary);">🔧 Administrator-Zugang</h3>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                                Für Geschäftseinstellungen (Firmendaten, Steuern, Bankverbindung)
+                            </p>
+                            <div class="admin-panel-field">
+                                <label for="setup-admin-user">Admin-Benutzername *</label>
+                                <input
+                                    type="text"
+                                    id="setup-admin-user"
+                                    class="admin-panel-input"
+                                    placeholder="z.B. mein_admin (mind. 3 Zeichen)"
+                                    autocomplete="off"
+                                    required
+                                    minlength="3"
+                                />
+                            </div>
+                            <div class="admin-panel-field">
+                                <label for="setup-admin-pass">Admin-Passwort *</label>
+                                <input
+                                    type="password"
+                                    id="setup-admin-pass"
+                                    class="admin-panel-input"
+                                    placeholder="Sicheres Passwort (mind. 6 Zeichen)"
+                                    autocomplete="new-password"
+                                    required
+                                    minlength="6"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Developer Credentials -->
+                        <div class="admin-panel-setup-section">
+                            <h3 style="margin: 20px 0 8px; font-size: 15px; color: var(--accent-warning);">👨‍💻 Developer-Zugang</h3>
+                            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
+                                Für technische Konfiguration (API-Keys, Datenbank, Webhooks) — hat Vollzugriff
+                            </p>
+                            <div class="admin-panel-field">
+                                <label for="setup-dev-user">Developer-Benutzername *</label>
+                                <input
+                                    type="text"
+                                    id="setup-dev-user"
+                                    class="admin-panel-input"
+                                    placeholder="z.B. mein_developer (mind. 3 Zeichen)"
+                                    autocomplete="off"
+                                    required
+                                    minlength="3"
+                                />
+                            </div>
+                            <div class="admin-panel-field">
+                                <label for="setup-dev-pass">Developer-Passwort *</label>
+                                <input
+                                    type="password"
+                                    id="setup-dev-pass"
+                                    class="admin-panel-input"
+                                    placeholder="Sicheres Passwort (mind. 6 Zeichen)"
+                                    autocomplete="new-password"
+                                    required
+                                    minlength="6"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="admin-panel-login-error" id="setup-error" style="display: none;"></div>
+
+                        <button type="submit" class="btn btn-primary admin-panel-login-btn" style="margin-top: 16px;">
+                            Zugangsdaten speichern & weiter
+                        </button>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        // Attach setup handler
+        const form = document.getElementById('admin-panel-setup-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this._handleFirstRunSetup();
+        });
+
+        // Focus first field
+        setTimeout(() => {
+            const input = document.getElementById('setup-admin-user');
+            if (input) {input.focus();}
+        }, 100);
+    }
+
+    _handleFirstRunSetup() {
+        const adminCreds = {
+            username: document.getElementById('setup-admin-user').value,
+            password: document.getElementById('setup-admin-pass').value
+        };
+        const devCreds = {
+            username: document.getElementById('setup-dev-user').value,
+            password: document.getElementById('setup-dev-pass').value
+        };
+        const errorDiv = document.getElementById('setup-error');
+
+        const result = this.service.completeFirstRunSetup(adminCreds, devCreds);
+
+        if (result.success) {
+            // Show success, then render login
+            this.container.innerHTML = `
+                <div class="admin-panel-login">
+                    <div class="admin-panel-login-card">
+                        <div class="admin-panel-login-icon">✅</div>
+                        <h2>Einrichtung abgeschlossen!</h2>
+                        <p class="admin-panel-login-subtitle">
+                            Die Zugangsdaten wurden gespeichert. Sie können sich jetzt anmelden.
+                        </p>
+                        <button class="btn btn-primary admin-panel-login-btn" id="setup-go-to-login">
+                            Zum Login
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('setup-go-to-login').addEventListener('click', () => {
+                this.renderLogin();
+            });
+        } else {
+            errorDiv.innerHTML = result.errors.map(e => `<div>${e}</div>`).join('');
+            errorDiv.style.display = 'block';
         }
     }
 
@@ -82,7 +251,10 @@ class AdminPanelUI {
                     <div class="admin-panel-login-hint">
                         <details>
                             <summary>Zugangsdaten vergessen?</summary>
-                            <p>Kontaktieren Sie Ihren Systemadministrator oder Developer, um die Zugangsdaten zurückzusetzen.</p>
+                            <p>Kontaktieren Sie Ihren Systemadministrator oder Developer.
+                            Im Notfall können die Zugangsdaten über die Browser-Konsole mit
+                            <code>localStorage.removeItem('mhs_admin_panel_setup_complete')</code>
+                            zurückgesetzt werden (erfordert Neueinrichtung).</p>
                         </details>
                     </div>
                 </div>
@@ -407,7 +579,6 @@ class AdminPanelUI {
             }
         }
 
-        // Kleinunternehmer checkbox
         const ku = document.getElementById('ap-kleinunternehmer');
         if (ku) {
             this.service.saveBusinessSetting('kleinunternehmer', ku.checked);
@@ -453,7 +624,8 @@ class AdminPanelUI {
 
                 <div class="admin-panel-warning-box admin-panel-warning-danger">
                     <div class="admin-panel-warning-icon">⚠️</div>
-                    <div>Wenn Sie diese Zugangsdaten vergessen, können sie nur durch direkten Zugriff auf den localStorage zurückgesetzt werden.</div>
+                    <div>Wenn Sie diese Zugangsdaten vergessen, können sie nur über die Browser-Konsole mit
+                    <code>localStorage.removeItem('mhs_admin_panel_setup_complete')</code> zurückgesetzt werden.</div>
                 </div>
 
                 <div class="admin-panel-form-grid">
@@ -474,7 +646,6 @@ class AdminPanelUI {
             ` : ''}
         `;
 
-        // Admin credentials save
         document.getElementById('ap-save-admin-creds').addEventListener('click', () => {
             const user = document.getElementById('ap-admin-new-user').value;
             const pass = document.getElementById('ap-admin-new-pass').value;
@@ -492,7 +663,6 @@ class AdminPanelUI {
             setTimeout(() => { status.textContent = ''; }, 4000);
         });
 
-        // Developer credentials save
         if (isDev) {
             document.getElementById('ap-save-dev-creds').addEventListener('click', () => {
                 const user = document.getElementById('ap-dev-new-user').value;
