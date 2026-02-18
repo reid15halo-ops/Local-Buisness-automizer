@@ -26,7 +26,7 @@ class NotificationService {
 
         // Subscribe to store changes if available
         if (window.storeService) {
-            window.storeService.subscribe(() => {
+            this._storeSubscription = window.storeService.subscribe(() => {
                 this.checkForStoreChanges();
             });
         }

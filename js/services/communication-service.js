@@ -5,9 +5,12 @@
 
 class CommunicationService {
     constructor() {
-        this.messages = JSON.parse(localStorage.getItem('freyai_messages') || '[]');
-        this.callLogs = JSON.parse(localStorage.getItem('freyai_call_logs') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_comm_settings') || '{}');
+        const _lsParsedMessages = JSON.parse(localStorage.getItem('freyai_messages') || '[]');
+        this.messages = Array.isArray(_lsParsedMessages) ? _lsParsedMessages : [];
+        const _lsParsedCallLogs = JSON.parse(localStorage.getItem('freyai_call_logs') || '[]');
+        this.callLogs = Array.isArray(_lsParsedCallLogs) ? _lsParsedCallLogs : [];
+        const _lsParsedCommSettings = JSON.parse(localStorage.getItem('freyai_comm_settings') || '{}');
+        this.settings = (_lsParsedCommSettings && typeof _lsParsedCommSettings === 'object' && !Array.isArray(_lsParsedCommSettings)) ? _lsParsedCommSettings : {};
     }
 
     // Unified Message Log

@@ -67,7 +67,7 @@ class CustomerService {
 
     deleteCustomer(id) {
         const customer = this.getCustomer(id);
-        if (!customer) { return; }
+        if (!customer) { return false; }
 
         // Use trash service for soft-delete + undo if available
         if (window.trashService) {
@@ -85,17 +85,18 @@ class CustomerService {
                 } else if (window.ErrorDisplay) {
                     window.ErrorDisplay.showWarning(result.reason);
                 }
-                return;
+                return false;
             }
             // trashService already removed from this.customers and saved
             // Reload from localStorage to stay in sync
             this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]');
-            return;
+            return true;
         }
 
         // Fallback: hard delete (only if trashService not loaded)
         this.customers = this.customers.filter(c => c.id !== id);
         this.save();
+        return true;
     }
 
     getCustomer(id) {

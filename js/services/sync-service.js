@@ -26,8 +26,10 @@ class SyncService {
         this.lastSyncTimes = this._loadLastSyncTimes();
 
         // Listen for online/offline events
-        window.addEventListener('online', () => this._onOnline());
-        window.addEventListener('offline', () => this._onOffline());
+        this._onOnlineHandler = () => this._onOnline();
+        this._onOfflineHandler = () => this._onOffline();
+        window.addEventListener('online', this._onOnlineHandler);
+        window.addEventListener('offline', this._onOfflineHandler);
     }
 
     // ---- Main Public API ----
@@ -370,6 +372,11 @@ class SyncService {
 
     _onOffline() {
         console.log('Offline - will sync when reconnected');
+    }
+
+    destroy() {
+        window.removeEventListener('online', this._onOnlineHandler);
+        window.removeEventListener('offline', this._onOfflineHandler);
     }
 }
 

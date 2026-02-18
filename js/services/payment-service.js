@@ -6,9 +6,12 @@
 class PaymentService {
     constructor() {
         try {
-            this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]');
-            this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]');
-            this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}');
+            const _lsParsedPayments = JSON.parse(localStorage.getItem('freyai_payments') || '[]');
+            this.payments = Array.isArray(_lsParsedPayments) ? _lsParsedPayments : [];
+            const _lsParsedLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]');
+            this.paymentLinks = Array.isArray(_lsParsedLinks) ? _lsParsedLinks : [];
+            const _lsParsedSettings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}');
+            this.settings = (_lsParsedSettings && typeof _lsParsedSettings === 'object' && !Array.isArray(_lsParsedSettings)) ? _lsParsedSettings : {};
 
             // Default settings
             if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
