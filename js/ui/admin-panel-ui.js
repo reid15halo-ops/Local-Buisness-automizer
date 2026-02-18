@@ -760,6 +760,14 @@ class AdminPanelUI {
             stripe_publishable_key: 'ap-stripe-key'
         };
 
+        // Warn if a Gemini API key is being persisted to localStorage.
+        // When Supabase is configured, the ai-proxy Edge Function handles Gemini calls server-side
+        // using GEMINI_API_KEY from a Deno env var — no client-side key is needed in that case.
+        const geminiInput = document.getElementById('ap-gemini-key');
+        if (geminiInput?.value) {
+            console.warn('[Security] Gemini API key saved to localStorage via admin panel. This key is readable by any script on this page. For production use, configure the ai-proxy Supabase Edge Function with the GEMINI_API_KEY environment variable instead.');
+        }
+
         let allSaved = true;
         for (const [key, inputId] of Object.entries(fields)) {
             const input = document.getElementById(inputId);

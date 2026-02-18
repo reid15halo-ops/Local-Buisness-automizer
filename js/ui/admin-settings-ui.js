@@ -297,7 +297,14 @@ class AdminSettingsUI {
                 throw new Error('Passwort muss mindestens 4 Zeichen lang sein.');
             }
 
-            // Save settings
+            // Save settings.
+            // Warn if a Gemini API key is being persisted to localStorage.
+            // When Supabase is configured, the ai-proxy Edge Function handles Gemini calls server-side
+            // using GEMINI_API_KEY from a Deno env var — no client-side key is needed in that case.
+            const geminiKeyInput = document.getElementById('setting-gemini_api_key');
+            if (geminiKeyInput?.value) {
+                console.warn('[Security] Gemini API key saved to localStorage via settings panel. This key is readable by any script on this page. For production use, configure the ai-proxy Supabase Edge Function with the GEMINI_API_KEY environment variable instead.');
+            }
             ['supabase_url', 'supabase_anon_key', 'gemini_api_key', 'resend_api_key', 'stripe_publishable_key', 'n8n_webhook_url'].forEach(key => {
                 const input = document.getElementById(`setting-${key}`);
                 if (input?.value) {

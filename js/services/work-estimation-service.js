@@ -161,18 +161,18 @@ Antworte NUR im JSON-Format:
 }`;
 
         try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localStorage.getItem('gemini_api_key')}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.3 }
-                })
+            // Route through window.geminiService._callGeminiAPI so that:
+            //   - When Supabase is configured, the request goes through the ai-proxy Edge Function
+            //     (GEMINI_API_KEY is kept server-side in a Deno env var — never exposed client-side).
+            //   - In local/dev mode, geminiService falls back to a direct call using whatever key
+            //     was passed at construction time, with a console.warn already emitted at init.
+            // This replaces the previous direct fetch that read localStorage.getItem('gemini_api_key')
+            // inline, which bypassed the proxy and exposed the key in client-side code.
+            const data = await window.geminiService._callGeminiAPI({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.3 }
             });
 
-            if (!response.ok) {throw new Error('API Error');}
-
-            const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
             const jsonMatch = text.match(/\{[\s\S]*\}/);
