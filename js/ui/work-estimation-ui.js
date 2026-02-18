@@ -623,7 +623,7 @@ class WorkEstimationUI {
         const quelle = estimation.quelle || 'basis';
 
         // Badge text
-        const badgeText = hatGemini ? 'KI-Vorschlag' : 'Automatische Schätzung';
+        const badgeText = hatGemini ? 'KI-Vorschlag (Künstliche Intelligenz)' : 'Automatische Schätzung';
 
         // Confidence display
         const konfidenzMap = {
@@ -663,7 +663,7 @@ class WorkEstimationUI {
 
                 <!-- Estimate Display -->
                 <div class="we-estimate-display">
-                    <span class="we-estimate-prefix">~</span>
+                    <span class="we-estimate-prefix" title="ungefähr">ca.</span>
                     <span class="we-estimate-value">${this._formatHours(stunden)}</span>
                     <span class="we-estimate-unit">Stunden</span>
                 </div>

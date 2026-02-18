@@ -90,7 +90,7 @@ class AdminSettingsUI {
         const errorDiv = document.getElementById('pin-error');
 
         if (!this.service.verifyAdminPin(pin)) {
-            errorDiv.textContent = 'Falsches Passwort. Bitte versuchen Sie es erneut.';
+            errorDiv.textContent = 'Falsches Passwort. Bitte versuchen Sie es erneut. Falls Sie das Passwort vergessen haben, wenden Sie sich an Ihren IT-Betreuer oder an den App-Support.';
             errorDiv.style.display = 'block';
             pinInput.value = '';
             pinInput.focus();
@@ -118,87 +118,93 @@ class AdminSettingsUI {
             <div class="modal-content admin-settings-content">
                 <div class="admin-settings-header">
                     <h2>⚙️ Technische Einstellungen</h2>
-                    <p class="admin-warning">⚠️ Diese Einstellungen sind nur für den Administrator gedacht. Änderungen können die Funktionalität der App beeinflussen.</p>
+                    <p class="admin-warning">⚠️ Diese Einstellungen sind nur für Administratoren. Falsche Eingaben können dazu führen, dass E-Mails nicht mehr versendet werden oder Daten nicht mehr gespeichert werden. Nur ändern, wenn Sie wissen, was Sie tun.</p>
                 </div>
 
                 <div class="admin-settings-body">
                     <form id="admin-settings-form">
                         <div class="admin-settings-section">
-                            <h3>Backend-Konfiguration</h3>
+                            <h3>Datenspeicher (Cloud-Backup)</h3>
                             <div class="admin-field">
-                                <label for="setting-supabase_url">Supabase Projekt-URL</label>
+                                <label for="setting-supabase_url">Server-Adresse</label>
                                 <input
                                     type="url"
                                     id="setting-supabase_url"
                                     class="admin-input"
                                     placeholder="https://xyz.supabase.co"
                                 />
+                                <p class="admin-hint">Die Internet-Adresse Ihres Cloud-Speichers, damit Ihre Daten gesichert werden. Erhalten Sie bei der App-Einrichtung von Ihrem IT-Betreuer.</p>
                             </div>
                             <div class="admin-field">
-                                <label for="setting-supabase_anon_key">Supabase Anon Key</label>
+                                <label for="setting-supabase_anon_key">Zugriffsschlüssel für den Datenspeicher</label>
                                 <input
                                     type="password"
                                     id="setting-supabase_anon_key"
                                     class="admin-input"
                                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
                                 />
+                                <p class="admin-hint">Geheimer Schlüssel für den Cloud-Speicher. Gehört zusammen mit der Server-Adresse oben. Von Ihrem IT-Betreuer bereitgestellt.</p>
                             </div>
                         </div>
 
                         <div class="admin-settings-section">
-                            <h3>Email-Versand</h3>
+                            <h3>E-Mail-Versand</h3>
                             <div class="admin-field">
-                                <label for="setting-resend_api_key">Resend API Key</label>
+                                <label for="setting-resend_api_key">Zugriffsschlüssel für E-Mail-Versand</label>
                                 <input
                                     type="password"
                                     id="setting-resend_api_key"
                                     class="admin-input"
                                     placeholder="re_..."
                                 />
+                                <p class="admin-hint">Damit die App automatisch E-Mails versenden kann (z. B. Rechnungen an Kunden). Den Schlüssel erhalten Sie unter resend.com — kostenlos bis 100 E-Mails/Tag.</p>
                             </div>
                         </div>
 
                         <div class="admin-settings-section">
-                            <h3>KI & Automation</h3>
+                            <h3>Künstliche Intelligenz (KI-Assistent) — optional</h3>
                             <div class="admin-field">
-                                <label for="setting-gemini_api_key">Google Gemini API Key (optional)</label>
+                                <label for="setting-gemini_api_key">Zugriffsschlüssel für den KI-Assistenten</label>
                                 <input
                                     type="password"
                                     id="setting-gemini_api_key"
                                     class="admin-input"
                                     placeholder="AIzaSy..."
                                 />
+                                <p class="admin-hint">Optional. Ermöglicht dem Computer, automatisch Angebotstexte und Zeitschätzungen zu erstellen. Schlüssel kostenlos erhältlich unter aistudio.google.com. Wenn leer gelassen, funktioniert die App normal — nur ohne KI-Hilfe.</p>
                             </div>
                         </div>
 
                         <div class="admin-settings-section">
-                            <h3>Zahlungen</h3>
+                            <h3>Online-Zahlung annehmen — optional</h3>
                             <div class="admin-field">
-                                <label for="setting-stripe_publishable_key">Stripe Publishable Key (optional)</label>
+                                <label for="setting-stripe_publishable_key">Zugriffsschlüssel für Online-Zahlung</label>
                                 <input
                                     type="password"
                                     id="setting-stripe_publishable_key"
                                     class="admin-input"
                                     placeholder="pk_live_..."
                                 />
+                                <p class="admin-hint">Optional. Damit Ihre Kunden Rechnungen direkt online per Kreditkarte bezahlen können. Konto und Schlüssel erhalten Sie unter stripe.com. Wenn Sie keine Online-Zahlung benötigen, lassen Sie dieses Feld leer.</p>
                             </div>
                         </div>
 
                         <div class="admin-settings-section">
-                            <h3>Webhooks & Integration</h3>
+                            <h3>Automatisierung — nur für IT-Fachleute (optional)</h3>
                             <div class="admin-field">
-                                <label for="setting-n8n_webhook_url">n8n Webhook URL (optional)</label>
+                                <label for="setting-n8n_webhook_url">Automatisierungs-Adresse</label>
                                 <input
                                     type="url"
                                     id="setting-n8n_webhook_url"
                                     class="admin-input"
                                     placeholder="https://..."
                                 />
+                                <p class="admin-hint">Sehr fortgeschrittene Einstellung für IT-Fachleute. Ermöglicht Verbindung zu externen Automatisierungswerkzeugen. Wenn Sie nicht wissen, was das ist — lassen Sie das Feld leer.</p>
                             </div>
                         </div>
 
                         <div class="admin-settings-section">
-                            <h3>Geschäftsmodell</h3>
+                            <h3>Steuer &amp; Geschäftsmodell</h3>
                             <div class="admin-field">
                                 <label class="checkbox-label">
                                     <input
@@ -206,9 +212,9 @@ class AdminSettingsUI {
                                         id="setting-kleinunternehmer"
                                         class="admin-checkbox"
                                     />
-                                    <span>Kleinunternehmer-Regelung (ohne Umsatzsteuer)</span>
+                                    <span>Kleinunternehmer-Regelung (keine Mehrwertsteuer auf Rechnungen)</span>
                                 </label>
-                                <p class="admin-hint">Aktivieren Sie dies, wenn Sie unter der Kleinunternehmer-Regelung tätig sind.</p>
+                                <p class="admin-hint">Aktivieren, wenn Ihr Jahresumsatz unter 22.000 € liegt und Sie beim Finanzamt als Kleinunternehmer eingetragen sind. Wirkung: Alle neuen Rechnungen werden OHNE Mehrwertsteuer erstellt. Im Zweifel Ihren Steuerberater fragen.</p>
                             </div>
                         </div>
 

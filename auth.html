@@ -246,9 +246,10 @@
 
         <div class="auth-card">
             <div class="auth-tabs">
-                <button class="auth-tab active" data-tab="login">Anmelden</button>
-                <button class="auth-tab" data-tab="register">Registrieren</button>
+                <button class="auth-tab active" data-tab="login" title="Sie haben bereits ein Konto">Anmelden</button>
+                <button class="auth-tab" data-tab="register" title="Erstes Mal hier? Konto erstellen">Neu registrieren</button>
             </div>
+            <p style="text-align:center;font-size:13px;color:var(--text-muted,#888);margin:6px 0 0;">Erstes Mal hier? Bitte &quot;Neu registrieren&quot; w&auml;hlen.</p>
 
             <div id="auth-message" class="auth-message" role="alert" aria-live="polite" aria-atomic="true"></div>
 
@@ -308,7 +309,7 @@
         </div>
 
         <div class="setup-notice" id="setup-notice" style="display:none;">
-            Supabase nicht konfiguriert.
+            Cloud-Speicher noch nicht eingerichtet &mdash; die App funktioniert, aber Daten werden nur lokal auf diesem Ger&auml;t gespeichert.
             <a href="index.html#einstellungen">Einstellungen &ouml;ffnen</a>
         </div>
     </div>

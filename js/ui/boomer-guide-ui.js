@@ -247,8 +247,9 @@ class BoomerGuideUI {
         this.fabEl = document.createElement('button');
         this.fabEl.className = 'boomer-guide-fab';
         this.fabEl.id = 'boomer-guide-fab';
-        this.fabEl.innerHTML = '📋';
-        this.fabEl.title = 'Was steht an?';
+        this.fabEl.innerHTML = '📋 Was steht an?';
+        this.fabEl.title = 'Aufgaben und offene Punkte anzeigen';
+        this.fabEl.setAttribute('aria-label', 'Aufgaben und offene Punkte anzeigen');
 
         const badge = document.createElement('span');
         badge.className = 'boomer-guide-fab-badge';

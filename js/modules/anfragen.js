@@ -53,12 +53,12 @@ function renderAnfragen() {
         container.innerHTML = `
             <div class="empty-state" style="padding: 60px 20px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-                <h3 style="margin-bottom: 8px;">Keine Anfragen vorhanden</h3>
+                <h3 style="margin-bottom: 8px;">Noch keine Kundenanfragen vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
-                    Erstelle deine erste Kundenanfrage um loszulegen.
+                    Hier sehen Sie alle Anfragen Ihrer Kunden. Klicken Sie auf den Knopf unten, um die erste Anfrage einzutragen.
                 </p>
                 <button class="btn btn-primary" onclick="document.getElementById('btn-neue-anfrage').click()">
-                    ➕ Neue Anfrage erstellen
+                    ➕ Erste Anfrage eintragen
                 </button>
             </div>
         `;
