@@ -1796,10 +1796,40 @@ Mit freundlichen Grüßen
                     <div class="view-header-row">
                         <div>
                             <h1>Berichte</h1>
-                            <p class="subtitle">Analysen & Auswertungen</p>
+                            <p class="subtitle">Analysen &amp; Auswertungen</p>
                         </div>
                     </div>
                 </header>
+
+                <!-- Periodic reports -->
+                <div style="margin-bottom:24px;">
+                    <p style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 12px;font-weight:600;">Periodische Berichte</p>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                        <button class="report-card periodic-report-btn" data-period="weekly"  style="padding:20px 16px;">
+                            <span class="report-icon">📅</span>
+                            <span class="report-name">Wochenbericht</span>
+                            <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">letzte 7 Tage</span>
+                        </button>
+                        <button class="report-card periodic-report-btn" data-period="monthly" style="padding:20px 16px;">
+                            <span class="report-icon">📆</span>
+                            <span class="report-name">Monatsbericht</span>
+                            <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">letzter Kalendermonat</span>
+                        </button>
+                        <button class="report-card periodic-report-btn" data-period="quarterly" style="padding:20px 16px;">
+                            <span class="report-icon">📊</span>
+                            <span class="report-name">Quartalsbericht</span>
+                            <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">letztes Quartal</span>
+                        </button>
+                        <button class="report-card periodic-report-btn" data-period="yearly" style="padding:20px 16px;">
+                            <span class="report-icon">📈</span>
+                            <span class="report-name">Jahresbericht</span>
+                            <span style="font-size:11px;color:var(--text-muted);margin-top:4px;">letztes Gesch&auml;ftsjahr</span>
+                        </button>
+                    </div>
+                </div>
+
+                <hr style="border:none;border-top:1px solid var(--border-color);margin:0 0 20px;">
+                <p style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 12px;font-weight:600;">Individuelle Berichte</p>
                 <div class="report-types">
                     <button class="report-card" data-report="sales">
                         <span class="report-icon">💰</span>
@@ -2993,6 +3023,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/ui/work-estimation-ui.js"></script>
     <script src="js/ui/ki-transparency-ui.js"></script>
     <script src="js/ui/gantt-timeline-ui.js"></script>
+    <script src="js/services/periodic-report-service.js"></script>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/excel-import-integration.js"></script>

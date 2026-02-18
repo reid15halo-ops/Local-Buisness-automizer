@@ -552,8 +552,8 @@ function initReports() {
     document.getElementById('report-start-date')?.setAttribute('value', startOfMonth.toISOString().split('T')[0]);
     document.getElementById('report-end-date')?.setAttribute('value', today.toISOString().split('T')[0]);
 
-    // Report type selection
-    document.querySelectorAll('.report-card').forEach(card => {
+    // Report type selection (custom date-range reports)
+    document.querySelectorAll('.report-card:not(.periodic-report-btn)').forEach(card => {
         card.addEventListener('click', () => {
             document.querySelectorAll('.report-card').forEach(c => c.classList.remove('active'));
             card.classList.add('active');
@@ -565,6 +565,44 @@ function initReports() {
     document.getElementById('btn-generate-report')?.addEventListener('click', () => {
         generateReport();
     });
+
+    // Periodic report buttons
+    document.querySelectorAll('.periodic-report-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.report-card').forEach(c => c.classList.remove('active'));
+            btn.classList.add('active');
+            generatePeriodicReport(btn.dataset.period);
+        });
+    });
+}
+
+function generatePeriodicReport(period) {
+    const svc    = window.periodicReportService;
+    const output = document.getElementById('report-output');
+    const chart  = document.getElementById('report-chart-container');
+    if (!svc || !output) { return; }
+
+    if (chart) { chart.style.display = 'none'; }
+    output.innerHTML = '<p style="color:var(--text-muted);padding:16px 0;">Bericht wird erstellt…</p>';
+
+    // Defer one tick so the loading message paints first
+    setTimeout(() => {
+        try {
+            let report;
+            switch (period) {
+                case 'weekly':    report = svc.generateWeekly();    break;
+                case 'monthly':   report = svc.generateMonthly();   break;
+                case 'quarterly': report = svc.generateQuarterly(); break;
+                case 'yearly':    report = svc.generateYearly();    break;
+                default: return;
+            }
+            svc._lastReport = report;
+            output.innerHTML = svc.renderHTML(report);
+        } catch (err) {
+            console.error('[PeriodicReport] Fehler:', err);
+            output.innerHTML = '<p style="color:var(--danger,#ef4444);padding:16px 0;">Bericht konnte nicht erstellt werden. Bitte prüfen Sie ob Daten vorhanden sind.</p>';
+        }
+    }, 0);
 }
 
 let currentReport = null;
