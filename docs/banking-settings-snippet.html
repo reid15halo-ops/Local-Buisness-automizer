@@ -1,0 +1,213 @@
+<!--
+  Banking Settings Card Snippet
+  ==============================
+  Drop this card into the Admin Settings or Buchhaltung section.
+  Requires window.bankingService (banking-service.js) to be loaded first.
+
+  Usage:
+    Copy this block into the relevant settings view in index.html,
+    or render it dynamically from the admin-settings-ui.js module.
+-->
+
+<div class="settings-card" id="banking-settings-card"
+     style="background:var(--card-bg,#1e1e1e);border-radius:12px;
+            padding:1.5rem;border:1px solid var(--border-color,#333);
+            margin-bottom:1.5rem;">
+
+    <!-- Card header -->
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+        <span style="font-size:1.75rem;">🏦</span>
+        <div>
+            <h3 style="margin:0;font-size:1.1rem;">Banking &amp; Bankabgleich</h3>
+            <p style="margin:0;font-size:0.82rem;color:var(--text-secondary,#aaa);">
+                PSD2-Verbindung via Nordigen / GoCardless Bank Account Data API
+            </p>
+        </div>
+    </div>
+
+    <!-- API credentials section -->
+    <fieldset style="border:1px solid var(--border-color,#333);border-radius:8px;
+                     padding:1rem;margin-bottom:1.25rem;">
+        <legend style="padding:0 0.5rem;font-size:0.85rem;
+                        color:var(--text-secondary,#aaa);font-weight:600;">
+            API-Zugangsdaten (Nordigen / GoCardless)
+        </legend>
+
+        <label style="display:block;margin-bottom:0.25rem;font-size:0.875rem;font-weight:600;">
+            Secret ID
+        </label>
+        <input
+            id="banking-cfg-secret-id"
+            type="text"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            style="width:100%;padding:0.6rem;border-radius:6px;
+                   border:1px solid var(--border-color,#333);
+                   background:var(--input-bg,#111);color:inherit;
+                   margin-bottom:0.75rem;box-sizing:border-box;"
+        />
+
+        <label style="display:block;margin-bottom:0.25rem;font-size:0.875rem;font-weight:600;">
+            Secret Key
+        </label>
+        <input
+            id="banking-cfg-secret-key"
+            type="password"
+            placeholder="Geheimer API-Schlüssel"
+            style="width:100%;padding:0.6rem;border-radius:6px;
+                   border:1px solid var(--border-color,#333);
+                   background:var(--input-bg,#111);color:inherit;
+                   margin-bottom:0.75rem;box-sizing:border-box;"
+        />
+
+        <p style="font-size:0.78rem;color:var(--text-secondary,#aaa);margin:0 0 1rem;">
+            Schlüssel werden als Supabase Edge Function Secrets gespeichert — niemals im Browser.
+            <a href="https://bankaccountdata.gocardless.com/"
+               target="_blank" rel="noopener noreferrer"
+               style="color:var(--accent,#6366f1);">
+                Kostenloses GoCardless-Konto erstellen
+            </a>
+        </p>
+
+        <button
+            class="btn btn-primary"
+            style="width:100%;"
+            onclick="(function(){
+                const id  = document.getElementById('banking-cfg-secret-id')?.value  || '';
+                const key = document.getElementById('banking-cfg-secret-key')?.value || '';
+                if (!id || !key) { alert('Bitte beide Felder ausfüllen.'); return; }
+                window.bankingService?.saveConfig({
+                    ...window.bankingService.config,
+                    nordigenSecretId: id,
+                    nordigenApiKey:   key,
+                });
+                if (typeof showToast === 'function') showToast('API-Schlüssel gespeichert', 'success');
+            })()">
+            API-Schlüssel speichern
+        </button>
+    </fieldset>
+
+    <!-- Connected accounts section -->
+    <div style="margin-bottom:1.25rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    margin-bottom:0.75rem;">
+            <h4 style="margin:0;font-size:0.95rem;">Verbundene Konten</h4>
+            <button
+                class="btn btn-secondary btn-sm"
+                onclick="window.bankingService?.showConnectBankModal()">
+                + Konto verbinden
+            </button>
+        </div>
+
+        <!-- Connected account list (populated by JS) -->
+        <div id="banking-cfg-account-list"
+             style="display:flex;flex-direction:column;gap:0.5rem;">
+            <!-- Accounts rendered here by renderSettingsAccountList() -->
+            <p style="font-size:0.85rem;color:var(--text-secondary,#aaa);"
+               id="banking-cfg-no-accounts">
+                Noch kein Konto verbunden.
+            </p>
+        </div>
+    </div>
+
+    <!-- Sync section -->
+    <div style="display:flex;align-items:center;justify-content:space-between;
+                padding-top:1rem;border-top:1px solid var(--border-color,#333);">
+        <div>
+            <span style="font-size:0.82rem;color:var(--text-secondary,#aaa);">
+                Letzter Sync:
+                <span id="banking-cfg-last-sync">—</span>
+            </span>
+        </div>
+        <button
+            class="btn btn-primary"
+            id="banking-cfg-sync-btn"
+            onclick="window.bankingService?.syncAllAccounts()">
+            🔄 Jetzt synchronisieren
+        </button>
+    </div>
+</div>
+
+<!--
+  Initialisation script — run once after banking-service.js is loaded.
+  Populates the connected account list and last-sync timestamp.
+-->
+<script>
+(function initBankingSettingsCard() {
+    'use strict';
+
+    function renderAccountList() {
+        const svc      = window.bankingService;
+        if (!svc) return;
+
+        const accounts = svc.config.accounts || [];
+        const list     = document.getElementById('banking-cfg-account-list');
+        const noAccMsg = document.getElementById('banking-cfg-no-accounts');
+        const lastSync = document.getElementById('banking-cfg-last-sync');
+        const syncBtn  = document.getElementById('banking-cfg-sync-btn');
+
+        // Pre-fill API key fields if already saved
+        const sidInput = document.getElementById('banking-cfg-secret-id');
+        const keyInput = document.getElementById('banking-cfg-secret-key');
+        if (sidInput && svc.config.nordigenSecretId) {
+            sidInput.value = svc.config.nordigenSecretId;
+        }
+        // Do not pre-fill the secret key for security (show placeholder only)
+
+        // Last sync timestamp
+        if (lastSync) {
+            lastSync.textContent = svc.config.lastSync
+                ? new Date(svc.config.lastSync).toLocaleString('de-DE')
+                : 'Noch nie';
+        }
+
+        // Disable sync button when no accounts connected
+        if (syncBtn) syncBtn.disabled = accounts.length === 0;
+
+        if (!list) return;
+
+        if (accounts.length === 0) {
+            if (noAccMsg) noAccMsg.style.display = '';
+            return;
+        }
+
+        if (noAccMsg) noAccMsg.style.display = 'none';
+
+        list.innerHTML = accounts.map(function(acc) {
+            var esc = function(s) {
+                return String(s || '')
+                    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            };
+            var balance = acc.balance != null
+                ? new Intl.NumberFormat('de-DE', {
+                      style: 'currency', currency: acc.currency || 'EUR'
+                  }).format(acc.balance)
+                : '—';
+
+            return '<div style="display:flex;align-items:center;justify-content:space-between;' +
+                   'padding:0.6rem 0.75rem;background:var(--bg-tertiary,#111);' +
+                   'border-radius:6px;border:1px solid var(--border-color,#333);">' +
+                       '<div>' +
+                           '<div style="font-weight:600;font-size:0.875rem;">' +
+                               esc(acc.name || 'Konto') +
+                           '</div>' +
+                           '<div style="font-size:0.78rem;color:var(--text-secondary,#aaa);">' +
+                               esc(acc.iban || acc.id || '') +
+                           '</div>' +
+                       '</div>' +
+                       '<div style="display:flex;align-items:center;gap:0.75rem;">' +
+                           '<span style="font-weight:700;">' + balance + '</span>' +
+                           '<button class="btn btn-sm btn-danger" ' +
+                               'onclick="window.bankingService?.disconnectAccount(\'' + esc(acc.id) + '\')">' +
+                               'Trennen' +
+                           '</button>' +
+                       '</div>' +
+                   '</div>';
+        }).join('');
+    }
+
+    // Run immediately and then poll every 30 s to reflect sync updates
+    renderAccountList();
+    setInterval(renderAccountList, 30_000);
+})();
+</script>
