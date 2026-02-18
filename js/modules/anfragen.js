@@ -35,6 +35,7 @@ function initAnfrageForm() {
         saveStore();
 
         addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
+        window.errorHandler?.success(`Anfrage von ${anfrage.kunde.name} wurde gespeichert.`);
 
         form.reset();
         closeModal('modal-anfrage');

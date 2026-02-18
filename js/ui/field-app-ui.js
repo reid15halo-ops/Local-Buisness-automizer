@@ -44,7 +44,7 @@ class FieldAppUI {
         this.fab.setAttribute('aria-label', 'Feld-Modus öffnen');
         this.fab.setAttribute('title', 'Feld-Modus');
         this.fab.innerHTML = `
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
                 <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
             </svg>
         `;
@@ -799,8 +799,8 @@ class FieldAppUI {
         return `
             <nav class="field-bottom-nav">
                 ${tabs.map(tab => `
-                    <button class="field-nav-tab ${this._isTabActive(tab.id) ? 'field-nav-tab--active' : ''}" data-action="switchTab" data-tab="${tab.id}">
-                        ${tab.icon}
+                    <button class="field-nav-tab ${this._isTabActive(tab.id) ? 'field-nav-tab--active' : ''}" data-action="switchTab" data-tab="${tab.id}" aria-label="${tab.label}">
+                        <span aria-hidden="true">${tab.icon}</span>
                         <span>${tab.label}</span>
                     </button>
                 `).join('')}
@@ -953,7 +953,7 @@ class FieldAppUI {
 
             case 'deletePhoto': {
                 const photoId = el.dataset.photoId;
-                if (photoId && service) {
+                if (photoId && service && confirm('Foto wirklich löschen?')) {
                     service.deletePhoto(photoId);
                     this.render();
                 }
@@ -1001,7 +1001,7 @@ class FieldAppUI {
 
             case 'deleteMaterial': {
                 const materialId = el.dataset.materialId;
-                if (materialId && service) {
+                if (materialId && service && confirm('Material wirklich löschen?')) {
                     service.removeMaterial(materialId);
                     this.render();
                 }
