@@ -57,7 +57,9 @@ class BankingService {
             if (supabaseUrl) {
                 return `${supabaseUrl}/functions/v1/banking-proxy`;
             }
-        } catch (_) { /* ignore */ }
+        } catch (e) {
+            console.warn('Failed to resolve proxy base URL, using fallback:', e);
+        }
         return '/functions/v1/banking-proxy';
     }
 

@@ -125,7 +125,9 @@ class WebhookService {
 
             try {
                 logEntry.responseBody = await response.text();
-            } catch (e) { }
+            } catch (e) {
+                console.warn('Could not read response body:', e);
+            }
 
             // Update webhook stats
             if (response.ok) {

@@ -75,7 +75,9 @@ serve(async (req) => {
             action: 'email.send',
             target: to,
             metadata: { subject, messageId: relayData.messageId, provider: 'protonmail' },
-        }).throwOnError().catch(() => {})
+        }).throwOnError().catch((err: unknown) => {
+            console.warn('Failed to write audit log:', err);
+        })
 
         return new Response(
             JSON.stringify({ success: true, messageId: relayData.messageId }),
