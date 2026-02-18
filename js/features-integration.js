@@ -576,7 +576,7 @@ function initReports() {
     });
 }
 
-function generatePeriodicReport(period) {
+async function generatePeriodicReport(period) {
     const svc    = window.periodicReportService;
     const output = document.getElementById('report-output');
     const chart  = document.getElementById('report-chart-container');
@@ -584,6 +584,12 @@ function generatePeriodicReport(period) {
 
     if (chart) { chart.style.display = 'none'; }
     output.innerHTML = '<p style="color:var(--text-muted);padding:16px 0;">Bericht wird erstellt…</p>';
+
+    try {
+        await ensureChartJS();
+    } catch {
+        // Chart.js failed to load — continue without charts
+    }
 
     // Defer one tick so the loading message paints first
     setTimeout(() => {
@@ -598,6 +604,8 @@ function generatePeriodicReport(period) {
             }
             svc._lastReport = report;
             output.innerHTML = svc.renderHTML(report);
+            // Draw charts after HTML is in DOM
+            requestAnimationFrame(() => svc.renderCharts(report));
         } catch (err) {
             console.error('[PeriodicReport] Fehler:', err);
             output.innerHTML = '<p style="color:var(--danger,#ef4444);padding:16px 0;">Bericht konnte nicht erstellt werden. Bitte prüfen Sie ob Daten vorhanden sind.</p>';

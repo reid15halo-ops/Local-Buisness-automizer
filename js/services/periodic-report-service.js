@@ -300,6 +300,14 @@ class PeriodicReportService {
         .pr-export-btn:hover { border-color: #6366f1; }
         .aging-bar { display: flex; gap: 8px; align-items: center; font-size: 12px; }
         .aging-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .pr-chart-wrap { background: var(--bg-card, #1c1c21); border: 1px solid var(--border-color, #27272a);
+            border-radius: 8px; padding: 16px 20px; position: relative; }
+        .pr-chart-label { font-size: 11px; text-transform: uppercase; letter-spacing: .4px;
+            color: var(--text-muted, #71717a); font-weight: 600; margin: 0 0 12px; }
+        .pr-chart-row { display: grid; gap: 12px; margin-bottom: 24px; }
+        .pr-chart-row.cols-2 { grid-template-columns: 1fr 1fr; }
+        .pr-chart-row.cols-1 { grid-template-columns: 1fr; }
+        @media (max-width: 700px) { .pr-chart-row.cols-2 { grid-template-columns: 1fr; } }
         `;
         document.head.appendChild(s);
     }
@@ -526,6 +534,22 @@ class PeriodicReportService {
     // Render HTML
     // ----------------------------------------
 
+    // ----------------------------------------
+    // Chart canvas helpers
+    // ----------------------------------------
+
+    _canvas(id, label, height = 240) {
+        return `<div class="pr-chart-wrap"><p class="pr-chart-label">${label}</p><canvas id="${id}" height="${height}"></canvas></div>`;
+    }
+
+    _chartRow(cols, ...items) {
+        return `<div class="pr-chart-row cols-${cols}">${items.join('')}</div>`;
+    }
+
+    // ----------------------------------------
+    // Render HTML
+    // ----------------------------------------
+
     renderHTML(report) {
         this.injectStyles();
         switch (report.type) {
@@ -570,6 +594,9 @@ class PeriodicReportService {
                     { label: 'Ausstehend (gesamt)', value: this._fmt(outstd), cls: 'yellow', sub: `${r.allOpen.length} offene Rechnungen` }
                 ])
             )}
+            ${this._chartRow(1,
+                this._canvas('pr-chart-weekly-status', 'Rechnungsstatus — Bezahlt vs. Offen', 200)
+            )}
             ${r.invoices.length ? this._section('Rechnungen diese Woche',
                 this._table(['Nr.', 'Kunde', 'Betrag', 'Status'], recentInvoices)
             ) : ''}
@@ -609,6 +636,10 @@ class PeriodicReportService {
             ${this._header(r.title, r.period, r.badge)}
             ${this._exportBtn('monthly')}
             ${this._section('Monatsübersicht', this._kpiRow(r.kpis))}
+            ${this._chartRow(2,
+                this._canvas('pr-chart-monthly-income', 'Einnahmen vs. Ausgaben', 220),
+                this._canvas('pr-chart-monthly-customers', 'Top Kunden nach Umsatz', 220)
+            )}
             ${this._section('Einnahmen vs. Ausgaben',
                 this._kpiRow([
                     { label: 'Einnahmen', value: this._fmt(r.income), cls: 'green' },
@@ -657,6 +688,10 @@ class PeriodicReportService {
             ${this._header(r.title, r.period, r.badge)}
             ${this._exportBtn('quarterly')}
             ${this._section('Quartalsübersicht', this._kpiRow(r.kpis))}
+            ${this._chartRow(2,
+                this._canvas('pr-chart-quarterly-months', 'Monatlicher Umsatz im Quartal', 220),
+                this._canvas('pr-chart-quarterly-income', 'Einnahmen vs. Ausgaben', 220)
+            )}
             ${this._section('Ergebnis',
                 this._kpiRow([
                     { label: 'Einnahmen', value: this._fmt(r.income), cls: 'green' },
@@ -718,6 +753,13 @@ class PeriodicReportService {
             ${this._header(r.title, r.period, r.badge)}
             ${this._exportBtn('yearly')}
             ${this._section('Jahresübersicht', this._kpiRow(r.kpis))}
+            ${this._chartRow(1,
+                this._canvas('pr-chart-yearly-monthly', 'Monatlicher Umsatz (Brutto)', 260)
+            )}
+            ${this._chartRow(2,
+                this._canvas('pr-chart-yearly-quarters', 'Quartalsentwicklung', 220),
+                this._canvas('pr-chart-yearly-expenses', 'Ausgaben nach Kategorie', 220)
+            )}
             ${this._section('Geschäftskennzahlen',
                 this._kpiRow([
                     { label: 'Ø Rechnungswert', value: this._fmt(r.avgInvoice) },
@@ -746,6 +788,209 @@ class PeriodicReportService {
                 this._table(['Kategorie', 'Betrag'], expRows)
             ) : ''}
         </div>`;
+    }
+
+    // ----------------------------------------
+    // Chart rendering (called after HTML is in DOM)
+    // ----------------------------------------
+
+    _charts = [];
+    _lastReport = null;
+
+    _destroyCharts() {
+        this._charts.forEach(c => { try { c.destroy(); } catch {} });
+        this._charts = [];
+    }
+
+    _chartDefaults() {
+        return {
+            color: '#a1a1aa',
+            plugins: { legend: { labels: { color: '#a1a1aa', font: { size: 11 } } } },
+            scales: {
+                x: { ticks: { color: '#71717a', font: { size: 11 } }, grid: { color: '#ffffff08' } },
+                y: { ticks: { color: '#71717a', font: { size: 11 } }, grid: { color: '#ffffff08' } }
+            }
+        };
+    }
+
+    _palette(n) {
+        const p = ['#6366f1','#22c55e','#f59e0b','#60a5fa','#a78bfa',
+                   '#f472b6','#34d399','#fb923c','#94a3b8','#fbbf24'];
+        return Array.from({ length: n }, (_, i) => p[i % p.length]);
+    }
+
+    _makeChart(id, config) {
+        const canvas = document.getElementById(id);
+        if (!canvas) { return; }
+        try {
+            const chart = new window.Chart(canvas, config);
+            this._charts.push(chart);
+        } catch (e) { console.warn('[PeriodicReport] Chart error on', id, e); }
+    }
+
+    renderCharts(report) {
+        if (!window.Chart) { return; }
+        this._destroyCharts();
+        const d = this._chartDefaults();
+
+        if (report.type === 'weekly') {
+            const rev = this._revenueStats(report.invoices);
+            const allOpenSum = report.allOpen.reduce((s, r) => s + (r.brutto || 0), 0);
+            this._makeChart('pr-chart-weekly-status', {
+                type: 'doughnut',
+                data: {
+                    labels: ['Bezahlt', 'Neu offen', 'Gesamt ausstehend'],
+                    datasets: [{ data: [rev.paid.sum, rev.open.sum, allOpenSum - rev.open.sum],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                        borderColor: '#18181b', borderWidth: 2 }]
+                },
+                options: { ...d, scales: undefined,
+                    plugins: { ...d.plugins, tooltip: {
+                        callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) }
+                    }}
+                }
+            });
+        }
+
+        if (report.type === 'monthly') {
+            // Donut: income vs expenses
+            this._makeChart('pr-chart-monthly-income', {
+                type: 'doughnut',
+                data: {
+                    labels: ['Einnahmen', 'Ausgaben'],
+                    datasets: [{ data: [report.income, report.totalExp],
+                        backgroundColor: ['#22c55e', '#ef4444'],
+                        borderColor: '#18181b', borderWidth: 2 }]
+                },
+                options: { ...d, scales: undefined,
+                    plugins: { ...d.plugins, tooltip: {
+                        callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) }
+                    }}
+                }
+            });
+            // Horizontal bar: top customers
+            const top = report.topCustomers.slice(0, 6);
+            this._makeChart('pr-chart-monthly-customers', {
+                type: 'bar',
+                data: {
+                    labels: top.map(c => c.name.length > 14 ? c.name.slice(0, 12) + '…' : c.name),
+                    datasets: [{ label: 'Umsatz', data: top.map(c => c.sum),
+                        backgroundColor: '#6366f1', borderRadius: 4 }]
+                },
+                options: { ...d, indexAxis: 'y',
+                    plugins: { ...d.plugins, legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) } }
+                    },
+                    scales: {
+                        x: { ...d.scales.x, ticks: { ...d.scales.x.ticks,
+                            callback: v => (v / 1000).toFixed(0) + 'k' } },
+                        y: { ...d.scales.y }
+                    }
+                }
+            });
+        }
+
+        if (report.type === 'quarterly') {
+            // Grouped bar: paid vs open per month
+            this._makeChart('pr-chart-quarterly-months', {
+                type: 'bar',
+                data: {
+                    labels: report.qMonths.map(m => m.label),
+                    datasets: [
+                        { label: 'Bezahlt', data: report.qMonths.map(m => m.paid),
+                          backgroundColor: '#22c55e', borderRadius: 4 },
+                        { label: 'Offen', data: report.qMonths.map(m => m.open),
+                          backgroundColor: '#f59e0b', borderRadius: 4 }
+                    ]
+                },
+                options: { ...d,
+                    plugins: { ...d.plugins, tooltip: {
+                        callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) }
+                    }},
+                    scales: {
+                        x: { ...d.scales.x, stacked: false },
+                        y: { ...d.scales.y, ticks: { ...d.scales.y.ticks,
+                            callback: v => (v / 1000).toFixed(0) + 'k €' } }
+                    }
+                }
+            });
+            // Donut: income vs expenses
+            this._makeChart('pr-chart-quarterly-income', {
+                type: 'doughnut',
+                data: {
+                    labels: ['Einnahmen', 'Ausgaben'],
+                    datasets: [{ data: [report.income, report.totalExp],
+                        backgroundColor: ['#22c55e', '#ef4444'],
+                        borderColor: '#18181b', borderWidth: 2 }]
+                },
+                options: { ...d, scales: undefined,
+                    plugins: { ...d.plugins, tooltip: {
+                        callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) }
+                    }}
+                }
+            });
+        }
+
+        if (report.type === 'yearly') {
+            const mNames = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+            // Bar: 12-month revenue
+            this._makeChart('pr-chart-yearly-monthly', {
+                type: 'bar',
+                data: {
+                    labels: mNames,
+                    datasets: [{ label: 'Umsatz (Brutto)', data: report.monthly.map(m => m.sum),
+                        backgroundColor: report.monthly.map(m => m.sum > 0 ? '#6366f1' : '#3f3f46'),
+                        borderRadius: 4 }]
+                },
+                options: { ...d,
+                    plugins: { ...d.plugins, legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) } }
+                    },
+                    scales: {
+                        x: { ...d.scales.x },
+                        y: { ...d.scales.y, ticks: { ...d.scales.y.ticks,
+                            callback: v => (v / 1000).toFixed(0) + 'k €' } }
+                    }
+                }
+            });
+            // Bar: quarterly
+            this._makeChart('pr-chart-yearly-quarters', {
+                type: 'bar',
+                data: {
+                    labels: report.quarterly.map(q => q.label.split(' ')[0]),
+                    datasets: [{ label: 'Umsatz', data: report.quarterly.map(q => q.sum),
+                        backgroundColor: this._palette(4), borderRadius: 4 }]
+                },
+                options: { ...d,
+                    plugins: { ...d.plugins, legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) } }
+                    },
+                    scales: {
+                        x: { ...d.scales.x },
+                        y: { ...d.scales.y, ticks: { ...d.scales.y.ticks,
+                            callback: v => (v / 1000).toFixed(0) + 'k €' } }
+                    }
+                }
+            });
+            // Donut: expense categories
+            const topExp = report.expenses.slice(0, 7);
+            if (topExp.length) {
+                this._makeChart('pr-chart-yearly-expenses', {
+                    type: 'doughnut',
+                    data: {
+                        labels: topExp.map(e => e.kategorie),
+                        datasets: [{ data: topExp.map(e => e.sum),
+                            backgroundColor: this._palette(topExp.length),
+                            borderColor: '#18181b', borderWidth: 2 }]
+                    },
+                    options: { ...d, scales: undefined,
+                        plugins: { ...d.plugins, tooltip: {
+                            callbacks: { label: ctx => ' ' + this._fmt(ctx.raw) }
+                        }}
+                    }
+                });
+            }
+        }
     }
 
     // ----------------------------------------
