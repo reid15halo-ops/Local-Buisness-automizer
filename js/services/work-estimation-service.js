@@ -175,7 +175,7 @@ Antworte NUR im JSON-Format:
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            const jsonMatch = text?.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const result = JSON.parse(jsonMatch[0]);
                 return {

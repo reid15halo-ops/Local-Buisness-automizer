@@ -8,6 +8,7 @@ class AuthService {
         this.user = null;
         this.session = null;
         this.listeners = [];
+        this._authSubscription = null;
     }
 
     getClient() {
@@ -127,13 +128,16 @@ class AuthService {
     onAuthChange(callback) {
         this.listeners.push(callback);
 
-        const client = this.getClient();
-        if (client) {
-            client.auth.onAuthStateChange((event, session) => {
-                this.session = session;
-                this.user = session?.user || null;
-                this._notify();
-            });
+        // Register the Supabase subscription only once to avoid duplicate _notify() calls
+        if (!this._authSubscription) {
+            const client = this.getClient();
+            if (client) {
+                this._authSubscription = client.auth.onAuthStateChange((event, session) => {
+                    this.session = session;
+                    this.user = session?.user || null;
+                    this._notify();
+                });
+            }
         }
 
         return () => {

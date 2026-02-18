@@ -37,7 +37,7 @@ class CashFlowService {
         // Get overdue invoices
         const overdueAmount = rechnungen
             .filter(r => {
-                if (r.status !== 'bezahlt') {
+                if (r.status === 'offen' || r.status === 'versendet') {
                     const dueDate = new Date(r.faelligkeitsdatum);
                     return dueDate < today;
                 }
