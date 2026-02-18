@@ -254,6 +254,9 @@ function renderRechnungen() {
                     <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); downloadInvoicePDF('${r.id}')" title="PDF herunterladen">
                         📄 PDF
                     </button>
+                    <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); window.eInvoiceService?.downloadXRechnungById('${r.id}')" title="XRechnung XML herunterladen (EN 16931 / B2G)">
+                        📋 XRechnung
+                    </button>
                     ${cancelBtn}
                     ${correctBtn}
                 </div>
@@ -435,6 +438,9 @@ function showRechnung(rechnungId) {
                 <button class="btn btn-secondary" id="btn-download-pdf">
                     📄 PDF herunterladen
                 </button>
+                <button class="btn btn-secondary" id="btn-download-xrechnung" title="XRechnung XML herunterladen (EN 16931 / B2G)">
+                    📋 XRechnung
+                </button>
                 ${markPaidBtn}
                 ${cancelBtn}
                 ${correctBtn}
@@ -450,6 +456,18 @@ function showRechnung(rechnungId) {
         pdfBtn.addEventListener('click', () => {
             showToast('PDF wird erstellt...', 'info');
             downloadInvoicePDF(rechnung.id);
+        });
+    }
+
+    // XRechnung download
+    const xrechnungBtn = modal.querySelector('#btn-download-xrechnung');
+    if (xrechnungBtn) {
+        xrechnungBtn.addEventListener('click', () => {
+            if (window.eInvoiceService) {
+                window.eInvoiceService.downloadXRechnung(rechnung);
+            } else {
+                showToast('E-Rechnung Service nicht verfügbar', 'error');
+            }
         });
     }
 
