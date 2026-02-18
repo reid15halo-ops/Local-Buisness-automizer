@@ -14,9 +14,10 @@ const SUPABASE_CONFIG = {
     anonKey: localStorage.getItem('supabase_anon_key') || '',
 };
 
-// Expose for landing page waitlist
+// Expose URL only (not the anon key) for landing page waitlist.
+// The anon key must not be placed on window — read it via window.supabaseConfig.config.anonKey
+// when absolutely needed within the same script context, or use the Supabase client directly.
 window.SUPABASE_URL = SUPABASE_CONFIG.url;
-window.SUPABASE_ANON_KEY = SUPABASE_CONFIG.anonKey;
 
 // Supabase Client (loaded via CDN)
 let supabaseClient = null;
@@ -54,10 +55,11 @@ function isSupabaseConfigured() {
 function updateSupabaseConfig(url, anonKey) {
     SUPABASE_CONFIG.url = url;
     SUPABASE_CONFIG.anonKey = anonKey;
+    // Store the URL in localStorage (not a secret). The anon key is kept in-memory only;
+    // persisting it to localStorage would expose it to any script on the page.
     localStorage.setItem('supabase_url', url);
-    localStorage.setItem('supabase_anon_key', anonKey);
     window.SUPABASE_URL = url;
-    window.SUPABASE_ANON_KEY = anonKey;
+    // Do NOT assign window.SUPABASE_ANON_KEY — the key must not be a window global.
     supabaseClient = null; // Force re-init
     initSupabase();
 }
