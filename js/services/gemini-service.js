@@ -331,5 +331,13 @@ FreyAI Visions`
     }
 }
 
-// Create global instance
-window.geminiService = new GeminiService(localStorage.getItem('gemini_api_key'));
+// Create global instance.
+// When Supabase is configured the service routes all requests through the ai-proxy Edge Function,
+// which reads GEMINI_API_KEY from a server-side Deno env var — no client-side key needed.
+// The localStorage fallback below supports local/dev environments only; it is NOT recommended
+// for production because localStorage is readable by any script on the page (XSS risk).
+const _localGeminiKey = localStorage.getItem('gemini_api_key');
+if (_localGeminiKey) {
+    console.warn('[Security] Gemini API key loaded from localStorage. This key is accessible to any script on this page. Use the ai-proxy Supabase Edge Function (GEMINI_API_KEY env var) for production deployments.');
+}
+window.geminiService = new GeminiService(_localGeminiKey || null);

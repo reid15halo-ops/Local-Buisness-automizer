@@ -215,6 +215,11 @@ function initSettings() {
 
     document.getElementById('btn-save-gemini')?.addEventListener('click', () => {
         const key = document.getElementById('gemini-api-key').value.trim();
+        // WARNING: Storing the Gemini API key in localStorage exposes it to any script on this
+        // page (XSS, browser extensions, etc.). When Supabase is configured, requests are proxied
+        // through the ai-proxy Edge Function which reads the key from a server-side env var.
+        // Only store the key in localStorage if users intentionally configure local/dev mode.
+        console.warn('[Security] Gemini API key stored in localStorage is accessible to any script on this page. Configure the ai-proxy Supabase Edge Function with GEMINI_API_KEY env var for production use.');
         localStorage.setItem('gemini_api_key', key);
         window.geminiService = new GeminiService(key);
         updateSettingsStatus();
