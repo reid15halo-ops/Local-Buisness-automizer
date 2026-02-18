@@ -249,27 +249,157 @@ class ApprovalService {
         }
     }
 
-    // Notifications (placeholder for actual implementation)
+    // Notifications
     notifyApprover(request, step) {
+        const title = `Freigabe erforderlich: ${request.workflowName}`;
+        const description = `${step.name} soll ${request.documentType} ${request.documentId} freigeben (Anfrage: ${request.id})`;
+
         console.log(`📧 Freigabe-Anfrage: ${step.name} soll ${request.documentType} ${request.documentId} freigeben`);
 
-        // Would integrate with email/notification service
-        if (window.communicationService) {
-            window.communicationService.logMessage({
-                type: 'system',
-                content: `Freigabe-Anfrage: ${request.workflowName}`,
-                to: step.role,
-                metadata: { requestId: request.id }
-            });
+        // In-app notification via notificationService
+        try {
+            if (window.notificationService) {
+                window.notificationService.addNotification('system', title, description, {
+                    entityType: 'approval',
+                    entityId: request.id
+                });
+            } else if (window.showToast) {
+                window.showToast(`Freigabe-Anfrage: ${step.name} – ${request.workflowName}`, 'info');
+            }
+        } catch (e) {
+            console.warn('ApprovalService: In-app notification failed:', e.message);
+        }
+
+        // Email notification via automationApi (requires Supabase)
+        try {
+            if (window.automationApi && window.supabaseConfig?.isConfigured()) {
+                const emailBody = `Hallo ${step.name},\n\nbitte prüfen und genehmigen Sie folgende Freigabe-Anfrage:\n\nWorkflow: ${request.workflowName}\nDokument: ${request.documentType} ${request.documentId}\nAnfrage-ID: ${request.id}\nErstellt: ${new Date(request.createdAt).toLocaleString('de-DE')}\n\nBitte öffnen Sie das System, um die Anfrage zu bearbeiten.`;
+                window.automationApi.sendEmail(
+                    step.role,
+                    title,
+                    emailBody
+                ).catch(e => console.warn('ApprovalService: Email send failed:', e.message));
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Email notification failed:', e.message);
+        }
+
+        // Push messenger (Telegram/WhatsApp) for high-visibility alerts
+        try {
+            if (window.pushMessengerService && window.pushMessengerService.isConfigured()) {
+                const pushMsg = `Freigabe-Anfrage\nWorkflow: ${request.workflowName}\nSchritt: ${step.name}\nDokument: ${request.documentType} ${request.documentId}\nAnfrage-ID: ${request.id}`;
+                window.pushMessengerService.sendAlert(pushMsg, 'high')
+                    .catch(e => console.warn('ApprovalService: Push notification failed:', e.message));
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Push notification failed:', e.message);
+        }
+
+        // Communication service log
+        try {
+            if (window.communicationService) {
+                window.communicationService.logMessage({
+                    type: 'system',
+                    content: `Freigabe-Anfrage: ${request.workflowName}`,
+                    to: step.role,
+                    metadata: { requestId: request.id }
+                });
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Communication log failed:', e.message);
         }
     }
 
     notifyRejection(request, step) {
-        console.log(`❌ Freigabe abgelehnt: ${request.workflowName} - ${step.comment}`);
+        const title = `Freigabe abgelehnt: ${request.workflowName}`;
+        const description = `${request.documentType} ${request.documentId} wurde von ${step.approver || step.name} abgelehnt${step.comment ? ': ' + step.comment : ''}`;
+
+        console.log(`Freigabe abgelehnt: ${request.workflowName} - ${step.comment}`);
+
+        // In-app notification
+        try {
+            if (window.notificationService) {
+                window.notificationService.addNotification('system', title, description, {
+                    entityType: 'approval',
+                    entityId: request.id
+                });
+            } else if (window.showToast) {
+                window.showToast(`Freigabe abgelehnt: ${request.workflowName}`, 'error');
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Rejection in-app notification failed:', e.message);
+        }
+
+        // Email notification via automationApi (requires Supabase)
+        try {
+            if (window.automationApi && window.supabaseConfig?.isConfigured()) {
+                const emailBody = `Ihre Freigabe-Anfrage wurde abgelehnt.\n\nWorkflow: ${request.workflowName}\nDokument: ${request.documentType} ${request.documentId}\nAbgelehnt von: ${step.approver || step.name}\nKommentar: ${step.comment || '(kein Kommentar)'}\nAnfrage-ID: ${request.id}`;
+                window.automationApi.sendEmail(
+                    request.requestedBy,
+                    title,
+                    emailBody
+                ).catch(e => console.warn('ApprovalService: Rejection email failed:', e.message));
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Rejection email notification failed:', e.message);
+        }
+
+        // Push messenger for rejection alert
+        try {
+            if (window.pushMessengerService && window.pushMessengerService.isConfigured()) {
+                const pushMsg = `Freigabe ABGELEHNT\nWorkflow: ${request.workflowName}\nDokument: ${request.documentType} ${request.documentId}\nKommentar: ${step.comment || '-'}`;
+                window.pushMessengerService.sendAlert(pushMsg, 'high')
+                    .catch(e => console.warn('ApprovalService: Rejection push notification failed:', e.message));
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Rejection push notification failed:', e.message);
+        }
     }
 
     notifyEscalation(request) {
-        console.log(`⚠️ Eskalation: ${request.workflowName} - Zeitüberschreitung`);
+        const title = `Eskalation: ${request.workflowName}`;
+        const description = `Zeitüberschreitung bei ${request.documentType} ${request.documentId} (Anfrage: ${request.id})`;
+
+        console.log(`Eskalation: ${request.workflowName} - Zeitüberschreitung`);
+
+        // In-app notification
+        try {
+            if (window.notificationService) {
+                window.notificationService.addNotification('system', title, description, {
+                    entityType: 'approval',
+                    entityId: request.id
+                });
+            } else if (window.showToast) {
+                window.showToast(`Eskalation: ${request.workflowName} – Zeitüberschreitung`, 'error');
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Escalation in-app notification failed:', e.message);
+        }
+
+        // Email notification via automationApi (requires Supabase)
+        try {
+            if (window.automationApi && window.supabaseConfig?.isConfigured()) {
+                const emailBody = `Eine Freigabe-Anfrage wurde eskaliert aufgrund einer Zeitüberschreitung.\n\nWorkflow: ${request.workflowName}\nDokument: ${request.documentType} ${request.documentId}\nEskaliert: ${new Date(request.escalatedAt).toLocaleString('de-DE')}\nAnfrage-ID: ${request.id}\n\nBitte handeln Sie umgehend.`;
+                window.automationApi.sendEmail(
+                    'management',
+                    title,
+                    emailBody
+                ).catch(e => console.warn('ApprovalService: Escalation email failed:', e.message));
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Escalation email notification failed:', e.message);
+        }
+
+        // Push messenger – use 'critical' priority for escalations
+        try {
+            if (window.pushMessengerService && window.pushMessengerService.isConfigured()) {
+                const pushMsg = `ESKALATION – Freigabe überfällig!\nWorkflow: ${request.workflowName}\nDokument: ${request.documentType} ${request.documentId}\nAnfrage-ID: ${request.id}`;
+                window.pushMessengerService.sendAlert(pushMsg, 'critical')
+                    .catch(e => console.warn('ApprovalService: Escalation push notification failed:', e.message));
+            }
+        } catch (e) {
+            console.warn('ApprovalService: Escalation push notification failed:', e.message);
+        }
     }
 
     // Get pending requests for a role
