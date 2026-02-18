@@ -388,7 +388,7 @@ async function processWithGemini(
     // 4. Generate PDF (simplified - would need actual PDF library)
     const pdfUrl = await generateAngebotPDF(angebot, analysis, email)
 
-    // 5. Send response email with offer
+    // 5. Send response email with offer (pdfUrl contains base64 PDF data)
     await sendAngebotEmail(
         email.from.email,
         analysis.kunde.name,
@@ -397,6 +397,7 @@ async function processWithGemini(
         enrichedPositionen,
         { netto, mwst, brutto }
     )
+
 
     // 6. Update email record
     await supabase
@@ -430,33 +431,371 @@ async function processWithGemini(
 }
 
 // ============================================
-// PDF Generation (Simplified)
+// PDF Generation
 // ============================================
-async function generateAngebotPDF(angebot: any, analysis: GeminiAnalysisResult, email: InboundEmail): Promise<string> {
-    // In production, this would use a PDF library
-    // For now, return a placeholder URL
-    // TODO: Implement actual PDF generation with jsPDF or similar
 
-    const pdfContent = {
-        type: 'angebot',
-        nummer: angebot.nummer,
-        datum: new Date().toISOString().split('T')[0],
-        kunde: {
-            name: analysis.kunde.name,
-            firma: analysis.kunde.firma,
-            email: email.from.email
-        },
-        positionen: angebot.positionen,
-        summen: {
-            netto: angebot.netto,
-            mwst: angebot.mwst,
-            brutto: angebot.brutto
-        }
+/**
+ * Encodes a string to Latin-1 bytes (PDF standard encoding).
+ * Characters outside Latin-1 range are replaced with '?'.
+ */
+function toBytes(str: string): Uint8Array {
+    const bytes = new Uint8Array(str.length)
+    for (let i = 0; i < str.length; i++) {
+        const code = str.charCodeAt(i)
+        bytes[i] = code < 256 ? code : 63 // '?' for out-of-range
+    }
+    return bytes
+}
+
+/**
+ * Escapes a string for use inside a PDF text string literal (parentheses notation).
+ * Also replaces common German umlauts with ASCII equivalents for Latin-1 safety.
+ */
+function pdfEscape(str: string): string {
+    return str
+        .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+        .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
+        .replace(/ß/g, 'ss')
+        .replace(/\\/g, '\\\\')
+        .replace(/\(/g, '\\(')
+        .replace(/\)/g, '\\)')
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n')
+}
+
+/**
+ * Truncates a string to a max byte length for PDF lines.
+ */
+function truncate(str: string, max = 80): string {
+    return str.length > max ? str.substring(0, max - 3) + '...' : str
+}
+
+/**
+ * Builds a minimal but valid PDF binary and returns it as a Uint8Array.
+ * Uses only Helvetica (a standard PDF font, no embedding needed).
+ */
+function buildAngebotPDF(
+    angebotNummer: string,
+    datum: string,
+    kunde: { name: string; firma?: string | null; email: string },
+    positionen: Array<{ beschreibung: string; menge: number; einheit: string; einzelpreis: number; gesamt: number }>,
+    summen: { netto: number; mwst: number; brutto: number }
+): Uint8Array {
+    const fmt = (n: number) =>
+        new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' EUR'
+
+    // Build page content stream
+    const lines: string[] = []
+
+    // -- Header bar (filled rectangle) --
+    lines.push('0.173 0.239 0.314 rg') // dark blue #2c3e50
+    lines.push('0 792 595 -60 re f')   // rect across top (A4 width=595, height=842)
+
+    // -- Company name in header --
+    lines.push('1 1 1 rg')             // white text
+    lines.push('BT')
+    lines.push('/F1 22 Tf')
+    lines.push('40 790 Td')
+    lines.push(`(FreyAI Visions) Tj`)
+    lines.push('ET')
+
+    lines.push('BT')
+    lines.push('/F2 10 Tf')
+    lines.push('350 790 Td')
+    lines.push(`(Angebot ${pdfEscape(angebotNummer)}) Tj`)
+    lines.push('ET')
+
+    // -- Reset to black for body --
+    lines.push('0 0 0 rg')
+
+    // -- Offer title --
+    lines.push('BT')
+    lines.push('/F1 16 Tf')
+    lines.push('40 720 Td')
+    lines.push(`(Angebot) Tj`)
+    lines.push('ET')
+
+    // Horizontal rule under title
+    lines.push('0.2 0.467 0.741 rg')   // blue #3498db
+    lines.push('40 712 515 -2 re f')
+    lines.push('0 0 0 rg')
+
+    // -- Document meta --
+    let y = 695
+    const lineH = 16
+    const drawText = (x: number, yPos: number, font: string, size: number, text: string) => {
+        lines.push('BT')
+        lines.push(`/${font} ${size} Tf`)
+        lines.push(`${x} ${yPos} Td`)
+        lines.push(`(${pdfEscape(truncate(text))}) Tj`)
+        lines.push('ET')
     }
 
-    // Store PDF data in Supabase Storage or return inline
-    // For now, we'll include it in the email as text
-    return 'inline' // Placeholder
+    drawText(40, y, 'F1', 10, `Angebotsnummer: ${angebotNummer}`)
+    drawText(320, y, 'F2', 10, `Datum: ${datum}`)
+    y -= lineH
+
+    drawText(40, y, 'F1', 10, `Angebotsdatum: ${datum}`)
+    drawText(320, y, 'F2', 10, 'Gueltig: 30 Tage')
+    y -= lineH * 2
+
+    // -- Customer section --
+    lines.push('0.961 0.961 0.961 rg') // light gray background
+    lines.push(`40 ${y + 4} 515 -${lineH * 4 + 8} re f`)
+    lines.push('0 0 0 rg')
+
+    drawText(48, y, 'F1', 11, 'Kunde')
+    y -= lineH
+
+    drawText(48, y, 'F2', 10, `Name: ${kunde.name}`)
+    y -= lineH
+
+    if (kunde.firma) {
+        drawText(48, y, 'F2', 10, `Firma: ${kunde.firma}`)
+        y -= lineH
+    }
+
+    drawText(48, y, 'F2', 10, `E-Mail: ${kunde.email}`)
+    y -= lineH * 2
+
+    // -- Positions table header --
+    lines.push('0.173 0.239 0.314 rg') // dark header
+    lines.push(`40 ${y + 4} 515 -${lineH + 4} re f`)
+    lines.push('1 1 1 rg')             // white text for header
+
+    lines.push('BT')
+    lines.push('/F1 9 Tf')
+    lines.push(`48 ${y} Td`)
+    lines.push('(Pos.) Tj')
+    lines.push('ET')
+
+    lines.push('BT')
+    lines.push('/F1 9 Tf')
+    lines.push(`75 ${y} Td`)
+    lines.push('(Beschreibung) Tj')
+    lines.push('ET')
+
+    lines.push('BT')
+    lines.push('/F1 9 Tf')
+    lines.push(`340 ${y} Td`)
+    lines.push('(Menge) Tj')
+    lines.push('ET')
+
+    lines.push('BT')
+    lines.push('/F1 9 Tf')
+    lines.push(`395 ${y} Td`)
+    lines.push('(Einzelpreis) Tj')
+    lines.push('ET')
+
+    lines.push('BT')
+    lines.push('/F1 9 Tf')
+    lines.push(`480 ${y} Td`)
+    lines.push('(Gesamt) Tj')
+    lines.push('ET')
+
+    lines.push('0 0 0 rg') // reset to black
+    y -= lineH
+
+    // -- Position rows --
+    for (let i = 0; i < positionen.length; i++) {
+        const pos = positionen[i]
+        // Alternating row background
+        if (i % 2 === 0) {
+            lines.push('0.973 0.973 0.973 rg')
+            lines.push(`40 ${y + 4} 515 -${lineH + 2} re f`)
+            lines.push('0 0 0 rg')
+        }
+
+        drawText(48, y, 'F2', 9, `${i + 1}.`)
+        drawText(75, y, 'F2', 9, truncate(pos.beschreibung, 55))
+        drawText(340, y, 'F2', 9, `${pos.menge} ${pos.einheit}`)
+        drawText(395, y, 'F2', 9, fmt(pos.einzelpreis))
+        drawText(480, y, 'F2', 9, fmt(pos.gesamt))
+        y -= lineH + 2
+
+        // Safety: stop if we're near bottom of page
+        if (y < 160) break
+    }
+
+    y -= 8
+
+    // Separator line
+    lines.push('0.7 0.7 0.7 rg')
+    lines.push(`40 ${y + 4} 515 -1 re f`)
+    lines.push('0 0 0 rg')
+    y -= 10
+
+    // -- Totals --
+    const totalsX = 380
+
+    drawText(totalsX, y, 'F2', 10, 'Nettobetrag:')
+    drawText(480, y, 'F2', 10, fmt(summen.netto))
+    y -= lineH
+
+    drawText(totalsX, y, 'F2', 10, 'MwSt. (19%):')
+    drawText(480, y, 'F2', 10, fmt(summen.mwst))
+    y -= 4
+
+    // Bold total line
+    lines.push('0.173 0.239 0.314 rg')
+    lines.push(`${totalsX - 5} ${y} 170 -${lineH + 6} re f`)
+    lines.push('1 1 1 rg')
+
+    lines.push('BT')
+    lines.push('/F1 11 Tf')
+    lines.push(`${totalsX} ${y - 2} Td`)
+    lines.push(`(Gesamtbetrag (brutto):) Tj`)
+    lines.push('ET')
+
+    lines.push('BT')
+    lines.push('/F1 11 Tf')
+    lines.push(`480 ${y - 2} Td`)
+    lines.push(`(${pdfEscape(fmt(summen.brutto))}) Tj`)
+    lines.push('ET')
+
+    lines.push('0 0 0 rg')
+    y -= lineH + 16
+
+    // -- Payment terms --
+    drawText(40, y, 'F2', 9, 'Zahlungsbedingungen: 14 Tage netto nach Erhalt der Rechnung')
+    y -= lineH
+    drawText(40, y, 'F2', 9, 'Gueltigkeitsdauer: 30 Tage ab Angebotsdatum')
+    y -= lineH * 2
+
+    // -- Footer --
+    lines.push('0.173 0.239 0.314 rg')
+    lines.push('40 60 515 -1 re f')
+    lines.push('0.5 0.5 0.5 rg')
+
+    drawText(40, 45, 'F2', 8, 'FreyAI Visions | Tel: +49 (0) xxx xxx xxx | E-Mail: info@freyai-visions.de')
+    drawText(40, 33, 'F2', 8, 'Zertifiziert nach DIN EN 1090 | Alle Preise zzgl. der gesetzlichen MwSt.')
+
+    lines.push('0 0 0 rg')
+
+    const streamContent = lines.join('\n')
+    const streamBytes = toBytes(streamContent)
+
+    // PDF object structure:
+    // 1: Catalog
+    // 2: Pages
+    // 3: Page
+    // 4: Font F1 (Helvetica-Bold)
+    // 5: Font F2 (Helvetica)
+    // 6: Content stream
+
+    const header = '%PDF-1.4\n'
+    currentOffset = toBytes(header).length
+
+    // We need to build objects in order. Let's collect them:
+    const rawObjects: { id: number; content: string }[] = [
+        {
+            id: 1,
+            content: `<< /Type /Catalog /Pages 2 0 R >>`
+        },
+        {
+            id: 2,
+            content: `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`
+        },
+        {
+            id: 4,
+            content: `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>`
+        },
+        {
+            id: 5,
+            content: `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>`
+        },
+        {
+            id: 6,
+            content: `<< /Length ${streamBytes.length} >>\nstream\n${streamContent}\nendstream`
+        },
+        {
+            id: 3,
+            content: `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 6 0 R /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> >>`
+        },
+    ]
+
+    // Sort by object id for xref table
+    rawObjects.sort((a, b) => a.id - b.id)
+
+    // Build xref offsets
+    const xrefOffsets: number[] = [0] // object 0 is free
+    let offset = toBytes(header).length
+
+    const objectStrings: string[] = []
+    for (const obj of rawObjects) {
+        xrefOffsets[obj.id] = offset
+        const str = `${obj.id} 0 obj\n${obj.content}\nendobj\n`
+        objectStrings.push(str)
+        offset += toBytes(str).length
+    }
+
+    // xref table
+    const maxObj = Math.max(...rawObjects.map(o => o.id))
+    let xref = `xref\n0 ${maxObj + 1}\n`
+    xref += '0000000000 65535 f \n'
+    for (let i = 1; i <= maxObj; i++) {
+        const off = xrefOffsets[i] ?? 0
+        const isFree = !xrefOffsets[i]
+        xref += `${String(off).padStart(10, '0')} 00000 ${isFree ? 'f' : 'n'} \n`
+    }
+
+    const trailer = `trailer\n<< /Size ${maxObj + 1} /Root 1 0 R >>\nstartxref\n${offset}\n%%EOF\n`
+
+    // Assemble final PDF
+    const parts: Uint8Array[] = [
+        toBytes(header),
+        ...objectStrings.map(s => toBytes(s)),
+        toBytes(xref),
+        toBytes(trailer),
+    ]
+
+    const totalLength = parts.reduce((sum, p) => sum + p.length, 0)
+    const result = new Uint8Array(totalLength)
+    let pos = 0
+    for (const part of parts) {
+        result.set(part, pos)
+        pos += part.length
+    }
+
+    return result
+}
+
+/**
+ * Converts a Uint8Array to a base64 string (Deno-compatible).
+ */
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+    let binary = ''
+    const chunkSize = 8192
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize)
+        binary += String.fromCharCode(...chunk)
+    }
+    return btoa(binary)
+}
+
+async function generateAngebotPDF(angebot: any, analysis: GeminiAnalysisResult, email: InboundEmail): Promise<string> {
+    const datum = new Date().toISOString().split('T')[0]
+
+    const pdfBytes = buildAngebotPDF(
+        angebot.nummer,
+        datum,
+        {
+            name: analysis.kunde.name,
+            firma: analysis.kunde.firma,
+            email: email.from.email,
+        },
+        angebot.positionen,
+        {
+            netto: angebot.netto,
+            mwst: angebot.mwst,
+            brutto: angebot.brutto,
+        }
+    )
+
+    const base64 = uint8ArrayToBase64(pdfBytes)
+    console.log(`PDF generated for ${angebot.nummer}: ${pdfBytes.length} bytes`)
+
+    return base64
 }
 
 // ============================================
@@ -466,7 +805,7 @@ async function sendAngebotEmail(
     to: string,
     kundenName: string,
     angebotNummer: string,
-    pdfUrl: string,
+    pdfBase64: string,
     positionen: any[],
     summen: { netto: number, mwst: number, brutto: number }
 ) {
@@ -550,6 +889,17 @@ async function sendAngebotEmail(
         </html>
     `
 
+    // Build attachments array: include PDF if available
+    const attachments = pdfBase64 && pdfBase64 !== 'inline'
+        ? [
+            {
+                filename: `Angebot-${angebotNummer}.pdf`,
+                content: pdfBase64,
+                content_type: 'application/pdf',
+            }
+          ]
+        : []
+
     await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -561,7 +911,8 @@ async function sendAngebotEmail(
             to: [to],
             subject: `Ihr Angebot ${angebotNummer} - FreyAI Visions`,
             html: htmlBody,
-            reply_to: 'info@handwerkflow.de'
+            reply_to: 'info@handwerkflow.de',
+            ...(attachments.length > 0 && { attachments }),
         }),
     })
 }
