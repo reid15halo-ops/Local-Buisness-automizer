@@ -194,7 +194,7 @@ class AdminPanelUI {
                 this.renderLogin();
             });
         } else {
-            errorDiv.innerHTML = result.errors.map(e => `<div>${e}</div>`).join('');
+            errorDiv.innerHTML = result.errors.map(e => `<div>${h(e)}</div>`).join('');
             errorDiv.style.display = 'block';
         }
     }

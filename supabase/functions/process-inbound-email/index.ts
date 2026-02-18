@@ -68,8 +68,31 @@ serve(async (req) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
+    // Webhook shared-secret authentication.
+    // The function is deployed with --no-verify-jwt because the external email
+    // service (Resend) cannot supply a Supabase JWT. The shared secret takes its
+    // place and prevents arbitrary callers from triggering business logic.
+    const webhookSecret = Deno.env.get('WEBHOOK_SECRET')
+    const providedSecret = req.headers.get('x-webhook-secret')
+
+    if (!webhookSecret || providedSecret !== webhookSecret) {
+        return new Response(
+            JSON.stringify({ error: 'Unauthorized' }),
+            { status: 401, headers: { 'Content-Type': 'application/json' } }
+        )
+    }
+
     try {
         const email: InboundEmail = await req.json()
+
+        // Validate sender email format before any processing.
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!email.from?.email || !emailRegex.test(email.from.email)) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid sender' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            )
+        }
 
         console.log('📧 Inbound email received:', {
             from: email.from.email,

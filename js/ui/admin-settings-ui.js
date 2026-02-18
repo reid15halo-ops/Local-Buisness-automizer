@@ -320,7 +320,7 @@ class AdminSettingsUI {
             alert('Einstellungen erfolgreich gespeichert!');
             this.closeSettings(modal);
         } catch (err) {
-            errorsDiv.innerHTML = `<div class="error-message">⚠️ ${err.message}</div>`;
+            errorsDiv.innerHTML = `<div class="error-message">⚠️ ${h(err.message)}</div>`;
             errorsDiv.style.display = 'block';
         }
     }
