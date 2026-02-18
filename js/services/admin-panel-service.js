@@ -369,6 +369,11 @@ class AdminPanelService {
 
         return { success: true, error: null };
     }
+
+    destroy() {
+        clearTimeout(this.sessionTimeout);
+        this.sessionTimeout = null;
+    }
 }
 
 // Global instance

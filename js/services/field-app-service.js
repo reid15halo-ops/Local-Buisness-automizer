@@ -63,6 +63,10 @@ class FieldAppService {
 
     exitFieldMode() {
         if (this.isFieldMode) {
+            if (this.cameraStream) {
+                this.cameraStream.getTracks().forEach(track => track.stop());
+                this.cameraStream = null;
+            }
             this.toggleFieldMode();
         }
     }

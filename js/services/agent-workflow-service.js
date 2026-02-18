@@ -1481,6 +1481,11 @@ Antworte NUR mit dem JSON-Array.`;
 
         return results;
     }
+
+    destroy() {
+        clearInterval(this.schedulerInterval);
+        this.schedulerInterval = null;
+    }
 }
 
 // Register on window
