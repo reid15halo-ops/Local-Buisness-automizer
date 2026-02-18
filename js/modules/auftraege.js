@@ -105,7 +105,10 @@ function executeStatusAutoAktion(auftrag, newStatus) {
                     return mat && mat.bestand < item.menge;
                 });
                 if (fehlend.length > 0) {
-                    window.AppUtils.showToast(`${fehlend.length} Material-Position(en) unter Mindestbestand`, 'warning');
+                    window.AppUtils.showToast(`${fehlend.length} Material-Position(en) unter Mindestbestand — Nachbestellung wird geprüft`, 'warning');
+                    // Immediately trigger the reorder engine so purchase orders are
+                    // created automatically without the user having to find that screen
+                    window.reorderEngineService?.checkAndReorder?.();
                 }
             }
             break;

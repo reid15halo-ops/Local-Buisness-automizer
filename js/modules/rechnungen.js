@@ -483,6 +483,11 @@ function showRechnung(rechnungId) {
                         rechnung.status = 'bezahlt';
                         rechnung.paidAt = new Date().toISOString();
                         saveStore();
+                        // Auto-record the payment as a revenue entry in bookkeeping
+                        // so the EÜR stays accurate without a separate manual step
+                        if (window.bookkeepingService) {
+                            window.bookkeepingService.addFromRechnung(rechnung);
+                        }
                         addActivity('✅', `Rechnung ${rechnung.id} als bezahlt markiert`);
                         closeModal('modal-rechnung');
                         renderRechnungen();

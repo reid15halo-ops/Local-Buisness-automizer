@@ -15,6 +15,12 @@ class ReorderEngineService {
         this.checkInterval = null;
         this.lastCheckTime = null;
         this.loadSettings();
+
+        // If the user had previously enabled auto-reorder, restore that state
+        // on startup — otherwise the engine silently does nothing after a page reload
+        if (this.settings.autoReorderEnabled) {
+            this.enable();
+        }
     }
 
     // ============================================

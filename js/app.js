@@ -4361,6 +4361,7 @@ function initAutomations() {
     initPaymentMatching();
     initFollowUp();
     initLowStockAlerts();
+    initDunningAlert();
 
     // Update badges on load
     setTimeout(() => {
@@ -4368,6 +4369,25 @@ function initAutomations() {
         updateLowStockBadge();
         updateEmailAutomationBadge();
     }, 500);
+}
+
+// Show a dashboard notification on startup when invoices need dunning action,
+// so the user does not have to manually navigate to Mahnwesen to discover them
+function initDunningAlert() {
+    if (!window.dunningService) { return; }
+    const offene = (store?.rechnungen || []).filter(r => r.status === 'offen' || r.status === 'versendet');
+    if (offene.length === 0) { return; }
+
+    const overdueItems = window.dunningService.checkAllOverdueInvoices(offene);
+    const actionNeeded = overdueItems.filter(item => item.actionNeeded);
+    if (actionNeeded.length === 0) { return; }
+
+    // Delay slightly so the rest of the UI has initialised
+    setTimeout(() => {
+        window.errorHandler?.warning(
+            `${actionNeeded.length} Rechnung${actionNeeded.length === 1 ? '' : 'en'} überfällig — bitte Zahlungserinnerungen prüfen (Menü: Zahlungserinnerungen)`
+        );
+    }, 1500);
 }
 
 // ============================================
