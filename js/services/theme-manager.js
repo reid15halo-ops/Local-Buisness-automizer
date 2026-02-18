@@ -39,9 +39,14 @@ class ThemeManager {
         const toggleBtn = document.getElementById('theme-toggle');
         if (!toggleBtn) {return;}
 
-        toggleBtn.addEventListener('click', () => {
-            this.toggle();
-        });
+        // If the toggle is a checkbox (settings page), ui-helpers.js handles the
+        // change event. Attach a click listener only for button-type toggles to
+        // avoid double-toggling when the checkbox change fires after click.
+        if (toggleBtn.type !== 'checkbox') {
+            toggleBtn.addEventListener('click', () => {
+                this.toggle();
+            });
+        }
 
         this.updateToggleButton();
     }
@@ -74,6 +79,12 @@ class ThemeManager {
     updateToggleButton() {
         const icon = document.getElementById('theme-icon');
         const text = document.getElementById('theme-text');
+        const toggleBtn = document.getElementById('theme-toggle');
+
+        // Sync checkbox checked state: checked = dark mode active
+        if (toggleBtn && toggleBtn.type === 'checkbox') {
+            toggleBtn.checked = this.currentTheme === 'dark';
+        }
 
         if (!icon || !text) {return;}
 
