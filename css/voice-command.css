@@ -1,0 +1,135 @@
+/* ============================================
+   Voice Command Service – UI Styles
+   Floating microphone button + transcript overlay
+   ============================================ */
+
+/* ----------------------------------------
+   Wrapper (positions both overlay and button)
+   ---------------------------------------- */
+#voice-command-ui {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    z-index: 9000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    pointer-events: none; /* children opt back in */
+}
+
+/* ----------------------------------------
+   Transcript overlay bubble
+   ---------------------------------------- */
+#voice-transcript-overlay {
+    pointer-events: none;
+    max-width: 260px;
+    padding: 8px 14px;
+    background: rgba(30, 30, 40, 0.88);
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.4;
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+    word-break: break-word;
+
+    /* Hidden by default */
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#voice-transcript-overlay.voice-transcript-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ----------------------------------------
+   Floating mic button
+   ---------------------------------------- */
+#voice-mic-button {
+    pointer-events: all;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary, #6366f1);
+    color: #fff;
+    box-shadow:
+        0 4px 14px rgba(99, 102, 241, 0.45),
+        0 2px 6px rgba(0, 0, 0, 0.2);
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+    outline-offset: 3px;
+}
+
+#voice-mic-button:hover {
+    background: var(--primary-dark, #4f52d4);
+    transform: scale(1.06);
+    box-shadow:
+        0 6px 20px rgba(99, 102, 241, 0.55),
+        0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+#voice-mic-button:active {
+    transform: scale(0.96);
+}
+
+#voice-mic-button:focus-visible {
+    outline: 3px solid var(--primary, #6366f1);
+}
+
+/* Listening state – pulsing red */
+#voice-mic-button.voice-listening {
+    background: #e53935;
+    box-shadow:
+        0 4px 14px rgba(229, 57, 53, 0.5),
+        0 2px 6px rgba(0, 0, 0, 0.2);
+    animation: voice-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(229, 57, 53, 0.55), 0 2px 6px rgba(0,0,0,0.2); }
+    50%  { box-shadow: 0 0 0 14px rgba(229, 57, 53, 0),   0 2px 6px rgba(0,0,0,0.2); }
+    100% { box-shadow: 0 0 0 0   rgba(229, 57, 53, 0),    0 2px 6px rgba(0,0,0,0.2); }
+}
+
+#voice-mic-button.voice-listening:hover {
+    background: #c62828;
+}
+
+/* ----------------------------------------
+   SVG icon inside button
+   ---------------------------------------- */
+#voice-mic-button svg {
+    display: block;
+    flex-shrink: 0;
+}
+
+/* ----------------------------------------
+   Mobile adjustments
+   ---------------------------------------- */
+@media (max-width: 600px) {
+    #voice-command-ui {
+        bottom: 18px;
+        right: 18px;
+    }
+
+    #voice-mic-button {
+        width: 50px;
+        height: 50px;
+    }
+
+    #voice-transcript-overlay {
+        max-width: 200px;
+        font-size: 12px;
+    }
+}
