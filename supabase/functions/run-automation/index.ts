@@ -50,6 +50,8 @@ serve(async (req) => {
                     break
                 }
 
+                const safeBody = (params.body || '').replace(/[\r\n]/g, ' ')
+                const safeSubject = (params.subject || '').replace(/[\r\n]/g, ' ')
                 const emailRes = await fetch(`${relayUrl}/send-email`, {
                     method: 'POST',
                     headers: {
@@ -58,8 +60,8 @@ serve(async (req) => {
                     },
                     body: JSON.stringify({
                         to: Array.isArray(params.to) ? params.to.join(', ') : params.to,
-                        subject: params.subject || 'HandwerkFlow Benachrichtigung',
-                        body: params.body || '',
+                        subject: safeSubject || 'HandwerkFlow Benachrichtigung',
+                        body: safeBody,
                     }),
                 })
                 const emailData = await emailRes.json()
@@ -81,6 +83,14 @@ serve(async (req) => {
                 let toNum = (params.to || '').replace(/[\s\-()]/g, '')
                 if (toNum.startsWith('0')) toNum = '+49' + toNum.substring(1)
                 if (!toNum.startsWith('+')) toNum = '+49' + toNum
+
+                const phoneRegex = /^\+[1-9]\d{6,14}$/
+                if (!phoneRegex.test(toNum)) {
+                    return new Response(
+                        JSON.stringify({ error: 'Invalid phone number format' }),
+                        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                    )
+                }
 
                 const smsRes = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
                     method: 'POST',

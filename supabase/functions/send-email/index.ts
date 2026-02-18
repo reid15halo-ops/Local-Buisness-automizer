@@ -39,6 +39,9 @@ serve(async (req) => {
             )
         }
 
+        const safeSubject = (subject || '').replace(/[\r\n]/g, ' ')
+        const safeTo = (to || '').replace(/[\r\n]/g, '')
+
         // Route to VPS Email Relay (Proton Mail Bridge)
         const relayUrl = Deno.env.get('EMAIL_RELAY_URL')
         const relaySecret = Deno.env.get('EMAIL_RELAY_SECRET')
@@ -56,7 +59,7 @@ serve(async (req) => {
                 'Authorization': `Bearer ${relaySecret}`,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ to, subject, body, replyTo, cc, bcc }),
+            body: JSON.stringify({ to: safeTo, subject: safeSubject, body, replyTo, cc, bcc }),
         })
 
         const relayData = await relayResponse.json()

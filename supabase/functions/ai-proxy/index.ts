@@ -56,7 +56,7 @@ serve(async (req) => {
         // Rate limit check
         if (!checkRateLimit(user.id)) {
             return new Response(
-                JSON.stringify({ error: 'Rate limit exceeded: max 50 requests per hour' }),
+                JSON.stringify({ error: 'Too many requests. Please try again later.' }),
                 { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }

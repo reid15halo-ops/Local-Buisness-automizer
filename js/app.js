@@ -40,7 +40,7 @@ function renderActivities() {
             <div class="activity-item">
                 <span class="activity-icon">${activity.icon}</span>
                 <div class="activity-content">
-                    <div class="activity-title">${activity.title}</div>
+                    <div class="activity-title">${h(activity.title)}</div>
                     <div class="activity-time">${window.UI?.getRelativeTime?.(activity.time) || ''}</div>
                 </div>
             </div>
@@ -206,7 +206,7 @@ function renderAnfragen() {
                 ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
                 <div class="item-actions">
                     <span class="status-badge status-neu">● Neu</span>
-                    <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${a.id}')">
+                    <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${h(a.id)}')">
                         📝 Angebot erstellen
                     </button>
                 </div>
@@ -661,7 +661,7 @@ function renderAngebote() {
                 <button class="btn btn-secondary btn-small" onclick="exportAngebotPDF('${h(a.id)}')">
                     PDF
                 </button>
-                <button class="btn btn-success" onclick="acceptAngebot('${a.id}')">
+                <button class="btn btn-success" onclick="acceptAngebot('${h(a.id)}')">
                     ✓ Auftrag erteilen
                 </button>
             </div>
@@ -1094,7 +1094,7 @@ function renderAuftragCard(a) {
     const grundHtml = a.statusGrund ? `<div style="font-size:11px;color:${statusCfg?.color || '#94a3b8'};margin-top:4px;font-style:italic;">${h(a.statusGrund)}</div>` : '';
 
     return `
-        <div class="auftrag-card" onclick="openAuftragDetail('${a.id}')">
+        <div class="auftrag-card" onclick="openAuftragDetail('${h(a.id)}')">
             <div class="auftrag-card-header">
                 <span class="auftrag-card-title">${h(a.kunde.name)}</span>
                 <span class="auftrag-card-id" title="Im Status seit ${dauerText}">${dauerText}</span>
@@ -1151,7 +1151,7 @@ function renderAuftraegeList(auftraege) {
         const workers = (a.mitarbeiter || []).join(', ');
 
         return `
-            <div class="item-card" onclick="openAuftragDetail('${a.id}')" style="cursor:pointer;">
+            <div class="item-card" onclick="openAuftragDetail('${h(a.id)}')" style="cursor:pointer;">
                 <div class="item-header">
                     <h3 class="item-title">${h(a.kunde.name)}</h3>
                     <span class="item-id">${a.id}</span>
@@ -1834,7 +1834,7 @@ function renderStueckliste() {
             <span style="font-size:13px;">${formatCurrency(item.ekPreis)}</span>
             <span style="font-size:13px;">${formatCurrency(item.vkPreis)}</span>
             <span class="sl-gesamt">${formatCurrency(item.menge * item.vkPreis)}</span>
-            <button type="button" class="sl-remove-btn" onclick="removeStuecklisteRow('${item.id}')" title="Entfernen">&times;</button>
+            <button type="button" class="sl-remove-btn" onclick="removeStuecklisteRow('${h(item.id)}')" title="Entfernen">&times;</button>
         </div>
     `).join('');
 
@@ -2237,18 +2237,18 @@ function renderRechnungen() {
                 <span class="status-badge status-${r.status}">
                     ● ${r.status === 'offen' ? 'Offen' : r.status === 'bezahlt' ? 'Bezahlt' : r.status === 'storniert' ? 'Storniert' : r.status}
                 </span>
-                <button class="btn btn-secondary btn-sm" onclick="downloadInvoicePDF('${r.id}')" title="PDF herunterladen">
+                <button class="btn btn-secondary btn-sm" onclick="downloadInvoicePDF('${h(r.id)}')" title="PDF herunterladen">
                     📄 PDF
                 </button>
-                <button class="btn btn-secondary btn-sm" onclick="generateEInvoice('${r.id}')" title="E-Rechnung (XRechnung)">
+                <button class="btn btn-secondary btn-sm" onclick="generateEInvoice('${h(r.id)}')" title="E-Rechnung (XRechnung)">
                     🔐 E-Rechnung
                 </button>
                 ${r.status === 'offen' ? `
-                    <button class="btn btn-success btn-sm" onclick="markInvoiceAsPaid('${r.id}')" title="Als bezahlt markieren">
+                    <button class="btn btn-success btn-sm" onclick="markInvoiceAsPaid('${h(r.id)}')" title="Als bezahlt markieren">
                         ✓ Bezahlt
                     </button>
                 ` : ''}
-                <button class="btn btn-primary" onclick="showRechnung('${r.id}')">
+                <button class="btn btn-primary" onclick="showRechnung('${h(r.id)}')">
                     👁 Anzeigen
                 </button>
             </div>
@@ -3207,7 +3207,7 @@ function renderMahnwesen() {
                     </div>
                 </div>
                 <div class="item-actions">
-                    <button class="btn btn-warning" onclick="openMahnungModal('${rechnung.id}')">
+                    <button class="btn btn-warning" onclick="openMahnungModal('${h(rechnung.id)}')">
                         📧 ${status.stufe.typ === 'erinnerung' ? 'Erinnerung' : 'Mahnung'} erstellen
                     </button>
                 </div>
@@ -4302,7 +4302,7 @@ async function renderEmailHistory(filter = '') {
 
                 ${entry.quote ? `
                     <div class="email-history-actions">
-                        <button class="btn btn-secondary btn-small" onclick="viewQuoteFromEmail('${entry.id}')">
+                        <button class="btn btn-secondary btn-small" onclick="viewQuoteFromEmail('${h(entry.id)}')">
                             📄 Angebot anzeigen
                         </button>
                     </div>
