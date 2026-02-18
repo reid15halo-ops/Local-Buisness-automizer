@@ -1,278 +1,234 @@
 /* ============================================
    Voice Command Service
-   Hands-free operation with German speech recognition
+   Hands-free German speech recognition for field use
+   Web Speech API (SpeechRecognition + SpeechSynthesis)
    ============================================ */
 
 class VoiceCommandService {
     constructor() {
         this.isListening = false;
         this.recognition = null;
-        this.synthesis = window.speechSynthesis;
+        this.synthesis = window.speechSynthesis || null;
+        this.commands = [];
+        this.micButton = null;
+        this.transcriptOverlay = null;
+        this.transcriptTimer = null;
+
         this.settings = JSON.parse(localStorage.getItem('freyai_voice_settings') || '{}');
         this.commandHistory = JSON.parse(localStorage.getItem('freyai_voice_history') || '[]');
 
         // Default settings
-        if (!this.settings.language) {this.settings.language = 'de-DE';}
-        if (!this.settings.speakResponses) {this.settings.speakResponses = true;}
-        if (!this.settings.wakeWord) {this.settings.wakeWord = 'okay freyai';}
-        if (!this.settings.continuousListening) {this.settings.continuousListening = false;}
+        if (!this.settings.language)           { this.settings.language = 'de-DE'; }
+        if (this.settings.speakResponses == null) { this.settings.speakResponses = true; }
 
-        // Initialize speech recognition
-        this.initRecognition();
-
-        // Command definitions
-        this.commands = this.initCommands();
+        this.init();
     }
 
-    // Initialize Web Speech API
-    initRecognition() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    // ----------------------------------------
+    // Init
+    // ----------------------------------------
+    init() {
+        this.commands = this.getCommands();
 
-        if (!SpeechRecognition) {
-            console.warn('Spracherkennung nicht verfügbar');
+        if (!this._isBrowserSupported()) {
+            this._showUnsupportedMessage();
             return;
         }
 
+        this._initRecognition();
+        this._buildUI();
+    }
+
+    // ----------------------------------------
+    // Browser support check
+    // ----------------------------------------
+    _isBrowserSupported() {
+        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    }
+
+    _showUnsupportedMessage() {
+        console.warn('[VoiceCommand] Spracherkennung (Web Speech API) wird in diesem Browser nicht unterstützt.');
+        // Show a one-time toast when the page loads
+        window.addEventListener('load', () => {
+            const show = window.showToast || (window.AppUtils && window.AppUtils.showToast);
+            if (typeof show === 'function') {
+                show(
+                    'Sprachsteuerung nicht verfügbar: Ihr Browser unterstützt die Web Speech API nicht. ' +
+                    'Bitte verwenden Sie Google Chrome oder Microsoft Edge.',
+                    'warning'
+                );
+            }
+        });
+    }
+
+    // ----------------------------------------
+    // Web Speech API recognition setup
+    // ----------------------------------------
+    _initRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         this.recognition = new SpeechRecognition();
         this.recognition.lang = this.settings.language;
-        this.recognition.continuous = this.settings.continuousListening;
+        this.recognition.continuous = false;
         this.recognition.interimResults = false;
         this.recognition.maxAlternatives = 3;
 
         this.recognition.onresult = (event) => {
-            const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-            this.processCommand(transcript);
+            const transcript = event.results[event.results.length - 1][0].transcript
+                .toLowerCase()
+                .trim();
+            this._showTranscript(transcript);
+            this.parseCommand(transcript);
         };
 
         this.recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            if (event.error === 'no-speech') {
-                this.speak('Ich habe Sie nicht verstanden. Bitte wiederholen Sie.');
+            console.error('[VoiceCommand] Fehler:', event.error);
+            this.isListening = false;
+            this._updateButtonState();
+
+            if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                this._showTranscript('Mikrofon-Zugriff verweigert.');
+                const show = window.showToast || (window.AppUtils && window.AppUtils.showToast);
+                if (typeof show === 'function') {
+                    show('Mikrofon-Zugriff wurde verweigert. Bitte Berechtigung erteilen.', 'error');
+                }
+            } else if (event.error === 'no-speech') {
+                this._showTranscript('Kein Ton erkannt.');
             }
         };
 
         this.recognition.onend = () => {
             this.isListening = false;
-            if (this.settings.continuousListening) {
-                this.startListening();
-            }
+            this._updateButtonState();
+        };
+
+        this.recognition.onstart = () => {
+            this.isListening = true;
+            this._updateButtonState();
         };
     }
 
-    // Initialize command definitions
-    initCommands() {
-        return [
-            // Navigation commands
-            {
-                patterns: ['zeige dashboard', 'öffne dashboard', 'startseite', 'übersicht'],
-                action: () => this.navigate('dashboard'),
-                response: 'Dashboard wird angezeigt'
-            },
-            {
-                patterns: ['zeige anfragen', 'offene anfragen', 'anfragen'],
-                action: () => this.navigate('anfragen'),
-                response: 'Anfragen werden angezeigt'
-            },
-            {
-                patterns: ['zeige angebote', 'offene angebote', 'angebote'],
-                action: () => this.navigate('angebote'),
-                response: 'Angebote werden angezeigt'
-            },
-            {
-                patterns: ['zeige aufträge', 'offene aufträge', 'aufträge'],
-                action: () => this.navigate('auftraege'),
-                response: 'Aufträge werden angezeigt'
-            },
-            {
-                patterns: ['zeige rechnungen', 'offene rechnungen', 'rechnungen'],
-                action: () => this.navigate('rechnungen'),
-                response: 'Rechnungen werden angezeigt'
-            },
-            {
-                patterns: ['zeige mahnungen', 'offene mahnungen', 'mahnwesen'],
-                action: () => this.navigate('mahnungen'),
-                response: 'Mahnungen werden angezeigt'
-            },
-            {
-                patterns: ['zeige kalender', 'termine', 'kalender'],
-                action: () => this.navigate('kalender'),
-                response: 'Kalender wird angezeigt'
-            },
-            {
-                patterns: ['zeige aufgaben', 'tasks', 'aufgaben'],
-                action: () => this.navigate('aufgaben'),
-                response: 'Aufgaben werden angezeigt'
-            },
-            {
-                patterns: ['zeige kunden', 'kundenliste', 'kunden'],
-                action: () => this.navigate('kunden'),
-                response: 'Kundenliste wird angezeigt'
-            },
-            {
-                patterns: ['zeige zeiterfassung', 'stempeluhr', 'zeiterfassung'],
-                action: () => this.navigate('zeiterfassung'),
-                response: 'Zeiterfassung wird angezeigt'
-            },
-            {
-                patterns: ['zeige buchhaltung', 'finanzen', 'buchhaltung'],
-                action: () => this.navigate('buchhaltung'),
-                response: 'Buchhaltung wird angezeigt'
-            },
-
-            // Time tracking
-            {
-                patterns: ['einstempeln', 'timer starten', 'arbeit beginnen', 'stempel ein'],
-                action: () => this.clockIn(),
-                response: 'Sie sind jetzt eingestempelt'
-            },
-            {
-                patterns: ['ausstempeln', 'timer stoppen', 'arbeit beenden', 'stempel aus'],
-                action: () => this.clockOut(),
-                response: 'Sie sind jetzt ausgestempelt'
-            },
-
-            // Create actions
-            {
-                patterns: ['neue anfrage', 'anfrage erstellen'],
-                action: () => this.openModal('modal-anfrage'),
-                response: 'Neue Anfrage wird erstellt'
-            },
-            {
-                patterns: ['neuer termin', 'termin erstellen', 'termin anlegen'],
-                action: () => this.openModal('modal-termin'),
-                response: 'Neuer Termin wird erstellt'
-            },
-            {
-                patterns: ['neue aufgabe', 'aufgabe erstellen', 'task anlegen'],
-                action: () => this.createQuickTask(),
-                response: 'Neue Aufgabe wird erstellt'
-            },
-
-            // Queries
-            {
-                patterns: ['umsatz heute', 'was haben wir heute verdient', 'heutiger umsatz'],
-                action: () => this.queryRevenueToday(),
-                response: null // Dynamic response
-            },
-            {
-                patterns: ['umsatz diese woche', 'wochenumsatz', 'umsatz woche'],
-                action: () => this.queryRevenueWeek(),
-                response: null
-            },
-            {
-                patterns: ['umsatz diesen monat', 'monatsumsatz', 'umsatz monat'],
-                action: () => this.queryRevenueMonth(),
-                response: null
-            },
-            {
-                patterns: ['wie viele offene rechnungen', 'offene rechnungen anzahl'],
-                action: () => this.queryOpenInvoices(),
-                response: null
-            },
-            {
-                patterns: ['wie viele termine heute', 'termine heute'],
-                action: () => this.queryTodayAppointments(),
-                response: null
-            },
-
-            // Call customer
-            {
-                patterns: ['rufe .* an', 'anrufen .*'],
-                action: (match) => this.callCustomer(match),
-                response: null,
-                isRegex: true
-            },
-
-            // Help
-            {
-                patterns: ['hilfe', 'was kannst du', 'befehle'],
-                action: () => this.showHelp(),
-                response: 'Ich kann Navigation, Zeiterfassung, Abfragen und mehr. Sagen Sie zum Beispiel: Zeige Dashboard, Einstempeln, oder Umsatz heute.'
-            }
-        ];
-    }
-
-    // Start listening
+    // ----------------------------------------
+    // Public API
+    // ----------------------------------------
     startListening() {
         if (!this.recognition) {
-            console.error('Recognition not available');
+            console.warn('[VoiceCommand] Spracherkennung nicht initialisiert.');
             return false;
         }
-
+        if (this.isListening) {
+            return true;
+        }
         try {
             this.recognition.start();
-            this.isListening = true;
-            console.log('🎤 Spracherkennung aktiv');
             return true;
         } catch (e) {
-            console.error('Could not start recognition:', e);
+            console.error('[VoiceCommand] Konnte Spracherkennung nicht starten:', e);
             return false;
         }
     }
 
-    // Stop listening
     stopListening() {
-        if (this.recognition) {
+        if (this.recognition && this.isListening) {
             this.recognition.stop();
-            this.isListening = false;
+        }
+        this.isListening = false;
+        this._updateButtonState();
+    }
+
+    toggleListening() {
+        if (this.isListening) {
+            this.stopListening();
+        } else {
+            this.startListening();
         }
     }
 
-    // Process recognized speech
-    processCommand(transcript) {
-        console.log('🗣️ Erkannt:', transcript);
+    // ----------------------------------------
+    // Command parsing
+    // ----------------------------------------
+    parseCommand(transcript) {
+        if (!transcript) { return { matched: false }; }
 
-        // Check for wake word if required
-        if (this.settings.wakeWord && !transcript.startsWith(this.settings.wakeWord)) {
-            return { matched: false, reason: 'no_wake_word' };
-        }
-
-        // Remove wake word
-        let command = transcript.replace(this.settings.wakeWord, '').trim();
-
-        // Find matching command
         for (const cmd of this.commands) {
-            for (const pattern of cmd.patterns) {
+            for (const trigger of cmd.triggers) {
                 let matched = false;
-                let match = null;
+                let entities = {};
 
-                if (cmd.isRegex) {
-                    const regex = new RegExp(pattern, 'i');
-                    match = command.match(regex);
-                    matched = !!match;
+                if (trigger instanceof RegExp) {
+                    const m = transcript.match(trigger);
+                    if (m) {
+                        matched = true;
+                        entities = { match: m };
+                    }
                 } else {
-                    matched = command.includes(pattern);
+                    if (transcript.includes(trigger)) {
+                        matched = true;
+                    }
                 }
 
                 if (matched) {
-                    // Log to history
-                    this.logCommand(transcript, pattern);
-
-                    // Execute action
-                    const result = cmd.action(match);
-
-                    // Speak response
+                    this._logCommand(transcript, cmd.intent);
+                    this.executeCommand(cmd.intent, entities);
                     if (cmd.response) {
                         this.speak(cmd.response);
-                    } else if (result?.response) {
-                        this.speak(result.response);
                     }
-
-                    return { matched: true, command: pattern, result };
+                    return { matched: true, intent: cmd.intent };
                 }
             }
         }
 
-        // No match found
-        this.speak('Ich habe den Befehl nicht verstanden. Sagen Sie Hilfe für verfügbare Befehle.');
+        // No match
+        this.speak('Befehl nicht erkannt. Sagen Sie "Hilfe" für eine Übersicht.');
         return { matched: false };
     }
 
-    // Text-to-speech
-    speak(text) {
-        if (!this.settings.speakResponses || !this.synthesis) {return;}
+    executeCommand(intent, entities) {
+        switch (intent) {
 
-        // Cancel any ongoing speech
+            // --- Navigation ---
+            case 'navigate_anfragen':
+                this._navigate('anfragen');
+                break;
+            case 'navigate_angebote':
+                this._navigate('angebote');
+                break;
+            case 'navigate_rechnungen':
+                this._navigate('rechnungen');
+                break;
+            case 'navigate_auftraege':
+                this._navigate('auftraege');
+                break;
+            case 'navigate_kunden':
+                this._navigate('kunden');
+                break;
+            case 'navigate_kalender':
+                this._navigate('kalender');
+                break;
+            case 'navigate_dashboard':
+                this._navigate('dashboard');
+                break;
+
+            // --- Actions ---
+            case 'neue_anfrage':
+                this._clickNeueAnfrage();
+                break;
+            case 'hilfe':
+                this._showHelp();
+                break;
+            case 'suche':
+                this._focusSearch(entities);
+                break;
+
+            default:
+                console.warn('[VoiceCommand] Unbekannter Intent:', intent);
+        }
+    }
+
+    // ----------------------------------------
+    // TTS feedback
+    // ----------------------------------------
+    speak(text) {
+        if (!this.settings.speakResponses || !this.synthesis) { return; }
         this.synthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
@@ -280,7 +236,7 @@ class VoiceCommandService {
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
 
-        // Try to use German voice
+        // Prefer a German voice if available
         const voices = this.synthesis.getVoices();
         const germanVoice = voices.find(v => v.lang.startsWith('de'));
         if (germanVoice) {
@@ -290,181 +246,229 @@ class VoiceCommandService {
         this.synthesis.speak(utterance);
     }
 
+    // ----------------------------------------
+    // Command definitions (German)
+    // ----------------------------------------
+    getCommands() {
+        return [
+            {
+                intent: 'navigate_anfragen',
+                triggers: ['zeige anfragen', 'öffne anfragen'],
+                response: 'Anfragen werden angezeigt.'
+            },
+            {
+                intent: 'navigate_angebote',
+                triggers: ['zeige angebote', 'öffne angebote'],
+                response: 'Angebote werden angezeigt.'
+            },
+            {
+                intent: 'navigate_rechnungen',
+                triggers: ['zeige rechnungen', 'zeige rechnung', 'öffne rechnungen'],
+                response: 'Rechnungen werden angezeigt.'
+            },
+            {
+                intent: 'navigate_auftraege',
+                triggers: ['zeige aufträge', 'zeige auftrag', 'öffne aufträge'],
+                response: 'Aufträge werden angezeigt.'
+            },
+            {
+                intent: 'navigate_kunden',
+                triggers: ['zeige kunden', 'öffne kunden'],
+                response: 'Kundenliste wird angezeigt.'
+            },
+            {
+                intent: 'navigate_kalender',
+                triggers: ['zeige kalender', 'öffne kalender'],
+                response: 'Kalender wird angezeigt.'
+            },
+            {
+                intent: 'navigate_dashboard',
+                triggers: ['zeige dashboard', 'öffne dashboard', 'zeige auswertungen'],
+                response: 'Dashboard wird angezeigt.'
+            },
+            {
+                intent: 'neue_anfrage',
+                triggers: ['neue anfrage', 'anfrage erstellen', 'anfrage anlegen'],
+                response: 'Neue Anfrage wird erstellt.'
+            },
+            {
+                intent: 'hilfe',
+                triggers: ['hilfe', 'was kannst du', 'sprachbefehle'],
+                response: 'Hilfe wird angezeigt.'
+            },
+            {
+                // Matches "suche [beliebiger Begriff]"
+                intent: 'suche',
+                triggers: [/^suche\s+(.+)$/i],
+                response: null  // dynamic – spoken in executeCommand
+            }
+        ];
+    }
+
+    // ----------------------------------------
     // Navigation helper
-    navigate(viewId) {
-        if (typeof switchView === 'function') {
-            switchView(viewId);
+    // ----------------------------------------
+    _navigate(viewId) {
+        if (window.navigationController && typeof window.navigationController.navigateTo === 'function') {
+            window.navigationController.navigateTo(viewId);
         } else {
+            // Fallback: manipulate DOM directly
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(`view-${viewId}`)?.classList.add('active');
-            document.querySelector(`[data-view="${viewId}"]`)?.classList.add('active');
+            const view = document.getElementById(`view-${viewId}`);
+            if (view) { view.classList.add('active'); }
+            const navItem = document.querySelector(`.nav-item[data-view="${viewId}"]`);
+            if (navItem) { navItem.classList.add('active'); }
         }
     }
 
-    // Open modal
-    openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('show');
+    _clickNeueAnfrage() {
+        const btn = document.getElementById('btn-neue-anfrage');
+        if (btn) {
+            btn.click();
+        } else {
+            console.warn('[VoiceCommand] btn-neue-anfrage nicht gefunden.');
         }
     }
 
-    // Clock in
-    clockIn() {
-        if (window.timeTrackingService) {
-            window.timeTrackingService.clockIn();
-            return { response: 'Sie sind jetzt eingestempelt. Gute Arbeit!' };
+    _showHelp() {
+        // Open the help modal if available
+        if (window.UI && typeof window.UI.openModal === 'function') {
+            window.UI.openModal('modal-help');
+        } else if (typeof window.openModal === 'function') {
+            window.openModal('modal-help');
+        } else {
+            // Fallback: navigate to dashboard
+            this._navigate('dashboard');
         }
     }
 
-    // Clock out
-    clockOut() {
-        if (window.timeTrackingService) {
-            window.timeTrackingService.clockOut();
-            return { response: 'Sie sind ausgestempelt. Schönen Feierabend!' };
+    _focusSearch(entities) {
+        const searchInput = document.getElementById('global-search');
+        if (!searchInput) { return; }
+
+        let term = '';
+        if (entities.match && entities.match[1]) {
+            term = entities.match[1].trim();
+        }
+
+        searchInput.focus();
+        searchInput.value = term;
+
+        // Dispatch input event so search service reacts
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+        if (term) {
+            this.speak(`Suche nach ${term}`);
+        } else {
+            this.speak('Suchfeld aktiviert.');
         }
     }
 
-    // Create quick task
-    createQuickTask() {
-        // Prompt for task title via speech
-        this.speak('Wie soll die Aufgabe heißen?');
-        // Would need async handling for follow-up speech
-        if (window.taskService) {
-            window.taskService.addTask({
-                title: 'Neue Sprachaufgabe',
-                priority: 'normal',
-                source: 'voice'
-            });
-        }
-    }
+    // ----------------------------------------
+    // Floating mic button UI
+    // ----------------------------------------
+    _buildUI() {
+        // Create wrapper
+        const wrapper = document.createElement('div');
+        wrapper.id = 'voice-command-ui';
 
-    // Query revenue today
-    queryRevenueToday() {
-        if (window.bookkeepingService) {
-            const today = new Date().toISOString().split('T')[0];
-            const buchungen = window.bookkeepingService.buchungen.filter(b =>
-                b.datum === today && b.typ === 'einnahme'
-            );
-            const total = buchungen.reduce((sum, b) => sum + b.betrag, 0);
-            const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
-            return { response: `Der Umsatz heute beträgt ${formatted}` };
-        }
-        return { response: 'Buchhaltung nicht verfügbar' };
-    }
+        // Transcript overlay (brief text above button)
+        this.transcriptOverlay = document.createElement('div');
+        this.transcriptOverlay.id = 'voice-transcript-overlay';
+        this.transcriptOverlay.setAttribute('aria-live', 'polite');
+        this.transcriptOverlay.setAttribute('aria-atomic', 'true');
 
-    // Query revenue week
-    queryRevenueWeek() {
-        if (window.bookkeepingService) {
-            const weekAgo = new Date();
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            const weekStart = weekAgo.toISOString().split('T')[0];
+        // Microphone button
+        this.micButton = document.createElement('button');
+        this.micButton.id = 'voice-mic-button';
+        this.micButton.type = 'button';
+        this.micButton.setAttribute('aria-label', 'Sprachsteuerung starten');
+        this.micButton.setAttribute('title', 'Sprachsteuerung (Klicken zum Aktivieren)');
+        this.micButton.innerHTML = this._micIconSVG();
 
-            const buchungen = window.bookkeepingService.buchungen.filter(b =>
-                b.datum >= weekStart && b.typ === 'einnahme'
-            );
-            const total = buchungen.reduce((sum, b) => sum + b.betrag, 0);
-            const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
-            return { response: `Der Wochenumsatz beträgt ${formatted}` };
-        }
-        return { response: 'Buchhaltung nicht verfügbar' };
-    }
-
-    // Query revenue month
-    queryRevenueMonth() {
-        if (window.bookkeepingService) {
-            const now = new Date();
-            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-
-            const buchungen = window.bookkeepingService.buchungen.filter(b =>
-                b.datum >= monthStart && b.typ === 'einnahme'
-            );
-            const total = buchungen.reduce((sum, b) => sum + b.betrag, 0);
-            const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
-            return { response: `Der Monatsumsatz beträgt ${formatted}` };
-        }
-        return { response: 'Buchhaltung nicht verfügbar' };
-    }
-
-    // Query open invoices
-    queryOpenInvoices() {
-        const rechnungen = store?.rechnungen || [];
-        const open = rechnungen.filter(r => r.status === 'offen' || r.status === 'versendet');
-        const total = open.reduce((sum, r) => sum + (r.betrag || 0), 0);
-        const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
-        return { response: `Sie haben ${open.length} offene Rechnungen im Wert von ${formatted}` };
-    }
-
-    // Query today's appointments
-    queryTodayAppointments() {
-        if (window.calendarService) {
-            const today = new Date().toISOString().split('T')[0];
-            const appointments = window.calendarService.getAppointmentsForDay(today);
-            if (appointments.length === 0) {
-                return { response: 'Sie haben heute keine Termine' };
-            }
-            return { response: `Sie haben heute ${appointments.length} Termine. Der erste ist um ${appointments[0].startTime} Uhr.` };
-        }
-        return { response: 'Kalender nicht verfügbar' };
-    }
-
-    // Call customer
-    callCustomer(match) {
-        const customerName = match[0].replace(/rufe|anrufen/gi, '').replace(/an$/i, '').trim();
-
-        if (window.customerService && window.phoneService) {
-            const customers = window.customerService.searchCustomers(customerName);
-            if (customers.length > 0 && customers[0].telefon) {
-                window.phoneService.makeCall(customers[0].telefon, customers[0]);
-                return { response: `Rufe ${customers[0].name} an` };
-            }
-        }
-        return { response: `Kunde ${customerName} nicht gefunden` };
-    }
-
-    // Show help
-    showHelp() {
-        this.navigate('dashboard');
-        // Could show a help modal
-    }
-
-    // Log command to history
-    logCommand(transcript, matchedPattern) {
-        this.commandHistory.push({
-            transcript: transcript,
-            matched: matchedPattern,
-            timestamp: new Date().toISOString()
+        this.micButton.addEventListener('click', () => {
+            this.toggleListening();
         });
 
-        // Keep last 100 commands
+        wrapper.appendChild(this.transcriptOverlay);
+        wrapper.appendChild(this.micButton);
+        document.body.appendChild(wrapper);
+    }
+
+    _micIconSVG() {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28" aria-hidden="true">
+            <path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 12c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-2.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>`;
+    }
+
+    _updateButtonState() {
+        if (!this.micButton) { return; }
+
+        if (this.isListening) {
+            this.micButton.classList.add('voice-listening');
+            this.micButton.setAttribute('aria-label', 'Sprachsteuerung stoppen');
+            this.micButton.setAttribute('title', 'Sprachsteuerung aktiv – Klicken zum Stoppen');
+        } else {
+            this.micButton.classList.remove('voice-listening');
+            this.micButton.setAttribute('aria-label', 'Sprachsteuerung starten');
+            this.micButton.setAttribute('title', 'Sprachsteuerung (Klicken zum Aktivieren)');
+        }
+    }
+
+    _showTranscript(text) {
+        if (!this.transcriptOverlay) { return; }
+
+        this.transcriptOverlay.textContent = text;
+        this.transcriptOverlay.classList.add('voice-transcript-visible');
+
+        if (this.transcriptTimer) {
+            clearTimeout(this.transcriptTimer);
+        }
+        this.transcriptTimer = setTimeout(() => {
+            if (this.transcriptOverlay) {
+                this.transcriptOverlay.classList.remove('voice-transcript-visible');
+                this.transcriptOverlay.textContent = '';
+            }
+        }, 3500);
+    }
+
+    // ----------------------------------------
+    // History & settings
+    // ----------------------------------------
+    _logCommand(transcript, intent) {
+        this.commandHistory.push({
+            transcript,
+            intent,
+            timestamp: new Date().toISOString()
+        });
         if (this.commandHistory.length > 100) {
             this.commandHistory = this.commandHistory.slice(-100);
         }
-
-        localStorage.setItem('freyai_voice_history', JSON.stringify(this.commandHistory));
+        try {
+            localStorage.setItem('freyai_voice_history', JSON.stringify(this.commandHistory));
+        } catch (_) {}
     }
 
-    // Get command history
     getHistory() {
         return this.commandHistory;
     }
 
-    // Check if speech is available
     isAvailable() {
-        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+        return this._isBrowserSupported();
     }
 
-    // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('freyai_voice_settings', JSON.stringify(this.settings));
-
+        try {
+            localStorage.setItem('freyai_voice_settings', JSON.stringify(this.settings));
+        } catch (_) {}
         if (this.recognition) {
             this.recognition.lang = this.settings.language;
-            this.recognition.continuous = this.settings.continuousListening;
         }
     }
 }
 
+// Instantiate globally
 window.voiceCommandService = new VoiceCommandService();
