@@ -175,11 +175,15 @@ A comprehensive feature plan for a retrofittable automation tool designed for sm
 - Revenue, tasks, appointments overview
 - Comparison to previous periods
 
-### 25. **Custom Report Generator**
-- Build reports with drag-and-drop
-- Schedule automatic report generation
-- Export to PDF, Excel, CSV
-- Share reports via email
+### 25. **Custom Report Generator** ✅ IMPLEMENTED
+- ~~Build reports with drag-and-drop~~ → Four auto-dated report periods available
+- **Weekly report** — 7-day revenue snapshot, open invoices, new inquiries/quotes, completed jobs
+- **Monthly report** — income vs. expenses, invoice aging (0–60+ days), top customers, service-type breakdown, conversion rate
+- **Quarterly report** — month-by-month trend bar chart, P&L, USt-Voranmeldung estimate, new vs. returning customers
+- **Yearly report** — full EÜR, 12-month + quarterly chart, top-10 customers, all expense categories, annual KPIs
+- All reports include Chart.js visualisations (doughnuts, bar charts) and CSV download
+- Implementation: `js/services/periodic-report-service.js` → `window.periodicReportService`
+- UI: Berichte view → "Periodische Berichte" section (4 one-click buttons)
 
 ### 26. **AI-Powered Insights**
 - Identify trends in sales data

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**FreyAI Visions Demo** is a comprehensive small business automation tool for German craftsmen and service providers (Handwerker). It automates the complete quote-to-invoice workflow and provides 21+ service modules for business operations.
+**FreyAI Visions Demo** is a comprehensive small business automation tool for German craftsmen and service providers (Handwerker). It automates the complete quote-to-invoice workflow and provides 22+ service modules for business operations.
 
 ---
 
@@ -26,7 +26,8 @@
 │       ├── booking-service.js      # Customer self-booking
 │       ├── timetracking-service.js # Clock in/out
 │       ├── document-service.js     # OCR scanning
-│       ├── report-service.js       # Report generation
+│       ├── report-service.js       # Ad-hoc report generation (date-range)
+│       ├── periodic-report-service.js # Weekly/Monthly/Quarterly/Yearly reports + charts
 │       ├── bookkeeping-service.js  # EÜR, DATEV
 │       ├── dunning-service.js      # Payment reminders
 │       ├── material-service.js     # Inventory
@@ -38,6 +39,7 @@
 │       ├── approval-service.js     # Multi-step approvals
 │       ├── print-digital-service.js # Paper migration
 │       └── work-estimation-service.js # AI hour estimation
+│           # 22 services total
 ├── 📁 config/
 │   └── n8n-workflow.json      # n8n automation workflow
 └── 📁 docs/
@@ -55,6 +57,7 @@
 | Styling | Custom CSS with CSS variables (dark theme) |
 | Storage | localStorage with `freyai_` prefix |
 | AI | Google Gemini 2.0 Flash API |
+| Charts | Chart.js 4.4.7 (loaded lazily via CDN) |
 | OCR | Tesseract.js (via CDN) |
 | Excel | SheetJS (via CDN) |
 | Automation | n8n (external) |
@@ -117,6 +120,66 @@ generateId() {
 --accent-warning: #f59e0b;
 --accent-danger: #ef4444;
 ```
+
+### Chart.js Pattern (Lazy Load + Dark Theme)
+
+Chart.js is loaded on first use via `ensureChartJS()` (defined in `features-integration.js`).
+Always insert canvas HTML into the DOM **before** calling `new Chart()`:
+
+```javascript
+// 1. Ensure library is loaded
+await ensureChartJS();
+
+// 2. Put canvas in DOM
+outputEl.innerHTML = `<canvas id="my-chart" height="260"></canvas>`;
+
+// 3. Draw after paint — chart reads canvas dimensions at render time
+requestAnimationFrame(() => {
+    new window.Chart(document.getElementById('my-chart'), {
+        type: 'bar',
+        data: { labels: [...], datasets: [{ data: [...], backgroundColor: '#6366f1', borderRadius: 4 }] },
+        options: {
+            plugins: { legend: { labels: { color: '#a1a1aa' } } },
+            scales: {
+                x: { ticks: { color: '#71717a' }, grid: { color: '#ffffff08' } },
+                y: { ticks: { color: '#71717a' }, grid: { color: '#ffffff08' } }
+            }
+        }
+    });
+});
+```
+
+**Palette for multi-series charts:**
+```javascript
+['#6366f1','#22c55e','#f59e0b','#60a5fa','#a78bfa','#f472b6','#34d399','#fb923c']
+```
+
+### Periodic Report Service Pattern
+
+`PeriodicReportService` auto-dates all four report periods and renders full HTML + Chart.js:
+
+```javascript
+const svc = window.periodicReportService;
+
+// Generate (returns structured data object)
+const report = svc.generateWeekly();     // last 7 days
+const report = svc.generateMonthly();    // last calendar month
+const report = svc.generateQuarterly();  // last full quarter (auto-detected)
+const report = svc.generateYearly();     // last calendar year
+
+// Render HTML then draw charts
+outputEl.innerHTML = svc.renderHTML(report);
+requestAnimationFrame(() => svc.renderCharts(report));
+
+// Export
+svc.downloadCSV('weekly');  // triggers browser download (.csv, UTF-8 BOM, semicolon-delimited)
+```
+
+Charts per report type:
+- **Weekly** — Doughnut: Bezahlt / Offen / Ausstehend
+- **Monthly** — Doughnut (income vs. expenses) + horizontal bar (top customers)
+- **Quarterly** — Grouped bar (month-by-month paid/open) + doughnut (income vs. expenses)
+- **Yearly** — Bar (12 months) + bar (4 quarters) + doughnut (expense categories)
 
 ---
 
@@ -203,10 +266,10 @@ initNewFeature();
    - Install prompt
 
 ### Medium Priority
-4. **Analytics Dashboard**
-   - Interactive charts (Chart.js or D3)
-   - KPI tracking widgets
-   - Year-over-year comparisons
+4. **Analytics Dashboard** ✅ IMPLEMENTED
+   - Periodic reports (weekly/monthly/quarterly/yearly) with Chart.js charts
+   - KPI cards, revenue tables, customer rankings, EÜR
+   - CSV export and print — see `js/services/periodic-report-service.js`
 
 5. **Multi-User Support**
    - User authentication
@@ -308,5 +371,5 @@ console.log('All:', window.exampleService.getAll());
 
 ---
 
-*Last Updated: 2026-01-15*
-*Version: 2.0 (21 services)*
+*Last Updated: 2026-02-19*
+*Version: 2.1 (22 services — periodic-report-service added)*

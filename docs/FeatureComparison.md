@@ -18,6 +18,7 @@ This document compares the **existing FreyAI Visions Demo** functionality with t
 | **17** | Automated Reminders | ✅ `DunningService` - Mahnwesen with escalation | **DONE** |
 | **21** | Visual Workflow Builder | ⚠️ `n8n-workflow.json` - External n8n integration | **PARTIAL** |
 | **24** | Business Dashboard | ✅ `updateDashboard()` - Stats cards with metrics | **DONE** |
+| **25** | Custom Report Generator | ✅ `PeriodicReportService` - Weekly/Monthly/Quarterly/Yearly with Chart.js charts, CSV export | **DONE** |
 | **26** | AI-Powered Insights | ✅ `GeminiService` - AI text generation for Angebote | **DONE** |
 | **27** | Legacy System Integration | ✅ `MaterialService.importFromExcel()` - Excel/CSV import | **DONE** |
 | **30** | Data Security & Backup | ⚠️ localStorage with `save()`/`loadStore()` | **PARTIAL** |
@@ -82,7 +83,7 @@ const anfrage = {
 | **20** | Lead Management | Sales pipeline, lead scoring | 🟢 LOW |
 | **22** | Recurring Task Automation | Repeating tasks, holiday handling | 🟡 MEDIUM |
 | **23** | Multi-Step Approval Processes | Document approval chains | 🟢 LOW |
-| **25** | Custom Report Generator | Drag-and-drop report builder | 🟢 LOW |
+| ~~**25**~~ | ~~Custom Report Generator~~ | ~~Drag-and-drop report builder~~ | ✅ **DONE** |
 | **28** | Phone System Integration | Click-to-call, call logging | 🔴 HIGH |
 | **29** | Print-to-Digital Bridge | Fax to email, print queue monitoring | 🟡 MEDIUM |
 
@@ -93,11 +94,11 @@ const anfrage = {
 ```
 ┌─────────────────────────────────────────────────────┐
 │                                                     │
-│   ████████████░░░░░░░░░░░░░░░░░░  37% COMPLETE     │
+│   █████████████░░░░░░░░░░░░░░░░░  40% COMPLETE     │
 │                                                     │
-│   ✅ Fully Implemented:    11 features              │
+│   ✅ Fully Implemented:    12 features              │
 │   ⚠️ Partially Implemented: 5 features              │
-│   ❌ Not Implemented:      14 features              │
+│   ❌ Not Implemented:      13 features              │
 │                                                     │
 └─────────────────────────────────────────────────────┘
 ```
@@ -122,6 +123,7 @@ const anfrage = {
 | `GeminiService` | `gemini-service.js` | AI text & price calculation |
 | `MaterialService` | `material-service.js` | Inventory, Excel import |
 | `WorkEstimationService` | `work-estimation-service.js` | AI hour estimation |
+| `PeriodicReportService` | `periodic-report-service.js` | Weekly/Monthly/Quarterly/Yearly reports with Chart.js charts and CSV export |
 
 ---
 
@@ -214,5 +216,5 @@ class EmailService {
 
 ---
 
-*Generated: 2026-01-15*
+*Generated: 2026-01-15 | Updated: 2026-02-19*
 *Comparison between existing FreyAI Visions Demo and proposed 30-Feature Plan*
