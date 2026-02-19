@@ -543,7 +543,7 @@ class ReorderEngineUI {
                 type: 'info'
             });
         } else {
-            alert(message);
+            showToast(message, 'info');
         }
 
         this.updateStatusDisplay();

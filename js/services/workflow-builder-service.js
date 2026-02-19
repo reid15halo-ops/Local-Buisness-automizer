@@ -1042,10 +1042,10 @@ class WorkflowBuilderService {
             }
         }
 
-        // Fallback: placeholder text
-        const placeholder = `[KI-generierter Text fuer: ${prompt.substring(0, 100)}]`;
-        context.variables[config.zielFeld || 'ai_text'] = placeholder;
-        return { success: true, text: placeholder, simulated: true };
+        // Fallback: AI not configured
+        const fallbackMessage = 'KI-Funktion nicht verfügbar. Bitte Gemini API-Schlüssel in den Einstellungen hinterlegen.';
+        context.variables[config.zielFeld || 'ai_text'] = fallbackMessage;
+        return { success: false, error: fallbackMessage };
     }
 
     async _executeWait(config) {

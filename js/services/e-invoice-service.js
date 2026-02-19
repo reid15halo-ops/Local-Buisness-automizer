@@ -729,7 +729,7 @@ class EInvoiceService {
             if (typeof window.showToast === 'function') {
                 window.showToast('Keine Rechnung gefunden', 'error');
             } else {
-                alert('Keine Rechnung gefunden');
+                showToast('Keine Rechnung gefunden', 'error');
             }
             return;
         }
@@ -790,7 +790,7 @@ class EInvoiceService {
             if (typeof window.showToast === 'function') {
                 window.showToast('Fehler bei XRechnung-Erstellung: ' + err.message, 'error');
             } else {
-                alert('Fehler bei XRechnung-Erstellung: ' + err.message);
+                showToast('Fehler bei XRechnung-Erstellung: ' + err.message, 'error');
             }
         }
     }

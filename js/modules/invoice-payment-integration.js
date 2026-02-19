@@ -281,9 +281,10 @@ class InvoicePaymentIntegration {
             // Fallback
             if (type === 'error') {
                 console.error(`${title}: ${message}`);
-                alert(`${title}\n\n${message}`);
+                showToast(`${title}: ${message}`, 'error');
             } else if (type !== 'loading') {
                 console.log(`${title}: ${message}`);
+                showToast(`${title}: ${message}`, type === 'success' ? 'success' : 'info');
             }
         }
     }

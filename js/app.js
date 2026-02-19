@@ -4213,9 +4213,9 @@ async function renderEmailAutomation() {
     document.getElementById('stat-emails-processed').textContent = stats.successful;
     document.getElementById('stat-quotes-created').textContent = stats.quotesCreated;
 
-    // Average processing time (placeholder)
-    const avgTime = stats.totalProcessed > 0 ? '2.3s' : '-';
-    document.getElementById('stat-avg-time').textContent = avgTime;
+    // Average processing time — no per-entry timing data is recorded,
+    // so show '-' until timing instrumentation is added.
+    document.getElementById('stat-avg-time').textContent = '-';
 
     // Render history
     await renderEmailHistory();
@@ -4317,9 +4317,58 @@ async function renderEmailHistory(filter = '') {
     }).join('');
 }
 
-function viewQuoteFromEmail(entryId) {
-    // Placeholder - könnte zum Angebot navigieren
-    showToast('Angebots-Details würden hier angezeigt', 'info');
+async function viewQuoteFromEmail(entryId) {
+    if (!window.emailAutomationService) {
+        showToast('E-Mail-Automation nicht verfügbar', 'error');
+        return;
+    }
+
+    // Find the email history entry
+    const history = await window.emailAutomationService.getProcessedEmails(100);
+    const entry = history.find(e => e.id === entryId);
+
+    if (!entry || !entry.quote) {
+        showToast('Angebot nicht gefunden', 'error');
+        return;
+    }
+
+    // Navigate to Angebote view
+    switchView('angebote');
+    document.querySelector('[data-view="angebote"]')?.click();
+
+    // Try to find a matching Angebot in store by customer name
+    const customerName = entry.quote.customer?.name;
+    if (customerName && store.angebote) {
+        const matchingAngebot = store.angebote.find(a =>
+            a.kunde?.name === customerName
+        );
+
+        if (matchingAngebot) {
+            // Wait for the view to render, then scroll to and highlight the matching card
+            setTimeout(() => {
+                const container = document.getElementById('angebote-list');
+                if (!container) return;
+                const cards = container.querySelectorAll('.item-card');
+                for (const card of cards) {
+                    const idEl = card.querySelector('.item-id');
+                    if (idEl && idEl.textContent === matchingAngebot.id) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.style.outline = '2px solid var(--primary-color, #4f46e5)';
+                        card.style.outlineOffset = '2px';
+                        setTimeout(() => {
+                            card.style.outline = '';
+                            card.style.outlineOffset = '';
+                        }, 3000);
+                        return;
+                    }
+                }
+            }, 200);
+            return;
+        }
+    }
+
+    // No matching Angebot in store — show quote summary
+    showToast(`Angebot: ${entry.quote.title} — ${formatCurrency(entry.quote.total)}`, 'info');
 }
 
 // Event handlers for email automation view

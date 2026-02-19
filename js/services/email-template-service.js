@@ -426,13 +426,27 @@ class EmailTemplateService {
                                             </p>
                                         </div>
 
-                                        <!-- SEPA Payment QR Code placeholder -->
+                                        <!-- SEPA Payment QR Code -->
+                                        ${(() => {
+                                            // Build EPC/GiroCode data for SEPA QR
+                                            const giroCode = [
+                                                'BCD', '002', '1', 'SCT',
+                                                comp.bic || '',
+                                                comp.name || '',
+                                                comp.iban || '',
+                                                'EUR' + brutto.toFixed(2),
+                                                '',
+                                                rechnung.id || rechnung.nummer || '',
+                                                '',
+                                                ''
+                                            ].join('\\n');
+                                            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(giroCode);
+                                            return `
                                         <div style="margin: 20px 0; padding: 15px; background-color: #f0fdf4; border: 1px solid #dcfce7; border-radius: 4px; text-align: center;">
-                                            <p style="margin: 0 0 10px 0; font-size: 12px; color: #15803d;">SEPA QR-Code</p>
-                                            <div style="width: 150px; height: 150px; margin: 0 auto; background-color: white; border: 1px solid #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #15803d;">
-                                                [QR-Code Placeholder]
-                                            </div>
-                                        </div>
+                                            <p style="margin: 0 0 10px 0; font-size: 12px; color: #15803d;">SEPA QR-Code — einfach mit Banking-App scannen</p>
+                                            <img src="${qrUrl}" alt="SEPA QR-Code" width="150" height="150" style="display: block; margin: 0 auto; border: 1px solid #dcfce7;" onerror="this.parentElement.innerHTML='<p style=\\'font-size:12px;color:#15803d;padding:10px;\\'>QR-Code konnte nicht geladen werden.<br>Bitte nutzen Sie die oben angegebenen Bankdaten.</p>';">
+                                        </div>`;
+                                        })()}
 
                                         <!-- Close -->
                                         <p style="margin: 30px 0 0 0; font-size: 14px;">

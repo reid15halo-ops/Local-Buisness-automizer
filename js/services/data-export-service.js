@@ -644,7 +644,7 @@ class DataExportService {
         if (window.errorHandler) {
             window.errorHandler.error(message);
         } else {
-            alert(`Fehler: ${message}`);
+            showToast(`Fehler: ${message}`, 'error');
         }
     }
 }

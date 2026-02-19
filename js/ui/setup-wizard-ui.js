@@ -447,14 +447,14 @@ class SetupWizardUI {
      * Show single error (for logo upload, etc)
      */
     showError(message) {
-        alert(message);
+        showToast(message, 'error');
     }
 
     /**
      * Show warning
      */
     showWarning(message) {
-        alert(message);
+        showToast(message, 'warning');
     }
 }
 

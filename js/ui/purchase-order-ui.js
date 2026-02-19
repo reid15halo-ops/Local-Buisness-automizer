@@ -174,12 +174,12 @@ class PurchaseOrderUI {
         const positions = this.currentPositions.filter(p => p.bezeichnung.trim());
 
         if (!supplierName) {
-            alert('Bitte Lieferantennamen eingeben');
+            showToast('Bitte Lieferantennamen eingeben', 'warning');
             return;
         }
 
         if (positions.length === 0) {
-            alert('Bitte mindestens eine Position hinzufügen');
+            showToast('Bitte mindestens eine Position hinzufügen', 'warning');
             return;
         }
 
@@ -240,7 +240,7 @@ class PurchaseOrderUI {
         });
 
         if (items.length === 0) {
-            alert('Bitte mindestens eine Menge eingeben');
+            showToast('Bitte mindestens eine Menge eingeben', 'warning');
             return;
         }
 
@@ -263,7 +263,7 @@ class PurchaseOrderUI {
         const pos = window.purchaseOrderService.generatePOFromLowStock();
 
         if (pos.length === 0) {
-            alert('Keine Materialien unter Mindestbestand');
+            showToast('Keine Materialien unter Mindestbestand', 'info');
             return;
         }
 

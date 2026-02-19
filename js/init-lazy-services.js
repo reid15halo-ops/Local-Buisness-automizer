@@ -152,7 +152,7 @@ function initOnboardingTutorial() {
             resetBtn.addEventListener('click', () => {
                 if (confirm('Das Tutorial wird auf Schritt 1 zurückgesetzt. Beim nächsten Besuch wird es automatisch gestartet.')) {
                     window.onboardingTutorial.reset();
-                    alert('✓ Tutorial zurückgesetzt!');
+                    showToast('Tutorial zurückgesetzt!', 'success');
                 }
             });
         }
