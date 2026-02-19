@@ -29,7 +29,7 @@ class DunningService {
 
         const rechnungsDatum = new Date(rechnung.createdAt);
         const heute = new Date();
-        const tageOffen = Math.floor((heute - rechnungsDatum) / (1000 * 60 * 60 * 24));
+        const tageOffen = Math.floor((heute - rechnungsDatum) / (window.APP_CONSTANTS?.MS_PER_DAY ?? 86400000));
 
         // Finde aktuelle Eskalationsstufe
         let aktuelleStufe = this.eskalationsStufen[0];
@@ -93,6 +93,14 @@ class DunningService {
     // Mahnung Texte generieren
     // ============================================
     generateMahnText(rechnung, stufe) {
+        const zahlungsfristTage = window.APP_CONSTANTS?.DEFAULT_PAYMENT_DAYS ?? 14;
+        const stufe1Gebuehr = this.eskalationsStufen.find(s => s.typ === 'mahnung1')?.gebuehr ?? 5;
+        const stufe2Gebuehr = this.eskalationsStufen.find(s => s.typ === 'mahnung2')?.gebuehr ?? 10;
+        const stufe3Gebuehr = this.eskalationsStufen.find(s => s.typ === 'mahnung3')?.gebuehr ?? 15;
+        const store = window.store || window.storeService?.state || {};
+        const bankName = store.bank || '';
+        const iban = store.iban || '';
+
         const templates = {
             'erinnerung': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -104,7 +112,7 @@ Offener Betrag: ${this.formatCurrency(rechnung.brutto)}
 
 Sollte sich Ihre Zahlung mit diesem Schreiben überschnitten haben, betrachten Sie diese Erinnerung bitte als gegenstandslos.
 
-Wir bitten um Überweisung innerhalb der nächsten 14 Tage.
+Wir bitten um Überweisung innerhalb der nächsten ${zahlungsfristTage} Tage.
 
 Mit freundlichen Grüßen
 FreyAI Visions`,
@@ -115,11 +123,11 @@ leider konnten wir trotz unserer Zahlungserinnerung keinen Zahlungseingang verze
 
 Rechnungsnummer: ${rechnung.id}
 Ursprünglicher Betrag: ${this.formatCurrency(rechnung.brutto)}
-Mahngebühr: ${this.formatCurrency(5.00)}
+Mahngebühr: ${this.formatCurrency(stufe1Gebuehr)}
 ────────────────────────────
-Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + 5.00)}
+Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + stufe1Gebuehr)}
 
-Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von 14 Tagen zu begleichen.
+Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von ${zahlungsfristTage} Tagen zu begleichen.
 
 Mit freundlichen Grüßen
 FreyAI Visions`,
@@ -131,11 +139,11 @@ trotz wiederholter Aufforderung ist die nachstehende Forderung immer noch offen.
 Rechnungsnummer: ${rechnung.id}
 Ursprünglicher Betrag: ${this.formatCurrency(rechnung.brutto)}
 Bisherige Mahngebühren: ${this.formatCurrency(this.getGesamtMahngebuehren(rechnung.id))}
-Aktuelle Mahngebühr: ${this.formatCurrency(10.00)}
+Aktuelle Mahngebühr: ${this.formatCurrency(stufe2Gebuehr)}
 ────────────────────────────
-Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id) + 10.00)}
+Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id) + stufe2Gebuehr)}
 
-Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, weitere rechtliche Schritte einzuleiten.
+Falls wir innerhalb von ${zahlungsfristTage} Tagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, weitere rechtliche Schritte einzuleiten.
 
 Mit freundlichen Grüßen
 FreyAI Visions`,
@@ -148,19 +156,19 @@ Die nachstehende Forderung ist trotz mehrfacher Aufforderung weiterhin unbeglich
 
 Rechnungsnummer: ${rechnung.id}
 Ursprünglicher Betrag: ${this.formatCurrency(rechnung.brutto)}
-Aufgelaufene Mahngebühren: ${this.formatCurrency(this.getGesamtMahngebuehren(rechnung.id) + 15.00)}
+Aufgelaufene Mahngebühren: ${this.formatCurrency(this.getGesamtMahngebuehren(rechnung.id) + stufe3Gebuehr)}
 ────────────────────────────
-Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id) + 15.00)}
+Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id) + stufe3Gebuehr)}
 
-Dies ist unsere letzte außergerichtliche Mahnung. Sollte der Betrag nicht innerhalb von 14 Tagen auf unserem Konto eingehen, werden wir:
+Dies ist unsere letzte außergerichtliche Mahnung. Sollte der Betrag nicht innerhalb von ${zahlungsfristTage} Tagen auf unserem Konto eingehen, werden wir:
 
 1. Ein gerichtliches Mahnverfahren einleiten
 2. Die Forderung an ein Inkassounternehmen übergeben
 3. Alle entstehenden Kosten Ihnen in Rechnung stellen
 
 Zahlungsdetails:
-Bank: Sparkasse Aschaffenburg
-IBAN: DE00 0000 0000 0000 0000 00
+Bank: ${bankName}
+IBAN: ${iban}
 Verwendungszweck: ${rechnung.id}
 
 FreyAI Visions`,

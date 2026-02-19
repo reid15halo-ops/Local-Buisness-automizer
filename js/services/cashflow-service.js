@@ -9,7 +9,7 @@ class CashFlowService {
 
         // Default settings
         if (!this.settings.monthsToForecast) {this.settings.monthsToForecast = 6;}
-        if (!this.settings.safetyBuffer) {this.settings.safetyBuffer = 5000;} // Minimum cash buffer
+        if (!this.settings.safetyBuffer) {this.settings.safetyBuffer = APP_CONSTANTS.DEFAULT_SAFETY_BUFFER;} // Minimum cash buffer
     }
 
     // Get current financial snapshot
@@ -62,7 +62,7 @@ class CashFlowService {
 
         const buchungen = bookkeeping.buchungen || [];
         const last6Months = new Date();
-        last6Months.setMonth(last6Months.getMonth() - 6);
+        last6Months.setMonth(last6Months.getMonth() - APP_CONSTANTS.MONTHLY_AVG_WINDOW);
 
         const relevantBuchungen = buchungen.filter(b => {
             const bDate = new Date(b.datum);
@@ -72,7 +72,7 @@ class CashFlowService {
         });
 
         const total = relevantBuchungen.reduce((sum, b) => sum + b.betrag, 0);
-        return total / 6;
+        return total / APP_CONSTANTS.MONTHLY_AVG_WINDOW;
     }
 
     // Generate future cash flow forecast
@@ -92,7 +92,7 @@ class CashFlowService {
             forecastDate.setMonth(forecastDate.getMonth() + i);
 
             // Add pending invoice payments (assume 50% collected each month)
-            const expectedCollections = i === 1 ? snapshot.pendingInvoices * 0.5 : 0;
+            const expectedCollections = i === 1 ? snapshot.pendingInvoices * APP_CONSTANTS.EXPECTED_COLLECTION_RATE : 0;
 
             projectedBalance += monthlyNet + expectedCollections;
 
@@ -134,12 +134,7 @@ class CashFlowService {
         // Quarterly tax payments (März, Juni, September, Dezember)
         if ([2, 5, 8, 11].includes(month)) {
             const avgIncome = this.calculateMonthlyAverage('income') * 3;
-            recurring += avgIncome * 0.15; // ~15% estimated tax
-        }
-
-        // Insurance payments (often quarterly or annual)
-        if (month === 0 || month === 6) {
-            recurring += 500; // Example insurance
+            recurring += avgIncome * APP_CONSTANTS.DEFAULT_TAX_ESTIMATE_RATE; // ~15% estimated tax
         }
 
         return recurring;
@@ -209,7 +204,7 @@ class CashFlowService {
                     date: date,
                     type: 'tax',
                     name: 'USt-Vorauszahlung',
-                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * 0.19 * 0.5
+                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * APP_CONSTANTS.VAT_RATE * APP_CONSTANTS.EXPECTED_COLLECTION_RATE
                 });
             }
         });
@@ -310,7 +305,7 @@ class CashFlowService {
         // Tax payment reminders
         const nextTax = this.getNextTaxDates()[0];
         if (nextTax) {
-            const daysUntil = Math.ceil((nextTax.date - new Date()) / (1000 * 60 * 60 * 24));
+            const daysUntil = Math.ceil((nextTax.date - new Date()) / APP_CONSTANTS.MS_PER_DAY);
             if (daysUntil < 30) {
                 recommendations.push({
                     priority: 'medium',

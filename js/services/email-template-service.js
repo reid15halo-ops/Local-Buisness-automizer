@@ -23,10 +23,10 @@ class EmailTemplateService {
                 postalCode: bd.postalCode || '63843',
                 phone: bd.phone || '+49 6029 9922964',
                 email: bd.email || 'info@freyai-visions.de',
-                vatId: bd.vatId || 'DE123456789',
-                iban: bd.iban || 'DE89 3704 0044 0532 0130 00',
-                bic: bd.bic || 'COBADEFFXXX',
-                bankName: bd.bankName || 'Commerzbank'
+                vatId: bd.vatId || '',
+                iban: bd.iban || '',
+                bic: bd.bic || '',
+                bankName: bd.bankName || ''
             };
         }
 
@@ -39,10 +39,10 @@ class EmailTemplateService {
             postalCode: stored.postalCode || '63843',
             phone: stored.phone || '+49 6029 9922964',
             email: stored.email || 'info@freyai-visions.de',
-            vatId: stored.vatId || 'DE123456789',
-            iban: stored.iban || 'DE89 3704 0044 0532 0130 00',
-            bic: stored.bic || 'COBADEFFXXX',
-            bankName: stored.bankName || 'Commerzbank'
+            vatId: stored.vatId || '',
+            iban: stored.iban || '',
+            bic: stored.bic || '',
+            bankName: stored.bankName || ''
         };
     }
 
@@ -145,7 +145,7 @@ class EmailTemplateService {
             `;
         }).join('');
 
-        const mwstSatz = 19;
+        const mwstSatz = window.APP_CONSTANTS?.VAT_PERCENT ?? 19;
         const mwst = netto * (mwstSatz / 100);
         const brutto = netto + mwst;
 
@@ -246,7 +246,7 @@ class EmailTemplateService {
                                         <!-- Validity Notice -->
                                         <div style="margin: 30px 0; padding: 15px; background-color: #f0f9ff; border-left: 4px solid #0284c7; border-radius: 4px;">
                                             <p style="margin: 0; font-size: 13px; color: #0c4a6e;">
-                                                <strong>Gültigkeitsdauer:</strong> Dieses Angebot ist 30 Tage gültig.
+                                                <strong>Gültigkeitsdauer:</strong> Dieses Angebot ist ${window.APP_CONSTANTS?.DEFAULT_QUOTE_VALIDITY_DAYS ?? 30} Tage gültig.
                                             </p>
                                         </div>
 
@@ -309,7 +309,7 @@ class EmailTemplateService {
             `;
         }).join('');
 
-        const mwstSatz = 19;
+        const mwstSatz = window.APP_CONSTANTS?.VAT_PERCENT ?? 19;
         const mwst = netto * (mwstSatz / 100);
         const brutto = netto + mwst;
 
@@ -440,7 +440,7 @@ class EmailTemplateService {
                                                 '',
                                                 ''
                                             ].join('\\n');
-                                            const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(giroCode);
+                                            const qrUrl = `${window.APP_CONSTANTS?.QR_SERVER_URL ?? 'https://api.qrserver.com/v1/create-qr-code/'}?size=150x150&data=` + encodeURIComponent(giroCode);
                                             return `
                                         <div style="margin: 20px 0; padding: 15px; background-color: #f0fdf4; border: 1px solid #dcfce7; border-radius: 4px; text-align: center;">
                                             <p style="margin: 0 0 10px 0; font-size: 12px; color: #15803d;">SEPA QR-Code — einfach mit Banking-App scannen</p>
@@ -775,7 +775,7 @@ class EmailTemplateService {
         const [hours, minutes] = (termin.uhrzeit || '09:00').split(':');
 
         const startDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, minutes);
-        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
+        const endDate = new Date(startDate.getTime() + (window.APP_CONSTANTS?.MS_PER_HOUR ?? 3_600_000)); // 1 hour duration
 
         const formatICSDate = (date) => {
             return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';

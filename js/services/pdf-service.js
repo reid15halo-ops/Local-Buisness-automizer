@@ -8,6 +8,7 @@ class PDFService {
     constructor() {
         this.loaded = false;
         this.margin = { top: 20, left: 20, right: 20, bottom: 25 };
+        this.pageHeight = 297;
         this.pageWidth = 210; // A4 mm
         this.contentWidth = 170; // 210 - 20 - 20
     }
@@ -17,7 +18,8 @@ class PDFService {
         await new Promise((resolve, reject) => {
             if (window.jspdf) { this.loaded = true; resolve(); return; }
             const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+            const JSPDF_CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+            script.src = JSPDF_CDN_URL;
             script.onload = () => { this.loaded = true; resolve(); };
             script.onerror = () => reject(new Error('jsPDF konnte nicht geladen werden'));
             document.head.appendChild(script);
@@ -37,12 +39,12 @@ class PDFService {
             companyName: store.companyName || 'FreyAI Visions',
             owner: store.owner || 'Max Mustermann',
             address: store.address || 'Handwerkerring 38a, 63776 Mömbris-Rothengrund',
-            taxId: store.taxId || '12/345/67890',
-            vatId: store.vatId || 'DE123456789',
+            taxId: store.taxId || '',
+            vatId: store.vatId || '',
             phone: store.phone || '+49 6029 99 22 96 4',
             email: store.email || 'info@freyai-visions.de',
-            iban: store.iban || 'DE00 0000 0000 0000 0000 00',
-            bank: store.bank || 'Sparkasse Aschaffenburg'
+            iban: store.iban || '',
+            bank: store.bank || ''
         };
     }
 
@@ -127,7 +129,7 @@ class PDFService {
         // Table rows
         rows.forEach((row, rowIdx) => {
             // Check if we need a new page
-            if (y > 260) {
+            if (y > (this.pageHeight ?? 297) - (this.margin?.bottom ?? 25)) {
                 doc.addPage();
                 y = this.margin.top + 10;
             }
@@ -284,7 +286,7 @@ class PDFService {
         // Totals
         y = this.drawTotals(doc, y, [
             { label: 'Nettobetrag:', value: this.fmtCurrency(rechnung.netto) },
-            { label: 'MwSt. 19%:', value: this.fmtCurrency(rechnung.mwst) },
+            { label: `MwSt. ${window.APP_CONSTANTS?.VAT_PERCENT ?? 19}%:`, value: this.fmtCurrency(rechnung.mwst) },
             { label: 'Gesamtbetrag:', value: this.fmtCurrency(rechnung.brutto), bold: true }
         ]);
 
@@ -305,7 +307,7 @@ class PDFService {
         doc.text('Zahlungsbedingungen:', this.margin.left, y);
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.text(`Zahlbar innerhalb von 14 Tagen ohne Abzug.`, this.margin.left, y + 5);
+        doc.text(`Zahlbar innerhalb von ${rechnung?.zahlungsziel ?? window.APP_CONSTANTS?.DEFAULT_PAYMENT_DAYS ?? 14} Tagen ohne Abzug.`, this.margin.left, y + 5);
         doc.text(`Bankverbindung: ${s.bank} · IBAN: ${s.iban}`, this.margin.left, y + 10);
 
         // Notes

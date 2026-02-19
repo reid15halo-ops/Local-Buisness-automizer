@@ -23,6 +23,10 @@ class BookkeepingService {
         }
     }
 
+    get _vatMult() {
+        return 1 + (this.einstellungen.umsatzsteuersatz || APP_CONSTANTS.VAT_PERCENT) / 100;
+    }
+
     // ============================================
     // Buchungen
     // ============================================
@@ -32,7 +36,7 @@ class BookkeepingService {
 
         // Calculate USt if not Kleinunternehmer
         if (!this.einstellungen.kleinunternehmer && buchung.typ === 'einnahme') {
-            buchung.netto = buchung.brutto / 1.19;
+            buchung.netto = buchung.brutto / this._vatMult;
             buchung.ust = buchung.brutto - buchung.netto;
         } else {
             buchung.netto = buchung.brutto;
@@ -106,8 +110,8 @@ class BookkeepingService {
             beschreibung: daten.beschreibung,
             datum: daten.datum || new Date().toISOString(),
             brutto: daten.betrag,
-            netto: daten.betrag / 1.19,
-            vorsteuer: daten.betrag - (daten.betrag / 1.19),
+            netto: daten.betrag / this._vatMult,
+            vorsteuer: daten.betrag - (daten.betrag / this._vatMult),
             belegnummer: daten.belegnummer || '',
             zahlungsart: daten.zahlungsart || 'Überweisung'
         };
@@ -229,6 +233,7 @@ class BookkeepingService {
     // ============================================
     exportDATEV(jahr) {
         const buchungen = this.getBuchungenForJahr(jahr);
+        const DATEV_CURRENCY = 'EUR';
 
         // DATEV CSV Format (vereinfacht)
         const header = [
@@ -243,11 +248,12 @@ class BookkeepingService {
             return [
                 b.brutto.toFixed(2).replace('.', ','),          // Umsatz
                 b.typ === 'einnahme' ? 'H' : 'S',               // Soll/Haben
-                'EUR',                                           // Währungskennzeichen
+                DATEV_CURRENCY,                                      // Währungskennzeichen
                 datevDatum,                                      // Belegdatum (DDMM)
                 b.belegnummer || b.id,                          // Belegfeld 1
                 b.beschreibung.substring(0, 60),                // Buchungstext (max 60)
-                b.typ === 'einnahme' ? '1200' : '1000',         // Gegenkonto (Bank/Kasse)
+                // DATEV SKR03 accounts — change if using SKR04
+                b.typ === 'einnahme' ? '1200' : '1000',         // Gegenkonto Bank
                 b.typ === 'einnahme' ? '8400' : '4400',         // Konto (Erlöse/Aufwand)
                 '',                                              // USt-ID
                 this.einstellungen.kleinunternehmer ? '0' : '9' // USt-Schlüssel (9 = 19%)

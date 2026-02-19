@@ -80,7 +80,7 @@ class WorkEstimationService {
 
         // Budget als Anhaltspunkt (wenn vorhanden)
         if (anfrage.budget && anfrage.budget > 0) {
-            const stundensatz = parseFloat(localStorage.getItem('stundensatz') || '65');
+            const stundensatz = parseFloat(localStorage.getItem('stundensatz') || APP_CONSTANTS.DEFAULT_HOURLY_RATE);
             const budgetStunden = anfrage.budget / stundensatz;
             // Gewichteter Durchschnitt
             stunden = (stunden * 0.3) + (budgetStunden * 0.7);
@@ -206,7 +206,7 @@ Antworte NUR im JSON-Format:
         };
 
         this.historischeArbeiten.push(eintrag);
-        if (this.historischeArbeiten.length > 100) {
+        if (this.historischeArbeiten.length > APP_CONSTANTS.MAX_HISTORICAL_ENTRIES) {
             this.historischeArbeiten = this.historischeArbeiten.slice(-100);
         }
         localStorage.setItem('freyai_historische_arbeiten', JSON.stringify(this.historischeArbeiten));

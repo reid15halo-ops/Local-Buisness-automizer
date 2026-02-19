@@ -36,7 +36,7 @@ function renderActivities() {
             return;
         }
 
-        container.innerHTML = activities.slice(0, 10).map(activity => `
+        container.innerHTML = activities.slice(0, window.APP_CONSTANTS?.ACTIVITY_FEED_LIMIT ?? 10).map(activity => `
             <div class="activity-item">
                 <span class="activity-icon">${activity.icon}</span>
                 <div class="activity-content">
@@ -330,7 +330,7 @@ function initAngebotForm() {
                 });
 
                 const netto = positionen.reduce((sum, p) => sum + (p.menge * p.preis), 0);
-                const mwst = netto * 0.19;
+                const mwst = netto * (window.APP_CONSTANTS?.VAT_RATE ?? 0.19);
                 const brutto = netto + mwst;
 
                 const angebot = {
@@ -547,7 +547,7 @@ function updateAngebotSummary() {
             }
         });
 
-        const mwst = netto * 0.19;
+        const mwst = netto * (window.APP_CONSTANTS?.VAT_RATE ?? 0.19);
         const brutto = netto + mwst;
 
         const nettoEl = document.getElementById('angebot-netto');
@@ -606,7 +606,7 @@ vielen Dank für Ihre Anfrage vom ${formatDate(anfrage.createdAt)}.
 
 Gerne unterbreiten wir Ihnen für die gewünschten Leistungen folgendes Angebot.
 
-Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
+Alle Preise verstehen sich zzgl. ${window.APP_CONSTANTS?.VAT_PERCENT ?? 19}% MwSt. Das Angebot gilt ${window.APP_CONSTANTS?.DEFAULT_QUOTE_VALIDITY_DAYS ?? 30} Tage.
 
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
 
@@ -1857,8 +1857,8 @@ function renderStueckliste() {
             }
 
             // Store materials for selection
-            suggestBox._materials = materials.slice(0, 8);
-            suggestBox.innerHTML = materials.slice(0, 8).map((m, i) => `
+            suggestBox._materials = materials.slice(0, window.APP_CONSTANTS?.AUTOCOMPLETE_LIMIT ?? 5);
+            suggestBox.innerHTML = materials.slice(0, window.APP_CONSTANTS?.AUTOCOMPLETE_LIMIT ?? 5).map((m, i) => `
                 <div class="sl-suggest-item" data-idx="${i}">
                     <span class="sl-suggest-name">${h(m.bezeichnung)}</span>
                     <span class="sl-suggest-meta">
@@ -1943,7 +1943,7 @@ function updateAuftragTotalSummary(auftrag) {
     const angebotNetto = auftrag.netto || 0;
 
     const netto = angebotNetto + materialVK + extra;
-    const mwst = netto * 0.19;
+    const mwst = netto * (window.APP_CONSTANTS?.VAT_RATE ?? 0.19);
     const brutto = netto + mwst;
 
     const set = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = formatCurrency(val);} };
@@ -2181,8 +2181,8 @@ function proceedWithAuftragCompletion(auftrag) {
         stuecklisteEK: stuecklisteEK,
         notizen: notizen,
         netto: netto,
-        mwst: netto * 0.19,
-        brutto: netto * 1.19,
+        mwst: netto * (window.APP_CONSTANTS?.VAT_RATE ?? 0.19),
+        brutto: netto * (window.APP_CONSTANTS?.VAT_MULTIPLIER ?? 1.19),
         status: 'offen',
         createdAt: new Date().toISOString()
     };
@@ -2382,7 +2382,7 @@ function showRechnung(rechnungId) {
                     <td class="text-right">${formatCurrency(rechnung.netto)}</td>
                 </tr>
                 <tr>
-                    <td>MwSt. 19%:</td>
+                    <td>MwSt. ${window.APP_CONSTANTS?.VAT_PERCENT ?? 19}%:</td>
                     <td class="text-right">${formatCurrency(rechnung.mwst)}</td>
                 </tr>
                 <tr class="total-row">
@@ -3300,7 +3300,7 @@ function renderBuchhaltung() {
         return;
     }
 
-    container.innerHTML = buchungen.slice().reverse().slice(0, 20).map(b => `
+    container.innerHTML = buchungen.slice().reverse().slice(0, window.APP_CONSTANTS?.BOOKKEEPING_DISPLAY_LIMIT ?? 20).map(b => `
         <div class="buchung-item">
             <div class="buchung-datum">${formatDate(b.datum)}</div>
             <div class="buchung-beschreibung">

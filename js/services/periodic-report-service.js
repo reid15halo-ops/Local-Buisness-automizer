@@ -138,15 +138,16 @@ class PeriodicReportService {
 
     _invoiceAging(allOpen) {
         const now = new Date();
+        const AGING = { fresh: 0, warn: 14, alert: 30, critical: 60 };
         const buckets = { fresh: [], due14: [], due30: [], due60: [], critical: [] };
         allOpen.forEach(r => {
             const due = new Date(r.faelligkeitsdatum || r.datum || r.createdAt);
-            const days = Math.floor((now - due) / 86400000);
-            if (days <= 0)       { buckets.fresh.push(r); }
-            else if (days <= 14) { buckets.due14.push(r); }
-            else if (days <= 30) { buckets.due30.push(r); }
-            else if (days <= 60) { buckets.due60.push(r); }
-            else                 { buckets.critical.push(r); }
+            const days = Math.floor((now - due) / APP_CONSTANTS.MS_PER_DAY);
+            if (days <= AGING.fresh)        { buckets.fresh.push(r); }
+            else if (days <= AGING.warn)    { buckets.due14.push(r); }
+            else if (days <= AGING.alert)   { buckets.due30.push(r); }
+            else if (days <= AGING.critical){ buckets.due60.push(r); }
+            else                            { buckets.critical.push(r); }
         });
         return buckets;
     }
@@ -355,7 +356,7 @@ class PeriodicReportService {
         const date = new Date(d); date.setHours(0, 0, 0, 0);
         date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
         const week1 = new Date(date.getFullYear(), 0, 4);
-        return 1 + Math.round(((date - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+        return 1 + Math.round(((date - week1) / APP_CONSTANTS.MS_PER_DAY - 3 + (week1.getDay() + 6) % 7) / 7);
     }
 
     // ----------------------------------------
@@ -678,7 +679,7 @@ class PeriodicReportService {
         const ustSection = r.ust ? this._section('USt-Voranmeldung ' + r.ust.zeitraum,
             this._kpiRow([
                 { label: 'Umsätze (netto)', value: this._fmt(r.ust.umsaetze19) },
-                { label: 'Umsatzsteuer 19 %', value: this._fmt(r.ust.ust19), cls: 'yellow' },
+                { label: `Umsatzsteuer ${APP_CONSTANTS.VAT_PERCENT} %`, value: this._fmt(r.ust.ust19), cls: 'yellow' },
                 { label: 'Vorsteuer', value: this._fmt(r.ust.vorsteuer), cls: 'green' },
                 { label: 'Zahllast', value: this._fmt(r.ust.zahllast), cls: 'red' }
             ])

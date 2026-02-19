@@ -33,7 +33,7 @@ function renderEmails() {
             <div class="email-content">
                 <div class="email-sender">${sanitize(email.fromName)}</div>
                 <div class="email-subject">${sanitize(email.subject)}</div>
-                <div class="email-preview">${sanitize(email.body.substring(0, 100))}...</div>
+                <div class="email-preview">${sanitize(email.body.substring(0, window.APP_CONSTANTS?.EMAIL_PREVIEW_CHARS ?? 100))}...</div>
                 <div class="email-actions">
                     <button class="btn btn-small btn-primary" onclick="createTaskFromEmail('${sanitize(email.id)}')">📋 Aufgabe erstellen</button>
                     <button class="btn btn-small btn-secondary" onclick="createAnfrageFromEmail('${sanitize(email.id)}')">📥 Als Anfrage</button>
@@ -620,7 +620,7 @@ async function ensureChartJS() {
     if (window.Chart) {return;}
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+        script.src = window.APP_CONSTANTS?.CHART_JS_URL ?? 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
         script.onload = resolve;
         script.onerror = () => reject(new Error('Chart.js konnte nicht geladen werden'));
         document.head.appendChild(script);

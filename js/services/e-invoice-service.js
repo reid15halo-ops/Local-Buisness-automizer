@@ -69,10 +69,10 @@ class EInvoiceService {
             city:        'Musterstadt',
             countryCode: 'DE',
             taxNumber:   '',
-            vatId:       'DE123456789',
-            iban:        'DE89370400440532013000',
-            bic:         'COBADEFFXXX',
-            bankName:    'Commerzbank',
+            vatId:       '',
+            iban:        '',
+            bic:         '',
+            bankName:    '',
             email:       'info@freyai-visions.de',
             phone:       '+49 6029 9922964'
         };
@@ -102,7 +102,7 @@ class EInvoiceService {
         // Determine due date
         const dueDate = invoice.faelligkeitsdatum
             ? new Date(invoice.faelligkeitsdatum)
-            : new Date(invoiceDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+            : new Date(invoiceDate.getTime() + (window.APP_CONSTANTS?.DEFAULT_PAYMENT_DAYS ?? 14) * (window.APP_CONSTANTS?.MS_PER_DAY ?? 86400000));
 
         // Format date to YYYYMMDD for XRechnung
         const fmtDate = (d) => {
@@ -207,9 +207,9 @@ class EInvoiceService {
             if (bs.kleinunternehmer) {
                 return 0;
             }
-            return parseFloat(bs.default_vat_rate) || 19;
+            return parseFloat(bs.default_vat_rate) || (window.APP_CONSTANTS?.VAT_PERCENT ?? 19);
         }
-        return 19;
+        return window.APP_CONSTANTS?.VAT_PERCENT ?? 19;
     }
 
     /**

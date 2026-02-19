@@ -146,14 +146,14 @@ class InvoiceTemplateService {
             rechnung: {
                 nummer: data.nummer || data.id,
                 datum: this.formatDate(data.datum || new Date().toISOString()),
-                faelligkeitsdatum: this.formatDate(data.faelligkeitsdatum || this.addDays(new Date(), 14))
+                faelligkeitsdatum: this.formatDate(data.faelligkeitsdatum || this.addDays(new Date(), window.APP_CONSTANTS?.DEFAULT_PAYMENT_DAYS ?? 14))
             },
             kunde: data.kunde || {},
             summe: {
                 netto: this.formatCurrency(data.netto || 0),
                 mwst: this.formatCurrency(data.mwst || 0),
                 brutto: this.formatCurrency(data.brutto || 0),
-                mwstSatz: '19%'
+                mwstSatz: `${window.APP_CONSTANTS?.VAT_PERCENT ?? 19}%`
             }
         };
 
@@ -197,10 +197,10 @@ class InvoiceTemplateService {
             plz: '63843',
             telefon: '+49 6029 9922964',
             email: 'info@freyai-visions.de',
-            ustId: 'DE123456789',
-            iban: 'DE89 3704 0044 0532 0130 00',
-            bic: 'COBADEFFXXX',
-            bank: 'Commerzbank'
+            ustId: '',
+            iban: '',
+            bic: '',
+            bank: ''
         };
     }
 
