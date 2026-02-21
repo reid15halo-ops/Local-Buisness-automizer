@@ -33,16 +33,17 @@ class PDFService {
 
     getSettings() {
         const store = window.storeService?.state?.settings || {};
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         return {
-            companyName: store.companyName || 'FreyAI Visions',
-            owner: store.owner || 'Max Mustermann',
-            address: store.address || 'Handwerkerring 38a, 63776 Mömbris-Rothengrund',
-            taxId: store.taxId || '12/345/67890',
-            vatId: store.vatId || 'DE123456789',
-            phone: store.phone || '+49 6029 99 22 96 4',
-            email: store.email || 'info@freyai-visions.de',
-            iban: store.iban || 'DE00 0000 0000 0000 0000 00',
-            bank: store.bank || 'Sparkasse Aschaffenburg'
+            companyName: ap.company_name || store.companyName || '',
+            owner: ap.owner_name || store.owner || '',
+            address: ap.address_street ? `${ap.address_street}, ${ap.address_postal || ''} ${ap.address_city || ''}`.trim() : (store.address || ''),
+            taxId: ap.tax_number || store.taxId || '',
+            vatId: ap.vat_id || store.vatId || '',
+            phone: ap.company_phone || store.phone || '',
+            email: ap.company_email || store.email || '',
+            iban: ap.bank_iban || store.iban || '',
+            bank: ap.bank_name || store.bank || ''
         };
     }
 

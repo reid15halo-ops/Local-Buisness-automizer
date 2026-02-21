@@ -9,7 +9,11 @@ class RouteService {
         this.settings = JSON.parse(localStorage.getItem('freyai_route_settings') || '{}');
 
         // Default settings
-        if (!this.settings.startAddress) {this.settings.startAddress = 'Musterstraße 1, 63843 Niedernberg';}
+        if (!this.settings.startAddress) {
+            const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            const storeAddr = window.storeService?.state?.settings?.address || '';
+            this.settings.startAddress = ap.address_street ? `${ap.address_street}, ${ap.address_postal || ''} ${ap.address_city || ''}`.trim() : (storeAddr || '');
+        }
         if (!this.settings.workStartTime) {this.settings.workStartTime = '08:00';}
         if (!this.settings.workEndTime) {this.settings.workEndTime = '17:00';}
         if (!this.settings.avgServiceDuration) {this.settings.avgServiceDuration = 60;} // minutes

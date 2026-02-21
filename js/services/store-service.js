@@ -12,11 +12,11 @@ class StoreService {
             rechnungen: [],
             activities: [],
             settings: {
-                companyName: 'FreyAI Visions',
-                owner: 'Max Mustermann',
-                address: 'Handwerkerring 38a, 12345 Musterstadt',
-                taxId: '12/345/67890',
-                vatId: 'DE123456789',
+                companyName: '',
+                owner: '',
+                address: '',
+                taxId: '',
+                vatId: '',
                 theme: 'dark'
             },
             currentAnfrageId: null,

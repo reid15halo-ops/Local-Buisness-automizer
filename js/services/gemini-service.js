@@ -100,7 +100,9 @@ class GeminiService {
             return this.getFallbackText(anfrage);
         }
 
-        const prompt = `Du bist ein professioneller Angebots-Schreiber für einen Metallbau-Betrieb (FreyAI Visions).
+        const bizType = this._getBusinessType();
+        const companyName = this._getCompanyName();
+        const prompt = `Du bist ein professioneller Angebots-Schreiber für einen ${bizType} (${companyName}).
 
 Erstelle einen professionellen, deutschsprachigen Angebots-Text basierend auf folgender Kundenanfrage:
 
@@ -113,7 +115,6 @@ ${anfrage.termin ? `Gewünschter Termin: ${anfrage.termin}` : ''}
 Der Text soll:
 - Professionell und höflich formuliert sein
 - Auf die spezifische Anfrage eingehen
-- Die DIN EN 1090 Zertifizierung erwähnen (falls relevant)
 - Zahlungsbedingungen und Gültigkeitsdauer des Angebots nennen
 - Ca. 150-200 Wörter lang sein
 
@@ -156,7 +157,7 @@ Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
 
         const positionenText = positionen.map(p => p.beschreibung).join(', ');
 
-        const prompt = `Du bist ein Kalkulations-Experte für einen Metallbau-Betrieb.
+        const prompt = `Du bist ein Kalkulations-Experte für einen ${this._getBusinessType()}.
 
 Hier ist der Materialbestand mit Preisen:
 ${materialList}
@@ -207,12 +208,10 @@ Antworte im JSON-Format:
 
         const context = history.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${m.content}`).join('\n');
 
-        const prompt = `Du bist ein erfahrener Fachberater für die Firma FreyAI Visions (FreyAI Visions).
-Deine Expertise umfasst:
-- Metallbau (Geländer, Treppen, Tore, Carports)
-- Hydraulik (Schlauchservice, Zylinderreparatur, Aggregate)
-- Schweißen (WIG, MIG/MAG, E-Hand, Zertifiziert nach DIN EN 1090)
-- Rohrleitungsbau (Ermeto, Presssysteme, Industrie)
+        const companyName = this._getCompanyName();
+        const bizType = this._getBusinessType();
+        const prompt = `Du bist ein erfahrener Fachberater für die Firma ${companyName} (${bizType}).
+Deine Expertise umfasst alle Leistungsbereiche des Unternehmens.
 
 Verhalte dich professionell, höflich und lösungsorientiert.
 Antworte präzise auf die Kundenfrage. Wenn technische Details fehlen (z.B. Maße, Material), frage gezielt danach.
@@ -238,12 +237,13 @@ Antwort:`;
     }
 
     getFallbackText(anfrage) {
+        const companyName = this._getCompanyName();
         const templates = {
             'metallbau': `Sehr geehrte Damen und Herren,
 
 vielen Dank für Ihre Anfrage bezüglich ${anfrage.beschreibung.substring(0, 50)}.
 
-Gerne unterbreiten wir Ihnen folgendes Angebot für die gewünschten Metallbauarbeiten. Als zertifizierter Metallbaubetrieb nach DIN EN 1090 garantieren wir höchste Qualitätsstandards und fachgerechte Ausführung.
+Gerne unterbreiten wir Ihnen folgendes Angebot für die gewünschten Arbeiten. Wir garantieren höchste Qualitätsstandards und fachgerechte Ausführung.
 
 Das Angebot umfasst alle notwendigen Materialien und Arbeitsleistungen. Änderungen im Arbeitsumfang werden nach Aufwand berechnet.
 
@@ -252,7 +252,7 @@ Die Arbeiten können nach Auftragserteilung innerhalb von 2-3 Wochen durchgefüh
 Dieses Angebot ist 30 Tage gültig. Wir freuen uns auf Ihren Auftrag!
 
 Mit freundlichen Grüßen
-FreyAI Visions`,
+${companyName}`,
 
             'schweissen': `Sehr geehrte Damen und Herren,
 
@@ -265,7 +265,7 @@ Materialien und Schweißzusätze sind im Angebot enthalten. Bei Arbeiten vor Ort
 Gültigkeitsdauer: 30 Tage.
 
 Mit freundlichen Grüßen
-FreyAI Visions`,
+${companyName}`,
 
             'rohrleitungsbau': `Sehr geehrte Damen und Herren,
 
@@ -278,7 +278,7 @@ Das Angebot beinhaltet Material, Montage und Druckprüfung.
 Gültigkeit: 30 Tage
 
 Mit freundlichen Grüßen
-FreyAI Visions`,
+${companyName}`,
 
             'default': `Sehr geehrte Damen und Herren,
 
@@ -291,7 +291,7 @@ Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
 
 Mit freundlichen Grüßen
-FreyAI Visions`
+${companyName}`
         };
 
         return templates[anfrage.leistungsart] || templates['default'];
@@ -328,6 +328,16 @@ FreyAI Visions`
             geschaetzte_materialkosten: gesamtkosten,
             empfohlene_arbeitsstunden: positionen.length * 2
         };
+    }
+
+    _getBusinessType() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        return ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
+    }
+
+    _getCompanyName() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 }
 

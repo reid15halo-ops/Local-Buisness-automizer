@@ -134,7 +134,9 @@ class WorkEstimationService {
             return this.schaetzeArbeitsstunden(anfrage);
         }
 
-        const prompt = `Du bist ein erfahrener Metallbau-Meister. Schätze die benötigten Arbeitsstunden für folgendes Projekt:
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerks-Meister';
+        const prompt = `Du bist ein erfahrener ${bizType}. Schätze die benötigten Arbeitsstunden für folgendes Projekt:
 
 Leistungsart: ${this.basisRichtwerte[anfrage.leistungsart]?.beschreibung || anfrage.leistungsart}
 Beschreibung: ${anfrage.beschreibung}
