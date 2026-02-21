@@ -488,6 +488,9 @@ class AdminPanelUI {
             }
         }
 
+        // Sync to einvoice service so invoices use real company data
+        window.eInvoiceService?.syncFromSettings();
+
         const status = document.getElementById('ap-business-status');
         if (status) {
             status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Fehler beim Speichern';
@@ -583,6 +586,9 @@ class AdminPanelUI {
         if (ku) {
             this.service.saveBusinessSetting('kleinunternehmer', ku.checked);
         }
+
+        // Sync to einvoice service so invoices use real bank/tax data
+        window.eInvoiceService?.syncFromSettings();
 
         const status = document.getElementById('ap-financial-status');
         if (status) {

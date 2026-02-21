@@ -396,7 +396,8 @@ class AgentWorkflowService {
             return this._getFallbackBriefingSummary(briefingData);
         }
 
-        const prompt = `Du bist ein Geschaeftsassistent fuer einen Metallbau-/Handwerksbetrieb.
+        const bizType = this._getBusinessType();
+        const prompt = `Du bist ein Geschaeftsassistent fuer einen ${bizType}.
 Erstelle ein kurzes, praegnantes Morgen-Briefing (max 200 Woerter) basierend auf diesen Daten:
 
 - Neue Anfragen (letzte 24h): ${briefingData.zusammenfassung.neueAnfragen}
@@ -596,7 +597,8 @@ Antworte NUR mit dem Briefing-Text auf Deutsch.`;
             return this._getFallbackDunningText(mahnung);
         }
 
-        const prompt = `Du bist der Geschaeftsfuehrer eines Metallbau-Handwerksbetriebs.
+        const bizType = this._getBusinessType();
+        const prompt = `Du bist der Geschaeftsfuehrer eines ${bizType}.
 Erstelle einen ${mahnung.tone}en Mahntext fuer folgende Rechnung:
 
 - Rechnungsnummer: ${mahnung.rechnungNummer}
@@ -775,7 +777,8 @@ Antworte NUR mit dem Mahntext.`;
             return this._getFallbackFollowUpText(followup);
         }
 
-        const prompt = `Du bist Vertriebsmitarbeiter eines Metallbau-/Handwerksbetriebs.
+        const bizType = this._getBusinessType();
+        const prompt = `Du bist Vertriebsmitarbeiter eines ${bizType}.
 Erstelle einen freundlichen Nachfass-Text fuer folgende Anfrage:
 
 - Kunde: ${followup.kunde}
@@ -895,7 +898,9 @@ Antworte NUR mit dem Nachfass-Text.`;
             return this._getFallbackQuoteDraft(anfrage);
         }
 
-        const prompt = `Du bist ein Kalkulations-Experte fuer einen Metallbau-/Handwerksbetrieb (FreyAI Visions).
+        const bizType = this._getBusinessType();
+        const companyName = this._getCompanyName();
+        const prompt = `Du bist ein Kalkulations-Experte fuer einen ${bizType} (${companyName}).
 Erstelle einen Angebotsentwurf basierend auf folgender Kundenanfrage:
 
 - Kunde: ${anfrage.kunde?.name || 'Unbekannt'}
@@ -918,7 +923,7 @@ Antworte im JSON-Format:
   "angebotstext": "Professioneller Angebotstext auf Deutsch (ca. 150 Woerter)"
 }
 
-Schaetze realistische Preise fuer Metallbau-/Handwerksarbeiten in Deutschland.
+Schaetze realistische Preise fuer Handwerksarbeiten in Deutschland.
 Antworte NUR mit dem JSON.`;
 
         try {
@@ -1134,7 +1139,8 @@ Antworte NUR mit dem JSON.`;
             `- [${i.prioritaet.toUpperCase()}] ${i.nachricht}`
         ).join('\n');
 
-        const prompt = `Du bist ein Planungsexperte fuer einen Handwerksbetrieb.
+        const bizType = this._getBusinessType();
+        const prompt = `Du bist ein Planungsexperte fuer einen ${bizType}.
 Analysiere folgende Auftraege und gib Optimierungsvorschlaege:
 
 Aktuelle Auftraege:
@@ -1423,6 +1429,18 @@ Antworte NUR mit dem JSON-Array.`;
             style: 'currency',
             currency: 'EUR'
         }).format(amount || 0);
+    }
+
+    _getBusinessType() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const storeSettings = window.storeService?.state?.settings || {};
+        return ap.business_type || storeSettings.businessType || 'Handwerksbetrieb';
+    }
+
+    _getCompanyName() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const storeSettings = window.storeService?.state?.settings || {};
+        return ap.company_name || storeSettings.companyName || 'FreyAI Visions';
     }
 
     /**

@@ -212,14 +212,17 @@ class ChatbotService {
         const businessKeywords = [
             'metall', 'stahl', 'hydraulik', 'schweiß', 'geländer', 'treppe', 'tor', 'carport',
             'schlauch', 'zylinder', 'reparatur', 'montage', 'angebot', 'preis', 'kosten',
-            'termin', 'anfrage', 'freyai', 'kunde', 'service', 'beratung', 'rohrleitung', 'industriemontage'
+            'termin', 'anfrage', 'freyai', 'kunde', 'service', 'beratung', 'rohrleitung', 'industriemontage',
+            'handwerk', 'auftrag', 'rechnung', 'projekt', 'arbeit', 'material', 'lieferung',
+            'wartung', 'sanierung', 'renovierung', 'bau', 'werkstatt', 'fertigung'
         ];
 
         const isBusinessRelated = businessKeywords.some(kw => lowerMsg.includes(kw)) ||
             /^(hallo|hi|guten tag|moin)/i.test(lowerMsg);
 
         if (!isBusinessRelated) {
-            return "Entschuldigung, als Fachberater von FreyAI Visions kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen im Bereich Metallbau und Hydraulik behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?";
+            const companyName = this.kb.company.name;
+            return `Entschuldigung, als Fachberater von ${companyName} kann ich Ihnen nur bei Fragen zu unseren Dienstleistungen behilflich sein. Wie kann ich Sie bei Ihrem Projekt unterstützen?`;
         }
 
         // 2. Try LLM (Ollama/Gemini)

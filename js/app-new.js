@@ -291,7 +291,7 @@ function openMahnungModal(rechnungId) {
 
 function initMahnwesen() {
     document.getElementById('btn-mahnung-create')?.addEventListener('click', () => {
-        const rechnungId = document.querySelector('[data-rechnung-id]').dataset.rechnungId;
+        const rechnungId = document.querySelector('[data-rechnung-id]')?.dataset?.rechnungId;
         if (!rechnungId) {return;}
 
         const mahnung = {
@@ -510,6 +510,41 @@ function updateSettingsStatus() {
     setAutoStatus('auto-status-sms', supabaseOk && twilioSid, 'Bereit');
     setAutoStatus('auto-status-overdue', supabaseOk && emailConfigured, 'Automatisch (tägl. 08:00)');
     setAutoStatus('auto-status-webhook', webhookUrl, 'Konfiguriert');
+}
+
+// ============================================
+// Sender Email Generation
+// ============================================
+function generateSenderEmail() {
+    const settings = window.storeService?.state?.settings || {};
+    const firmaName = settings.companyName || settings.firmenname || settings.firma || '';
+
+    let slug = '';
+    if (firmaName) {
+        slug = firmaName
+            .toLowerCase()
+            .replace(/gmbh|gbr|kg|ohg|ag|ug|e\.k\.|co\./gi, '')
+            .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 30);
+    }
+
+    if (!slug) {
+        slug = 'firma-' + crypto.randomUUID().substring(0, 8);
+    }
+
+    const baseEmail = localStorage.getItem('proton_base_email') || 'noreply@freyai-visions.de';
+    const [localPart, domain] = baseEmail.split('@');
+    const senderEmail = `${localPart}+${slug}@${domain}`;
+
+    localStorage.setItem('sender_email', senderEmail);
+    localStorage.setItem('sender_email_slug', slug);
+
+    const emailField = document.getElementById('sender-email');
+    if (emailField) {emailField.value = senderEmail;}
+
+    return senderEmail;
 }
 
 // ============================================

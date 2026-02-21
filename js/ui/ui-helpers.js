@@ -230,6 +230,8 @@ window.UI = {
                 };
                 window.storeService.state.settings = newSettings;
                 window.storeService.save();
+                // Sync to einvoice service so invoices use real company data
+                window.eInvoiceService?.syncFromSettings();
                 // Regenerate sender email when company name changes
                 if (typeof generateSenderEmail === 'function') {generateSenderEmail();}
                 window.UI.showToast('Einstellungen gespeichert', 'success');

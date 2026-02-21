@@ -12,18 +12,53 @@ class EInvoiceService {
         if (!this.settings.businessData) {
             this.settings.businessData = {
                 name: 'FreyAI Visions',
-                street: 'Musterstraße 123',
-                city: 'Musterstadt',
-                postalCode: '63843',
+                street: '',
+                city: '',
+                postalCode: '',
                 country: 'DE',
-                vatId: 'DE123456789',
-                email: 'info@freyai-visions.de',
-                phone: '+49 6029 9922964',
-                iban: 'DE89 3704 0044 0532 0130 00',
-                bic: 'COBADEFFXXX',
-                bankName: 'Commerzbank'
+                vatId: '',
+                email: '',
+                phone: '',
+                iban: '',
+                bic: '',
+                bankName: ''
             };
         }
+
+        // Sync from admin panel / store settings on init
+        this.syncFromSettings();
+    }
+
+    // Sync business data from admin panel settings and store settings
+    syncFromSettings() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const storeSettings = window.storeService?.state?.settings || {};
+
+        const name = ap.company_name || storeSettings.companyName || storeSettings.firmenname || '';
+        const street = ap.address_street || storeSettings.address || '';
+        const city = ap.address_city || '';
+        const postalCode = ap.address_postal || '';
+        const vatId = ap.tax_number || storeSettings.vatId || storeSettings.taxId || '';
+        const email = ap.company_email || '';
+        const phone = ap.company_phone || '';
+        const iban = ap.bank_iban || '';
+        const bic = ap.bank_bic || '';
+        const bankName = ap.bank_name || '';
+
+        // Only update fields that have actual values (don't overwrite with empty)
+        const bd = this.settings.businessData;
+        if (name) bd.name = name;
+        if (street) bd.street = street;
+        if (city) bd.city = city;
+        if (postalCode) bd.postalCode = postalCode;
+        if (vatId) bd.vatId = vatId;
+        if (email) bd.email = email;
+        if (phone) bd.phone = phone;
+        if (iban) bd.iban = iban;
+        if (bic) bd.bic = bic;
+        if (bankName) bd.bankName = bankName;
+
+        localStorage.setItem('freyai_einvoice_settings', JSON.stringify(this.settings));
     }
 
     // Generate XRechnung XML
