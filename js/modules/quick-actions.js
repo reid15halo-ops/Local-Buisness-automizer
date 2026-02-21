@@ -12,9 +12,10 @@ function initQuickActions() {
             return;
         }
 
-        // Get user name from settings or use fallback
+        // Get user name from admin settings or store
         const store = window.storeService?.state || {};
-        const userName = store.settings?.userName || store.settings?.firmenname || 'Chef';
+        const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+        const userName = ap.owner_name || store.settings?.owner || store.settings?.companyName || 'Chef';
 
         // Get current time for greeting
         const greeting = getTimeBasedGreeting(userName);
@@ -28,13 +29,48 @@ function initQuickActions() {
         // Get recent activities (last 5)
         const activities = (store.activities || []).slice(0, 5);
 
+        // Check if user is new (no data yet)
+        const totalItems = offeneAnfragen + wartendeAngebote + aktiveAuftraege + offeneRechnungen;
+        const isNewUser = totalItems === 0 && activities.length === 0;
+
         // Build HTML
         let html = `
             <div class="quick-actions-view">
                 <div class="qa-greeting-section">
                     <h1 class="qa-greeting">${greeting}</h1>
-                    <p class="qa-subtitle">Was möchten Sie tun?</p>
+                    <p class="qa-subtitle">${isNewUser ? 'Willkommen! So funktioniert dein Workflow:' : 'Was möchten Sie tun?'}</p>
                 </div>
+
+                ${isNewUser ? `
+                <div class="qa-onboarding" style="background: var(--accent-primary-light); border: 1px solid var(--accent-primary); border-radius: var(--border-radius); padding: 20px; margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 12px; color: var(--accent-primary-hover);">Dein Workflow in 4 Schritten</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                        <div style="text-align: center; padding: 12px;">
+                            <div style="font-size: 32px;">1. 📥</div>
+                            <div style="font-weight: 600; margin: 4px 0;">Anfrage</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Kundenanfrage erfassen</div>
+                        </div>
+                        <div style="text-align: center; padding: 12px;">
+                            <div style="font-size: 32px;">2. 📝</div>
+                            <div style="font-weight: 600; margin: 4px 0;">Angebot</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">KI erstellt Angebot</div>
+                        </div>
+                        <div style="text-align: center; padding: 12px;">
+                            <div style="font-size: 32px;">3. ✅</div>
+                            <div style="font-weight: 600; margin: 4px 0;">Auftrag</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Angebot angenommen</div>
+                        </div>
+                        <div style="text-align: center; padding: 12px;">
+                            <div style="font-size: 32px;">4. 💰</div>
+                            <div style="font-weight: 600; margin: 4px 0;">Rechnung</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Automatisch erstellt</div>
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 12px; font-size: 13px; color: var(--text-secondary);">
+                        Starte mit einer neuen Anfrage oder probiere den Demo-Workflow aus!
+                    </p>
+                </div>
+                ` : ''}
 
                 <div class="qa-cards-grid">
                     <button class="qa-card" id="qa-neuer-kunde" title="Neuen Kunden hinzufügen">
@@ -121,7 +157,7 @@ function renderActivitiesList(activities) {
         <div class="qa-activity-item">
             <span class="qa-activity-icon">${activity.icon}</span>
             <div class="qa-activity-content">
-                <div class="qa-activity-title">${activity.title}</div>
+                <div class="qa-activity-title">${window.UI?.sanitize?.(activity.title) || activity.title}</div>
                 <div class="qa-activity-time">${window.UI?.getRelativeTime?.(activity.time) || ''}</div>
             </div>
         </div>

@@ -310,45 +310,31 @@ function generateAIText() {
     aiBtn.textContent = '⏳ Generiere...';
     aiBtn.disabled = true;
 
-    setTimeout(() => {
-        const templates = {
-            'metallbau': `Sehr geehrte Damen und Herren,
+    // Add timeout safety for AI generation
+    const aiTimeout = setTimeout(() => {
+        aiBtn.innerHTML = '🤖 KI-Vorschlag generieren';
+        aiBtn.disabled = false;
+        if (window.showToast) showToast('KI-Generierung abgebrochen (Timeout)', 'warning');
+    }, 30000);
 
-vielen Dank für Ihre Anfrage bezüglich ${anfrage.beschreibung.substring(0, 50)}.
+    setTimeout(() => {
+        clearTimeout(aiTimeout);
+        const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+        const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || '';
+        const signoff = companyName ? `\nMit freundlichen Grüßen\n${companyName}` : '\nMit freundlichen Grüßen';
+
+        const text = `Sehr geehrte Damen und Herren,
+
+vielen Dank für Ihre Anfrage vom ${formatDate(anfrage.createdAt)}${anfrage.beschreibung ? ` bezüglich ${anfrage.beschreibung.substring(0, 60)}` : ''}.
 
 Gerne unterbreiten wir Ihnen folgendes Angebot für die gewünschten Arbeiten. Wir garantieren höchste Qualitätsstandards und fachgerechte Ausführung.
 
 Das Angebot umfasst alle notwendigen Materialien und Arbeitsleistungen. Änderungen im Arbeitsumfang werden nach Aufwand berechnet.
 
-Die Arbeiten können nach Auftragserteilung innerhalb von 2-3 Wochen durchgeführt werden.
-
-Dieses Angebot ist 30 Tage gültig. Wir freuen uns auf Ihren Auftrag!`,
-
-            'schweissen': `Sehr geehrte Damen und Herren,
-
-bezugnehmend auf Ihre Anfrage übersenden wir Ihnen unser Angebot für die Schweißarbeiten.
-
-Unsere zertifizierten Schweißfachkräfte führen alle gängigen Schweißverfahren (WIG, MAG, MIG) aus. Die Qualität unserer Arbeit entspricht den höchsten Branchenstandards.
-
-Materialien und Schweißzusätze sind im Angebot enthalten. Bei Arbeiten vor Ort wird eine Anfahrtspauschale berechnet.
-
-Gültigkeitsdauer: 30 Tage.`,
-
-            'default': `Sehr geehrte Damen und Herren,
-
-vielen Dank für Ihre Anfrage vom ${formatDate(anfrage.createdAt)}.
-
-Gerne unterbreiten wir Ihnen für die gewünschten Leistungen folgendes Angebot.
-
 Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
 
 Bei Fragen stehen wir Ihnen gerne zur Verfügung.
-
-Mit freundlichen Grüßen
-FreyAI Visions`
-        };
-
-        const text = templates[anfrage.leistungsart] || templates['default'];
+${signoff}`;
         document.getElementById('angebot-text').value = text;
 
         // KI-Transparenz: Vorschlag klar kennzeichnen und Nutzer entscheiden lassen

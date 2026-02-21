@@ -578,6 +578,9 @@ async function runDemoWorkflow() {
         window.materialService.loadDemoMaterials();
     }
 
+    const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+    const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerk';
+
     const demoAnfrage = {
         id: generateId('ANF'),
         kunde: {
@@ -585,8 +588,8 @@ async function runDemoWorkflow() {
             email: 'info@demo-gmbh.de',
             telefon: '+49 123 456789'
         },
-        leistungsart: 'metallbau',
-        beschreibung: 'Stahltreppe für Bürogebäude, 12 Stufen, inkl. Geländer nach DIN EN 1090',
+        leistungsart: bizType.toLowerCase(),
+        beschreibung: `Demo-Projekt: Beispielauftrag für ${bizType}`,
         budget: 3500,
         termin: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
         status: 'neu',
@@ -605,9 +608,9 @@ async function runDemoWorkflow() {
         kunde: demoAnfrage.kunde,
         leistungsart: demoAnfrage.leistungsart,
         positionen: [
-            { beschreibung: 'Stahltreppe 12 Stufen', menge: 1, einheit: 'Stk.', preis: 2200 },
-            { beschreibung: 'Geländer Edelstahl', menge: 4, einheit: 'lfm', preis: 185 },
-            { beschreibung: 'Montage vor Ort', menge: 8, einheit: 'Std.', preis: 65 }
+            { beschreibung: `${bizType} - Hauptleistung`, menge: 1, einheit: 'Stk.', preis: 2200 },
+            { beschreibung: 'Zusatzleistung', menge: 4, einheit: 'Stk.', preis: 185 },
+            { beschreibung: 'Montage / Arbeitszeit', menge: 8, einheit: 'Std.', preis: 65 }
         ],
         text: 'Sehr geehrte Damen und Herren,\n\nvielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot.',
         netto: 3460,
