@@ -1,4 +1,4 @@
-# MHS Workflow - Feature Brainstorm
+# FreyAI Visions - Feature Brainstorm
 
 > Generated 2026-02-17 | Based on codebase analysis + market research
 
@@ -6,7 +6,7 @@
 
 ## Current State Summary
 
-MHS Workflow is already a comprehensive German craftsmen (Handwerker) business suite with:
+FreyAI Visions is already a comprehensive German craftsmen (Handwerker) business suite with:
 - Full quote-to-invoice pipeline
 - 85+ services, 14 modules, CRM, bookkeeping, DATEV export
 - AI (Gemini), Stripe payments, email automation, PWA/offline
@@ -178,7 +178,7 @@ MHS Workflow is already a comprehensive German craftsmen (Handwerker) business s
 ---
 
 ### 12. Voice Commands & Dictation
-**What:** "Hey MHS, erstelle einen Termin bei Müller am Freitag um 14 Uhr" -- voice input for creating records, logging time, and adding notes. Especially useful on job sites with dirty hands.
+**What:** "Hey FreyAI, erstelle einen Termin bei Müller am Freitag um 14 Uhr" -- voice input for creating records, logging time, and adding notes. Especially useful on job sites with dirty hands.
 
 **Why:** Web Speech API is free and works offline in Chrome. Zero infrastructure cost. Huge UX improvement for field use.
 
@@ -220,9 +220,9 @@ MHS Workflow is already a comprehensive German craftsmen (Handwerker) business s
 ---
 
 ### 15. Zapier / Make / n8n Public Integration
-**What:** Publish the app as a trigger/action in Zapier, Make, or at minimum provide a well-documented webhook API so users can connect MHS to any other tool.
+**What:** Publish the app as a trigger/action in Zapier, Make, or at minimum provide a well-documented webhook API so users can connect FreyAI to any other tool.
 
-**Why:** Zapier has 7,000+ apps. Being listed there makes MHS discoverable and eliminates "but it doesn't connect to my accounting software" objections.
+**Why:** Zapier has 7,000+ apps. Being listed there makes FreyAI discoverable and eliminates "but it doesn't connect to my accounting software" objections.
 
 **Implementation ideas:**
 - Document existing webhook endpoints as public API

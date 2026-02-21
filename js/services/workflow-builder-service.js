@@ -1186,7 +1186,7 @@ class WorkflowBuilderService {
                 nodes: [
                     { id: 'n1', type: 'trigger', action: 'anfrage_created', config: {}, position: { x: 80, y: 200 }, label: 'Neue Anfrage' },
                     { id: 'n2', type: 'action', action: 'create_angebot', config: { gueltigkeitTage: '30' }, position: { x: 340, y: 200 }, label: 'Angebot erstellen' },
-                    { id: 'n3', type: 'action', action: 'send_email', config: { vorlage: 'angebot', betreff: 'Ihr Angebot von MHS' }, position: { x: 600, y: 200 }, label: 'Angebot senden' },
+                    { id: 'n3', type: 'action', action: 'send_email', config: { vorlage: 'angebot', betreff: 'Ihr Angebot von FreyAI Visions' }, position: { x: 600, y: 200 }, label: 'Angebot senden' },
                     { id: 'n4', type: 'action', action: 'create_auftrag', config: { prioritaet: 'normal' }, position: { x: 860, y: 200 }, label: 'Auftrag anlegen' },
                     { id: 'n5', type: 'action', action: 'create_rechnung', config: { zahlungsziel: '14' }, position: { x: 1120, y: 200 }, label: 'Rechnung erstellen' }
                 ],
@@ -1248,7 +1248,7 @@ class WorkflowBuilderService {
                 nodes: [
                     { id: 'n1', type: 'trigger', action: 'angebot_approved', config: {}, position: { x: 80, y: 200 }, label: 'Angebot angenommen' },
                     { id: 'n2', type: 'action', action: 'create_auftrag', config: { prioritaet: 'normal', startDatum: '5' }, position: { x: 340, y: 200 }, label: 'Auftrag erstellen' },
-                    { id: 'n3', type: 'action', action: 'send_email', config: { vorlage: 'auftragsbestaetigung', betreff: 'Auftragsbestaetigung - MHS' }, position: { x: 600, y: 120 }, label: 'Bestaetigung senden' },
+                    { id: 'n3', type: 'action', action: 'send_email', config: { vorlage: 'auftragsbestaetigung', betreff: 'Auftragsbestaetigung - FreyAI Visions' }, position: { x: 600, y: 120 }, label: 'Bestaetigung senden' },
                     { id: 'n4', type: 'action', action: 'reserve_material', config: { materialListe: 'aus_auftrag' }, position: { x: 600, y: 320 }, label: 'Material reservieren' },
                     { id: 'n5', type: 'action', action: 'add_calendar_entry', config: { tageAbHeute: '5', startZeit: '09:00', dauerMinuten: '120', typ: 'termin' }, position: { x: 860, y: 200 }, label: 'Termin planen' }
                 ],

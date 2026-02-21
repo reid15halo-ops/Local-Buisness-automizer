@@ -137,6 +137,21 @@ class NavigationController {
             case 'admin-panel':
                 if (window.adminPanelUI) {window.adminPanelUI.init();}
                 break;
+            case 'agent-workflows':
+                if (window.agentWorkflowUI) {
+                    window.agentWorkflowUI.init();
+                }
+                break;
+            case 'workflow-builder':
+                if (window.workflowBuilderUI) {
+                    window.workflowBuilderUI.mount('view-workflow-builder');
+                }
+                break;
+            case 'aufmass':
+                if (window.aufmassUI) {
+                    window.aufmassUI.render();
+                }
+                break;
             // New features (Self-initializing via their own listeners, but good to ensure)
             case 'workflows':
             case 'scanner':

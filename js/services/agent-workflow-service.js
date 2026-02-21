@@ -635,7 +635,7 @@ Antworte NUR mit dem Mahntext.`;
     }
 
     _getFallbackDunningText(mahnung) {
-        const firma = window.storeService?.state?.settings?.companyName || 'MHS Metallbau Hydraulik Service';
+        const firma = window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
         const neueFrist = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE');
 
         if (mahnung.severity === 'freundlich') {
@@ -811,7 +811,7 @@ Antworte NUR mit dem Nachfass-Text.`;
     }
 
     _getFallbackFollowUpText(followup) {
-        const firma = window.storeService?.state?.settings?.companyName || 'MHS Metallbau Hydraulik Service';
+        const firma = window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
 
         return `Sehr geehrte(r) ${followup.kunde},\n\n` +
             `vor ${followup.tageOffen} Tagen haben Sie uns eine Anfrage ` +
@@ -895,7 +895,7 @@ Antworte NUR mit dem Nachfass-Text.`;
             return this._getFallbackQuoteDraft(anfrage);
         }
 
-        const prompt = `Du bist ein Kalkulations-Experte fuer einen Metallbau-/Handwerksbetrieb (MHS Metallbau Hydraulik Service).
+        const prompt = `Du bist ein Kalkulations-Experte fuer einen Metallbau-/Handwerksbetrieb (FreyAI Visions).
 Erstelle einen Angebotsentwurf basierend auf folgender Kundenanfrage:
 
 - Kunde: ${anfrage.kunde?.name || 'Unbekannt'}
@@ -973,7 +973,7 @@ Antworte NUR mit dem JSON.`;
                 `Gesamtbetrag: ${this._formatCurrency(brutto)} (inkl. MwSt.)\n\n` +
                 `Dieses Angebot ist 30 Tage gueltig. Die Ausfuehrung erfolgt nach unseren ` +
                 `allgemeinen Geschaeftsbedingungen. Bei Fragen stehen wir Ihnen gerne zur Verfuegung.\n\n` +
-                `Mit freundlichen Gruessen\nMHS Metallbau Hydraulik Service`
+                `Mit freundlichen Gruessen\nFreyAI Visions`
         };
     }
 

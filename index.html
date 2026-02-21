@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/reorder-engine.css">
     <link rel="stylesheet" href="css/admin-panel.css">
     <link rel="stylesheet" href="css/boomer-guide.css">
+    <link rel="stylesheet" href="css/agent-workflows.css">
+    <link rel="stylesheet" href="css/field-app.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
@@ -19,11 +21,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="FreyAI Visions">
-    <!-- SheetJS for Excel import (with SRI) -->
-    <!-- TODO: Verify SRI hash - compute via: curl -s URL | openssl dgst -sha384 -binary | openssl base64 -A -->
-    <!-- SheetJS for Excel import (with SRI verification) -->
-    <!-- See COMPUTE_SRI_HASHES.md for hash computation instructions -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" integrity="sha384-W1K8l5ULGpTq8i3JL6d/5O0w7a8gGWh1BDLV5V6BWVIL1q9YPxQB6pILdXQ0a7HA" crossorigin="anonymous"></script>
+    <!-- SheetJS for Excel import (SRI verified 2026-02-21) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" integrity="sha384-QCIdq2UMVEoSRhR3ZWZwdz2/pivLowr+eokFMdYyukq7qI26VYRxFa4Nl6FKetmL" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -245,6 +244,21 @@
 
                 <!-- Advanced Tools Section (Pro) -->
                 <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="agent-workflows" data-mode="pro">
+                    <span class="nav-icon">🤖</span>
+                    KI-Agenten
+                    <span class="badge badge-new">NEU</span>
+                </button>
+                <button class="nav-item" data-view="workflow-builder" data-mode="pro">
+                    <span class="nav-icon">🔧</span>
+                    Workflow-Builder
+                    <span class="badge badge-new">NEU</span>
+                </button>
+                <button class="nav-item" data-view="aufmass" data-mode="pro">
+                    <span class="nav-icon">📐</span>
+                    Aufmaß
+                    <span class="badge badge-new">NEU</span>
+                </button>
                 <button class="nav-item" data-view="workflows" data-mode="pro">
                     <span class="nav-icon">⚡</span>
                     Workflows
@@ -2050,6 +2064,23 @@ Mit freundlichen Grüßen
                 </div>
             </section>
 
+            <!-- Agent Workflows View -->
+            <section class="view" id="view-agent-workflows">
+                <!-- Rendered by agent-workflow-ui.js -->
+            </section>
+
+            <!-- Workflow Builder View -->
+            <section class="view" id="view-workflow-builder">
+                <!-- Rendered by workflow-builder-ui.js -->
+            </section>
+
+            <!-- Aufmaß View -->
+            <section class="view" id="view-aufmass">
+                <div id="aufmass-container">
+                    <!-- Rendered by aufmass-ui.js -->
+                </div>
+            </section>
+
             <!-- Backup View -->
             <section class="view" id="view-backup">
                 <header class="view-header">
@@ -2906,9 +2937,6 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/db-service.js"></script>
     <script src="js/services/demo-guard-service.js"></script>
     <script src="js/services/demo-data-service.js"></script>
-    <!-- Supabase Auth (with SRI verification) -->
-    <!-- See COMPUTE_SRI_HASHES.md for hash computation instructions -->
-    <script async defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" integrity="sha384-lR1mLQYPUL5mELPSt4xUJ1BTQG0KhhR+rHKgL10k8j1TLfBYe2cddAOdP2mVjvLe" crossorigin="anonymous"></script>
     <script src="js/services/supabase-config.js"></script>
     <script src="js/services/sync-service.js"></script>
     <script src="js/services/auth-service.js"></script>
@@ -2977,6 +3005,16 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/features-integration.js"></script>
     <script src="js/new-features-ui.js"></script>
     <script src="js/excel-import-integration.js"></script>
+
+    <!-- Agent Workflows, Field App, Aufmaß, Workflow Builder -->
+    <script src="js/services/agent-workflow-service.js"></script>
+    <script src="js/services/field-app-service.js"></script>
+    <script src="js/services/aufmass-service.js"></script>
+    <script src="js/services/workflow-builder-service.js"></script>
+    <script src="js/ui/agent-workflow-ui.js"></script>
+    <script src="js/ui/field-app-ui.js"></script>
+    <script src="js/ui/aufmass-ui.js"></script>
+    <script src="js/ui/workflow-builder-ui.js"></script>
 
     <!-- Modular Application Components - new architecture -->
     <script src="js/modules/utils.js"></script>
