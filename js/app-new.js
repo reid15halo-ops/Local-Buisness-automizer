@@ -88,7 +88,7 @@ function renderMaterial() {
                     Importiere deine Materialliste aus Excel oder lade Demo-Daten.
                 </p>
                 <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button class="btn btn-secondary" onclick="window.materialService.loadDemoData(); renderMaterial();">
+                    <button class="btn btn-secondary" onclick="window.materialService.loadDemoMaterials(); renderMaterial();">
                         🎲 Demo-Daten laden
                     </button>
                     <button class="btn btn-primary" onclick="document.getElementById('material-import').click()">
@@ -267,7 +267,7 @@ function renderMahnwesen() {
     container.innerHTML = rechnungen.map(r => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(r.kunde.name)}</h3>
+                <h3 class="item-title">${window.UI.sanitize(r.kunde?.name || 'Unbekannter Kunde')}</h3>
                 <span class="item-id">${r.id}</span>
             </div>
             <div class="item-meta">

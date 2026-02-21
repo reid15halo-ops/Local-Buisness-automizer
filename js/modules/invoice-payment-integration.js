@@ -67,6 +67,32 @@ class InvoicePaymentIntegration {
                 return;
             }
 
+            // Mark invoice as paid in store
+            if (window.invoiceService) {
+                try {
+                    await window.invoiceService.markAsPaid(invoiceId, { method: 'Stripe' });
+                } catch (e) {
+                    console.warn('invoiceService.markAsPaid failed:', e);
+                    // Fallback: update store directly
+                    const invoice = this.getInvoiceById(invoiceId);
+                    if (invoice) {
+                        invoice.status = 'bezahlt';
+                        invoice.paidAt = new Date().toISOString();
+                        invoice.paymentMethod = 'Stripe';
+                        window.storeService?.save();
+                    }
+                }
+            } else {
+                // No invoiceService - update store directly
+                const invoice = this.getInvoiceById(invoiceId);
+                if (invoice) {
+                    invoice.status = 'bezahlt';
+                    invoice.paidAt = new Date().toISOString();
+                    invoice.paymentMethod = 'Stripe';
+                    window.storeService?.save();
+                }
+            }
+
             // Notify user
             this.showNotification('Zahlung erfolgreich!', 'success', 'Die Rechnung wurde als bezahlt markiert.');
 
