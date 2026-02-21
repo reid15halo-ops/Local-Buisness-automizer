@@ -13,7 +13,7 @@ class BookkeepingService {
             this.einstellungen = {
                 kleinunternehmer: false,          // § 19 UStG
                 umsatzsteuersatz: 19,              // Standard 19%
-                firmenName: 'FreyAI Visions',
+                firmenName: JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').company_name || window.storeService?.state?.settings?.companyName || '',
                 steuernummer: '',
                 ustIdNr: '',
                 finanzamt: '',

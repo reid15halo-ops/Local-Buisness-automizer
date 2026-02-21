@@ -10,6 +10,11 @@ class CommunicationService {
         this.settings = JSON.parse(localStorage.getItem('freyai_comm_settings') || '{}');
     }
 
+    _companyName() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+    }
+
     // Unified Message Log
     logMessage(message) {
         const entry = {
@@ -64,8 +69,8 @@ class CommunicationService {
         this.logMessage({
             type: 'call',
             direction: entry.direction,
-            from: entry.direction === 'inbound' ? entry.phoneNumber : 'FreyAI Visions',
-            to: entry.direction === 'outbound' ? entry.phoneNumber : 'FreyAI Visions',
+            from: entry.direction === 'inbound' ? entry.phoneNumber : this._companyName(),
+            to: entry.direction === 'outbound' ? entry.phoneNumber : this._companyName(),
             content: entry.notes || `Anruf ${entry.outcome === 'connected' ? 'verbunden' : entry.outcome}`,
             customerId: entry.customerId,
             customerName: entry.customerName
@@ -82,7 +87,7 @@ class CommunicationService {
         const smsEntry = this.logMessage({
             type: 'sms',
             direction: 'outbound',
-            from: 'FreyAI Visions',
+            from: this._companyName(),
             to: to,
             content: message,
             customerId: customerId,
@@ -102,7 +107,7 @@ class CommunicationService {
         const waEntry = this.logMessage({
             type: 'whatsapp',
             direction: 'outbound',
-            from: 'FreyAI Visions',
+            from: this._companyName(),
             to: to,
             content: message,
             customerId: customerId,
@@ -157,22 +162,25 @@ class CommunicationService {
 
     // Communication Templates
     getTemplates() {
+        const cn = this._companyName();
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const phone = ap.company_phone || window.storeService?.state?.settings?.phone || '';
         return {
             termin_bestaetigung: {
                 name: 'Terminbestätigung (SMS)',
-                content: 'Ihr Termin bei FreyAI Visions: {{datum}} um {{uhrzeit}} Uhr. Bei Fragen: 06029-9922964'
+                content: `Ihr Termin bei ${cn}: {{datum}} um {{uhrzeit}} Uhr.${phone ? ' Bei Fragen: ' + phone : ''}`
             },
             termin_erinnerung: {
                 name: 'Terminerinnerung (SMS)',
-                content: 'Erinnerung: Morgen {{datum}} um {{uhrzeit}} Uhr Termin bei FreyAI Visions. Wir freuen uns auf Sie!'
+                content: `Erinnerung: Morgen {{datum}} um {{uhrzeit}} Uhr Termin bei ${cn}. Wir freuen uns auf Sie!`
             },
             rechnung_erinnerung: {
                 name: 'Zahlungserinnerung (SMS)',
-                content: 'Freundliche Erinnerung: Rechnung {{rechnungId}} über {{betrag}}€ ist noch offen. FreyAI Visions'
+                content: `Freundliche Erinnerung: Rechnung {{rechnungId}} über {{betrag}}€ ist noch offen. ${cn}`
             },
             angebot_followup: {
                 name: 'Angebots-Nachfrage',
-                content: 'Guten Tag! Haben Sie Fragen zu unserem Angebot {{angebotId}}? Gerne stehen wir zur Verfügung. FreyAI Visions'
+                content: `Guten Tag! Haben Sie Fragen zu unserem Angebot {{angebotId}}? Gerne stehen wir zur Verfügung. ${cn}`
             }
         };
     }

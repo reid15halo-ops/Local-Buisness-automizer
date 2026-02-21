@@ -417,7 +417,7 @@ class ChatbotService {
 
         // === TSCHÜSS ===
         if (lowerMsg.match(/tschüss|auf wiedersehen|bye|ciao|bis bald/)) {
-            return `Auf Wiedersehen! 👋\n\n**Ihre Vorteile bei FreyAI Visions:**\n✅ Meisterbetrieb mit ${kb.company.experience}\n✅ Faire Preise\n✅ Zuverlässig & pünktlich\n\n📞 ${kb.company.phone}\n📧 ${kb.company.email}\n\nWir freuen uns auf Ihren Auftrag!`;
+            return `Auf Wiedersehen! 👋\n\n**Ihre Vorteile bei ${kb.company.name}:**\n✅ ${kb.company.experience}\n✅ Faire Preise\n✅ Zuverlässig & pünktlich\n\n📞 ${kb.company.phone}\n📧 ${kb.company.email}\n\nWir freuen uns auf Ihren Auftrag!`;
         }
 
         // === JA/NEIN ===

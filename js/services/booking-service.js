@@ -196,7 +196,18 @@ class BookingService {
     }
 
     // Email Templates
+    _companyInfo() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const store = window.storeService?.state?.settings || {};
+        return {
+            name: ap.company_name || store.companyName || 'FreyAI Visions',
+            phone: ap.company_phone || store.phone || '',
+            email: ap.company_email || store.email || ''
+        };
+    }
+
     getConfirmationEmailData(booking) {
+        const ci = this._companyInfo();
         return {
             to: booking.customer.email,
             subject: `Terminbestätigung: ${this.getServiceName(booking.serviceType)}`,
@@ -211,15 +222,14 @@ Details:
 - Bestätigungscode: ${booking.confirmationCode}
 
 Bei Fragen oder zur Stornierung erreichen Sie uns unter:
-Tel: +49 6029 99 22 96 4
-E-Mail: info@freyai-visions.de
-
+${ci.phone ? 'Tel: ' + ci.phone + '\n' : ''}${ci.email ? 'E-Mail: ' + ci.email + '\n' : ''}
 Mit freundlichen Grüßen
-FreyAI Visions`
+${ci.name}`
         };
     }
 
     getReminderEmailData(booking) {
+        const ci = this._companyInfo();
         return {
             to: booking.customer.email,
             subject: `Terminerinnerung: Morgen um ${booking.startTime} Uhr`,
@@ -234,7 +244,7 @@ dies ist eine Erinnerung an Ihren morgigen Termin:
 Wir freuen uns auf Sie!
 
 Mit freundlichen Grüßen
-FreyAI Visions`
+${ci.name}`
         };
     }
 

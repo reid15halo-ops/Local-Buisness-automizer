@@ -978,7 +978,7 @@ Antworte NUR mit dem JSON.`;
                 `Gesamtbetrag: ${this._formatCurrency(brutto)} (inkl. MwSt.)\n\n` +
                 `Dieses Angebot ist 30 Tage gueltig. Die Ausfuehrung erfolgt nach unseren ` +
                 `allgemeinen Geschaeftsbedingungen. Bei Fragen stehen wir Ihnen gerne zur Verfuegung.\n\n` +
-                `Mit freundlichen Gruessen\nFreyAI Visions`
+                `Mit freundlichen Gruessen\n${this._getCompanyName()}`
         };
     }
 
