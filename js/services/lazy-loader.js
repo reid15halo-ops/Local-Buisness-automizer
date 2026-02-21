@@ -251,8 +251,15 @@ class LazyLoader {
      * @returns {Promise} Resolves when all services are loaded
      */
     async loadServices(serviceNames) {
-        const promises = serviceNames.map(name => this.loadScript(name));
-        return Promise.all(promises);
+        const results = await Promise.allSettled(
+            serviceNames.map(name => this.loadScript(name))
+        );
+        const failed = results
+            .map((r, i) => r.status === 'rejected' ? serviceNames[i] : null)
+            .filter(Boolean);
+        if (failed.length > 0) {
+            console.warn(`⚠️ ${failed.length} service(s) failed to load:`, failed.join(', '));
+        }
     }
 
     /**
@@ -289,8 +296,7 @@ class LazyLoader {
         }
 
         console.log(`🎯 Loading services for view: ${viewName}`);
-        const promises = groups.map(group => this.loadGroup(group));
-        return Promise.all(promises);
+        await Promise.allSettled(groups.map(group => this.loadGroup(group)));
     }
 
     /**

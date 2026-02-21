@@ -189,18 +189,19 @@ class InvoiceTemplateService {
             };
         }
 
-        // Fallback to defaults
+        // Fallback: try admin panel settings
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         return {
-            name: 'FreyAI Visions',
-            strasse: 'Musterstraße 123',
-            ort: 'Musterstadt',
-            plz: '63843',
-            telefon: '+49 6029 9922964',
-            email: 'info@freyai-visions.de',
-            ustId: 'DE123456789',
-            iban: 'DE89 3704 0044 0532 0130 00',
-            bic: 'COBADEFFXXX',
-            bank: 'Commerzbank'
+            name: ap.company_name || 'FreyAI Visions',
+            strasse: ap.address_street || '',
+            ort: ap.address_city || '',
+            plz: ap.address_postal || '',
+            telefon: ap.company_phone || '',
+            email: ap.company_email || '',
+            ustId: ap.tax_number || '',
+            iban: ap.bank_iban || '',
+            bic: ap.bank_bic || '',
+            bank: ap.bank_name || ''
         };
     }
 

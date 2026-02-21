@@ -71,10 +71,9 @@ class PaymentService {
                 createdAt: new Date().toISOString(),
                 expiresAt: new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000).toISOString(),
                 paidAt: null,
-                paymentMethod: null,
                 transactionId: null,
                 stripeSessionId: null,
-                paymentMethod: 'stripe' // Default to Stripe
+                paymentMethod: null
             };
 
             // Try to generate Stripe payment link if it's an invoice

@@ -59,9 +59,11 @@ class QrCodeService {
     createGiroCodeData(invoice) {
         // EPC QR Code format for SEPA Credit Transfer
         const amount = invoice.betrag || 0;
-        const iban = this.settings.iban || 'DE89370400440532013000';
-        const bic = this.settings.bic || 'COBADEFFXXX';
-        const recipient = this.settings.recipientName || 'FreyAI Visions';
+        const bd = window.eInvoiceService?.settings?.businessData || {};
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const iban = (bd.iban || ap.bank_iban || this.settings.iban || '').replace(/\s/g, '');
+        const bic = bd.bic || ap.bank_bic || this.settings.bic || '';
+        const recipient = bd.name || ap.company_name || this.settings.recipientName || 'FreyAI Visions';
         const reference = invoice.nummer || invoice.id;
 
         // EPC QR Code format

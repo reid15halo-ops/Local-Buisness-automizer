@@ -24,19 +24,8 @@ class ChatbotService {
     // =====================================================
     initKnowledgeBase() {
         return {
-            // COMPANY INFO
-            company: {
-                name: 'FreyAI Visions',
-                owner: 'Inhaber geführter Meisterbetrieb',
-                experience: '15+ Jahre Erfahrung',
-                team: '5 Fachkräfte inkl. Meister und Gesellen',
-                certifications: ['Schweißfachbetrieb nach DIN EN 1090', 'DVS-zertifiziert', 'Hydraulik-Fachbetrieb'],
-                serviceArea: 'Main-Kinzig-Kreis, Aschaffenburg, Miltenberg, Frankfurt Umland (50km Radius)',
-                address: 'Hauptstraße 1, 63820 Elsenfeld',
-                phone: '06029-9922964',
-                email: 'info@freyai-visions.de',
-                hours: { weekday: '08:00-18:00', saturday: 'nach Vereinbarung', emergency: '24/7 Notdienst' }
-            },
+            // COMPANY INFO (reads from admin settings dynamically)
+            company: this._loadCompanyInfo(),
 
             // PRICING GUIDELINES (Richtwerte)
             pricing: {
@@ -159,6 +148,28 @@ class ChatbotService {
                     'Wann passt Ihnen ein Termin für die Beratung?'
                 ]
             }
+        };
+    }
+
+    _loadCompanyInfo() {
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        const bd = window.eInvoiceService?.settings?.businessData || {};
+        const name = ap.company_name || bd.name || 'FreyAI Visions';
+        const street = ap.address_street || bd.street || '';
+        const postal = ap.address_postal || bd.postalCode || '';
+        const city = ap.address_city || bd.city || '';
+        const address = (street && city) ? `${street}, ${postal} ${city}` : '';
+        return {
+            name: name,
+            owner: ap.owner_name || 'Inhaber',
+            experience: '15+ Jahre Erfahrung',
+            team: '5 Fachkräfte inkl. Meister und Gesellen',
+            certifications: ['Schweißfachbetrieb nach DIN EN 1090', 'DVS-zertifiziert', 'Hydraulik-Fachbetrieb'],
+            serviceArea: '50km Radius',
+            address: address,
+            phone: ap.company_phone || bd.phone || '',
+            email: ap.company_email || bd.email || '',
+            hours: { weekday: '08:00-18:00', saturday: 'nach Vereinbarung', emergency: '24/7 Notdienst' }
         };
     }
 

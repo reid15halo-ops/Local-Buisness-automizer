@@ -253,11 +253,11 @@ function addPosition(prefill = null) {
         }
 
         suggestBox.innerHTML = materials.slice(0, 5).map(m => `
-            <div class="material-suggest-item" data-material='${JSON.stringify(m)}'>
-                <span class="material-suggest-name">${m.bezeichnung}</span>
+            <div class="material-suggest-item" data-material='${h(JSON.stringify(m))}'>
+                <span class="material-suggest-name">${h(m.bezeichnung)}</span>
                 <span class="material-suggest-meta">
                     <span class="price">${formatCurrency(m.vkPreis || m.preis)}</span>
-                    <span class="stock">${m.bestand} ${m.einheit}</span>
+                    <span class="stock">${m.bestand} ${h(m.einheit)}</span>
                 </span>
             </div>
         `).join('');

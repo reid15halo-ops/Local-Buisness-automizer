@@ -82,6 +82,17 @@ const SanitizeService = {
     isValidSteuerId(id) {
         if (typeof id !== 'string') {return false;}
         return /^\d{10,11}$/.test(id.replace(/[\s\/]/g, ''));
+    },
+
+    // Safe JSON.parse wrapper for localStorage reads
+    safeJsonParse(str, fallback = null) {
+        if (!str) return fallback;
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+            console.warn('JSON parse failed:', e.message);
+            return fallback;
+        }
     }
 };
 

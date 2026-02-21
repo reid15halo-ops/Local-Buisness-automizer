@@ -327,7 +327,7 @@ class MaterialPickerUI {
                     <div class="material-picker-item-info">
                         <span>
                             <span class="material-picker-stock-indicator ${stockColor}"></span>
-                            Verfügbar: ${material.bestand} ${material.einheit}
+                            Verfügbar: ${material.bestand} ${window.UI?.sanitize?.(material.einheit) || material.einheit}
                         </span>
                         <span>${this.formatCurrency(material.vkPreis || material.preis)}</span>
                     </div>

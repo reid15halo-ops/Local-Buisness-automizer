@@ -13,36 +13,36 @@ class EmailTemplateService {
      * Get company information from eInvoiceService or localStorage
      */
     getCompanyInfo() {
-        // Try to get from eInvoiceService
+        // Try to get from eInvoiceService (synced from admin settings)
         if (window.eInvoiceService && window.eInvoiceService.settings.businessData) {
             const bd = window.eInvoiceService.settings.businessData;
             return {
                 name: bd.name || 'FreyAI Visions',
-                street: bd.street || 'Musterstraße 123',
-                city: bd.city || 'Musterstadt',
-                postalCode: bd.postalCode || '63843',
-                phone: bd.phone || '+49 6029 9922964',
-                email: bd.email || 'info@freyai-visions.de',
-                vatId: bd.vatId || 'DE123456789',
-                iban: bd.iban || 'DE89 3704 0044 0532 0130 00',
-                bic: bd.bic || 'COBADEFFXXX',
-                bankName: bd.bankName || 'Commerzbank'
+                street: bd.street || '',
+                city: bd.city || '',
+                postalCode: bd.postalCode || '',
+                phone: bd.phone || '',
+                email: bd.email || '',
+                vatId: bd.vatId || '',
+                iban: bd.iban || '',
+                bic: bd.bic || '',
+                bankName: bd.bankName || ''
             };
         }
 
-        // Fallback to localStorage
-        const stored = JSON.parse(localStorage.getItem('freyai_company_info') || '{}');
+        // Fallback: try admin panel settings
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         return {
-            name: stored.name || 'FreyAI Visions',
-            street: stored.street || 'Musterstraße 123',
-            city: stored.city || 'Musterstadt',
-            postalCode: stored.postalCode || '63843',
-            phone: stored.phone || '+49 6029 9922964',
-            email: stored.email || 'info@freyai-visions.de',
-            vatId: stored.vatId || 'DE123456789',
-            iban: stored.iban || 'DE89 3704 0044 0532 0130 00',
-            bic: stored.bic || 'COBADEFFXXX',
-            bankName: stored.bankName || 'Commerzbank'
+            name: ap.company_name || 'FreyAI Visions',
+            street: ap.address_street || '',
+            city: ap.address_city || '',
+            postalCode: ap.address_postal || '',
+            phone: ap.company_phone || '',
+            email: ap.company_email || '',
+            vatId: ap.tax_number || '',
+            iban: ap.bank_iban || '',
+            bic: ap.bank_bic || '',
+            bankName: ap.bank_name || ''
         };
     }
 
