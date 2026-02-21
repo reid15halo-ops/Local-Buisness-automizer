@@ -219,6 +219,10 @@
     transition: var(--transition);
 }
 
+.stat-card.clickable {
+    cursor: pointer;
+}
+
 .stat-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-md);
@@ -931,6 +935,21 @@ textarea {
 
     .position-row {
         grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .position-row input,
+    .position-row select {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    .position-remove {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .workflow-steps {

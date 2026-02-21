@@ -513,6 +513,17 @@ function renderAngebote() {
                 <span>${a.positionen.length} Positionen</span>
                 <span>${formatCurrency(a.brutto)}</span>
                 <span>${formatDate(a.createdAt)}</span>
+                ${(() => {
+                    if (a.status === 'offen' || a.status === 'entwurf') {
+                        const created = new Date(a.createdAt);
+                        const expiry = new Date(created.getTime() + 30 * 24 * 60 * 60 * 1000);
+                        const daysLeft = Math.ceil((expiry - Date.now()) / (24 * 60 * 60 * 1000));
+                        if (daysLeft < 0) return '<span style="color:var(--accent-danger);font-weight:600;">Abgelaufen</span>';
+                        if (daysLeft <= 7) return `<span style="color:var(--accent-warning);font-weight:600;">Noch ${daysLeft}T gültig</span>`;
+                        return `<span style="color:var(--text-muted);">Noch ${daysLeft}T gültig</span>`;
+                    }
+                    return '';
+                })()}
             </div>
             <p class="item-description">${getLeistungsartLabel(a.leistungsart)}</p>
             <div class="item-actions">

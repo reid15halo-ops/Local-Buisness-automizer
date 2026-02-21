@@ -59,10 +59,9 @@ class ErrorHandler {
             display: flex;
             align-items: center;
             gap: 12px;
-            min-width: 300px;
-            max-width: 450px;
-            padding: 16px;
-            margin-bottom: 12px;
+            min-width: 280px;
+            max-width: 100%;
+            padding: 14px 16px;
             background: var(--bg-card, #1c1c21);
             border: 1px solid var(--border-color, #27272a);
             border-left: 4px solid ${this.getColorForType(type)};
@@ -94,6 +93,8 @@ class ErrorHandler {
             z-index: 10000;
             display: flex;
             flex-direction: column;
+            gap: 8px;
+            max-width: 400px;
             pointer-events: none; /* Allow clicking through container */
         `;
         document.body.appendChild(container);
