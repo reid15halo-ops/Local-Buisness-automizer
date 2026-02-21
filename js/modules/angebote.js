@@ -167,7 +167,7 @@ function addPosition(prefill = null) {
     if (prefill?.materialId) {
         const material = window.materialService?.getMaterial(prefill.materialId);
         if (material) {
-            materialDisplay = `${material.bezeichnung} (${material.artikelnummer})`;
+            materialDisplay = `${(window.UI?.sanitize || String)(material.bezeichnung)} (${(window.UI?.sanitize || String)(material.artikelnummer)})`;
         }
     }
 
@@ -176,12 +176,12 @@ function addPosition(prefill = null) {
             <input type="text" class="pos-beschreibung" placeholder="Beschreibung tippen..."
                    data-suggest-id="${uniqueId}"
                    data-material-id="${prefill?.materialId || ''}"
-                   value="${prefill?.beschreibung || ''}"
+                   value="${(window.UI?.sanitize || String)(prefill?.beschreibung || '')}"
                    autocomplete="off">
             <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
         </div>
         <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" oninput="updateAngebotSummary()">
-        <input type="text" class="pos-einheit" placeholder="Einheit" value="${prefill?.einheit || 'Stk.'}">
+        <input type="text" class="pos-einheit" placeholder="Einheit" value="${(window.UI?.sanitize || String)(prefill?.einheit || 'Stk.')}">
         <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" oninput="updateAngebotSummary()">
         <div class="position-material-selector">
             <button type="button" class="btn btn-small position-material-picker" data-position-id="${uniqueId}">📦 Material</button>

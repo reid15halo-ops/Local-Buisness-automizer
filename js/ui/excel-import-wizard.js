@@ -291,7 +291,12 @@ class ExcelImportWizard {
             document.getElementById('btn-next-step').disabled = false;
 
         } catch (error) {
-            document.getElementById('analysis-text').innerHTML = `<span style="color: var(--color-error)">✗ Fehler: ${error.message}</span>`;
+            const errEl = document.getElementById('analysis-text');
+            errEl.textContent = '';
+            const errSpan = document.createElement('span');
+            errSpan.style.color = 'var(--color-error)';
+            errSpan.textContent = `✗ Fehler: ${error.message}`;
+            errEl.appendChild(errSpan);
             console.error('Analyse-Fehler:', error);
         }
     }

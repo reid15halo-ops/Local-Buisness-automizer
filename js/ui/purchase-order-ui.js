@@ -350,7 +350,7 @@ class PurchaseOrderUI {
         return `
             <tr style="border-bottom: 1px solid var(--border-color);">
                 <td style="padding: 12px; font-weight: 600;">${po.nummer}</td>
-                <td style="padding: 12px;">${po.lieferant.name}</td>
+                <td style="padding: 12px;">${window.UI?.sanitize?.(po.lieferant.name) || po.lieferant.name}</td>
                 <td style="padding: 12px; text-align: center;">
                     <span class="badge" style="background: ${statusBadgeColor};">${statusLabel}</span>
                 </td>
@@ -490,7 +490,7 @@ class PurchaseOrderUI {
 
         const currentValue = select.value;
         select.innerHTML = '<option value="">Alle Lieferanten</option>' +
-            suppliers.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            suppliers.map(s => `<option value="${(window.UI?.sanitize || String)(s.name)}">${(window.UI?.sanitize || String)(s.name)}</option>`).join('');
         select.value = currentValue;
     }
 

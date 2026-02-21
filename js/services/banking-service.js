@@ -5,10 +5,10 @@
 
 class BankingService {
     constructor() {
-        this.accounts = JSON.parse(localStorage.getItem('freyai_bank_accounts') || '[]');
-        this.transactions = JSON.parse(localStorage.getItem('freyai_bank_transactions') || '[]');
-        this.matchedPayments = JSON.parse(localStorage.getItem('freyai_matched_payments') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_banking_settings') || '{}');
+        try { this.accounts = JSON.parse(localStorage.getItem('freyai_bank_accounts') || '[]'); } catch { this.accounts = []; }
+        try { this.transactions = JSON.parse(localStorage.getItem('freyai_bank_transactions') || '[]'); } catch { this.transactions = []; }
+        try { this.matchedPayments = JSON.parse(localStorage.getItem('freyai_matched_payments') || '[]'); } catch { this.matchedPayments = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_banking_settings') || '{}'); } catch { this.settings = {}; }
 
         // Demo bank data
         this.demoBanks = [
@@ -312,8 +312,10 @@ class BankingService {
 
         // Add to bookkeeping
         if (window.bookkeepingService) {
-            window.bookkeepingService.addEinnahme({
+            window.bookkeepingService.addBuchung({
+                typ: 'einnahme',
                 datum: tx.date.split('T')[0],
+                brutto: tx.amount,
                 betrag: tx.amount,
                 kategorie: 'Kundeneinnahmen',
                 beschreibung: `Zahlung ${invoiceId}: ${tx.name}`,

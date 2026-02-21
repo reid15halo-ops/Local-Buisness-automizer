@@ -5,8 +5,8 @@
 
 class BookkeepingService {
     constructor() {
-        this.buchungen = JSON.parse(localStorage.getItem('freyai_buchungen') || '[]');
-        this.einstellungen = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings') || '{}');
+        try { this.buchungen = JSON.parse(localStorage.getItem('freyai_buchungen') || '[]'); } catch { this.buchungen = []; }
+        try { this.einstellungen = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings') || '{}'); } catch { this.einstellungen = {}; }
 
         // Default settings
         if (!this.einstellungen.kleinunternehmer) {

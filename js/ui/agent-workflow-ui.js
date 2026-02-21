@@ -359,7 +359,7 @@ class AgentWorkflowUI {
                         ${briefing.staleLeads.map(lead => `
                             <div class="agent-detail-item">
                                 <div class="agent-detail-main">
-                                    <strong>${lead.kunde}</strong> ${lead.leistungsart ? `- ${lead.leistungsart}` : ''}
+                                    <strong>${this._esc(lead.kunde)}</strong> ${lead.leistungsart ? `- ${this._esc(lead.leistungsart)}` : ''}
                                 </div>
                                 <div class="agent-detail-right">
                                     <span class="agent-detail-badge agent-badge-warning">${lead.tageOffen} Tage</span>
@@ -380,7 +380,7 @@ class AgentWorkflowUI {
                         ${briefing.aktiveAuftraege.map(a => `
                             <div class="agent-detail-item">
                                 <div class="agent-detail-main">
-                                    <strong>${a.id}</strong> - ${a.kunde} ${a.leistungsart ? `(${a.leistungsart})` : ''}
+                                    <strong>${this._esc(a.id)}</strong> - ${this._esc(a.kunde)} ${a.leistungsart ? `(${this._esc(a.leistungsart)})` : ''}
                                 </div>
                                 <div class="agent-detail-right">
                                     <div class="agent-progress-bar-sm">
@@ -860,12 +860,12 @@ class AgentWorkflowUI {
                 <h4>Mahnungen (${data.mahnungen.length})</h4>
                 ${data.mahnungen.map(m => `
                     <div class="agent-preview-card">
-                        <strong>${m.rechnungNummer}</strong> - ${m.kunde}
+                        <strong>${this._esc(m.rechnungNummer)}</strong> - ${this._esc(m.kunde)}
                         <span class="agent-badge agent-badge-${m.severity === 'letzte_warnung' ? 'error' : m.severity === 'freundlich' ? 'active' : 'warning'}">
                             ${m.severityLabel}
                         </span>
                         <br>Betrag: ${this._formatCurrency(m.betrag)} | ${m.tageUeberfaellig} Tage ueberfaellig
-                        ${m.mahntext ? `<div class="agent-preview-text">${this._truncate(m.mahntext, 200)}</div>` : ''}
+                        ${m.mahntext ? `<div class="agent-preview-text">${this._esc(this._truncate(m.mahntext, 200))}</div>` : ''}
                     </div>
                 `).join('')}
             </div>
@@ -878,11 +878,11 @@ class AgentWorkflowUI {
                 <h4>Nachverfolgungen (${data.followups.length})</h4>
                 ${data.followups.map(f => `
                     <div class="agent-preview-card">
-                        <strong>${f.kunde}</strong> ${f.leistungsart ? `- ${f.leistungsart}` : ''}
+                        <strong>${this._esc(f.kunde)}</strong> ${f.leistungsart ? `- ${this._esc(f.leistungsart)}` : ''}
                         <span class="agent-badge agent-badge-${f.prioritaet === 'hoch' ? 'error' : f.prioritaet === 'mittel' ? 'warning' : 'info'}">
                             ${f.tageOffen} Tage
                         </span>
-                        ${f.nachfasstext ? `<div class="agent-preview-text">${this._truncate(f.nachfasstext, 200)}</div>` : ''}
+                        ${f.nachfasstext ? `<div class="agent-preview-text">${this._esc(this._truncate(f.nachfasstext, 200))}</div>` : ''}
                     </div>
                 `).join('')}
             </div>
@@ -895,11 +895,11 @@ class AgentWorkflowUI {
                 <h4>Angebotsentwuerfe (${data.angebote.length})</h4>
                 ${data.angebote.map(a => `
                     <div class="agent-preview-card">
-                        <strong>${a.kunde}</strong> ${a.leistungsart ? `- ${a.leistungsart}` : ''}
+                        <strong>${this._esc(a.kunde)}</strong> ${a.leistungsart ? `- ${this._esc(a.leistungsart)}` : ''}
                         ${a.geschaetzterPreis ? `<br>Geschaetzter Preis: ${this._formatCurrency(a.geschaetzterPreis.brutto)} (brutto)` : ''}
                         ${a.positionen.length > 0 ? `
                             <ul class="agent-preview-list">
-                                ${a.positionen.map(p => `<li>${p.beschreibung}: ${p.menge} ${p.einheit} x ${this._formatCurrency(p.einzelpreis)}</li>`).join('')}
+                                ${a.positionen.map(p => `<li>${this._esc(p.beschreibung)}: ${p.menge} ${this._esc(p.einheit)} x ${this._formatCurrency(p.einzelpreis)}</li>`).join('')}
                             </ul>
                         ` : ''}
                     </div>
@@ -914,7 +914,7 @@ class AgentWorkflowUI {
                 ${data.probleme?.length > 0 ? `
                 <h4>Erkannte Probleme</h4>
                 <ul class="agent-preview-list">
-                    ${data.probleme.map(p => `<li>[${p.prioritaet.toUpperCase()}] ${p.nachricht}</li>`).join('')}
+                    ${data.probleme.map(p => `<li>[${this._esc(p.prioritaet.toUpperCase())}] ${this._esc(p.nachricht)}</li>`).join('')}
                 </ul>
                 ` : ''}
                 <h4>Vorschlaege (${Array.isArray(data.vorschlaege) ? data.vorschlaege.length : 0})</h4>
@@ -923,7 +923,7 @@ class AgentWorkflowUI {
                         <span class="agent-badge agent-badge-${v.prioritaet === 'hoch' ? 'error' : v.prioritaet === 'mittel' ? 'warning' : 'info'}">
                             ${v.prioritaet}
                         </span>
-                        ${v.vorschlag}
+                        ${this._esc(v.vorschlag)}
                     </div>
                 `).join('') : '<p>Keine Vorschlaege generiert.</p>'}
             </div>
@@ -951,6 +951,11 @@ class AgentWorkflowUI {
         if (!text) return '';
         if (text.length <= maxLen) return text;
         return text.substring(0, maxLen) + '...';
+    }
+
+    _esc(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     _nl2br(text) {

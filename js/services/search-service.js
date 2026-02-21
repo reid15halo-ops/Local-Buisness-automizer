@@ -236,7 +236,7 @@ class SearchService {
                     <div class="search-result-icon">${result.icon}</div>
                     <div class="search-result-content">
                         <div class="search-result-title">${window.UI.sanitize(result.title)}</div>
-                        <div class="search-result-subtitle">${result.subtitle}</div>
+                        <div class="search-result-subtitle">${window.UI.sanitize(result.subtitle)}</div>
                         <div class="search-result-description">${window.UI.sanitize(result.description)}</div>
                     </div>
                 </div>

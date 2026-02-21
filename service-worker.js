@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v9';
+const CACHE_NAME = 'freyai-visions-v10';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy

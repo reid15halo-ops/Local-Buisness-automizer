@@ -5,8 +5,8 @@
 
 class AiAssistantService {
     constructor() {
-        this.conversationHistory = JSON.parse(localStorage.getItem('freyai_ai_history') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_ai_settings') || '{}');
+        try { this.conversationHistory = JSON.parse(localStorage.getItem('freyai_ai_history') || '[]'); } catch { this.conversationHistory = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_ai_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'de';}
@@ -119,8 +119,8 @@ class AiAssistantService {
             case 'profit':
                 if (window.bookkeepingService) {
                     data.buchungen = window.bookkeepingService.buchungen || [];
-                    data.summary = window.bookkeepingService.getMonthSummary
-                        ? window.bookkeepingService.getMonthSummary()
+                    data.summary = window.bookkeepingService.berechneEUR
+                        ? window.bookkeepingService.berechneEUR()
                         : null;
                 }
                 if (typeof store !== 'undefined') {
@@ -139,7 +139,7 @@ class AiAssistantService {
 
             case 'customers':
                 if (window.customerService) {
-                    data.customers = window.customerService.getCustomers();
+                    data.customers = window.customerService.getAllCustomers();
                 }
                 if (entities.customer) {
                     data.specificCustomer = window.customerService?.searchCustomers(entities.customer)[0];
@@ -150,20 +150,20 @@ class AiAssistantService {
                 if (window.calendarService) {
                     const today = new Date().toISOString().split('T')[0];
                     data.todayAppointments = window.calendarService.getAppointmentsForDay(today);
-                    data.allAppointments = window.calendarService.getAppointments();
+                    data.allAppointments = window.calendarService.appointments || [];
                 }
                 break;
 
             case 'tasks':
                 if (window.taskService) {
-                    data.tasks = window.taskService.getTasks();
-                    data.openTasks = data.tasks.filter(t => t.status !== 'done');
+                    data.tasks = window.taskService.getAllTasks();
+                    data.openTasks = data.tasks.filter(t => t.status !== 'erledigt');
                 }
                 break;
 
             case 'time':
                 if (window.timeTrackingService) {
-                    data.timeEntries = window.timeTrackingService.getEntries();
+                    data.timeEntries = window.timeTrackingService.entries || [];
                     data.todayHours = window.timeTrackingService.getTodayHours?.() || 0;
                 }
                 break;

@@ -8,7 +8,7 @@
 
 class LLMService {
     constructor() {
-        this.config = JSON.parse(localStorage.getItem('freyai_llm_config') || '{"provider":"gemini"}');
+        try { this.config = JSON.parse(localStorage.getItem('freyai_llm_config') || '{"provider":"gemini"}'); } catch { this.config = { provider: 'gemini' }; }
         // Default configs
         if (!this.config.provider) {this.config.provider = 'gemini';}
         if (!this.config.ollamaUrl) {this.config.ollamaUrl = 'http://localhost:11434';}

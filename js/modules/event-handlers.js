@@ -149,7 +149,7 @@
                             if (!confirmed) {return;}
                         }
 
-                        window.materialService?.loadDemoData?.();
+                        window.materialService?.loadDemoMaterials?.();
                         window.renderMaterial?.();
 
                         // Show demo mode banner

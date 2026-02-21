@@ -1626,7 +1626,7 @@ function initAuftragDetailHandlers() {
         const hours = prompt('Stunden eingeben (z.B. 2.5):');
         if (!hours || isNaN(parseFloat(hours))) {return;}
 
-        window.timeTrackingService.addManualEntry({
+        window.timeTrackingService.addEntry({
             auftragId: auftrag.id,
             customerId: auftrag.kunde.name,
             description: `Manuell: ${auftrag.kunde.name}`,
@@ -2884,7 +2884,7 @@ function initAutomationSettings() {
 
     // View Email Automation History
     document.getElementById('btn-view-email-automation')?.addEventListener('click', () => {
-        window.UI.switchView('email-automation');
+        if (typeof switchView === 'function') { switchView('email-automation'); }
     });
 
     // Run Test
@@ -3748,7 +3748,8 @@ function addToRecentCustomers(kunde) {
 // ============================================
 // Customer Presets (Position Templates by Email)
 // ============================================
-const customerPresets = JSON.parse(localStorage.getItem('freyai_customer_presets') || '{}');
+let customerPresets = {};
+try { customerPresets = JSON.parse(localStorage.getItem('freyai_customer_presets') || '{}'); } catch { customerPresets = {}; }
 
 function saveCustomerPresets() {
     localStorage.setItem('freyai_customer_presets', JSON.stringify(customerPresets));
@@ -3865,7 +3866,7 @@ function initCustomerPresets() {
         picker.querySelectorAll('.material-picker-item').forEach(item => {
             item.addEventListener('click', () => {
                 item.classList.toggle('selected');
-                const m = JSON.parse(item.dataset.material);
+                let m; try { m = JSON.parse(item.dataset.material); } catch { return; }
                 if (item.classList.contains('selected')) {
                     selected.add(m.artikelnummer);
                     item.querySelector('.material-picker-check').textContent = '✓';
