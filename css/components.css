@@ -151,18 +151,26 @@
 }
 
 /* PO detail table styles */
+.po-detail-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .po-detail-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 12px;
+    min-width: 500px;
 }
 
-.po-detail-table th {
+.po-detail-table th,
+.po-detail-table td {
     text-align: left;
-    padding: 8px;
+    padding: 10px 8px;
 }
 
-.po-detail-table th.text-right {
+.po-detail-table th.text-right,
+.po-detail-table td.text-right {
     text-align: right;
 }
 

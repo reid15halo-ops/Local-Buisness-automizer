@@ -109,9 +109,12 @@ class ErrorHandler {
             @keyframes fadeOut {
                 to { opacity: 0; transform: translateY(10px); }
             }
-            .toast { pointer-events: auto; } /* Enable clicks on toasts */
-            .toast-close { background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; margin-left: auto; }
+            .toast { pointer-events: auto; }
+            .toast-close { background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; margin-left: auto; min-width: 32px; min-height: 32px; }
             .toast-close:hover { color: #fff; }
+            @media (max-width: 640px) {
+                #toast-container { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+            }
         `;
         document.head.appendChild(style);
 
