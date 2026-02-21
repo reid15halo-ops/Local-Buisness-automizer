@@ -2445,3 +2445,17 @@ body:has(.demo-mode-banner) {
         margin: 0 16px 8px;
     }
 }
+
+/* ============================================
+   Form Validation Styles
+   ============================================ */
+.input-error {
+    border-color: var(--color-error, #ef4444) !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+.field-error {
+    color: var(--color-error, #ef4444);
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+}

@@ -139,7 +139,35 @@ class LazyLoader {
             charts: [
                 'dashboard-charts-service',
                 'data-export-service'
+            ],
+
+            // Agent Workflows & AI Automation
+            'agent-workflows': [
+                'agent-workflow-service'
+            ],
+
+            // Field App (mobile on-site mode)
+            'field-app': [
+                'field-app-service'
+            ],
+
+            // Aufmaß (site measurement)
+            aufmass: [
+                'aufmass-service'
+            ],
+
+            // Workflow Builder (visual automation editor)
+            'workflow-builder': [
+                'workflow-builder-service'
             ]
+        };
+
+        // UI scripts that need loading after their service
+        this.uiGroups = {
+            'agent-workflows': ['agent-workflow-ui'],
+            'field-app': ['field-app-ui'],
+            'aufmass': ['aufmass-ui'],
+            'workflow-builder': ['workflow-builder-ui']
         };
 
         // View to service group mapping
@@ -164,7 +192,11 @@ class LazyLoader {
             'material': ['workflow'],
             'material-list': ['workflow'],
             'kommunikation': ['crm'],
-            'trash': ['advanced']
+            'trash': ['advanced'],
+            'agent-workflows': ['agent-workflows', 'ai', 'automation'],
+            'workflow-builder': ['workflow-builder', 'automation'],
+            'aufmass': ['aufmass', 'workflow'],
+            'field-app': ['field-app', 'workflow', 'calendar']
         };
     }
 
@@ -236,7 +268,13 @@ class LazyLoader {
         }
 
         console.log(`📦 Loading service group: ${groupName}`);
-        return this.loadServices(services);
+        await this.loadServices(services);
+
+        // Also load corresponding UI scripts if any
+        const uiScripts = this.uiGroups?.[groupName];
+        if (uiScripts) {
+            await Promise.all(uiScripts.map(name => this.loadScript(name, 'js/ui/')));
+        }
     }
 
     /**

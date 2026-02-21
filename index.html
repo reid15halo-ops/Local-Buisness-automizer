@@ -2288,11 +2288,11 @@ Mit freundlichen Grüßen
                 <div class="form-row">
                     <div class="form-group">
                         <label for="kunde-email">E-Mail</label>
-                        <input type="email" id="kunde-email" placeholder="email@beispiel.de">
+                        <input type="email" id="kunde-email" placeholder="email@beispiel.de" data-validate="email">
                     </div>
                     <div class="form-group">
                         <label for="kunde-telefon">Telefon</label>
-                        <input type="tel" id="kunde-telefon" placeholder="+49 123 456789">
+                        <input type="tel" id="kunde-telefon" placeholder="+49 123 456789" data-validate="phone">
                     </div>
                 </div>
                 <div class="form-group">
@@ -2952,6 +2952,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/user-mode-service.js"></script>
     <script src="js/ui/mode-toggle-ui.js"></script>
 
+    <script src="js/services/form-validation-service.js"></script>
     <script src="js/services/excel-recognition-service.js"></script>
     <script src="js/ui/ui-helpers.js"></script>
     <script src="js/ui/excel-import-wizard.js"></script>
@@ -3007,14 +3008,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/excel-import-integration.js"></script>
 
     <!-- Agent Workflows, Field App, Aufmaß, Workflow Builder -->
-    <script src="js/services/agent-workflow-service.js"></script>
-    <script src="js/services/field-app-service.js"></script>
-    <script src="js/services/aufmass-service.js"></script>
-    <script src="js/services/workflow-builder-service.js"></script>
-    <script src="js/ui/agent-workflow-ui.js"></script>
-    <script src="js/ui/field-app-ui.js"></script>
-    <script src="js/ui/aufmass-ui.js"></script>
-    <script src="js/ui/workflow-builder-ui.js"></script>
+    <!-- Lazy-loaded via lazy-loader.js when views are opened -->
 
     <!-- Modular Application Components - new architecture -->
     <script src="js/modules/utils.js"></script>

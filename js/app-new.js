@@ -363,7 +363,165 @@ function initBuchhaltung() {
 // Automation Settings
 // ============================================
 function initAutomationSettings() {
-    // Implementation stubs - full implementation in original app.js
+    // Load saved values
+    const relayUrl = localStorage.getItem('email_relay_url');
+    const relaySecret = localStorage.getItem('email_relay_secret');
+    const senderEmail = localStorage.getItem('sender_email');
+    const twilioSid = localStorage.getItem('twilio_sid');
+    const twilioToken = localStorage.getItem('twilio_token');
+    const twilioFrom = localStorage.getItem('twilio_from');
+
+    if (document.getElementById('email-relay-url')) {
+        document.getElementById('email-relay-url').value = relayUrl || '';
+        document.getElementById('email-relay-secret').value = relaySecret || '';
+        document.getElementById('sender-email').value = senderEmail || '';
+    }
+    if (document.getElementById('twilio-sid')) {
+        document.getElementById('twilio-sid').value = twilioSid || '';
+        document.getElementById('twilio-token').value = twilioToken || '';
+        document.getElementById('twilio-from').value = twilioFrom || '';
+    }
+
+    // Auto-generate sender email on first launch
+    if (!senderEmail && typeof generateSenderEmail === 'function') {
+        generateSenderEmail();
+    }
+
+    // Save Email config
+    document.getElementById('btn-save-email-config')?.addEventListener('click', () => {
+        const url = document.getElementById('email-relay-url').value.trim();
+        const secret = document.getElementById('email-relay-secret').value.trim();
+        localStorage.setItem('email_relay_url', url);
+        localStorage.setItem('email_relay_secret', secret);
+        updateSettingsStatus();
+        showToast('E-Mail-Konfiguration gespeichert', 'success');
+    });
+
+    // Test Email
+    document.getElementById('btn-test-email')?.addEventListener('click', async () => {
+        if (!window.automationAPI?.isAvailable()) {
+            showToast('Supabase muss zuerst konfiguriert sein', 'warning');
+            return;
+        }
+        const email = localStorage.getItem('sender_email');
+        if (!email) {
+            showToast('Absender-E-Mail konnte nicht generiert werden', 'warning');
+            return;
+        }
+        showToast('Sende Test-E-Mail...', 'info');
+        const result = await window.automationAPI.sendEmail(
+            email, 'FreyAI Test', 'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand funktioniert.'
+        );
+        showToast(result.success ? 'Test-E-Mail gesendet!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
+    });
+
+    // Save SMS config
+    document.getElementById('btn-save-sms-config')?.addEventListener('click', () => {
+        localStorage.setItem('twilio_sid', document.getElementById('twilio-sid').value.trim());
+        localStorage.setItem('twilio_token', document.getElementById('twilio-token').value.trim());
+        localStorage.setItem('twilio_from', document.getElementById('twilio-from').value.trim());
+        updateSettingsStatus();
+        showToast('SMS-Konfiguration gespeichert', 'success');
+    });
+
+    // Email Automation Config
+    document.getElementById('btn-save-email-automation')?.addEventListener('click', async () => {
+        const enabled = document.getElementById('email-auto-reply-enabled')?.checked;
+        const requireApproval = document.getElementById('email-require-approval')?.checked;
+        const replyTemplate = document.getElementById('email-reply-template')?.value.trim();
+
+        const config = {
+            enabled,
+            requireApproval,
+            replyTemplate,
+            autoCreateQuote: true,
+            autoSendReply: !requireApproval
+        };
+
+        if (window.emailAutomationService) {
+            const result = await window.emailAutomationService.setConfig(config);
+            if (result.success) {
+                updateSettingsStatus();
+                showToast('E-Mail Automation Konfiguration gespeichert', 'success');
+            } else {
+                showToast('Fehler beim Speichern: ' + result.error, 'error');
+            }
+        } else {
+            showToast('Service noch nicht geladen', 'warning');
+        }
+    });
+
+    // Test Email Processing
+    document.getElementById('btn-test-email-processing')?.addEventListener('click', () => {
+        if (window.UI?.openModal) window.UI.openModal('modal-test-email');
+    });
+
+    // View Email Automation History
+    document.getElementById('btn-view-email-automation')?.addEventListener('click', () => {
+        if (window.UI?.switchView) window.UI.switchView('email-automation');
+    });
+
+    // Check overdue manually
+    document.getElementById('btn-check-overdue')?.addEventListener('click', async () => {
+        if (!window.automationAPI?.isAvailable()) {
+            showToast('Supabase muss zuerst konfiguriert sein', 'warning');
+            return;
+        }
+        showToast('Prüfe überfällige Rechnungen...', 'info');
+        const result = await window.automationAPI.checkOverdue();
+        if (result.success) {
+            showToast(`Geprüft: ${result.checked} Rechnungen, ${result.reminders_sent} Mahnungen gesendet`, 'success');
+        } else {
+            showToast('Fehler: ' + result.error, 'error');
+        }
+    });
+
+    updateSettingsStatus();
+}
+
+function updateSettingsStatus() {
+    const geminiKey = localStorage.getItem('gemini_api_key');
+    const webhookUrl = localStorage.getItem('n8n_webhook_url');
+    const relayUrl = localStorage.getItem('email_relay_url');
+    const relaySecret = localStorage.getItem('email_relay_secret');
+    const emailConfigured = relayUrl && relaySecret;
+    const twilioSid = localStorage.getItem('twilio_sid');
+
+    const setStatus = (el, configured) => {
+        if (!el) return;
+        el.textContent = configured ? '● Konfiguriert' : '● Nicht konfiguriert';
+        el.className = 'status-indicator' + (configured ? ' connected' : '');
+    };
+
+    setStatus(document.getElementById('gemini-status'), geminiKey);
+    setStatus(document.getElementById('webhook-status'), webhookUrl);
+    setStatus(document.getElementById('email-status'), emailConfigured);
+    setStatus(document.getElementById('sms-status'), twilioSid);
+
+    // Email Automation Status
+    if (window.emailAutomationService) {
+        const config = window.emailAutomationService.getConfig();
+        const el = document.getElementById('email-automation-status');
+        if (el) {
+            el.textContent = config.enabled ? '● Aktiv' : '● Deaktiviert';
+            el.className = 'status-indicator' + (config.enabled ? ' connected' : '');
+        }
+    }
+
+    // Automation status panel
+    const supabaseOk = window.supabaseConfig?.isConfigured?.();
+    const setAutoStatus = (id, ok, label) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = ok ? label || 'Aktiv' : 'Nicht konfiguriert';
+        el.style.color = ok ? 'var(--accent-primary)' : 'var(--text-muted)';
+    };
+
+    setAutoStatus('auto-status-supabase', supabaseOk, 'Verbunden');
+    setAutoStatus('auto-status-email', supabaseOk && emailConfigured, 'Bereit');
+    setAutoStatus('auto-status-sms', supabaseOk && twilioSid, 'Bereit');
+    setAutoStatus('auto-status-overdue', supabaseOk && emailConfigured, 'Automatisch (tägl. 08:00)');
+    setAutoStatus('auto-status-webhook', webhookUrl, 'Konfiguriert');
 }
 
 // ============================================

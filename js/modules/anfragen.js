@@ -16,15 +16,30 @@ function initAnfrageForm() {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
+        // Validate form inputs
+        if (window.formValidation) {
+            const result = window.formValidation.validateDOMForm(form, {
+                'kunde-name': ['required', 'minLength(2)'],
+                'kunde-email': ['email'],
+                'kunde-telefon': ['phone'],
+                'beschreibung': ['required'],
+                'budget': ['number']
+            });
+            if (!result.valid) {
+                if (window.showToast) showToast('Bitte Pflichtfelder korrekt ausfüllen', 'warning');
+                return;
+            }
+        }
+
         const anfrage = {
             id: generateId('ANF'),
             kunde: {
-                name: document.getElementById('kunde-name').value,
-                email: document.getElementById('kunde-email').value,
-                telefon: document.getElementById('kunde-telefon').value
+                name: document.getElementById('kunde-name').value.trim(),
+                email: document.getElementById('kunde-email').value.trim(),
+                telefon: document.getElementById('kunde-telefon').value.trim()
             },
             leistungsart: document.getElementById('leistungsart').value,
-            beschreibung: document.getElementById('beschreibung').value,
+            beschreibung: document.getElementById('beschreibung').value.trim(),
             budget: parseFloat(document.getElementById('budget').value) || 0,
             termin: document.getElementById('termin').value,
             status: 'neu',
