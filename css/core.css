@@ -40,6 +40,7 @@
     --surface-light: #24242a;
     --input-bg: #1f1f25;
     --input-bg-focus: #27272a;
+    --bg-muted: #2a2a3a;
 
     /* Accent Colors - Primary Actions */
     --accent-primary: #6366f1;
@@ -57,6 +58,10 @@
     --accent-info: #3b82f6;
     --accent-info-light: rgba(59, 130, 246, 0.15);
 
+    /* Error/Success aliases */
+    --color-error: #ef4444;
+    --color-success: #22c55e;
+
     /* Accent Color aliases (for reorder-engine.css compatibility) */
     --accent-color: #4CAF50;
     --accent-dark: #388E3C;
@@ -66,7 +71,7 @@
     /* Text Colors */
     --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
-    --text-muted: #71717a;
+    --text-muted: #8b8b94;
 
     /* Border & Spacing */
     --border-color: #27272a;
@@ -145,6 +150,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
 }
 
 .nav-item {
@@ -675,11 +683,36 @@ body.light-theme {
     --text-secondary: #4b5563;
     --text-muted: #6b7280;
     --border-color: #e5e7eb;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* ============================================
    Accessibility & Validation
    ============================================ */
+
+/* Inline form validation errors */
+.input-error {
+    border-color: var(--color-error, #ef4444) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.field-error {
+    color: var(--color-error, #ef4444);
+    font-size: 12px;
+    margin-top: 4px;
+    font-weight: 500;
+}
 
 /* Visual feedback for invalid forms */
 input:not(:placeholder-shown):invalid,
@@ -1141,7 +1174,7 @@ body:has(.demo-mode-banner) {
 }
 
 .priority-action-item:hover {
-    background: #2a2a32;
+    background: var(--bg-hover);
     transform: translateX(4px);
 }
 

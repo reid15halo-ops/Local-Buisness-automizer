@@ -167,8 +167,11 @@ function renderRechnungen() {
                 <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
                 <h3 style="margin-bottom: 8px;">Keine Rechnungen vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
-                    Rechnungen werden automatisch aus abgeschlossenen Aufträgen erstellt.
+                    Rechnungen werden automatisch erstellt, wenn du einen Auftrag abschließt.
                 </p>
+                <button class="btn btn-primary" onclick="window.navigationController?.navigateTo('auftraege')">
+                    🔧 Zu den Aufträgen
+                </button>
             </div>
         `;
         return;

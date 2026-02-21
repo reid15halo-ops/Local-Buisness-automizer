@@ -417,11 +417,16 @@ function renderAngebote() {
                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
-                    Erstelle Angebote aus offenen Anfragen.
+                    Erstelle Angebote aus offenen Anfragen oder lege eine neue Anfrage an.
                 </p>
-                <button class="btn btn-primary" onclick="window.navigationController.navigateTo('anfragen')">
-                    Anfragen ansehen
-                </button>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="window.navigationController?.navigateTo('anfragen')">
+                        📥 Anfragen ansehen
+                    </button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('btn-neue-anfrage')?.click()">
+                        ➕ Neue Anfrage
+                    </button>
+                </div>
             </div>
         `;
         return;

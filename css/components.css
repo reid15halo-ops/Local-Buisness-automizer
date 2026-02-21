@@ -627,7 +627,13 @@
     font-size: 28px;
     cursor: pointer;
     line-height: 1;
-    padding: 0;
+    padding: 8px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm);
     transition: var(--transition-fast);
 }
 

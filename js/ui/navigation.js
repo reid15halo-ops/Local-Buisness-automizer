@@ -42,7 +42,9 @@ class NavigationController {
         if (toggle && sidebar) {
             toggle.addEventListener('click', (e) => {
                 e.stopPropagation();
-                sidebar.classList.toggle('active');
+                const isOpen = sidebar.classList.toggle('active');
+                toggle.setAttribute('aria-expanded', isOpen);
+                toggle.setAttribute('aria-label', isOpen ? 'Hauptmenü schließen' : 'Hauptmenü öffnen');
             });
 
             document.addEventListener('click', (e) => {
@@ -50,6 +52,8 @@ class NavigationController {
                     !sidebar.contains(e.target) &&
                     e.target !== toggle) {
                     sidebar.classList.remove('active');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.setAttribute('aria-label', 'Hauptmenü öffnen');
                 }
             });
 
@@ -57,6 +61,7 @@ class NavigationController {
                 item.addEventListener('click', () => {
                     if (window.innerWidth <= 768) {
                         sidebar.classList.remove('active');
+                        toggle.setAttribute('aria-expanded', 'false');
                     }
                 });
             });

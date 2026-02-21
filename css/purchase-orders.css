@@ -36,13 +36,22 @@
 .po-position-row input,
 .po-position-row select {
     width: 100%;
-    padding: 6px 8px;
+    padding: 8px 10px;
+    min-height: 38px;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: 4px;
     color: var(--text-primary);
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .po-position-row input,
+    .po-position-row select {
+        min-height: 44px;
+        font-size: 16px;
+    }
 }
 
 .po-position-row input:focus,

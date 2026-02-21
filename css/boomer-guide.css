@@ -229,7 +229,7 @@
 }
 
 .boomer-feed-item:hover {
-    background: #2a2a32;
+    background: var(--bg-hover);
     transform: translateX(4px);
 }
 
@@ -352,7 +352,7 @@
 }
 
 .boomer-splash-btn-secondary:hover {
-    background: #2a2a32;
+    background: var(--bg-hover);
     color: var(--text-primary);
 }
 

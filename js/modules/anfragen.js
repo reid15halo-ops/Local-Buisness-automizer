@@ -16,7 +16,29 @@ function initAnfrageForm() {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        // Validate form inputs
+        // Validate form inputs with inline error highlighting
+        const requiredFields = [
+            { id: 'kunde-name', label: 'Kundenname' },
+            { id: 'beschreibung', label: 'Beschreibung' }
+        ];
+        let hasErrors = false;
+
+        // Clear previous errors
+        form.querySelectorAll('.field-error').forEach(el => el.remove());
+        form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+
+        requiredFields.forEach(({ id, label }) => {
+            const input = document.getElementById(id);
+            if (input && !input.value.trim()) {
+                hasErrors = true;
+                input.classList.add('input-error');
+                const errorEl = document.createElement('div');
+                errorEl.className = 'field-error';
+                errorEl.textContent = `${label} ist ein Pflichtfeld`;
+                input.parentElement.appendChild(errorEl);
+            }
+        });
+
         if (window.formValidation) {
             const result = window.formValidation.validateDOMForm(form, {
                 'kunde-name': ['required', 'minLength(2)'],
@@ -25,10 +47,15 @@ function initAnfrageForm() {
                 'beschreibung': ['required'],
                 'budget': ['number']
             });
-            if (!result.valid) {
-                if (window.showToast) showToast('Bitte Pflichtfelder korrekt ausfüllen', 'warning');
-                return;
-            }
+            if (!result.valid) { hasErrors = true; }
+        }
+
+        if (hasErrors) {
+            if (window.showToast) showToast('Bitte Pflichtfelder korrekt ausfüllen', 'warning');
+            // Scroll to first error
+            const firstError = form.querySelector('.input-error');
+            if (firstError) { firstError.focus(); }
+            return;
         }
 
         const anfrage = {
@@ -53,6 +80,7 @@ function initAnfrageForm() {
 
         form.reset();
         closeModal('modal-anfrage');
+        if (window.showToast) { showToast('Anfrage erfolgreich erstellt', 'success'); }
         switchView('anfragen');
         document.querySelector('[data-view="anfragen"]').click();
     });
@@ -99,15 +127,43 @@ function renderAnfragen() {
                 <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${a.id}')">
                     📝 Angebot erstellen
                 </button>
+                <button class="btn btn-secondary btn-small" onclick="deleteAnfrage('${a.id}')" title="Anfrage löschen">
+                    🗑️
+                </button>
             </div>
         </div>
     `).join('');
 }
 
+function deleteAnfrage(id) {
+    if (window.confirmDialogService) {
+        window.confirmDialogService.show({
+            title: 'Anfrage löschen',
+            message: 'Möchtest du diese Anfrage wirklich löschen?',
+            confirmText: 'Löschen',
+            cancelText: 'Abbrechen',
+            destructive: true,
+            onConfirm: () => {
+                store.anfragen = store.anfragen.filter(a => a.id !== id);
+                saveStore();
+                renderAnfragen();
+                if (window.showToast) { showToast('Anfrage gelöscht', 'success'); }
+            }
+        });
+    } else {
+        store.anfragen = store.anfragen.filter(a => a.id !== id);
+        saveStore();
+        renderAnfragen();
+        if (window.showToast) { showToast('Anfrage gelöscht', 'success'); }
+    }
+}
+window.deleteAnfrage = deleteAnfrage;
+
 // Export anfragen functions
 window.AnfragenModule = {
     initAnfrageForm,
-    renderAnfragen
+    renderAnfragen,
+    deleteAnfrage
 };
 
 // Make globally available

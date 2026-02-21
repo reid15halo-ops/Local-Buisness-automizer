@@ -111,8 +111,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         container.querySelectorAll('.workflow-delete').forEach(btn => {
             btn.addEventListener('click', function () {
-                if (confirm('Workflow wirklich löschen?')) {
-                    const id = this.closest('.workflow-item').dataset.id;
+                const itemEl = this.closest('.workflow-item');
+                const id = itemEl?.dataset.id;
+                if (!id) return;
+                if (window.confirmDialogService) {
+                    window.confirmDialogService.show({
+                        title: 'Workflow löschen',
+                        message: 'Möchtest du diesen Workflow wirklich löschen?',
+                        confirmText: 'Löschen',
+                        cancelText: 'Abbrechen',
+                        destructive: true,
+                        onConfirm: () => {
+                            window.workflowService.deleteWorkflow(id);
+                            initWorkflowsView();
+                        }
+                    });
+                } else {
                     window.workflowService.deleteWorkflow(id);
                     initWorkflowsView();
                 }
@@ -518,10 +532,19 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification('Bitte Kunde auswählen', 'warning');
             return;
         }
-        if (confirm('ACHTUNG: Alle Daten dieses Kunden werden unwiderruflich gelöscht! Fortfahren?')) {
-            const result = window.securityBackupService.deleteCustomerData(customerId);
-            showNotification(`${result.deletedCount} Datensätze gelöscht`, 'success');
-            populateCustomerSelects();
+        if (window.confirmDialogService) {
+            window.confirmDialogService.show({
+                title: 'Kundendaten löschen',
+                message: 'ACHTUNG: Alle Daten dieses Kunden werden unwiderruflich gelöscht! Fortfahren?',
+                confirmText: 'Endgültig löschen',
+                cancelText: 'Abbrechen',
+                destructive: true,
+                onConfirm: () => {
+                    const result = window.securityBackupService.deleteCustomerData(customerId);
+                    showNotification(`${result.deletedCount} Datensätze gelöscht`, 'success');
+                    populateCustomerSelects();
+                }
+            });
         }
     });
 

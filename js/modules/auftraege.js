@@ -340,10 +340,13 @@ function renderAuftraegeList(auftraege) {
 
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding:40px 20px;text-align:center;">
+            <div class="empty-state" style="padding:60px 20px;text-align:center;">
                 <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
-                <h3>Keine Aufträge</h3>
-                <p style="color:var(--text-secondary);">Aufträge entstehen aus angenommenen Angeboten.</p>
+                <h3 style="margin-bottom:8px;">Keine Aufträge</h3>
+                <p style="color:var(--text-secondary);margin-bottom:24px;">Aufträge entstehen aus angenommenen Angeboten.</p>
+                <button class="btn btn-primary" onclick="window.navigationController?.navigateTo('angebote')">
+                    📝 Zu den Angeboten
+                </button>
             </div>`;
         return;
     }
