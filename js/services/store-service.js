@@ -17,6 +17,12 @@ class StoreService {
                 address: '',
                 taxId: '',
                 vatId: '',
+                phone: '',
+                email: '',
+                iban: '',
+                bic: '',
+                bank: '',
+                businessType: '',
                 theme: 'dark'
             },
             currentAnfrageId: null,
