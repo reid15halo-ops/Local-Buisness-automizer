@@ -282,7 +282,8 @@ Mit freundlichen Grüßen
             return 'Überdachung / Carport';
         }
 
-        return 'Metallbau-Projekt';
+        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        return (ap.business_type || 'Handwerks') + '-Projekt';
     }
 
     extractDimensions(text) {

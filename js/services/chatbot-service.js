@@ -283,7 +283,7 @@ class ChatbotService {
 
         // === GREETINGS ===
         if (/^(hallo|hi|guten\s?(tag|morgen|abend)|moin|servus|hey|grüß)/i.test(lowerMsg)) {
-            return `Guten Tag! 👋 Willkommen bei **${kb.company.name}**!\n\nIch bin Ihr digitaler Fachberater mit umfassendem Wissen zu:\n\n🔧 **Metallbau** – Geländer, Treppen, Tore, Carports\n⚙️ **Hydraulik** – Schläuche, Zylinder, Aggregate\n🔥 **Schweißtechnik** – WIG, MIG/MAG, alle Materialien\n\nAls zertifizierter **${kb.company.certifications[0]}** beraten wir Sie kompetent!\n\nWomit kann ich Ihnen helfen?`;
+            return `Guten Tag! 👋 Willkommen bei **${kb.company.name}**!\n\nIch bin Ihr digitaler Fachberater und helfe Ihnen gerne bei allen Fragen zu unseren Leistungen und Projekten.\n\nWomit kann ich Ihnen helfen?`;
         }
 
         // === GELÄNDER - DETAILED ===
@@ -434,12 +434,12 @@ class ChatbotService {
                 return `⏱️ **Projektdauer (Richtwerte)**\n\n• Geländer 5m: 2-3 Tage + 1 Tag Montage\n• Treppe: 2-4 Wochen\n• Tor: 1-2 Wochen\n• Schlauchpresse: 15 Minuten\n• Zylinder-Reparatur: 2-5 Werktage\n\nUm welches Projekt geht es?`;
             }
             if (lowerMsg.match(/garantie|gewährleist/)) {
-                return `📜 **Gewährleistung**\n\n• Metallbau: 5 Jahre auf Konstruktion\n• Schweißnähte: lebenslang nach DIN\n• Oberflächenbeschichtung: 2 Jahre\n• Hydraulik-Reparatur: 12 Monate\n\nAlle Arbeiten DIN/EN-dokumentiert.`;
+                return `📜 **Gewährleistung**\n\nUnsere Arbeiten unterliegen den gesetzlichen Gewährleistungsfristen. Details zu Ihrem spezifischen Projekt besprechen wir gerne persönlich.\n\n📞 Rufen Sie uns an: ${kb.company.phone}`;
             }
         }
 
         // === DEFAULT - SMART ===
-        return `Danke für Ihre Nachricht! 📩\n\nIch bin Fachberater für:\n\n🏗️ **Metallbau** – Geländer, Treppen, Tore (inkl. Preise)\n⚙️ **Hydraulik** – Schläuche, Zylinder, Problemlösung\n🔥 **Schweißen** – Verfahren, Materialberatung\n🔬 **Materialien** – Stahl, Edelstahl, Oberflächenschutz\n\n**Beispielfragen:**\n• \"Was kostet ein Geländer aus Edelstahl?\"\n• \"Hydraulikschlauch geplatzt - was tun?\"\n• \"V2A oder V4A für außen?\"\n\nOder schildern Sie einfach Ihr Projekt!\n\n📞 Direkt: ${kb.company.phone}`;
+        return `Danke für Ihre Nachricht! 📩\n\nIch bin Fachberater bei **${kb.company.name}** und helfe Ihnen gerne bei:\n\n🏗️ **Projekten** – Beratung, Preise, Planung\n📋 **Angeboten** – individuelle Kostenvoranschläge\n🔧 **Technik** – Materialberatung, Verfahren\n\nSchildern Sie einfach Ihr Projekt oder stellen Sie eine Frage!\n\n📞 Direkt: ${kb.company.phone}`;
     }
 
     // Process incoming message
