@@ -420,7 +420,7 @@ class AdminPanelUI {
                 <div class="admin-panel-form-grid">
                     <div class="admin-panel-field">
                         <label for="ap-company-name">Firmenname *</label>
-                        <input type="text" id="ap-company-name" class="admin-panel-input" value="${this._esc(settings.company_name)}" placeholder="Müller Metallbau GmbH" />
+                        <input type="text" id="ap-company-name" class="admin-panel-input" value="${this._esc(settings.company_name)}" placeholder="Meine Firma GmbH" />
                     </div>
                     <div class="admin-panel-field">
                         <label for="ap-owner-name">Inhaber / Geschäftsführer *</label>
@@ -452,6 +452,10 @@ class AdminPanelUI {
                         <label for="ap-company-website">Website</label>
                         <input type="url" id="ap-company-website" class="admin-panel-input" value="${this._esc(settings.company_website)}" placeholder="https://www.firma.de" />
                     </div>
+                    <div class="admin-panel-field">
+                        <label for="ap-business-type">Betriebsart (für KI-Texte)</label>
+                        <input type="text" id="ap-business-type" class="admin-panel-input" value="${this._esc(settings.business_type)}" placeholder="z.B. Metallbaubetrieb, Elektrobetrieb, Malerbetrieb" />
+                    </div>
                 </div>
 
                 <div class="admin-panel-actions">
@@ -475,7 +479,8 @@ class AdminPanelUI {
             address_city: 'ap-address-city',
             company_email: 'ap-company-email',
             company_phone: 'ap-company-phone',
-            company_website: 'ap-company-website'
+            company_website: 'ap-company-website',
+            business_type: 'ap-business-type'
         };
 
         let allSaved = true;
