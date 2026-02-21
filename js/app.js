@@ -4208,8 +4208,20 @@ async function renderEmailAutomation() {
     document.getElementById('stat-emails-processed').textContent = stats.successful;
     document.getElementById('stat-quotes-created').textContent = stats.quotesCreated;
 
-    // Average processing time (placeholder)
-    const avgTime = stats.totalProcessed > 0 ? '2.3s' : '-';
+    // Average processing time: calculate from history if available
+    let avgTime = '-';
+    if (stats.totalProcessed > 0) {
+        const history = await window.emailAutomationService.getProcessedEmails(100);
+        const timings = history
+            .filter(e => e.processingTime && typeof e.processingTime === 'number')
+            .map(e => e.processingTime);
+        if (timings.length > 0) {
+            const avg = timings.reduce((sum, t) => sum + t, 0) / timings.length;
+            avgTime = (avg / 1000).toFixed(1) + 's';
+        } else {
+            avgTime = 'N/A';
+        }
+    }
     document.getElementById('stat-avg-time').textContent = avgTime;
 
     // Render history
@@ -4312,9 +4324,39 @@ async function renderEmailHistory(filter = '') {
     }).join('');
 }
 
-function viewQuoteFromEmail(entryId) {
-    // Placeholder - könnte zum Angebot navigieren
-    showToast('Angebots-Details würden hier angezeigt', 'info');
+async function viewQuoteFromEmail(entryId) {
+    // Navigate to the angebote view
+    if (window.navigationController) {
+        await window.navigationController.navigateTo('angebote');
+    }
+
+    // Try to find quote data from email history
+    if (window.emailAutomationService) {
+        const history = await window.emailAutomationService.getProcessedEmails(100);
+        const entry = history.find(e => e.id === entryId);
+        if (entry && entry.quote) {
+            const quoteTitle = entry.quote.title || 'Angebot';
+            const customerName = entry.quote.customer?.name || '';
+            const msg = customerName
+                ? `Angebot "${quoteTitle}" für ${customerName}`
+                : `Angebot "${quoteTitle}"`;
+            showToast(msg, 'info');
+
+            // If a matching angebot exists in the store, scroll to it
+            if (entry.quote.id) {
+                const el = document.querySelector(`[data-id="${entry.quote.id}"]`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.classList.add('highlight');
+                    setTimeout(() => el.classList.remove('highlight'), 2000);
+                }
+            }
+        } else {
+            showToast('Angebote-Ansicht geöffnet', 'info');
+        }
+    } else {
+        showToast('Angebote-Ansicht geöffnet', 'info');
+    }
 }
 
 // Event handlers for email automation view

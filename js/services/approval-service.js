@@ -249,15 +249,22 @@ class ApprovalService {
         }
     }
 
-    // Notifications (placeholder for actual implementation)
+    // Notifications
     notifyApprover(request, step) {
-        console.log(`📧 Freigabe-Anfrage: ${step.name} soll ${request.documentType} ${request.documentId} freigeben`);
+        const title = request.workflowName || `${request.documentType} ${request.documentId}`;
+        const message = `Neue Freigabe-Anfrage: ${title}`;
 
-        // Would integrate with email/notification service
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, 'info');
+        } else if (window.UI && typeof window.UI.showToast === 'function') {
+            window.UI.showToast(message, 'info');
+        }
+
+        // Also log to communication service if available
         if (window.communicationService) {
             window.communicationService.logMessage({
                 type: 'system',
-                content: `Freigabe-Anfrage: ${request.workflowName}`,
+                content: message,
                 to: step.role,
                 metadata: { requestId: request.id }
             });
@@ -265,11 +272,25 @@ class ApprovalService {
     }
 
     notifyRejection(request, step) {
-        console.log(`❌ Freigabe abgelehnt: ${request.workflowName} - ${step.comment}`);
+        const title = request.workflowName || `${request.documentType} ${request.documentId}`;
+        const message = `Freigabe abgelehnt: ${title}`;
+
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, 'error');
+        } else if (window.UI && typeof window.UI.showToast === 'function') {
+            window.UI.showToast(message, 'error');
+        }
     }
 
     notifyEscalation(request) {
-        console.log(`⚠️ Eskalation: ${request.workflowName} - Zeitüberschreitung`);
+        const title = request.workflowName || request.documentId;
+        const message = `Eskalation: Freigabe für ${title} überfällig`;
+
+        if (typeof window.showToast === 'function') {
+            window.showToast(message, 'warning');
+        } else if (window.UI && typeof window.UI.showToast === 'function') {
+            window.UI.showToast(message, 'warning');
+        }
     }
 
     // Get pending requests for a role

@@ -29,3 +29,7 @@ temp/
 *~
 .vscode/settings.json
 .idea/
+
+# Credentials (never commit)
+.credentials
+*.credentials

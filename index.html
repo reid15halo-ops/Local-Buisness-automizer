@@ -2964,6 +2964,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/calendar-ui-service.js"></script>
 
     <!-- App Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="js/services/automation-api.js"></script>
     <script src="js/services/pdf-service.js"></script>
     <script src="js/services/purchase-order-service.js"></script>
@@ -3006,7 +3007,7 @@ Email: max.mustermann@example.com</textarea>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                navigator.serviceWorker.register('./service-worker.js')
                     .then(reg => console.log('✅ Service Worker registered'))
                     .catch(err => console.log('Service Worker registration failed:', err));
             });
