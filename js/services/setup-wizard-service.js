@@ -59,6 +59,13 @@ class SetupWizardService {
                         required: true
                     },
                     {
+                        name: 'business_type',
+                        label: 'Betriebsart (für KI-Texte)',
+                        placeholder: 'z.B. Metallbaubetrieb, Elektrobetrieb, Malerbetrieb',
+                        type: 'text',
+                        required: false
+                    },
+                    {
                         name: 'company_logo',
                         label: 'Logo hochladen (optional)',
                         type: 'file',
