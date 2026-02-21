@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v7';
+const CACHE_NAME = 'freyai-visions-v8';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -23,6 +23,7 @@ const STATIC_ASSETS = [
     '/auth.html',
     '/landing.html',
     '/offline.html',
+    '/booking.html',
     '/setup-credentials.html',
     '/test-invoice-system.html',
 
@@ -32,6 +33,10 @@ const STATIC_ASSETS = [
     '/css/fonts.css',
     '/css/purchase-orders.css',
     '/css/reorder-engine.css',
+    '/css/admin-panel.css',
+    '/css/agent-workflows.css',
+    '/css/boomer-guide.css',
+    '/css/field-app.css',
 
     // --- Core JS ---
     '/js/app.js',
@@ -59,8 +64,11 @@ const STATIC_ASSETS = [
 
     // --- JS Services ---
     '/js/services/activity-indicator-service.js',
+    '/js/services/admin-panel-service.js',
+    '/js/services/agent-workflow-service.js',
     '/js/services/ai-assistant-service.js',
     '/js/services/approval-service.js',
+    '/js/services/aufmass-service.js',
     '/js/services/auth-service.js',
     '/js/services/automation-api.js',
     '/js/services/banking-service.js',
@@ -89,6 +97,8 @@ const STATIC_ASSETS = [
     '/js/services/email-service.js',
     '/js/services/email-template-service.js',
     '/js/services/error-display-service.js',
+    '/js/services/field-app-service.js',
+    '/js/services/form-validation-service.js',
     '/js/services/error-handler.js',
     '/js/services/error-handler-utils.js',
     '/js/services/excel-recognition-service.js',
@@ -113,6 +123,7 @@ const STATIC_ASSETS = [
     '/js/services/print-digital-service.js',
     '/js/services/profitability-service.js',
     '/js/services/purchase-order-service.js',
+    '/js/services/push-messenger-service.js',
     '/js/services/pwa-install-service.js',
     '/js/services/qrcode-service.js',
     '/js/services/recurring-task-service.js',
@@ -143,18 +154,28 @@ const STATIC_ASSETS = [
     '/js/services/warranty-service.js',
     '/js/services/webhook-service.js',
     '/js/services/work-estimation-service.js',
+    '/js/services/workflow-builder-service.js',
     '/js/services/workflow-service.js',
 
     // --- JS UI Components ---
+    '/js/ui/admin-panel-ui.js',
     '/js/ui/admin-settings-ui.js',
+    '/js/ui/agent-workflow-ui.js',
+    '/js/ui/aufmass-ui.js',
+    '/js/ui/boomer-guide-ui.js',
     '/js/ui/excel-import-wizard.js',
+    '/js/ui/field-app-ui.js',
+    '/js/ui/gantt-timeline-ui.js',
     '/js/ui/keyboard-shortcuts.js',
+    '/js/ui/ki-transparency-ui.js',
     '/js/ui/mode-toggle-ui.js',
     '/js/ui/navigation.js',
     '/js/ui/purchase-order-ui.js',
     '/js/ui/reorder-engine-ui.js',
     '/js/ui/setup-wizard-ui.js',
     '/js/ui/ui-helpers.js',
+    '/js/ui/work-estimation-ui.js',
+    '/js/ui/workflow-builder-ui.js',
 
     // --- i18n (Internationalization) ---
     '/js/i18n/de.js',
@@ -167,7 +188,6 @@ const STATIC_ASSETS = [
 
 // External CDN resources to cache
 const CDN_ASSETS = [
-    'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
     'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js'
 ];
 

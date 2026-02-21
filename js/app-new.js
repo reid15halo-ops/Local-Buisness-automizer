@@ -251,18 +251,6 @@ function initSettings() {
     });
 }
 
-function updateSettingsStatus() {
-    const geminiKey = localStorage.getItem('gemini_api_key');
-    const webhookUrl = localStorage.getItem('n8n_webhook_url');
-
-    if (document.getElementById('gemini-status')) {
-        document.getElementById('gemini-status').textContent = geminiKey ? '✅ Konfiguriert' : '❌ Nicht konfiguriert';
-    }
-    if (document.getElementById('webhook-status')) {
-        document.getElementById('webhook-status').textContent = webhookUrl ? '✅ Konfiguriert' : '❌ Nicht konfiguriert';
-    }
-}
-
 // ============================================
 // Mahnwesen (Dunning)
 // ============================================

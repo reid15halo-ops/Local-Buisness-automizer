@@ -84,7 +84,18 @@ function initAngebotForm() {
             }
         });
 
+        // Validate: at least one position required
+        if (positionen.length === 0) {
+            if (window.showToast) window.showToast('Mindestens eine Position mit Beschreibung, Menge und Preis erforderlich', 'warning');
+            return;
+        }
+
         const netto = positionen.reduce((sum, p) => sum + (p.menge * p.preis), 0);
+        if (netto <= 0) {
+            if (window.showToast) window.showToast('Angebotssumme muss größer als 0 sein', 'warning');
+            return;
+        }
+
         const mwst = netto * 0.19;
         const brutto = netto + mwst;
 

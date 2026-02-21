@@ -373,22 +373,121 @@ function renderAuftraegeList(auftraege) {
     }).join('');
 }
 
-// Initialization stub for handlers - full implementation in main app
+// Auftrag form initialization (for completing orders with Stückliste)
 function initAuftragForm() {
-    // Detailed implementation would go here
-    // This is called from main app.js during init
+    const form = document.getElementById('form-auftrag');
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const auftragId = document.getElementById('auftrag-id')?.value;
+        const auftrag = store.auftraege.find(a => a.id === auftragId);
+        if (!auftrag) return;
+
+        const arbeitszeit = parseFloat(document.getElementById('arbeitszeit')?.value) || 0;
+        auftrag.arbeitszeit = arbeitszeit;
+        auftrag.completedAt = new Date().toISOString();
+
+        saveStore();
+        addActivity('✅', `Auftrag ${auftrag.id} abgeschlossen (${arbeitszeit}h)`);
+        window.AppUtils.closeModal('modal-auftrag');
+        renderAuftraege();
+    });
+
+    // Stückliste: Material hinzufügen Button
+    document.getElementById('btn-add-stueckliste')?.addEventListener('click', () => {
+        const rows = document.getElementById('stueckliste-rows');
+        if (!rows) return;
+        const idx = rows.children.length;
+        const row = document.createElement('div');
+        row.className = 'stueckliste-row';
+        row.innerHTML = `
+            <input type="text" placeholder="Bezeichnung" class="sl-name" data-idx="${idx}">
+            <input type="number" placeholder="1" value="1" min="0.1" step="0.1" class="sl-menge" data-idx="${idx}">
+            <input type="text" placeholder="Stk" value="Stk" class="sl-einheit" data-idx="${idx}">
+            <input type="number" placeholder="0.00" step="0.01" class="sl-ek" data-idx="${idx}">
+            <input type="number" placeholder="0.00" step="0.01" class="sl-vk" data-idx="${idx}">
+            <span class="sl-gesamt" data-idx="${idx}">0,00 €</span>
+            <button type="button" class="btn-remove-sl" data-idx="${idx}">&times;</button>
+        `;
+        rows.appendChild(row);
+    });
 }
 
+// Auftrag detail view handlers (tabs, status buttons, time tracking)
 function initAuftragDetailHandlers() {
-    // Detailed implementation would go here
-    // This is called from main app.js during init
+    // Tab switching
+    document.getElementById('auftrag-detail-tabs')?.addEventListener('click', (e) => {
+        const tab = e.target.closest('.auftrag-tab');
+        if (!tab) return;
+        const tabName = tab.dataset.tab;
+
+        // Update active tab button
+        document.querySelectorAll('#auftrag-detail-tabs .auftrag-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        // Update active tab content
+        const modal = document.getElementById('modal-auftrag-detail');
+        modal.querySelectorAll('.auftrag-tab-content').forEach(c => c.classList.remove('active'));
+        const content = modal.querySelector(`.auftrag-tab-content[data-tab="${tabName}"]`);
+        if (content) content.classList.add('active');
+    });
+
+    // Status action buttons (delegated)
+    document.getElementById('ad-status-actions')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-status]');
+        if (!btn || !currentDetailAuftragId) return;
+        changeAuftragStatus(currentDetailAuftragId, btn.dataset.status);
+        openAuftragDetail(currentDetailAuftragId); // Refresh view
+    });
 }
 
+// Open auftrag detail modal and populate it
 function openAuftragDetail(auftragId) {
     currentDetailAuftragId = auftragId;
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) {return;}
-    // Detail view implementation handled elsewhere
+    if (!auftrag) return;
+
+    const kunde = auftrag.kunde || {};
+    const statusConfig = AUFTRAG_STATUS_CONFIG[auftrag.status] || {};
+
+    // Title
+    const title = document.getElementById('auftrag-detail-title');
+    if (title) title.textContent = `Auftrag ${auftrag.id}`;
+
+    // Overview fields
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '-'; };
+    setEl('ad-kunde-name', kunde.name || kunde.firma);
+    setEl('ad-kunde-kontakt', [kunde.email, kunde.telefon].filter(Boolean).join(' · '));
+    setEl('ad-leistungsart', h(auftrag.leistungsart || ''));
+    setEl('ad-angebotswert', auftrag.angebotswert ? formatCurrency(auftrag.angebotswert) : '-');
+
+    // Status pipeline visual
+    const pipeline = document.getElementById('ad-status-pipeline');
+    if (pipeline) {
+        const allStates = Object.entries(AUFTRAG_STATUS_CONFIG);
+        pipeline.innerHTML = allStates.map(([key, cfg]) => {
+            const isCurrent = key === auftrag.status;
+            const isPast = cfg.order < (statusConfig.order || 0);
+            return `<span class="pipeline-step ${isCurrent ? 'current' : ''} ${isPast ? 'done' : ''}">${cfg.icon} ${cfg.label}</span>`;
+        }).join('');
+    }
+
+    // Status action buttons
+    const actions = document.getElementById('ad-status-actions');
+    if (actions && statusConfig.erlaubteUebergaenge) {
+        actions.innerHTML = statusConfig.erlaubteUebergaenge.map(s => {
+            const cfg = AUFTRAG_STATUS_CONFIG[s] || {};
+            return `<button class="btn btn-small" data-status="${s}">${cfg.icon || ''} ${cfg.label || s}</button>`;
+        }).join('');
+    }
+
+    // Reset to first tab
+    const tabs = document.querySelectorAll('#auftrag-detail-tabs .auftrag-tab');
+    tabs.forEach((t, i) => t.classList.toggle('active', i === 0));
+    const contents = document.querySelectorAll('#modal-auftrag-detail .auftrag-tab-content');
+    contents.forEach((c, i) => c.classList.toggle('active', i === 0));
+
     window.AppUtils.openModal('modal-auftrag-detail');
 }
 

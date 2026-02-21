@@ -19,9 +19,9 @@
 ### Technical Highlights
 - Multi-language (DE/EN) with 402 translation keys
 - Dark industrial UI theme with light mode support
-- PWA with offline-first architecture, Service Worker v5
-- 481 unit tests, GitHub Actions CI/CD
-- 80+ service modules, modular architecture
+- PWA with offline-first architecture, Service Worker v8
+- Unit tests (in progress), GitHub Actions CI/CD
+- 94 service modules, modular architecture
 - Lazy loading (-75% initial load), GZIP compression
 - Security: CSP, XSS protection, input sanitization (A rating)
 
@@ -84,9 +84,9 @@ ssh pi@raspberrypi.local 'bash -s' < raspberry-pi-auto-install.sh
 │   └── reorder-engine.css
 │
 ├── js/
-│   ├── services/          # 80+ service modules
-│   ├── modules/           # 12 feature modules
-│   ├── ui/                # 7 UI components
+│   ├── services/          # 94 service modules
+│   ├── modules/           # 14 feature modules
+│   ├── ui/                # 18 UI components
 │   └── i18n/              # Translations (DE/EN)
 │
 ├── config/                # Configuration files
@@ -109,7 +109,7 @@ ssh pi@raspberrypi.local 'bash -s' < raspberry-pi-auto-install.sh
 ### Running Tests
 ```bash
 npm install
-npm run test    # Run 481 unit tests
+npm run test    # Run Unit tests (in progress)
 npm run lint    # ESLint validation
 npm run build   # Production build
 ```
@@ -161,7 +161,7 @@ See `.env.example` for complete list.
 - **Lighthouse Score:** 92/100
 - **Bundle Size:** 200 KB (-75% optimized)
 - **Memory:** 25 MB (-44% optimized)
-- **Cache Strategy:** Stale-while-revalidate (Service Worker v5)
+- **Cache Strategy:** Stale-while-revalidate (Service Worker v8)
 
 ## Browser Support
 

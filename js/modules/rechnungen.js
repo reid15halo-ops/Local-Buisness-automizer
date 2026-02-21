@@ -497,8 +497,60 @@ function showRechnung(rechnungId) {
 }
 
 function initRechnungActions() {
-    // Initialize any event listeners for invoice actions
-    // Implementation details would go here
+    // Delegated click handler for invoice action buttons
+    document.getElementById('view-rechnungen')?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+
+        const action = btn.dataset.action;
+        const rechnungId = btn.dataset.id;
+        const rechnung = store.rechnungen.find(r => r.id === rechnungId);
+        if (!rechnung) return;
+
+        switch (action) {
+            case 'download-pdf':
+                if (window.pdfGenerationService) {
+                    try {
+                        await window.pdfGenerationService.downloadPDF(rechnung);
+                        if (window.showToast) showToast('PDF heruntergeladen', 'success');
+                    } catch (err) {
+                        if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+                    }
+                }
+                break;
+            case 'xrechnung':
+                if (window.eInvoiceService) {
+                    const result = window.eInvoiceService.generateXRechnung(rechnung);
+                    if (result.success) {
+                        window.eInvoiceService.downloadXml(result.recordId);
+                        if (window.showToast) showToast('XRechnung XML generiert', 'success');
+                    }
+                }
+                break;
+            case 'zugferd':
+                if (window.eInvoiceService) {
+                    const result = await window.eInvoiceService.generateZugferd(rechnung);
+                    if (result.success && result.pdfBytes) {
+                        window.eInvoiceService.downloadZugferdPdf(result.recordId);
+                        if (window.showToast) showToast('ZUGFeRD PDF generiert', 'success');
+                    } else {
+                        window.eInvoiceService.downloadXml(result.recordId);
+                        if (window.showToast) showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');
+                    }
+                }
+                break;
+            case 'mark-paid':
+                if (rechnung.status === 'offen') {
+                    rechnung.status = 'bezahlt';
+                    rechnung.bezahltAm = new Date().toISOString();
+                    saveStore();
+                    addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
+                    renderRechnungen();
+                    if (window.showToast) showToast('Als bezahlt markiert', 'success');
+                }
+                break;
+        }
+    });
 }
 
 function initRechnungenFilters() {
