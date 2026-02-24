@@ -3950,7 +3950,7 @@ function initPaymentMatching() {
 }
 
 function parseGermanFloat(str) {
-  if (!str || typeof str !== 'string') return 0;
+  if (!str || typeof str !== 'string') { return 0; }
   // Remove thousand separators (dots) and replace decimal comma with dot
   const normalized = str.trim().replace(/\./g, '').replace(',', '.');
   const result = parseFloat(normalized);

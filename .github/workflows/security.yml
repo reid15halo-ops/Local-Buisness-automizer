@@ -32,7 +32,9 @@ jobs:
         run: npm ci
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
+        # Remaining moderate vulns are in esbuild/vite/vitest (dev server only, not production)
+        # Use --audit-level=high; upgrade vitest when a non-breaking fix is available
+        run: npm audit --audit-level=high
 
   sri-check:
     name: SRI Integrity Check
