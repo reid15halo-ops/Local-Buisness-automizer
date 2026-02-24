@@ -46,14 +46,14 @@
       "name": "GET Uptime Kuma Status",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 180],
+      "position": [460, 200],
       "continueOnFail": true,
       "notes": "Fetches Uptime Kuma status page via Tailscale hostname 'uptime-kuma-pi4'. If Tailscale is down, this will fail and trigger alert."
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ ($env[\"BACKEND_URL\"] || 'http://backend:8001') + '/health' }}",
+        "url": "={{ $env[\"BACKEND_URL\"] }}/health",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -77,9 +77,9 @@
       "name": "GET Backend Health (Zone 2)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 420],
+      "position": [460, 400],
       "continueOnFail": true,
-      "notes": "FIXED: Backend URL now uses BACKEND_URL env var with fallback. Checks Zone 2 Python backend service health endpoint."
+      "notes": "Checks Zone 2 Python backend service health endpoint via BACKEND_URL env var."
     },
     {
       "parameters": {
@@ -159,7 +159,7 @@
             {
               "id": "down-services",
               "name": "down_services",
-              "value": "={{ (() => { const down = []; if (!$json[\"uptime_kuma_ok\"]) down.push('uptime-kuma (Pi4 unreachable via Tailscale)'); if (!$json[\"backend_ok\"]) down.push('backend:8001 (Zone 2 Python API)'); if ($json[\"uptime_monitors\"]) { Object.entries($json[\"uptime_monitors\"]).forEach(([k,m]) => { if (m.status !== 1 && m.status !== 'up') down.push(m.name || k); }); } return down; })() }}",
+              "value": "={{ (() => { const down = []; if (!$json[\"uptime_kuma_ok\"]) down.push('uptime-kuma (Pi4 unreachable via Tailscale)'); if (!$json[\"backend_ok\"]) down.push('backend (Zone 2 Python API)'); if ($json[\"uptime_monitors\"]) { Object.entries($json[\"uptime_monitors\"]).forEach(([k,m]) => { if (m.status !== 1 && m.status !== 'up') down.push(m.name || k); }); } return down; })() }}",
               "type": "array"
             }
           ]
@@ -205,7 +205,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.telegram.org/bot{{ $env[\"TELEGRAM_BOT_TOKEN\"] }}/sendMessage",
+        "url": "https://api.telegram.org/bot{{ $env[\"TELEGRAM_BOT_TOKEN\"] }}/sendMessage",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -217,7 +217,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"chat_id\": \"{{ $env[\"TELEGRAM_CTO_CHAT_ID\"] }}\",\n  \"text\": \"ALERT: Service Outage Detected\\n\\nTime: {{ $json[\"check_timestamp\"] }}\\nDown Services:\\n{{ $json[\"down_services\"].map(s => '- ' + s).join('\\n') }}\\n\\nStatus Summary:\\n- Uptime Kuma (Pi4): {{ $json[\"uptime_kuma_ok\"] ? 'OK' : 'DOWN' }}\\n- Backend Zone 2: {{ $json[\"backend_ok\"] ? 'OK' : 'DOWN' }}\\n\\nPlease investigate immediately.\",\n  \"parse_mode\": \"HTML\",\n  \"disable_notification\": false\n}",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $env[\"TELEGRAM_CTO_CHAT_ID\"] }}\",\n  \"text\": \"<b>ALERT: Service Outage Detected</b>\\n\\n<b>Time</b>: {{ $json[\"check_timestamp\"] }}\\n<b>Down Services</b>:\\n{{ $json[\"down_services\"].map(s => '- ' + s).join('\\n') }}\\n\\n<b>Status Summary</b>:\\n- Uptime Kuma (Pi4): {{ $json[\"uptime_kuma_ok\"] ? 'OK' : 'DOWN' }}\\n- Backend Zone 2: {{ $json[\"backend_ok\"] ? 'OK' : 'DOWN' }}\\n\\nPlease investigate immediately.\",\n  \"parse_mode\": \"HTML\",\n  \"disable_notification\": false\n}",
         "options": {
           "timeout": 10000
         }
@@ -226,14 +226,14 @@
       "name": "Telegram Alert to CTO",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1560, 140],
+      "position": [1560, 160],
       "continueOnFail": true,
-      "notes": "Sends Telegram message to CTO. Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CTO_CHAT_ID env vars. FIXED: parse_mode changed from Markdown to HTML to avoid Markdown escape issues in n8n expressions."
+      "notes": "Sends Telegram message to CTO. Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CTO_CHAT_ID env vars. Uses HTML parse_mode."
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env[\"ALERT_EMAIL_WEBHOOK_URL\"] || ($env[\"BACKEND_URL\"] || 'http://backend:8001') + '/notify/email' }}",
+        "url": "={{ $env[\"ALERT_EMAIL_WEBHOOK_URL\"] || ($env[\"BACKEND_URL\"] + '/notify/email') }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -254,9 +254,9 @@
       "name": "Email Alert to CTO",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1560, 300],
+      "position": [1560, 320],
       "continueOnFail": true,
-      "notes": "FIXED: Uses ALERT_EMAIL_WEBHOOK_URL env var with fallback to BACKEND_URL/notify/email. Requires CTO_EMAIL env var."
+      "notes": "Sends email alert via backend service or SMTP webhook. Requires ALERT_EMAIL_WEBHOOK_URL and CTO_EMAIL env vars."
     },
     {
       "parameters": {
@@ -275,7 +275,7 @@
             },
             {
               "fieldId": "message",
-              "fieldValue": "={{ 'Down services: ' + $json[\"down_services\"].join(', ') + ' | Uptime Kuma: ' + ($json[\"uptime_kuma_ok\"] ? 'OK' : 'DOWN') + ' | Backend: ' + ($json[\"backend_ok\"] ? 'OK' : 'DOWN') }}"
+              "fieldValue": "={{ 'Down services: ' + $json[\"down_services\"].join(', ') + ' | uptime_kuma_ok: ' + $json[\"uptime_kuma_ok\"] + ' | backend_ok: ' + $json[\"backend_ok\"] + ' | status_codes: uk=' + $json[\"uptime_kuma_status_code\"] + ' be=' + $json[\"backend_status_code\"] + ' | checked_at: ' + $json[\"check_timestamp\"] }}"
             },
             {
               "fieldId": "read",
@@ -288,14 +288,13 @@
       "name": "Log Outage to Supabase",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1780, 220],
+      "position": [1780, 240],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Removed non-existent columns: severity, details, alerted_at, alert_sent. Notifications table schema: id, user_id, title, message, type, read, created_at. Down service details now included in message field."
+      }
     },
     {
       "parameters": {
@@ -314,11 +313,11 @@
             },
             {
               "fieldId": "message",
-              "fieldValue": "={{ 'All services healthy at ' + $json[\"check_timestamp\"] + ' | Uptime Kuma: ' + $json[\"uptime_kuma_status_code\"] + ' | Backend: ' + $json[\"backend_status_code\"] }}"
+              "fieldValue": "={{ 'All services healthy | uptime_kuma_ok: ' + $json[\"uptime_kuma_ok\"] + ' | backend_ok: ' + $json[\"backend_ok\"] + ' | checked_at: ' + $json[\"check_timestamp\"] }}"
             },
             {
               "fieldId": "read",
-              "fieldValue": true
+              "fieldValue": false
             }
           ]
         }
@@ -334,7 +333,7 @@
           "name": "Supabase API"
         }
       },
-      "notes": "FIXED: Removed non-existent columns: severity, details, alerted_at, alert_sent. Maps to actual notifications schema. NOTE: read=true means healthy checks are pre-marked as read to avoid UI clutter. Consider logging only every Nth check (e.g. every 30 min) to avoid excessive Supabase rows."
+      "notes": "Logs every healthy check. Consider adjusting to log every Nth check (e.g. every 30 min) to avoid excessive Supabase rows."
     }
   ],
   "connections": {
@@ -472,5 +471,5 @@
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Zone 3 Health Monitoring & Backup Alerts - FIXED v2\n\n### Audit Changes\n- FIXED: notifications table INSERT was referencing non-existent columns: severity, details, alerted_at, alert_sent. Schema only has: id, user_id, title, message, type, read, created_at\n- FIXED: Down service details and status info moved into message field (concatenated string)\n- FIXED: read=false for outage notifications (shows in UI), read=true for healthy checks (auto-dismissed)\n- FIXED: Backend URL now uses BACKEND_URL env var with fallback for email alert endpoint\n- FIXED: Telegram parse_mode changed from Markdown to HTML to avoid expression conflicts\n- NOTE: The Log Outage node receives from both Telegram and Email alert nodes; this may insert duplicate records. Consider using a Merge or Wait node if deduplication is needed.\n\n### Setup Required\n1. **Tailscale**: Ensure n8n Docker container can resolve 'uptime-kuma-pi4' via Tailscale MagicDNS\n2. **Telegram**: Create bot via @BotFather. Set TELEGRAM_BOT_TOKEN and TELEGRAM_CTO_CHAT_ID env vars\n3. **Email**: Set ALERT_EMAIL_WEBHOOK_URL and CTO_EMAIL env vars\n4. **Backend**: Set BACKEND_URL env var\n5. **Supabase**: Set up 'Supabase API' credential in n8n\n\n### Services Monitored\n- Uptime Kuma on Raspberry Pi 4 (Zone 3) via Tailscale: http://uptime-kuma-pi4:3001\n- Backend Zone 2 Python API: $env[\"BACKEND_URL\"]/health\n- All monitors registered in Uptime Kuma status page 'main'\n\n### Alert Channels\n1. Telegram message to CTO chat\n2. Email via backend notification service\n3. Supabase notifications table log (visible in app UI)"
+  "notes": "## Zone 3 Health Monitoring & Backup Alerts\n\n### Fixes Applied (v2)\n- Removed non-existent notifications columns: severity, details, alerted_at, alert_sent\n- notifications INSERT now uses only: type, title, message, read (actual schema columns)\n- Status details moved into message string (concatenated as readable text)\n- Replaced hardcoded 'http://backend:8001' with $env[\"BACKEND_URL\"] in health check and email fallback\n- Changed Telegram parse_mode from 'Markdown' to 'HTML' (more reliable; avoids MarkdownV2 escaping issues)\n- Updated Telegram message to use HTML bold tags instead of Markdown asterisks\n\n### Setup Required\n1. **Tailscale**: Ensure n8n Docker container can resolve 'uptime-kuma-pi4' via Tailscale MagicDNS.\n2. **Telegram**: Create bot via @BotFather, get TELEGRAM_BOT_TOKEN. Get chat ID via @userinfobot. Set TELEGRAM_CTO_CHAT_ID and TELEGRAM_BOT_TOKEN env vars.\n3. **Email**: Set ALERT_EMAIL_WEBHOOK_URL (or BACKEND_URL) and CTO_EMAIL env vars.\n4. **Supabase notifications table**: Has columns: id, user_id, title, message, type, read, created_at.\n\n### Services Monitored\n- Uptime Kuma on Raspberry Pi 4 (Zone 3) via Tailscale: http://uptime-kuma-pi4:3001\n- Backend Zone 2 Python API: BACKEND_URL/health\n- All monitors registered in Uptime Kuma status page 'main'\n\n### Alert Channels\n1. Telegram message to CTO chat (HTML format)\n2. Email via ALERT_EMAIL_WEBHOOK_URL or backend notification service\n3. Supabase notifications table log\n\n### Reduce Noise\n- Consider adding a cooldown check: only alert if service was healthy in last check\n- Use n8n static data or Supabase to track last alert time per service"
 }

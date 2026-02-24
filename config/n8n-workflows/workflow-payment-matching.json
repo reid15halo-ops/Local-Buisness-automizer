@@ -23,7 +23,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://bankaccountdata.gocardless.com/api/v2/accounts/{{ $env[\"GOCARDLESS_ACCOUNT_ID\"] }}/transactions/",
+        "url": "https://bankaccountdata.gocardless.com/api/v2/accounts/{{ $env[\"GOCARDLESS_ACCOUNT_ID\"] }}/transactions/",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -59,8 +59,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [460, 300],
-      "continueOnFail": false,
-      "notes": "GoCardless Open Banking API. Returns transactions.booked array and transactions.pending array. Requires GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID env vars."
+      "notes": "GoCardless Open Banking API. Returns transactions.booked array and transactions.pending array. Requires GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID."
     },
     {
       "parameters": {
@@ -102,7 +101,7 @@
       "name": "Split Booked Transactions",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
-      "position": [900, 180],
+      "position": [900, 200],
       "notes": "Splits the transactions.booked array into individual items for per-transaction processing"
     },
     {
@@ -161,7 +160,7 @@
       "name": "Normalize Transaction Fields",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [1120, 180],
+      "position": [1120, 200],
       "notes": "Flattens GoCardless transaction object into normalized fields for easier downstream processing"
     },
     {
@@ -191,7 +190,7 @@
       "name": "Credit Transactions Only",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 180],
+      "position": [1340, 200],
       "notes": "Only process incoming payments (positive amounts). Skip outgoing payments."
     },
     {
@@ -207,14 +206,14 @@
       "name": "Lookup Rechnung by Amount (±0.01)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1560, 100],
+      "position": [1560, 140],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
       },
-      "notes": "FIXED: Table changed from 'invoices' to 'rechnungen'. Column changed from 'total' to 'brutto'. Status filter changed from 'sent,action_required_dunning' to 'offen' (matches rechnungen.status CHECK constraint). Matches by amount ±0.01 EUR."
+      "notes": "Matches by brutto amount ±0.01 EUR on rechnungen with status=offen. Returns up to 5 candidates."
     },
     {
       "parameters": {
@@ -229,14 +228,14 @@
       "name": "Lookup Rechnung by Reference",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1560, 300],
+      "position": [1560, 320],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
       },
-      "notes": "FIXED: Table changed to 'rechnungen'. Secondary matching uses leistungsart field (closest to invoice reference in schema). Status filter uses 'offen'."
+      "notes": "Secondary matching strategy: match rechnung id/leistungsart in transaction reference field. rechnungen does not have invoice_number column; use leistungsart as reference."
     },
     {
       "parameters": {
@@ -254,7 +253,7 @@
       "name": "Merge Match Results",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [1780, 200],
+      "position": [1780, 220],
       "notes": "Combines results from both lookup strategies. Input 1: amount match, Input 2: reference match."
     },
     {
@@ -284,7 +283,7 @@
       "name": "Match Found?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [2000, 200]
+      "position": [2000, 220]
     },
     {
       "parameters": {
@@ -308,7 +307,7 @@
             },
             {
               "fieldId": "paid_at",
-              "fieldValue": "={{ new Date($node[\"Normalize Transaction Fields\"].json[\"txn_booking_date\"]).toISOString() }}"
+              "fieldValue": "={{ $node[\"Normalize Transaction Fields\"].json[\"txn_booking_date\"] }}"
             }
           ]
         }
@@ -317,14 +316,13 @@
       "name": "UPDATE rechnungen status='bezahlt'",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [2220, 100],
+      "position": [2220, 120],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Table changed from 'invoices' to 'rechnungen'. Status value changed from 'paid' to 'bezahlt' (matches CHECK constraint). Column changed from 'paid_date' to 'paid_at'. Removed non-existent columns payment_transaction_id, payment_amount_received, payment_matched_by."
+      }
     },
     {
       "parameters": {
@@ -335,7 +333,7 @@
           "fieldValues": [
             {
               "fieldId": "action",
-              "fieldValue": "payment.auto_matched"
+              "fieldValue": "payment_auto_matched"
             },
             {
               "fieldId": "target",
@@ -343,7 +341,7 @@
             },
             {
               "fieldId": "metadata",
-              "fieldValue": "={{ JSON.stringify({ rechnung_id: $node[\"Merge Match Results\"].json[\"id\"], transaction_id: $node[\"Normalize Transaction Fields\"].json[\"txn_id\"], amount: $node[\"Normalize Transaction Fields\"].json[\"txn_amount\"], booking_date: $node[\"Normalize Transaction Fields\"].json[\"txn_booking_date\"], matched_by: 'auto_bank_matching' }) }}"
+              "fieldValue": "={{ JSON.stringify({ rechnung_id: $node[\"Merge Match Results\"].json[\"id\"], kunde_name: $node[\"Merge Match Results\"].json[\"kunde_name\"], transaction_id: $node[\"Normalize Transaction Fields\"].json[\"txn_id\"], amount: $node[\"Normalize Transaction Fields\"].json[\"txn_amount\"], booking_date: $node[\"Normalize Transaction Fields\"].json[\"txn_booking_date\"] }) }}"
             }
           ]
         }
@@ -352,14 +350,13 @@
       "name": "INSERT automation_log (matched)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [2440, 100],
+      "position": [2440, 120],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Uses automation_log (exists in schema) instead of non-existent jobs_queue."
+      }
     },
     {
       "parameters": {
@@ -370,11 +367,11 @@
           "fieldValues": [
             {
               "fieldId": "action",
-              "fieldValue": "payment.unmatched"
+              "fieldValue": "payment_unmatched"
             },
             {
               "fieldId": "target",
-              "fieldValue": "={{ $json[\"txn_id\"] || 'unknown' }}"
+              "fieldValue": "={{ $json[\"txn_id\"] }}"
             },
             {
               "fieldId": "metadata",
@@ -387,14 +384,14 @@
       "name": "INSERT automation_log (manual review)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [2220, 320],
+      "position": [2220, 340],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
       },
-      "notes": "FIXED: Uses automation_log instead of jobs_queue. Logs unmatched transactions with reason='no_rechnung_match' for manual review in the operations dashboard."
+      "notes": "Logs unmatched transactions for manual review in the operations dashboard."
     },
     {
       "parameters": {
@@ -405,7 +402,7 @@
           "fieldValues": [
             {
               "fieldId": "action",
-              "fieldValue": "payment.matching_run_empty"
+              "fieldValue": "payment_matching_run"
             },
             {
               "fieldId": "target",
@@ -413,7 +410,7 @@
             },
             {
               "fieldId": "metadata",
-              "fieldValue": "={{ JSON.stringify({ message: 'No booked transactions in last 7 days', run_date: new Date().toISOString() }) }}"
+              "fieldValue": "={{ JSON.stringify({ message: 'No transactions in last 7 days', run_date: new Date().toISOString() }) }}"
             }
           ]
         }
@@ -428,43 +425,7 @@
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Uses automation_log instead of jobs_queue. Logs empty run for audit trail."
-    },
-    {
-      "parameters": {
-        "operation": "create",
-        "tableId": "automation_log",
-        "dataToSend": "defineBelow",
-        "fieldsToSend": {
-          "fieldValues": [
-            {
-              "fieldId": "action",
-              "fieldValue": "payment.matching_error"
-            },
-            {
-              "fieldId": "target",
-              "fieldValue": "gocardless"
-            },
-            {
-              "fieldId": "metadata",
-              "fieldValue": "={{ JSON.stringify({ error: $json[\"error\"] || 'GoCardless API error', timestamp: new Date().toISOString() }) }}"
-            }
-          ]
-        }
-      },
-      "id": "node-error-handler",
-      "name": "Error Handler: Log Fetch Error",
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
-      "position": [680, 480],
-      "credentials": {
-        "supabaseApi": {
-          "id": "cred-supabase-api",
-          "name": "Supabase API"
-        }
-      },
-      "notes": "ADDED: Error handler for GoCardless API failures or other unexpected errors."
+      }
     }
   ],
   "connections": {
@@ -626,5 +587,5 @@
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Zahlungsabgleich (Payment Auto-Matching) - FIXED v2\n\n### Audit Changes\n- FIXED: Table changed from 'invoices' to 'rechnungen' (correct schema table)\n- FIXED: Column 'total' changed to 'brutto' (correct column name in rechnungen)\n- FIXED: Status filter changed from 'sent,action_required_dunning' to 'offen' (matches rechnungen.status CHECK constraint: offen/bezahlt/storniert)\n- FIXED: Status update value changed from 'paid' to 'bezahlt' (German, matches CHECK constraint)\n- FIXED: 'paid_date' column changed to 'paid_at' (correct column in rechnungen)\n- FIXED: Removed non-existent columns: payment_transaction_id, payment_amount_received, payment_matched_by\n- FIXED: jobs_queue table replaced with automation_log (exists in schema)\n- ADDED: Error handler node for GoCardless API failures\n- NOTE: Transaction details (txn_id, amount, matched_by) now stored in automation_log.metadata JSON\n\n### Setup Required\n1. **GoCardless**: Register at bankaccountdata.gocardless.com. Obtain access token and account ID.\n2. **Env Vars**: Set GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID in n8n\n3. **Supabase**: Set up 'Supabase API' credential in n8n\n\n### Matching Strategies (dual)\n1. **Amount match**: rechnungen.brutto within ±0.01 EUR of transaction amount\n2. **Reference match**: rechnungen.leistungsart contains transaction remittance reference\n\n### Scheduling\n- Runs at 07:00 daily (1 hour before dunning check at 08:00)\n- Processes last 7 days of transactions to catch delayed bookings"
+  "notes": "## Zahlungsabgleich (Payment Auto-Matching)\n\n### Fixes Applied (v2)\n- Changed tableId 'invoices' -> 'rechnungen' (actual schema table)\n- Changed column 'total' -> 'brutto' (actual rechnungen column)\n- Changed status filter 'sent,action_required_dunning' -> 'offen' (valid CHECK constraint values)\n- Changed UPDATE status 'paid' -> 'bezahlt' (valid CHECK constraint value: offen/bezahlt/storniert)\n- Changed column 'paid_date' -> 'paid_at' (actual rechnungen column)\n- Removed non-existent columns: payment_transaction_id, payment_amount_received, payment_matched_by (store in metadata)\n- Replaced jobs_queue with automation_log (action, target, metadata)\n- Transaction match data stored in automation_log.metadata JSONB\n\n### Setup Required\n1. **GoCardless**: Register at bankaccountdata.gocardless.com. Obtain access token and account ID.\n2. **Env Vars**: Set GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID in n8n.\n3. **Supabase rechnungen table**: Uses columns: status (offen/bezahlt/storniert), brutto, paid_at, kunde_name.\n\n### Matching Strategies (dual)\n1. **Amount match**: Rechnung brutto within ±0.01 EUR of transaction amount with status=offen\n2. **Reference match**: Rechnung leistungsart found in transaction remittance information\n\n### Scheduling\n- Runs at 07:00 daily (1 hour before dunning check at 08:00)\n- Processes last 7 days of transactions to catch delayed bookings\n\n### Manual Review\n- Unmatched transactions logged in automation_log with action='payment_unmatched' and requires_manual_review=true in metadata"
 }

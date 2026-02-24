@@ -40,15 +40,14 @@
         "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 500,\n  \"response_format\": { \"type\": \"json_object\" },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Classify the intent of the incoming message. Return JSON with fields: { intent: string, confidence: number, language: string, urgency: string, summary: string }. Intent must be exactly one of: appointment_request, quote_request, complaint, payment, general, spam. Urgency: low/medium/high. Confidence: 0.0-1.0.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Channel: {{ $json.body.channel }}\\nFrom: {{ $json.body.sender_name }} <{{ $json.body.sender_email }}>\\nSubject: {{ $json.body.subject }}\\nMessage:\\n{{ $json.body.body }}\"\n    }\n  ]\n}",
         "options": {
           "timeout": 30000
-        }
+        },
+        "continueOnFail": true
       },
       "id": "node-intent-analysis",
       "name": "OpenAI Intent Analysis",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 300],
-      "continueOnFail": true,
-      "notes": "Calls OpenAI via OPENAI_API_KEY env var (not hardcoded). continueOnFail ensures error path is handled."
+      "position": [460, 300]
     },
     {
       "parameters": {
@@ -56,27 +55,27 @@
         "assignments": {
           "assignments": [
             {
-              "id": "intent-field",
+              "id": "assign-intent",
               "name": "intent",
-              "value": "={{ $json[\"choices\"] ? JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])[\"intent\"] : 'general' }}",
+              "value": "={{ (() => { try { const parsed = JSON.parse($json[\"choices\"][0][\"message\"][\"content\"]); return parsed.intent || 'general'; } catch(e) { return 'general'; } })() }}",
               "type": "string"
             },
             {
-              "id": "confidence-field",
+              "id": "assign-confidence",
               "name": "confidence",
-              "value": "={{ $json[\"choices\"] ? JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])[\"confidence\"] : 0 }}",
+              "value": "={{ (() => { try { const parsed = JSON.parse($json[\"choices\"][0][\"message\"][\"content\"]); return parsed.confidence || 0.5; } catch(e) { return 0.5; } })() }}",
               "type": "number"
             },
             {
-              "id": "summary-field",
-              "name": "ai_summary",
-              "value": "={{ $json[\"choices\"] ? JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])[\"summary\"] : '' }}",
+              "id": "assign-summary",
+              "name": "summary",
+              "value": "={{ (() => { try { const parsed = JSON.parse($json[\"choices\"][0][\"message\"][\"content\"]); return parsed.summary || ''; } catch(e) { return ''; } })() }}",
               "type": "string"
             },
             {
-              "id": "urgency-field",
+              "id": "assign-urgency",
               "name": "urgency",
-              "value": "={{ $json[\"choices\"] ? JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])[\"urgency\"] : 'low' }}",
+              "value": "={{ (() => { try { const parsed = JSON.parse($json[\"choices\"][0][\"message\"][\"content\"]); return parsed.urgency || 'low'; } catch(e) { return 'low'; } })() }}",
               "type": "string"
             }
           ]
@@ -85,11 +84,11 @@
         "options": {}
       },
       "id": "node-extract-intent",
-      "name": "Extract Intent Fields",
+      "name": "Extract Intent",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [680, 300],
-      "notes": "FIXED: Extracts individual fields from GPT JSON response. Falls back to 'general' intent if GPT call failed (continueOnFail). Removed deprecated 'output' mode."
+      "notes": "Parses GPT JSON response into top-level fields (intent, confidence, summary, urgency) for Switch node routing"
     },
     {
       "parameters": {
@@ -215,8 +214,7 @@
       "name": "Route by Intent",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
-      "position": [900, 300],
-      "notes": "FIXED: Now routes on $json['intent'] field (extracted by Extract Intent Fields node). Output 0=appointment, 1=quote, 2=complaint, 3=payment, 4=spam, fallback=general."
+      "position": [900, 300]
     },
     {
       "parameters": {
@@ -224,35 +222,25 @@
         "url": "https://www.googleapis.com/calendar/v3/calendars/primary/freebusy",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "googleCalendarOAuth2Api",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"timeMin\": \"{{ new Date().toISOString() }}\",\n  \"timeMax\": \"{{ new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() }}\",\n  \"timeZone\": \"Europe/Berlin\",\n  \"items\": [{\"id\": \"primary\"}]\n}",
         "options": {
           "timeout": 15000
-        }
+        },
+        "continueOnFail": true
       },
       "id": "node-gcal-freebusy",
       "name": "Google Calendar Free/Busy",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1120, 100],
+      "position": [1120, 140],
       "credentials": {
         "googleCalendarOAuth2Api": {
           "id": "cred-google-calendar",
           "name": "Google Calendar OAuth2"
         }
-      },
-      "continueOnFail": true,
-      "notes": "FIXED: Uses predefined Google Calendar OAuth2 credential type. Token injected automatically by n8n. Method changed from GET+body to proper freebusy query."
+      }
     },
     {
       "parameters": {
@@ -273,18 +261,17 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Assistent. Verfasse eine freundliche, professionelle E-Mail-Antwort auf Deutsch. Biete genau 2 Terminvorschlaege an. Sei hoeflich und praezise. Schliesse mit einer Bitte um Bestaetigung ab.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Urspruengliche Anfrage von {{ $node[\"Communication Webhook\"].json.body.sender_name }}: {{ $node[\"Communication Webhook\"].json.body.body }}\\n\\nVerfuegbare Zeitfenster (naechste 2 Wochen):\\n{{ JSON.stringify($json) }}\\n\\nBitte verfasse eine Antwort-E-Mail mit 2 konkreten Terminvorschlaegen.\"\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Assistent. Verfasse eine freundliche, professionelle E-Mail-Antwort auf Deutsch. Biete genau 2 Terminvorschlaege an. Sei hoeflich und praezise. Schliesse mit einer Bitte um Bestaetigung ab.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Urspruengliche Anfrage von {{ $node[\\\"Communication Webhook\\\"].json.body.sender_name }}: {{ $node[\\\"Communication Webhook\\\"].json.body.body }}\\n\\nVerfuegbare Zeitfenster (naechste 2 Wochen):\\n{{ JSON.stringify($json) }}\\n\\nBitte verfasse eine Antwort-E-Mail mit 2 konkreten Terminvorschlaegen.\"\n    }\n  ]\n}",
         "options": {
           "timeout": 30000
-        }
+        },
+        "continueOnFail": true
       },
       "id": "node-draft-appointment-reply",
       "name": "Draft Appointment Reply",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1340, 100],
-      "continueOnFail": true,
-      "notes": "FIXED: Uses OPENAI_API_KEY env var instead of inline credential expression."
+      "position": [1340, 140]
     },
     {
       "parameters": {
@@ -305,18 +292,17 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Assistent. Verfasse eine freundliche, professionelle Antwort auf Deutsch fuer die jeweilige Anfrage. Passe Ton und Inhalt der Anfrageart an (Angebot, Beschwerde, Zahlung, Allgemein).\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Anfrageart: {{ $node[\"Extract Intent Fields\"].json.intent }}\\nVon: {{ $node[\"Communication Webhook\"].json.body.sender_name }}\\nBetreff: {{ $node[\"Communication Webhook\"].json.body.subject }}\\nNachricht: {{ $node[\"Communication Webhook\"].json.body.body }}\\n\\nBitte verfasse eine professionelle Antwort.\"\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Assistent. Verfasse eine freundliche, professionelle Antwort auf Deutsch fuer die jeweilige Anfrage. Passe Ton und Inhalt der Anfrageart an (Angebot, Beschwerde, Zahlung, Allgemein).\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Anfrageart: {{ $node[\\\"Extract Intent\\\"].json.intent }}\\nVon: {{ $node[\\\"Communication Webhook\\\"].json.body.sender_name }}\\nBetreff: {{ $node[\\\"Communication Webhook\\\"].json.body.subject }}\\nNachricht: {{ $node[\\\"Communication Webhook\\\"].json.body.body }}\\n\\nBitte verfasse eine professionelle Antwort.\"\n    }\n  ]\n}",
         "options": {
           "timeout": 30000
-        }
+        },
+        "continueOnFail": true
       },
       "id": "node-draft-general-reply",
       "name": "Draft General Reply",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1120, 380],
-      "continueOnFail": true,
-      "notes": "FIXED: Uses OPENAI_API_KEY env var. References Extract Intent Fields node (renamed from Extract Intent)."
+      "position": [1120, 380]
     },
     {
       "parameters": {
@@ -334,20 +320,16 @@
               "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.sender_name }}"
             },
             {
-              "fieldId": "message",
-              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.body }}"
-            },
-            {
               "fieldId": "direction",
               "fieldValue": "inbound"
             },
             {
-              "fieldId": "status",
-              "fieldValue": "delivered"
+              "fieldId": "message",
+              "fieldValue": "={{ 'FROM: ' + $node[\"Communication Webhook\"].json.body.sender_email + ' | INTENT: ' + $node[\"Extract Intent\"].json.intent + ' | SUBJECT: ' + $node[\"Communication Webhook\"].json.body.subject + ' | DRAFT: ' + $json[\"choices\"][0][\"message\"][\"content\"] }}"
             },
             {
-              "fieldId": "template_id",
-              "fieldValue": "={{ $node[\"Extract Intent Fields\"].json.intent }}"
+              "fieldId": "status",
+              "fieldValue": "sent"
             }
           ]
         }
@@ -356,14 +338,13 @@
       "name": "INSERT communication_log (appointment)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1560, 100],
+      "position": [1560, 140],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Table changed from 'communications' to 'communication_log' (correct schema table). Columns mapped to: channel, kunde_name, message, direction, status, template_id."
+      }
     },
     {
       "parameters": {
@@ -381,20 +362,16 @@
               "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.sender_name }}"
             },
             {
-              "fieldId": "message",
-              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.body }}"
-            },
-            {
               "fieldId": "direction",
               "fieldValue": "inbound"
             },
             {
-              "fieldId": "status",
-              "fieldValue": "delivered"
+              "fieldId": "message",
+              "fieldValue": "={{ 'FROM: ' + $node[\"Communication Webhook\"].json.body.sender_email + ' | INTENT: ' + $node[\"Extract Intent\"].json.intent + ' | SUBJECT: ' + $node[\"Communication Webhook\"].json.body.subject + ' | DRAFT: ' + $json[\"choices\"][0][\"message\"][\"content\"] }}"
             },
             {
-              "fieldId": "template_id",
-              "fieldValue": "={{ $node[\"Extract Intent Fields\"].json.intent }}"
+              "fieldId": "status",
+              "fieldValue": "sent"
             }
           ]
         }
@@ -409,8 +386,7 @@
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Table changed from 'communications' to 'communication_log'. Columns mapped correctly."
+      }
     },
     {
       "parameters": {
@@ -421,7 +397,7 @@
           "fieldValues": [
             {
               "fieldId": "action",
-              "fieldValue": "communication.processed"
+              "fieldValue": "communication_appointment_draft"
             },
             {
               "fieldId": "target",
@@ -429,23 +405,22 @@
             },
             {
               "fieldId": "metadata",
-              "fieldValue": "={{ JSON.stringify({ intent: $node[\"Extract Intent Fields\"].json.intent, confidence: $node[\"Extract Intent Fields\"].json.confidence, channel: $node[\"Communication Webhook\"].json.body.channel, urgency: $node[\"Extract Intent Fields\"].json.urgency }) }}"
+              "fieldValue": "={{ JSON.stringify({ intent: $node[\"Extract Intent\"].json.intent, sender: $node[\"Communication Webhook\"].json.body.sender_email, channel: $node[\"Communication Webhook\"].json.body.channel, urgency: $node[\"Extract Intent\"].json.urgency }) }}"
             }
           ]
         }
       },
-      "id": "node-log-comm-appt",
-      "name": "INSERT automation_log (appointment processed)",
+      "id": "node-automation-log-appt",
+      "name": "INSERT automation_log (appointment draft)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1780, 100],
+      "position": [1780, 140],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Uses automation_log table (exists in schema) instead of non-existent jobs_queue."
+      }
     },
     {
       "parameters": {
@@ -456,7 +431,7 @@
           "fieldValues": [
             {
               "fieldId": "action",
-              "fieldValue": "communication.processed"
+              "fieldValue": "communication_general_draft"
             },
             {
               "fieldId": "target",
@@ -464,13 +439,13 @@
             },
             {
               "fieldId": "metadata",
-              "fieldValue": "={{ JSON.stringify({ intent: $node[\"Extract Intent Fields\"].json.intent, confidence: $node[\"Extract Intent Fields\"].json.confidence, channel: $node[\"Communication Webhook\"].json.body.channel, urgency: $node[\"Extract Intent Fields\"].json.urgency }) }}"
+              "fieldValue": "={{ JSON.stringify({ intent: $node[\"Extract Intent\"].json.intent, sender: $node[\"Communication Webhook\"].json.body.sender_email, channel: $node[\"Communication Webhook\"].json.body.channel, urgency: $node[\"Extract Intent\"].json.urgency }) }}"
             }
           ]
         }
       },
-      "id": "node-log-comm-general",
-      "name": "INSERT automation_log (general processed)",
+      "id": "node-automation-log-general",
+      "name": "INSERT automation_log (general draft)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [1560, 380],
@@ -479,32 +454,32 @@
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      },
-      "notes": "FIXED: Uses automation_log table instead of non-existent jobs_queue."
+      }
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ status: 'received', intent: $node[\"Extract Intent Fields\"].json.intent, message: 'Communication processed successfully' }) }}"
+        "responseBody": "={{ JSON.stringify({ status: 'received', intent: $node[\"Extract Intent\"].json.intent, urgency: $node[\"Extract Intent\"].json.urgency, message: 'Communication processed successfully' }) }}"
       },
       "id": "node-respond-webhook",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1120, 560],
-      "notes": "FIXED: responseBody now uses proper JSON.stringify expression instead of template literal with embedded quotes."
+      "position": [1120, 560]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ status: 'error', message: 'Processing failed', intent: 'unknown' }) }}"
+        "responseBody": "={ \"status\": \"error\", \"message\": \"Failed to process communication\" }",
+        "options": {
+          "responseCode": 500
+        }
       },
-      "id": "node-respond-webhook-error",
-      "name": "Respond to Webhook (Error)",
+      "id": "node-respond-error",
+      "name": "Respond Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [680, 560],
-      "notes": "ADDED: Error response node for cases where intent analysis completely fails."
+      "position": [680, 500]
     }
   ],
   "connections": {
@@ -523,14 +498,14 @@
       "main": [
         [
           {
-            "node": "Extract Intent Fields",
+            "node": "Extract Intent",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract Intent Fields": {
+    "Extract Intent": {
       "main": [
         [
           {
@@ -624,7 +599,7 @@
       "main": [
         [
           {
-            "node": "INSERT automation_log (appointment processed)",
+            "node": "INSERT automation_log (appointment draft)",
             "type": "main",
             "index": 0
           }
@@ -635,14 +610,14 @@
       "main": [
         [
           {
-            "node": "INSERT automation_log (general processed)",
+            "node": "INSERT automation_log (general draft)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "INSERT automation_log (appointment processed)": {
+    "INSERT automation_log (appointment draft)": {
       "main": [
         [
           {
@@ -653,7 +628,7 @@
         ]
       ]
     },
-    "INSERT automation_log (general processed)": {
+    "INSERT automation_log (general draft)": {
       "main": [
         [
           {
@@ -682,5 +657,5 @@
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Kommunikation & Terminplanung - FIXED v2\n\n### Audit Changes\n- FIXED: All $credentials.openAiApi.apiKey inline expressions replaced with $env[\"OPENAI_API_KEY\"]\n- FIXED: Table 'communications' does not exist in schema. Changed to 'communication_log' (correct table)\n- FIXED: Column mapping updated: channel, kunde_name, message, direction, status, template_id (matches communication_log schema)\n- FIXED: Extract Intent node was using deprecated 'output' mode. Replaced with proper field assignments extracting intent, confidence, summary, urgency from GPT JSON response\n- FIXED: Route by Intent switch now references $json['intent'] field (not $json['output'])\n- FIXED: jobs_queue table does not exist in schema. Replaced with automation_log (exists in schema)\n- FIXED: Google Calendar node now uses predefined credential type instead of inline token\n- ADDED: continueOnFail on GPT/Calendar nodes\n- ADDED: Error response node for webhook failures\n\n### Setup Required\n1. **Webhook URL**: Configure your email parser (e.g. Postmark, Mailgun) or WhatsApp gateway to POST to the n8n webhook URL\n2. **Credentials**: Set up 'Supabase API' and 'Google Calendar OAuth2' credentials in n8n\n3. **Env Vars**: Set OPENAI_API_KEY in n8n environment variables\n4. **Switch routing**: Output 0=appointment, 1=quote, 2=complaint, 3=payment, 4=spam, fallback=general\n\n### Flow\nWebhook -> GPT-4o intent classification -> Switch routing -> Google Calendar (appointments only) -> GPT-4o draft reply -> communication_log INSERT -> automation_log log -> Webhook response"
+  "notes": "## Kommunikation & Terminplanung\n\n### Fixes Applied (v2)\n- Replaced $credentials.openAiApi.apiKey with $env[\"OPENAI_API_KEY\"]\n- Changed tableId 'communications' -> 'communication_log' (actual schema table)\n- Fixed communication_log columns: channel, kunde_name, direction, message, status\n- Fixed Extract Intent node: uses assignments mode with JSON.parse + fallback instead of deprecated output mode\n- Fixed Switch node: routes on $json[\"intent\"] not $json[\"output\"]\n- Replaced jobs_queue with automation_log (action, target, metadata)\n- Google Calendar uses predefinedCredentialType instead of inline token\n- Added continueOnFail on OpenAI nodes\n- Added error response node\n\n### Setup Required\n1. **Webhook URL**: Configure your email parser (e.g. Postmark, Mailgun) or WhatsApp gateway to POST to the webhook URL.\n2. **Credentials**: Set up 'Supabase API' and 'Google Calendar OAuth2' credentials in n8n.\n3. **Env Vars**: Set OPENAI_API_KEY in n8n environment.\n4. **Switch routing**: Output 0=appointment, 1=quote, 2=complaint, 3=payment, 4=spam, fallback=general.\n\n### Flow\nWebhook -> GPT-4o intent classification -> Switch routing -> Google Calendar (appointments only) -> GPT-4o draft reply -> Supabase communication_log INSERT -> automation_log log -> Webhook response"
 }

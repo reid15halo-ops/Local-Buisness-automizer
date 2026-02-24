@@ -1,0 +1,847 @@
+{
+  "name": "Kunden-Onboarding (Customer Onboarding)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-customer",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "rawBody": false
+        }
+      },
+      "id": "node-webhook-trigger",
+      "name": "Webhook: New Customer",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "new-customer-onboarding-webhook",
+      "notes": "Trigger: POST /webhook/new-customer\nExpected payload: { name: string (required), email: string (required), phone?: string, address?: string, city?: string, zip?: string, kategorie?: string, notizen?: string, user_id: string (required) }\nURL pattern: https://your-n8n.domain/webhook/new-customer"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "name-required",
+              "leftValue": "={{ $json.body.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "email-required",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            },
+            {
+              "id": "user-id-required",
+              "leftValue": "={{ $json.body.user_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-validate-input",
+      "name": "Validate Required Fields",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "notes": "Validates that required fields are present: name, email, user_id. Phone is optional. Routes to error response if any required field is missing."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "customer-id",
+              "name": "customer_id",
+              "value": "=KD-{{ Date.now().toString(36).toUpperCase() }}-{{ Math.random().toString(36).substring(2,6).toUpperCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-name",
+              "name": "name",
+              "value": "={{ $json.body.name.trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-email",
+              "name": "email",
+              "value": "={{ $json.body.email.trim().toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-phone",
+              "name": "telefon",
+              "value": "={{ $json.body.phone || $json.body.telefon || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-address",
+              "name": "adresse",
+              "value": "={{ $json.body.address || $json.body.adresse || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-city",
+              "name": "stadt",
+              "value": "={{ $json.body.city || $json.body.stadt || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-zip",
+              "name": "plz",
+              "value": "={{ $json.body.zip || $json.body.plz || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-notes",
+              "name": "notizen",
+              "value": "={{ $json.body.notes || $json.body.notizen || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-kategorie",
+              "name": "kategorie",
+              "value": "={{ $json.body.kategorie || 'neukunde' }}",
+              "type": "string"
+            },
+            {
+              "id": "customer-user-id",
+              "name": "user_id",
+              "value": "={{ $json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "has-phone",
+              "name": "has_phone",
+              "value": "={{ !!($json.body.phone || $json.body.telefon) }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "node-prepare-customer",
+      "name": "Prepare Customer Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 220],
+      "notes": "Normalizes and prepares customer data. Generates a unique customer ID in format KD-XXXX-XXXX. Handles both English (phone/address/city/zip) and German (telefon/adresse/stadt/plz) field names."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "kunden",
+        "returnAll": false,
+        "limit": 1,
+        "filterType": "string",
+        "filterString": "=email=eq.{{ $json[\"email\"] }}&user_id=eq.{{ $json[\"user_id\"] }}"
+      },
+      "id": "node-check-existing",
+      "name": "Check Existing Kunden by Email",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 220],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "continueOnFail": false,
+      "notes": "Checks if a Kunden record with the same email already exists for this user. Returns existing record or empty array. Prevents duplicate customer creation."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "already-exists",
+              "leftValue": "={{ $json[\"id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-exists-check",
+      "name": "Customer Already Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 220],
+      "notes": "If customer already exists (true path): update existing record. If new customer (false path): insert new record."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "kunden",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"name\"] }}"
+            },
+            {
+              "fieldId": "telefon",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"telefon\"] }}"
+            },
+            {
+              "fieldId": "adresse",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"adresse\"] }}"
+            },
+            {
+              "fieldId": "stadt",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"stadt\"] }}"
+            },
+            {
+              "fieldId": "plz",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"plz\"] }}"
+            },
+            {
+              "fieldId": "notizen",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"notizen\"] }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "aktiv"
+            }
+          ]
+        }
+      },
+      "id": "node-update-existing-kunde",
+      "name": "UPDATE kunden (existing)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1340, 120],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Updates existing Kunden record if email already exists. Returns updated record with id."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "kunden",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "id",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"customer_id\"] }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"user_id\"] }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"name\"] }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"email\"] }}"
+            },
+            {
+              "fieldId": "telefon",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"telefon\"] }}"
+            },
+            {
+              "fieldId": "adresse",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"adresse\"] }}"
+            },
+            {
+              "fieldId": "stadt",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"stadt\"] }}"
+            },
+            {
+              "fieldId": "plz",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"plz\"] }}"
+            },
+            {
+              "fieldId": "notizen",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"notizen\"] }}"
+            },
+            {
+              "fieldId": "kategorie",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"kategorie\"] }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "aktiv"
+            }
+          ]
+        }
+      },
+      "id": "node-insert-new-kunde",
+      "name": "INSERT kunden (new)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1340, 320],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Inserts new Kunden record. All columns match kunden table schema: id (TEXT PK), user_id, name, email, telefon, adresse, stadt, plz, notizen, kategorie, status."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "resolved-id",
+              "name": "resolved_customer_id",
+              "value": "={{ $json[\"id\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "resolved-email",
+              "name": "resolved_email",
+              "value": "={{ $json[\"email\"] || $node[\"Prepare Customer Data\"].json[\"email\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "resolved-name",
+              "name": "resolved_name",
+              "value": "={{ $json[\"name\"] || $node[\"Prepare Customer Data\"].json[\"name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "resolved-telefon",
+              "name": "resolved_telefon",
+              "value": "={{ $json[\"telefon\"] || $node[\"Prepare Customer Data\"].json[\"telefon\"] || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "resolved-has-phone",
+              "name": "resolved_has_phone",
+              "value": "={{ !!($json[\"telefon\"] || $node[\"Prepare Customer Data\"].json[\"telefon\"]) }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "node-resolve-customer",
+      "name": "Resolve Customer Record",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1560, 220],
+      "notes": "Normalizes customer data from either the INSERT or UPDATE path so downstream nodes have consistent field names regardless of which path was taken."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $env[\"SUPABASE_PROJECT_REF\"] }}.supabase.co/functions/v1/send-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_ANON_KEY\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json[\"resolved_email\"] }}\",\n  \"subject\": \"Willkommen bei uns - Ihr Handwerker-Portal ist bereit!\",\n  \"body\": \"<html><body><h2>Herzlich Willkommen, {{ $json[\"resolved_name\"] }}!</h2><p>Vielen Dank fuer Ihr Vertrauen. Wir freuen uns, Sie als neuen Kunden begruessen zu duerfen.</p><p>Ihr Kundenkonto wurde erfolgreich eingerichtet. Sie koennen sich jetzt einloggen und Anfragen stellen.</p><p>Mit freundlichen Gruessen,<br>Ihr Handwerker-Team</p></body></html>\"\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-send-welcome-email",
+      "name": "Send Welcome Email (Edge Function)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 140],
+      "continueOnFail": true,
+      "notes": "Calls Supabase Edge Function 'send-email' to send welcome email. Uses service role key to authenticate. SUPABASE_PROJECT_REF, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY env vars required. continueOnFail=true so SMS and inquiry creation proceed even if email fails."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-phone-check",
+              "leftValue": "={{ $node[\"Resolve Customer Record\"].json[\"resolved_has_phone\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-check-phone",
+      "name": "Phone Number Present?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 320],
+      "notes": "Conditionally sends SMS only if customer has a phone number. Routes to SMS node (true) or skips to anfragen creation (false)."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $env[\"SUPABASE_PROJECT_REF\"] }}.supabase.co/functions/v1/send-sms",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_ANON_KEY\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $node[\"Resolve Customer Record\"].json[\"resolved_telefon\"] }}\",\n  \"message\": \"Willkommen {{ $node[\"Resolve Customer Record\"].json[\"resolved_name\"] }}! Ihr Kundenkonto wurde eingerichtet. Bei Fragen: info@freyai-visions.de\"\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-send-welcome-sms",
+      "name": "Send Welcome SMS (Edge Function)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2000, 240],
+      "continueOnFail": true,
+      "notes": "Calls Supabase Edge Function 'send-sms' to send welcome SMS. Only executed if customer has a phone number. Requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER set in Supabase edge function environment. continueOnFail=true."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "anfragen",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "id",
+              "fieldValue": "=ANF-{{ Date.now().toString(36).toUpperCase() }}-{{ Math.random().toString(36).substring(2,5).toUpperCase() }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"user_id\"] }}"
+            },
+            {
+              "fieldId": "kunde_name",
+              "fieldValue": "={{ $node[\"Resolve Customer Record\"].json[\"resolved_name\"] }}"
+            },
+            {
+              "fieldId": "kunde_email",
+              "fieldValue": "={{ $node[\"Resolve Customer Record\"].json[\"resolved_email\"] }}"
+            },
+            {
+              "fieldId": "kunde_telefon",
+              "fieldValue": "={{ $node[\"Resolve Customer Record\"].json[\"resolved_telefon\"] }}"
+            },
+            {
+              "fieldId": "leistungsart",
+              "fieldValue": "Erstberatung"
+            },
+            {
+              "fieldId": "beschreibung",
+              "fieldValue": "=Automatisch erstellte Erstanfrage bei Kunden-Onboarding am {{ new Date().toLocaleDateString('de-DE') }}."
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "neu"
+            }
+          ]
+        }
+      },
+      "id": "node-create-initial-anfrage",
+      "name": "INSERT anfragen (initial inquiry)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2220, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Creates an initial inquiry record in 'anfragen' table. All columns match schema: id (TEXT PK), user_id, kunde_name, kunde_email, kunde_telefon, leistungsart, beschreibung, status. This gives the sales team a starting point to follow up."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "action",
+              "fieldValue": "customer.onboarded"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "={{ $node[\"Resolve Customer Record\"].json[\"resolved_customer_id\"] }}"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ customer_id: $node[\"Resolve Customer Record\"].json[\"resolved_customer_id\"], name: $node[\"Resolve Customer Record\"].json[\"resolved_name\"], email: $node[\"Resolve Customer Record\"].json[\"resolved_email\"], has_phone: $node[\"Resolve Customer Record\"].json[\"resolved_has_phone\"], anfrage_created: true, timestamp: new Date().toISOString() }) }}"
+            }
+          ]
+        }
+      },
+      "id": "node-log-onboarding",
+      "name": "INSERT automation_log (onboarding)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2440, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Logs the complete onboarding event to automation_log for audit trail and reporting."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, customer_id: $node[\"Resolve Customer Record\"].json[\"resolved_customer_id\"], name: $node[\"Resolve Customer Record\"].json[\"resolved_name\"], email: $node[\"Resolve Customer Record\"].json[\"resolved_email\"], anfrage_created: true, message: 'Kunden-Onboarding erfolgreich abgeschlossen' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "node-respond-success",
+      "name": "Respond: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2660, 300],
+      "notes": "Returns success response with customer_id, name, email, and confirmation that anfrage was created."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: 'Validation failed: name, email, and user_id are required fields', required_fields: ['name', 'email', 'user_id'], received_fields: Object.keys($json.body || {}) }) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "node-respond-validation-error",
+      "name": "Respond: Validation Error (400)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 480],
+      "notes": "Returns HTTP 400 with descriptive error message when required fields are missing."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "action",
+              "fieldValue": "customer.onboarding_error"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "={{ $node[\"Prepare Customer Data\"].json[\"email\"] || 'unknown' }}"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ error: $json[\"error\"] || 'Unknown error during onboarding', step: $runIndex, timestamp: new Date().toISOString(), customer_name: $node[\"Prepare Customer Data\"].json[\"name\"] || 'unknown', customer_email: $node[\"Prepare Customer Data\"].json[\"email\"] || 'unknown' }) }}"
+            }
+          ]
+        }
+      },
+      "id": "node-error-log",
+      "name": "INSERT automation_log (onboarding error)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2000, 480],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Error handler: logs failures from kunden INSERT/UPDATE or anfragen INSERT to automation_log."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: 'Internal server error during customer onboarding. The error has been logged.', customer_id: null }) }}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "node-respond-error",
+      "name": "Respond: Server Error (500)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2220, 480],
+      "notes": "Returns HTTP 500 when a processing error occurs after validation. Error details are logged to automation_log."
+    }
+  ],
+  "connections": {
+    "Webhook: New Customer": {
+      "main": [
+        [
+          {
+            "node": "Validate Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Prepare Customer Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond: Validation Error (400)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Customer Data": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Kunden by Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Kunden by Email": {
+      "main": [
+        [
+          {
+            "node": "Customer Already Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer Already Exists?": {
+      "main": [
+        [
+          {
+            "node": "UPDATE kunden (existing)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT kunden (new)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE kunden (existing)": {
+      "main": [
+        [
+          {
+            "node": "Resolve Customer Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT kunden (new)": {
+      "main": [
+        [
+          {
+            "node": "Resolve Customer Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Customer Record": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email (Edge Function)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Phone Number Present?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email (Edge Function)": {
+      "main": [
+        [
+          {
+            "node": "INSERT anfragen (initial inquiry)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phone Number Present?": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome SMS (Edge Function)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send Welcome SMS (Edge Function)": {
+      "main": [
+        [
+          {
+            "node": "INSERT anfragen (initial inquiry)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT anfragen (initial inquiry)": {
+      "main": [
+        [
+          {
+            "node": "INSERT automation_log (onboarding)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT automation_log (onboarding)": {
+      "main": [
+        [
+          {
+            "node": "Respond: Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT automation_log (onboarding error)": {
+      "main": [
+        [
+          {
+            "node": "Respond: Server Error (500)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["onboarding", "kunden", "crm", "email", "sms"],
+  "triggerCount": 1,
+  "updatedAt": "2026-02-24T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Kunden-Onboarding (Customer Onboarding)\n\n### Webhook\nPOST https://your-n8n.domain/webhook/new-customer\n\n### Request Payload\n{\n  \"name\": \"Max Mustermann\",        // required\n  \"email\": \"max@example.de\",       // required\n  \"user_id\": \"uuid-of-app-user\",   // required\n  \"phone\": \"+4917612345678\",        // optional\n  \"address\": \"Musterstrasse 1\",     // optional\n  \"city\": \"Frankfurt\",              // optional\n  \"zip\": \"60311\",                   // optional\n  \"kategorie\": \"neukunde\",          // optional, default: neukunde\n  \"notes\": \"Referred by partner\"    // optional\n}\n\n### Success Response (200)\n{\n  \"success\": true,\n  \"customer_id\": \"KD-XXXXX-XXXX\",\n  \"name\": \"Max Mustermann\",\n  \"email\": \"max@example.de\",\n  \"anfrage_created\": true,\n  \"message\": \"Kunden-Onboarding erfolgreich abgeschlossen\"\n}\n\n### Error Response (400 - Validation)\n{ \"success\": false, \"error\": \"Validation failed: ...\", \"required_fields\": [...] }\n\n### Error Response (500 - Server Error)\n{ \"success\": false, \"error\": \"Internal server error...\", \"customer_id\": null }\n\n### Setup Required\n1. **Credentials**: Set up 'Supabase API' credential in n8n\n2. **Env Vars**: SUPABASE_PROJECT_REF, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY\n3. **Edge Functions**: Ensure 'send-email' and 'send-sms' edge functions are deployed to Supabase\n4. **Twilio** (for SMS): Configure TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER in Supabase edge function secrets\n\n### Flow\n1. Webhook receives POST /webhook/new-customer\n2. Validate required fields (name, email, user_id)\n3. Check if customer already exists by email\n4. INSERT new kunden record OR UPDATE existing one\n5. Send welcome email via send-email edge function\n6. Send welcome SMS via send-sms edge function (if phone present)\n7. INSERT initial anfragen record (leistungsart='Erstberatung')\n8. Log to automation_log\n9. Respond with success/error JSON"
+}

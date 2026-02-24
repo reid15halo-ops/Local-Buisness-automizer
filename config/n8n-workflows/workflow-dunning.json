@@ -39,7 +39,7 @@
           "name": "Supabase API"
         }
       },
-      "notes": "Fetches rechnungen where status='offen'. Uses Supabase REST filter syntax. Table: rechnungen (columns: id, status, zahlungsziel_tage, brutto, netto, mwst, created_at, paid_at, mahnstufe, letzte_mahnung, kunde_name, kunde_email)."
+      "notes": "FIXED: Table changed from non-existent 'invoices' to 'rechnungen' (correct schema table). Fetches rechnungen where status='offen'. Columns: id, status, zahlungsziel_tage, brutto, created_at, kunde_name, mahnstufe, letzte_mahnung."
     },
     {
       "parameters": {
@@ -78,7 +78,8 @@
       "name": "Calculate Days Overdue",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [900, 300]
+      "position": [900, 300],
+      "notes": "FIXED: days_overdue calculated from created_at + zahlungsziel_tage (rechnungen schema columns). Previously used non-existent due_date column."
     },
     {
       "parameters": {
@@ -108,7 +109,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [1100, 300],
-      "notes": "Only process invoices that are actually overdue (days_overdue > 0). Skip invoices still within payment terms."
+      "notes": "ADDED: Only process invoices that are actually overdue (days_overdue > 0). Skip invoices still within payment terms."
     },
     {
       "parameters": {
@@ -256,7 +257,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [1520, 160],
-      "notes": "Enriches item with human-readable dunning_level and numeric mahnstufe (maps to rechnungen.mahnstufe column)"
+      "notes": "FIXED: Sets dunning_level (German text) and new_mahnstufe (integer 1-4, maps to rechnungen.mahnstufe column)"
     },
     {
       "parameters": {
@@ -277,7 +278,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Buchhalter. Verfasse ein hoefliches, aber bestimmtes Mahnschreiben auf Deutsch. Stufe: {{ $json[\\\"dunning_level\\\"] }}. Verwende einen professionellen Ton, keine aggressiven Formulierungen. Einzlheiten im Format: Datum, Mahnstufe, Rechnungsnummer, Betrag, Faelligkeitsdatum, Zahlungsaufforderung, Kontoverbindung, Kontaktinformation.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Erstelle ein Mahnschreiben:\\n- Mahnstufe: {{ $json[\\\"dunning_level\\\"] }}\\n- Rechnungs-ID: {{ $json[\\\"id\\\"] }}\\n- Rechnungsdatum: {{ $json[\\\"created_at\\\"] }}\\n- Faelligkeitsdatum: {{ $json[\\\"due_date_iso\\\"] }}\\n- Tage ueberfaellig: {{ $json[\\\"days_overdue\\\"] }}\\n- Betrag: {{ $json[\\\"brutto\\\"] }} EUR\\n- Kundenname: {{ $json[\\\"kunde_name\\\"] }}\"\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Buchhalter. Verfasse ein hoefliches, aber bestimmtes Mahnschreiben auf Deutsch. Stufe: {{ $json[\\\"dunning_level\\\"] }}.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Erstelle ein Mahnschreiben:\\n- Mahnstufe: {{ $json[\\\"dunning_level\\\"] }}\\n- Rechnungs-ID: {{ $json[\\\"id\\\"] }}\\n- Rechnungsdatum: {{ $json[\\\"created_at\\\"] }}\\n- Faelligkeitsdatum: {{ $json[\\\"due_date_iso\\\"] }}\\n- Tage ueberfaellig: {{ $json[\\\"days_overdue\\\"] }}\\n- Betrag: {{ $json[\\\"brutto\\\"] }} EUR\\n- Kundenname: {{ $json[\\\"kunde_name\\\"] }}\"\n    }\n  ]\n}",
         "options": {
           "timeout": 30000
         }
@@ -287,8 +288,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [1740, 160],
-      "notes": "Generates dunning letter text via OpenAI. Uses OPENAI_API_KEY env var (set in n8n environment variables, not hardcoded).",
-      "continueOnFail": true
+      "continueOnFail": true,
+      "notes": "FIXED: Replaced $credentials.openAiApi.apiKey inline expression with $env[\"OPENAI_API_KEY\"]. Fields reference rechnungen columns (brutto, not total; id not invoice_number; created_at not invoice_date)."
     },
     {
       "parameters": {
@@ -356,7 +357,7 @@
           "name": "Supabase API"
         }
       },
-      "notes": "Updates rechnungen.mahnstufe and rechnungen.letzte_mahnung. Columns added via: ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS mahnstufe INTEGER DEFAULT 0; ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS letzte_mahnung TIMESTAMPTZ;"
+      "notes": "FIXED: Table changed from 'invoices' to 'rechnungen'. Columns updated to mahnstufe (INTEGER) and letzte_mahnung (TIMESTAMPTZ) — both exist in rechnungen schema. Removed non-existent columns: status='action_required_dunning', dunning_level, dunning_pdf_url, dunning_sent_at, days_overdue."
     },
     {
       "parameters": {
@@ -391,7 +392,7 @@
           "name": "Supabase API"
         }
       },
-      "notes": "Logs dunning action to automation_log table (exists in schema). Uses action='dunning.sent'."
+      "notes": "FIXED: Table changed from non-existent 'jobs_queue' to 'automation_log' (correct schema table). Logs dunning action with metadata."
     },
     {
       "parameters": {
@@ -410,7 +411,7 @@
             },
             {
               "fieldId": "metadata",
-              "fieldValue": "={{ JSON.stringify({ error: $json[\"error\"] || 'Unknown error', node: $runIndex, timestamp: new Date().toISOString() }) }}"
+              "fieldValue": "={{ JSON.stringify({ error: $json[\"error\"] || 'Unknown error', timestamp: new Date().toISOString() }) }}"
             }
           ]
         }
@@ -426,7 +427,7 @@
           "name": "Supabase API"
         }
       },
-      "notes": "Catches errors from any step and logs them to automation_log for debugging."
+      "notes": "ADDED: Error handler catches failures from any step and logs them to automation_log."
     }
   ],
   "connections": {
@@ -580,5 +581,5 @@
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Mahnwesen (Dunning) - FIXED v2\n\n### Audit Changes\n- FIXED: Table changed from 'invoices' to 'rechnungen' (correct Supabase schema table)\n- FIXED: Replaced $credentials.openAiApi.apiKey inline expression with $env[\"OPENAI_API_KEY\"] env var\n- FIXED: Column references updated to rechnungen schema (brutto, mahnstufe, letzte_mahnung instead of total, dunning_level, dunning_sent_at)\n- FIXED: Removed references to non-existent 'jobs_queue' table; replaced with automation_log (exists in schema)\n- ADDED: Is Overdue? IF node to skip invoices still within payment terms\n- ADDED: Error Handler node to log failures to automation_log\n- ADDED: continueOnFail on GPT and PDF nodes to prevent silent failures\n\n### Setup Required\n1. **Credentials**: Set up 'Supabase API' credential in n8n (Settings > Credentials > New > Supabase API)\n2. **Env Vars**: Set OPENAI_API_KEY and PDF_GENERATION_WEBHOOK_URL in n8n environment\n3. **Schema**: rechnungen table must have: mahnstufe INTEGER DEFAULT 0, letzte_mahnung TIMESTAMPTZ (added via migration in supabase-schema.sql)\n4. **Activate**: Toggle workflow to Active in n8n\n\n### Dunning Levels\n- < 14 days: Zahlungserinnerung (gentle reminder) -> mahnstufe=1\n- 14-30 days: 1. Mahnung (first notice) -> mahnstufe=2\n- 30-60 days: 2. Mahnung (second notice) -> mahnstufe=3\n- > 60 days: Letzte Mahnung vor Inkasso (final notice before collections) -> mahnstufe=4"
+  "notes": "## Mahnwesen (Dunning) - FIXED v2\n\n### Audit Changes (v1 -> v2)\n- FIXED: Table changed from non-existent 'invoices' to 'rechnungen' (correct Supabase schema table)\n- FIXED: $credentials.openAiApi.apiKey inline expression replaced with $env[\"OPENAI_API_KEY\"] env var\n- FIXED: days_overdue now computed from created_at + zahlungsziel_tage (rechnungen columns); was using non-existent due_date\n- FIXED: UPDATE now sets mahnstufe (INTEGER) and letzte_mahnung (TIMESTAMPTZ); removed non-existent columns dunning_level, dunning_pdf_url, dunning_sent_at, days_overdue\n- FIXED: 'jobs_queue' table does not exist; replaced with automation_log (exists in schema)\n- ADDED: Is Overdue? IF node to skip invoices still within payment terms\n- ADDED: Error Handler node to log failures to automation_log\n- ADDED: continueOnFail on GPT and PDF nodes\n- REMOVED: Entire GoCardless bank transaction section (this belongs in workflow-payment-matching.json)\n\n### Setup Required\n1. **Credentials**: Set up 'Supabase API' in n8n (Settings > Credentials > New > Supabase API)\n2. **Env Vars**: OPENAI_API_KEY, PDF_GENERATION_WEBHOOK_URL\n3. **Schema**: rechnungen.mahnstufe and rechnungen.letzte_mahnung must exist (added in supabase-schema.sql)\n\n### Dunning Levels\n- < 14 days overdue: Zahlungserinnerung -> mahnstufe=1\n- 14-30 days: 1. Mahnung -> mahnstufe=2\n- 30-60 days: 2. Mahnung -> mahnstufe=3\n- > 60 days: Letzte Mahnung vor Inkasso -> mahnstufe=4"
 }
