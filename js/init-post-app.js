@@ -67,7 +67,7 @@
         attempts++;
     }
 
-    if (!window.authService) return;
+    if (!window.authService) {return;}
 
     // Check if Supabase is configured
     const isConfigured = window.authService?.isConfigured?.() || false;
@@ -75,7 +75,7 @@
     if (!isConfigured) {
         // In offline mode, hide user info panel
         const panel = document.getElementById('user-info-panel');
-        if (panel) panel.style.display = 'none';
+        if (panel) {panel.style.display = 'none';}
         return;
     }
 

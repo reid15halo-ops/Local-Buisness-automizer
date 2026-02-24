@@ -20,10 +20,10 @@ class FragebogenImportUI {
      */
     injectWizardButton() {
         const wizardBody = document.getElementById('wizard-body');
-        if (!wizardBody) return;
+        if (!wizardBody) {return;}
 
         // Don't add twice
-        if (document.getElementById('fragebogen-import-btn')) return;
+        if (document.getElementById('fragebogen-import-btn')) {return;}
 
         const wrapper = document.createElement('div');
         wrapper.style.cssText = 'text-align:center; margin-top:18px; margin-bottom:6px;';
@@ -81,7 +81,7 @@ class FragebogenImportUI {
      * If ?import=fragebogen is in the URL and data exists, show import dialog.
      */
     autoCheckImport() {
-        if (!this.service) return;
+        if (!this.service) {return;}
 
         if (this.service.hasImportUrlParam() && this.service.hasPendingImport()) {
             // Small delay so app UI is ready
@@ -343,12 +343,12 @@ class FragebogenImportUI {
 
         // Close on overlay click
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) this._closeDialog();
+            if (e.target === overlay) {this._closeDialog();}
         });
 
         // Close on Escape
         this._escHandler = (e) => {
-            if (e.key === 'Escape') this._closeDialog();
+            if (e.key === 'Escape') {this._closeDialog();}
         };
         document.addEventListener('keydown', this._escHandler);
 
@@ -432,7 +432,7 @@ class FragebogenImportUI {
                 toast.style.opacity = '0';
                 toast.style.transition = 'opacity 0.2s';
                 setTimeout(() => {
-                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                    if (toast.parentNode) {toast.parentNode.removeChild(toast);}
                 }, 200);
             }
         };
@@ -453,7 +453,7 @@ class FragebogenImportUI {
      * @returns {string}
      */
     _esc(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         if (window.UI && typeof window.UI.sanitize === 'function') {
             return window.UI.sanitize(str);
         }
@@ -469,7 +469,7 @@ class FragebogenImportUI {
      */
     _refreshWizardFields() {
         const wizardBody = document.getElementById('wizard-body');
-        if (!wizardBody) return;
+        if (!wizardBody) {return;}
 
         // Re-trigger wizard step rendering if available
         if (window.setupWizardUI && typeof window.setupWizardUI.updateStepContent === 'function') {

@@ -947,7 +947,7 @@ class BonScannerService {
 
         for (let i = 1; i < lines.length; i++) {
             const cols = this._parseCSVLine(lines[i], delimiter);
-            if (cols.length < 3) continue;
+            if (cols.length < 3) {continue;}
 
             const artikelnummer = this._getCSVValue(cols, colMap.artikelnummer);
             const bezeichnung = this._getCSVValue(cols, colMap.bezeichnung);
@@ -956,7 +956,7 @@ class BonScannerService {
             const einzelpreis = this._parseGermanNumber(this._getCSVValue(cols, colMap.einzelpreis) || '0');
             let gesamtpreis = this._parseGermanNumber(this._getCSVValue(cols, colMap.gesamtpreis) || '0');
 
-            if (!bezeichnung) continue;
+            if (!bezeichnung) {continue;}
 
             if (gesamtpreis === 0 && einzelpreis > 0 && menge > 0) {
                 gesamtpreis = Math.round(einzelpreis * menge * 100) / 100;
@@ -994,7 +994,7 @@ class BonScannerService {
 
         for (let i = 1; i < lines.length; i++) {
             const cols = this._parseCSVLine(lines[i], delimiter);
-            if (cols.length < 3) continue;
+            if (cols.length < 3) {continue;}
 
             const artikelnummer = this._getCSVValue(cols, colMap.artikelnummer);
             let bezeichnung = this._getCSVValue(cols, colMap.bezeichnung);
@@ -1004,7 +1004,7 @@ class BonScannerService {
             const einzelpreis = this._parseGermanNumber(this._getCSVValue(cols, colMap.einzelpreis) || '0');
             let gesamtpreis = this._parseGermanNumber(this._getCSVValue(cols, colMap.gesamtpreis) || '0');
 
-            if (!bezeichnung) continue;
+            if (!bezeichnung) {continue;}
 
             // Abmessung an Bezeichnung anfügen
             if (abmessung && !bezeichnung.includes(abmessung)) {
@@ -1045,7 +1045,7 @@ class BonScannerService {
 
         for (let i = 1; i < lines.length; i++) {
             const cols = this._parseCSVLine(lines[i], delimiter);
-            if (cols.length < 2) continue;
+            if (cols.length < 2) {continue;}
 
             const artikelnummer = this._getCSVValue(cols, colMap.artikelnummer);
             const bezeichnung = this._getCSVValue(cols, colMap.bezeichnung);
@@ -1054,7 +1054,7 @@ class BonScannerService {
             const einzelpreis = this._parseGermanNumber(this._getCSVValue(cols, colMap.einzelpreis) || '0');
             let gesamtpreis = this._parseGermanNumber(this._getCSVValue(cols, colMap.gesamtpreis) || '0');
 
-            if (!bezeichnung) continue;
+            if (!bezeichnung) {continue;}
 
             if (gesamtpreis === 0 && einzelpreis > 0 && menge > 0) {
                 gesamtpreis = Math.round(einzelpreis * menge * 100) / 100;
@@ -1395,13 +1395,13 @@ class BonScannerService {
      * @returns {number} Ähnlichkeitswert 0.0 - 1.0
      */
     _fuzzyMatch(str1, str2) {
-        if (!str1 || !str2) return 0;
+        if (!str1 || !str2) {return 0;}
 
         const s1 = str1.toLowerCase().trim();
         const s2 = str2.toLowerCase().trim();
 
         // Exakte Übereinstimmung
-        if (s1 === s2) return 1.0;
+        if (s1 === s2) {return 1.0;}
 
         // Enthaltensein
         if (s1.includes(s2) || s2.includes(s1)) {
@@ -1414,7 +1414,7 @@ class BonScannerService {
         const tokens1 = s1.split(/[\s\-_\/\.,:;]+/).filter(t => t.length > 1);
         const tokens2 = s2.split(/[\s\-_\/\.,:;]+/).filter(t => t.length > 1);
 
-        if (tokens1.length === 0 || tokens2.length === 0) return 0;
+        if (tokens1.length === 0 || tokens2.length === 0) {return 0;}
 
         let matchCount = 0;
         const totalTokens = Math.max(tokens1.length, tokens2.length);
@@ -1480,16 +1480,16 @@ class BonScannerService {
      * @returns {number} JavaScript-Zahl
      */
     _parseGermanNumber(str) {
-        if (!str || typeof str !== 'string') return 0;
+        if (!str || typeof str !== 'string') {return 0;}
 
         // Whitespace und Währungszeichen entfernen
         let cleaned = str.replace(/[€EUR\s]/gi, '').trim();
 
-        if (!cleaned) return 0;
+        if (!cleaned) {return 0;}
 
         // Negatives Vorzeichen behandeln
         const isNegative = cleaned.startsWith('-');
-        if (isNegative) cleaned = cleaned.substring(1);
+        if (isNegative) {cleaned = cleaned.substring(1);}
 
         // Deutsche Formatierung: Punkt als Tausendertrenner, Komma als Dezimaltrenner
         // Prüfen ob beides vorkommt
@@ -1508,7 +1508,7 @@ class BonScannerService {
         // Das ist die sicherste Annahme für Bon-Beträge
 
         const result = parseFloat(cleaned);
-        if (isNaN(result)) return 0;
+        if (isNaN(result)) {return 0;}
 
         return isNegative ? -result : result;
     }
@@ -1519,10 +1519,10 @@ class BonScannerService {
      * @returns {string|null} ISO-Datum (YYYY-MM-DD) oder null
      */
     _parseGermanDate(str) {
-        if (!str) return null;
+        if (!str) {return null;}
 
         const match = str.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/);
-        if (!match) return null;
+        if (!match) {return null;}
 
         const day = match[1].padStart(2, '0');
         const month = match[2].padStart(2, '0');
@@ -1535,7 +1535,7 @@ class BonScannerService {
 
         // Validierung
         const dateObj = new Date(`${year}-${month}-${day}`);
-        if (isNaN(dateObj.getTime())) return null;
+        if (isNaN(dateObj.getTime())) {return null;}
 
         return `${year}-${month}-${day}`;
     }
@@ -1546,7 +1546,7 @@ class BonScannerService {
      * @returns {string|null} Erkannter Lieferantenname oder null
      */
     _detectSupplier(text) {
-        if (!text) return null;
+        if (!text) {return null;}
 
         // Nur den Anfang des Bons prüfen (Kopfbereich)
         const header = text.substring(0, Math.min(text.length, 500));
@@ -1579,7 +1579,7 @@ class BonScannerService {
      * @private
      */
     _normalizeEinheit(einheit) {
-        if (!einheit) return 'Stk.';
+        if (!einheit) {return 'Stk.';}
 
         const normalized = einheit.trim().toUpperCase();
         const mapping = {
@@ -1626,8 +1626,8 @@ class BonScannerService {
         const commaCount = (headerLine.match(/,/g) || []).length;
         const tabCount = (headerLine.match(/\t/g) || []).length;
 
-        if (tabCount > 0 && tabCount >= semicolonCount && tabCount >= commaCount) return '\t';
-        if (semicolonCount > commaCount) return ';';
+        if (tabCount > 0 && tabCount >= semicolonCount && tabCount >= commaCount) {return '\t';}
+        if (semicolonCount > commaCount) {return ';';}
         return ',';
     }
 
@@ -1679,7 +1679,7 @@ class BonScannerService {
                         break;
                     }
                 }
-                if (colMap[field] >= 0) break;
+                if (colMap[field] >= 0) {break;}
             }
         }
 
@@ -1691,7 +1691,7 @@ class BonScannerService {
      * @private
      */
     _getCSVValue(cols, index) {
-        if (index < 0 || index >= cols.length) return '';
+        if (index < 0 || index >= cols.length) {return '';}
         return (cols[index] || '').replace(/^["']|["']$/g, '').trim();
     }
 
@@ -1718,7 +1718,7 @@ class BonScannerService {
      */
     deleteWareneingang(id) {
         const index = this.wareneingaenge.findIndex(we => we.id === id);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         this.wareneingaenge.splice(index, 1);
         this._save();

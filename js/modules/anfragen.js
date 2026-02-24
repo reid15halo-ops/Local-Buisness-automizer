@@ -51,7 +51,7 @@ function initAnfrageForm() {
         }
 
         if (hasErrors) {
-            if (window.showToast) showToast('Bitte Pflichtfelder korrekt ausfüllen', 'warning');
+            if (window.showToast) {showToast('Bitte Pflichtfelder korrekt ausfüllen', 'warning');}
             // Scroll to first error
             const firstError = form.querySelector('.input-error');
             if (firstError) { firstError.focus(); }

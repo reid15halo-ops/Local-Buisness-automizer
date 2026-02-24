@@ -379,13 +379,13 @@ function renderAuftraegeList(auftraege) {
 // Auftrag form initialization (for completing orders with Stückliste)
 function initAuftragForm() {
     const form = document.getElementById('form-auftrag');
-    if (!form) return;
+    if (!form) {return;}
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         const auftragId = document.getElementById('auftrag-id')?.value;
         const auftrag = store.auftraege.find(a => a.id === auftragId);
-        if (!auftrag) return;
+        if (!auftrag) {return;}
 
         const arbeitszeit = parseFloat(document.getElementById('arbeitszeit')?.value) || 0;
         auftrag.arbeitszeit = arbeitszeit;
@@ -400,7 +400,7 @@ function initAuftragForm() {
     // Stückliste: Material hinzufügen Button
     document.getElementById('btn-add-stueckliste')?.addEventListener('click', () => {
         const rows = document.getElementById('stueckliste-rows');
-        if (!rows) return;
+        if (!rows) {return;}
         const idx = rows.children.length;
         const row = document.createElement('div');
         row.className = 'stueckliste-row';
@@ -422,7 +422,7 @@ function initAuftragDetailHandlers() {
     // Tab switching
     document.getElementById('auftrag-detail-tabs')?.addEventListener('click', (e) => {
         const tab = e.target.closest('.auftrag-tab');
-        if (!tab) return;
+        if (!tab) {return;}
         const tabName = tab.dataset.tab;
 
         // Update active tab button
@@ -433,13 +433,13 @@ function initAuftragDetailHandlers() {
         const modal = document.getElementById('modal-auftrag-detail');
         modal.querySelectorAll('.auftrag-tab-content').forEach(c => c.classList.remove('active'));
         const content = modal.querySelector(`.auftrag-tab-content[data-tab="${tabName}"]`);
-        if (content) content.classList.add('active');
+        if (content) {content.classList.add('active');}
     });
 
     // Status action buttons (delegated)
     document.getElementById('ad-status-actions')?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-status]');
-        if (!btn || !currentDetailAuftragId) return;
+        if (!btn || !currentDetailAuftragId) {return;}
         changeAuftragStatus(currentDetailAuftragId, btn.dataset.status);
         openAuftragDetail(currentDetailAuftragId); // Refresh view
     });
@@ -449,17 +449,17 @@ function initAuftragDetailHandlers() {
 function openAuftragDetail(auftragId) {
     currentDetailAuftragId = auftragId;
     const auftrag = store.auftraege.find(a => a.id === auftragId);
-    if (!auftrag) return;
+    if (!auftrag) {return;}
 
     const kunde = auftrag.kunde || {};
     const statusConfig = AUFTRAG_STATUS_CONFIG[auftrag.status] || {};
 
     // Title
     const title = document.getElementById('auftrag-detail-title');
-    if (title) title.textContent = `Auftrag ${auftrag.id}`;
+    if (title) {title.textContent = `Auftrag ${auftrag.id}`;}
 
     // Overview fields
-    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '-'; };
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = val || '-';} };
     setEl('ad-kunde-name', kunde.name || kunde.firma);
     setEl('ad-kunde-kontakt', [kunde.email, kunde.telefon].filter(Boolean).join(' · '));
     setEl('ad-leistungsart', h(auftrag.leistungsart || ''));

@@ -66,16 +66,16 @@ class EInvoiceService {
 
         // Only update fields that have actual values (don't overwrite with empty)
         const bd = this.settings.businessData;
-        if (name) bd.name = name;
-        if (street) bd.street = street;
-        if (city) bd.city = city;
-        if (postalCode) bd.postalCode = postalCode;
-        if (vatId) bd.vatId = vatId;
-        if (email) bd.email = email;
-        if (phone) bd.phone = phone;
-        if (iban) bd.iban = iban;
-        if (bic) bd.bic = bic;
-        if (bankName) bd.bankName = bankName;
+        if (name) {bd.name = name;}
+        if (street) {bd.street = street;}
+        if (city) {bd.city = city;}
+        if (postalCode) {bd.postalCode = postalCode;}
+        if (vatId) {bd.vatId = vatId;}
+        if (email) {bd.email = email;}
+        if (phone) {bd.phone = phone;}
+        if (iban) {bd.iban = iban;}
+        if (bic) {bd.bic = bic;}
+        if (bankName) {bd.bankName = bankName;}
 
         localStorage.setItem('freyai_einvoice_settings', JSON.stringify(this.settings));
     }
@@ -256,21 +256,21 @@ class EInvoiceService {
 
     // Tax category mapping: S=Standard, AA=Reduced, E=Exempt (Kleinunternehmer par. 19)
     _getTaxCategory(satz) {
-        if (satz === 0) return 'E';
-        if (satz === 7) return 'AA';
+        if (satz === 0) {return 'E';}
+        if (satz === 7) {return 'AA';}
         return 'S';
     }
 
     // Tax category scheme name
     _getTaxCategoryName(satz) {
-        if (satz === 0) return 'Not subject to VAT';
-        if (satz === 7) return 'Reduced rate';
+        if (satz === 0) {return 'Not subject to VAT';}
+        if (satz === 7) {return 'Reduced rate';}
         return 'Standard rate';
     }
 
     // Escape XML special characters
     _escXml(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -286,7 +286,7 @@ class EInvoiceService {
             const rate = p.mwstSatz ?? p.ustSatz ?? 19;
             const einzelpreis = p.einzelpreis ?? p.preis ?? 0;
             const menge = p.menge ?? 1;
-            if (!groups[rate]) groups[rate] = { rate, netto: 0, positionen: [] };
+            if (!groups[rate]) {groups[rate] = { rate, netto: 0, positionen: [] };}
             groups[rate].netto += menge * einzelpreis;
             groups[rate].positionen.push(p);
         }
@@ -295,9 +295,9 @@ class EInvoiceService {
 
     // Normalize date to ISO YYYY-MM-DD
     _normalizeDate(dateStr) {
-        if (!dateStr) return new Date().toISOString().split('T')[0];
+        if (!dateStr) {return new Date().toISOString().split('T')[0];}
         const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return new Date().toISOString().split('T')[0];
+        if (isNaN(d.getTime())) {return new Date().toISOString().split('T')[0];}
         return d.toISOString().split('T')[0];
     }
 
@@ -519,7 +519,7 @@ ${positionen.map((pos, i) => {
 
     // Load pdf-lib from CDN
     async _loadPdfLib() {
-        if (window.PDFLib) return window.PDFLib;
+        if (window.PDFLib) {return window.PDFLib;}
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
@@ -1046,7 +1046,7 @@ ${positionen.map((pos, i) => {
         // Extract parent section
         const parentRegex = new RegExp(`<[^>]*${parentTag}[^>]*>([\\s\\S]*?)<\\/[^>]*${parentTag}>`);
         const parentMatch = xml.match(parentRegex);
-        if (!parentMatch) return false;
+        if (!parentMatch) {return false;}
 
         const parentContent = parentMatch[1];
         const childRegex = new RegExp(`<[^>]*${childTag}[^>]*>([^<]+)<\\/`);
@@ -1385,9 +1385,9 @@ ${positionen.map((pos, i) => {
      * @returns {string}
      */
     formatDate(dateStr) {
-        if (!dateStr) return '';
+        if (!dateStr) {return '';}
         const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return dateStr;
+        if (isNaN(d.getTime())) {return dateStr;}
         return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 

@@ -31,7 +31,7 @@ class FormValidationService {
     validate(value, rules) {
         for (const rule of rules) {
             const fn = typeof rule === 'function' ? rule : this.rules[rule];
-            if (!fn) continue;
+            if (!fn) {continue;}
             const result = fn(value);
             if (result !== true) {
                 return { valid: false, error: result };
@@ -74,7 +74,7 @@ class FormValidationService {
 
         for (const [inputId, rules] of Object.entries(schema)) {
             const el = form.querySelector(`#${inputId}`) || form.querySelector(`[name="${inputId}"]`);
-            if (!el) continue;
+            if (!el) {continue;}
 
             const value = el.type === 'checkbox' ? el.checked : el.value;
             data[inputId] = value;
@@ -97,7 +97,7 @@ class FormValidationService {
     _setFieldError(el, error) {
         // Remove existing error
         const existingError = el.parentElement?.querySelector('.field-error');
-        if (existingError) existingError.remove();
+        if (existingError) {existingError.remove();}
         el.classList.remove('input-error');
 
         if (error) {
@@ -116,7 +116,7 @@ class FormValidationService {
     _initOnBlurValidation() {
         document.addEventListener('focusout', (e) => {
             const el = e.target;
-            if (!el?.dataset?.validate) return;
+            if (!el?.dataset?.validate) {return;}
 
             const rules = el.dataset.validate.split(',').map(r => r.trim());
             const value = el.type === 'checkbox' ? el.checked : el.value;

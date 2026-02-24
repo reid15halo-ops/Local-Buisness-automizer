@@ -6,7 +6,7 @@
 // Lazy Core Service Shims (evaluated on access, not at parse time)
 const store = new Proxy({}, {
     get(_, prop) { return window.storeService?.state?.[prop]; },
-    set(_, prop, val) { if (window.storeService?.state) window.storeService.state[prop] = val; return true; }
+    set(_, prop, val) { if (window.storeService?.state) {window.storeService.state[prop] = val;} return true; }
 });
 const saveStore = () => window.storeService?.save();
 const addActivity = (icon, title) => window.storeService?.addActivity(icon, title);

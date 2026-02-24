@@ -5,7 +5,7 @@
 
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (!modal) return;
+    if (!modal) {return;}
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
@@ -17,11 +17,11 @@ function openModal(modalId) {
 
     // Set up focus trap
     modal._focusTrapHandler = (e) => {
-        if (e.key !== 'Tab') return;
+        if (e.key !== 'Tab') {return;}
         const focusableEls = modal.querySelectorAll(
             'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
-        if (focusableEls.length === 0) return;
+        if (focusableEls.length === 0) {return;}
         const first = focusableEls[0];
         const last = focusableEls[focusableEls.length - 1];
         if (e.shiftKey && document.activeElement === first) {
@@ -37,7 +37,7 @@ function openModal(modalId) {
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (!modal) return;
+    if (!modal) {return;}
     modal.classList.remove('active');
     document.body.style.overflow = '';
 

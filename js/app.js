@@ -6,7 +6,7 @@
 // Security: standalone HTML escape - available before window.UI loads
 // Falls back to this if window.UI.sanitize is not yet available
 function _esc(str) {
-    if (!str) return '';
+    if (!str) {return '';}
     const t = document.createElement('div');
     t.textContent = str;
     return t.innerHTML;

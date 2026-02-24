@@ -68,7 +68,7 @@ class WorkflowBuilderUI {
     }
 
     refresh() {
-        if (!this.container) return;
+        if (!this.container) {return;}
         if (this.viewMode === 'list') {
             this.render();
         } else {
@@ -81,7 +81,7 @@ class WorkflowBuilderUI {
     // ================================================================
 
     render() {
-        if (!this.container) return;
+        if (!this.container) {return;}
 
         if (this.viewMode === 'list') {
             this._renderWorkflowList();
@@ -284,7 +284,7 @@ class WorkflowBuilderUI {
         // Card click -> open editor
         this.container.querySelectorAll('.wfb-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (e.target.closest('[data-action]')) return;
+                if (e.target.closest('[data-action]')) {return;}
                 const id = card.dataset.workflowId;
                 this.currentWorkflowId = id;
                 this.viewMode = 'editor';
@@ -498,7 +498,7 @@ class WorkflowBuilderUI {
     // ================================================================
 
     _renderCanvasContent(workflow) {
-        if (!this.nodesLayer || !this.connectionsLayer) return;
+        if (!this.nodesLayer || !this.connectionsLayer) {return;}
 
         // Render connections first (below nodes)
         this.connectionsLayer.innerHTML = '';
@@ -588,7 +588,7 @@ class WorkflowBuilderUI {
     _renderConnection(workflow, conn) {
         const fromNode = workflow.nodes.find(n => n.id === conn.fromNodeId);
         const toNode = workflow.nodes.find(n => n.id === conn.toNodeId);
-        if (!fromNode || !toNode) return;
+        if (!fromNode || !toNode) {return;}
 
         const fromPos = this._getPortPosition(fromNode, conn.fromPort, 'output');
         const toPos = this._getPortPosition(toNode, conn.toPort, 'input');
@@ -668,7 +668,7 @@ class WorkflowBuilderUI {
     _renderConfigPanel(workflow) {
         const service = this._getService();
         const node = workflow.nodes.find(n => n.id === this.selectedNodeId);
-        if (!node) return this._renderConfigEmpty();
+        if (!node) {return this._renderConfigEmpty();}
 
         let typeDef;
         if (node.type === 'trigger') {
@@ -677,7 +677,7 @@ class WorkflowBuilderUI {
             typeDef = service.getActionTypes()[node.action];
         }
 
-        if (!typeDef) return this._renderConfigEmpty();
+        if (!typeDef) {return this._renderConfigEmpty();}
 
         const configFields = typeDef.configFields || [];
 
@@ -894,7 +894,7 @@ class WorkflowBuilderUI {
     // ================================================================
 
     _bindCanvasEvents() {
-        if (!this.svgCanvas) return;
+        if (!this.svgCanvas) {return;}
 
         // Node interaction
         this.nodesLayer.querySelectorAll('.wfb-node').forEach(nodeEl => {
@@ -902,7 +902,7 @@ class WorkflowBuilderUI {
 
             // Click to select
             nodeEl.addEventListener('mousedown', (e) => {
-                if (e.target.closest('.wfb-port')) return;
+                if (e.target.closest('.wfb-port')) {return;}
                 e.stopPropagation();
 
                 this.selectedNodeId = nodeId;
@@ -1235,7 +1235,7 @@ class WorkflowBuilderUI {
         });
 
         const canvasWrapper = document.getElementById('wfb-canvas-wrapper');
-        if (!canvasWrapper) return;
+        if (!canvasWrapper) {return;}
 
         const wrapperRect = canvasWrapper.getBoundingClientRect();
         const contentW = maxX - minX + padding * 2;
@@ -1256,8 +1256,8 @@ class WorkflowBuilderUI {
     // ================================================================
 
     _handleKeyDown(e) {
-        if (this.viewMode !== 'editor') return;
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        if (this.viewMode !== 'editor') {return;}
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {return;}
 
         if (e.key === 'Delete' || e.key === 'Backspace') {
             e.preventDefault();
@@ -1348,7 +1348,7 @@ class WorkflowBuilderUI {
 
         overlay.querySelector('.wfb-modal-close').addEventListener('click', () => overlay.remove());
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.remove();
+            if (e.target === overlay) {overlay.remove();}
         });
 
         const btnClear = overlay.querySelector('#wfb-clear-history');
@@ -1396,12 +1396,12 @@ class WorkflowBuilderUI {
     }
 
     _truncateText(text, maxLen) {
-        if (!text) return '';
+        if (!text) {return '';}
         return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
     }
 
     _formatRelativeTime(isoString) {
-        if (!isoString) return 'Nie';
+        if (!isoString) {return 'Nie';}
         const date = new Date(isoString);
         const now = new Date();
         const diffMs = now - date;
@@ -1409,15 +1409,15 @@ class WorkflowBuilderUI {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMin < 1) return 'Gerade eben';
-        if (diffMin < 60) return `vor ${diffMin} Min.`;
-        if (diffHours < 24) return `vor ${diffHours} Std.`;
-        if (diffDays < 7) return `vor ${diffDays} Tagen`;
+        if (diffMin < 1) {return 'Gerade eben';}
+        if (diffMin < 60) {return `vor ${diffMin} Min.`;}
+        if (diffHours < 24) {return `vor ${diffHours} Std.`;}
+        if (diffDays < 7) {return `vor ${diffDays} Tagen`;}
         return date.toLocaleDateString('de-DE');
     }
 
     _formatDateTime(isoString) {
-        if (!isoString) return '';
+        if (!isoString) {return '';}
         const d = new Date(isoString);
         return d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
     }

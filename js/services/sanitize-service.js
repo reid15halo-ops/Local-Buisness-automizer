@@ -86,7 +86,7 @@ const SanitizeService = {
 
     // Safe JSON.parse wrapper for localStorage reads
     safeJsonParse(str, fallback = null) {
-        if (!str) return fallback;
+        if (!str) {return fallback;}
         try {
             return JSON.parse(str);
         } catch (e) {

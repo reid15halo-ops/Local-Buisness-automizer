@@ -48,7 +48,7 @@ class GanttTimelineUI {
     }
 
     refresh() {
-        if (this.container) this.render();
+        if (this.container) {this.render();}
     }
 
     // ================================================================
@@ -60,8 +60,8 @@ class GanttTimelineUI {
     }
 
     _saveStore() {
-        if (window.AppUtils?.saveStore) window.AppUtils.saveStore();
-        else if (window.storeService?.save) window.storeService.save();
+        if (window.AppUtils?.saveStore) {window.AppUtils.saveStore();}
+        else if (window.storeService?.save) {window.storeService.save();}
     }
 
     _startOfWeek(date) {
@@ -97,10 +97,10 @@ class GanttTimelineUI {
     }
 
     _parseDate(val) {
-        if (!val) return null;
-        if (val instanceof Date) return new Date(val.getFullYear(), val.getMonth(), val.getDate());
+        if (!val) {return null;}
+        if (val instanceof Date) {return new Date(val.getFullYear(), val.getMonth(), val.getDate());}
         const d = new Date(val);
-        if (isNaN(d.getTime())) return null;
+        if (isNaN(d.getTime())) {return null;}
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());
     }
 
@@ -116,7 +116,7 @@ class GanttTimelineUI {
     }
 
     _sanitize(str) {
-        if (window.UI?.sanitize) return window.UI.sanitize(str);
+        if (window.UI?.sanitize) {return window.UI.sanitize(str);}
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
@@ -341,7 +341,7 @@ class GanttTimelineUI {
                 `;
                 row.style.cursor = 'pointer';
                 row.addEventListener('click', () => {
-                    if (window.openAuftragDetail) window.openAuftragDetail(a.id);
+                    if (window.openAuftragDetail) {window.openAuftragDetail(a.id);}
                 });
                 labelCol.appendChild(row);
             });
@@ -413,12 +413,12 @@ class GanttTimelineUI {
                 rowBg.style.top = (idx * this.ROW_HEIGHT) + 'px';
                 rowBg.style.height = this.ROW_HEIGHT + 'px';
                 rowBg.style.width = '100%';
-                if (idx % 2 === 1) rowBg.classList.add('gantt-row-alt');
+                if (idx % 2 === 1) {rowBg.classList.add('gantt-row-alt');}
                 gridBody.appendChild(rowBg);
 
                 // Bar
                 const bar = this._buildBar(a, idx);
-                if (bar) gridBody.appendChild(bar);
+                if (bar) {gridBody.appendChild(bar);}
             });
 
             // Today red line (on top of everything)
@@ -474,7 +474,7 @@ class GanttTimelineUI {
     _buildBar(auftrag, rowIdx) {
         const start = this._parseDate(auftrag.startDatum);
         const end = this._parseDate(auftrag.endDatum);
-        if (!start || !end) return null;
+        if (!start || !end) {return null;}
 
         const viewStart = new Date(this.viewStartDate);
         const viewEnd = this.viewEndDate;
@@ -485,7 +485,7 @@ class GanttTimelineUI {
         const durationDays = this._daysBetween(start, end) + 1; // inclusive
 
         // Check if bar is at least partially visible
-        if (barEndDay < 0 || barStartDay >= this.totalDays) return null;
+        if (barEndDay < 0 || barStartDay >= this.totalDays) {return null;}
 
         const clampedStart = Math.max(0, barStartDay);
         const clampedEnd = Math.min(this.totalDays - 1, barEndDay);
@@ -550,9 +550,9 @@ class GanttTimelineUI {
         // Click to open detail
         bar.addEventListener('click', (e) => {
             // Don't trigger if we just finished a drag
-            if (this._justDragged) return;
-            if (e.target.classList.contains('gantt-resize-handle')) return;
-            if (window.openAuftragDetail) window.openAuftragDetail(auftrag.id);
+            if (this._justDragged) {return;}
+            if (e.target.classList.contains('gantt-resize-handle')) {return;}
+            if (window.openAuftragDetail) {window.openAuftragDetail(auftrag.id);}
         });
 
         // Drag to move
@@ -612,10 +612,10 @@ class GanttTimelineUI {
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
 
-            if (barEl) barEl.classList.remove('gantt-bar-dragging');
+            if (barEl) {barEl.classList.remove('gantt-bar-dragging');}
             this._hideTooltip();
 
-            if (!this._justDragged) return;
+            if (!this._justDragged) {return;}
 
             const dx = e.clientX - startX;
             const dayShift = Math.round(dx / this.DAY_WIDTH);
@@ -627,7 +627,7 @@ class GanttTimelineUI {
 
             const origStart = this._parseDate(auftrag.startDatum);
             const origEnd = this._parseDate(auftrag.endDatum);
-            if (!origStart || !origEnd) return;
+            if (!origStart || !origEnd) {return;}
 
             if (mode === 'move') {
                 auftrag.startDatum = this._addDays(origStart, dayShift).toISOString().split('T')[0];
@@ -677,7 +677,7 @@ class GanttTimelineUI {
         const dayShift = Math.round(dx / this.DAY_WIDTH);
         const origStart = this._parseDate(auftrag.startDatum);
         const origEnd = this._parseDate(auftrag.endDatum);
-        if (!origStart || !origEnd || !this.tooltip) return;
+        if (!origStart || !origEnd || !this.tooltip) {return;}
 
         let newStart, newEnd;
         if (mode === 'move') {
@@ -686,7 +686,7 @@ class GanttTimelineUI {
         } else {
             newStart = origStart;
             newEnd = this._addDays(origEnd, dayShift);
-            if (newEnd < newStart) newEnd = new Date(newStart);
+            if (newEnd < newStart) {newEnd = new Date(newStart);}
         }
 
         this.tooltip.textContent = `Neuer Zeitraum: ${this._formatDEShort(newStart)} - ${this._formatDE(newEnd)}`;
@@ -733,8 +733,8 @@ class GanttTimelineUI {
 
             // Click to open detail
             card.addEventListener('click', (e) => {
-                if (e.defaultPrevented) return;
-                if (window.openAuftragDetail) window.openAuftragDetail(a.id);
+                if (e.defaultPrevented) {return;}
+                if (window.openAuftragDetail) {window.openAuftragDetail(a.id);}
             });
 
             // Drag start
@@ -775,11 +775,11 @@ class GanttTimelineUI {
             gridBody.classList.remove('gantt-drop-active');
 
             const auftragId = e.dataTransfer.getData('text/plain');
-            if (!auftragId) return;
+            if (!auftragId) {return;}
 
             const store = this._getStore();
             const auftrag = (store.auftraege || []).find(a => a.id === auftragId);
-            if (!auftrag) return;
+            if (!auftrag) {return;}
 
             // Calculate drop day based on mouse position
             const rect = gridBody.getBoundingClientRect();
@@ -811,7 +811,7 @@ class GanttTimelineUI {
     // ================================================================
 
     _scrollToToday() {
-        if (!this.scrollContainer) return;
+        if (!this.scrollContainer) {return;}
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const offset = this._daysBetween(this.viewStartDate, today);
@@ -827,7 +827,7 @@ class GanttTimelineUI {
     // ================================================================
 
     _injectStyles() {
-        if (document.getElementById('gantt-timeline-styles')) return;
+        if (document.getElementById('gantt-timeline-styles')) {return;}
 
         const style = document.createElement('style');
         style.id = 'gantt-timeline-styles';

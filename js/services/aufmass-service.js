@@ -138,7 +138,7 @@ class AufmassService {
      */
     updateProject(id, data) {
         const project = this.getProject(id);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const allowed = ['name', 'customerName', 'customerEmail', 'address', 'notes'];
         allowed.forEach(key => {
@@ -159,7 +159,7 @@ class AufmassService {
      */
     deleteProject(id) {
         const index = this.projects.findIndex(p => p.id === id);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         this.projects.splice(index, 1);
         this.save();
@@ -206,7 +206,7 @@ class AufmassService {
      */
     addRoom(projectId, roomData) {
         const project = this.getProject(projectId);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const room = {
             id: this._generateId('RAUM'),
@@ -254,10 +254,10 @@ class AufmassService {
      */
     updateRoom(projectId, roomId, data) {
         const project = this.getProject(projectId);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const room = project.rooms.find(r => r.id === roomId);
-        if (!room) return null;
+        if (!room) {return null;}
 
         const allowed = [
             'name', 'type', 'length', 'width', 'height',
@@ -290,10 +290,10 @@ class AufmassService {
      */
     deleteRoom(projectId, roomId) {
         const project = this.getProject(projectId);
-        if (!project) return false;
+        if (!project) {return false;}
 
         const index = project.rooms.findIndex(r => r.id === roomId);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         project.rooms.splice(index, 1);
         project.updatedAt = new Date().toISOString();
@@ -314,10 +314,10 @@ class AufmassService {
      */
     addDeduction(projectId, roomId, deduction) {
         const project = this.getProject(projectId);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const room = project.rooms.find(r => r.id === roomId);
-        if (!room) return null;
+        if (!room) {return null;}
 
         const typeDef = this.DEDUCTION_TYPES[deduction.type] || this.DEDUCTION_TYPES.sonstiges;
 
@@ -331,7 +331,7 @@ class AufmassService {
             wall: deduction.wall || '' // optional: which wall
         };
 
-        if (!room.deductions) room.deductions = [];
+        if (!room.deductions) {room.deductions = [];}
         room.deductions.push(ded);
         project.updatedAt = new Date().toISOString();
         this.save();
@@ -348,20 +348,20 @@ class AufmassService {
      */
     updateDeduction(projectId, roomId, deductionId, data) {
         const project = this.getProject(projectId);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const room = project.rooms.find(r => r.id === roomId);
-        if (!room || !room.deductions) return null;
+        if (!room || !room.deductions) {return null;}
 
         const ded = room.deductions.find(d => d.id === deductionId);
-        if (!ded) return null;
+        if (!ded) {return null;}
 
-        if (data.type !== undefined) ded.type = data.type;
-        if (data.name !== undefined) ded.name = data.name;
-        if (data.width !== undefined) ded.width = this._toNum(data.width);
-        if (data.height !== undefined) ded.height = this._toNum(data.height);
-        if (data.count !== undefined) ded.count = Math.max(1, parseInt(data.count) || 1);
-        if (data.wall !== undefined) ded.wall = data.wall;
+        if (data.type !== undefined) {ded.type = data.type;}
+        if (data.name !== undefined) {ded.name = data.name;}
+        if (data.width !== undefined) {ded.width = this._toNum(data.width);}
+        if (data.height !== undefined) {ded.height = this._toNum(data.height);}
+        if (data.count !== undefined) {ded.count = Math.max(1, parseInt(data.count) || 1);}
+        if (data.wall !== undefined) {ded.wall = data.wall;}
 
         project.updatedAt = new Date().toISOString();
         this.save();
@@ -377,13 +377,13 @@ class AufmassService {
      */
     removeDeduction(projectId, roomId, deductionId) {
         const project = this.getProject(projectId);
-        if (!project) return false;
+        if (!project) {return false;}
 
         const room = project.rooms.find(r => r.id === roomId);
-        if (!room || !room.deductions) return false;
+        if (!room || !room.deductions) {return false;}
 
         const index = room.deductions.findIndex(d => d.id === deductionId);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         room.deductions.splice(index, 1);
         project.updatedAt = new Date().toISOString();
@@ -401,7 +401,7 @@ class AufmassService {
      * @returns {Object} { floorArea, ceilingArea, wallArea, perimeter, volume, wallAreas, netWallArea, totalDeductionArea }
      */
     calculateRoom(room) {
-        if (!room) return this._emptyCalc();
+        if (!room) {return this._emptyCalc();}
 
         let floorArea = 0;
         let perimeter = 0;
@@ -632,7 +632,7 @@ class AufmassService {
 
     // Custom Polygon (Shoelace formula)
     _polygonFloorArea(points) {
-        if (!points || points.length < 3) return 0;
+        if (!points || points.length < 3) {return 0;}
         let area = 0;
         const n = points.length;
         for (let i = 0; i < n; i++) {
@@ -644,7 +644,7 @@ class AufmassService {
     }
 
     _polygonPerimeter(points) {
-        if (!points || points.length < 2) return 0;
+        if (!points || points.length < 2) {return 0;}
         let perimeter = 0;
         const n = points.length;
         for (let i = 0; i < n; i++) {
@@ -657,7 +657,7 @@ class AufmassService {
     }
 
     _polygonWallAreas(points, height) {
-        if (!points || points.length < 2) return [];
+        if (!points || points.length < 2) {return [];}
         const h = this._toNum(height);
         const walls = [];
         const n = points.length;
@@ -676,7 +676,7 @@ class AufmassService {
 
     // Deductions total
     _totalDeductionArea(room) {
-        if (!room || !room.deductions || room.deductions.length === 0) return 0;
+        if (!room || !room.deductions || room.deductions.length === 0) {return 0;}
         return room.deductions.reduce((sum, d) => {
             return sum + (this._toNum(d.width) * this._toNum(d.height) * (d.count || 1));
         }, 0);
@@ -814,7 +814,7 @@ class AufmassService {
      */
     generateQuotePositions(projectId, options = {}) {
         const project = this.getProject(projectId);
-        if (!project) return [];
+        if (!project) {return [];}
 
         const positions = [];
         const {
@@ -888,14 +888,14 @@ class AufmassService {
         }
 
         const positions = this.generateQuotePositions(projectId, options);
-        if (positions.length === 0) return false;
+        if (positions.length === 0) {return false;}
 
         const store = window.storeService.state;
         const angebot = store.angebote.find(a => a.id === angebotId);
-        if (!angebot) return false;
+        if (!angebot) {return false;}
 
         // Append positions
-        if (!angebot.positionen) angebot.positionen = [];
+        if (!angebot.positionen) {angebot.positionen = [];}
         angebot.positionen.push(...positions);
 
         // Recalculate totals
@@ -921,10 +921,10 @@ class AufmassService {
         }
 
         const project = this.getProject(projectId);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const positions = this.generateQuotePositions(projectId, options);
-        if (positions.length === 0) return null;
+        if (positions.length === 0) {return null;}
 
         const netto = positions.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
 
@@ -1005,7 +1005,7 @@ class AufmassService {
      */
     exportProject(projectId) {
         const project = this.getProject(projectId);
-        if (!project) return null;
+        if (!project) {return null;}
 
         const exportData = {
             version: '1.0',
@@ -1060,7 +1060,7 @@ class AufmassService {
      */
     duplicateProject(projectId) {
         const json = this.exportProject(projectId);
-        if (!json) return null;
+        if (!json) {return null;}
         const data = JSON.parse(json);
         data.project.name = data.project.name + ' (Kopie)';
         return this.importProject(data);
