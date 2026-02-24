@@ -1,0 +1,683 @@
+{
+  "name": "Kommunikation & Terminplanung (Communication & Scheduling)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "communication-intake",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "node-webhook-trigger",
+      "name": "Communication Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "communication-intake-webhook",
+      "notes": "Receives POSTs from email parser (e.g. Postmark inbound) or WhatsApp gateway. Payload: { channel, sender_email, sender_name, subject, body, attachments[] }"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 500,\n  \"response_format\": { \"type\": \"json_object\" },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Classify the intent of the incoming message. Return JSON with fields: { intent: string, confidence: number, language: string, urgency: string, summary: string }. Intent must be exactly one of: appointment_request, quote_request, complaint, payment, general, spam. Urgency: low/medium/high. Confidence: 0.0-1.0.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Channel: {{ $json.body.channel }}\\nFrom: {{ $json.body.sender_name }} <{{ $json.body.sender_email }}>\\nSubject: {{ $json.body.subject }}\\nMessage:\\n{{ $json.body.body }}\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-intent-analysis",
+      "name": "OpenAI Intent Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-openai-api",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])[\"intent\"] }}"
+      },
+      "id": "node-extract-intent",
+      "name": "Extract Intent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300],
+      "notes": "Flatten GPT response into top-level fields for Switch node routing"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"output\"] }}",
+                    "rightValue": "appointment_request",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "appointment_request"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"output\"] }}",
+                    "rightValue": "quote_request",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "quote_request"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"output\"] }}",
+                    "rightValue": "complaint",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "complaint"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"output\"] }}",
+                    "rightValue": "payment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "payment"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"output\"] }}",
+                    "rightValue": "spam",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "spam"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "node-intent-switch",
+      "name": "Route by Intent",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/calendar/v3/calendars/primary/freebusy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.googleCalendarOAuth2Api.accessToken }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"timeMin\": \"{{ new Date().toISOString() }}\",\n  \"timeMax\": \"{{ new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() }}\",\n  \"timeZone\": \"Europe/Berlin\",\n  \"items\": [{\"id\": \"primary\"}]\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-gcal-freebusy",
+      "name": "Google Calendar Free/Busy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 140],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "cred-google-calendar",
+          "name": "Google Calendar OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Assistent. Verfasse eine freundliche, professionelle E-Mail-Antwort auf Deutsch. Biete genau 2 Terminvorschlaege an. Sei hoeflich und praezise. Schliesse mit einer Bitte um Bestaetigung ab.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Urspruengliche Anfrage von {{ $node[\"Communication Webhook\"].json.body.sender_name }}: {{ $node[\"Communication Webhook\"].json.body.body }}\\n\\nVerfuegbare Zeitfenster (naechste 2 Wochen):\\n{{ JSON.stringify($json) }}\\n\\nBitte verfasse eine Antwort-E-Mail mit 2 konkreten Terminvorschlaegen.\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-draft-appointment-reply",
+      "name": "Draft Appointment Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 140],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-openai-api",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1000,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Assistent. Verfasse eine freundliche, professionelle Antwort auf Deutsch fuer die jeweilige Anfrage. Passe Ton und Inhalt der Anfrageart an (Angebot, Beschwerde, Zahlung, Allgemein).\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Anfrageart: {{ $node[\"Extract Intent\"].json.output }}\\nVon: {{ $node[\"Communication Webhook\"].json.body.sender_name }}\\nBetreff: {{ $node[\"Communication Webhook\"].json.body.subject }}\\nNachricht: {{ $node[\"Communication Webhook\"].json.body.body }}\\n\\nBitte verfasse eine professionelle Antwort.\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-draft-general-reply",
+      "name": "Draft General Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 380],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-openai-api",
+          "name": "OpenAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "communications",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "channel",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.channel }}"
+            },
+            {
+              "fieldId": "sender_email",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.sender_email }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.sender_name }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.subject }}"
+            },
+            {
+              "fieldId": "body",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.body }}"
+            },
+            {
+              "fieldId": "intent",
+              "fieldValue": "={{ $node[\"Extract Intent\"].json.output }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "draft"
+            },
+            {
+              "fieldId": "ai_draft",
+              "fieldValue": "={{ $json[\"choices\"][0][\"message\"][\"content\"] }}"
+            },
+            {
+              "fieldId": "received_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-supabase-insert-comm-appt",
+      "name": "INSERT communications (appointment)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1560, 140],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "communications",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "channel",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.channel }}"
+            },
+            {
+              "fieldId": "sender_email",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.sender_email }}"
+            },
+            {
+              "fieldId": "sender_name",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.sender_name }}"
+            },
+            {
+              "fieldId": "subject",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.subject }}"
+            },
+            {
+              "fieldId": "body",
+              "fieldValue": "={{ $node[\"Communication Webhook\"].json.body.body }}"
+            },
+            {
+              "fieldId": "intent",
+              "fieldValue": "={{ $node[\"Extract Intent\"].json.output }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "draft"
+            },
+            {
+              "fieldId": "ai_draft",
+              "fieldValue": "={{ $json[\"choices\"][0][\"message\"][\"content\"] }}"
+            },
+            {
+              "fieldId": "received_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-supabase-insert-comm-general",
+      "name": "INSERT communications (general)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1340, 380],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "email_draft"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ JSON.stringify({ intent: $node[\"Extract Intent\"].json.output, sender: $node[\"Communication Webhook\"].json.body.sender_email, channel: $node[\"Communication Webhook\"].json.body.channel }) }}"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-jobs-queue-comm-appt",
+      "name": "INSERT jobs_queue (appointment draft)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1780, 140],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "email_draft"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ JSON.stringify({ intent: $node[\"Extract Intent\"].json.output, sender: $node[\"Communication Webhook\"].json.body.sender_email, channel: $node[\"Communication Webhook\"].json.body.channel }) }}"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-jobs-queue-comm-general",
+      "name": "INSERT jobs_queue (general draft)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1560, 380],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"received\", \"intent\": \"{{ $node[\"Extract Intent\"].json.output }}\", \"message\": \"Communication processed successfully\" }"
+      },
+      "id": "node-respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 560]
+    }
+  ],
+  "connections": {
+    "Communication Webhook": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Intent Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Intent Analysis": {
+      "main": [
+        [
+          {
+            "node": "Extract Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Intent": {
+      "main": [
+        [
+          {
+            "node": "Route by Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Intent": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar Free/Busy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft General Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft General Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft General Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft General Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar Free/Busy": {
+      "main": [
+        [
+          {
+            "node": "Draft Appointment Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Appointment Reply": {
+      "main": [
+        [
+          {
+            "node": "INSERT communications (appointment)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft General Reply": {
+      "main": [
+        [
+          {
+            "node": "INSERT communications (general)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT communications (appointment)": {
+      "main": [
+        [
+          {
+            "node": "INSERT jobs_queue (appointment draft)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT communications (general)": {
+      "main": [
+        [
+          {
+            "node": "INSERT jobs_queue (general draft)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT jobs_queue (appointment draft)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT jobs_queue (general draft)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["communication", "scheduling", "email", "intent", "zone2"],
+  "triggerCount": 1,
+  "updatedAt": "2026-02-24T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Kommunikation & Terminplanung\n\n### Setup Required\n1. **Webhook URL**: Configure your email parser (e.g. Postmark, Mailgun) or WhatsApp gateway to POST to the webhook URL.\n2. **Credentials**: Set up 'Supabase API', 'OpenAI API Key', and 'Google Calendar OAuth2' credentials in n8n.\n3. **Switch routing**: Output 0=appointment, 1=quote, 2=complaint, 3=payment, 4=spam, fallback=general.\n\n### Flow\nWebhook -> GPT-4o intent classification -> Switch routing -> Google Calendar (appointments only) -> GPT-4o draft reply -> Supabase communications INSERT -> jobs_queue log -> Webhook response"
+}
