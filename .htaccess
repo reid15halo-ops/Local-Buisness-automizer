@@ -6,10 +6,10 @@
 <IfModule mod_headers.c>
     # Content Security Policy (CSP)
     # Prevents XSS, injection attacks, and unauthorized resource loading
-    # TODO: Remove 'unsafe-inline' from script-src once event delegation is fully in place
     Header set Content-Security-Policy "\
         default-src 'self'; \
-        script-src 'self' 'unsafe-inline' https://cdn.sheetjs.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; \
+        # TODO: nonces required before removing unsafe-inline from style-src
+        script-src 'self' https://cdn.sheetjs.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; \
         style-src 'self' 'unsafe-inline'; \
         font-src 'self'; \
         img-src 'self' data: blob:; \

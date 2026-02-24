@@ -152,6 +152,7 @@ class ApprovalQueueService {
             const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
             return comms.filter(c => c.status === 'draft' && c.aiGenerated);
         } catch (e) {
+            console.error('[ApprovalQueueService] Error:', e);
             return [];
         }
     }
@@ -188,7 +189,7 @@ class ApprovalQueueService {
                     );
                     return tageOffen >= 28 && r.status !== 'bezahlt'; // 28+ days overdue
                 }).map(r => ({ ...r, status: 'action_required_dunning' }));
-            } catch (e) { return []; }
+            } catch (e) { console.error('[ApprovalQueueService] Error:', e); return []; }
         }
 
         return [];
@@ -493,7 +494,9 @@ class ApprovalQueueService {
                     comms[idx].sentAt = new Date().toISOString();
                     localStorage.setItem('freyai_communications', JSON.stringify(comms));
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('[ApprovalQueueService] Unhandled error:', e);
+            }
         }
 
         // Submit send job to backend
@@ -562,7 +565,9 @@ class ApprovalQueueService {
                     localStorage.setItem('freyai_communications', JSON.stringify(comms));
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error('[ApprovalQueueService] Unhandled error:', e);
+        }
     }
 
     async _skipDunning(card) {

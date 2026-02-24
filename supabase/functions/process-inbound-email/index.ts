@@ -91,6 +91,18 @@ function escapeHtml(s: string | null | undefined): string {
 }
 
 // ============================================
+// Document Number Generator
+// ============================================
+function generateDocumentNumber(prefix: string): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+    return `${prefix}-${year}${month}${day}-${random}`;
+}
+
+// ============================================
 // Rate Limiter (in-memory, resets on cold start)
 // ============================================
 
@@ -463,7 +475,7 @@ async function processWithGemini(
     }
 
     // 2. Create Anfrage
-    const anfrageNummer = `ANF-${Date.now()}`
+    const anfrageNummer = generateDocumentNumber('ANF')
     const { data: anfrage, error: anfrageError } = await supabase
         .from('anfragen')
         .insert({
@@ -513,7 +525,7 @@ async function processWithGemini(
     const mwst = netto * DEFAULT_TAX_RATE
     const brutto = netto + mwst
 
-    const angebotNummer = `ANG-${Date.now()}`
+    const angebotNummer = generateDocumentNumber('ANG')
     const { data: angebot, error: angebotError } = await supabase
         .from('angebote')
         .insert({
@@ -666,8 +678,8 @@ async function generateAngebotPDF(
         if (line2) currentPage.drawText(line2, { x: col.desc, y: y - 11, size: 9, font: fontRegular, color: darkBlue })
         currentPage.drawText(String(pos.menge ?? ''), { x: col.qty, y, size: 9, font: fontRegular, color: darkBlue })
         currentPage.drawText(String(pos.einheit || ''), { x: col.unit, y, size: 9, font: fontRegular, color: darkBlue })
-        currentPage.drawText(pdfCurrency(pos.einzelpreis), { x: col.price, y, size: 9, font: fontRegular, color: darkBlue })
-        currentPage.drawText(pdfCurrency(pos.gesamt), { x: col.total, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(formatCurrency(pos.einzelpreis), { x: col.price, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(formatCurrency(pos.gesamt), { x: col.total, y, size: 9, font: fontRegular, color: darkBlue })
         y -= rowHeight
     }
 
@@ -677,18 +689,18 @@ async function generateAngebotPDF(
     y -= 16
 
     currentPage.drawText('Netto:', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
-    currentPage.drawText(pdfCurrency(angebot.netto), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(formatCurrency(angebot.netto), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
     y -= 14
 
     currentPage.drawText('MwSt. (19%):', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
-    currentPage.drawText(pdfCurrency(angebot.mwst), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(formatCurrency(angebot.mwst), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
     y -= 6
 
     currentPage.drawLine({ start: { x: col.price - 5, y }, end: { x: pageWidth - margin, y }, thickness: 1, color: darkBlue })
     y -= 16
 
     currentPage.drawText('Gesamtbetrag:', { x: col.price, y, size: 11, font: fontBold, color: darkBlue })
-    currentPage.drawText(pdfCurrency(angebot.brutto), { x: col.total, y, size: 11, font: fontBold, color: darkBlue })
+    currentPage.drawText(formatCurrency(angebot.brutto), { x: col.total, y, size: 11, font: fontBold, color: darkBlue })
     y -= 30
 
     // Terms
@@ -720,10 +732,8 @@ async function generateAngebotPDF(
     return { url: publicUrl, bytes }
 }
 
-function pdfCurrency(amount: number): string {
-    if (amount == null || isNaN(amount)) return '0,00 €'
-    return `${amount.toFixed(2).replace('.', ',')} €`
-}
+// NOTE: This mirrors formatCurrency() in js/app.js - both format EUR amounts
+// formatCurrency() removed; use formatCurrency() for all currency formatting
 
 // ============================================
 // Email Responses
@@ -740,7 +750,7 @@ async function sendAngebotEmail(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    const senderEmail = Deno.env.get('SENDER_EMAIL') || 'angebote@handwerkflow.de'
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'angebote@handwerkflow.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -810,7 +820,7 @@ async function sendAngebotEmail(
                 <div class="footer">
                     <p>
                         FreyAI Visions<br>
-                        Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de<br>
+                        ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de<br>
                         Zertifiziert nach DIN EN 1090
                     </p>
                 </div>
@@ -833,11 +843,11 @@ async function sendAngebotEmail(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Angebote <${senderEmail}>`,
+            from: `FreyAI Visions Angebote <${SENDER_EMAIL}>`,
             to: [to],
             subject: `Ihr Angebot ${angebotNummer} - FreyAI Visions`,
             html: htmlBody,
-            reply_to: 'info@handwerkflow.de',
+            reply_to: REPLY_TO_EMAIL,
             ...(pdfBase64 && {
                 attachments: [{
                     filename: `${angebotNummer}.pdf`,
@@ -866,7 +876,7 @@ async function sendFollowUpQuestions(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    const senderEmail = Deno.env.get('SENDER_EMAIL') || 'info@handwerkflow.de'
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
 
     const questionsHTML = questions.map((q, i) =>
         `<li style="margin-bottom: 12px;"><strong>${i + 1}.</strong> ${escapeHtml(q)}</li>`
@@ -901,7 +911,7 @@ async function sendFollowUpQuestions(
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
                     FreyAI Visions<br>
-                    Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de
+                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de
                 </p>
             </div>
         </body>
@@ -915,7 +925,7 @@ async function sendFollowUpQuestions(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Info <${senderEmail}>`,
+            from: `FreyAI Visions Info <${SENDER_EMAIL}>`,
             to: [to],
             subject: 'Rückfrage zu Ihrer Anfrage',
             html: htmlBody
@@ -938,7 +948,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    const senderEmail = Deno.env.get('SENDER_EMAIL') || 'info@handwerkflow.de'
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -974,7 +984,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Info <${senderEmail}>`,
+            from: `FreyAI Visions Info <${SENDER_EMAIL}>`,
             to: [to],
             subject: 'Ihre Anfrage bei FreyAI Visions',
             html: htmlBody
@@ -991,9 +1001,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
 // ============================================
 // Utilities
 // ============================================
+// NOTE: This mirrors formatCurrency() in js/app.js - both format EUR amounts
 function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('de-DE', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(amount)
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
 }

@@ -185,7 +185,13 @@ app.post('/send-email', async (request, reply) => {
             accepted: info.accepted,
         };
     } catch (err) {
-        request.log.error(err, 'Email send failed');
+        const recipient = Array.isArray(to) ? to.join(', ') : to;
+        const emailSubject = subject;
+        console.error('[email-relay] Failed to send email', {
+            to: recipient,
+            subject: emailSubject,
+            error: err?.message ?? err
+        });
         return reply.code(500).send({
             error: 'E-Mail Versand fehlgeschlagen',
             details: err.message,
@@ -257,7 +263,9 @@ app.post('/test', async (request, reply) => {
 // --- Start ---
 app.listen({ port: PORT, host: '0.0.0.0' }, (err) => {
     if (err) {
-        console.error(err);
+        console.error('[email-relay] Failed to start server', {
+            error: err?.message ?? err
+        });
         process.exit(1);
     }
     console.log(`Email Relay listening on port ${PORT}`);

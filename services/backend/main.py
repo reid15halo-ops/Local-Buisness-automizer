@@ -123,10 +123,12 @@ app = FastAPI(
 # CORS Middleware
 # ---------------------------------------------------------------------------
 
+# ALLOWED_ORIGINS is read from the ALLOWED_ORIGINS env var (comma-separated list).
+# The wildcard Supabase regex has been removed; list every trusted origin explicitly
+# in ALLOWED_ORIGINS so the allowed-origin set is auditable and not open-ended.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.supabase\.co",  # all Supabase projects
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
