@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="css/boomer-guide.css">
     <link rel="stylesheet" href="css/agent-workflows.css">
     <link rel="stylesheet" href="css/field-app.css">
-    <link rel="stylesheet" href="css/it-inventory.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
@@ -279,12 +278,6 @@
                 <button class="nav-item" data-view="admin-panel" data-mode="pro">
                     <span class="nav-icon">🔐</span>
                     Verwaltung
-                </button>
-
-                <!-- Home IT Inventory (Simple Mode) -->
-                <button class="nav-item" data-view="it-inventory" data-mode="simple">
-                    <span class="nav-icon">🖥️</span>
-                    IT-Inventar
                 </button>
 
                 <!-- Settings (Simple Mode) -->
@@ -835,15 +828,6 @@
                 <div id="admin-panel-content">
                     <!-- Rendered dynamically by AdminPanelUI -->
                 </div>
-            </section>
-
-            <!-- Home IT Inventory View -->
-            <section class="view" id="view-it-inventory">
-                <header class="view-header">
-                    <h1>🖥️ Heim IT-Inventar</h1>
-                    <p class="subtitle">Übersicht aller IT-Geräte zu Hause</p>
-                </header>
-                <div id="it-inventory-container"></div>
             </section>
 
             <!-- Einstellungen View -->
@@ -3044,8 +3028,6 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/modules/rechnungen.js"></script>
     <script src="js/services/bon-scanner-service.js"></script>
     <script src="js/modules/wareneingang.js"></script>
-    <script src="js/services/it-inventory-service.js"></script>
-    <script src="js/ui/it-inventory-ui.js"></script>
     <script src="js/app-new.js"></script>
 
     <!-- Main application (current production version - fallback) -->

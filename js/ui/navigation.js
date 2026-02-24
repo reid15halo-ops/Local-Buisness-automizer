@@ -163,9 +163,6 @@ class NavigationController {
                     });
                 }
                 break;
-            case 'it-inventory':
-                if (window.itInventoryUI) { window.itInventoryUI.render(); }
-                break;
             // New features (Self-initializing via their own listeners, but good to ensure)
             case 'workflows':
             case 'scanner':
