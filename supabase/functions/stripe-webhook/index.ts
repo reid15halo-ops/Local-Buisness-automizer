@@ -3,9 +3,9 @@
 // Env vars needed: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
 // Set webhook endpoint in Stripe Dashboard: https://your-domain/functions/v1/stripe-webhook
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import Stripe from 'https://esm.sh/stripe@14.14.0?target=deno'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import Stripe from 'https://esm.sh/stripe@16.2.0?target=deno'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!)
 
@@ -88,7 +88,7 @@ serve(async (req) => {
     } catch (err) {
         console.error('Webhook error:', err)
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }

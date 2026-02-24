@@ -3,12 +3,28 @@
 // Executes a workflow action server-side (email, sms, webhook, notification)
 // Called from the frontend workflow engine for each action step
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+function isBlockedUrl(parsedUrl: URL): boolean {
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/\[|\]/g, '')
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) return true
+    if (hostname === 'localhost' || hostname === '::1') return true
+    if (/^127\./.test(hostname)) return true
+    if (hostname === '0.0.0.0') return true
+    if (/^169\.254\./.test(hostname)) return true
+    if (hostname.includes('metadata.google') || hostname.includes('metadata.internal')) return true
+    if (/^10\./.test(hostname)) return true
+    if (/^192\.168\./.test(hostname)) return true
+    if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)) return true
+    if (/^\d+$/.test(hostname)) return true
+    if (/^fc[0-9a-f]{2}:/i.test(hostname) || /^fe[89ab][0-9a-f]:/i.test(hostname)) return true
+    return false
 }
 
 serve(async (req) => {
@@ -102,14 +118,15 @@ serve(async (req) => {
                     result = { success: false, error: 'Webhook URL fehlt' }
                     break
                 }
+                let webhookParsedUrl: URL
                 try {
-                    const url = new URL(params.url)
-                    if (['localhost', '127.0.0.1', '0.0.0.0'].includes(url.hostname)) {
-                        result = { success: false, error: 'Interne URLs nicht erlaubt' }
-                        break
-                    }
+                    webhookParsedUrl = new URL(params.url)
                 } catch {
                     result = { success: false, error: 'Ungültige URL' }
+                    break
+                }
+                if (isBlockedUrl(webhookParsedUrl)) {
+                    result = { success: false, error: 'Diese URL ist nicht erlaubt' }
                     break
                 }
 
@@ -162,7 +179,7 @@ serve(async (req) => {
         )
     } catch (err) {
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }

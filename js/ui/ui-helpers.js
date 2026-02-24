@@ -315,6 +315,14 @@ window.UI = {
     }
 };
 
+// Standalone escape function - always available, fail-closed (not optional-chained)
+window.esc = function(str) {
+    if (!str) return '';
+    const t = document.createElement('div');
+    t.textContent = str;
+    return t.innerHTML;
+};
+
 // HTML escape shorthand used throughout app.js for XSS prevention
 window.h = window.UI.sanitize;
 

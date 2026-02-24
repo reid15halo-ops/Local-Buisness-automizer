@@ -18,6 +18,7 @@
 
 const Fastify = require('fastify');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 // --- Config from environment ---
 const PORT = parseInt(process.env.PORT || '3100');
@@ -41,8 +42,9 @@ const transporter = nodemailer.createTransport({
         pass: SMTP_PASS,
     },
     tls: {
-        // Proton Bridge uses self-signed cert
-        rejectUnauthorized: false,
+        // Proton Bridge uses self-signed cert on localhost only
+        // If SMTP_HOST is not localhost, enforce certificate validation
+        rejectUnauthorized: SMTP_HOST !== '127.0.0.1' && SMTP_HOST !== 'localhost',
     },
 });
 
@@ -62,7 +64,8 @@ app.addHook('onRequest', async (request, reply) => {
         return;
     }
 
-    if (token !== API_SECRET) {
+    if (!API_SECRET || token.length !== API_SECRET.length ||
+        !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(API_SECRET))) {
         reply.code(401).send({ error: 'Ungültiger API Key' });
         return;
     }

@@ -3,6 +3,15 @@
    Complete Quote-to-Invoice Workflow
    ============================================ */
 
+// Security: standalone HTML escape - available before window.UI loads
+// Falls back to this if window.UI.sanitize is not yet available
+function _esc(str) {
+    if (!str) return '';
+    const t = document.createElement('div');
+    t.textContent = str;
+    return t.innerHTML;
+}
+
 // ============================================
 // Core Service Shims
 // logic migrated to: store-service.js, ui-helpers.js, navigation.js
@@ -192,16 +201,16 @@ function renderAnfragen() {
         container.innerHTML = anfragen.map(a => `
             <div class="item-card">
                 <div class="item-header">
-                    <h3 class="item-title">${window.UI?.sanitize?.(a.kunde?.name) || 'Unbekannt'}</h3>
+                    <h3 class="item-title">${(window.UI?.sanitize || _esc)(a.kunde?.name) || 'Unbekannt'}</h3>
                     <span class="item-id">${a.id || ''}</span>
                 </div>
                 <div class="item-meta">
-                    <span>📧 ${window.UI?.sanitize?.(a.kunde?.email) || '-'}</span>
-                    <span>📞 ${window.UI?.sanitize?.(a.kunde?.telefon) || '-'}</span>
+                    <span>📧 ${(window.UI?.sanitize || _esc)(a.kunde?.email) || '-'}</span>
+                    <span>📞 ${(window.UI?.sanitize || _esc)(a.kunde?.telefon) || '-'}</span>
                     <span>📅 ${formatDate(a.termin)}</span>
                 </div>
                 <p class="item-description">
-                    <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${window.UI?.sanitize?.(a.beschreibung) || ''}
+                    <strong>${getLeistungsartLabel(a.leistungsart)}:</strong> ${(window.UI?.sanitize || _esc)(a.beschreibung) || ''}
                 </p>
                 ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
                 <div class="item-actions">
@@ -258,9 +267,9 @@ function createAngebotFromAnfrage(anfrageId) {
 
         if (angebotKundeInfoEl) {
             angebotKundeInfoEl.innerHTML = `
-                <strong>${window.UI?.sanitize?.(anfrage.kunde?.name) || 'Unbekannt'}</strong><br>
+                <strong>${(window.UI?.sanitize || _esc)(anfrage.kunde?.name) || 'Unbekannt'}</strong><br>
                 ${getLeistungsartLabel(anfrage.leistungsart)}<br>
-                <small>${window.UI?.sanitize?.(anfrage.beschreibung?.substring(0, 100)) || ''}...</small>
+                <small>${(window.UI?.sanitize || _esc)(anfrage.beschreibung?.substring(0, 100)) || ''}...</small>
             `;
         }
 
@@ -2088,7 +2097,7 @@ function initAuftragForm() {
         // Show confirmation dialog
         window.confirmDialogService?.confirmCompleteAuftrag(
             auftrag.id,
-            window.UI?.sanitize?.(auftrag.kunde?.name) || 'Unbekannt',
+            (window.UI?.sanitize || _esc)(auftrag.kunde?.name) || 'Unbekannt',
             () => {
                 // Confirmed - proceed with completion
                 proceedWithAuftragCompletion(auftrag);
@@ -2791,11 +2800,11 @@ function generateSenderEmail() {
 function initAutomationSettings() {
     // Load saved values
     const relayUrl = localStorage.getItem('email_relay_url');
-    const relaySecret = localStorage.getItem('email_relay_secret');
+    const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const senderEmail = localStorage.getItem('sender_email');
-    const twilioSid = localStorage.getItem('twilio_sid');
-    const twilioToken = localStorage.getItem('twilio_token');
-    const twilioFrom = localStorage.getItem('twilio_from');
+    const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
+    const twilioToken = (sessionStorage.getItem("twilio_token") || localStorage.getItem("twilio_token"));
+    const twilioFrom = (sessionStorage.getItem("twilio_from") || localStorage.getItem("twilio_from"));
 
     if (document.getElementById('email-relay-url')) {
         document.getElementById('email-relay-url').value = relayUrl || '';
@@ -2818,7 +2827,7 @@ function initAutomationSettings() {
         const url = document.getElementById('email-relay-url').value.trim();
         const secret = document.getElementById('email-relay-secret').value.trim();
         localStorage.setItem('email_relay_url', url);
-        localStorage.setItem('email_relay_secret', secret);
+        sessionStorage.setItem("email_relay_secret", secret);
         updateSettingsStatus();
         showToast('E-Mail-Konfiguration gespeichert', 'success');
     });
@@ -2843,9 +2852,9 @@ function initAutomationSettings() {
 
     // Save SMS config
     document.getElementById('btn-save-sms-config')?.addEventListener('click', () => {
-        localStorage.setItem('twilio_sid', document.getElementById('twilio-sid').value.trim());
-        localStorage.setItem('twilio_token', document.getElementById('twilio-token').value.trim());
-        localStorage.setItem('twilio_from', document.getElementById('twilio-from').value.trim());
+        sessionStorage.setItem("twilio_sid", document.getElementById('twilio-sid').value.trim());
+        sessionStorage.setItem("twilio_token", document.getElementById('twilio-token').value.trim());
+        sessionStorage.setItem("twilio_from", document.getElementById('twilio-from').value.trim());
         updateSettingsStatus();
         showToast('SMS-Konfiguration gespeichert', 'success');
     });
@@ -3031,9 +3040,9 @@ function updateSettingsStatus() {
     const geminiKey = localStorage.getItem('gemini_api_key');
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
     const relayUrl = localStorage.getItem('email_relay_url');
-    const relaySecret = localStorage.getItem('email_relay_secret');
+    const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const emailConfigured = relayUrl && relaySecret;
-    const twilioSid = localStorage.getItem('twilio_sid');
+    const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
 
     const geminiStatus = document.getElementById('gemini-status');
     const webhookStatus = document.getElementById('webhook-status');

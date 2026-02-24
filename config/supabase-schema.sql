@@ -380,7 +380,9 @@ ALTER TABLE automation_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users see own automation logs" ON automation_log
     FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Edge functions can insert logs" ON automation_log
-    FOR INSERT WITH CHECK (true);
+    FOR INSERT WITH CHECK (
+        auth.uid() = user_id OR auth.role() = 'service_role'
+    );
 
 CREATE INDEX idx_automation_log_user ON automation_log(user_id);
 CREATE INDEX idx_automation_log_action ON automation_log(action);
@@ -403,7 +405,9 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users see own notifications" ON notifications
     FOR ALL USING (auth.uid() = user_id);
 CREATE POLICY "Edge functions can insert notifications" ON notifications
-    FOR INSERT WITH CHECK (true);
+    FOR INSERT WITH CHECK (
+        auth.uid() = user_id OR auth.role() = 'service_role'
+    );
 
 CREATE INDEX idx_notifications_user ON notifications(user_id, read);
 
