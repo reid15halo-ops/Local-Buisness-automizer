@@ -1,0 +1,176 @@
+{
+  "_comment": "FreyAI Visions – Coolify v4 Application Definition",
+  "_version": "4.0",
+  "_service": "freyai-backend",
+  "_updated": "2026-02-24",
+
+  "name": "freyai-backend",
+  "description": "FreyAI FastAPI backend – math guardrails, GoCardless, Supabase bridge (the 5% of 95/5 architecture)",
+  "fqdn": "",
+  "domains": [],
+
+  "build_pack": "dockerfile",
+  "dockerfile_location": "services/backend/Dockerfile",
+  "build_context": "services/backend",
+  "dockerfile_target_build": "",
+  "base_image": "",
+
+  "repository": {
+    "git_repository": "YOUR_REPO_URL",
+    "git_branch": "main",
+    "git_commit_sha": "HEAD",
+    "git_full_url": "YOUR_REPO_FULL_URL",
+    "is_private": true,
+    "private_key_id": null
+  },
+
+  "ports_mappings": "",
+  "ports_exposes": "8001",
+  "expose_port": 8001,
+
+  "health_check": {
+    "enabled": true,
+    "path": "/health",
+    "port": "8001",
+    "host": "0.0.0.0",
+    "method": "GET",
+    "return_code": 200,
+    "scheme": "http",
+    "use_server_ip": true,
+    "response_text": null,
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3,
+    "start_period": 20
+  },
+
+  "restart_policy": "always",
+  "replicas": 1,
+
+  "environment_variables": [
+    {
+      "key": "BACKEND_API_KEY",
+      "value": "YOUR_BACKEND_API_KEY",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "Shared secret for n8n → backend authentication"
+    },
+    {
+      "key": "SUPABASE_URL",
+      "value": "YOUR_SUPABASE_PROJECT_URL",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "Supabase project URL (https://xxxx.supabase.co)"
+    },
+    {
+      "key": "SUPABASE_SERVICE_ROLE_KEY",
+      "value": "YOUR_SUPABASE_SERVICE_ROLE_KEY",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "Supabase service role key – server-side only, never expose to frontend"
+    },
+    {
+      "key": "OPENAI_API_KEY",
+      "value": "YOUR_OPENAI_API_KEY",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "OpenAI API key for AI-assisted invoice parsing and analysis"
+    },
+    {
+      "key": "GOCARDLESS_CLIENT_ID",
+      "value": "YOUR_GOCARDLESS_CLIENT_ID",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "GoCardless OAuth client ID"
+    },
+    {
+      "key": "GOCARDLESS_CLIENT_SECRET",
+      "value": "YOUR_GOCARDLESS_CLIENT_SECRET",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "GoCardless OAuth client secret"
+    },
+    {
+      "key": "GOCARDLESS_ENVIRONMENT",
+      "value": "sandbox",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "GoCardless environment: sandbox or live"
+    },
+    {
+      "key": "LOG_LEVEL",
+      "value": "INFO",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "Python log level: DEBUG | INFO | WARNING | ERROR"
+    },
+    {
+      "key": "PORT",
+      "value": "8001",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "Uvicorn listen port – must match ports_exposes"
+    },
+    {
+      "key": "WORKERS",
+      "value": "2",
+      "is_build_time": false,
+      "is_preview": false,
+      "description": "Uvicorn worker count (CPX31 has 4 vCPUs; 2 workers leaves headroom for n8n)"
+    }
+  ],
+
+  "persistent_storage": [],
+
+  "resource_limits": {
+    "cpu_limit": null,
+    "cpu_shares": 1024,
+    "memory_limit": "512m",
+    "memory_swap_limit": "512m",
+    "memory_swappiness": 60
+  },
+
+  "network": {
+    "network_mode": "bridge",
+    "attach_to_network": "freyai-net",
+    "dns": ["1.1.1.1", "8.8.8.8"],
+    "dns_search": []
+  },
+
+  "labels": [
+    "traefik.enable=false",
+    "com.freyai.service=backend",
+    "com.freyai.zone=2",
+    "com.centurylinklabs.watchtower.enable=true"
+  ],
+
+  "deployment": {
+    "zero_downtime": true,
+    "blue_green": false,
+    "strategy": "rolling",
+    "pre_deploy_command": "",
+    "post_deploy_command": "",
+    "custom_healthcheck_found": true
+  },
+
+  "preview_url_template": "",
+  "custom_nginx_configuration": "",
+
+  "source_type": "github",
+  "manual_webhook_secret": "YOUR_COOLIFY_WEBHOOK_SECRET",
+
+  "settings": {
+    "is_static": false,
+    "is_dockerfile_build": true,
+    "is_raw_compose_deployment_enabled": false,
+    "is_build_cache_enabled": true,
+    "is_auto_deploy": true,
+    "is_preview_deployment_enabled": false,
+    "is_force_https_enabled": true,
+    "is_http2_enabled": false,
+    "is_log_drain_enabled": false,
+    "watch_paths": [
+      "services/backend/**"
+    ]
+  }
+}

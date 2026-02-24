@@ -1,0 +1,775 @@
+{
+  "name": "Mahnwesen (Dunning / Receivables)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        },
+        "timezone": "Europe/Berlin"
+      },
+      "id": "node-schedule-trigger",
+      "name": "Daily 08:00 Berlin",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Runs every day at 08:00 Europe/Berlin. CRON: 0 8 * * *"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "invoices",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "sent"
+            }
+          ]
+        },
+        "filterType": "string",
+        "filterString": "status=eq.sent&due_date=lt.{{ new Date(Date.now() - 86400000).toISOString() }}"
+      },
+      "id": "node-get-overdue",
+      "name": "SELECT Overdue Invoices",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Fetches invoices where status='sent' AND due_date < NOW() - 1 day. Uses Supabase REST filter syntax."
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "id": "node-split-batches",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "days-overdue-calc",
+              "name": "days_overdue",
+              "value": "={{ Math.floor((Date.now() - new Date($json[\"due_date\"]).getTime()) / 86400000) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-calc-days",
+      "name": "Calculate Days Overdue",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"days_overdue\"] }}",
+                    "rightValue": 14,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reminder"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"days_overdue\"] }}",
+                    "rightValue": 14,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json[\"days_overdue\"] }}",
+                    "rightValue": 30,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "first_dunning"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"days_overdue\"] }}",
+                    "rightValue": 30,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json[\"days_overdue\"] }}",
+                    "rightValue": 60,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "second_dunning"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"days_overdue\"] }}",
+                    "rightValue": 60,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "final_notice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-dunning-level-switch",
+      "name": "Dunning Level Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1120, 300],
+      "notes": "Output 0: reminder (<14d), Output 1: first dunning (14-30d), Output 2: second dunning (30-60d), Output 3: final notice (>60d)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $credentials.openAiApi.apiKey }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Buchhalter. Verfasse ein hoefliches, aber bestimmtes Mahnschreiben auf Deutsch. Stufe: {{ $json[\"dunning_level\"] }}. Verwende einen professionellen Ton, keine aggressiven Formulierungen. Einzlheiten im Format: Datum, Mahnstufe, Rechnungsnummer, Betrag, Faelligkeitsdatum, Zahlungsaufforderung, Kontoverbindung, Kontaktinformation.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Erstelle ein Mahnschreiben:\\n- Mahnstufe: {{ $json[\"dunning_level\"] }}\\n- Rechnungsnummer: {{ $json[\"invoice_number\"] }}\\n- Rechnungsdatum: {{ $json[\"invoice_date\"] }}\\n- Faelligkeitsdatum: {{ $json[\"due_date\"] }}\\n- Tage ueberfaellig: {{ $json[\"days_overdue\"] }}\\n- Betrag: {{ $json[\"total\"] }} EUR\\n- Kundennummer: {{ $json[\"customer_id\"] }}\\n- IBAN: {{ $json[\"iban\"] }}\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-generate-dunning-letter",
+      "name": "Generate Dunning Letter (GPT)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "cred-openai-api",
+          "name": "OpenAI API Key"
+        }
+      },
+      "notes": "Receives merged data from all 4 Switch outputs. The dunning_level field is set by the Set node before this."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dunning-level-label",
+              "name": "dunning_level",
+              "value": "={{ $json[\"days_overdue\"] < 14 ? 'Zahlungserinnerung' : $json[\"days_overdue\"] < 30 ? '1. Mahnung' : $json[\"days_overdue\"] < 60 ? '2. Mahnung' : 'Letzte Mahnung vor Inkasso' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-set-dunning-label",
+      "name": "Set Dunning Level Label",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1340, 160],
+      "notes": "Enriches item with human-readable dunning_level before sending to GPT"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env[\"PDF_GENERATION_WEBHOOK_URL\"] || 'http://backend:8001/pdf/generate' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"template\": \"dunning_letter\",\n  \"content\": \"{{ $json[\"choices\"][0][\"message\"][\"content\"] }}\",\n  \"invoice_number\": \"{{ $node[\"Calculate Days Overdue\"].json[\"invoice_number\"] }}\",\n  \"dunning_level\": \"{{ $node[\"Set Dunning Level Label\"].json[\"dunning_level\"] }}\",\n  \"date\": \"{{ new Date().toLocaleDateString('de-DE') }}\"\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-generate-pdf",
+      "name": "Generate PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 300],
+      "notes": "Posts to PDF generation service. Returns { pdf_url: string }. Configure PDF_GENERATION_WEBHOOK_URL env var or use backend:8001/pdf/generate."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "invoices",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node[\"Calculate Days Overdue\"].json[\"id\"] }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "action_required_dunning"
+            },
+            {
+              "fieldId": "dunning_level",
+              "fieldValue": "={{ $node[\"Set Dunning Level Label\"].json[\"dunning_level\"] }}"
+            },
+            {
+              "fieldId": "dunning_pdf_url",
+              "fieldValue": "={{ $json[\"pdf_url\"] }}"
+            },
+            {
+              "fieldId": "dunning_sent_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "days_overdue",
+              "fieldValue": "={{ $node[\"Calculate Days Overdue\"].json[\"days_overdue\"] }}"
+            }
+          ]
+        }
+      },
+      "id": "node-update-invoice-dunning",
+      "name": "UPDATE invoice (dunning sent)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1780, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "dunning_check"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ JSON.stringify({ invoice_id: $node[\"Calculate Days Overdue\"].json[\"id\"], invoice_number: $node[\"Calculate Days Overdue\"].json[\"invoice_number\"], dunning_level: $node[\"Set Dunning Level Label\"].json[\"dunning_level\"], days_overdue: $node[\"Calculate Days Overdue\"].json[\"days_overdue\"], total: $node[\"Calculate Days Overdue\"].json[\"total\"] }) }}"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-jobs-queue-dunning",
+      "name": "INSERT jobs_queue (dunning)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2000, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://bankaccountdata.gocardless.com/api/v2/transactions/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"GOCARDLESS_ACCESS_TOKEN\"] }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "account_id",
+              "value": "={{ $env[\"GOCARDLESS_ACCOUNT_ID\"] }}"
+            },
+            {
+              "name": "date_from",
+              "value": "={{ new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }}"
+            },
+            {
+              "name": "date_to",
+              "value": "={{ new Date().toISOString().split('T')[0] }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-gocardless-transactions",
+      "name": "GoCardless Bank Transactions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2220, 300],
+      "notes": "Fetches last 30 days of bank transactions from GoCardless (Open Banking). Requires GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID env vars."
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "transactions.booked",
+        "options": {}
+      },
+      "id": "node-split-transactions",
+      "name": "Split Transactions",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "invoices",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": []
+        },
+        "filterType": "string",
+        "filterString": "=status=eq.sent&total=gte.{{ parseFloat($json[\"transactionAmount\"][\"amount\"]) - 0.01 }}&total=lte.{{ parseFloat($json[\"transactionAmount\"][\"amount\"]) + 0.01 }}"
+      },
+      "id": "node-lookup-invoice-by-amount",
+      "name": "Lookup Invoice by Amount",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2660, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Matches transaction amount to invoice total within ±0.01 EUR tolerance."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "invoice-match-check",
+              "leftValue": "={{ $json[\"id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-match-found",
+      "name": "Invoice Match Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2880, 300]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "invoices",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "paid"
+            },
+            {
+              "fieldId": "paid_date",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            },
+            {
+              "fieldId": "payment_transaction_id",
+              "fieldValue": "={{ $node[\"Split Transactions\"].json[\"transactionId\"] }}"
+            }
+          ]
+        }
+      },
+      "id": "node-mark-paid",
+      "name": "UPDATE invoice (paid)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [3100, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "payment_unmatched"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "pending"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ JSON.stringify({ transaction_id: $node[\"Split Transactions\"].json[\"transactionId\"], amount: $node[\"Split Transactions\"].json[\"transactionAmount\"][\"amount\"], currency: $node[\"Split Transactions\"].json[\"transactionAmount\"][\"currency\"], booking_date: $node[\"Split Transactions\"].json[\"bookingDate\"], creditor_name: $node[\"Split Transactions\"].json[\"creditorName\"], reason: 'no_invoice_match' }) }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-manual-review-queue",
+      "name": "INSERT jobs_queue (manual review)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [3100, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 08:00 Berlin": {
+      "main": [
+        [
+          {
+            "node": "SELECT Overdue Invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SELECT Overdue Invoices": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Calculate Days Overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Days Overdue": {
+      "main": [
+        [
+          {
+            "node": "Dunning Level Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dunning Level Switch": {
+      "main": [
+        [
+          {
+            "node": "Set Dunning Level Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Dunning Level Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Dunning Level Label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Dunning Level Label",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Dunning Level Label": {
+      "main": [
+        [
+          {
+            "node": "Generate Dunning Letter (GPT)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Dunning Letter (GPT)": {
+      "main": [
+        [
+          {
+            "node": "Generate PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PDF": {
+      "main": [
+        [
+          {
+            "node": "UPDATE invoice (dunning sent)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE invoice (dunning sent)": {
+      "main": [
+        [
+          {
+            "node": "INSERT jobs_queue (dunning)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT jobs_queue (dunning)": {
+      "main": [
+        [
+          {
+            "node": "GoCardless Bank Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GoCardless Bank Transactions": {
+      "main": [
+        [
+          {
+            "node": "Split Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Transactions": {
+      "main": [
+        [
+          {
+            "node": "Lookup Invoice by Amount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Invoice by Amount": {
+      "main": [
+        [
+          {
+            "node": "Invoice Match Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invoice Match Found?": {
+      "main": [
+        [
+          {
+            "node": "UPDATE invoice (paid)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT jobs_queue (manual review)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["dunning", "mahnwesen", "finance", "gocardless", "zone2"],
+  "triggerCount": 1,
+  "updatedAt": "2026-02-24T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Mahnwesen (Dunning)\n\n### Setup Required\n1. **Credentials**: Set up 'Supabase API' and 'OpenAI API Key' in n8n.\n2. **GoCardless**: Set GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID env vars. Register at bankaccountdata.gocardless.com.\n3. **PDF Service**: Set PDF_GENERATION_WEBHOOK_URL env var pointing to your PDF gen service.\n4. **Supabase invoices table**: Must have columns: status, due_date, invoice_number, invoice_date, total, iban, customer_id, dunning_level, dunning_pdf_url, dunning_sent_at, days_overdue, paid_date, payment_transaction_id.\n\n### Dunning Levels\n- < 14 days: Zahlungserinnerung (gentle reminder)\n- 14-30 days: 1. Mahnung (first notice)\n- 30-60 days: 2. Mahnung (second notice)\n- > 60 days: Letzte Mahnung vor Inkasso (final notice before collections)"
+}

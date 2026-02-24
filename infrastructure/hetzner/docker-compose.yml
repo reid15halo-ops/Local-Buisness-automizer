@@ -1,0 +1,236 @@
+# =============================================================================
+# FreyAI Visions – Zone 2 Hetzner VPS (CPX31) Docker Compose
+# Architecture: 95/5 – n8n orchestration + FastAPI backend
+# Managed by: Coolify v4
+# Last updated: 2026-02-24
+# =============================================================================
+
+version: "3.9"
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Traefik – Reverse proxy + automatic TLS via Let's Encrypt
+  # ---------------------------------------------------------------------------
+  traefik:
+    image: traefik:v3.0
+    container_name: freyai-traefik
+    restart: unless-stopped
+    command:
+      # API & dashboard (internal only)
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      # Docker provider – only expose containers with explicit labels
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=freyai-net"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirect all HTTP → HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # Let's Encrypt ACME (TLS challenge)
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json"
+      # Logging
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/certs
+    networks:
+      - freyai-net
+    labels:
+      # Expose Traefik dashboard on a secured sub-path (Tailscale access only)
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${DOMAIN}`) && PathPrefix(`/traefik`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=traefik-auth"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_USERS}"
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 15 – Internal n8n database (NOT Supabase – cloud-only)
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: freyai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-n8n}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - freyai-net
+    # Postgres is intentionally NOT exposed on any host port.
+    # Only containers on freyai-net can reach it.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB:-n8n}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ---------------------------------------------------------------------------
+  # n8n – Workflow automation engine (the "95" in 95/5)
+  # ---------------------------------------------------------------------------
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: freyai-n8n
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      # Auth
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+      # Host & protocol
+      N8N_HOST: ${DOMAIN}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: https
+      WEBHOOK_URL: https://${DOMAIN}/
+      # Encryption
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Database (internal Postgres)
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: db
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-n8n}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      # Execution pruning (keep disk usage low on CPX31)
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 336        # 14 days in hours
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: 10000
+      # Timezone
+      GENERIC_TIMEZONE: Europe/London
+      TZ: Europe/London
+      # Prevent n8n from phoning home
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - freyai-net
+    # n8n is NOT exposed on the host – Traefik handles all ingress
+    labels:
+      - "traefik.enable=true"
+      # Main n8n router (full domain)
+      - "traefik.http.routers.n8n.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.n8n.service=n8n-svc"
+      - "traefik.http.services.n8n-svc.loadbalancer.server.port=5678"
+      # Security headers middleware
+      - "traefik.http.routers.n8n.middlewares=n8n-headers"
+      - "traefik.http.middlewares.n8n-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.n8n-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.n8n-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.n8n-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.n8n-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.n8n-headers.headers.browserXssFilter=true"
+      # Watchtower managed
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ---------------------------------------------------------------------------
+  # Backend – FastAPI service (the "5" in 95/5)
+  # Handles: math guardrails, GoCardless, heavy compute
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ../../services/backend
+      dockerfile: Dockerfile
+    container_name: freyai-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Explicitly pass critical vars so they are visible to health checks
+      BACKEND_API_KEY: ${BACKEND_API_KEY}
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOCARDLESS_CLIENT_ID: ${GOCARDLESS_CLIENT_ID}
+      GOCARDLESS_CLIENT_SECRET: ${GOCARDLESS_CLIENT_SECRET}
+    # Port 8001 is internal only – n8n calls backend via freyai-net
+    # NOT exposed on host ports intentionally
+    expose:
+      - "8001"
+    networks:
+      - freyai-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f -H 'X-API-Key: ${BACKEND_API_KEY}' http://localhost:8001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    labels:
+      - "traefik.enable=false"
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # ---------------------------------------------------------------------------
+  # Watchtower – Nightly auto-updates for n8n and backend only
+  # ---------------------------------------------------------------------------
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: freyai-watchtower
+    restart: unless-stopped
+    environment:
+      # Run at 03:00 UTC every night
+      WATCHTOWER_SCHEDULE: "0 0 3 * * *"
+      WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_INCLUDE_STOPPED: "false"
+      WATCHTOWER_NOTIFICATIONS: "email"
+      WATCHTOWER_NOTIFICATION_EMAIL_FROM: ${WATCHTOWER_EMAIL_FROM:-watchtower@freyai.local}
+      WATCHTOWER_NOTIFICATION_EMAIL_TO: ${WATCHTOWER_EMAIL_TO}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER: ${SMTP_HOST:-smtp.gmail.com}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PORT: ${SMTP_PORT:-587}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_USER: ${SMTP_USER}
+      WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD: ${SMTP_PASSWORD}
+      # Only watch containers with this label
+      WATCHTOWER_LABEL_ENABLE: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - freyai-net
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  n8n_data:
+    driver: local
+    labels:
+      com.freyai.description: "n8n workflow data and credentials"
+  postgres_data:
+    driver: local
+    labels:
+      com.freyai.description: "Internal Postgres data for n8n"
+  traefik_certs:
+    driver: local
+    labels:
+      com.freyai.description: "Let's Encrypt TLS certificates"
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  freyai-net:
+    driver: bridge
+    internal: false   # Must be false so Traefik can reach the internet for ACME
+    labels:
+      com.freyai.description: "Internal bridge – all FreyAI services"
