@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreyAI Visions — Beta-Fragebogen V1</title>
+    <style>
+        :root {
+            --accent: #6366f1;
+            --accent-light: #818cf8;
+            --bg: #ffffff;
+            --bg-section: #f8f8fc;
+            --bg-sub: #f0f0f8;
+            --text: #111118;
+            --text-secondary: #4a4a6a;
+            --border: #d1d1e0;
+            --radius: 10px;
+            --shadow: 0 2px 8px rgba(99,102,241,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #eeeef8;
+            color: var(--text);
+            line-height: 1.7;
+            padding: 32px 16px 64px;
+        }
+
+        /* ---- Page wrapper ---- */
+        .page {
+            max-width: 780px;
+            margin: 0 auto;
+            background: var(--bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 32px rgba(99,102,241,0.12);
+            overflow: hidden;
+        }
+
+        /* ---- Header ---- */
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 60%, #818cf8 100%);
+            color: #fff;
+            padding: 40px 48px 36px;
+        }
+
+        .header-brand {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            opacity: 0.85;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 20px;
+            padding: 3px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .header-intro {
+            font-size: 15px;
+            line-height: 1.7;
+            opacity: 0.92;
+            max-width: 580px;
+        }
+
+        .header-intro strong {
+            color: #fff;
+        }
+
+        .header-meta {
+            margin-top: 20px;
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        /* ---- Body ---- */
+        .body {
+            padding: 0 48px 48px;
+        }
+
+        /* ---- Section ---- */
+        .section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            padding: 16px 20px;
+            background: var(--bg-section);
+            border-left: 4px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin-bottom: 24px;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .subsection {
+            background: var(--bg-sub);
+            border-radius: var(--radius);
+            padding: 18px 22px 14px;
+            margin-bottom: 20px;
+        }
+
+        .subsection-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .subsection-scenario {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 16px;
+        }
+
+        /* ---- Question ---- */
+        .question {
+            margin-bottom: 24px;
+        }
+
+        .question-label {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .question-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        /* ---- Inputs ---- */
+        textarea {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: #fff;
+            resize: vertical;
+            min-height: 64px;
+            transition: border-color 0.15s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+        }
+
+        .text-short {
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            transition: border-color 0.15s;
+        }
+
+        .text-short:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+        }
+
+        /* ---- Checkbox / Radio lists ---- */
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1.5px solid transparent;
+            transition: background 0.1s, border-color 0.1s;
+        }
+
+        .option-item:hover {
+            background: var(--bg-section);
+            border-color: var(--border);
+        }
+
+        .option-item input[type="checkbox"],
+        .option-item input[type="radio"] {
+            margin-top: 2px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .option-item span {
+            font-size: 14px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .option-inline-input {
+            border: none;
+            border-bottom: 1.5px solid var(--border);
+            outline: none;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text);
+            width: 200px;
+            padding: 1px 4px;
+            background: transparent;
+        }
+
+        .option-inline-input:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        /* ---- Rating scale ---- */
+        .rating-scale {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .rating-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-style: italic;
+            white-space: nowrap;
+        }
+
+        .rating-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .rating-dot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .rating-dot input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .rating-dot span {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* ---- NPS scale ---- */
+        .nps-scale {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .nps-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .nps-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .nps-item span {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .nps-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        /* ---- Priority table ---- */
+        .priority-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .priority-table th {
+            text-align: center;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .priority-table th:first-child {
+            text-align: left;
+        }
+
+        .priority-table td {
+            padding: 10px 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .priority-table td:first-child {
+            text-align: left;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .priority-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .priority-table tr:nth-child(even) {
+            background: var(--bg-section);
+        }
+
+        .priority-table input[type="radio"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        /* ---- Time estimate box ---- */
+        .time-box {
+            background: var(--bg-section);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .time-box input[type="text"] {
+            border: none;
+            border-bottom: 1.5px solid var(--border);
+            width: 60px;
+            text-align: center;
+            font-size: 14px;
+            font-family: inherit;
+            background: transparent;
+            outline: none;
+        }
+
+        .time-box input[type="text"]:focus {
+            border-bottom-color: var(--accent);
+        }
+
+        /* ---- Divider ---- */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 32px 0;
+        }
+
+        /* ---- Note box ---- */
+        .note {
+            background: rgba(99,102,241,0.07);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* ---- Footer ---- */
+        .footer {
+            background: var(--bg-section);
+            border-top: 1px solid var(--border);
+            padding: 28px 48px;
+            text-align: center;
+        }
+
+        .footer-thanks {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .footer-meta {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* ---- Print button ---- */
+        .print-btn {
+            display: block;
+            margin: 24px auto 0;
+            padding: 10px 28px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .print-btn:hover {
+            background: var(--accent-light);
+        }
+
+        /* ---- Print styles ---- */
+        @media print {
+            body { background: #fff; padding: 0; }
+            .page { box-shadow: none; border-radius: 0; }
+            .print-btn { display: none; }
+            .header { background: #4f46e5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            textarea, .text-short { border: 1px solid #ccc; }
+        }
+
+        @media (max-width: 600px) {
+            .header, .body, .footer { padding-left: 20px; padding-right: 20px; }
+            .rating-scale { flex-direction: column; align-items: flex-start; }
+            .nps-scale { gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-brand">FreyAI Visions</div>
+        <h1>Beta-Fragebogen</h1>
+        <div class="header-badge">Vertraulich · Kostenlose Beta-Phase · Tester #001</div>
+        <p class="header-intro">
+            Hallo!<br><br>
+            Vielen Dank, dass du dir die Zeit nimmst, FreyAI Visions zu testen.
+            Dein Feedback ist Gold wert — du hilfst dabei, das System für Handwerker wie dich wirklich
+            praxistauglich zu machen.<br><br>
+            Der Fragebogen dauert ca. <strong>10–15 Minuten</strong>. Kein Richtig oder Falsch — deine ehrliche Meinung zählt.
+        </p>
+        <div class="header-meta">Beta v1.0 · Fragebogen-Version 1.0 · Feb 2026</div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">Drucken / Als PDF speichern</button>
+
+    <div class="body">
+
+        <!-- TEIL 1 -->
+        <div class="section">
+            <div class="section-title">
+                Teil 1: Du &amp; dein Betrieb
+                <span class="section-subtitle">Damit wir verstehen, in welchem Kontext du arbeitest</span>
+            </div>
+
+            <!-- Q1 -->
+            <div class="question">
+                <label class="question-label">1. Was machst du beruflich? <span class="question-hint">(Gewerk / Branche)</span></label>
+                <input class="text-short" type="text" name="q1" placeholder="z.B. Elektriker, Schreiner, Maler …">
+            </div>
+
+            <!-- Q2 -->
+            <div class="question">
+                <label class="question-label">2. Wie viele Mitarbeiter hat dein Betrieb? <span class="question-hint">(inkl. dir)</span></label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="solo">
+                        <span>Nur ich (Einzelkämpfer)</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="2-5">
+                        <span>2–5 Personen</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="6-15">
+                        <span>6–15 Personen</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q2" value="15+">
+                        <span>Mehr als 15</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="question">
+                <label class="question-label">3. Wie viele Rechnungen schreibst du ungefähr pro Monat?</label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="<10">
+                        <span>Weniger als 10</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="10-30">
+                        <span>10–30</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value="30-60">
+                        <span>30–60</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q3" value=">60">
+                        <span>Mehr als 60</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="question">
+                <label class="question-label">4. Womit erledigst du deine Büroarbeit aktuell? <span class="question-hint">(Mehrfachauswahl möglich)</span></label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="checkbox" name="q4a" value="zettel">
+                        <span>Zettel &amp; Stift / Excel</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="q4b" value="word">
+                        <span>Word / LibreOffice</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="q4c" value="datev">
+                        <span>DATEV / Steuerberater</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="q4d" value="software">
+                        <span>Lexware / Sage / sevDesk / Billomat</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="checkbox" name="q4e" value="other">
+                        <span>Sonstiges:&nbsp;<input class="option-inline-input" type="text" name="q4e_text" placeholder="Was nutzt du?"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q5 -->
+            <div class="question">
+                <label class="question-label">5. Was nervt dich an deiner aktuellen Lösung am meisten?</label>
+                <textarea name="q5" rows="3" placeholder="Deine Antwort …"></textarea>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEIL 2 -->
+        <div class="section">
+            <div class="section-title">
+                Teil 2: Erster Eindruck
+                <span class="section-subtitle">Deine Reaktion in den ersten Minuten</span>
+            </div>
+
+            <!-- Q6 -->
+            <div class="question">
+                <label class="question-label">6. Was war dein erster Gedanke, als du die App geöffnet hast?</label>
+                <textarea name="q6" rows="3" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <!-- Q7 -->
+            <div class="question">
+                <label class="question-label">7. Hast du dich sofort zurechtgefunden?</label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q7" value="yes">
+                        <span>Ja, sofort klar</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q7" value="mostly">
+                        <span>Weitgehend ja, ein paar Sachen unklar</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q7" value="no">
+                        <span>Nein, ich war am Anfang lost</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q8 -->
+            <div class="question">
+                <label class="question-label">8. Was hat dich positiv überrascht?</label>
+                <textarea name="q8" rows="2" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <!-- Q9 -->
+            <div class="question">
+                <label class="question-label">9. Was hat dich gestört oder verwirrt?</label>
+                <textarea name="q9" rows="2" placeholder="Deine Antwort …"></textarea>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEIL 3 -->
+        <div class="section">
+            <div class="section-title">
+                Teil 3: Die Kernfunktionen
+                <span class="section-subtitle">Bitte teste jeden Schritt und bewerte ihn</span>
+            </div>
+
+            <!-- A: Anfrage -->
+            <div class="subsection">
+                <div class="subsection-title">A — Anfrage erfassen</div>
+                <div class="subsection-scenario">Szenario: Ein Neukunde ruft an. Du trägst ihn ein.</div>
+
+                <!-- Q10 -->
+                <div class="question">
+                    <label class="question-label">10. Wie einfach war es, eine neue Anfrage anzulegen?</label>
+                    <div class="rating-scale">
+                        <span class="rating-label">1 — sehr schwierig</span>
+                        <div class="rating-dots">
+                            <div class="rating-dot"><input type="radio" name="q10" value="1"><span>1</span></div>
+                            <div class="rating-dot"><input type="radio" name="q10" value="2"><span>2</span></div>
+                            <div class="rating-dot"><input type="radio" name="q10" value="3"><span>3</span></div>
+                            <div class="rating-dot"><input type="radio" name="q10" value="4"><span>4</span></div>
+                            <div class="rating-dot"><input type="radio" name="q10" value="5"><span>5</span></div>
+                        </div>
+                        <span class="rating-label">5 — kinderleicht</span>
+                    </div>
+                </div>
+
+                <!-- Q11 -->
+                <div class="question">
+                    <label class="question-label">11. Hast du alle Felder gefunden, die du brauchst?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q11" value="all">
+                            <span>Ja, alles da</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q11" value="mostly">
+                            <span>Meistens, aber es fehlt:&nbsp;<input class="option-inline-input" type="text" name="q11_mostly" placeholder="Was fehlt?"></span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q11" value="missing">
+                            <span>Wichtige Felder fehlen:&nbsp;<input class="option-inline-input" type="text" name="q11_missing" placeholder="Was fehlt?"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B: Angebot -->
+            <div class="subsection">
+                <div class="subsection-title">B — Angebot erstellen</div>
+                <div class="subsection-scenario">Szenario: Du erstellst ein Angebot für den Kunden.</div>
+
+                <!-- Q12 -->
+                <div class="question">
+                    <label class="question-label">12. Wie lange hast du gebraucht, um dein erstes Angebot zu erstellen?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q12" value="<5min">
+                            <span>Unter 5 Minuten</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q12" value="5-15min">
+                            <span>5–15 Minuten</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q12" value="15-30min">
+                            <span>15–30 Minuten</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q12" value=">30min">
+                            <span>Länger als 30 Minuten — was hat so lang gedauert?&nbsp;<input class="option-inline-input" type="text" name="q12_reason" placeholder="Grund …"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q13 -->
+                <div class="question">
+                    <label class="question-label">13. Konntest du Positionen (Material, Arbeitszeit) so eintragen, wie du es brauchst?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q13" value="yes">
+                            <span>Ja, passt genau</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q13" value="partial">
+                            <span>Teilweise:&nbsp;<input class="option-inline-input" type="text" name="q13_partial" placeholder="Was fehlt?" style="width:260px"></span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q13" value="no">
+                            <span>Nein:&nbsp;<input class="option-inline-input" type="text" name="q13_no" placeholder="Was fehlt?" style="width:280px"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q14 -->
+                <div class="question">
+                    <label class="question-label">14. Würdest du dieses Angebot wirklich an einen echten Kunden schicken?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q14" value="yes">
+                            <span>Ja, sofort</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q14" value="adjustments">
+                            <span>Nach kleineren Anpassungen</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q14" value="no">
+                            <span>Nein — warum:&nbsp;<input class="option-inline-input" type="text" name="q14_why" placeholder="Warum nicht?" style="width:260px"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- C: Rechnung -->
+            <div class="subsection">
+                <div class="subsection-title">C — Rechnung schreiben</div>
+                <div class="subsection-scenario">Szenario: Der Auftrag ist fertig. Du stellst die Rechnung.</div>
+
+                <!-- Q15 -->
+                <div class="question">
+                    <label class="question-label">15. Wie einfach war die Umwandlung Angebot → Rechnung?</label>
+                    <div class="rating-scale">
+                        <span class="rating-label">1 — sehr schwierig</span>
+                        <div class="rating-dots">
+                            <div class="rating-dot"><input type="radio" name="q15" value="1"><span>1</span></div>
+                            <div class="rating-dot"><input type="radio" name="q15" value="2"><span>2</span></div>
+                            <div class="rating-dot"><input type="radio" name="q15" value="3"><span>3</span></div>
+                            <div class="rating-dot"><input type="radio" name="q15" value="4"><span>4</span></div>
+                            <div class="rating-dot"><input type="radio" name="q15" value="5"><span>5</span></div>
+                        </div>
+                        <span class="rating-label">5 — sehr einfach</span>
+                    </div>
+                </div>
+
+                <!-- Q16 -->
+                <div class="question">
+                    <label class="question-label">16. Sieht die Rechnung professionell aus?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q16" value="yes">
+                            <span>Ja, sehr</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q16" value="okay">
+                            <span>Geht so</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q16" value="no">
+                            <span>Nein — was fehlt:&nbsp;<input class="option-inline-input" type="text" name="q16_missing" placeholder="Was fehlt?" style="width:240px"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q17 -->
+                <div class="question">
+                    <label class="question-label">17. Fehlt etwas auf der Rechnung, das du gesetzlich brauchst? <span class="question-hint">(z.B. Steuernummer, IBAN)</span></label>
+                    <textarea name="q17" rows="2" placeholder="Deine Antwort …"></textarea>
+                </div>
+            </div>
+
+            <!-- D: KI -->
+            <div class="subsection">
+                <div class="subsection-title">D — KI-Funktionen <span style="font-weight:400;font-style:italic;text-transform:none">(falls getestet)</span></div>
+                <div class="subsection-scenario">Bon-Scanner, automatische E-Mail-Antworten, Mahnwesen</div>
+
+                <!-- Q18 -->
+                <div class="question">
+                    <label class="question-label">18. Hast du den Bon-Scanner / OCR-Upload ausprobiert?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q18" value="yes">
+                            <span>Ja → War es nützlich?&nbsp;<input class="option-inline-input" type="text" name="q18_yes" placeholder="Dein Eindruck …" style="width:240px"></span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q18" value="no">
+                            <span>Nein → Warum nicht?&nbsp;<input class="option-inline-input" type="text" name="q18_no" placeholder="Dein Eindruck …" style="width:240px"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q19 -->
+                <div class="question">
+                    <label class="question-label">19. Hat die KI etwas vorgeschlagen, das du direkt übernommen hast?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q19" value="multiple">
+                            <span>Ja, mehrfach</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q19" value="once">
+                            <span>Einmal</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q19" value="no">
+                            <span>Nein, ich hab alles selbst gemacht</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Q20 -->
+                <div class="question">
+                    <label class="question-label">20. Vertraust du der KI genug, um ihre Vorschläge (Texte, Zahlen) mit einem Klick freizugeben — ohne alles nochmal zu prüfen?</label>
+                    <div class="option-list">
+                        <label class="option-item">
+                            <input type="radio" name="q20" value="yes">
+                            <span>Ja, wenn die Zahlen stimmen</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q20" value="quick-check">
+                            <span>Nur nach kurzem Drüberschauen</span>
+                        </label>
+                        <label class="option-item">
+                            <input type="radio" name="q20" value="always-check">
+                            <span>Nein, ich prüfe immer alles selbst</span>
+                        </label>
+                    </div>
+                    <div class="note">Hinweis: Das System ist so gebaut, dass DU immer das letzte Wort hast — 95% macht die KI vor, 5% entscheidest du.</div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEIL 4 -->
+        <div class="section">
+            <div class="section-title">
+                Teil 4: Bedienbarkeit &amp; Technik
+            </div>
+
+            <!-- Q21 -->
+            <div class="question">
+                <label class="question-label">21. Auf welchem Gerät hast du hauptsächlich getestet?</label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q21" value="win">
+                        <span>PC / Laptop (Windows)</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q21" value="mac">
+                        <span>PC / Laptop (Mac)</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q21" value="linux">
+                        <span>PC / Laptop (Linux)</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q21" value="tablet">
+                        <span>Tablet</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q21" value="phone">
+                        <span>Smartphone</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q22 -->
+            <div class="question">
+                <label class="question-label">22. Hat die App auf deinem Gerät ruckelfrei funktioniert?</label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q22" value="smooth">
+                        <span>Ja, alles flüssig</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q22" value="minor">
+                        <span>Ein paar Hänger, aber okay</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q22" value="slow">
+                        <span>Träge / langsam</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q22" value="crash">
+                        <span>Abgestürzt / Fehler:&nbsp;<input class="option-inline-input" type="text" name="q22_error" placeholder="Was ist passiert?" style="width:260px"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q23 -->
+            <div class="question">
+                <label class="question-label">23. Hast du Fehler oder unerwartetes Verhalten bemerkt?</label>
+                <textarea name="q23" rows="3" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <!-- Q24 -->
+            <div class="question">
+                <label class="question-label">24. Wie empfindest du die Geschwindigkeit der App insgesamt?</label>
+                <div class="rating-scale">
+                    <span class="rating-label">1 — sehr langsam</span>
+                    <div class="rating-dots">
+                        <div class="rating-dot"><input type="radio" name="q24" value="1"><span>1</span></div>
+                        <div class="rating-dot"><input type="radio" name="q24" value="2"><span>2</span></div>
+                        <div class="rating-dot"><input type="radio" name="q24" value="3"><span>3</span></div>
+                        <div class="rating-dot"><input type="radio" name="q24" value="4"><span>4</span></div>
+                        <div class="rating-dot"><input type="radio" name="q24" value="5"><span>5</span></div>
+                    </div>
+                    <span class="rating-label">5 — sehr schnell</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEIL 5 -->
+        <div class="section">
+            <div class="section-title">Teil 5: Das Große Bild</div>
+
+            <!-- Q25 -->
+            <div class="question">
+                <label class="question-label">25. Was ist die eine Funktion, die du täglich nutzen würdest?</label>
+                <textarea name="q25" rows="2" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <!-- Q26 -->
+            <div class="question">
+                <label class="question-label">26. Was ist die eine Funktion, die dir am meisten fehlt?</label>
+                <textarea name="q26" rows="2" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <!-- Q27 -->
+            <div class="question">
+                <label class="question-label">27. Gibt es etwas im System, das du sofort wieder löschen würdest?</label>
+                <textarea name="q27" rows="2" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <!-- Q28 -->
+            <div class="question">
+                <label class="question-label">28. Stell dir vor, du könntest mit FreyAI folgendes automatisch erledigen — wie wichtig ist dir das jeweils?</label>
+                <table class="priority-table">
+                    <thead>
+                        <tr>
+                            <th>Funktion</th>
+                            <th>1<br><small>unwichtig</small></th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5<br><small>sehr wichtig</small></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Rechnungen per Foto einlesen (OCR)</td>
+                            <td><input type="radio" name="q28_ocr" value="1"></td>
+                            <td><input type="radio" name="q28_ocr" value="2"></td>
+                            <td><input type="radio" name="q28_ocr" value="3"></td>
+                            <td><input type="radio" name="q28_ocr" value="4"></td>
+                            <td><input type="radio" name="q28_ocr" value="5"></td>
+                        </tr>
+                        <tr>
+                            <td>Automatische Zahlungserinnerungen (Mahnungen)</td>
+                            <td><input type="radio" name="q28_dunning" value="1"></td>
+                            <td><input type="radio" name="q28_dunning" value="2"></td>
+                            <td><input type="radio" name="q28_dunning" value="3"></td>
+                            <td><input type="radio" name="q28_dunning" value="4"></td>
+                            <td><input type="radio" name="q28_dunning" value="5"></td>
+                        </tr>
+                        <tr>
+                            <td>E-Mails automatisch beantworten lassen</td>
+                            <td><input type="radio" name="q28_email" value="1"></td>
+                            <td><input type="radio" name="q28_dunning" value="2"></td>
+                            <td><input type="radio" name="q28_email" value="3"></td>
+                            <td><input type="radio" name="q28_email" value="4"></td>
+                            <td><input type="radio" name="q28_email" value="5"></td>
+                        </tr>
+                        <tr>
+                            <td>Termine automatisch eintragen</td>
+                            <td><input type="radio" name="q28_cal" value="1"></td>
+                            <td><input type="radio" name="q28_cal" value="2"></td>
+                            <td><input type="radio" name="q28_cal" value="3"></td>
+                            <td><input type="radio" name="q28_cal" value="4"></td>
+                            <td><input type="radio" name="q28_cal" value="5"></td>
+                        </tr>
+                        <tr>
+                            <td>Bankeingang mit Rechnung automatisch abgleichen</td>
+                            <td><input type="radio" name="q28_bank" value="1"></td>
+                            <td><input type="radio" name="q28_bank" value="2"></td>
+                            <td><input type="radio" name="q28_bank" value="3"></td>
+                            <td><input type="radio" name="q28_bank" value="4"></td>
+                            <td><input type="radio" name="q28_bank" value="5"></td>
+                        </tr>
+                        <tr>
+                            <td>Angebote per Sprache diktieren</td>
+                            <td><input type="radio" name="q28_voice" value="1"></td>
+                            <td><input type="radio" name="q28_voice" value="2"></td>
+                            <td><input type="radio" name="q28_voice" value="3"></td>
+                            <td><input type="radio" name="q28_voice" value="4"></td>
+                            <td><input type="radio" name="q28_voice" value="5"></td>
+                        </tr>
+                        <tr>
+                            <td>DATEV-Export für Steuerberater</td>
+                            <td><input type="radio" name="q28_datev" value="1"></td>
+                            <td><input type="radio" name="q28_datev" value="2"></td>
+                            <td><input type="radio" name="q28_datev" value="3"></td>
+                            <td><input type="radio" name="q28_datev" value="4"></td>
+                            <td><input type="radio" name="q28_datev" value="5"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEIL 6 -->
+        <div class="section">
+            <div class="section-title">Teil 6: Preis &amp; Wert</div>
+
+            <!-- Q29 -->
+            <div class="question">
+                <label class="question-label">29. Was wäre für dich ein fairer monatlicher Preis für dieses System — wenn es alles wie versprochen kann?</label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q29" value="free">
+                        <span>Nichts — das mache ich lieber selbst</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q29" value="<20">
+                        <span>Bis 20 €/Monat</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q29" value="20-50">
+                        <span>20–50 €/Monat</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q29" value="50-100">
+                        <span>50–100 €/Monat</span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q29" value=">100">
+                        <span>Über 100 €/Monat, wenn es mir wirklich Zeit spart</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q30 -->
+            <div class="question">
+                <label class="question-label">30. Mit wie vielen Stunden Büroarbeit pro Woche könntest du rechnen, wenn FreyAI 95% davon übernimmt?</label>
+                <div class="time-box">
+                    Aktuell verbringe ich ca.&nbsp;
+                    <input type="text" name="q30_current" placeholder="0">&nbsp;Stunden/Woche mit Bürokram.<br>
+                    Davon würde FreyAI mir ca.&nbsp;
+                    <input type="text" name="q30_saved" placeholder="0">&nbsp;Stunden sparen.
+                </div>
+            </div>
+
+            <!-- Q31 -->
+            <div class="question">
+                <label class="question-label">31. Würdest du FreyAI einem Kollegen / Handwerkerkumpel empfehlen?</label>
+                <div class="nps-scale">
+                    <div class="nps-item"><input type="radio" name="q31" value="0"><span>0</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="1"><span>1</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="2"><span>2</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="3"><span>3</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="4"><span>4</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="5"><span>5</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="6"><span>6</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="7"><span>7</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="8"><span>8</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="9"><span>9</span></div>
+                    <div class="nps-item"><input type="radio" name="q31" value="10"><span>10</span></div>
+                </div>
+                <div class="nps-labels">
+                    <span>0 — auf keinen Fall</span>
+                    <span>10 — sofort</span>
+                </div>
+            </div>
+
+            <div class="question" style="margin-top:16px">
+                <label class="question-label">Warum diese Note?</label>
+                <textarea name="q31_why" rows="2" placeholder="Deine Antwort …"></textarea>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- TEIL 7 -->
+        <div class="section">
+            <div class="section-title">Teil 7: Abschluss</div>
+
+            <!-- Q32 -->
+            <div class="question">
+                <label class="question-label">32. Darf ich dich in 4 Wochen nochmal kontaktieren, um zu hören wie es läuft?</label>
+                <div class="option-list">
+                    <label class="option-item">
+                        <input type="radio" name="q32" value="yes">
+                        <span>Ja, gerne — am besten per:&nbsp;<input class="option-inline-input" type="text" name="q32_contact" placeholder="E-Mail / Telefon / WhatsApp …" style="width:260px"></span>
+                    </label>
+                    <label class="option-item">
+                        <input type="radio" name="q32" value="no">
+                        <span>Lieber nicht</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Q33 -->
+            <div class="question">
+                <label class="question-label">33. Hast du noch etwas auf dem Herzen, das du loswerden möchtest?</label>
+                <textarea name="q33" rows="4" placeholder="Alles raus …"></textarea>
+            </div>
+        </div>
+
+    </div><!-- /body -->
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-thanks">Vielen Dank — du bist Beta-Tester #001 und das bedeutet mir ehrlich gesagt viel.</div>
+        <div class="footer-note">Alle Antworten sind vertraulich und werden nur zur Produktverbesserung genutzt.</div>
+        <button class="print-btn" onclick="window.print()">Drucken / Als PDF speichern</button>
+        <div class="footer-meta" style="margin-top:20px">FreyAI Visions · Beta v1.0 · Fragebogen-Version 1.0 · Feb 2026</div>
+    </div>
+
+</div><!-- /page -->
+</body>
+</html>
