@@ -1042,10 +1042,9 @@ class WorkflowBuilderService {
             }
         }
 
-        // Fallback: placeholder text
-        const placeholder = `[KI-generierter Text fuer: ${prompt.substring(0, 100)}]`;
-        context.variables[config.zielFeld || 'ai_text'] = placeholder;
-        return { success: true, text: placeholder, simulated: true };
+        // No AI service available - throw so the caller records a proper error state
+        // instead of silently storing a placeholder that looks like real content
+        throw new Error(`AI service unavailable for context: ${prompt.substring(0, 100)}. Please check your Gemini API key configuration.`);
     }
 
     async _executeWait(config) {

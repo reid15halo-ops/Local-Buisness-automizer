@@ -538,7 +538,9 @@ function generateSenderEmail() {
         slug = 'firma-' + crypto.randomUUID().substring(0, 8);
     }
 
-    const baseEmail = localStorage.getItem('proton_base_email') || 'noreply@freyai-visions.de';
+    // TODO: NOREPLY_EMAIL should come from company settings, not be hardcoded here
+    const noReplyEmail = settings?.noreply_email ?? 'noreply@handwerkflow.de';
+    const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;
 

@@ -2657,6 +2657,7 @@ function renderMaterialList(materials) {
 function initSettings() {
     // Load saved values
     const geminiKey = localStorage.getItem('gemini_api_key');
+    // TODO: stundensatz should come from company settings (admin_settings table), not localStorage alone
     const stundensatz = localStorage.getItem('stundensatz') || '65';
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
 
@@ -2789,7 +2790,9 @@ function generateSenderEmail() {
     }
 
     // Use plus-addressing on the Proton Mail base address
-    const baseEmail = localStorage.getItem('proton_base_email') || 'noreply@handwerkflow.de';
+    // TODO: NOREPLY_EMAIL should come from company settings, not be hardcoded here
+    const noReplyEmail = settings?.noreply_email ?? 'noreply@handwerkflow.de';
+    const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;
 
