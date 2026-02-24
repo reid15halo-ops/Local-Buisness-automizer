@@ -2669,6 +2669,10 @@ function initSettings() {
     // Save Gemini API Key
     document.getElementById('btn-save-gemini')?.addEventListener('click', () => {
         const key = document.getElementById('gemini-api-key').value.trim();
+        // SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
+        // It is currently stored here for development convenience only.
+        // Production deployment MUST proxy Gemini calls through the backend service
+        // (services/backend/main.py) so the key never reaches the browser.
         localStorage.setItem('gemini_api_key', key);
         window.geminiService = new GeminiService(key);
         updateSettingsStatus();
@@ -3939,6 +3943,14 @@ function initPaymentMatching() {
     });
 }
 
+function parseGermanFloat(str) {
+  if (!str || typeof str !== 'string') return 0;
+  // Remove thousand separators (dots) and replace decimal comma with dot
+  const normalized = str.trim().replace(/\./g, '').replace(',', '.');
+  const result = parseFloat(normalized);
+  return isNaN(result) ? 0 : result;
+}
+
 function parseBankCSV(content) {
     const lines = content.split('\n').filter(l => l.trim());
     const separator = lines[0].includes(';') ? ';' : ',';
@@ -3955,7 +3967,7 @@ function parseBankCSV(content) {
         const datumIdx = headers.findIndex(h => h.includes('datum') || h.includes('valuta') || h.includes('date'));
 
         if (betragIdx >= 0 && values[betragIdx]) {
-            let betrag = parseFloat(values[betragIdx].replace('.', '').replace(',', '.'));
+            let betrag = parseGermanFloat(values[betragIdx]);
             if (!isNaN(betrag) && betrag > 0) { // Only positive = incoming
                 transactions.push({
                     betrag,

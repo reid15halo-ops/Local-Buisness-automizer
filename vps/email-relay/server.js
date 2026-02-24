@@ -20,6 +20,26 @@ const Fastify = require('fastify');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
+// safeCompare performs a constant-time string comparison by hashing both values to the
+// same fixed length with SHA-256 before calling timingSafeEqual.  This removes the
+// token-length side-channel that an early-exit length check would introduce.
+function safeCompare(a, b) {
+    const ha = crypto.createHash('sha256').update(String(a)).digest();
+    const hb = crypto.createHash('sha256').update(String(b)).digest();
+    return crypto.timingSafeEqual(ha, hb);
+}
+
+// sanitizeEmailHtml strips <script> tags and inline event handlers from inbound HTML bodies
+// before passing them to nodemailer, preventing XSS payloads from reaching email clients.
+function sanitizeEmailHtml(html) {
+    if (!html) return html;
+    // Strip script tags and inline event handlers to prevent XSS into email clients
+    return html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
+        .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '');
+}
+
 // --- Config from environment ---
 const PORT = parseInt(process.env.PORT || '3100');
 const API_SECRET = process.env.API_SECRET || '';
@@ -48,6 +68,36 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+// --- Recipient Validator (TODO 4) ---
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_RECIPIENTS = 50;
+
+function validateRecipients(recipients) {
+  if (!Array.isArray(recipients)) return { valid: false, error: 'recipients must be an array' };
+  if (recipients.length === 0) return { valid: false, error: 'recipients array is empty' };
+  if (recipients.length > MAX_RECIPIENTS) return { valid: false, error: `too many recipients (max ${MAX_RECIPIENTS})` };
+  const invalid = recipients.filter(r => !EMAIL_REGEX.test(r));
+  if (invalid.length > 0) return { valid: false, error: `invalid recipient emails: ${invalid.join(', ')}` };
+  return { valid: true };
+}
+
+// --- Per-sender rate limiter for bulk endpoint (TODO 3) ---
+const senderRateLimits = new Map();
+const BULK_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const BULK_RATE_LIMIT_MAX = 200; // max 200 emails per sender per 5 min window
+
+function checkBulkRateLimit(senderKey) {
+  const now = Date.now();
+  const entry = senderRateLimits.get(senderKey);
+  if (!entry || now - entry.windowStart > BULK_RATE_LIMIT_WINDOW_MS) {
+    senderRateLimits.set(senderKey, { count: 1, windowStart: now });
+    return true;
+  }
+  if (entry.count >= BULK_RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
 // --- Fastify Server ---
 const app = Fastify({ logger: true });
 
@@ -64,8 +114,10 @@ app.addHook('onRequest', async (request, reply) => {
         return;
     }
 
-    if (!API_SECRET || token.length !== API_SECRET.length ||
-        !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(API_SECRET))) {
+    // Use constant-time comparison via SHA-256 hashes to prevent timing side-channel attacks.
+    // Hashing both values to equal fixed length avoids the length leak that an early-exit
+    // length check would introduce before timingSafeEqual.
+    if (!safeCompare(token, API_SECRET)) {
         reply.code(401).send({ error: 'Ungültiger API Key' });
         return;
     }
@@ -91,6 +143,13 @@ app.post('/send-email', async (request, reply) => {
         return reply.code(400).send({ error: '"to" und "subject" sind erforderlich' });
     }
 
+    // Validate recipients (TODO 4)
+    const toArray = Array.isArray(to) ? to : [to];
+    const recipientCheck = validateRecipients(toArray);
+    if (!recipientCheck.valid) {
+        return reply.code(400).send({ error: recipientCheck.error });
+    }
+
     if (!SMTP_USER) {
         return reply.code(500).send({ error: 'SMTP nicht konfiguriert (SMTP_USER fehlt)' });
     }
@@ -107,14 +166,14 @@ app.post('/send-email', async (request, reply) => {
 
         // Support both plain text and HTML
         if (html) {
-            mailOptions.html = html;
+            mailOptions.html = sanitizeEmailHtml(html);
         } else if (body) {
             // Auto-detect HTML or convert plain text
             if (body.includes('<') && body.includes('>')) {
-                mailOptions.html = body;
+                mailOptions.html = sanitizeEmailHtml(body);
             } else {
                 mailOptions.text = body;
-                mailOptions.html = `<pre style="font-family: Arial, Helvetica, sans-serif; white-space: pre-wrap; line-height: 1.6;">${body}</pre>`;
+                mailOptions.html = sanitizeEmailHtml(`<pre style="font-family: Arial, Helvetica, sans-serif; white-space: pre-wrap; line-height: 1.6;">${body}</pre>`);
             }
         }
 
@@ -144,6 +203,12 @@ app.post('/send-bulk', async (request, reply) => {
 
     if (emails.length > 50) {
         return reply.code(400).send({ error: 'Maximal 50 E-Mails pro Batch' });
+    }
+
+    // Per-sender rate limit (TODO 3)
+    const senderKey = request.body?.from || request.ip;
+    if (!checkBulkRateLimit(senderKey)) {
+        return reply.code(429).send({ error: 'Bulk rate limit exceeded. Try again later.' });
     }
 
     const results = [];
