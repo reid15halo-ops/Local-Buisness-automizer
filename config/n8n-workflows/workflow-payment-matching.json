@@ -1,0 +1,615 @@
+{
+  "name": "Zahlungsabgleich (Bank Payment Auto-Matching)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        },
+        "timezone": "Europe/Berlin"
+      },
+      "id": "node-schedule-trigger",
+      "name": "Daily 07:00 Berlin",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Runs every day at 07:00 Europe/Berlin (1 hour before dunning check). CRON: 0 7 * * *"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://bankaccountdata.gocardless.com/api/v2/accounts/{{ $env[\"GOCARDLESS_ACCOUNT_ID\"] }}/transactions/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"GOCARDLESS_ACCESS_TOKEN\"] }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "date_from",
+              "value": "={{ new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }}"
+            },
+            {
+              "name": "date_to",
+              "value": "={{ new Date().toISOString().split('T')[0] }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "node-fetch-transactions",
+      "name": "Fetch Last 7 Days Transactions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "notes": "GoCardless Open Banking API. Returns transactions.booked array and transactions.pending array. Requires GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-transactions",
+              "leftValue": "={{ $json[\"transactions\"] && $json[\"transactions\"][\"booked\"] && $json[\"transactions\"][\"booked\"].length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-check-transactions",
+      "name": "Has Transactions?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "transactions.booked",
+        "options": {
+          "destinationFieldName": ""
+        }
+      },
+      "id": "node-split-transactions",
+      "name": "Split Booked Transactions",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [900, 200],
+      "notes": "Splits the transactions.booked array into individual items for per-transaction processing"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "txn-amount",
+              "name": "txn_amount",
+              "value": "={{ parseFloat($json[\"transactionAmount\"][\"amount\"]) }}",
+              "type": "number"
+            },
+            {
+              "id": "txn-currency",
+              "name": "txn_currency",
+              "value": "={{ $json[\"transactionAmount\"][\"currency\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "txn-id",
+              "name": "txn_id",
+              "value": "={{ $json[\"transactionId\"] || $json[\"internalTransactionId\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "txn-date",
+              "name": "txn_booking_date",
+              "value": "={{ $json[\"bookingDate\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "txn-creditor",
+              "name": "txn_creditor_name",
+              "value": "={{ $json[\"creditorName\"] || $json[\"debtorName\"] || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "txn-reference",
+              "name": "txn_reference",
+              "value": "={{ $json[\"remittanceInformationUnstructured\"] || $json[\"remittanceInformationStructured\"] || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "txn-iban",
+              "name": "txn_creditor_iban",
+              "value": "={{ $json[\"creditorAccount\"] ? $json[\"creditorAccount\"][\"iban\"] : ($json[\"debtorAccount\"] ? $json[\"debtorAccount\"][\"iban\"] : '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "node-normalize-transaction",
+      "name": "Normalize Transaction Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 200],
+      "notes": "Flattens GoCardless transaction object into normalized fields for easier downstream processing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "positive-amount",
+              "leftValue": "={{ $json[\"txn_amount\"] }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-credit-only",
+      "name": "Credit Transactions Only",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 200],
+      "notes": "Only process incoming payments (positive amounts). Skip outgoing payments."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "invoices",
+        "returnAll": false,
+        "limit": 5,
+        "filterType": "string",
+        "filterString": "=status=in.(sent,action_required_dunning)&total=gte.{{ $json[\"txn_amount\"] - 0.01 }}&total=lte.{{ $json[\"txn_amount\"] + 0.01 }}"
+      },
+      "id": "node-lookup-by-amount",
+      "name": "Lookup Invoice by Amount (±0.01)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1560, 140],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Matches by amount ±0.01 EUR. Returns up to 5 candidates (should typically be 0 or 1)."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "invoices",
+        "returnAll": false,
+        "limit": 5,
+        "filterType": "string",
+        "filterString": "=status=in.(sent,action_required_dunning)&invoice_number=ilike.*{{ encodeURIComponent($json[\"txn_reference\"]) }}*"
+      },
+      "id": "node-lookup-by-reference",
+      "name": "Lookup Invoice by Reference",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1560, 320],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Secondary matching strategy: match invoice_number in transaction reference/description field."
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {
+          "clashHandling": {
+            "values": {
+              "resolveClash": "preferInput2"
+            }
+          }
+        }
+      },
+      "id": "node-merge-match-results",
+      "name": "Merge Match Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1780, 220],
+      "notes": "Combines results from both lookup strategies. Input 1: amount match, Input 2: reference match."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "match-found",
+              "leftValue": "={{ $json[\"id\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-match-found",
+      "name": "Match Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 220]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "invoices",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "paid"
+            },
+            {
+              "fieldId": "paid_date",
+              "fieldValue": "={{ $node[\"Normalize Transaction Fields\"].json[\"txn_booking_date\"] }}"
+            },
+            {
+              "fieldId": "payment_transaction_id",
+              "fieldValue": "={{ $node[\"Normalize Transaction Fields\"].json[\"txn_id\"] }}"
+            },
+            {
+              "fieldId": "payment_amount_received",
+              "fieldValue": "={{ $node[\"Normalize Transaction Fields\"].json[\"txn_amount\"] }}"
+            },
+            {
+              "fieldId": "payment_matched_by",
+              "fieldValue": "auto_bank_matching"
+            }
+          ]
+        }
+      },
+      "id": "node-mark-paid",
+      "name": "UPDATE invoice status='paid'",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2220, 120],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "payment_auto_matched"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ JSON.stringify({ invoice_id: $node[\"Merge Match Results\"].json[\"id\"], invoice_number: $node[\"Merge Match Results\"].json[\"invoice_number\"], transaction_id: $node[\"Normalize Transaction Fields\"].json[\"txn_id\"], amount: $node[\"Normalize Transaction Fields\"].json[\"txn_amount\"], booking_date: $node[\"Normalize Transaction Fields\"].json[\"txn_booking_date\"] }) }}"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-log-matched",
+      "name": "INSERT jobs_queue (matched)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2440, 120],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "payment_unmatched"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "pending"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={{ JSON.stringify({ transaction_id: $json[\"txn_id\"], amount: $json[\"txn_amount\"], currency: $json[\"txn_currency\"], booking_date: $json[\"txn_booking_date\"], creditor_name: $json[\"txn_creditor_name\"], reference: $json[\"txn_reference\"], creditor_iban: $json[\"txn_creditor_iban\"], reason: 'no_invoice_match', requires_manual_review: true }) }}"
+            },
+            {
+              "fieldId": "created_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-manual-review",
+      "name": "INSERT jobs_queue (manual review)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2220, 340],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Queues unmatched transactions for manual review in the operations dashboard."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "jobs_queue",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "job_type",
+              "fieldValue": "payment_matching_run"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "payload",
+              "fieldValue": "={ \"message\": \"No transactions in last 7 days\", \"run_date\": \"{{ new Date().toISOString() }}\" }"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "id": "node-log-no-transactions",
+      "name": "Log: No Transactions",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 07:00 Berlin": {
+      "main": [
+        [
+          {
+            "node": "Fetch Last 7 Days Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Last 7 Days Transactions": {
+      "main": [
+        [
+          {
+            "node": "Has Transactions?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Transactions?": {
+      "main": [
+        [
+          {
+            "node": "Split Booked Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log: No Transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Booked Transactions": {
+      "main": [
+        [
+          {
+            "node": "Normalize Transaction Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Transaction Fields": {
+      "main": [
+        [
+          {
+            "node": "Credit Transactions Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Credit Transactions Only": {
+      "main": [
+        [
+          {
+            "node": "Lookup Invoice by Amount (±0.01)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Lookup Invoice by Reference",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Invoice by Amount (±0.01)": {
+      "main": [
+        [
+          {
+            "node": "Merge Match Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Invoice by Reference": {
+      "main": [
+        [
+          {
+            "node": "Merge Match Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Match Results": {
+      "main": [
+        [
+          {
+            "node": "Match Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match Found?": {
+      "main": [
+        [
+          {
+            "node": "UPDATE invoice status='paid'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT jobs_queue (manual review)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE invoice status='paid'": {
+      "main": [
+        [
+          {
+            "node": "INSERT jobs_queue (matched)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["payment", "matching", "gocardless", "banking", "finance"],
+  "triggerCount": 1,
+  "updatedAt": "2026-02-24T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Zahlungsabgleich (Payment Auto-Matching)\n\n### Setup Required\n1. **GoCardless**: Register at bankaccountdata.gocardless.com. Obtain access token and account ID.\n2. **Env Vars**: Set GOCARDLESS_ACCESS_TOKEN and GOCARDLESS_ACCOUNT_ID in n8n.\n3. **Supabase invoices table**: Must have columns: status, total, invoice_number, paid_date, payment_transaction_id, payment_amount_received, payment_matched_by.\n\n### Matching Strategies (dual)\n1. **Amount match**: Invoice total within ±0.01 EUR of transaction amount\n2. **Reference match**: Invoice number found in transaction remittance information\n\n### Scheduling\n- Runs at 07:00 daily (1 hour before dunning check at 08:00)\n- Processes last 7 days of transactions to catch delayed bookings\n\n### Manual Review\n- Unmatched transactions queued in jobs_queue with type='payment_unmatched' and status='pending'\n- Review these in the operations dashboard"
+}
