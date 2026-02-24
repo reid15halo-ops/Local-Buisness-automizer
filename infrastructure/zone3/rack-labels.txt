@@ -1,0 +1,173 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║            FreyAI Visions 95/5 — Zone 3: Distributed Edge HQ               ║
+║                    10-Inch Rack — Label & Cable Guide                       ║
+║                      (P-Touch / Label-Maker Format)                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1: RACK POSITION MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Physical 10-inch rack layout (top to bottom, 1U per rack unit):
+
+  ┌─────────────────────────────────────────┐
+  │  HE 1  │  1U  │  PATCH PANEL / Keystone │ ← Cable management / patch
+  ├─────────────────────────────────────────┤
+  │  HE 2  │  1U  │  NETWORK SWITCH (8-port)│ ← Gigabit switch (all LAN)
+  ├─────────────────────────────────────────┤
+  │  HE 3  │  2U  │  UGREEN NAS 2300        │ ← Z3-NAS (Sovereign Vault)
+  │        │      │  Label: [Z3-NAS]        │
+  ├─────────────────────────────────────────┤
+  │  HE 5  │  1U  │  Lenovo ThinkCentre M75n│ ← Z3-COMPUTE (Edge Compute)
+  │        │      │  Label: [Z3-M75N]       │
+  ├─────────────────────────────────────────┤
+  │  HE 6  │  1U  │  Raspberry Pi 4         │ ← Z3-PI (Network Guardian)
+  │        │      │  Label: [Z3-PI4]        │
+  ├─────────────────────────────────────────┤
+  │  HE 7  │  1U  │  HP t640 Thin Client    │ ← Z3-T640 (Command Center)
+  │        │      │  Label: [Z3-T640]       │
+  ├─────────────────────────────────────────┤
+  │  HE 8  │  1U  │  Power Strip / PDU      │ ← UPS-fed power distribution
+  ├─────────────────────────────────────────┤
+  │  HE 9  │  1U  │  BLANK / Reserved       │ ← Future expansion
+  └─────────────────────────────────────────┘
+
+  Note: Z3-GAMING (Gaming Rig) is floor-mounted beside the rack,
+        connected to switch via labeled cable Z3-GAMING-ETH-SW1.
+        Xiaomi Redmi 12 Pro (Z3-PHONE) is wall-mounted nearby.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2: DEVICE LABELS  (print on P-Touch, affix to front panel)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Label Text          Font    Size    Color           Placement
+──────────────────────────────────────────────────────────────────────────────
+[Z3-NAS]           Bold    12pt    Black on White  Front of NAS 2300 (top)
+[Z3-M75N]          Bold    12pt    Black on White  Front of ThinkCentre bezel
+[Z3-PI4]           Bold    12pt    Black on White  Raspberry Pi 4 case top
+[Z3-T640]          Bold    12pt    Black on White  Front of HP t640
+[Z3-GAMING]        Bold    12pt    Black on White  Top of gaming rig case
+[Z3-PHONE]         Bold    10pt    Black on White  Back of phone holder/mount
+[Z3-SW1]           Bold    12pt    Black on White  Top of network switch
+[Z3-RACK]          Bold    14pt    White on Black  Rack front panel (top)
+
+Sub-labels (smaller, under device labels):
+──────────────────────────────────────────────────────────────────────────────
+[Sovereign Vault]  Regular 9pt     Black on White  Under [Z3-NAS]
+[Edge Compute]     Regular 9pt     Black on White  Under [Z3-M75N]
+[Network Guardian] Regular 9pt     Black on White  Under [Z3-PI4]
+[Command Center]   Regular 9pt     Black on White  Under [Z3-T640]
+[Heavy Forge]      Regular 9pt     Black on White  Under [Z3-GAMING]
+[Comms Gateway]    Regular 9pt     Black on White  Under [Z3-PHONE]
+
+IP Address labels (on rear panel, near port):
+──────────────────────────────────────────────────────────────────────────────
+[192.168.1.11]     Regular 8pt     Black on Yellow Near NAS ethernet port
+[192.168.1.12]     Regular 8pt     Black on Yellow Near ThinkCentre eth port
+[192.168.1.10]     Regular 8pt     Black on Yellow Near Pi4 ethernet port
+[192.168.1.13]     Regular 8pt     Black on Yellow Near HP t640 ethernet port
+[192.168.1.20]     Regular 8pt     Black on Yellow Near Gaming Rig eth port
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3: CABLE LABELS  (COLOR CODING LEGEND)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+COLOR CODE:
+  BLUE  cables  = Compute devices  (ThinkCentre, Gaming Rig, HP t640)
+  RED   cables  = Gateway/Uplink   (Router → Switch, Pi4 as router, WAN)
+  GREEN cables  = NAS / Storage    (NAS 2300, backup paths)
+  GREY  cables  = Management       (IPMI, serial console, USB)
+  WHITE cables  = Phone / Comms    (USB charging, Termux tether)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4: CABLE LABEL LIST  (print flag-style, wrap around cable)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Format: DEVICE-INTERFACE-DESTINATION
+Example: Z3-M75N-ETH-SW1 = ThinkCentre M75n, Ethernet port, to Switch port 1
+
+Ethernet Cables (Cat6):
+──────────────────────────────────────────────────────────────────────────────
+Label                   Color   From                    To              Port
+──────────────────────────────────────────────────────────────────────────────
+Z3-WAN-RTR-SW1         RED     ISP Router (WAN in)     Switch Port 1   (uplink)
+Z3-RTR-SW1             RED     Home Router             Switch Port 2
+Z3-NAS-ETH-SW1         GREEN   NAS 2300 (eth0)         Switch Port 3
+Z3-M75N-ETH-SW1        BLUE    ThinkCentre M75n        Switch Port 4
+Z3-PI4-ETH-SW1         RED     Raspberry Pi 4          Switch Port 5
+Z3-T640-ETH-SW1        BLUE    HP t640                 Switch Port 6
+Z3-GAMING-ETH-SW1      BLUE    Gaming Rig              Switch Port 7
+Z3-SW1-SPARE           GREY    Switch Port 8           (reserved)
+
+USB / Power Cables:
+──────────────────────────────────────────────────────────────────────────────
+Label                   Color   Description
+──────────────────────────────────────────────────────────────────────────────
+Z3-PI4-USB-PWR         GREY    Pi4 USB-C power (from PDU)
+Z3-PHONE-USB-PWR       WHITE   Xiaomi Redmi USB-C power (wall charger)
+Z3-PHONE-USB-TETHER    WHITE   Xiaomi USB → ThinkCentre (USB tether backup)
+
+Video Cables (HP t640 — 4x DisplayPort):
+──────────────────────────────────────────────────────────────────────────────
+Label                   Description
+──────────────────────────────────────────────────────────────────────────────
+Z3-T640-DP1-MON1       DisplayPort → Monitor 1 (Primary FreyAI Dashboard)
+Z3-T640-DP2-MON2       DisplayPort → Monitor 2 (Grafana Metrics)
+Z3-T640-DP3-MON3       DisplayPort → Monitor 3 (Uptime Kuma / Alerts)
+Z3-T640-DP4-MON4       DisplayPort → Monitor 4 (Reserved / Logs)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5: SWITCH PORT MAP  (tape inside switch access panel or rack door)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Switch: Z3-SW1 (8-port Gigabit, HE2)
+
+  Port │ Cable Label         │ Device               │ IP
+  ─────┼─────────────────────┼──────────────────────┼───────────────
+    1  │ Z3-WAN-RTR-SW1      │ ISP Router / WAN     │ 192.168.1.1
+    2  │ Z3-RTR-SW1          │ Home Router           │ 192.168.1.1
+    3  │ Z3-NAS-ETH-SW1      │ UGREEN NAS 2300       │ 192.168.1.11
+    4  │ Z3-M75N-ETH-SW1     │ ThinkCentre M75n      │ 192.168.1.12
+    5  │ Z3-PI4-ETH-SW1      │ Raspberry Pi 4        │ 192.168.1.10
+    6  │ Z3-T640-ETH-SW1     │ HP t640 Thin Client   │ 192.168.1.13
+    7  │ Z3-GAMING-ETH-SW1   │ Gaming Rig            │ 192.168.1.20
+    8  │ Z3-SW1-SPARE        │ (spare)               │ —
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6: TAILSCALE MESH QUICK REFERENCE  (laminate and attach to rack door)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Tailscale Hostnames (reachable from anywhere in the mesh):
+  ┌──────────────────┬───────────────────┬──────────────────────┐
+  │ Tailscale Host   │ LAN IP            │ Services             │
+  ├──────────────────┼───────────────────┼──────────────────────┤
+  │ nas-vault        │ 192.168.1.11      │ SFTP :22, SMB :445   │
+  │ thinkcenter-m75n │ 192.168.1.12      │ n8n :5679, Port :9001│
+  │ pi4-guardian     │ 192.168.1.10      │ DNS :53, Kuma :3001  │
+  │ hp-t640-kiosk    │ 192.168.1.13      │ Kiosk display only   │
+  │ gaming-forge     │ 192.168.1.20      │ Ollama :11434        │
+  │ hetzner-vps      │ (dynamic TS IP)   │ n8n :5678, API :8000 │
+  └──────────────────┴───────────────────┴──────────────────────┘
+
+  Subnet: 192.168.1.0/24 routed by pi4-guardian (Tailscale subnet router)
+  DNS:    Pi-hole on pi4-guardian:53 (upstream: Cloudflare 1.1.1.1)
+  VPN:    Tailscale mesh (WireGuard) — all traffic encrypted
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7: P-TOUCH PRINT SETTINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Recommended tape: Brother TZe-231 (12mm, Black on White)
+  For color-coded cables: TZe-431 (Black on Red), TZe-531 (Black on Blue),
+                          TZe-731 (Black on Green), TZe-221 (Black on White)
+  Cable flag labels: Use TZe tape + Flag label template in P-Touch Editor
+  Device panel labels: TZe-231 12mm (main) + TZe-221 9mm (sub-label)
+  IP address labels: TZe-621 (Black on Yellow) 9mm
+  Rack overview card: TZe-335 (White on Black) 12mm for rack ID
+
+  P-Touch Editor template: "Flag" → text both sides, 25mm flag width
+  Font: Helsinki Bold 12pt (device labels), Helsinki Regular 8pt (IPs)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+END OF RACK LABELS GUIDE — FreyAI Zone 3 / 2026-02-24
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
