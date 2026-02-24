@@ -732,8 +732,7 @@ async function generateAngebotPDF(
     return { url: publicUrl, bytes }
 }
 
-// NOTE: This mirrors formatCurrency() in js/app.js - both format EUR amounts
-// formatCurrency() removed; use formatCurrency() for all currency formatting
+// NOTE: pdfCurrency() removed - use formatCurrency() for all currency formatting in this file
 
 // ============================================
 // Email Responses
@@ -970,7 +969,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
                     FreyAI Visions<br>
-                    Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de
+                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de
                 </p>
             </div>
         </body>

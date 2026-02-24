@@ -2,6 +2,8 @@
    Store Service
    Centralized state management
    ============================================ */
+// TODO: read from company settings
+const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
 
 class StoreService {
     constructor() {
@@ -392,8 +394,8 @@ class StoreService {
                     stuecklisteEK: auftrag.stuecklisteEK || 0,
                     notizen: auftrag.notizen,
                     netto: netto,
-                    mwst: netto * 0.19,
-                    brutto: netto * 1.19,
+                    mwst: netto * DEFAULT_TAX_RATE,
+                    brutto: netto * (1 + DEFAULT_TAX_RATE),
                     status: 'offen',
                     datum: new Date().toISOString(),
                     faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),

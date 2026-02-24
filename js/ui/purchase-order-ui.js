@@ -2,6 +2,8 @@
    Purchase Order UI Module
    Handles all PO interface interactions
    ============================================ */
+// TODO: read from company settings
+const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
 
 class PurchaseOrderUI {
     constructor() {
@@ -453,8 +455,8 @@ class PurchaseOrderUI {
             netto += (pos.menge || 0) * (pos.ekPreis || 0);
         });
 
-        const mwst = netto * 0.19;
-        const brutto = netto * 1.19;
+        const mwst = netto * DEFAULT_TAX_RATE;
+        const brutto = netto * (1 + DEFAULT_TAX_RATE);
 
         document.getElementById('po-summary-netto').textContent = netto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
         document.getElementById('po-summary-mwst').textContent = mwst.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });

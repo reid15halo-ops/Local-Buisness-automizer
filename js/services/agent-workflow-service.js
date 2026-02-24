@@ -16,6 +16,8 @@
    - Graceful fallback if Gemini is unavailable
    - Execution log persisted in localStorage by date
    ============================================ */
+// TODO: read from company settings
+const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
 
 class AgentWorkflowService {
     constructor() {
@@ -954,7 +956,7 @@ Antworte NUR mit dem JSON.`;
         // Estimate based on leistungsart
         const basePrice = this._estimateBasePrice(anfrage.leistungsart);
         const netto = basePrice;
-        const mwst = Math.round(netto * 0.19 * 100) / 100;
+        const mwst = Math.round(netto * DEFAULT_TAX_RATE * 100) / 100;
         const brutto = Math.round((netto + mwst) * 100) / 100;
 
         return {
@@ -1432,13 +1434,33 @@ Antworte NUR mit dem JSON-Array.`;
     }
 
     _getBusinessType() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap = {};
+        try {
+            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
+                console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
+                ap = {};
+            }
+        } catch (e) {
+            console.warn('[AgentWorkflow] Failed to parse admin_settings JSON:', e?.message);
+            ap = {};
+        }
         const storeSettings = window.storeService?.state?.settings || {};
         return ap.business_type || storeSettings.businessType || 'Handwerksbetrieb';
     }
 
     _getCompanyName() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap = {};
+        try {
+            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
+                console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
+                ap = {};
+            }
+        } catch (e) {
+            console.warn('[AgentWorkflow] Failed to parse admin_settings JSON:', e?.message);
+            ap = {};
+        }
         const storeSettings = window.storeService?.state?.settings || {};
         return ap.company_name || storeSettings.companyName || 'FreyAI Visions';
     }

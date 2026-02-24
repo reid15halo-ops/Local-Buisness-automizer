@@ -3,6 +3,9 @@
    Complete Quote-to-Invoice Workflow
    ============================================ */
 
+// TODO: read from company settings (admin panel / Supabase admin_settings table)
+const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+
 // Security: standalone HTML escape - available before window.UI loads
 // Falls back to this if window.UI.sanitize is not yet available
 function _esc(str) {
@@ -339,7 +342,7 @@ function initAngebotForm() {
                 });
 
                 const netto = positionen.reduce((sum, p) => sum + (p.menge * p.preis), 0);
-                const mwst = netto * 0.19;
+                const mwst = netto * DEFAULT_TAX_RATE;
                 const brutto = netto + mwst;
 
                 const angebot = {
@@ -556,7 +559,7 @@ function updateAngebotSummary() {
             }
         });
 
-        const mwst = netto * 0.19;
+        const mwst = netto * DEFAULT_TAX_RATE;
         const brutto = netto + mwst;
 
         const nettoEl = document.getElementById('angebot-netto');
@@ -1952,7 +1955,7 @@ function updateAuftragTotalSummary(auftrag) {
     const angebotNetto = auftrag.netto || 0;
 
     const netto = angebotNetto + materialVK + extra;
-    const mwst = netto * 0.19;
+    const mwst = netto * DEFAULT_TAX_RATE;
     const brutto = netto + mwst;
 
     const set = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = formatCurrency(val);} };
@@ -2190,8 +2193,8 @@ function proceedWithAuftragCompletion(auftrag) {
         stuecklisteEK: stuecklisteEK,
         notizen: notizen,
         netto: netto,
-        mwst: netto * 0.19,
-        brutto: netto * 1.19,
+        mwst: netto * DEFAULT_TAX_RATE,
+        brutto: netto * (1 + DEFAULT_TAX_RATE),
         status: 'offen',
         createdAt: new Date().toISOString()
     };
@@ -2654,6 +2657,7 @@ function renderMaterialList(materials) {
 function initSettings() {
     // Load saved values
     const geminiKey = localStorage.getItem('gemini_api_key');
+    // TODO: stundensatz should come from company settings (admin_settings table), not localStorage alone
     const stundensatz = localStorage.getItem('stundensatz') || '65';
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
 
@@ -2786,7 +2790,9 @@ function generateSenderEmail() {
     }
 
     // Use plus-addressing on the Proton Mail base address
-    const baseEmail = localStorage.getItem('proton_base_email') || 'noreply@handwerkflow.de';
+    // TODO: NOREPLY_EMAIL should come from company settings, not be hardcoded here
+    const noReplyEmail = settings?.noreply_email ?? 'noreply@handwerkflow.de';
+    const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;
 
@@ -3649,8 +3655,8 @@ async function runDemoWorkflow() {
         arbeitszeit: demoAuftrag.arbeitszeit,
         materialKosten: demoAuftrag.materialKosten,
         netto: demoAuftrag.netto + demoAuftrag.materialKosten,
-        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * 0.19,
-        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * 1.19,
+        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * DEFAULT_TAX_RATE,
+        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + DEFAULT_TAX_RATE),
         status: 'offen',
         createdAt: new Date().toISOString()
     };
