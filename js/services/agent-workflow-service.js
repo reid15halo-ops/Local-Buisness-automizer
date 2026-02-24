@@ -1432,13 +1432,33 @@ Antworte NUR mit dem JSON-Array.`;
     }
 
     _getBusinessType() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap = {};
+        try {
+            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
+                console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
+                ap = {};
+            }
+        } catch (e) {
+            console.warn('[AgentWorkflow] Failed to parse admin_settings JSON:', e?.message);
+            ap = {};
+        }
         const storeSettings = window.storeService?.state?.settings || {};
         return ap.business_type || storeSettings.businessType || 'Handwerksbetrieb';
     }
 
     _getCompanyName() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap = {};
+        try {
+            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
+                console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
+                ap = {};
+            }
+        } catch (e) {
+            console.warn('[AgentWorkflow] Failed to parse admin_settings JSON:', e?.message);
+            ap = {};
+        }
         const storeSettings = window.storeService?.state?.settings || {};
         return ap.company_name || storeSettings.companyName || 'FreyAI Visions';
     }
