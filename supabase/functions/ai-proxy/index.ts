@@ -3,33 +3,12 @@
 // Deploy: supabase functions deploy ai-proxy
 // Env vars: GEMINI_API_KEY
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-// Simple in-memory rate limiter: max 50 requests per user per hour
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
-
-function checkRateLimit(userId: string): boolean {
-    const now = Date.now()
-    const entry = rateLimitMap.get(userId)
-
-    if (!entry || now > entry.resetTime) {
-        // Reset or create new entry
-        rateLimitMap.set(userId, { count: 1, resetTime: now + 3600000 }) // 1 hour
-        return true
-    }
-
-    if (entry.count >= 50) {
-        return false // Rate limit exceeded
-    }
-
-    entry.count++
-    return true
 }
 
 serve(async (req) => {
@@ -53,8 +32,16 @@ serve(async (req) => {
             )
         }
 
-        // Rate limit check
-        if (!checkRateLimit(user.id)) {
+        // DB-based rate limit: count requests in last hour
+        const oneHourAgo = new Date(Date.now() - 3600000).toISOString()
+        const { count: requestCount } = await supabase
+            .from('automation_log')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('action', 'ai.gemini_request')
+            .gte('created_at', oneHourAgo)
+
+        if ((requestCount ?? 0) >= 50) {
             return new Response(
                 JSON.stringify({ error: 'Rate limit exceeded: max 50 requests per hour' }),
                 { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -119,7 +106,7 @@ serve(async (req) => {
     } catch (err) {
         console.error('AI Proxy error:', err)
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }

@@ -12,8 +12,8 @@
 //     )$$
 //   );
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -23,6 +23,16 @@ const corsHeaders = {
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
+    }
+
+    // Validate caller is authorized (pg_cron or admin)
+    const callerAuth = req.headers.get('Authorization') ?? ''
+    const expectedKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    if (!expectedKey || callerAuth !== `Bearer ${expectedKey}`) {
+        return new Response(
+            JSON.stringify({ error: 'Unauthorized' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
     }
 
     try {
@@ -125,8 +135,9 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     } catch (err) {
+        console.error('Webhook error:', err)
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }

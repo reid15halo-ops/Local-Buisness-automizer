@@ -1,9 +1,9 @@
 // Supabase Edge Function: Process Inbound Email (Resend Webhook)
 // Deploy: supabase functions deploy process-inbound-email --no-verify-jwt
-// Env vars: RESEND_API_KEY, GEMINI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// Env vars: RESEND_API_KEY, GEMINI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_WEBHOOK_SECRET
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -61,6 +61,19 @@ interface GeminiAnalysisResult {
 }
 
 // ============================================
+// HTML Escape Helper
+// ============================================
+function escapeHtml(s: string | null | undefined): string {
+    if (!s) return ''
+    return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
+// ============================================
 // Main Handler
 // ============================================
 serve(async (req) => {
@@ -68,10 +81,24 @@ serve(async (req) => {
         return new Response('ok', { headers: corsHeaders })
     }
 
+    // C-1: Webhook signature verification via shared secret
+    const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET')
+    if (webhookSecret) {
+        const authHeader = req.headers.get('Authorization')
+        if (authHeader !== `Bearer ${webhookSecret}`) {
+            return new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+    } else {
+        console.warn('process-inbound-email: RESEND_WEBHOOK_SECRET is not set - webhook requests are unauthenticated')
+    }
+
     try {
         const email: InboundEmail = await req.json()
 
-        console.log('📧 Inbound email received:', {
+        console.log('Inbound email received:', {
             from: email.from.email,
             subject: email.subject
         })
@@ -176,7 +203,7 @@ serve(async (req) => {
     } catch (err: any) {
         console.error('Error processing inbound email:', err)
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
@@ -314,6 +341,10 @@ async function processWithGemini(
             })
             .eq('id', kundeId)
     } else {
+        // M-4: No user_id context available in this webhook handler - records are created without
+        // user association. The service role bypasses RLS, but multi-tenancy requires a designated
+        // user_id. Configure a default user_id env var or update this logic for proper tenancy.
+        console.warn('process-inbound-email: No user_id context - records created without user association')
         const { data: newCustomer } = await supabase
             .from('kunden')
             .insert({
@@ -496,11 +527,11 @@ async function sendAngebotEmail(
             <div class="container">
                 <div class="header">
                     <h1>FreyAI Visions</h1>
-                    <p>Ihr Angebot ${angebotNummer}</p>
+                    <p>Ihr Angebot ${escapeHtml(angebotNummer)}</p>
                 </div>
 
                 <div class="content">
-                    <p>Sehr geehrte/r ${kundenName},</p>
+                    <p>Sehr geehrte/r ${escapeHtml(kundenName)},</p>
 
                     <p>vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen folgendes Angebot:</p>
 
@@ -508,7 +539,7 @@ async function sendAngebotEmail(
                         <h3>Leistungen</h3>
                         ${positionen.map(pos => `
                             <div class="position">
-                                <strong>${pos.beschreibung}</strong><br>
+                                <strong>${escapeHtml(pos.beschreibung)}</strong><br>
                                 ${pos.menge} ${pos.einheit} × ${formatCurrency(pos.einzelpreis)} = ${formatCurrency(pos.gesamt)}
                             </div>
                         `).join('')}
@@ -581,7 +612,7 @@ async function sendFollowUpQuestions(
     const senderEmail = Deno.env.get('SENDER_EMAIL') || 'info@handwerkflow.de'
 
     const questionsHTML = questions.map((q, i) =>
-        `<li style="margin-bottom: 12px;"><strong>${i + 1}.</strong> ${q}</li>`
+        `<li style="margin-bottom: 12px;"><strong>${i + 1}.</strong> ${escapeHtml(q)}</li>`
     ).join('')
 
     const htmlBody = `
@@ -591,7 +622,7 @@ async function sendFollowUpQuestions(
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h2>Vielen Dank für Ihre Anfrage!</h2>
 
-                <p>Sehr geehrte/r ${name},</p>
+                <p>Sehr geehrte/r ${escapeHtml(name)},</p>
 
                 <p>vielen Dank für Ihr Interesse an unseren Leistungen.</p>
 
@@ -653,7 +684,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h2>Vielen Dank für Ihre Anfrage!</h2>
 
-                <p>Sehr geehrte/r ${name},</p>
+                <p>Sehr geehrte/r ${escapeHtml(name)},</p>
 
                 <p>wir haben Ihre Anfrage erhalten und werden diese schnellstmöglich bearbeiten.</p>
 

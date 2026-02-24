@@ -353,11 +353,11 @@ function initBuchhaltung() {
 function initAutomationSettings() {
     // Load saved values
     const relayUrl = localStorage.getItem('email_relay_url');
-    const relaySecret = localStorage.getItem('email_relay_secret');
+    const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const senderEmail = localStorage.getItem('sender_email');
-    const twilioSid = localStorage.getItem('twilio_sid');
-    const twilioToken = localStorage.getItem('twilio_token');
-    const twilioFrom = localStorage.getItem('twilio_from');
+    const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
+    const twilioToken = (sessionStorage.getItem("twilio_token") || localStorage.getItem("twilio_token"));
+    const twilioFrom = (sessionStorage.getItem("twilio_from") || localStorage.getItem("twilio_from"));
 
     if (document.getElementById('email-relay-url')) {
         document.getElementById('email-relay-url').value = relayUrl || '';
@@ -380,7 +380,7 @@ function initAutomationSettings() {
         const url = document.getElementById('email-relay-url').value.trim();
         const secret = document.getElementById('email-relay-secret').value.trim();
         localStorage.setItem('email_relay_url', url);
-        localStorage.setItem('email_relay_secret', secret);
+        sessionStorage.setItem("email_relay_secret", secret);
         updateSettingsStatus();
         showToast('E-Mail-Konfiguration gespeichert', 'success');
     });
@@ -405,9 +405,9 @@ function initAutomationSettings() {
 
     // Save SMS config
     document.getElementById('btn-save-sms-config')?.addEventListener('click', () => {
-        localStorage.setItem('twilio_sid', document.getElementById('twilio-sid').value.trim());
-        localStorage.setItem('twilio_token', document.getElementById('twilio-token').value.trim());
-        localStorage.setItem('twilio_from', document.getElementById('twilio-from').value.trim());
+        sessionStorage.setItem("twilio_sid", document.getElementById('twilio-sid').value.trim());
+        sessionStorage.setItem("twilio_token", document.getElementById('twilio-token').value.trim());
+        sessionStorage.setItem("twilio_from", document.getElementById('twilio-from').value.trim());
         updateSettingsStatus();
         showToast('SMS-Konfiguration gespeichert', 'success');
     });
@@ -471,9 +471,9 @@ function updateSettingsStatus() {
     const geminiKey = localStorage.getItem('gemini_api_key');
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
     const relayUrl = localStorage.getItem('email_relay_url');
-    const relaySecret = localStorage.getItem('email_relay_secret');
+    const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const emailConfigured = relayUrl && relaySecret;
-    const twilioSid = localStorage.getItem('twilio_sid');
+    const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
 
     const setStatus = (el, configured) => {
         if (!el) return;

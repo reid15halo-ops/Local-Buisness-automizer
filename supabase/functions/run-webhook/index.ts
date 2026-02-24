@@ -2,16 +2,43 @@
 // Deploy: supabase functions deploy run-webhook
 // Allows frontend workflows to call external webhooks without CORS issues
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Blocked hosts to prevent SSRF
-const BLOCKED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '169.254.169.254', 'metadata.google']
+function isBlockedUrl(parsedUrl: URL): boolean {
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/\[|\]/g, '')
+
+    // Block non-HTTP(S) protocols
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) return true
+
+    // Block loopback
+    if (hostname === 'localhost' || hostname === '::1') return true
+    if (/^127\./.test(hostname)) return true
+    if (hostname === '0.0.0.0') return true
+
+    // Block link-local / APIPA / cloud metadata
+    if (/^169\.254\./.test(hostname)) return true
+    if (hostname.includes('metadata.google') || hostname.includes('metadata.internal')) return true
+
+    // Block private RFC 1918 ranges
+    if (/^10\./.test(hostname)) return true
+    if (/^192\.168\./.test(hostname)) return true
+    if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)) return true
+
+    // Block decimal/hex encoded IPs that resolve to private (basic check)
+    // Pure numeric hostnames like 2130706433 (= 127.0.0.1)
+    if (/^\d+$/.test(hostname)) return true
+
+    // Block IPv6 private/link-local
+    if (/^fc[0-9a-f]{2}:/i.test(hostname) || /^fe[89ab][0-9a-f]:/i.test(hostname)) return true
+
+    return false
+}
 
 serve(async (req) => {
     if (req.method === 'OPTIONS') {
@@ -54,14 +81,7 @@ serve(async (req) => {
         }
 
         // Security: block internal/private URLs
-        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-            return new Response(
-                JSON.stringify({ error: 'Nur HTTP/HTTPS URLs erlaubt' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
-        }
-
-        if (BLOCKED_HOSTS.some(h => parsedUrl.hostname.includes(h))) {
+        if (isBlockedUrl(parsedUrl)) {
             return new Response(
                 JSON.stringify({ error: 'Diese URL ist nicht erlaubt' }),
                 { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -104,8 +124,9 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     } catch (err) {
+        console.error(err)
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }

@@ -2,8 +2,8 @@
 // Deploy: supabase functions deploy send-sms
 // Env vars: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
 
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -103,7 +103,7 @@ serve(async (req) => {
         )
     } catch (err) {
         return new Response(
-            JSON.stringify({ error: err.message }),
+            JSON.stringify({ error: 'Interner Serverfehler' }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
