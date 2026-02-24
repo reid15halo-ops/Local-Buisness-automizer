@@ -3,6 +3,8 @@
    Complete Quote-to-Invoice Workflow
    Modular Architecture Entry Point
    ============================================ */
+// TODO: read from company settings
+const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
 
 // Module-level convenience shortcuts
 const {
@@ -668,8 +670,8 @@ async function runDemoWorkflow() {
         arbeitszeit: demoAuftrag.arbeitszeit,
         materialKosten: demoAuftrag.materialKosten,
         netto: demoAuftrag.netto + demoAuftrag.materialKosten,
-        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * 0.19,
-        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * 1.19,
+        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * DEFAULT_TAX_RATE,
+        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + DEFAULT_TAX_RATE),
         status: 'offen',
         createdAt: new Date().toISOString()
     };
