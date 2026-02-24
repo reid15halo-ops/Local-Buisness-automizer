@@ -23,6 +23,16 @@ Thumbs.db
 temp/
 *.log
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
 # Editor
 *.swp
 *.swo
