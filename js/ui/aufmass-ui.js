@@ -29,21 +29,21 @@ class AufmassUI {
         // Delegate all click events inside the aufmass container
         document.addEventListener('click', (e) => {
             const container = document.getElementById('aufmass-container');
-            if (!container || !container.contains(e.target)) return;
+            if (!container || !container.contains(e.target)) {return;}
             this.handleClick(e);
         });
 
         // Delegate input events for real-time calculation
         document.addEventListener('input', (e) => {
             const container = document.getElementById('aufmass-container');
-            if (!container || !container.contains(e.target)) return;
+            if (!container || !container.contains(e.target)) {return;}
             this.handleInput(e);
         });
 
         // Delegate change events
         document.addEventListener('change', (e) => {
             const container = document.getElementById('aufmass-container');
-            if (!container || !container.contains(e.target)) return;
+            if (!container || !container.contains(e.target)) {return;}
             this.handleChange(e);
         });
     }
@@ -54,7 +54,7 @@ class AufmassUI {
 
     render() {
         const container = document.getElementById('aufmass-container');
-        if (!container) return;
+        if (!container) {return;}
 
         switch (this.currentScreen) {
             case 'list':
@@ -422,7 +422,7 @@ class AufmassUI {
         const placeholder = isCm ? '0' : '0.00';
 
         const displayVal = (val) => {
-            if (!val && val !== 0) return '';
+            if (!val && val !== 0) {return '';}
             return isCm ? Math.round(val * 100) : val;
         };
 
@@ -639,7 +639,7 @@ class AufmassUI {
     _svgRectangle(room, W, H, pad) {
         const l = room.length || 0;
         const w = room.width || 0;
-        if (l === 0 && w === 0) return this._svgPlaceholder(W, H);
+        if (l === 0 && w === 0) {return this._svgPlaceholder(W, H);}
 
         const drawW = W - 2 * pad;
         const drawH = H - 2 * pad;
@@ -667,7 +667,7 @@ class AufmassUI {
         const w1 = room.width1 || 0;
         const l2 = room.length2 || 0;
         const w2 = room.width2 || 0;
-        if (l1 === 0 && l2 === 0) return this._svgPlaceholder(W, H);
+        if (l1 === 0 && l2 === 0) {return this._svgPlaceholder(W, H);}
 
         const maxL = Math.max(l1, l2);
         const maxW = w1 + w2;
@@ -702,7 +702,7 @@ class AufmassUI {
         const a = room.sideA || 0;
         const b = room.sideB || 0;
         const d = room.depth || 0;
-        if (a === 0 && b === 0) return this._svgPlaceholder(W, H);
+        if (a === 0 && b === 0) {return this._svgPlaceholder(W, H);}
 
         const maxSide = Math.max(a, b);
         const drawW = W - 2 * pad;
@@ -732,7 +732,7 @@ class AufmassUI {
     _svgTriangle(room, W, H, pad) {
         const base = room.base || 0;
         const th = room.triHeight || 0;
-        if (base === 0 && th === 0) return this._svgPlaceholder(W, H);
+        if (base === 0 && th === 0) {return this._svgPlaceholder(W, H);}
 
         const drawW = W - 2 * pad;
         const drawH = H - 2 * pad;
@@ -758,7 +758,7 @@ class AufmassUI {
 
     _svgCircle(room, W, H, pad) {
         const r = room.radius || 0;
-        if (r === 0) return this._svgPlaceholder(W, H);
+        if (r === 0) {return this._svgPlaceholder(W, H);}
 
         const drawR = Math.min(W - 2 * pad, H - 2 * pad) / 2;
         const cx = W / 2;
@@ -775,7 +775,7 @@ class AufmassUI {
     }
 
     _svgDeductions(room, rx, ry, rw, rh, realL, realW) {
-        if (!room.deductions || room.deductions.length === 0) return '';
+        if (!room.deductions || room.deductions.length === 0) {return '';}
 
         const deductions = [];
         // Place deductions along the walls
@@ -1208,7 +1208,7 @@ class AufmassUI {
 
     handleClick(e) {
         const btn = e.target.closest('[data-action]');
-        if (!btn) return;
+        if (!btn) {return;}
 
         const action = btn.dataset.action;
         const projectId = btn.dataset.projectId;
@@ -1437,7 +1437,7 @@ class AufmassUI {
 
         document.getElementById('aufmass-modal-close').addEventListener('click', closeModal);
         document.getElementById('aufmass-modal-cancel').addEventListener('click', closeModal);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) {closeModal();} });
 
         document.getElementById('aufmass-modal-confirm').addEventListener('click', () => {
             const name = document.getElementById('aufmass-new-name').value.trim();
@@ -1464,7 +1464,7 @@ class AufmassUI {
 
     showEditProjectModal(projectId) {
         const project = window.aufmassService.getProject(projectId);
-        if (!project) return;
+        if (!project) {return;}
 
         const html = `
             <div class="aufmass-modal-overlay" id="aufmass-modal-overlay">
@@ -1510,7 +1510,7 @@ class AufmassUI {
 
         document.getElementById('aufmass-modal-close').addEventListener('click', closeModal);
         document.getElementById('aufmass-modal-cancel').addEventListener('click', closeModal);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) {closeModal();} });
 
         document.getElementById('aufmass-modal-confirm').addEventListener('click', () => {
             const name = document.getElementById('aufmass-edit-name').value.trim();
@@ -1589,7 +1589,7 @@ class AufmassUI {
 
         document.getElementById('aufmass-modal-close').addEventListener('click', closeModal);
         document.getElementById('aufmass-modal-cancel').addEventListener('click', closeModal);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) {closeModal();} });
 
         // Update defaults when type changes
         const typeSelect = document.getElementById('aufmass-ded-type');
@@ -1611,7 +1611,7 @@ class AufmassUI {
             if (typeDef) {
                 widthInput.value = typeDef.defaultWidth;
                 heightInput.value = typeDef.defaultHeight;
-                if (!nameInput.value) nameInput.placeholder = typeDef.label;
+                if (!nameInput.value) {nameInput.placeholder = typeDef.label;}
                 updatePreview();
             }
         });
@@ -1638,7 +1638,7 @@ class AufmassUI {
     addNewRoom(projectId) {
         const service = window.aufmassService;
         const project = service.getProject(projectId);
-        if (!project) return;
+        if (!project) {return;}
 
         const room = service.addRoom(projectId, {
             name: `Raum ${project.rooms.length + 1}`,
@@ -1658,7 +1658,7 @@ class AufmassUI {
     }
 
     confirmDeleteProject(projectId) {
-        if (!confirm('Aufma\u00DF-Projekt wirklich l\u00F6schen? Dies kann nicht r\u00FCckg\u00E4ngig gemacht werden.')) return;
+        if (!confirm('Aufma\u00DF-Projekt wirklich l\u00F6schen? Dies kann nicht r\u00FCckg\u00E4ngig gemacht werden.')) {return;}
 
         window.aufmassService.deleteProject(projectId);
         if (this.currentProjectId === projectId) {
@@ -1670,7 +1670,7 @@ class AufmassUI {
     }
 
     confirmDeleteRoom(projectId, roomId) {
-        if (!confirm('Raum wirklich l\u00F6schen?')) return;
+        if (!confirm('Raum wirklich l\u00F6schen?')) {return;}
 
         window.aufmassService.deleteRoom(projectId, roomId);
         this.render();
@@ -1684,7 +1684,7 @@ class AufmassUI {
 
     exportProject(projectId) {
         const json = window.aufmassService.exportProject(projectId);
-        if (!json) return;
+        if (!json) {return;}
 
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -1759,7 +1759,7 @@ class AufmassUI {
                 return;
             }
 
-            if (!angebot.positionen) angebot.positionen = [];
+            if (!angebot.positionen) {angebot.positionen = [];}
             angebot.positionen.push(...positions);
 
             const netto = angebot.positionen.reduce((s, p) => s + (p.menge || 0) * (p.preis || 0), 0);
@@ -1783,10 +1783,10 @@ class AufmassUI {
     _refreshCalcAndPreview(projectId, roomId) {
         const service = window.aufmassService;
         const project = service.getProject(projectId);
-        if (!project) return;
+        if (!project) {return;}
 
         const room = project.rooms.find(r => r.id === roomId);
-        if (!room) return;
+        if (!room) {return;}
 
         const calc = service.calculateRoom(room);
 
@@ -1879,14 +1879,14 @@ class AufmassUI {
     }
 
     _esc(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
 
     _formatDate(isoStr) {
-        if (!isoStr) return '';
+        if (!isoStr) {return '';}
         try {
             const d = new Date(isoStr);
             return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });

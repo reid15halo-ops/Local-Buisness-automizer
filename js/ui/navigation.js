@@ -145,21 +145,21 @@ class NavigationController {
             case 'agent-workflows':
                 if (window.lazyLoader) {
                     window.lazyLoader.loadForView('agent-workflows').then(() => {
-                        if (window.agentWorkflowUI) window.agentWorkflowUI.init();
+                        if (window.agentWorkflowUI) {window.agentWorkflowUI.init();}
                     });
                 }
                 break;
             case 'workflow-builder':
                 if (window.lazyLoader) {
                     window.lazyLoader.loadForView('workflow-builder').then(() => {
-                        if (window.workflowBuilderUI) window.workflowBuilderUI.mount('view-workflow-builder');
+                        if (window.workflowBuilderUI) {window.workflowBuilderUI.mount('view-workflow-builder');}
                     });
                 }
                 break;
             case 'aufmass':
                 if (window.lazyLoader) {
                     window.lazyLoader.loadForView('aufmass').then(() => {
-                        if (window.aufmassUI) window.aufmassUI.render();
+                        if (window.aufmassUI) {window.aufmassUI.render();}
                     });
                 }
                 break;

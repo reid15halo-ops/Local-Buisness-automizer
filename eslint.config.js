@@ -14,7 +14,7 @@ export default [
   {
     files: ['js/**/*.js'],
     languageOptions: {
-      ecmaVersion: 2021,
+      ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
         window: 'readonly',
@@ -26,7 +26,7 @@ export default [
       'semi': ['error', 'always'],
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'eqeqeq': ['error', 'always'],
+      'eqeqeq': ['error', 'always', { null: 'ignore' }],
       'curly': ['error', 'all']
     }
   }

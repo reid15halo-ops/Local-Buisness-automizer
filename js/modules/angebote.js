@@ -86,13 +86,13 @@ function initAngebotForm() {
 
         // Validate: at least one position required
         if (positionen.length === 0) {
-            if (window.showToast) window.showToast('Mindestens eine Position mit Beschreibung, Menge und Preis erforderlich', 'warning');
+            if (window.showToast) {window.showToast('Mindestens eine Position mit Beschreibung, Menge und Preis erforderlich', 'warning');}
             return;
         }
 
         const netto = positionen.reduce((sum, p) => sum + (p.menge * p.preis), 0);
         if (netto <= 0) {
-            if (window.showToast) window.showToast('Angebotssumme muss größer als 0 sein', 'warning');
+            if (window.showToast) {window.showToast('Angebotssumme muss größer als 0 sein', 'warning');}
             return;
         }
 
@@ -314,7 +314,7 @@ function generateAIText() {
     const aiTimeout = setTimeout(() => {
         aiBtn.innerHTML = '🤖 KI-Vorschlag generieren';
         aiBtn.disabled = false;
-        if (window.showToast) showToast('KI-Generierung abgebrochen (Timeout)', 'warning');
+        if (window.showToast) {showToast('KI-Generierung abgebrochen (Timeout)', 'warning');}
     }, 30000);
 
     setTimeout(() => {
@@ -518,8 +518,8 @@ function renderAngebote() {
                         const created = new Date(a.createdAt);
                         const expiry = new Date(created.getTime() + 30 * 24 * 60 * 60 * 1000);
                         const daysLeft = Math.ceil((expiry - Date.now()) / (24 * 60 * 60 * 1000));
-                        if (daysLeft < 0) return '<span style="color:var(--accent-danger);font-weight:600;">Abgelaufen</span>';
-                        if (daysLeft <= 7) return `<span style="color:var(--accent-warning);font-weight:600;">Noch ${daysLeft}T gültig</span>`;
+                        if (daysLeft < 0) {return '<span style="color:var(--accent-danger);font-weight:600;">Abgelaufen</span>';}
+                        if (daysLeft <= 7) {return `<span style="color:var(--accent-warning);font-weight:600;">Noch ${daysLeft}T gültig</span>`;}
                         return `<span style="color:var(--text-muted);">Noch ${daysLeft}T gültig</span>`;
                     }
                     return '';
@@ -734,7 +734,7 @@ function initAngeboteFilters() {
 
 // Inject CSS for entwurf status badge and preview modal
 (function injectEntwurfStyles() {
-    if (document.getElementById('entwurf-styles')) return;
+    if (document.getElementById('entwurf-styles')) {return;}
     const style = document.createElement('style');
     style.id = 'entwurf-styles';
     style.textContent = `

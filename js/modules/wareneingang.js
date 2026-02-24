@@ -41,9 +41,9 @@ function updateStats() {
     const elLast = document.getElementById('we-last');
     const elBankPending = document.getElementById('we-bank-pending');
 
-    if (elCount) elCount.textContent = count;
-    if (elValue) elValue.textContent = formatCurrency(totalValue);
-    if (elLast) elLast.textContent = lastEntry ? formatDate(lastEntry.datum) : '\u2013';
+    if (elCount) {elCount.textContent = count;}
+    if (elValue) {elValue.textContent = formatCurrency(totalValue);}
+    if (elLast) {elLast.textContent = lastEntry ? formatDate(lastEntry.datum) : '\u2013';}
 
     // Count unmatched bank purchases
     let bankPending = 0;
@@ -53,11 +53,11 @@ function updateStats() {
             bankPending = txs.length;
         } catch (e) { /* service not ready */ }
     }
-    if (elBankPending) elBankPending.textContent = bankPending;
+    if (elBankPending) {elBankPending.textContent = bankPending;}
 
     // Update nav badge
     const badge = document.getElementById('wareneingang-badge');
-    if (badge) badge.textContent = bankPending;
+    if (badge) {badge.textContent = bankPending;}
 }
 
 // ============================================
@@ -88,7 +88,7 @@ function switchTab(tabId) {
         panel.classList.remove('active');
     });
     const activePanel = document.getElementById('we-tab-' + tabId);
-    if (activePanel) activePanel.classList.add('active');
+    if (activePanel) {activePanel.classList.add('active');}
 
     renderActiveTab();
 }
@@ -106,7 +106,7 @@ function renderActiveTab() {
 // ============================================
 function renderBonScanTab() {
     const resultsContainer = document.getElementById('we-bon-results');
-    if (!resultsContainer) return;
+    if (!resultsContainer) {return;}
 
     if (!bonScanResults) {
         resultsContainer.style.display = 'none';
@@ -118,16 +118,16 @@ function renderBonScanTab() {
 }
 
 async function handleBonFile(file) {
-    if (!file) return;
+    if (!file) {return;}
 
     const dropzone = document.getElementById('we-dropzone');
     const processing = document.getElementById('we-processing');
     const resultsContainer = document.getElementById('we-bon-results');
 
     // Show processing state
-    if (dropzone) dropzone.style.display = 'none';
-    if (processing) processing.style.display = '';
-    if (resultsContainer) resultsContainer.style.display = 'none';
+    if (dropzone) {dropzone.style.display = 'none';}
+    if (processing) {processing.style.display = '';}
+    if (resultsContainer) {resultsContainer.style.display = 'none';}
 
     try {
         // Step 1: OCR scan
@@ -176,8 +176,8 @@ async function handleBonFile(file) {
         showToast('Fehler beim Scannen: ' + err.message, 'error');
         bonScanResults = null;
     } finally {
-        if (processing) processing.style.display = 'none';
-        if (!bonScanResults && dropzone) dropzone.style.display = '';
+        if (processing) {processing.style.display = 'none';}
+        if (!bonScanResults && dropzone) {dropzone.style.display = '';}
         renderBonScanTab();
     }
 }
@@ -190,14 +190,14 @@ async function startCamera() {
     const videoEl = document.getElementById('we-camera-video');
     const dropzone = document.getElementById('we-dropzone');
 
-    if (!previewContainer || !videoEl) return;
+    if (!previewContainer || !videoEl) {return;}
 
     try {
         cameraStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
         });
         videoEl.srcObject = cameraStream;
-        if (dropzone) dropzone.style.display = 'none';
+        if (dropzone) {dropzone.style.display = 'none';}
         previewContainer.style.display = '';
     } catch (err) {
         console.error('Camera error:', err);
@@ -207,14 +207,14 @@ async function startCamera() {
 
 async function captureCamera() {
     const videoEl = document.getElementById('we-camera-video');
-    if (!videoEl || !window.ocrScannerService) return;
+    if (!videoEl || !window.ocrScannerService) {return;}
 
     const previewContainer = document.getElementById('we-camera-preview');
     const processing = document.getElementById('we-processing');
 
     stopCamera();
-    if (previewContainer) previewContainer.style.display = 'none';
-    if (processing) processing.style.display = '';
+    if (previewContainer) {previewContainer.style.display = 'none';}
+    if (processing) {processing.style.display = '';}
 
     try {
         const ocrResult = await window.ocrScannerService.scanFromCamera(videoEl);
@@ -253,10 +253,10 @@ async function captureCamera() {
         showToast('Fehler: ' + err.message, 'error');
         bonScanResults = null;
     } finally {
-        if (processing) processing.style.display = 'none';
+        if (processing) {processing.style.display = 'none';}
         if (!bonScanResults) {
             const dropzone = document.getElementById('we-dropzone');
-            if (dropzone) dropzone.style.display = '';
+            if (dropzone) {dropzone.style.display = '';}
         }
         renderBonScanTab();
     }
@@ -268,15 +268,15 @@ function stopCamera() {
         cameraStream = null;
     }
     const videoEl = document.getElementById('we-camera-video');
-    if (videoEl) videoEl.srcObject = null;
+    if (videoEl) {videoEl.srcObject = null;}
 }
 
 function cancelCamera() {
     stopCamera();
     const previewContainer = document.getElementById('we-camera-preview');
     const dropzone = document.getElementById('we-dropzone');
-    if (previewContainer) previewContainer.style.display = 'none';
-    if (dropzone) dropzone.style.display = '';
+    if (previewContainer) {previewContainer.style.display = 'none';}
+    if (dropzone) {dropzone.style.display = '';}
 }
 
 // ============================================
@@ -285,7 +285,7 @@ function cancelCamera() {
 function renderBankTab() {
     const listContainer = document.getElementById('we-bank-list');
     const resultsContainer = document.getElementById('we-bank-results');
-    if (!listContainer) return;
+    if (!listContainer) {return;}
 
     let transactions = [];
     if (window.bankingService) {
@@ -301,7 +301,7 @@ function renderBankTab() {
 
     if (transactions.length === 0) {
         listContainer.innerHTML = '<p class="empty-state">Keine offenen Material-Eink\u00e4ufe erkannt. Verbinde dein Bankkonto unter Buchhaltung.</p>';
-        if (resultsContainer) resultsContainer.style.display = 'none';
+        if (resultsContainer) {resultsContainer.style.display = 'none';}
         return;
     }
 
@@ -356,7 +356,7 @@ function buildBankQuickEntryForm(entry, tx) {
 
     let html = '<div class="we-quick-entry">';
     html += '<h3>Positionen erfassen';
-    if (tx) html += ' <span style="color:var(--text-secondary); font-weight:400;">(' + h(tx.name || '') + ')</span>';
+    if (tx) {html += ' <span style="color:var(--text-secondary); font-weight:400;">(' + h(tx.name || '') + ')</span>';}
     html += '</h3>';
 
     html += '<div class="we-table-responsive"><table class="we-results-table"><thead><tr>';
@@ -402,25 +402,25 @@ function buildBankQuickEntryForm(entry, tx) {
 }
 
 function addBankRow() {
-    if (!bankQuickEntry) return;
+    if (!bankQuickEntry) {return;}
     bankQuickEntry.rows.push(createEmptyBankRow());
     renderBankTab();
 }
 
 function removeBankRow(idx) {
-    if (!bankQuickEntry) return;
-    if (bankQuickEntry.rows.length <= 1) return; // keep at least one row
+    if (!bankQuickEntry) {return;}
+    if (bankQuickEntry.rows.length <= 1) {return;} // keep at least one row
     bankQuickEntry.rows.splice(idx, 1);
     renderBankTab();
 }
 
 function updateBankRowField(idx, field, value) {
-    if (!bankQuickEntry || !bankQuickEntry.rows[idx]) return;
+    if (!bankQuickEntry || !bankQuickEntry.rows[idx]) {return;}
     bankQuickEntry.rows[idx][field] = value;
 }
 
 async function processBankEntry() {
-    if (!bankQuickEntry) return;
+    if (!bankQuickEntry) {return;}
 
     // Sync fields from DOM
     syncBankRowsFromDOM();
@@ -472,7 +472,7 @@ async function processBankEntry() {
 }
 
 function syncBankRowsFromDOM() {
-    if (!bankQuickEntry) return;
+    if (!bankQuickEntry) {return;}
     bankQuickEntry.rows.forEach((row, idx) => {
         const searchEl = document.querySelector('.we-bank-material-search[data-row="' + idx + '"]');
         const selectEl = document.querySelector('.we-bank-mat-select[data-row="' + idx + '"]');
@@ -480,11 +480,11 @@ function syncBankRowsFromDOM() {
         const einheitEl = document.querySelector('.we-bank-einheit[data-row="' + idx + '"]');
         const preisEl = document.querySelector('.we-bank-preis[data-row="' + idx + '"]');
 
-        if (searchEl) row.searchQuery = searchEl.value;
-        if (selectEl) row.materialId = selectEl.value;
-        if (mengeEl) row.menge = parseFloat(mengeEl.value) || 0;
-        if (einheitEl) row.einheit = einheitEl.value;
-        if (preisEl) row.preis = parseFloat(preisEl.value) || 0;
+        if (searchEl) {row.searchQuery = searchEl.value;}
+        if (selectEl) {row.materialId = selectEl.value;}
+        if (mengeEl) {row.menge = parseFloat(mengeEl.value) || 0;}
+        if (einheitEl) {row.einheit = einheitEl.value;}
+        if (preisEl) {row.preis = parseFloat(preisEl.value) || 0;}
     });
 }
 
@@ -493,7 +493,7 @@ function syncBankRowsFromDOM() {
 // ============================================
 function renderSupplierImportTab() {
     const resultsContainer = document.getElementById('we-csv-results');
-    if (!resultsContainer) return;
+    if (!resultsContainer) {return;}
 
     if (!csvImportResults) {
         resultsContainer.style.display = 'none';
@@ -505,7 +505,7 @@ function renderSupplierImportTab() {
 }
 
 async function handleCSVFile(file) {
-    if (!file) return;
+    if (!file) {return;}
 
     const supplierSelect = document.getElementById('we-supplier-type');
     const supplierType = supplierSelect ? supplierSelect.value : 'generic';
@@ -687,7 +687,7 @@ async function processResultsBooking(source) {
         if (source === 'bon') {
             bonScanResults = null;
             const dropzone = document.getElementById('we-dropzone');
-            if (dropzone) dropzone.style.display = '';
+            if (dropzone) {dropzone.style.display = '';}
         } else {
             csvImportResults = null;
         }
@@ -700,7 +700,7 @@ async function processResultsBooking(source) {
 }
 
 function syncResultItemsFromDOM(resultData, source) {
-    if (!resultData || !resultData.items) return;
+    if (!resultData || !resultData.items) {return;}
     resultData.items.forEach((item, idx) => {
         const beschEl = document.querySelector('.we-res-beschreibung[data-row="' + idx + '"][data-source="' + source + '"]');
         const mengeEl = document.querySelector('.we-res-menge[data-row="' + idx + '"][data-source="' + source + '"]');
@@ -708,11 +708,11 @@ function syncResultItemsFromDOM(resultData, source) {
         const preisEl = document.querySelector('.we-res-einzelpreis[data-row="' + idx + '"][data-source="' + source + '"]');
         const matEl = document.querySelector('.we-res-material[data-row="' + idx + '"][data-source="' + source + '"]');
 
-        if (beschEl) item.beschreibung = beschEl.value;
-        if (mengeEl) item.menge = parseFloat(mengeEl.value) || 0;
-        if (einheitEl) item.einheit = einheitEl.value;
-        if (preisEl) item.einzelpreis = parseFloat(preisEl.value) || 0;
-        if (matEl) item.materialId = matEl.value;
+        if (beschEl) {item.beschreibung = beschEl.value;}
+        if (mengeEl) {item.menge = parseFloat(mengeEl.value) || 0;}
+        if (einheitEl) {item.einheit = einheitEl.value;}
+        if (preisEl) {item.einzelpreis = parseFloat(preisEl.value) || 0;}
+        if (matEl) {item.materialId = matEl.value;}
     });
 }
 
@@ -720,7 +720,7 @@ function resetResults(source) {
     if (source === 'bon') {
         bonScanResults = null;
         const dropzone = document.getElementById('we-dropzone');
-        if (dropzone) dropzone.style.display = '';
+        if (dropzone) {dropzone.style.display = '';}
         renderBonScanTab();
     } else if (source === 'csv') {
         csvImportResults = null;
@@ -732,7 +732,7 @@ function resetResults(source) {
 // Fallback local save
 // ============================================
 function saveWareneingangLocally(data) {
-    if (!store.wareneingaenge) store.wareneingaenge = [];
+    if (!store.wareneingaenge) {store.wareneingaenge = [];}
 
     const we = {
         id: 'WE-' + Date.now(),
@@ -785,7 +785,7 @@ function searchMaterials(query) {
 // ============================================
 function renderWareneingangHistory() {
     const container = document.getElementById('we-history-list');
-    if (!container) return;
+    if (!container) {return;}
 
     const wareneingaenge = getWareneingaengeList();
     const sorted = [...wareneingaenge].sort((a, b) => new Date(b.datum || b.createdAt) - new Date(a.datum || a.createdAt));
@@ -888,7 +888,7 @@ function toggleHistoryExpand(weId) {
 // ============================================
 function initWareneingang() {
     const viewEl = document.getElementById('view-wareneingang');
-    if (!viewEl) return;
+    if (!viewEl) {return;}
 
     // --- Tab switching ---
     viewEl.querySelectorAll('.we-tab[data-we-tab]').forEach(btn => {
@@ -902,7 +902,7 @@ function initWareneingang() {
     if (fileInput) {
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files && e.target.files[0];
-            if (file) handleBonFile(file);
+            if (file) {handleBonFile(file);}
             e.target.value = ''; // reset for re-upload
         });
     }
@@ -925,12 +925,12 @@ function initWareneingang() {
             e.stopPropagation();
             dropzone.classList.remove('we-dropzone-active');
             const file = e.dataTransfer.files && e.dataTransfer.files[0];
-            if (file) handleBonFile(file);
+            if (file) {handleBonFile(file);}
         });
         // Click on dropzone also opens file picker (except when clicking buttons/labels directly)
         dropzone.addEventListener('click', (e) => {
-            if (e.target.closest('button') || e.target.closest('label') || e.target.closest('input')) return;
-            if (fileInput) fileInput.click();
+            if (e.target.closest('button') || e.target.closest('label') || e.target.closest('input')) {return;}
+            if (fileInput) {fileInput.click();}
         });
     }
 
@@ -953,7 +953,7 @@ function initWareneingang() {
     if (csvInput) {
         csvInput.addEventListener('change', (e) => {
             const file = e.target.files && e.target.files[0];
-            if (file) handleCSVFile(file);
+            if (file) {handleCSVFile(file);}
             e.target.value = '';
         });
     }
@@ -966,7 +966,7 @@ function initWareneingang() {
         const bankCaptureBtn = target.closest('.we-bank-capture-btn');
         if (bankCaptureBtn) {
             const txId = bankCaptureBtn.getAttribute('data-tx-id');
-            if (txId) openBankQuickEntry(txId);
+            if (txId) {openBankQuickEntry(txId);}
             return;
         }
 
@@ -980,7 +980,7 @@ function initWareneingang() {
         const removeRowBtn = target.closest('.we-bank-remove-row');
         if (removeRowBtn) {
             const idx = parseInt(removeRowBtn.getAttribute('data-row'), 10);
-            if (!isNaN(idx)) removeBankRow(idx);
+            if (!isNaN(idx)) {removeBankRow(idx);}
             return;
         }
 
@@ -1001,7 +1001,7 @@ function initWareneingang() {
         const buchenBtn = target.closest('.we-buchen-btn');
         if (buchenBtn) {
             const source = buchenBtn.getAttribute('data-source');
-            if (source) processResultsBooking(source);
+            if (source) {processResultsBooking(source);}
             return;
         }
 
@@ -1009,7 +1009,7 @@ function initWareneingang() {
         const resetBtn = target.closest('.we-reset-btn');
         if (resetBtn) {
             const source = resetBtn.getAttribute('data-source');
-            if (source) resetResults(source);
+            if (source) {resetResults(source);}
             return;
         }
 
@@ -1017,7 +1017,7 @@ function initWareneingang() {
         const historyToggle = target.closest('.we-history-toggle');
         if (historyToggle) {
             const weId = historyToggle.getAttribute('data-we-id');
-            if (weId) toggleHistoryExpand(weId);
+            if (weId) {toggleHistoryExpand(weId);}
             return;
         }
     });
@@ -1029,7 +1029,7 @@ function initWareneingang() {
             if (historyToggle) {
                 e.preventDefault();
                 const weId = historyToggle.getAttribute('data-we-id');
-                if (weId) toggleHistoryExpand(weId);
+                if (weId) {toggleHistoryExpand(weId);}
             }
         }
     });

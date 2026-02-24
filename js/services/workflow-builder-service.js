@@ -425,7 +425,7 @@ class WorkflowBuilderService {
     deleteWorkflow(id) {
         this.deactivateWorkflow(id);
         const index = this.workflows.findIndex(w => w.id === id);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         this.workflows.splice(index, 1);
         this.save();
@@ -434,7 +434,7 @@ class WorkflowBuilderService {
 
     duplicateWorkflow(id) {
         const original = this.getWorkflow(id);
-        if (!original) return null;
+        if (!original) {return null;}
 
         const copy = this.createWorkflow({
             name: original.name + ' (Kopie)',
@@ -452,7 +452,7 @@ class WorkflowBuilderService {
 
     addNode(workflowId, node) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return null;
+        if (!workflow) {return null;}
 
         const newNode = {
             id: node.id || this._generateId('ND'),
@@ -481,10 +481,10 @@ class WorkflowBuilderService {
 
     updateNode(workflowId, nodeId, data) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return null;
+        if (!workflow) {return null;}
 
         const node = workflow.nodes.find(n => n.id === nodeId);
-        if (!node) return null;
+        if (!node) {return null;}
 
         Object.assign(node, data);
         workflow.updatedAt = new Date().toISOString();
@@ -494,7 +494,7 @@ class WorkflowBuilderService {
 
     removeNode(workflowId, nodeId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return false;
+        if (!workflow) {return false;}
 
         // Remove the node
         workflow.nodes = workflow.nodes.filter(n => n.id !== nodeId);
@@ -511,7 +511,7 @@ class WorkflowBuilderService {
 
     getNode(workflowId, nodeId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return null;
+        if (!workflow) {return null;}
         return workflow.nodes.find(n => n.id === nodeId) || null;
     }
 
@@ -521,7 +521,7 @@ class WorkflowBuilderService {
 
     addConnection(workflowId, connection) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return null;
+        if (!workflow) {return null;}
 
         // Prevent self-connections
         if (connection.fromNodeId === connection.toNodeId) {
@@ -563,7 +563,7 @@ class WorkflowBuilderService {
 
     removeConnection(workflowId, connectionId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return false;
+        if (!workflow) {return false;}
 
         workflow.connections = workflow.connections.filter(c => c.id !== connectionId);
         workflow.updatedAt = new Date().toISOString();
@@ -573,7 +573,7 @@ class WorkflowBuilderService {
 
     getConnectionsForNode(workflowId, nodeId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return { incoming: [], outgoing: [] };
+        if (!workflow) {return { incoming: [], outgoing: [] };}
 
         return {
             incoming: workflow.connections.filter(c => c.toNodeId === nodeId),
@@ -656,7 +656,7 @@ class WorkflowBuilderService {
 
     async _executeFromNode(workflow, nodeId, context, execution) {
         const node = workflow.nodes.find(n => n.id === nodeId);
-        if (!node) return;
+        if (!node) {return;}
 
         const startTime = Date.now();
 
@@ -751,10 +751,10 @@ class WorkflowBuilderService {
 
     async _executeCreateAngebot(config, context) {
         const store = this._getStore();
-        if (!store) return { success: false, error: 'Store nicht verfuegbar' };
+        if (!store) {return { success: false, error: 'Store nicht verfuegbar' };}
 
         const anfrage = context.variables.anfrage || context.triggerData.record;
-        if (!anfrage) return { success: false, error: 'Keine Anfrage im Kontext' };
+        if (!anfrage) {return { success: false, error: 'Keine Anfrage im Kontext' };}
 
         const angebot = {
             id: this._generateId('ANG'),
@@ -780,10 +780,10 @@ class WorkflowBuilderService {
 
     async _executeCreateAuftrag(config, context) {
         const store = this._getStore();
-        if (!store) return { success: false, error: 'Store nicht verfuegbar' };
+        if (!store) {return { success: false, error: 'Store nicht verfuegbar' };}
 
         const angebot = context.variables.angebot || context.triggerData.record;
-        if (!angebot) return { success: false, error: 'Kein Angebot im Kontext' };
+        if (!angebot) {return { success: false, error: 'Kein Angebot im Kontext' };}
 
         const startOffset = parseInt(config.startDatum) || 3;
         const auftrag = {
@@ -810,10 +810,10 @@ class WorkflowBuilderService {
 
     async _executeCreateRechnung(config, context) {
         const store = this._getStore();
-        if (!store) return { success: false, error: 'Store nicht verfuegbar' };
+        if (!store) {return { success: false, error: 'Store nicht verfuegbar' };}
 
         const auftrag = context.variables.auftrag || context.triggerData.record;
-        if (!auftrag) return { success: false, error: 'Kein Auftrag im Kontext' };
+        if (!auftrag) {return { success: false, error: 'Kein Auftrag im Kontext' };}
 
         const positionen = auftrag.positionen || [];
         const netto = positionen.reduce((sum, p) => sum + ((p.menge || 1) * (p.preis || 0)), 0);
@@ -874,7 +874,7 @@ class WorkflowBuilderService {
 
     async _executeSendReminder(config, context) {
         const rechnung = context.variables.rechnung || context.triggerData.record;
-        if (!rechnung) return { success: false, error: 'Keine Rechnung im Kontext' };
+        if (!rechnung) {return { success: false, error: 'Keine Rechnung im Kontext' };}
 
         const stufe = config.stufe || 'erinnerung';
         const gebuehr = parseFloat(config.mahngebuehr) || 0;
@@ -895,13 +895,13 @@ class WorkflowBuilderService {
 
     async _executeUpdateStatus(config, context) {
         const store = this._getStore();
-        if (!store) return { success: false, error: 'Store nicht verfuegbar' };
+        if (!store) {return { success: false, error: 'Store nicht verfuegbar' };}
 
         const entitaet = config.entitaet || 'auftrag';
         const neuerStatus = config.neuerStatus || '';
         const record = context.triggerData.record || context.variables[entitaet];
 
-        if (!record || !record.id) return { success: false, error: 'Kein Datensatz im Kontext' };
+        if (!record || !record.id) {return { success: false, error: 'Kein Datensatz im Kontext' };}
 
         const collectionMap = {
             anfrage: 'anfragen',
@@ -911,10 +911,10 @@ class WorkflowBuilderService {
         };
 
         const collection = store[collectionMap[entitaet]];
-        if (!collection) return { success: false, error: 'Unbekannte Entitaet: ' + entitaet };
+        if (!collection) {return { success: false, error: 'Unbekannte Entitaet: ' + entitaet };}
 
         const item = collection.find(i => i.id === record.id);
-        if (!item) return { success: false, error: 'Datensatz nicht gefunden: ' + record.id };
+        if (!item) {return { success: false, error: 'Datensatz nicht gefunden: ' + record.id };}
 
         const alterStatus = item.status;
         item.status = neuerStatus;
@@ -1107,7 +1107,7 @@ class WorkflowBuilderService {
 
     activateWorkflow(workflowId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return false;
+        if (!workflow) {return false;}
 
         workflow.isActive = true;
         workflow.updatedAt = new Date().toISOString();
@@ -1120,7 +1120,7 @@ class WorkflowBuilderService {
 
     deactivateWorkflow(workflowId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return false;
+        if (!workflow) {return false;}
 
         workflow.isActive = false;
         workflow.updatedAt = new Date().toISOString();
@@ -1151,12 +1151,12 @@ class WorkflowBuilderService {
 
     handleEvent(eventType, eventData = {}) {
         const matchingWorkflows = this.workflows.filter(wf => {
-            if (!wf.isActive) return false;
+            if (!wf.isActive) {return false;}
             const triggerNode = wf.nodes.find(n => n.type === 'trigger');
-            if (!triggerNode) return false;
+            if (!triggerNode) {return false;}
 
             const triggerDef = this.triggerTypes[triggerNode.action];
-            if (!triggerDef) return false;
+            if (!triggerDef) {return false;}
 
             return triggerDef.eventType === eventType;
         });
@@ -1327,7 +1327,7 @@ class WorkflowBuilderService {
 
     validateWorkflow(workflowId) {
         const workflow = this.getWorkflow(workflowId);
-        if (!workflow) return { valid: false, errors: ['Workflow nicht gefunden'] };
+        if (!workflow) {return { valid: false, errors: ['Workflow nicht gefunden'] };}
 
         const errors = [];
         const warnings = [];
@@ -1349,7 +1349,7 @@ class WorkflowBuilderService {
 
         // Check for orphan nodes (no connections)
         workflow.nodes.forEach(node => {
-            if (node.type === 'trigger') return; // Triggers may not have incoming
+            if (node.type === 'trigger') {return;} // Triggers may not have incoming
             const hasIncoming = workflow.connections.some(c => c.toNodeId === node.id);
             const hasOutgoing = workflow.connections.some(c => c.fromNodeId === node.id);
             if (!hasIncoming && !hasOutgoing) {
@@ -1452,7 +1452,7 @@ class WorkflowBuilderService {
     }
 
     _resolveTemplate(template, context) {
-        if (!template) return '';
+        if (!template) {return '';}
         return template.replace(/\{\{([^}]+)\}\}/g, (match, path) => {
             const value = this._resolveFieldValue(path.trim(), context);
             return value !== undefined && value !== null ? String(value) : match;
@@ -1460,13 +1460,13 @@ class WorkflowBuilderService {
     }
 
     _resolveFieldValue(fieldPath, context) {
-        if (!fieldPath) return undefined;
+        if (!fieldPath) {return undefined;}
 
         const parts = fieldPath.split('.');
         let current = context.variables;
 
         for (const part of parts) {
-            if (current === undefined || current === null) return undefined;
+            if (current === undefined || current === null) {return undefined;}
             current = current[part];
         }
 
@@ -1474,7 +1474,7 @@ class WorkflowBuilderService {
             // Try trigger data
             current = context.triggerData;
             for (const part of parts) {
-                if (current === undefined || current === null) return undefined;
+                if (current === undefined || current === null) {return undefined;}
                 current = current[part];
             }
         }
@@ -1495,8 +1495,8 @@ class WorkflowBuilderService {
 
         while (queue.length > 0) {
             const current = queue.shift();
-            if (current === fromNodeId) return true;
-            if (visited.has(current)) continue;
+            if (current === fromNodeId) {return true;}
+            if (visited.has(current)) {continue;}
             visited.add(current);
 
             const outgoing = workflow.connections.filter(c => c.fromNodeId === current);

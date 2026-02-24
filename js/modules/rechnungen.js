@@ -15,8 +15,8 @@ let rechnungenSearchDebounceTimer = null;
  * An 'offen' invoice whose due date has passed is considered 'ueberfaellig'.
  */
 function getEffectiveStatus(rechnung) {
-    if (rechnung.status === 'storniert') return 'storniert';
-    if (rechnung.status === 'bezahlt') return 'bezahlt';
+    if (rechnung.status === 'storniert') {return 'storniert';}
+    if (rechnung.status === 'bezahlt') {return 'bezahlt';}
     // Check overdue: offen + past due date
     if (rechnung.status === 'offen' && rechnung.faelligkeitsdatum) {
         const dueDate = new Date(rechnung.faelligkeitsdatum);
@@ -109,16 +109,16 @@ function buildRechnungTrail(rechnung, isCurrent) {
         parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('anfragen');">📥 ${h(anfrage.id)}</span>`);
     }
     if (angebot) {
-        if (parts.length > 0) parts.push('<span class="trail-arrow">&rarr;</span>');
+        if (parts.length > 0) {parts.push('<span class="trail-arrow">&rarr;</span>');}
         parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('angebote');">📝 ${h(angebot.id)}</span>`);
     }
     if (auftrag) {
-        if (parts.length > 0) parts.push('<span class="trail-arrow">&rarr;</span>');
+        if (parts.length > 0) {parts.push('<span class="trail-arrow">&rarr;</span>');}
         parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('auftraege');">🔧 ${h(auftrag.id)}</span>`);
     }
 
     // The Rechnung itself
-    if (parts.length > 0) parts.push('<span class="trail-arrow">&rarr;</span>');
+    if (parts.length > 0) {parts.push('<span class="trail-arrow">&rarr;</span>');}
     if (isCurrent) {
         parts.push(`<span class="trail-item trail-current">📄 ${h(rechnung.id)}</span>`);
     } else {
@@ -503,21 +503,21 @@ function initRechnungActions() {
     // Delegated click handler for invoice action buttons
     document.getElementById('view-rechnungen')?.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-action]');
-        if (!btn) return;
+        if (!btn) {return;}
 
         const action = btn.dataset.action;
         const rechnungId = btn.dataset.id;
         const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-        if (!rechnung) return;
+        if (!rechnung) {return;}
 
         switch (action) {
             case 'download-pdf':
                 if (window.pdfGenerationService) {
                     try {
                         await window.pdfGenerationService.downloadPDF(rechnung);
-                        if (window.showToast) showToast('PDF heruntergeladen', 'success');
+                        if (window.showToast) {showToast('PDF heruntergeladen', 'success');}
                     } catch (err) {
-                        if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+                        if (window.showToast) {showToast('PDF-Fehler: ' + err.message, 'error');}
                     }
                 }
                 break;
@@ -526,7 +526,7 @@ function initRechnungActions() {
                     const result = window.eInvoiceService.generateXRechnung(rechnung);
                     if (result.success) {
                         window.eInvoiceService.downloadXml(result.recordId);
-                        if (window.showToast) showToast('XRechnung XML generiert', 'success');
+                        if (window.showToast) {showToast('XRechnung XML generiert', 'success');}
                     }
                 }
                 break;
@@ -535,10 +535,10 @@ function initRechnungActions() {
                     const result = await window.eInvoiceService.generateZugferd(rechnung);
                     if (result.success && result.pdfBytes) {
                         window.eInvoiceService.downloadZugferdPdf(result.recordId);
-                        if (window.showToast) showToast('ZUGFeRD PDF generiert', 'success');
+                        if (window.showToast) {showToast('ZUGFeRD PDF generiert', 'success');}
                     } else {
                         window.eInvoiceService.downloadXml(result.recordId);
-                        if (window.showToast) showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');
+                        if (window.showToast) {showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');}
                     }
                 }
                 break;
@@ -549,7 +549,7 @@ function initRechnungActions() {
                     saveStore();
                     addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
                     renderRechnungen();
-                    if (window.showToast) showToast('Als bezahlt markiert', 'success');
+                    if (window.showToast) {showToast('Als bezahlt markiert', 'success');}
                 }
                 break;
         }

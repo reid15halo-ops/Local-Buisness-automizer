@@ -317,7 +317,7 @@ window.UI = {
 
 // Standalone escape function - always available, fail-closed (not optional-chained)
 window.esc = function(str) {
-    if (!str) return '';
+    if (!str) {return '';}
     const t = document.createElement('div');
     t.textContent = str;
     return t.innerHTML;

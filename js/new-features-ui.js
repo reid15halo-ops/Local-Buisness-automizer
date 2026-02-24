@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.addEventListener('click', function () {
                 const itemEl = this.closest('.workflow-item');
                 const id = itemEl?.dataset.id;
-                if (!id) return;
+                if (!id) {return;}
                 if (window.confirmDialogService) {
                     window.confirmDialogService.show({
                         title: 'Workflow löschen',

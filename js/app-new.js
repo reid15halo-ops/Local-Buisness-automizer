@@ -441,12 +441,12 @@ function initAutomationSettings() {
 
     // Test Email Processing
     document.getElementById('btn-test-email-processing')?.addEventListener('click', () => {
-        if (window.UI?.openModal) window.UI.openModal('modal-test-email');
+        if (window.UI?.openModal) {window.UI.openModal('modal-test-email');}
     });
 
     // View Email Automation History
     document.getElementById('btn-view-email-automation')?.addEventListener('click', () => {
-        if (window.UI?.switchView) window.UI.switchView('email-automation');
+        if (window.UI?.switchView) {window.UI.switchView('email-automation');}
     });
 
     // Check overdue manually
@@ -476,7 +476,7 @@ function updateSettingsStatus() {
     const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
 
     const setStatus = (el, configured) => {
-        if (!el) return;
+        if (!el) {return;}
         el.textContent = configured ? '● Konfiguriert' : '● Nicht konfiguriert';
         el.className = 'status-indicator' + (configured ? ' connected' : '');
     };
@@ -500,7 +500,7 @@ function updateSettingsStatus() {
     const supabaseOk = window.supabaseConfig?.isConfigured?.();
     const setAutoStatus = (id, ok, label) => {
         const el = document.getElementById(id);
-        if (!el) return;
+        if (!el) {return;}
         el.textContent = ok ? label || 'Aktiv' : 'Nicht konfiguriert';
         el.style.color = ok ? 'var(--accent-primary)' : 'var(--text-muted)';
     };

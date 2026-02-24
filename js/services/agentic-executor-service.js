@@ -172,7 +172,7 @@ class AgenticExecutorService {
      */
     setAgentSchedule(agentId, schedule) {
         const config = this.agentConfigs[agentId];
-        if (!config) return { success: false, error: `Agent ${agentId} nicht konfiguriert` };
+        if (!config) {return { success: false, error: `Agent ${agentId} nicht konfiguriert` };}
 
         config.schedule = schedule || null;
         this._saveConfig();
@@ -188,7 +188,7 @@ class AgenticExecutorService {
      */
     getAgentConfig(agentId) {
         const config = this.agentConfigs[agentId];
-        if (!config) return null;
+        if (!config) {return null;}
 
         return {
             ...config,
@@ -1246,7 +1246,7 @@ class AgenticExecutorService {
      * Undo a single action based on its undo data.
      */
     async _undoSingleAction(undoData) {
-        if (!undoData) return;
+        if (!undoData) {return;}
 
         switch (undoData.type) {
             case 'mahnstufe_update': {
@@ -1322,7 +1322,7 @@ class AgenticExecutorService {
      * Start the scheduler that checks every minute for due agents.
      */
     startScheduler() {
-        if (this.schedulerInterval) return;
+        if (this.schedulerInterval) {return;}
 
         this.schedulerRunning = true;
         this.schedulerInterval = setInterval(() => this.checkSchedules(), 60000);
@@ -1353,7 +1353,7 @@ class AgenticExecutorService {
         const todayKey = now.toDateString();
 
         for (const [agentId, config] of Object.entries(this.agentConfigs)) {
-            if (config.level === 'off' || !config.schedule) continue;
+            if (config.level === 'off' || !config.schedule) {continue;}
 
             // Parse schedule
             let scheduledTime = config.schedule;
@@ -1366,14 +1366,14 @@ class AgenticExecutorService {
             }
 
             // Check day constraint
-            if (scheduledDay && scheduledDay !== currentDay) continue;
+            if (scheduledDay && scheduledDay !== currentDay) {continue;}
 
             // Check time match
-            if (scheduledTime !== currentTime) continue;
+            if (scheduledTime !== currentTime) {continue;}
 
             // Check if already run today
             const lastCheckKey = `${agentId}-${todayKey}`;
-            if (this._lastScheduleCheck[lastCheckKey]) continue;
+            if (this._lastScheduleCheck[lastCheckKey]) {continue;}
 
             // Mark as checked for today
             this._lastScheduleCheck[lastCheckKey] = true;
@@ -1431,7 +1431,7 @@ class AgenticExecutorService {
     }
 
     _getPendingApprovalsForAgent(agentId) {
-        if (!window.approvalQueueService) return 0;
+        if (!window.approvalQueueService) {return 0;}
         return window.approvalQueueService._queue.filter(
             item => item.data?.agentId === agentId
         ).length;
@@ -1461,7 +1461,7 @@ class AgenticExecutorService {
 
     _showNotification(agentId, level, message, executionId = null) {
         const config = this.agentConfigs[agentId];
-        if (!config) return;
+        if (!config) {return;}
 
         // Dispatch custom event for the dashboard UI to pick up
         const event = new CustomEvent('agentic-notification', {
@@ -1531,8 +1531,8 @@ class AgenticExecutorService {
                 for (const [agentId, savedConfig] of Object.entries(savedConfigs)) {
                     if (this.agentConfigs[agentId]) {
                         // Only merge specific user-configurable fields
-                        if (savedConfig.level) this.agentConfigs[agentId].level = savedConfig.level;
-                        if (savedConfig.schedule !== undefined) this.agentConfigs[agentId].schedule = savedConfig.schedule;
+                        if (savedConfig.level) {this.agentConfigs[agentId].level = savedConfig.level;}
+                        if (savedConfig.schedule !== undefined) {this.agentConfigs[agentId].schedule = savedConfig.schedule;}
                     }
                 }
             }
@@ -1656,8 +1656,8 @@ class AgenticExecutorService {
         const highPriority = ['send_mahnung_email', 'update_mahnstufe', 'send_zahlungserinnerung'];
         const medPriority = ['send_followup_email', 'create_angebot', 'create_task'];
 
-        if (highPriority.includes(actionId)) return 1;
-        if (medPriority.includes(actionId)) return 2;
+        if (highPriority.includes(actionId)) {return 1;}
+        if (medPriority.includes(actionId)) {return 2;}
         return 3;
     }
 

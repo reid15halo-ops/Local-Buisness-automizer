@@ -23,7 +23,7 @@ class AgentWorkflowUI {
 
     init() {
         this.container = document.getElementById('view-agent-workflows');
-        if (!this.container) return;
+        if (!this.container) {return;}
 
         this.render();
         this.attachEventListeners();
@@ -34,7 +34,7 @@ class AgentWorkflowUI {
     // ============================================
 
     render() {
-        if (!this.container) return;
+        if (!this.container) {return;}
 
         this.container.innerHTML = `
             <div class="agent-workflow-wrapper">
@@ -516,7 +516,7 @@ class AgentWorkflowUI {
     // ============================================
 
     attachEventListeners() {
-        if (!this.container) return;
+        if (!this.container) {return;}
 
         // Use event delegation on the container
         this.container.addEventListener('click', (e) => this._handleClick(e));
@@ -525,7 +525,7 @@ class AgentWorkflowUI {
 
     _handleClick(e) {
         const target = e.target.closest('button, [data-tab]');
-        if (!target) return;
+        if (!target) {return;}
 
         // Tab switching
         if (target.classList.contains('agent-tab')) {
@@ -538,7 +538,7 @@ class AgentWorkflowUI {
         if (target.classList.contains('agent-btn-run')) {
             e.preventDefault();
             const agentId = target.dataset.agentId;
-            if (agentId) this._executeAgent(agentId);
+            if (agentId) {this._executeAgent(agentId);}
             return;
         }
 
@@ -546,7 +546,7 @@ class AgentWorkflowUI {
         if (target.classList.contains('agent-btn-preview')) {
             e.preventDefault();
             const agentId = target.dataset.agentId;
-            if (agentId) this._previewAgent(agentId);
+            if (agentId) {this._previewAgent(agentId);}
             return;
         }
 
@@ -642,7 +642,7 @@ class AgentWorkflowUI {
 
     _refreshPane(tabId) {
         const pane = this.container.querySelector(`#agent-pane-${tabId}`);
-        if (!pane) return;
+        if (!pane) {return;}
 
         switch (tabId) {
             case 'dashboard':
@@ -661,7 +661,7 @@ class AgentWorkflowUI {
     }
 
     async _executeAgent(agentId) {
-        if (this.isLoading) return;
+        if (this.isLoading) {return;}
 
         this._showLoading(true);
         try {
@@ -680,7 +680,7 @@ class AgentWorkflowUI {
     }
 
     async _previewAgent(agentId) {
-        if (this.isLoading) return;
+        if (this.isLoading) {return;}
 
         this._showLoading(true);
         try {
@@ -695,7 +695,7 @@ class AgentWorkflowUI {
     }
 
     async _runAllAgents() {
-        if (this.isLoading) return;
+        if (this.isLoading) {return;}
 
         this._showLoading(true);
         try {
@@ -714,22 +714,22 @@ class AgentWorkflowUI {
 
     _toggleScheduler() {
         const service = window.agentWorkflowService;
-        if (!service) return;
+        if (!service) {return;}
 
         const btn = this.container.querySelector('#btn-toggle-scheduler');
         if (service.schedulerInterval) {
             service.stopScheduler();
-            if (btn) btn.innerHTML = '<span class="agent-btn-icon">&#9201;</span> Scheduler starten';
+            if (btn) {btn.innerHTML = '<span class="agent-btn-icon">&#9201;</span> Scheduler starten';}
             window.errorHandler?.info('Scheduler gestoppt');
         } else {
             service.startScheduler();
-            if (btn) btn.innerHTML = '<span class="agent-btn-icon">&#9209;</span> Scheduler stoppen';
+            if (btn) {btn.innerHTML = '<span class="agent-btn-icon">&#9209;</span> Scheduler stoppen';}
             window.errorHandler?.success('Scheduler gestartet - Agenten werden automatisch ausgefuehrt');
         }
     }
 
     async _generateBriefing() {
-        if (this.isLoading) return;
+        if (this.isLoading) {return;}
 
         this._showLoading(true);
         try {
@@ -756,7 +756,7 @@ class AgentWorkflowUI {
 
     _toggleAgent(agentId, enabled) {
         const service = window.agentWorkflowService;
-        if (!service) return;
+        if (!service) {return;}
 
         service.toggleAgent(agentId, enabled);
 
@@ -764,7 +764,7 @@ class AgentWorkflowUI {
         const item = this.container.querySelector(`.agent-config-item[data-agent-id="${agentId}"]`);
         if (item) {
             const label = item.querySelector('.agent-toggle-label');
-            if (label) label.textContent = enabled ? 'Aktiv' : 'Inaktiv';
+            if (label) {label.textContent = enabled ? 'Aktiv' : 'Inaktiv';}
         }
     }
 
@@ -779,7 +779,7 @@ class AgentWorkflowUI {
     _showPreview(result) {
         const modal = this.container.querySelector('#agent-preview-modal');
         const body = this.container.querySelector('#agent-preview-body');
-        if (!modal || !body) return;
+        if (!modal || !body) {return;}
 
         body.innerHTML = this._renderPreviewContent(result);
         modal.style.display = 'flex';
@@ -787,12 +787,12 @@ class AgentWorkflowUI {
 
     _closePreview() {
         const modal = this.container.querySelector('#agent-preview-modal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {modal.style.display = 'none';}
         this.previewResult = null;
     }
 
     async _executeFromPreview() {
-        if (!this.previewResult) return;
+        if (!this.previewResult) {return;}
 
         const agentId = this.previewResult.agentId;
         this._closePreview();
@@ -937,7 +937,7 @@ class AgentWorkflowUI {
     _showLoading(show) {
         this.isLoading = show;
         const overlay = this.container?.querySelector('#agent-loading');
-        if (overlay) overlay.style.display = show ? 'flex' : 'none';
+        if (overlay) {overlay.style.display = show ? 'flex' : 'none';}
     }
 
     _formatCurrency(amount) {
@@ -948,18 +948,18 @@ class AgentWorkflowUI {
     }
 
     _truncate(text, maxLen) {
-        if (!text) return '';
-        if (text.length <= maxLen) return text;
+        if (!text) {return '';}
+        if (text.length <= maxLen) {return text;}
         return text.substring(0, maxLen) + '...';
     }
 
     _esc(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     _nl2br(text) {
-        if (!text) return '';
+        if (!text) {return '';}
         return text.replace(/\n/g, '<br>');
     }
 

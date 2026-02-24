@@ -1012,27 +1012,27 @@ function initAuftragViewToggle() {
     function setActiveView(mode) {
         // Reset all buttons
         [kanbanBtn, listBtn, timelineBtn].forEach(btn => {
-            if (btn) btn.classList.replace('btn-primary', 'btn-secondary');
+            if (btn) {btn.classList.replace('btn-primary', 'btn-secondary');}
         });
 
         // Hide timeline mount
-        if (timelineMount) timelineMount.style.display = 'none';
+        if (timelineMount) {timelineMount.style.display = 'none';}
 
         if (mode === 'kanban') {
-            if (kanbanBtn) kanbanBtn.classList.replace('btn-secondary', 'btn-primary');
-            if (window.AuftraegeModule) window.AuftraegeModule.auftragViewMode = 'kanban';
+            if (kanbanBtn) {kanbanBtn.classList.replace('btn-secondary', 'btn-primary');}
+            if (window.AuftraegeModule) {window.AuftraegeModule.auftragViewMode = 'kanban';}
             window.renderAuftraege?.();
         } else if (mode === 'list') {
-            if (listBtn) listBtn.classList.replace('btn-secondary', 'btn-primary');
-            if (window.AuftraegeModule) window.AuftraegeModule.auftragViewMode = 'list';
+            if (listBtn) {listBtn.classList.replace('btn-secondary', 'btn-primary');}
+            if (window.AuftraegeModule) {window.AuftraegeModule.auftragViewMode = 'list';}
             window.renderAuftraege?.();
         } else if (mode === 'timeline') {
-            if (timelineBtn) timelineBtn.classList.replace('btn-secondary', 'btn-primary');
+            if (timelineBtn) {timelineBtn.classList.replace('btn-secondary', 'btn-primary');}
             // Hide kanban and list
             const kanbanEl = document.getElementById('auftrag-kanban');
             const listEl = document.getElementById('auftraege-list');
-            if (kanbanEl) kanbanEl.style.display = 'none';
-            if (listEl) listEl.style.display = 'none';
+            if (kanbanEl) {kanbanEl.style.display = 'none';}
+            if (listEl) {listEl.style.display = 'none';}
             // Show and mount Gantt
             if (timelineMount) {
                 timelineMount.style.display = 'block';

@@ -250,7 +250,7 @@ class FragebogenImportService {
     hasPendingImport() {
         try {
             const raw = localStorage.getItem(this.STORAGE_KEY);
-            if (!raw) return false;
+            if (!raw) {return false;}
             const data = JSON.parse(raw);
             return data && data._pendingImport === true;
         } catch (e) {
@@ -265,7 +265,7 @@ class FragebogenImportService {
     getPendingImportData() {
         try {
             const raw = localStorage.getItem(this.STORAGE_KEY);
-            if (!raw) return null;
+            if (!raw) {return null;}
             const data = JSON.parse(raw);
             if (data && data._pendingImport === true) {
                 return data;
@@ -411,8 +411,8 @@ class FragebogenImportService {
 
         if ((street || plz || city) && window.storeService) {
             const parts = [];
-            if (street) parts.push(street);
-            if (plz || city) parts.push([plz, city].filter(Boolean).join(' '));
+            if (street) {parts.push(street);}
+            if (plz || city) {parts.push([plz, city].filter(Boolean).join(' '));}
             window.storeService.store.settings.address = parts.join(', ');
         }
     }
@@ -423,7 +423,7 @@ class FragebogenImportService {
      */
     _parseBicBank(formData) {
         const bicRaw = (formData.bic || '').trim();
-        if (!bicRaw || !window.storeService) return;
+        if (!bicRaw || !window.storeService) {return;}
 
         // Common pattern: "XXXXDEXX / Sparkasse Musterstadt" or "XXXXDEXX"
         if (bicRaw.includes('/')) {
@@ -441,7 +441,7 @@ class FragebogenImportService {
      */
     _detectBusinessType(formData) {
         const gewerk = (formData.gewerk || '').toLowerCase();
-        if (!gewerk) return;
+        if (!gewerk) {return;}
 
         for (const entry of this.businessTypeMap) {
             for (const keyword of entry.keywords) {

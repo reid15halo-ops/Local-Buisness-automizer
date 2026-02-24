@@ -203,17 +203,17 @@ class AgentWorkflowService {
         const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
         for (const [agentId, agent] of this.agents) {
-            if (!agent.enabled) continue;
+            if (!agent.enabled) {continue;}
 
             const schedule = this._getAgentSchedule(agentId);
-            if (!schedule) continue;
+            if (!schedule) {continue;}
 
             // Check if the agent should run at this time
             if (schedule === currentTime) {
                 // Check if already run today
                 if (agent.lastRun) {
                     const lastRunDate = new Date(agent.lastRun).toDateString();
-                    if (lastRunDate === now.toDateString()) continue;
+                    if (lastRunDate === now.toDateString()) {continue;}
                 }
 
                 try {
@@ -229,7 +229,7 @@ class AgentWorkflowService {
      * Start the scheduler that checks every minute for due agents.
      */
     startScheduler() {
-        if (this.schedulerInterval) return;
+        if (this.schedulerInterval) {return;}
         this.schedulerInterval = setInterval(() => this.runScheduledAgents(), 60000);
         console.log('[AgentWorkflow] Scheduler gestartet');
     }
@@ -271,13 +271,13 @@ class AgentWorkflowService {
 
         // Urgent items
         const overdueInvoices = rechnungen.filter(r => {
-            if (r.status === 'bezahlt') return false;
+            if (r.status === 'bezahlt') {return false;}
             const due = r.faelligkeitsdatum ? new Date(r.faelligkeitsdatum) : null;
             return due && due < today;
         });
 
         const staleLeads = anfragen.filter(a => {
-            if (a.status === 'angebot-erstellt' || a.status === 'abgeschlossen') return false;
+            if (a.status === 'angebot-erstellt' || a.status === 'abgeschlossen') {return false;}
             const created = new Date(a.createdAt);
             const daysSince = (today - created) / (1000 * 60 * 60 * 24);
             return daysSince > 3;
@@ -365,7 +365,7 @@ class AgentWorkflowService {
         }
 
         const nearDeadlineOrders = activeOrders.filter(a => {
-            if (!a.endDatum) return false;
+            if (!a.endDatum) {return false;}
             const deadline = new Date(a.endDatum);
             const daysLeft = (deadline - today) / (1000 * 60 * 60 * 24);
             return daysLeft >= 0 && daysLeft <= 3;
@@ -495,7 +495,7 @@ Antworte NUR mit dem Briefing-Text auf Deutsch.`;
 
         // Find overdue invoices
         const overdueInvoices = rechnungen.filter(r => {
-            if (r.status === 'bezahlt') return false;
+            if (r.status === 'bezahlt') {return false;}
             const due = r.faelligkeitsdatum ? new Date(r.faelligkeitsdatum) : null;
             if (!due) {
                 // No due date: check if created more than 30 days ago
@@ -721,7 +721,7 @@ Antworte NUR mit dem Mahntext.`;
             const daysSince = (today - created) / (1000 * 60 * 60 * 24);
 
             // Must be older than 3 days
-            if (daysSince <= 3) return false;
+            if (daysSince <= 3) {return false;}
 
             // Check if an angebot has been created for this anfrage
             const hasAngebot = angebote.some(ang => ang.anfrageId === a.id);
@@ -844,7 +844,7 @@ Antworte NUR mit dem Nachfass-Text.`;
 
         // Find inquiries that don't yet have quotes
         const unquotedAnfragen = anfragen.filter(a => {
-            if (a.status === 'abgeschlossen' || a.status === 'abgelehnt') return false;
+            if (a.status === 'abgeschlossen' || a.status === 'abgelehnt') {return false;}
             const hasAngebot = angebote.some(ang => ang.anfrageId === a.id);
             return !hasAngebot;
         });
@@ -983,17 +983,17 @@ Antworte NUR mit dem JSON.`;
     }
 
     _estimateBasePrice(leistungsart) {
-        if (!leistungsart) return 850;
+        if (!leistungsart) {return 850;}
 
         const la = leistungsart.toLowerCase();
-        if (la.includes('schweiss') || la.includes('schweiß')) return 1200;
-        if (la.includes('treppen') || la.includes('gelaender') || la.includes('geländer')) return 3500;
-        if (la.includes('tor') || la.includes('zaun')) return 2800;
-        if (la.includes('hydraulik')) return 1500;
-        if (la.includes('reparatur') || la.includes('wartung')) return 650;
-        if (la.includes('montage')) return 1100;
-        if (la.includes('konstruktion') || la.includes('stahlbau')) return 4500;
-        if (la.includes('beratung') || la.includes('planung')) return 450;
+        if (la.includes('schweiss') || la.includes('schweiß')) {return 1200;}
+        if (la.includes('treppen') || la.includes('gelaender') || la.includes('geländer')) {return 3500;}
+        if (la.includes('tor') || la.includes('zaun')) {return 2800;}
+        if (la.includes('hydraulik')) {return 1500;}
+        if (la.includes('reparatur') || la.includes('wartung')) {return 650;}
+        if (la.includes('montage')) {return 1100;}
+        if (la.includes('konstruktion') || la.includes('stahlbau')) {return 4500;}
+        if (la.includes('beratung') || la.includes('planung')) {return 450;}
         return 850;
     }
 
@@ -1088,10 +1088,10 @@ Antworte NUR mit dem JSON.`;
 
         // 4. Low progress on near-deadline orders
         const behindSchedule = orderTimeline.filter(o => {
-            if (!o.startDatum || !o.endDatum) return false;
+            if (!o.startDatum || !o.endDatum) {return false;}
             const totalDuration = o.endDatum - o.startDatum;
             const elapsed = today - o.startDatum;
-            if (totalDuration <= 0 || elapsed <= 0) return false;
+            if (totalDuration <= 0 || elapsed <= 0) {return false;}
             const expectedProgress = Math.min(100, (elapsed / totalDuration) * 100);
             return o.fortschritt < expectedProgress - 20; // More than 20% behind
         });
@@ -1323,7 +1323,7 @@ Antworte NUR mit dem JSON-Array.`;
         try {
             for (const [agentId, settings] of Object.entries(config)) {
                 const agent = this.agents.get(agentId);
-                if (!agent) continue;
+                if (!agent) {continue;}
 
                 if (typeof settings.enabled === 'boolean') {
                     agent.enabled = settings.enabled;
@@ -1342,7 +1342,7 @@ Antworte NUR mit dem JSON-Array.`;
 
     toggleAgent(agentId, enabled) {
         const agent = this.agents.get(agentId);
-        if (!agent) return false;
+        if (!agent) {return false;}
 
         agent.enabled = enabled;
         this._persistConfig();
@@ -1356,14 +1356,14 @@ Antworte NUR mit dem JSON-Array.`;
 
     _getAgentSchedule(agentId) {
         const saved = this._savedConfig?.schedules?.[agentId];
-        if (saved) return saved;
+        if (saved) {return saved;}
         const agent = this.agents.get(agentId);
         return agent?.defaultSchedule || null;
     }
 
     _setAgentSchedule(agentId, schedule) {
-        if (!this._savedConfig) this._savedConfig = {};
-        if (!this._savedConfig.schedules) this._savedConfig.schedules = {};
+        if (!this._savedConfig) {this._savedConfig = {};}
+        if (!this._savedConfig.schedules) {this._savedConfig.schedules = {};}
         this._savedConfig.schedules[agentId] = schedule;
     }
 
@@ -1397,7 +1397,7 @@ Antworte NUR mit dem JSON-Array.`;
     }
 
     _applyConfig() {
-        if (!this._savedConfig) return;
+        if (!this._savedConfig) {return;}
 
         const enabledMap = this._savedConfig.enabled || {};
         for (const [agentId, enabled] of Object.entries(enabledMap)) {
@@ -1481,7 +1481,7 @@ Antworte NUR mit dem JSON-Array.`;
         const results = [];
 
         for (const [agentId, agent] of this.agents) {
-            if (!agent.enabled) continue;
+            if (!agent.enabled) {continue;}
 
             try {
                 const result = await this.executeAgent(agentId, {}, dryRun);
