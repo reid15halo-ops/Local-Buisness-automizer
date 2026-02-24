@@ -1,0 +1,1930 @@
+/* ============================================
+   Field App Mobile CSS - Optimierte Mobile UI
+   Full-screen overlay, large touch targets,
+   high contrast, outdoor-optimized
+   ============================================ */
+
+/* ============================================
+   CSS Custom Properties for Field Mobile
+   ============================================ */
+
+:root {
+    --field-touch-min: 48px;
+    --field-btn-round: 64px;
+    --field-font-body: 18px;
+    --field-font-header: 24px;
+    --field-font-timer: 56px;
+    --field-nav-height: 64px;
+    --field-safe-top: env(safe-area-inset-top, 0px);
+    --field-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --field-safe-left: env(safe-area-inset-left, 0px);
+    --field-safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* ============================================
+   Full-Screen Field Mode Overlay
+   ============================================ */
+
+.field-mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10001;
+    background: var(--bg-dark, #0f0f13);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-top: var(--field-safe-top);
+    padding-left: var(--field-safe-left);
+    padding-right: var(--field-safe-right);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent overscroll on iOS */
+    overscroll-behavior: none;
+    touch-action: manipulation;
+}
+
+.field-mobile-overlay--hidden {
+    display: none;
+}
+
+.field-mobile-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ============================================
+   Disable Zoom on Inputs (16px minimum)
+   ============================================ */
+
+.field-mobile-overlay input,
+.field-mobile-overlay select,
+.field-mobile-overlay textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+}
+
+.field-mobile-overlay input:focus,
+.field-mobile-overlay select:focus,
+.field-mobile-overlay textarea:focus {
+    font-size: 16px !important;
+}
+
+/* ============================================
+   Field Mobile Header
+   ============================================ */
+
+.field-mobile-header {
+    padding: 16px 16px 12px;
+    background: var(--bg-dark, #0f0f13);
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+.field-mobile-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.field-mobile-header-title {
+    font-size: var(--field-font-header);
+    font-weight: 700;
+    color: var(--text-primary, #f4f4f5);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.field-mobile-header-subtitle {
+    font-size: 15px;
+    color: var(--text-secondary, #a1a1aa);
+    margin: 4px 0 0;
+}
+
+.field-mobile-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--accent-primary, #6366f1);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 4px 8px 0;
+    min-height: var(--field-touch-min);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-back-btn:active {
+    opacity: 0.6;
+}
+
+/* ============================================
+   GPS Check-in Banner
+   ============================================ */
+
+.field-mobile-gps-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(34, 197, 94, 0.08);
+    border-bottom: 1px solid rgba(34, 197, 94, 0.15);
+    font-size: 14px;
+    color: var(--accent-success, #22c55e);
+    flex-shrink: 0;
+    min-height: var(--field-touch-min);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-gps-banner:active {
+    background: rgba(34, 197, 94, 0.15);
+}
+
+.field-mobile-gps-banner svg {
+    flex-shrink: 0;
+}
+
+.field-mobile-gps-banner-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.field-mobile-gps-banner-time {
+    font-size: 12px;
+    color: var(--text-muted, #71717a);
+    font-variant-numeric: tabular-nums;
+}
+
+.field-mobile-gps-banner--pending {
+    background: rgba(245, 158, 11, 0.08);
+    border-bottom-color: rgba(245, 158, 11, 0.15);
+    color: var(--accent-warning, #f59e0b);
+}
+
+/* ============================================
+   Active Timer Banner
+   ============================================ */
+
+.field-mobile-timer-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(34, 197, 94, 0.08);
+    border-bottom: 1px solid rgba(34, 197, 94, 0.2);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: var(--field-touch-min);
+    flex-shrink: 0;
+}
+
+.field-mobile-timer-banner:active {
+    background: rgba(34, 197, 94, 0.15);
+}
+
+.field-mobile-timer-banner-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-mobile-timer-banner-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-success, #22c55e);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.field-mobile-timer-banner-job {
+    font-size: 15px;
+    color: var(--text-primary, #f4f4f5);
+    font-weight: 500;
+}
+
+.field-mobile-timer-banner-time {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-success, #22c55e);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   Content Area (scrollable)
+   ============================================ */
+
+.field-mobile-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding: 16px;
+    min-height: 0;
+}
+
+.field-mobile-content--no-pad {
+    padding: 0;
+}
+
+/* ============================================
+   Job Cards - Large Touch Targets
+   ============================================ */
+
+.field-mobile-job-card {
+    display: flex;
+    align-items: stretch;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 80px;
+    overflow: hidden;
+}
+
+.field-mobile-job-card:active {
+    background: var(--bg-hover, #27272a);
+    border-color: var(--accent-primary, #6366f1);
+}
+
+/* Colored left border for status */
+.field-mobile-job-card-status-bar {
+    width: 5px;
+    flex-shrink: 0;
+    border-radius: 12px 0 0 12px;
+}
+
+.field-mobile-job-card-status-bar--offen {
+    background: #f59e0b;
+}
+
+.field-mobile-job-card-status-bar--geplant {
+    background: #3b82f6;
+}
+
+.field-mobile-job-card-status-bar--bestaetigt {
+    background: #3b82f6;
+}
+
+.field-mobile-job-card-status-bar--in_arbeit {
+    background: #22c55e;
+}
+
+.field-mobile-job-card-status-bar--in_bearbeitung {
+    background: #22c55e;
+}
+
+.field-mobile-job-card-status-bar--fertig {
+    background: #a78bfa;
+}
+
+.field-mobile-job-card-status-bar--abgeschlossen {
+    background: #a78bfa;
+}
+
+.field-mobile-job-card-status-bar--pausiert {
+    background: #f59e0b;
+}
+
+.field-mobile-job-card-status-bar--storniert {
+    background: #ef4444;
+}
+
+.field-mobile-job-card-body {
+    flex: 1;
+    padding: 14px 16px;
+    min-width: 0;
+}
+
+.field-mobile-job-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.field-mobile-job-card-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary, #a1a1aa);
+    font-variant-numeric: tabular-nums;
+}
+
+.field-mobile-job-card-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.field-mobile-job-card-title {
+    font-size: var(--field-font-body);
+    font-weight: 600;
+    color: var(--text-primary, #f4f4f5);
+    margin: 0 0 4px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-mobile-job-card-customer {
+    font-size: 15px;
+    color: var(--text-secondary, #a1a1aa);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-mobile-job-card-address {
+    font-size: 13px;
+    color: var(--text-muted, #71717a);
+    margin: 4px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-mobile-job-card--active {
+    border-color: var(--accent-success, #22c55e);
+    background: rgba(34, 197, 94, 0.04);
+}
+
+.field-mobile-job-card-chevron {
+    display: flex;
+    align-items: center;
+    padding: 0 12px 0 0;
+    color: var(--text-muted, #71717a);
+    flex-shrink: 0;
+}
+
+/* ============================================
+   Active Job View - Timer Display
+   ============================================ */
+
+.field-mobile-timer {
+    text-align: center;
+    padding: 24px 16px 16px;
+}
+
+.field-mobile-timer-display {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    font-size: var(--field-font-timer);
+    font-weight: 700;
+    color: var(--text-primary, #f4f4f5);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 3px;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.field-mobile-timer-label {
+    font-size: 15px;
+    color: var(--text-secondary, #a1a1aa);
+    margin: 4px 0 0;
+}
+
+/* ============================================
+   Clock In/Out Button - 80px tall, centered
+   ============================================ */
+
+.field-mobile-clock-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    height: 80px;
+    border-radius: 16px;
+    border: none;
+    font-size: 22px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform 0.1s ease;
+}
+
+.field-mobile-clock-btn:active {
+    transform: scale(0.97);
+}
+
+.field-mobile-clock-btn--in {
+    background: var(--accent-success, #22c55e);
+    color: #ffffff;
+    box-shadow: 0 6px 24px rgba(34, 197, 94, 0.35);
+}
+
+.field-mobile-clock-btn--out {
+    background: var(--accent-danger, #ef4444);
+    color: #ffffff;
+    box-shadow: 0 6px 24px rgba(239, 68, 68, 0.35);
+}
+
+/* ============================================
+   Quick Action Buttons Row
+   ============================================ */
+
+.field-mobile-actions-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+    padding: 20px 8px;
+}
+
+.field-mobile-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: var(--field-btn-round);
+    height: var(--field-btn-round);
+    border-radius: 50%;
+    border: 2px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    background: var(--bg-card, #1c1c21);
+    color: var(--accent-primary, #6366f1);
+    cursor: pointer;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.field-mobile-action-btn:active {
+    background: var(--bg-hover, #27272a);
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-action-btn-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary, #a1a1aa);
+    margin-top: 4px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.field-mobile-action-btn-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+/* Action button variants */
+.field-mobile-action-btn--photo {
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.25);
+}
+
+.field-mobile-action-btn--photo:active {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.field-mobile-action-btn--note {
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.field-mobile-action-btn--note:active {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.field-mobile-action-btn--material {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+.field-mobile-action-btn--material:active {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.field-mobile-action-btn--signature {
+    color: #a78bfa;
+    border-color: rgba(167, 139, 250, 0.25);
+}
+
+.field-mobile-action-btn--signature:active {
+    border-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.1);
+}
+
+/* Actions with label below the button */
+.field-mobile-action-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ============================================
+   Customer Info (tap-to-call)
+   ============================================ */
+
+.field-mobile-customer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 16px;
+    background: var(--bg-card, #1c1c21);
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.field-mobile-customer-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary, #f4f4f5);
+}
+
+.field-mobile-customer-phone {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: var(--accent-primary, #6366f1);
+    text-decoration: none;
+    min-height: var(--field-touch-min);
+    padding: 4px 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.field-mobile-customer-phone:active {
+    opacity: 0.7;
+}
+
+.field-mobile-customer-address {
+    font-size: 14px;
+    color: var(--text-muted, #71717a);
+}
+
+/* ============================================
+   Job Description (expandable)
+   ============================================ */
+
+.field-mobile-description {
+    margin-bottom: 12px;
+}
+
+.field-mobile-description-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-card, #1c1c21);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-secondary, #a1a1aa);
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: var(--field-touch-min);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-description-toggle:active {
+    background: var(--bg-hover, #27272a);
+}
+
+.field-mobile-description-toggle svg {
+    transition: transform 0.2s ease;
+}
+
+.field-mobile-description-toggle--open svg {
+    transform: rotate(180deg);
+}
+
+.field-mobile-description-body {
+    padding: 0 16px 12px;
+    background: var(--bg-card, #1c1c21);
+    border-radius: 0 0 12px 12px;
+    margin-top: -12px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text-primary, #f4f4f5);
+    display: none;
+}
+
+.field-mobile-description-body--open {
+    display: block;
+}
+
+/* ============================================
+   Quick Photo - Full-screen overlay
+   ============================================ */
+
+.field-mobile-quick-photo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10010;
+    background: #000000;
+    display: flex;
+    flex-direction: column;
+}
+
+.field-mobile-quick-photo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    padding-top: calc(12px + var(--field-safe-top));
+    background: rgba(0, 0, 0, 0.8);
+    flex-shrink: 0;
+}
+
+.field-mobile-quick-photo-close {
+    width: var(--field-touch-min);
+    height: var(--field-touch-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-quick-photo-preview {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.field-mobile-quick-photo-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.field-mobile-quick-photo-actions {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px 16px;
+    padding-bottom: calc(20px + var(--field-safe-bottom));
+    background: rgba(0, 0, 0, 0.8);
+    flex-shrink: 0;
+}
+
+.field-mobile-quick-photo-capture {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 4px solid #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background 0.15s ease;
+}
+
+.field-mobile-quick-photo-capture:active {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.field-mobile-quick-photo-capture-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #ffffff;
+    transform: scale(0.85);
+}
+
+/* ============================================
+   Quick Note - Full-screen overlay
+   ============================================ */
+
+.field-mobile-quick-note {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10010;
+    background: var(--bg-dark, #0f0f13);
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--field-safe-top);
+}
+
+.field-mobile-quick-note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    flex-shrink: 0;
+}
+
+.field-mobile-quick-note-textarea {
+    flex: 1;
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary, #f4f4f5);
+    font-size: var(--field-font-body);
+    font-family: inherit;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.field-mobile-quick-note-textarea::placeholder {
+    color: var(--text-muted, #71717a);
+}
+
+.field-mobile-quick-note-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + var(--field-safe-bottom));
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    flex-shrink: 0;
+}
+
+.field-mobile-voice-to-text-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-primary, #6366f1);
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--accent-primary, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background 0.15s ease;
+}
+
+.field-mobile-voice-to-text-btn:active {
+    background: rgba(99, 102, 241, 0.25);
+}
+
+.field-mobile-voice-to-text-btn--recording {
+    border-color: var(--accent-danger, #ef4444);
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-danger, #ef4444);
+    animation: field-mobile-pulse 1.5s ease-in-out infinite;
+}
+
+.field-mobile-quick-note-save {
+    flex: 1;
+    height: 52px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-quick-note-save:active {
+    opacity: 0.85;
+}
+
+/* ============================================
+   Material Log
+   ============================================ */
+
+.field-mobile-material-search {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 16px;
+    padding-left: 44px;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    color: var(--text-primary, #f4f4f5);
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    margin-bottom: 12px;
+    -webkit-appearance: none;
+}
+
+.field-mobile-material-search:focus {
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-material-search-wrap {
+    position: relative;
+}
+
+.field-mobile-material-search-wrap svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted, #71717a);
+    pointer-events: none;
+}
+
+.field-mobile-material-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-card, #1c1c21);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    min-height: 56px;
+}
+
+.field-mobile-material-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.field-mobile-material-item-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary, #f4f4f5);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-mobile-material-item-note {
+    font-size: 13px;
+    color: var(--text-muted, #71717a);
+    margin-top: 2px;
+}
+
+.field-mobile-material-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.field-mobile-material-qty-btn {
+    width: var(--field-touch-min);
+    height: var(--field-touch-min);
+    border-radius: 50%;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    background: var(--bg-hover, #27272a);
+    color: var(--text-primary, #f4f4f5);
+    font-size: 22px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-material-qty-btn:active {
+    background: var(--accent-primary, #6366f1);
+    border-color: var(--accent-primary, #6366f1);
+    color: #ffffff;
+}
+
+.field-mobile-material-qty-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-primary, #6366f1);
+    min-width: 40px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.field-mobile-material-qty-unit {
+    font-size: 13px;
+    color: var(--text-muted, #71717a);
+}
+
+.field-mobile-material-delete {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 50%;
+    color: var(--accent-danger, #ef4444);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-material-delete:active {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   Signature Pad - Full-screen Canvas
+   ============================================ */
+
+.field-mobile-signature-pad {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10010;
+    background: var(--bg-dark, #0f0f13);
+    display: flex;
+    flex-direction: column;
+}
+
+.field-mobile-signature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    padding-top: calc(12px + var(--field-safe-top));
+    background: var(--bg-dark, #0f0f13);
+    border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    flex-shrink: 0;
+}
+
+.field-mobile-signature-header-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #f4f4f5);
+}
+
+.field-mobile-signature-canvas-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+}
+
+.field-mobile-signature-canvas {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.15));
+    border-radius: 12px;
+    background: var(--bg-card, #1c1c21);
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.field-mobile-signature-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: var(--text-muted, #71717a);
+    pointer-events: none;
+}
+
+.field-mobile-signature-name {
+    padding: 0 16px 8px;
+    flex-shrink: 0;
+}
+
+.field-mobile-signature-name input {
+    width: 100%;
+    height: 52px;
+    padding: 12px 16px;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    color: var(--text-primary, #f4f4f5);
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.field-mobile-signature-name input:focus {
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-signature-footer {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    padding-bottom: calc(12px + var(--field-safe-bottom));
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    flex-shrink: 0;
+}
+
+.field-mobile-signature-clear-btn {
+    height: 52px;
+    padding: 0 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    background: var(--bg-card, #1c1c21);
+    color: var(--text-secondary, #a1a1aa);
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-signature-clear-btn:active {
+    background: var(--bg-hover, #27272a);
+}
+
+.field-mobile-signature-save-btn {
+    flex: 1;
+    height: 52px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-signature-save-btn:active {
+    opacity: 0.85;
+}
+
+/* ============================================
+   Bottom Navigation Bar - 5 tabs
+   ============================================ */
+
+.field-mobile-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    background: var(--bg-card, #1c1c21);
+    border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    flex-shrink: 0;
+    height: var(--field-nav-height);
+    padding-bottom: var(--field-safe-bottom);
+}
+
+.field-mobile-nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: none;
+    color: var(--text-muted, #71717a);
+    font-size: 10px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    min-height: var(--field-touch-min);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    padding: 4px 2px;
+    position: relative;
+    transition: color 0.15s ease;
+}
+
+.field-mobile-nav-tab:active {
+    color: var(--text-secondary, #a1a1aa);
+}
+
+.field-mobile-nav-tab--active {
+    color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-nav-tab--active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 3px;
+    background: var(--accent-primary, #6366f1);
+    border-radius: 0 0 3px 3px;
+}
+
+.field-mobile-nav-tab--active svg {
+    color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-nav-tab-badge {
+    position: absolute;
+    top: 4px;
+    right: 50%;
+    transform: translateX(12px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-danger, #ef4444);
+}
+
+/* ============================================
+   Offline Indicator Banner
+   ============================================ */
+
+.field-mobile-offline-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--accent-warning, #f59e0b);
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    min-height: 32px;
+}
+
+.field-mobile-offline-banner--hidden {
+    display: none;
+}
+
+.field-mobile-offline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-warning, #f59e0b);
+    animation: field-mobile-pulse-dot 2s ease-in-out infinite;
+}
+
+.field-mobile-offline-sync-btn {
+    margin-left: auto;
+    padding: 4px 12px;
+    background: rgba(245, 158, 11, 0.2);
+    border: none;
+    border-radius: 6px;
+    color: var(--accent-warning, #f59e0b);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 32px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-offline-sync-btn:active {
+    background: rgba(245, 158, 11, 0.35);
+}
+
+/* Online status */
+.field-mobile-online-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: rgba(34, 197, 94, 0.08);
+    color: var(--accent-success, #22c55e);
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+    min-height: 32px;
+}
+
+.field-mobile-online-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-success, #22c55e);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+/* ============================================
+   Empty States
+   ============================================ */
+
+.field-mobile-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.field-mobile-empty-icon {
+    margin-bottom: 16px;
+    opacity: 0.4;
+}
+
+.field-mobile-empty-text {
+    font-size: var(--field-font-body);
+    color: var(--text-secondary, #a1a1aa);
+    margin: 0;
+}
+
+.field-mobile-empty-subtext {
+    font-size: 15px;
+    color: var(--text-muted, #71717a);
+    margin: 8px 0 0;
+}
+
+/* ============================================
+   Section Dividers
+   ============================================ */
+
+.field-mobile-section {
+    margin-top: 20px;
+}
+
+.field-mobile-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted, #71717a);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 0 0 10px;
+    padding: 0 4px;
+}
+
+/* ============================================
+   Photo Gallery in job view
+   ============================================ */
+
+.field-mobile-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.field-mobile-photo-thumb {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--bg-card, #1c1c21);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.field-mobile-photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.field-mobile-photo-thumb:active {
+    opacity: 0.8;
+}
+
+/* ============================================
+   Notes list in job view
+   ============================================ */
+
+.field-mobile-note-item {
+    padding: 12px 14px;
+    background: var(--bg-card, #1c1c21);
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.field-mobile-note-item-text {
+    font-size: 15px;
+    color: var(--text-primary, #f4f4f5);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.field-mobile-note-item-time {
+    font-size: 12px;
+    color: var(--text-muted, #71717a);
+    margin-top: 4px;
+}
+
+/* ============================================
+   More screen items
+   ============================================ */
+
+.field-mobile-more-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 60px;
+    padding: 14px 16px;
+    background: var(--bg-card, #1c1c21);
+    border: none;
+    border-radius: 12px;
+    color: var(--text-primary, #f4f4f5);
+    font-size: 16px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 8px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    text-align: left;
+}
+
+.field-mobile-more-item:active {
+    background: var(--bg-hover, #27272a);
+}
+
+.field-mobile-more-item svg:first-child {
+    color: var(--accent-primary, #6366f1);
+    flex-shrink: 0;
+}
+
+.field-mobile-more-item-label {
+    flex: 1;
+}
+
+.field-mobile-more-item-chevron {
+    color: var(--text-muted, #71717a);
+    flex-shrink: 0;
+}
+
+/* Exit field mode button */
+.field-mobile-exit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 56px;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.05);
+    color: var(--accent-danger, #ef4444);
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 16px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-exit-btn:active {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* ============================================
+   Stats Grid (More screen)
+   ============================================ */
+
+.field-mobile-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.field-mobile-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 8px;
+    background: var(--bg-card, #1c1c21);
+    border-radius: 12px;
+}
+
+.field-mobile-stat-value {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--accent-primary, #6366f1);
+    font-variant-numeric: tabular-nums;
+}
+
+.field-mobile-stat-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #71717a);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+}
+
+/* ============================================
+   Swipe hint indicator
+   ============================================ */
+
+.field-mobile-swipe-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+    font-size: 13px;
+    color: var(--text-muted, #71717a);
+    opacity: 0.6;
+}
+
+/* ============================================
+   Form elements
+   ============================================ */
+
+.field-mobile-form-group {
+    margin-bottom: 14px;
+}
+
+.field-mobile-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted, #71717a);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.field-mobile-form-input {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 16px;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    color: var(--text-primary, #f4f4f5);
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.field-mobile-form-input:focus {
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-form-input::placeholder {
+    color: var(--text-muted, #71717a);
+}
+
+.field-mobile-form-select {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 16px;
+    padding-right: 40px;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    color: var(--text-primary, #f4f4f5);
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+.field-mobile-form-select:focus {
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.field-mobile-form-row {
+    display: flex;
+    gap: 10px;
+}
+
+.field-mobile-form-row .field-mobile-form-group {
+    flex: 1;
+}
+
+.field-mobile-submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 56px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    font-size: 17px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.field-mobile-submit-btn:active {
+    opacity: 0.85;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes field-mobile-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+    }
+}
+
+@keyframes field-mobile-pulse-dot {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+@keyframes field-mobile-slide-in-right {
+    from {
+        transform: translateX(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes field-mobile-slide-in-up {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.field-mobile-animate-in {
+    animation: field-mobile-slide-in-up 0.2s ease-out;
+}
+
+/* ============================================
+   Landscape Mode Support
+   ============================================ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .field-mobile-header {
+        padding: 8px 16px 6px;
+    }
+
+    .field-mobile-header-title {
+        font-size: 20px;
+    }
+
+    .field-mobile-timer-display {
+        font-size: 40px;
+    }
+
+    .field-mobile-timer {
+        padding: 8px 16px;
+    }
+
+    .field-mobile-clock-btn {
+        height: 60px;
+        font-size: 18px;
+    }
+
+    .field-mobile-actions-row {
+        padding: 10px 8px;
+    }
+
+    .field-mobile-action-btn {
+        width: 52px;
+        height: 52px;
+    }
+
+    .field-mobile-bottom-nav {
+        height: 52px;
+    }
+
+    .field-mobile-nav-tab {
+        min-height: 40px;
+    }
+
+    .field-mobile-job-card {
+        min-height: 60px;
+        margin-bottom: 8px;
+    }
+
+    .field-mobile-content {
+        padding: 8px 16px;
+    }
+
+    /* In landscape, show actions in single row */
+    .field-mobile-actions-row {
+        flex-wrap: nowrap;
+    }
+
+    .field-mobile-signature-canvas-wrap {
+        padding: 8px;
+    }
+}
+
+/* ============================================
+   Small Screens (320px - 360px)
+   ============================================ */
+
+@media (max-width: 360px) {
+    :root {
+        --field-font-body: 16px;
+        --field-font-header: 20px;
+        --field-font-timer: 44px;
+        --field-btn-round: 56px;
+    }
+
+    .field-mobile-job-card-title {
+        font-size: 16px;
+    }
+
+    .field-mobile-action-btn-label {
+        font-size: 10px;
+    }
+
+    .field-mobile-stat-value {
+        font-size: 24px;
+    }
+
+    .field-mobile-clock-btn {
+        height: 70px;
+        font-size: 20px;
+    }
+}
+
+/* ============================================
+   Wider Phones (480px+)
+   ============================================ */
+
+@media (min-width: 480px) {
+    .field-mobile-content {
+        padding: 16px 24px;
+    }
+
+    .field-mobile-header {
+        padding: 16px 24px 12px;
+    }
+
+    .field-mobile-actions-row {
+        padding: 20px 16px;
+    }
+
+    .field-mobile-photo-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .field-mobile-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============================================
+   Tablet (768px+) - Constrain width
+   ============================================ */
+
+@media (min-width: 768px) {
+    .field-mobile-screen {
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .field-mobile-bottom-nav {
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .field-mobile-timer-display {
+        font-size: 72px;
+    }
+
+    .field-mobile-clock-btn {
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* ============================================
+   Dark Mode (explicit override)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .field-mobile-overlay {
+        background: #0a0a0d;
+    }
+
+    .field-mobile-job-card,
+    .field-mobile-material-item,
+    .field-mobile-note-item,
+    .field-mobile-more-item,
+    .field-mobile-stat-card,
+    .field-mobile-customer-info {
+        background: #141418;
+        border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .field-mobile-bottom-nav {
+        background: #141418;
+        border-top-color: rgba(255, 255, 255, 0.06);
+    }
+}
+
+/* Light mode overrides for field mobile */
+@media (prefers-color-scheme: light) {
+    .field-mobile-overlay {
+        background: #f8f9fa;
+    }
+
+    .field-mobile-header {
+        background: #f8f9fa;
+    }
+
+    .field-mobile-header-title {
+        color: #1a1a2e;
+    }
+
+    .field-mobile-header-subtitle {
+        color: #6b7280;
+    }
+
+    .field-mobile-job-card,
+    .field-mobile-material-item,
+    .field-mobile-note-item,
+    .field-mobile-more-item,
+    .field-mobile-stat-card,
+    .field-mobile-customer-info,
+    .field-mobile-form-input,
+    .field-mobile-form-select,
+    .field-mobile-material-search {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .field-mobile-job-card-title,
+    .field-mobile-customer-name,
+    .field-mobile-material-item-name,
+    .field-mobile-note-item-text,
+    .field-mobile-timer-display {
+        color: #1a1a2e;
+    }
+
+    .field-mobile-bottom-nav {
+        background: #ffffff;
+        border-top-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .field-mobile-nav-tab {
+        color: #9ca3af;
+    }
+
+    .field-mobile-description-toggle,
+    .field-mobile-description-body {
+        background: #ffffff;
+    }
+}
+
+/* ============================================
+   High Contrast Mode (outdoor visibility)
+   ============================================ */
+
+@media (prefers-contrast: more) {
+    .field-mobile-overlay {
+        background: #000000;
+    }
+
+    .field-mobile-header-title {
+        color: #ffffff;
+        font-weight: 800;
+    }
+
+    .field-mobile-job-card {
+        border-width: 2px;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .field-mobile-job-card-title {
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .field-mobile-timer-display {
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .field-mobile-clock-btn--in {
+        background: #16a34a;
+        box-shadow: 0 0 0 2px #ffffff;
+    }
+
+    .field-mobile-clock-btn--out {
+        background: #dc2626;
+        box-shadow: 0 0 0 2px #ffffff;
+    }
+
+    .field-mobile-bottom-nav {
+        border-top-width: 2px;
+        border-top-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .field-mobile-nav-tab--active {
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .field-mobile-action-btn {
+        border-width: 2px;
+    }
+}
+
+/* ============================================
+   Reduce Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .field-mobile-voice-to-text-btn--recording {
+        animation: none;
+    }
+
+    .field-mobile-offline-dot {
+        animation: none;
+    }
+
+    .field-mobile-animate-in {
+        animation: none;
+    }
+
+    .field-mobile-clock-btn,
+    .field-mobile-action-btn,
+    .field-mobile-nav-tab,
+    .field-mobile-job-card {
+        transition: none;
+    }
+}
+
+/* ============================================
+   Print: hide field mobile overlay
+   ============================================ */
+
+@media print {
+    .field-mobile-overlay,
+    .field-mobile-quick-photo,
+    .field-mobile-quick-note,
+    .field-mobile-signature-pad {
+        display: none !important;
+    }
+}
