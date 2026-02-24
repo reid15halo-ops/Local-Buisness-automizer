@@ -474,7 +474,8 @@ async function processWithGemini(
             budget: analysis.anfrage.budget,
             termin: analysis.anfrage.termin,
             status: 'neu',
-            quelle: 'email'
+            quelle: 'email',
+            ...(resolvedUserId ? { user_id: resolvedUserId } : {})
         })
         .select()
         .single()
@@ -509,7 +510,7 @@ async function processWithGemini(
         }
     })
 
-    const mwst = netto * 0.19
+    const mwst = netto * DEFAULT_TAX_RATE
     const brutto = netto + mwst
 
     const angebotNummer = `ANG-${Date.now()}`
@@ -525,7 +526,8 @@ async function processWithGemini(
             brutto: brutto,
             status: 'versendet',
             arbeitszeit: analysis.geschaetzteStunden,
-            versanddatum: new Date().toISOString()
+            versanddatum: new Date().toISOString(),
+            ...(resolvedUserId ? { user_id: resolvedUserId } : {})
         })
         .select()
         .single()
@@ -690,9 +692,12 @@ async function generateAngebotPDF(
     y -= 30
 
     // Terms
-    currentPage.drawText('Gültigkeitsdauer: 30 Tage ab Angebotsdatum', { x: margin, y, size: 9, font: fontRegular, color: grey })
+    // Payment terms read from admin_settings, fallback to DEFAULT_PAYMENT_DAYS env var, then 30
+    const validityDays = adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '30'
+    const paymentTerms = adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '14'
+    currentPage.drawText(`Gültigkeitsdauer: ${validityDays} Tage ab Angebotsdatum`, { x: margin, y, size: 9, font: fontRegular, color: grey })
     y -= 13
-    currentPage.drawText('Zahlungsbedingungen: 14 Tage netto nach Erhalt der Rechnung', { x: margin, y, size: 9, font: fontRegular, color: grey })
+    currentPage.drawText(`Zahlungsbedingungen: ${paymentTerms} Tage netto nach Erhalt der Rechnung`, { x: margin, y, size: 9, font: fontRegular, color: grey })
 
     // Footer
     currentPage.drawLine({ start: { x: margin, y: 60 }, end: { x: pageWidth - margin, y: 60 }, thickness: 0.5, color: grey })
@@ -791,8 +796,8 @@ async function sendAngebotEmail(
                         </div>
                     </div>
 
-                    <p><strong>Gültigkeitsdauer:</strong> 30 Tage ab Angebotsdatum</p>
-                    <p><strong>Zahlungsbedingungen:</strong> 14 Tage netto nach Erhalt der Rechnung</p>
+                    <p><strong>Gültigkeitsdauer:</strong> ${adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '30'} Tage ab Angebotsdatum</p>
+                    <p><strong>Zahlungsbedingungen:</strong> ${adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '14'} Tage netto nach Erhalt der Rechnung</p>
 
                     ${pdfUrl && pdfUrl !== 'inline' ? `<p><a href="${escapeHtml(pdfUrl)}" style="display:inline-block;background:#2c3e50;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">📄 Angebot als PDF herunterladen</a></p>` : ''}
 
