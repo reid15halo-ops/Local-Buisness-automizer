@@ -968,10 +968,157 @@
             ohne Stunden in Einstellungen zu verlieren.<br><br>
             <em>Alle Angaben sind vertraulich und werden ausschließlich zur Einrichtung deiner App verwendet.</em>
         </div>
-        <button class="btn btn-primary" onclick="window.print()">Drucken / Als PDF speichern</button>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:10px;">
+            <button class="btn btn-primary" onclick="window.print()">Drucken / Als PDF speichern</button>
+            <button class="btn btn-primary" id="btn-import-to-app" style="background:linear-gradient(135deg,#4338ca 0%,#6366f1 100%);">
+                In App importieren
+            </button>
+        </div>
+        <div id="import-status" style="display:none; font-size:13px; margin-top:10px; padding:10px 16px; border-radius:8px;"></div>
         <div class="footer-meta">FreyAI Visions · Betriebs-Aufnahmebogen V1 · Feb 2026</div>
     </div>
 
 </div><!-- /page -->
+
+<script>
+(function() {
+    'use strict';
+
+    /**
+     * Collect all form data from the Aufnahmebogen into a structured object.
+     * Reads text inputs, radios, checkboxes, textareas, and inline inputs.
+     * @returns {Object}
+     */
+    function collectFormData() {
+        var data = {};
+        var page = document.querySelector('.page');
+        if (!page) return data;
+
+        // --- Text, email, tel inputs and textareas ---
+        var inputs = page.querySelectorAll('input[type="text"][name], input[type="email"][name], input[type="tel"][name], textarea[name]');
+        inputs.forEach(function(el) {
+            var name = el.getAttribute('name');
+            var val = (el.value || '').trim();
+            if (name && val) {
+                data[name] = val;
+            }
+        });
+
+        // --- Radio buttons (take the checked value) ---
+        var radios = page.querySelectorAll('input[type="radio"]:checked');
+        radios.forEach(function(el) {
+            var name = el.getAttribute('name');
+            if (name) {
+                data[name] = el.value;
+            }
+        });
+
+        // --- Checkboxes (collect as arrays of values or boolean) ---
+        var checkboxes = page.querySelectorAll('input[type="checkbox"][name]');
+        var cbGroups = {};
+        checkboxes.forEach(function(el) {
+            var name = el.getAttribute('name');
+            if (!cbGroups[name]) cbGroups[name] = [];
+            if (el.checked) {
+                cbGroups[name].push(el.value || 'on');
+            }
+        });
+        Object.keys(cbGroups).forEach(function(name) {
+            if (cbGroups[name].length > 0) {
+                data[name] = cbGroups[name].length === 1 ? cbGroups[name][0] : cbGroups[name];
+            }
+        });
+
+        return data;
+    }
+
+    /**
+     * Show a status message below the import button.
+     */
+    function showStatus(message, type) {
+        var el = document.getElementById('import-status');
+        if (!el) return;
+        el.style.display = 'block';
+        el.style.background = type === 'success' ? 'rgba(16,185,129,0.12)' : type === 'error' ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.1)';
+        el.style.color = type === 'success' ? '#047857' : type === 'error' ? '#b91c1c' : '#4338ca';
+        el.textContent = message;
+    }
+
+    /**
+     * Handle the "In App importieren" button click.
+     * Collects form data, stores it in localStorage, and redirects to the main app.
+     */
+    function handleImport() {
+        try {
+            var formData = collectFormData();
+
+            // Check if at least some core fields are filled
+            var hasData = !!(formData.firmenname || formData.inhaber || formData.gewerk || formData.strasse);
+            if (!hasData) {
+                showStatus('Bitte fülle mindestens Firmenname, Name oder Gewerk aus, bevor du importierst.', 'error');
+                return;
+            }
+
+            // Mark as pending import
+            formData._pendingImport = true;
+            formData._collectedAt = new Date().toISOString();
+
+            // Store in localStorage
+            localStorage.setItem('freyai_fragebogen_data', JSON.stringify(formData));
+
+            showStatus('Daten gespeichert! Du wirst jetzt zur App weitergeleitet\u2026', 'success');
+
+            // Redirect to main app with import flag
+            setTimeout(function() {
+                window.location.href = 'index.html?import=fragebogen';
+            }, 800);
+
+        } catch (e) {
+            console.error('[Fragebogen] Import-Fehler:', e);
+            showStatus('Fehler beim Speichern. Bitte versuche es erneut.', 'error');
+        }
+    }
+
+    // --- Attach event listener ---
+    var btn = document.getElementById('btn-import-to-app');
+    if (btn) {
+        btn.addEventListener('click', handleImport);
+    }
+
+    // --- Pre-fill from existing app data if available ---
+    try {
+        var stored = localStorage.getItem('freyai_fragebogen_data');
+        if (stored) {
+            var existing = JSON.parse(stored);
+            if (existing && !existing._pendingImport) {
+                // Pre-fill fields from previously stored data
+                var page = document.querySelector('.page');
+                if (page) {
+                    Object.keys(existing).forEach(function(key) {
+                        if (key.charAt(0) === '_') return; // Skip internal keys
+                        var val = existing[key];
+                        if (typeof val !== 'string') return;
+
+                        // Text / email / tel inputs
+                        var input = page.querySelector('input[name="' + key + '"][type="text"], input[name="' + key + '"][type="email"], input[name="' + key + '"][type="tel"], textarea[name="' + key + '"]');
+                        if (input) {
+                            input.value = val;
+                            return;
+                        }
+
+                        // Radio buttons
+                        var radio = page.querySelector('input[name="' + key + '"][type="radio"][value="' + val + '"]');
+                        if (radio) {
+                            radio.checked = true;
+                        }
+                    });
+                }
+            }
+        }
+    } catch (e) {
+        // Ignore pre-fill errors silently
+    }
+})();
+</script>
 </body>
 </html>

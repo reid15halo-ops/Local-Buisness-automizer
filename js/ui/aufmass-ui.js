@@ -8,8 +8,9 @@ class AufmassUI {
     constructor() {
         this.currentProjectId = null;
         this.currentRoomId = null;
-        this.currentScreen = 'list'; // list | detail | room-editor | material | quote-transfer
+        this.currentScreen = 'list'; // list | detail | room-editor | material | quote-transfer | summary
         this.debounceTimers = {};
+        this.unitMode = 'm'; // 'm' or 'cm'
         this.init();
     }
 
@@ -70,6 +71,9 @@ class AufmassUI {
                 break;
             case 'quote-transfer':
                 this.renderQuoteTransfer(container);
+                break;
+            case 'summary':
+                this.renderProjectSummary(container);
                 break;
             default:
                 this.renderProjectList(container);
@@ -190,6 +194,7 @@ class AufmassUI {
                 <div class="aufmass-header-actions">
                     <button class="btn btn-secondary" data-action="edit-project" data-project-id="${project.id}" title="Projekt bearbeiten">Bearbeiten</button>
                     <button class="btn btn-secondary" data-action="export-project" data-project-id="${project.id}" title="JSON Export">Export</button>
+                    <button class="btn btn-secondary" data-action="open-summary" data-project-id="${project.id}" title="Zusammenfassung">Zusammenfassung</button>
                     <button class="btn btn-primary" data-action="open-quote-transfer" data-project-id="${project.id}">In Angebot \u00FCbernehmen</button>
                 </div>
             </div>
@@ -340,7 +345,13 @@ class AufmassUI {
 
                     <!-- Dimensions (type-dependent) -->
                     <div class="aufmass-form-card">
-                        <h3>Ma\u00DFe (in Metern)</h3>
+                        <div class="aufmass-section-header">
+                            <h3>Ma\u00DFe</h3>
+                            <div class="aufmass-unit-toggle" id="aufmass-unit-toggle">
+                                <button class="${this.unitMode === 'm' ? 'active' : ''}" data-action="set-unit" data-unit="m">m</button>
+                                <button class="${this.unitMode === 'cm' ? 'active' : ''}" data-action="set-unit" data-unit="cm">cm</button>
+                            </div>
+                        </div>
                         <div class="aufmass-form-grid" id="aufmass-dimension-fields">
                             ${this._renderDimensionFields(room, project.id)}
                         </div>
@@ -405,16 +416,25 @@ class AufmassUI {
 
     _renderDimensionFields(room, projectId) {
         const fields = [];
+        const isCm = this.unitMode === 'cm';
+        const unitLabel = isCm ? 'cm' : 'm';
+        const step = isCm ? '1' : '0.01';
+        const placeholder = isCm ? '0' : '0.00';
 
-        const makeField = (id, label, value, unit = 'm') => `
+        const displayVal = (val) => {
+            if (!val && val !== 0) return '';
+            return isCm ? Math.round(val * 100) : val;
+        };
+
+        const makeField = (id, label, value) => `
             <div class="aufmass-form-group">
                 <label for="aufmass-dim-${id}">${label}</label>
                 <div class="aufmass-input-with-unit">
                     <input type="number" id="aufmass-dim-${id}" class="aufmass-input aufmass-dim-input"
-                        value="${value || ''}" step="0.01" min="0" max="999"
+                        value="${displayVal(value)}" step="${step}" min="0" max="${isCm ? '99900' : '999'}"
                         data-field="${id}" data-project-id="${projectId}" data-room-id="${room.id}"
-                        placeholder="0.00" />
-                    <span class="aufmass-input-unit">${unit}</span>
+                        placeholder="${placeholder}" />
+                    <span class="aufmass-input-unit">${unitLabel}</span>
                 </div>
             </div>
         `;
@@ -450,7 +470,8 @@ class AufmassUI {
                 break;
             case 'frei':
                 fields.push(makeField('height', 'H\u00F6he', room.height));
-                // Custom polygon editor is handled separately
+                // Inline polygon point editor
+                fields.push(this._renderPolygonEditor(room, projectId));
                 break;
             default:
                 fields.push(makeField('length', 'L\u00E4nge', room.length));
@@ -459,6 +480,54 @@ class AufmassUI {
         }
 
         return fields.join('');
+    }
+
+    _renderPolygonEditor(room, projectId) {
+        const points = room.points || [];
+        const isCm = this.unitMode === 'cm';
+        const unitLabel = isCm ? 'cm' : 'm';
+
+        const displayVal = (val) => isCm ? Math.round((val || 0) * 100) : (val || 0);
+
+        let pointRows = '';
+        if (points.length === 0) {
+            pointRows = '<p class="aufmass-deduction-empty">Noch keine Punkte. F\u00FCgen Sie mindestens 3 Eckpunkte hinzu.</p>';
+        } else {
+            pointRows = points.map((pt, i) => `
+                <div class="aufmass-polygon-point">
+                    <label>P${i + 1}</label>
+                    <div class="aufmass-input-with-unit">
+                        <input type="number" class="aufmass-input aufmass-input--small aufmass-polygon-x"
+                            value="${displayVal(pt.x)}" step="${isCm ? '1' : '0.01'}" data-point-index="${i}"
+                            data-project-id="${projectId}" data-room-id="${room.id}" placeholder="X" />
+                        <span class="aufmass-input-unit">X ${unitLabel}</span>
+                    </div>
+                    <div class="aufmass-input-with-unit">
+                        <input type="number" class="aufmass-input aufmass-input--small aufmass-polygon-y"
+                            value="${displayVal(pt.y)}" step="${isCm ? '1' : '0.01'}" data-point-index="${i}"
+                            data-project-id="${projectId}" data-room-id="${room.id}" placeholder="Y" />
+                        <span class="aufmass-input-unit">Y ${unitLabel}</span>
+                    </div>
+                    <button class="aufmass-btn-icon aufmass-btn-delete" data-action="remove-polygon-point"
+                        data-point-index="${i}" data-project-id="${projectId}" data-room-id="${room.id}"
+                        title="Punkt entfernen">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        return `
+            <div class="aufmass-polygon-editor" style="grid-column: 1 / -1;">
+                <h4 style="font-size: 14px; color: var(--text-secondary); margin: 0 0 8px 0;">Eckpunkte (Polygon)</h4>
+                <div class="aufmass-polygon-points">
+                    ${pointRows}
+                </div>
+                <div class="aufmass-polygon-actions">
+                    <button class="btn btn-small btn-secondary" data-action="add-polygon-point"
+                        data-project-id="${projectId}" data-room-id="${room.id}">+ Punkt hinzuf\u00FCgen</button>
+                    ${points.length >= 3 ? `<span style="font-size: 12px; color: var(--text-muted); align-self: center;">${points.length} Punkte definiert</span>` : ''}
+                </div>
+            </div>
+        `;
     }
 
     _renderDeductions(room, projectId) {
@@ -955,6 +1024,182 @@ class AufmassUI {
                 }
             });
         });
+    }
+
+    // ============================================
+    // Screen 6: Project Summary (Print / Overview)
+    // ============================================
+
+    renderProjectSummary(container) {
+        const service = window.aufmassService;
+        const project = service.getProject(this.currentProjectId);
+        if (!project) { this.currentScreen = 'list'; this.render(); return; }
+
+        const summary = service.getProjectSummary(this.currentProjectId);
+
+        // Build room detail rows
+        const roomRows = summary.rooms.map(rs => {
+            const typeDef = service.ROOM_TYPES[rs.type] || service.ROOM_TYPES.rechteck;
+            return `
+                <tr>
+                    <td>${this._esc(rs.name)}</td>
+                    <td>${typeDef.icon} ${typeDef.label}</td>
+                    <td style="text-align: right;">${rs.floorArea.toFixed(2)}</td>
+                    <td style="text-align: right;">${rs.netWallArea.toFixed(2)}</td>
+                    <td style="text-align: right;">${rs.ceilingArea.toFixed(2)}</td>
+                    <td style="text-align: right;">${rs.volume.toFixed(2)}</td>
+                    <td style="text-align: right;">${rs.totalDeductionArea.toFixed(2)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        // Build material summary across all rooms
+        const materialSummary = {};
+        project.rooms.forEach(room => {
+            const materials = service.estimateAllMaterials(room);
+            materials.forEach(mat => {
+                if (!materialSummary[mat.materialType]) {
+                    materialSummary[mat.materialType] = {
+                        label: mat.label,
+                        unit: mat.unit,
+                        totalArea: 0,
+                        totalWithWaste: 0
+                    };
+                }
+                materialSummary[mat.materialType].totalArea += mat.area;
+                materialSummary[mat.materialType].totalWithWaste += mat.totalWithWaste;
+            });
+        });
+
+        const materialRows = Object.entries(materialSummary).map(([key, m]) => `
+            <tr>
+                <td>${this._esc(m.label)}</td>
+                <td style="text-align: right;">${m.totalArea.toFixed(2)} m\u00B2</td>
+                <td style="text-align: right;">${m.totalWithWaste.toFixed(2)} ${this._esc(m.unit)}</td>
+            </tr>
+        `).join('');
+
+        // Generate printable HTML summary
+        const summaryHtml = service.exportProjectSummary ? service.exportProjectSummary(this.currentProjectId) : null;
+
+        container.innerHTML = `
+            <div class="aufmass-header">
+                <div class="aufmass-header-text">
+                    <button class="aufmass-btn-back" data-action="back-to-detail">&larr; Zur\u00FCck</button>
+                    <h2>Projekt-Zusammenfassung</h2>
+                    <p class="aufmass-subtitle">${this._esc(project.name)}</p>
+                </div>
+                <div class="aufmass-header-actions">
+                    <button class="btn btn-secondary" data-action="print-summary" data-project-id="${project.id}">Drucken / PDF</button>
+                    <button class="btn btn-primary" data-action="open-quote-transfer" data-project-id="${project.id}">Angebot erstellen</button>
+                </div>
+            </div>
+
+            <div class="aufmass-summary" id="aufmass-summary-content">
+                <h3 class="aufmass-summary-title">${this._esc(project.name)}</h3>
+                <p class="aufmass-summary-subtitle">
+                    ${project.customerName ? `Kunde: ${this._esc(project.customerName)}` : ''}
+                    ${project.address ? ` | Adresse: ${this._esc(project.address)}` : ''}
+                    ${project.updatedAt ? ` | Stand: ${this._formatDate(project.updatedAt)}` : ''}
+                </p>
+
+                <!-- Totals -->
+                <div class="aufmass-summary-section">
+                    <h4>Gesamtfl\u00E4chen</h4>
+                    <div class="aufmass-summary-grid" style="margin-bottom: 0;">
+                        <div class="aufmass-summary-card">
+                            <div class="aufmass-summary-value">${summary.roomCount}</div>
+                            <div class="aufmass-summary-label">R\u00E4ume</div>
+                        </div>
+                        <div class="aufmass-summary-card">
+                            <div class="aufmass-summary-value">${summary.totalFloorArea.toFixed(2)}<small> m\u00B2</small></div>
+                            <div class="aufmass-summary-label">Bodenfl\u00E4che</div>
+                        </div>
+                        <div class="aufmass-summary-card">
+                            <div class="aufmass-summary-value">${summary.totalNetWallArea.toFixed(2)}<small> m\u00B2</small></div>
+                            <div class="aufmass-summary-label">Wandfl\u00E4che (netto)</div>
+                        </div>
+                        <div class="aufmass-summary-card">
+                            <div class="aufmass-summary-value">${summary.totalCeilingArea.toFixed(2)}<small> m\u00B2</small></div>
+                            <div class="aufmass-summary-label">Deckenfl\u00E4che</div>
+                        </div>
+                        <div class="aufmass-summary-card">
+                            <div class="aufmass-summary-value">${summary.totalVolume.toFixed(2)}<small> m\u00B3</small></div>
+                            <div class="aufmass-summary-label">Volumen</div>
+                        </div>
+                        <div class="aufmass-summary-card">
+                            <div class="aufmass-summary-value">${summary.totalDeductionArea.toFixed(2)}<small> m\u00B2</small></div>
+                            <div class="aufmass-summary-label">Abz\u00FCge</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Details Table -->
+                <div class="aufmass-summary-section">
+                    <h4>R\u00E4ume im Detail</h4>
+                    <div class="aufmass-positions-table-wrap">
+                        <table class="aufmass-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Raum</th>
+                                    <th>Typ</th>
+                                    <th style="text-align: right;">Boden m\u00B2</th>
+                                    <th style="text-align: right;">Wand m\u00B2</th>
+                                    <th style="text-align: right;">Decke m\u00B2</th>
+                                    <th style="text-align: right;">Vol. m\u00B3</th>
+                                    <th style="text-align: right;">Abz. m\u00B2</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${roomRows || '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Keine R\u00E4ume</td></tr>'}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" style="font-weight: 700;">Gesamt</td>
+                                    <td style="text-align: right;">${summary.totalFloorArea.toFixed(2)}</td>
+                                    <td style="text-align: right;">${summary.totalNetWallArea.toFixed(2)}</td>
+                                    <td style="text-align: right;">${summary.totalCeilingArea.toFixed(2)}</td>
+                                    <td style="text-align: right;">${summary.totalVolume.toFixed(2)}</td>
+                                    <td style="text-align: right;">${summary.totalDeductionArea.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Material Summary -->
+                <div class="aufmass-summary-section">
+                    <h4>Material\u00FCbersicht (gesch\u00E4tzt)</h4>
+                    <div class="aufmass-positions-table-wrap">
+                        <table class="aufmass-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Material</th>
+                                    <th style="text-align: right;">Fl\u00E4che</th>
+                                    <th style="text-align: right;">Bedarf (inkl. Verschnitt)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${materialRows || '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Keine Daten</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                ${project.notes ? `
+                    <div class="aufmass-summary-section">
+                        <h4>Projekt-Notizen</h4>
+                        <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${this._esc(project.notes)}</p>
+                    </div>
+                ` : ''}
+            </div>
+
+            <div class="aufmass-summary-actions">
+                <button class="btn btn-secondary" data-action="export-project" data-project-id="${project.id}">JSON Export</button>
+                <button class="btn btn-secondary" data-action="print-summary" data-project-id="${project.id}">Drucken / PDF</button>
+                <button class="btn btn-primary" data-action="open-quote-transfer" data-project-id="${project.id}">Angebot erstellen</button>
+            </div>
+        `;
     }
 
     // ============================================

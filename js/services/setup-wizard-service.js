@@ -306,6 +306,110 @@ class SetupWizardService {
             exported_at: new Date().toISOString()
         };
     }
+
+    /**
+     * Import data from Fragebogen (Betriebs-Aufnahmebogen) into wizard fields.
+     * Delegates to FragebogenImportService if available, otherwise applies data directly.
+     * @param {Object} data - Key-value pairs from the fragebogen form
+     * @returns {{ success: boolean, imported: number, errors: Array }}
+     */
+    importFromFragebogen(data) {
+        if (!data || typeof data !== 'object') {
+            console.error('[SetupWizard] importFromFragebogen: Keine gültigen Daten.');
+            return { success: false, imported: 0, errors: ['Keine gültigen Daten.'] };
+        }
+
+        try {
+            // If the dedicated import service is available, delegate to it
+            if (window.fragebogenImportService) {
+                const result = window.fragebogenImportService.importFromFragebogen(data);
+                return {
+                    success: result.errors.length === 0,
+                    imported: result.imported.length,
+                    errors: result.errors.map(e => typeof e === 'string' ? e : `${e.field}: ${e.reason}`)
+                };
+            }
+
+            // Fallback: direct mapping for core wizard fields
+            const mapping = {
+                firmenname:    'company_name',
+                inhaber:       'owner_name',
+                strasse:       'address_street',
+                plz:           'address_postal',
+                ort:           'address_city',
+                steuernummer:  'tax_number',
+                gewerk:        'business_type'
+            };
+
+            let importedCount = 0;
+            for (const [fragebogenKey, wizardKey] of Object.entries(mapping)) {
+                const value = data[fragebogenKey];
+                if (value && String(value).trim()) {
+                    this.saveField(wizardKey, String(value).trim());
+                    importedCount++;
+                }
+            }
+
+            return { success: true, imported: importedCount, errors: [] };
+
+        } catch (e) {
+            console.error('[SetupWizard] importFromFragebogen Fehler:', e);
+            return { success: false, imported: 0, errors: [e.message || 'Unbekannter Fehler'] };
+        }
+    }
+
+    /**
+     * Check for pending fragebogen import (e.g. URL param ?import=fragebogen).
+     * Call this during app initialization to auto-trigger import flow.
+     * @returns {boolean} true if an import was detected and should be handled
+     */
+    checkForFragebogenImport() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('import') !== 'fragebogen') {
+                return false;
+            }
+
+            // Check if import data exists in localStorage
+            const raw = localStorage.getItem('freyai_fragebogen_data');
+            if (!raw) {
+                console.warn('[SetupWizard] URL hat ?import=fragebogen, aber keine Daten in localStorage.');
+                return false;
+            }
+
+            const data = JSON.parse(raw);
+            if (!data || data._pendingImport !== true) {
+                return false;
+            }
+
+            console.log('[SetupWizard] Fragebogen-Import erkannt. Starte Import-Flow...');
+
+            // If the UI component is available, let it handle the preview dialog
+            if (window.fragebogenImportUI) {
+                window.fragebogenImportUI.autoCheckImport();
+                return true;
+            }
+
+            // Fallback: import directly without preview
+            const result = this.importFromFragebogen(data);
+            if (result.success) {
+                // Clear pending flag
+                delete data._pendingImport;
+                localStorage.setItem('freyai_fragebogen_data', JSON.stringify(data));
+            }
+
+            // Clean URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('import');
+            window.history.replaceState({}, document.title, url.pathname + url.search);
+
+            return true;
+
+        } catch (e) {
+            console.error('[SetupWizard] Fehler bei Fragebogen-Import-Prüfung:', e);
+            return false;
+        }
+    }
 }
 
 // Global instance

@@ -7235,3 +7235,21 @@ textarea {
     white-space: nowrap;
     color: var(--text-muted);
 }
+
+/* === Offline Banner (extracted from inline styles) === */
+.offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #1e40af;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    z-index: 10000;
+    font-size: 13px;
+    font-weight: 500;
+}
+.offline-banner-active {
+    padding-top: 40px;
+}

@@ -73,9 +73,9 @@ class SyncService {
             try {
                 const data = await this._pullFromSupabase(table, userId, filters);
                 this._updateLastSyncTime(table);
-                // Update local cache with fresh data
+                // Update local cache with fresh data, checking for conflicts
                 const localItems = this._getLocal(table);
-                const merged = this._mergeData(localItems, data);
+                const merged = this._mergeData(table, localItems, data);
                 localStorage.setItem(`hwf_${table}`, JSON.stringify(merged));
                 return data;
             } catch (err) {
@@ -297,10 +297,20 @@ class SyncService {
     }
 
     /**
-     * Merge local and remote data (prefer remote if newer)
+     * Merge local and remote data with conflict detection.
+     * When both versions have changed since last sync, delegates to
+     * ConflictResolutionService instead of blindly picking a winner.
+     * @param {string} table - Table name for conflict tracking
+     * @param {Array} local - Local records
+     * @param {Array} remote - Remote records
+     * @returns {Array} Merged records
      */
-    _mergeData(local, remote) {
+    _mergeData(table, local, remote) {
         const remoteMap = new Map(remote.map(r => [r.id, r]));
+        const lastSync = this.lastSyncTimes[table] || null;
+
+        // Check for conflicts and get IDs of records that are in conflict
+        const conflictRecordIds = this._checkForConflicts(table, local, remote, lastSync);
 
         // Start with remote data
         const merged = [...remote];
@@ -308,6 +318,14 @@ class SyncService {
         // Add/update with local items that are newer or not in remote
         for (const item of local) {
             const remoteItem = remoteMap.get(item.id);
+
+            // Skip records that are pending manual conflict resolution
+            if (conflictRecordIds.has(item.id)) {
+                // Keep the remote version in merged for now; the conflict
+                // will be resolved by the user via ConflictResolutionService
+                continue;
+            }
+
             if (!remoteItem || new Date(item.updated_at || item.created_at) > new Date(remoteItem.updated_at || remoteItem.created_at)) {
                 const idx = merged.findIndex(m => m.id === item.id);
                 if (idx >= 0) {
@@ -319,6 +337,97 @@ class SyncService {
         }
 
         return merged;
+    }
+
+    /**
+     * Check for conflicts between local and remote items.
+     * If both local and remote have been modified since the last sync,
+     * a conflict is detected. Depending on the auto-resolve strategy,
+     * conflicts are either auto-resolved or stored for manual resolution.
+     *
+     * @param {string} table - Table name
+     * @param {Array} localItems - Local records
+     * @param {Array} remoteItems - Remote records
+     * @param {string|null} lastSync - ISO timestamp of last successful sync
+     * @returns {Set<string>} Set of record IDs that are in pending manual conflict
+     */
+    _checkForConflicts(table, localItems, remoteItems, lastSync) {
+        const conflictRecordIds = new Set();
+
+        try {
+            const conflictService = window.conflictResolutionService;
+            if (!conflictService) {
+                // No conflict service available, fall through to default merge
+                return conflictRecordIds;
+            }
+
+            const remoteMap = new Map(remoteItems.map(r => [r.id, r]));
+            const lastSyncDate = lastSync ? new Date(lastSync) : null;
+            let conflictsDetected = 0;
+
+            for (const localItem of localItems) {
+                const remoteItem = remoteMap.get(localItem.id);
+                if (!remoteItem) {
+                    // Only exists locally - no conflict
+                    continue;
+                }
+
+                const localUpdated = new Date(localItem.updated_at || localItem.created_at || 0);
+                const remoteUpdated = new Date(remoteItem.updated_at || remoteItem.created_at || 0);
+
+                // Both modified since last sync? That's a potential conflict.
+                const localModifiedSinceSync = !lastSyncDate || localUpdated > lastSyncDate;
+                const remoteModifiedSinceSync = !lastSyncDate || remoteUpdated > lastSyncDate;
+
+                if (localModifiedSinceSync && remoteModifiedSinceSync) {
+                    // Detect field-level differences
+                    const detection = conflictService.detectConflict(table, localItem, remoteItem);
+
+                    if (detection.hasConflict) {
+                        const strategy = conflictService.getAutoResolveStrategy();
+
+                        if (strategy === 'local-wins') {
+                            // Auto-resolve: local wins (no user intervention needed)
+                            // The default merge loop will pick up the local item
+                            continue;
+                        } else if (strategy === 'remote-wins') {
+                            // Auto-resolve: remote wins - skip local item in merge
+                            // Remote is already in the merged array by default
+                            continue;
+                        } else {
+                            // strategy === 'manual': store for user resolution
+                            conflictService.addConflict({
+                                table,
+                                recordId: localItem.id,
+                                recordTitle: null, // auto-derived by service
+                                localRecord: localItem,
+                                remoteRecord: remoteItem,
+                                conflictingFields: detection.fields
+                            });
+
+                            conflictRecordIds.add(localItem.id);
+                            conflictsDetected++;
+                        }
+                    }
+                }
+            }
+
+            // Emit event if conflicts were detected
+            if (conflictsDetected > 0) {
+                console.log(`SyncService: ${conflictsDetected} conflict(s) detected in ${table}`);
+                try {
+                    window.dispatchEvent(new CustomEvent('sync-conflict-detected', {
+                        detail: { table, count: conflictsDetected }
+                    }));
+                } catch (eventErr) {
+                    console.error('SyncService: Error dispatching conflict event:', eventErr);
+                }
+            }
+        } catch (err) {
+            console.error('SyncService: Error checking for conflicts:', err);
+        }
+
+        return conflictRecordIds;
     }
 
     // ---- Sync Queue Management ----

@@ -1,0 +1,925 @@
+/* ============================================
+   Dashboard Widgets - Customizable Widget System
+
+   Contains:
+   - Widget toolbar (edit toggle, reset)
+   - Widget grid (responsive CSS Grid)
+   - Widget cards (small, medium, large sizes)
+   - Widget header, body, footer
+   - KPI, list, and chart widget content styles
+   - Edit mode (drag handles, remove buttons)
+   - Add-widget dialog overlay
+   - Drag-and-drop visual states
+   - Dark mode (default) & light theme support
+   - Smooth animations
+   - Mobile responsive (1 column on small screens)
+   ============================================ */
+
+/* ============================================
+   Widget Toolbar
+   ============================================ */
+
+.widget-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.widget-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, #27272a);
+    border-radius: var(--border-radius-sm, 8px);
+    color: var(--text-secondary, #a1a1aa);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.15s ease);
+    font-family: inherit;
+}
+
+.widget-toolbar-btn:hover {
+    background: var(--bg-hover, #24242a);
+    color: var(--text-primary, #ffffff);
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.widget-toolbar-btn.active {
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    border-color: var(--accent-primary, #6366f1);
+}
+
+.widget-toolbar-btn.active:hover {
+    background: var(--accent-primary-hover, #818cf8);
+}
+
+.widget-toolbar-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.widget-toolbar-label {
+    line-height: 1;
+}
+
+.widget-reset-btn {
+    margin-left: auto;
+}
+
+/* ============================================
+   Widget Grid Container
+   ============================================ */
+
+.widget-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+/* ============================================
+   Widget Card Base
+   ============================================ */
+
+.widget-card {
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, #27272a);
+    border-radius: var(--border-radius, 12px);
+    overflow: hidden;
+    transition: transform var(--transition, 0.25s ease),
+                box-shadow var(--transition, 0.25s ease),
+                opacity 0.2s ease;
+    animation: widgetFadeIn 0.3s ease;
+}
+
+@keyframes widgetFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.widget-card:hover {
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   Widget Card Sizes
+   ============================================ */
+
+.widget-card-small {
+    grid-column: span 1;
+}
+
+.widget-card-medium {
+    grid-column: span 2;
+}
+
+.widget-card-large {
+    grid-column: span 4;
+}
+
+/* "Add widget" card */
+.widget-card-add {
+    grid-column: span 1;
+    border: 2px dashed var(--border-color, #27272a);
+    background: transparent;
+    cursor: pointer;
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition, 0.25s ease);
+}
+
+.widget-card-add:hover,
+.widget-card-add:focus {
+    border-color: var(--accent-primary, #6366f1);
+    background: var(--accent-primary-alpha, rgba(99, 102, 241, 0.1));
+}
+
+.widget-card-add:focus {
+    outline: 2px solid var(--accent-primary, #6366f1);
+    outline-offset: 2px;
+}
+
+.widget-add-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted, #8b8b94);
+}
+
+.widget-add-icon {
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--accent-primary, #6366f1);
+}
+
+.widget-add-label {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* ============================================
+   Widget Header
+   ============================================ */
+
+.widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border-color, #27272a);
+}
+
+.widget-header-icon {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.widget-header-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary, #a1a1aa);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================
+   Widget Body
+   ============================================ */
+
+.widget-body {
+    padding: 16px;
+    min-height: 80px;
+}
+
+.widget-error {
+    color: var(--accent-danger, #ef4444);
+    font-size: 13px;
+    text-align: center;
+    padding: 12px;
+}
+
+.widget-no-data {
+    color: var(--text-muted, #8b8b94);
+    font-size: 13px;
+    text-align: center;
+    padding: 12px;
+}
+
+/* ============================================
+   Widget Footer (details link)
+   ============================================ */
+
+.widget-footer {
+    padding: 0 16px 12px;
+}
+
+.widget-details-link {
+    background: none;
+    border: none;
+    color: var(--accent-primary, #6366f1);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: color var(--transition-fast, 0.15s ease);
+    font-family: inherit;
+}
+
+.widget-details-link:hover {
+    color: var(--accent-primary-hover, #818cf8);
+}
+
+/* ============================================
+   KPI Widget Content
+   ============================================ */
+
+.widget-kpi {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.widget-kpi-value {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-primary, #ffffff);
+}
+
+.widget-kpi-value.negative {
+    color: var(--accent-danger, #ef4444);
+}
+
+.widget-kpi-sub {
+    font-size: 14px;
+    color: var(--accent-primary, #6366f1);
+    font-weight: 600;
+}
+
+.widget-kpi-label {
+    font-size: 12px;
+    color: var(--text-muted, #8b8b94);
+    margin-top: 2px;
+}
+
+.widget-kpi-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+}
+
+.widget-kpi-trend.trend-up {
+    background: var(--accent-success-light, rgba(34, 197, 94, 0.15));
+    color: var(--accent-success, #22c55e);
+}
+
+.widget-kpi-trend.trend-down {
+    background: var(--accent-danger-light, rgba(239, 68, 68, 0.1));
+    color: var(--accent-danger, #ef4444);
+}
+
+.widget-kpi-trend.trend-stable {
+    background: rgba(161, 161, 170, 0.1);
+    color: var(--text-secondary, #a1a1aa);
+}
+
+/* ============================================
+   List Widget Content
+   ============================================ */
+
+.widget-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color, #27272a) transparent;
+}
+
+.widget-list-empty {
+    color: var(--text-muted, #8b8b94);
+    font-size: 13px;
+    text-align: center;
+    padding: 16px 8px;
+    font-style: italic;
+}
+
+.widget-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg-dark, #0f0f12);
+    border-radius: var(--border-radius-sm, 8px);
+    border: 1px solid transparent;
+    transition: all var(--transition-fast, 0.15s ease);
+}
+
+.widget-list-item:hover {
+    background: var(--bg-hover, #24242a);
+    border-color: var(--border-color, #27272a);
+}
+
+.widget-list-item-danger {
+    border-left: 3px solid var(--accent-danger, #ef4444);
+}
+
+.widget-list-item-warning {
+    border-left: 3px solid var(--accent-warning, #f59e0b);
+}
+
+.widget-list-item-new {
+    border-left: 3px solid var(--accent-primary, #6366f1);
+}
+
+.widget-list-icon {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.widget-list-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.widget-list-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary, #ffffff);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.widget-list-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary, #a1a1aa);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.widget-list-time {
+    font-size: 11px;
+    color: var(--text-muted, #8b8b94);
+}
+
+.widget-list-summary {
+    padding: 10px 12px 4px;
+    font-size: 13px;
+    color: var(--text-secondary, #a1a1aa);
+    border-top: 1px solid var(--border-color, #27272a);
+    margin-top: 8px;
+}
+
+.widget-list-summary strong {
+    color: var(--accent-danger, #ef4444);
+}
+
+/* ============================================
+   Chart Widget Content
+   ============================================ */
+
+.widget-chart {
+    width: 100%;
+    overflow: hidden;
+}
+
+.widget-chart-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ============================================
+   Edit Mode Styles
+   ============================================ */
+
+.widget-edit-mode .widget-card {
+    cursor: grab;
+    position: relative;
+}
+
+.widget-edit-mode .widget-card:active {
+    cursor: grabbing;
+}
+
+.widget-edit-mode .widget-card:hover {
+    border-color: var(--accent-primary, #6366f1);
+}
+
+/* Drag handle */
+.widget-drag-handle {
+    font-size: 20px;
+    color: var(--text-muted, #8b8b94);
+    cursor: grab;
+    user-select: none;
+    line-height: 1;
+    padding: 0 4px;
+    transition: color var(--transition-fast, 0.15s ease);
+}
+
+.widget-drag-handle:hover {
+    color: var(--accent-primary, #6366f1);
+}
+
+.widget-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* Remove button */
+.widget-remove-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-danger-light, rgba(239, 68, 68, 0.1));
+    border: none;
+    border-radius: 50%;
+    color: var(--accent-danger, #ef4444);
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transition-fast, 0.15s ease);
+    line-height: 1;
+}
+
+.widget-remove-btn:hover {
+    background: var(--accent-danger, #ef4444);
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+/* Drag visual states */
+.widget-dragging {
+    opacity: 0.5 !important;
+    transform: rotate(2deg) !important;
+    box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.5)) !important;
+    z-index: 10;
+}
+
+.widget-drag-over {
+    border-color: var(--accent-primary, #6366f1) !important;
+    box-shadow: 0 0 0 2px var(--accent-primary-light, rgba(99, 102, 241, 0.15)),
+                inset 0 0 20px var(--accent-primary-alpha, rgba(99, 102, 241, 0.1)) !important;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+
+.widget-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    background: var(--bg-card, #1c1c21);
+    border: 2px dashed var(--border-color, #27272a);
+    border-radius: var(--border-radius, 12px);
+    text-align: center;
+}
+
+.widget-empty-icon {
+    font-size: 48px;
+    opacity: 0.5;
+}
+
+.widget-empty-text {
+    font-size: 16px;
+    color: var(--text-muted, #8b8b94);
+    margin: 0;
+}
+
+.widget-empty-btn {
+    padding: 12px 24px;
+    background: var(--accent-primary, #6366f1);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--border-radius-sm, 8px);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition, 0.25s ease);
+    font-family: inherit;
+}
+
+.widget-empty-btn:hover {
+    background: var(--accent-primary-hover, #818cf8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   Add Widget Dialog
+   ============================================ */
+
+.widget-add-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: widgetDialogFadeIn 0.2s ease;
+}
+
+@keyframes widgetDialogFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.widget-add-dialog {
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, #27272a);
+    border-radius: var(--border-radius, 12px);
+    width: 100%;
+    max-width: 560px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.5));
+    animation: widgetDialogSlideUp 0.25s ease;
+}
+
+@keyframes widgetDialogSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.widget-add-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color, #27272a);
+}
+
+.widget-add-dialog-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary, #ffffff);
+}
+
+.widget-add-dialog-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-hover, #24242a);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-secondary, #a1a1aa);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.15s ease);
+}
+
+.widget-add-dialog-close:hover {
+    background: var(--bg-secondary, #24242a);
+    color: var(--text-primary, #ffffff);
+}
+
+.widget-add-dialog-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.widget-add-empty {
+    color: var(--text-muted, #8b8b94);
+    text-align: center;
+    padding: 24px;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Category groups */
+.widget-add-category {
+    margin-bottom: 20px;
+}
+
+.widget-add-category:last-child {
+    margin-bottom: 0;
+}
+
+.widget-add-category-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted, #8b8b94);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 10px 0;
+}
+
+.widget-add-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.widget-add-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-dark, #0f0f12);
+    border: 1px solid var(--border-color, #27272a);
+    border-radius: var(--border-radius-sm, 8px);
+    cursor: pointer;
+    transition: all var(--transition-fast, 0.15s ease);
+    font-family: inherit;
+    color: inherit;
+    text-align: left;
+    width: 100%;
+}
+
+.widget-add-item:hover {
+    background: var(--bg-hover, #24242a);
+    border-color: var(--accent-primary, #6366f1);
+    transform: translateX(4px);
+}
+
+.widget-add-item:focus {
+    outline: 2px solid var(--accent-primary, #6366f1);
+    outline-offset: 2px;
+}
+
+.widget-add-item-icon {
+    font-size: 22px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.widget-add-item-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary, #ffffff);
+}
+
+.widget-add-item-size {
+    font-size: 11px;
+    color: var(--text-muted, #8b8b94);
+    background: rgba(161, 161, 170, 0.1);
+    padding: 3px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ============================================
+   Light Theme Overrides
+   ============================================ */
+
+body.light-theme .widget-card {
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+}
+
+body.light-theme .widget-card:hover {
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+body.light-theme .widget-list-item {
+    background: var(--bg-dark, #f3f4f6);
+}
+
+body.light-theme .widget-add-item {
+    background: var(--bg-dark, #f3f4f6);
+}
+
+body.light-theme .widget-chart-svg text {
+    fill: var(--text-secondary, #4b5563);
+}
+
+/* [data-theme="dark"] support (if used alongside body class) */
+[data-theme="dark"] .widget-card {
+    background: var(--bg-card, #1c1c21);
+    border-color: var(--border-color, #27272a);
+}
+
+/* ============================================
+   Responsive: Tablet (641px - 1024px)
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .widget-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .widget-card-small {
+        grid-column: span 1;
+    }
+
+    .widget-card-medium {
+        grid-column: span 2;
+    }
+
+    .widget-card-large {
+        grid-column: span 2;
+    }
+
+    .widget-card-add {
+        grid-column: span 1;
+    }
+
+    .widget-kpi-value {
+        font-size: 30px;
+    }
+
+    .widget-add-dialog {
+        max-width: 500px;
+    }
+}
+
+/* ============================================
+   Responsive: Mobile (max 640px)
+   ============================================ */
+
+@media (max-width: 640px) {
+    .widget-toolbar {
+        margin-bottom: 16px;
+    }
+
+    .widget-toolbar-btn {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+
+    .widget-toolbar-label {
+        display: none;
+    }
+
+    .widget-toolbar-icon {
+        font-size: 18px;
+    }
+
+    .widget-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .widget-card-small,
+    .widget-card-medium,
+    .widget-card-large {
+        grid-column: span 1;
+    }
+
+    .widget-card-add {
+        grid-column: span 1;
+        min-height: 100px;
+    }
+
+    .widget-card:hover {
+        transform: none;
+    }
+
+    .widget-kpi-value {
+        font-size: 28px;
+    }
+
+    .widget-header {
+        padding: 12px 14px 8px;
+    }
+
+    .widget-body {
+        padding: 12px 14px;
+    }
+
+    .widget-list-item {
+        padding: 8px 10px;
+    }
+
+    .widget-list-title {
+        font-size: 12px;
+    }
+
+    .widget-list-subtitle {
+        font-size: 11px;
+    }
+
+    /* Full-screen dialog on mobile */
+    .widget-add-dialog-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .widget-add-dialog {
+        max-width: none;
+        max-height: 90vh;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .widget-add-dialog-header {
+        padding: 16px 20px;
+    }
+
+    .widget-add-dialog-body {
+        padding: 16px 20px;
+    }
+
+    .widget-add-item {
+        padding: 14px 16px;
+    }
+}
+
+/* ============================================
+   Reduced Motion Preference
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .widget-card,
+    .widget-card:hover,
+    .widget-dragging,
+    .widget-add-dialog-overlay,
+    .widget-add-dialog {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ============================================
+   Print - Hide widgets toolbar and edit controls
+   ============================================ */
+
+@media print {
+    .widget-toolbar,
+    .widget-remove-btn,
+    .widget-drag-handle,
+    .widget-card-add,
+    .widget-details-link,
+    .widget-add-dialog-overlay {
+        display: none !important;
+    }
+
+    .widget-grid {
+        gap: 12px;
+    }
+
+    .widget-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .widget-card:hover {
+        transform: none !important;
+    }
+}
