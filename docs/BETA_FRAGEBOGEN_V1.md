@@ -1,261 +1,402 @@
-# FreyAI Visions — Beta-Fragebogen (Tester #001)
-**Vertraulich | Kostenlose Beta-Phase**
+# FreyAI Visions — Betriebs-Aufnahmebogen V1
+**Vertraulich | Wird zur App-Einrichtung genutzt**
 
 ---
 
 Hallo!
 
-Vielen Dank, dass du dir die Zeit nimmst, FreyAI Visions zu testen.
-Dein Feedback ist Gold wert — du hilfst dabei, das System für Handwerker wie dich wirklich praxistauglich zu machen.
+Bevor du loslegst, nehme ich mir 10 Minuten, um zu verstehen wie dein Betrieb heute tickt.
+So kann ich FreyAI direkt auf dich einstellen — du fängst nicht bei Null an, sondern die App ist von Anfang an dein Werkzeug.
 
-Der Fragebogen dauert ca. **10–15 Minuten**. Kein Richtig oder Falsch — deine ehrliche Meinung zählt.
+Kein Richtig oder Falsch. Je genauer du antwortest, desto besser passt die App zu dir.
 
 ---
 
-## TEIL 1: Du & dein Betrieb
-*(Damit wir verstehen, in welchem Kontext du arbeitest)*
+## TEIL 1: Dein Betrieb
 
-**1. Was machst du beruflich? (Gewerk / Branche)**
+*Diese Angaben werden direkt in die App übernommen (Briefkopf, Rechnungen, Angebote).*
+
+**1. Firmenname / Betriebsname**
 ```
 _______________________________________________
 ```
 
-**2. Wie viele Mitarbeiter hat dein Betrieb? (inkl. dir)**
-- [ ] Nur ich (Einzelkämpfer)
-- [ ] 2–5 Personen
-- [ ] 6–15 Personen
+**2. Dein Name (Inhaber / Ansprechpartner)**
+```
+_______________________________________________
+```
+
+**3. Gewerk / Branche**
+```
+z.B. Elektriker, Schreiner, Maler, Sanitär, Dachdecker …
+_______________________________________________
+```
+
+**4. Rechtsform**
+- [ ] Einzelunternehmer / Selbständig
+- [ ] GbR
+- [ ] GmbH
+- [ ] UG
+- [ ] Sonstiges: `_______________`
+
+**5. Betriebsadresse**
+```
+Straße & Nr.: _______________________________________________
+PLZ & Ort:   _______________________________________________
+```
+
+**6. Kontakt**
+```
+Telefon:  _______________________________________________
+E-Mail:   _______________________________________________
+Website:  _______________________________________________ (falls vorhanden)
+```
+
+**7. Steuernummer**
+```
+_______________________________________________
+```
+
+**8. Umsatzsteuer-ID (falls vorhanden)**
+```
+DE _______________________________________________
+```
+
+**9. Kleinunternehmer nach §19 UStG?**
+- [ ] Ja — ich weise keine Mehrwertsteuer aus
+- [ ] Nein — ich nutze 19 % / 7 % MwSt.
+
+**10. IBAN für Rechnungen**
+```
+DE _______________________________________________
+BIC / Bank: _______________________________________________
+```
+
+**11. Wie viele Personen arbeiten im Betrieb? (inkl. dir)**
+- [ ] Nur ich
+- [ ] 2–5
+- [ ] 6–15
 - [ ] Mehr als 15
 
-**3. Wie viele Rechnungen schreibst du ungefähr pro Monat?**
-- [ ] Weniger als 10
+---
+
+## TEIL 2: Rechnungen — so läuft es heute
+
+**12. Womit schreibst du aktuell deine Rechnungen?**
+*(Mehrfachauswahl möglich)*
+- [ ] Word / LibreOffice (Vorlage)
+- [ ] Excel-Tabelle
+- [ ] Von Hand / Vordrucke
+- [ ] DATEV über Steuerberater
+- [ ] Software (welche?): `_______________________________________________`
+- [ ] Ich schreibe keine Rechnungen (Aufmaß / Abrechnung läuft anders): `_______________`
+
+**13. Wie viele Rechnungen schreibst du ungefähr pro Monat?**
+- [ ] Unter 10
 - [ ] 10–30
 - [ ] 30–60
 - [ ] Mehr als 60
 
-**4. Womit erledigst du deine Büroarbeit aktuell?**
-*(Mehrfachauswahl möglich)*
-- [ ] Zettel & Stift / Excel
-- [ ] Word / LibreOffice
-- [ ] DATEV / Steuerberater
-- [ ] Lexware / Sage / sevDesk / Billomat
-- [ ] Sonstiges: `_______________________________`
-
-**5. Was nervt dich an deiner aktuellen Lösung am meisten?**
-```
-_______________________________________________
-_______________________________________________
-```
-
----
-
-## TEIL 2: Erster Eindruck
-*(Deine Reaktion in den ersten Minuten)*
-
-**6. Was war dein erster Gedanke, als du die App geöffnet hast?**
-```
-_______________________________________________
-_______________________________________________
-```
-
-**7. Hast du dich sofort zurechtgefunden?**
-- [ ] Ja, sofort klar
-- [ ] Weitgehend ja, ein paar Sachen unklar
-- [ ] Nein, ich war am Anfang lost
-
-**8. Was hat dich positiv überrascht?**
-```
-_______________________________________________
-```
-
-**9. Was hat dich gestört oder verwirrt?**
-```
-_______________________________________________
-```
-
----
-
-## TEIL 3: Die Kernfunktionen
-*(Bitte teste jeden Schritt und bewerte ihn)*
-
-### A — Anfrage erfassen
-*Szenario: Ein Neukunde ruft an. Du trägst ihn ein.*
-
-**10. Wie einfach war es, eine neue Anfrage anzulegen?**
-
-`1 — sehr schwierig` ○ ○ ○ ○ ○ `5 — kinderleicht`
-
-**11. Hast du alle Felder gefunden, die du brauchst?**
-- [ ] Ja, alles da
-- [ ] Meistens, aber es fehlt: `_________________________`
-- [ ] Wichtige Felder fehlen: `_________________________`
-
----
-
-### B — Angebot erstellen
-*Szenario: Du erstellst ein Angebot für den Kunden.*
-
-**12. Wie lange hast du gebraucht, um dein erstes Angebot zu erstellen?**
-- [ ] Unter 5 Minuten
-- [ ] 5–15 Minuten
+**14. Wie lange sitzt du ungefähr für eine Rechnung?**
+- [ ] Unter 15 Minuten
 - [ ] 15–30 Minuten
-- [ ] Länger als 30 Minuten (was hat so lang gedauert? `________________`)
+- [ ] 30–60 Minuten
+- [ ] Über 1 Stunde
 
-**13. Konntest du Positionen (Material, Arbeitszeit) so eintragen, wie du es brauchst?**
-- [ ] Ja, passt genau
-- [ ] Teilweise: `_______________________________________________`
-- [ ] Nein: `_______________________________________________`
+**15. Was steht bei dir auf einer typischen Rechnung? Was berechnest du ab?**
+*(Mehrfachauswahl — alles ankreuzen, was du verwendest)*
+- [ ] Arbeitszeit (Stunden × Stundenlohn)
+- [ ] Pauschalpreise (Festpreis pro Leistung)
+- [ ] Material (einzeln aufgelistet)
+- [ ] Material (als Pauschale)
+- [ ] Fahrtkosten
+- [ ] Auslage / Fremdleistungen
+- [ ] Aufmaß-Positionen (m², lfm, Stück …)
+- [ ] Sonstiges: `_______________________________________________`
 
-**14. Würdest du dieses Angebot wirklich an einen echten Kunden schicken?**
-- [ ] Ja, sofort
-- [ ] Nach kleineren Anpassungen
-- [ ] Nein — warum: `_______________________________________`
+**16. Welche Stundensätze verwendest du? (falls zutreffend)**
+```
+Geselle:      ___ €/h
+Meister/du:   ___ €/h
+Auszubi:      ___ €/h
+Notdienst:    ___ €/h  (falls vorhanden)
+```
+
+**17. Wie ist dein Standardzahlungsziel?**
+- [ ] Sofort / bei Übergabe
+- [ ] 7 Tage
+- [ ] 14 Tage
+- [ ] 30 Tage
+- [ ] Individuell: `_______________`
+
+**18. Bietest du Skonto an?**
+- [ ] Nein
+- [ ] Ja: `___ % bei Zahlung innerhalb von ___ Tagen`
+
+**19. Wie schickst du Rechnungen an Kunden?**
+- [ ] Per Post (Papier)
+- [ ] Per E-Mail (PDF)
+- [ ] Per WhatsApp
+- [ ] Ich übergebe sie persönlich
+- [ ] Sonstiges: `_______________________________________________`
+
+**20. Wo landen deine ausgestellten Rechnungen danach?**
+*(Wie speicherst / archivierst du sie?)*
+- [ ] Physischer Ordner / Ablage
+- [ ] Ordner auf dem PC / Laptop
+- [ ] Cloud (Google Drive, Dropbox, OneDrive …): `_______________`
+- [ ] E-Mail-Postfach (als gesendete E-Mail)
+- [ ] Gar nicht / nur beim Kunden
+- [ ] In einer Software: `_______________________________________________`
 
 ---
 
-### C — Rechnung schreiben
-*Szenario: Der Auftrag ist fertig. Du stellst die Rechnung.*
+## TEIL 3: Angebote — so läuft es heute
 
-**15. Wie einfach war die Umwandlung Angebot → Rechnung?**
+**21. Schreibst du Angebote, bevor du einen Auftrag annimmst?**
+- [ ] Ja, immer
+- [ ] Manchmal / bei größeren Jobs
+- [ ] Selten / kaum
+- [ ] Nein, wir einigen uns mündlich
 
-`1 — sehr schwierig` ○ ○ ○ ○ ○ `5 — sehr einfach`
+**22. Womit erstellst du Angebote?** *(falls zutreffend)*
+- [ ] Word / LibreOffice
+- [ ] Excel
+- [ ] Gleiche Software wie Rechnungen: `_______________`
+- [ ] Von Hand
+- [ ] Sonstiges: `_______________________________________________`
 
-**16. Sieht die Rechnung professionell aus?**
-- [ ] Ja, sehr
-- [ ] Geht so
-- [ ] Nein — was fehlt: `___________________________________`
+**23. Wie lange brauchst du für ein typisches Angebot?**
+- [ ] Unter 15 Minuten
+- [ ] 15–30 Minuten
+- [ ] 30–60 Minuten
+- [ ] Über 1 Stunde
 
-**17. Fehlt etwas auf der Rechnung, das du gesetzlich brauchst? (z.B. Steuernummer, IBAN)**
+**24. Wie verschickst du Angebote?**
+- [ ] Per E-Mail
+- [ ] Per Post
+- [ ] Per WhatsApp
+- [ ] Mündlich / telefonisch
+- [ ] Persönlich übergeben
+
+---
+
+## TEIL 4: Kundenverwaltung — wie du Kunden heute speicherst
+
+**25. Wo sind deine Kundendaten gespeichert?**
+*(Mehrfachauswahl möglich)*
+- [ ] Im Handy (Kontakte-App)
+- [ ] Auf Papier / Karteikarten
+- [ ] Excel-/Tabellendatei
+- [ ] In meiner Rechnungssoftware
+- [ ] In meinem Kopf / gar nicht strukturiert
+- [ ] CRM-System: `_______________________________________________`
+
+**26. Wie viele aktive Kunden hast du ungefähr?**
+- [ ] Unter 20
+- [ ] 20–100
+- [ ] 100–500
+- [ ] Über 500
+
+**27. Hast du eine exportierbare Kundenliste? (z.B. Excel, CSV)**
+- [ ] Ja, könnte ich bereitstellen
+- [ ] Ja, aber nur als Papierliste
+- [ ] Nein
+
+**28. Trennst du Privat- und Gewerbekunden?**
+- [ ] Ja
+- [ ] Nein, alles gemischt
+
+---
+
+## TEIL 5: Mahnwesen — was passiert bei Zahlungsverzug
+
+**29. Wie oft zahlen Kunden zu spät?**
+- [ ] Selten (unter 10 % der Rechnungen)
+- [ ] Manchmal (10–30 %)
+- [ ] Oft (über 30 %)
+
+**30. Was machst du aktuell, wenn eine Rechnung nicht bezahlt wird?**
+*(Mehrfachauswahl möglich)*
+- [ ] Ich rufe an
+- [ ] Ich schreibe eine Erinnerung per WhatsApp / E-Mail
+- [ ] Ich schicke eine formelle Mahnung (Brief / PDF)
+- [ ] Ich vergesse es / mache nichts
+- [ ] Ich gebe es ans Inkasso / Anwalt
+
+**31. Wie lange wartest du, bis du mahnst?**
+- [ ] Unter 1 Woche nach Fälligkeit
+- [ ] 1–2 Wochen
+- [ ] 3–4 Wochen
+- [ ] Über 1 Monat / wenn ich dran denke
+
+**32. Wie viel Geld (ca.) hast du aktuell in offenen / überfälligen Rechnungen?**
+```
+Ca. _______________ € offen
+```
+*(Diese Info bleibt vertraulich — hilft mir, die Mahnstufen richtig einzustellen)*
+
+---
+
+## TEIL 6: Terminplanung — wie du Baustellen und Termine koordinierst
+
+**33. Womit planst du deine Termine und Baustellen?**
+*(Mehrfachauswahl möglich)*
+- [ ] Papier-Kalender / Wandkalender
+- [ ] Handy-Kalender (Apple, Google …)
+- [ ] Whiteboard / Tafel im Büro
+- [ ] Excel / Tabelle
+- [ ] Aus dem Kopf
+- [ ] Software: `_______________________________________________`
+
+**34. Wie nimmst du neue Terminanfragen an?**
+- [ ] Telefon
+- [ ] WhatsApp
+- [ ] E-Mail
+- [ ] Über meine Website
+- [ ] Persönlich / vor Ort
+
+**35. Wie viele aktive Baustellen / Aufträge hast du gleichzeitig ungefähr?**
+- [ ] 1–3
+- [ ] 4–10
+- [ ] Mehr als 10
+
+**36. Koordinierst du auch Mitarbeiter-Einsätze über den Kalender?**
+- [ ] Nein, nur für mich
+- [ ] Ja, ich teile einen Plan mit meinen Leuten: `Wie? _______________`
+
+---
+
+## TEIL 7: Dokumente & Ablage — wo alles landet
+
+**37. Wo bewahrst du folgende Dokumente auf?**
+
+| Dokument | Papier-Ordner | PC-Ordner | Cloud | E-Mail | Software | Gar nicht |
+|---|---|---|---|---|---|---|
+| Rechnungen (ausgestellt) | ○ | ○ | ○ | ○ | ○ | ○ |
+| Eingangsrechnungen / Belege | ○ | ○ | ○ | ○ | ○ | ○ |
+| Angebote | ○ | ○ | ○ | ○ | ○ | ○ |
+| Verträge / Auftragsbestätigungen | ○ | ○ | ○ | ○ | ○ | ○ |
+| Lieferscheine | ○ | ○ | ○ | ○ | ○ | ○ |
+
+**38. Was machst du mit Kassenquittungen und Belegen (z.B. Tankquittungen, Baumarkt)?**
+- [ ] Ich sammle sie und gebe sie gesammelt dem Steuerberater
+- [ ] Ich fotografiere sie und speichere sie irgendwo
+- [ ] Ich schmeisse sie weg / ignoriere sie
+- [ ] Sonstiges: `_______________________________________________`
+
+---
+
+## TEIL 8: Kommunikation mit Kunden
+
+**39. Über welchen Kanal kommunizierst du am häufigsten mit Kunden?**
+- [ ] Telefon
+- [ ] WhatsApp
+- [ ] E-Mail
+- [ ] Persönlich vor Ort
+
+**40. Schreibst du Standard-Texte (Auftragsbestätigung, Terminbestätigung, Angebots-E-Mail) jedes Mal neu oder hast du Vorlagen?**
+- [ ] Jedes Mal neu
+- [ ] Ich habe Vorlagen in Word / E-Mail
+- [ ] Ich kopiere alte Nachrichten und passe sie an
+- [ ] Die KI / Software macht das
+
+**41. Hast du Texte / Vorlagen, die du regelmäßig verwendest und die in die App übernommen werden sollen?**
 ```
 _______________________________________________
+_______________________________________________
+(z.B. "Vielen Dank für Ihren Auftrag, wir beginnen am …")
 ```
 
 ---
 
-### D — KI-Funktionen (falls getestet)
-*Bon-Scanner, automatische E-Mail-Antworten, Mahnwesen*
+## TEIL 9: Buchhaltung & Steuer
 
-**18. Hast du den Bon-Scanner / OCR-Upload ausprobiert?**
-- [ ] Ja → War es nützlich? `___________________________________`
-- [ ] Nein → Warum nicht? `___________________________________`
+**42. Wer macht deine Buchhaltung?**
+- [ ] Ich selbst
+- [ ] Meine Frau / Familie
+- [ ] Ein Steuerberater: `Name / Kanzlei: _______________________________________________`
+- [ ] Ein Buchhalter (extern)
 
-**19. Hat die KI etwas vorgeschlagen, das du direkt übernommen hast?**
-- [ ] Ja, mehrfach
-- [ ] Einmal
-- [ ] Nein, ich hab alles selbst gemacht
+**43. Nutzt du DATEV?**
+- [ ] Ja, direkt
+- [ ] Mein Steuerberater nutzt DATEV, ich liefere Belege
+- [ ] Nein
 
-**20. Vertraust du der KI genug, um ihre Vorschläge (Texte, Zahlen) mit einem Klick freizugeben — ohne alles nochmal zu prüfen?**
-- [ ] Ja, wenn die Zahlen stimmen
-- [ ] Nur nach kurzem Drüberschauen
-- [ ] Nein, ich prüfe immer alles selbst
+**44. Wie übergibst du Belege an deinen Steuerberater?**
+- [ ] Physisch (Ordner, Briefumschlag)
+- [ ] Per E-Mail / Upload-Portal
+- [ ] DATEV Unternehmen Online
+- [ ] Gar nicht strukturiert — er holt sich was er braucht
 
-*(Hinweis: Das System ist so gebaut, dass DU immer das letzte Wort hast — 95% macht die KI vor, 5% entscheidest du.)*
+**45. Welche Steuerform nutzt du?**
+- [ ] EÜR (Einnahmen-Überschuss-Rechnung)
+- [ ] Bilanz / doppelte Buchführung
+- [ ] Weiß ich nicht genau
 
 ---
 
-## TEIL 4: Bedienbarkeit & Technik
+## TEIL 10: Material & Lager *(nur ausfüllen, wenn relevant)*
 
-**21. Auf welchem Gerät hast du hauptsächlich getestet?**
-- [ ] PC / Laptop (Windows)
-- [ ] PC / Laptop (Mac)
-- [ ] PC / Laptop (Linux)
+**46. Bestellst du regelmäßig Material für Baustellen / Aufträge?**
+- [ ] Ja, oft
+- [ ] Manchmal
+- [ ] Nein, ich rechne nur Arbeitszeit ab
+
+**47. Führst du einen Lagerbestand?**
+- [ ] Nein
+- [ ] Ja, auf Papier / im Kopf
+- [ ] Ja, in Excel
+- [ ] Ja, in einer Software
+
+**48. Hast du Stammlieferanten, bei denen du regelmäßig bestellst?**
+```
+Lieferant 1: _______________________________________________
+Lieferant 2: _______________________________________________
+Lieferant 3: _______________________________________________
+```
+
+---
+
+## TEIL 11: Technik & Geräte
+
+**49. Welche Geräte nutzt du beruflich?** *(Mehrfachauswahl)*
+- [ ] Smartphone (Android)
+- [ ] Smartphone (iPhone)
 - [ ] Tablet
-- [ ] Smartphone
+- [ ] Laptop / PC (Windows)
+- [ ] Laptop / PC (Mac)
+- [ ] Ich arbeite nur mit dem Handy
 
-**22. Hat die App auf deinem Gerät ruckelfrei funktioniert?**
-- [ ] Ja, alles flüssig
-- [ ] Ein paar Hänger, aber okay
-- [ ] Träge / langsam
-- [ ] Abgestürzt / Fehler: `__________________________________`
-
-**23. Hast du Fehler oder unerwartetes Verhalten bemerkt?**
-```
-_______________________________________________
-_______________________________________________
-```
-
-**24. Wie empfindest du die Geschwindigkeit der App insgesamt?**
-
-`1 — sehr langsam` ○ ○ ○ ○ ○ `5 — sehr schnell`
+**50. Wie würdest du deinen Umgang mit Apps und Software einschätzen?**
+- [ ] Nicht so mein Ding — lieber einfach halten
+- [ ] Ich komme klar, solange es nicht zu kompliziert ist
+- [ ] Kein Problem, ich lerne schnell
 
 ---
 
-## TEIL 5: Das Große Bild
+## Abschluss
 
-**25. Was ist die eine Funktion, die du täglich nutzen würdest?**
+**51. Was ist das Größte, das dir im Büro-Alltag Zeit frisst oder Stress macht?**
 ```
+_______________________________________________
 _______________________________________________
 ```
 
-**26. Was ist die eine Funktion, die dir am meisten fehlt?**
+**52. Gibt es etwas Spezielles in deinem Betrieb, das ich wissen sollte, damit die App für dich funktioniert?**
+*(z.B. bestimmte Abrechnungsformen, Besonderheiten deines Gewerks, spezielle Anforderungen)*
 ```
-_______________________________________________
-```
-
-**27. Gibt es etwas im System, das du sofort wieder löschen würdest?**
-```
-_______________________________________________
-```
-
-**28. Stell dir vor, du könntest mit FreyAI folgendes automatisch erledigen:**
-
-Wie wichtig ist dir das jeweils? (1 = unwichtig, 5 = sehr wichtig)
-
-| Funktion | 1 | 2 | 3 | 4 | 5 |
-|---|---|---|---|---|---|
-| Rechnungen per Foto einlesen (OCR) | ○ | ○ | ○ | ○ | ○ |
-| Automatische Zahlungserinnerungen (Mahnungen) | ○ | ○ | ○ | ○ | ○ |
-| E-Mails automatisch beantworten lassen | ○ | ○ | ○ | ○ | ○ |
-| Termine automatisch eintragen | ○ | ○ | ○ | ○ | ○ |
-| Bankeingang mit Rechnung automatisch abgleichen | ○ | ○ | ○ | ○ | ○ |
-| Angebote per Sprache diktieren | ○ | ○ | ○ | ○ | ○ |
-| DATEV-Export für Steuerberater | ○ | ○ | ○ | ○ | ○ |
-
----
-
-## TEIL 6: Preis & Wert
-
-**29. Was wäre für dich ein fairer monatlicher Preis für dieses System — wenn es alles wie versprochen kann?**
-- [ ] Nichts — das mache ich lieber selbst
-- [ ] Bis 20 €/Monat
-- [ ] 20–50 €/Monat
-- [ ] 50–100 €/Monat
-- [ ] Über 100 €/Monat, wenn es mir wirklich Zeit spart
-
-**30. Mit wie vielen Stunden Büroarbeit pro Woche könntest du rechnen, wenn FreyAI 95% davon übernimmt?**
-```
-Aktuell verbringe ich ca. ___ Stunden/Woche mit Bürokram.
-Davon würde FreyAI mir ca. ___ Stunden sparen.
-```
-
-**31. Würdest du FreyAI einem Kollegen / Handwerkerkumpel empfehlen?**
-
-`0 — auf keinen Fall` ○ ○ ○ ○ ○ ○ ○ ○ ○ ○ `10 — sofort`
-
-**Warum diese Note?**
-```
-_______________________________________________
-```
-
----
-
-## TEIL 7: Abschluss
-
-**32. Darf ich dich in 4 Wochen nochmal kontaktieren, um zu hören wie es läuft?**
-- [ ] Ja, gerne — am besten per: `___________________________`
-- [ ] Lieber nicht
-
-**33. Hast du noch etwas auf dem Herzen, das du loswerden möchtest?**
-```
-_______________________________________________
 _______________________________________________
 _______________________________________________
 ```
 
 ---
 
-**Vielen Dank — du bist Beta-Tester #001 und das bedeutet mir ehrlich gesagt viel.**
+**Vielen Dank.**
 
-*Alle Antworten sind vertraulich und werden nur zur Produktverbesserung genutzt.*
+*Mit diesen Angaben richte ich FreyAI so ein, dass du von Tag 1 produktiv arbeitest — ohne Stunden in Einstellungen zu verlieren.*
+
+*Alle Angaben sind vertraulich und werden ausschließlich zur Einrichtung deiner App verwendet.*
 
 ---
-*FreyAI Visions | Beta v1.0 | Fragebogen-Version: 1.0 | Feb 2026*
+*FreyAI Visions | Betriebs-Aufnahmebogen V1 | Feb 2026*

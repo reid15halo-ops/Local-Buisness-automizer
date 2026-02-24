@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreyAI Visions — Beta-Fragebogen V1</title>
+    <title>FreyAI Visions — Betriebs-Aufnahmebogen V1</title>
     <style>
         :root {
             --accent: #6366f1;
             --accent-light: #818cf8;
+            --accent-bg: rgba(99,102,241,0.07);
             --bg: #ffffff;
             --bg-section: #f8f8fc;
-            --bg-sub: #f0f0f8;
+            --bg-sub: #f1f1f9;
             --text: #111118;
             --text-secondary: #4a4a6a;
+            --text-muted: #7070a0;
             --border: #d1d1e0;
             --radius: 10px;
-            --shadow: 0 2px 8px rgba(99,102,241,0.08);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,463 +29,249 @@
             padding: 32px 16px 64px;
         }
 
-        /* ---- Page wrapper ---- */
         .page {
-            max-width: 780px;
+            max-width: 800px;
             margin: 0 auto;
             background: var(--bg);
             border-radius: 16px;
-            box-shadow: 0 4px 32px rgba(99,102,241,0.12);
+            box-shadow: 0 4px 40px rgba(99,102,241,0.13);
             overflow: hidden;
         }
 
         /* ---- Header ---- */
         .header {
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 60%, #818cf8 100%);
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 55%, #818cf8 100%);
             color: #fff;
-            padding: 40px 48px 36px;
+            padding: 44px 52px 38px;
         }
-
-        .header-brand {
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            opacity: 0.85;
-            margin-bottom: 10px;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-
+        .header-brand { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
+        .header h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; line-height: 1.2; }
         .header-badge {
             display: inline-block;
-            background: rgba(255,255,255,0.18);
-            border: 1px solid rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.32);
             border-radius: 20px;
             padding: 3px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            letter-spacing: 0.05em;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 22px;
         }
+        .header-intro { font-size: 14.5px; line-height: 1.75; opacity: 0.92; max-width: 600px; }
+        .header-intro strong { color: #fff; font-weight: 700; }
+        .header-meta { margin-top: 20px; font-size: 12px; opacity: 0.6; }
 
-        .header-intro {
-            font-size: 15px;
-            line-height: 1.7;
-            opacity: 0.92;
-            max-width: 580px;
+        /* ---- Toolbar ---- */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 14px 52px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-section);
+            gap: 10px;
         }
-
-        .header-intro strong {
-            color: #fff;
-        }
-
-        .header-meta {
-            margin-top: 20px;
+        .btn {
+            padding: 8px 20px;
+            border-radius: 8px;
             font-size: 13px;
-            opacity: 0.7;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: background 0.15s;
         }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-light); }
+        .btn-ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+        .btn-ghost:hover { background: var(--accent-bg); }
 
         /* ---- Body ---- */
-        .body {
-            padding: 0 48px 48px;
-        }
+        .body { padding: 0 52px 52px; }
 
         /* ---- Section ---- */
-        .section {
-            margin-top: 40px;
-        }
-
+        .section { margin-top: 44px; }
         .section-title {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
             color: var(--accent);
-            padding: 16px 20px;
-            background: var(--bg-section);
+            padding: 14px 20px;
+            background: var(--bg-sub);
             border-left: 4px solid var(--accent);
             border-radius: 0 var(--radius) var(--radius) 0;
-            margin-bottom: 24px;
+            margin-bottom: 26px;
+            line-height: 1.3;
         }
-
-        .section-subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 400;
+        .section-title small {
             display: block;
-            margin-top: 2px;
-        }
-
-        .subsection {
-            background: var(--bg-sub);
-            border-radius: var(--radius);
-            padding: 18px 22px 14px;
-            margin-bottom: 20px;
-        }
-
-        .subsection-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .subsection-scenario {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-bottom: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 3px;
         }
 
         /* ---- Question ---- */
-        .question {
-            margin-bottom: 24px;
-        }
-
-        .question-label {
-            font-size: 15px;
-            font-weight: 600;
+        .question { margin-bottom: 26px; }
+        .question:last-child { margin-bottom: 0; }
+        .q-label {
+            display: block;
+            font-size: 14.5px;
+            font-weight: 700;
             color: var(--text);
             margin-bottom: 10px;
-            display: block;
+            line-height: 1.4;
         }
-
-        .question-hint {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 400;
-            font-style: italic;
+        .q-label .q-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 800;
+            margin-right: 8px;
+            flex-shrink: 0;
+            vertical-align: middle;
         }
+        .q-hint { font-size: 12px; color: var(--text-muted); font-weight: 400; font-style: italic; display: block; margin-bottom: 10px; margin-left: 30px; }
 
         /* ---- Inputs ---- */
-        textarea {
-            width: 100%;
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 14px;
+        textarea, input[type="text"], input[type="email"], input[type="tel"] {
             font-family: inherit;
+            font-size: 14px;
             color: var(--text);
             background: #fff;
-            resize: vertical;
-            min-height: 64px;
-            transition: border-color 0.15s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-        }
-
-        .text-short {
             border: 1.5px solid var(--border);
             border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--text);
-            background: #fff;
+            padding: 9px 13px;
+            transition: border-color 0.15s, box-shadow 0.15s;
             width: 100%;
-            max-width: 400px;
-            transition: border-color 0.15s;
         }
-
-        .text-short:focus {
+        textarea { resize: vertical; min-height: 62px; }
+        textarea:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="tel"]:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.11);
         }
+        .input-sm { max-width: 320px; }
+        .input-xs { max-width: 180px; }
 
-        /* ---- Checkbox / Radio lists ---- */
-        .option-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        /* ---- Grid inputs ---- */
+        .field-grid {
+            display: grid;
+            gap: 12px;
         }
+        .field-grid-2 { grid-template-columns: 1fr 1fr; }
+        .field-row { display: flex; gap: 10px; align-items: center; }
+        .field-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; min-width: 120px; }
 
+        /* ---- Options ---- */
+        .option-list { display: flex; flex-direction: column; gap: 7px; }
         .option-item {
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 9px 13px;
             border: 1.5px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
             transition: background 0.1s, border-color 0.1s;
         }
-
-        .option-item:hover {
-            background: var(--bg-section);
-            border-color: var(--border);
-        }
-
-        .option-item input[type="checkbox"],
-        .option-item input[type="radio"] {
-            margin-top: 2px;
-            width: 16px;
-            height: 16px;
+        .option-item:hover { background: var(--bg-sub); border-color: var(--border); }
+        .option-item input[type="radio"], .option-item input[type="checkbox"] {
+            width: 16px; height: 16px;
             accent-color: var(--accent);
             flex-shrink: 0;
-        }
-
-        .option-item span {
-            font-size: 14px;
-            color: var(--text);
-            line-height: 1.5;
-        }
-
-        .option-inline-input {
-            border: none;
-            border-bottom: 1.5px solid var(--border);
-            outline: none;
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--text);
-            width: 200px;
-            padding: 1px 4px;
-            background: transparent;
-        }
-
-        .option-inline-input:focus {
-            border-bottom-color: var(--accent);
-        }
-
-        /* ---- Rating scale ---- */
-        .rating-scale {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 4px;
-        }
-
-        .rating-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-style: italic;
-            white-space: nowrap;
-        }
-
-        .rating-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .rating-dot {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
+            margin-top: 2px;
             cursor: pointer;
         }
+        .option-item span { font-size: 14px; color: var(--text); line-height: 1.5; }
 
-        .rating-dot input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent);
-            cursor: pointer;
+        .inline-input {
+            border: none !important;
+            border-bottom: 1.5px solid var(--border) !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            padding: 1px 4px !important;
+            width: auto !important;
+            min-width: 180px;
+            background: transparent !important;
+            font-size: 13px;
         }
+        .inline-input:focus { border-bottom-color: var(--accent) !important; }
+        .inline-input-sm { min-width: 100px; }
 
-        .rating-dot span {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
+        /* ---- Stundensatz grid ---- */
+        .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 400px; }
+        .rate-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+        .rate-item input { width: 80px; text-align: right; padding: 7px 10px; }
+        .rate-suffix { font-size: 13px; color: var(--text-muted); }
 
-        /* ---- NPS scale ---- */
-        .nps-scale {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-
-        .nps-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .nps-item input[type="radio"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        .nps-item span {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-weight: 600;
-        }
-
-        .nps-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-top: 4px;
-        }
-
-        /* ---- Priority table ---- */
-        .priority-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        .priority-table th {
+        /* ---- Table ---- */
+        .ablage-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .ablage-table th {
             text-align: center;
-            padding: 8px 10px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 8px 6px;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--accent);
             border-bottom: 2px solid var(--border);
+            white-space: nowrap;
         }
-
-        .priority-table th:first-child {
-            text-align: left;
-        }
-
-        .priority-table td {
-            padding: 10px 10px;
+        .ablage-table th:first-child { text-align: left; }
+        .ablage-table td {
+            padding: 10px 6px;
             border-bottom: 1px solid var(--border);
             text-align: center;
             vertical-align: middle;
         }
+        .ablage-table td:first-child { text-align: left; font-weight: 500; }
+        .ablage-table tr:last-child td { border-bottom: none; }
+        .ablage-table tr:nth-child(even) td { background: var(--bg-section); }
+        .ablage-table input[type="radio"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
 
-        .priority-table td:first-child {
-            text-align: left;
-            font-weight: 500;
-            color: var(--text);
-        }
-
-        .priority-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .priority-table tr:nth-child(even) {
-            background: var(--bg-section);
-        }
-
-        .priority-table input[type="radio"] {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--accent);
-            cursor: pointer;
-        }
-
-        /* ---- Time estimate box ---- */
-        .time-box {
-            background: var(--bg-section);
-            border: 1.5px solid var(--border);
-            border-radius: 8px;
-            padding: 14px 18px;
-            font-size: 14px;
-            line-height: 2;
-        }
-
-        .time-box input[type="text"] {
-            border: none;
-            border-bottom: 1.5px solid var(--border);
-            width: 60px;
-            text-align: center;
-            font-size: 14px;
-            font-family: inherit;
-            background: transparent;
-            outline: none;
-        }
-
-        .time-box input[type="text"]:focus {
-            border-bottom-color: var(--accent);
-        }
-
-        /* ---- Divider ---- */
-        .divider {
-            border: none;
-            border-top: 1px solid var(--border);
-            margin: 32px 0;
-        }
-
-        /* ---- Note box ---- */
+        /* ---- Note / Info ---- */
         .note {
-            background: rgba(99,102,241,0.07);
+            background: var(--accent-bg);
             border-left: 3px solid var(--accent);
             border-radius: 0 8px 8px 0;
             padding: 10px 16px;
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-secondary);
             font-style: italic;
-            margin-top: 10px;
+            margin-top: 8px;
         }
+
+        /* ---- Divider ---- */
+        hr { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
 
         /* ---- Footer ---- */
         .footer {
-            background: var(--bg-section);
+            background: var(--bg-sub);
             border-top: 1px solid var(--border);
-            padding: 28px 48px;
+            padding: 30px 52px;
             text-align: center;
         }
+        .footer-thanks { font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+        .footer-note { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; }
+        .footer-meta { font-size: 11px; color: #aaa; margin-top: 16px; }
 
-        .footer-thanks {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--accent);
-            margin-bottom: 8px;
-        }
-
-        .footer-note {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .footer-meta {
-            font-size: 12px;
-            color: #aaa;
-        }
-
-        /* ---- Print button ---- */
-        .print-btn {
-            display: block;
-            margin: 24px auto 0;
-            padding: 10px 28px;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .print-btn:hover {
-            background: var(--accent-light);
-        }
-
-        /* ---- Print styles ---- */
+        /* ---- Print ---- */
         @media print {
             body { background: #fff; padding: 0; }
             .page { box-shadow: none; border-radius: 0; }
-            .print-btn { display: none; }
-            .header { background: #4f46e5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            textarea, .text-short { border: 1px solid #ccc; }
+            .toolbar { display: none; }
+            .header { background: #4338ca !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .section-title { background: var(--bg-sub) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
 
-        @media (max-width: 600px) {
-            .header, .body, .footer { padding-left: 20px; padding-right: 20px; }
-            .rating-scale { flex-direction: column; align-items: flex-start; }
-            .nps-scale { gap: 4px; }
+        @media (max-width: 640px) {
+            .header, .body, .footer, .toolbar { padding-left: 20px; padding-right: 20px; }
+            .field-grid-2 { grid-template-columns: 1fr; }
+            .rate-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -494,665 +281,680 @@
     <!-- HEADER -->
     <div class="header">
         <div class="header-brand">FreyAI Visions</div>
-        <h1>Beta-Fragebogen</h1>
-        <div class="header-badge">Vertraulich · Kostenlose Beta-Phase · Tester #001</div>
+        <h1>Betriebs-Aufnahmebogen</h1>
+        <div class="header-badge">Vertraulich · Wird zur App-Einrichtung genutzt</div>
         <p class="header-intro">
-            Hallo!<br><br>
-            Vielen Dank, dass du dir die Zeit nimmst, FreyAI Visions zu testen.
-            Dein Feedback ist Gold wert — du hilfst dabei, das System für Handwerker wie dich wirklich
-            praxistauglich zu machen.<br><br>
-            Der Fragebogen dauert ca. <strong>10–15 Minuten</strong>. Kein Richtig oder Falsch — deine ehrliche Meinung zählt.
+            Bevor du loslegst, nehme ich mir ein paar Minuten, um zu verstehen wie dein Betrieb heute tickt.<br><br>
+            So kann ich FreyAI direkt auf dich einstellen — <strong>du fängst nicht bei Null an</strong>, sondern die App ist von Anfang an dein Werkzeug. Je genauer du antwortest, desto besser passt die App zu dir.
         </p>
-        <div class="header-meta">Beta v1.0 · Fragebogen-Version 1.0 · Feb 2026</div>
+        <div class="header-meta">FreyAI Visions · Betriebs-Aufnahmebogen V1 · Feb 2026</div>
     </div>
 
-    <button class="print-btn" onclick="window.print()">Drucken / Als PDF speichern</button>
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <button class="btn btn-ghost" onclick="window.print()">Drucken / PDF</button>
+    </div>
 
     <div class="body">
 
-        <!-- TEIL 1 -->
+        <!-- ========== TEIL 1: BETRIEB ========== -->
         <div class="section">
             <div class="section-title">
-                Teil 1: Du &amp; dein Betrieb
-                <span class="section-subtitle">Damit wir verstehen, in welchem Kontext du arbeitest</span>
+                Teil 1: Dein Betrieb
+                <small>Diese Angaben werden direkt in die App übernommen — Briefkopf, Rechnungen, Angebote</small>
             </div>
 
-            <!-- Q1 -->
             <div class="question">
-                <label class="question-label">1. Was machst du beruflich? <span class="question-hint">(Gewerk / Branche)</span></label>
-                <input class="text-short" type="text" name="q1" placeholder="z.B. Elektriker, Schreiner, Maler …">
+                <label class="q-label"><span class="q-num">1</span> Firmenname / Betriebsname</label>
+                <input type="text" name="firmenname" placeholder="z.B. Elektro Müller GmbH">
             </div>
 
-            <!-- Q2 -->
             <div class="question">
-                <label class="question-label">2. Wie viele Mitarbeiter hat dein Betrieb? <span class="question-hint">(inkl. dir)</span></label>
+                <label class="q-label"><span class="q-num">2</span> Dein Name (Inhaber / Ansprechpartner)</label>
+                <input type="text" name="inhaber" placeholder="Vor- und Nachname">
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">3</span> Gewerk / Branche</label>
+                <input type="text" name="gewerk" placeholder="z.B. Elektriker, Schreiner, Maler, Sanitär, Dachdecker …" class="input-sm" style="max-width:100%">
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">4</span> Rechtsform</label>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q2" value="solo">
-                        <span>Nur ich (Einzelkämpfer)</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q2" value="2-5">
-                        <span>2–5 Personen</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q2" value="6-15">
-                        <span>6–15 Personen</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q2" value="15+">
-                        <span>Mehr als 15</span>
-                    </label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="einzelunternehmer"><span>Einzelunternehmer / Selbständig</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="gbr"><span>GbR</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="gmbh"><span>GmbH</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="ug"><span>UG</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="sonstige"><span>Sonstiges:&nbsp;<input class="inline-input" type="text" name="rechtsform_sonstige" placeholder="Rechtsform …"></span></label>
                 </div>
             </div>
 
-            <!-- Q3 -->
             <div class="question">
-                <label class="question-label">3. Wie viele Rechnungen schreibst du ungefähr pro Monat?</label>
+                <label class="q-label"><span class="q-num">5</span> Betriebsadresse</label>
+                <div class="field-grid" style="max-width:520px">
+                    <input type="text" name="strasse" placeholder="Straße & Hausnummer">
+                    <div class="field-grid field-grid-2">
+                        <input type="text" name="plz" placeholder="PLZ">
+                        <input type="text" name="ort" placeholder="Ort">
+                    </div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">6</span> Kontakt</label>
+                <div class="field-grid" style="max-width:480px">
+                    <div class="field-row"><span class="field-label">Telefon</span><input type="tel" name="telefon" placeholder="+49 …"></div>
+                    <div class="field-row"><span class="field-label">E-Mail</span><input type="email" name="email" placeholder="info@betrieb.de"></div>
+                    <div class="field-row"><span class="field-label">Website</span><input type="text" name="website" placeholder="www.betrieb.de (optional)"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">7</span> Steuernummer</label>
+                <input type="text" name="steuernummer" placeholder="123/456/78900" class="input-sm">
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">8</span> Umsatzsteuer-ID <span style="font-weight:400;color:var(--text-muted)">(falls vorhanden)</span></label>
+                <input type="text" name="ust_id" placeholder="DE 123456789" class="input-sm">
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">9</span> Kleinunternehmer nach §19 UStG?</label>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q3" value="<10">
-                        <span>Weniger als 10</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q3" value="10-30">
-                        <span>10–30</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q3" value="30-60">
-                        <span>30–60</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q3" value=">60">
-                        <span>Mehr als 60</span>
-                    </label>
+                    <label class="option-item"><input type="radio" name="kleinunternehmer" value="ja"><span>Ja — ich weise keine Mehrwertsteuer aus</span></label>
+                    <label class="option-item"><input type="radio" name="kleinunternehmer" value="nein"><span>Nein — ich nutze 19 % / 7 % MwSt.</span></label>
                 </div>
             </div>
 
-            <!-- Q4 -->
             <div class="question">
-                <label class="question-label">4. Womit erledigst du deine Büroarbeit aktuell? <span class="question-hint">(Mehrfachauswahl möglich)</span></label>
+                <label class="q-label"><span class="q-num">10</span> IBAN für Rechnungen</label>
+                <div class="field-grid" style="max-width:480px">
+                    <input type="text" name="iban" placeholder="DE 00 0000 0000 0000 0000 00">
+                    <div class="field-row"><span class="field-label">BIC / Bank</span><input type="text" name="bic" placeholder="XXXXDEXX / Sparkasse …"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">11</span> Wie viele Personen arbeiten im Betrieb? <span style="font-weight:400;color:var(--text-muted)">(inkl. dir)</span></label>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="checkbox" name="q4a" value="zettel">
-                        <span>Zettel &amp; Stift / Excel</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" name="q4b" value="word">
-                        <span>Word / LibreOffice</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" name="q4c" value="datev">
-                        <span>DATEV / Steuerberater</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" name="q4d" value="software">
-                        <span>Lexware / Sage / sevDesk / Billomat</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="checkbox" name="q4e" value="other">
-                        <span>Sonstiges:&nbsp;<input class="option-inline-input" type="text" name="q4e_text" placeholder="Was nutzt du?"></span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Q5 -->
-            <div class="question">
-                <label class="question-label">5. Was nervt dich an deiner aktuellen Lösung am meisten?</label>
-                <textarea name="q5" rows="3" placeholder="Deine Antwort …"></textarea>
-            </div>
-        </div>
-
-        <hr class="divider">
-
-        <!-- TEIL 2 -->
-        <div class="section">
-            <div class="section-title">
-                Teil 2: Erster Eindruck
-                <span class="section-subtitle">Deine Reaktion in den ersten Minuten</span>
-            </div>
-
-            <!-- Q6 -->
-            <div class="question">
-                <label class="question-label">6. Was war dein erster Gedanke, als du die App geöffnet hast?</label>
-                <textarea name="q6" rows="3" placeholder="Deine Antwort …"></textarea>
-            </div>
-
-            <!-- Q7 -->
-            <div class="question">
-                <label class="question-label">7. Hast du dich sofort zurechtgefunden?</label>
-                <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q7" value="yes">
-                        <span>Ja, sofort klar</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q7" value="mostly">
-                        <span>Weitgehend ja, ein paar Sachen unklar</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q7" value="no">
-                        <span>Nein, ich war am Anfang lost</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Q8 -->
-            <div class="question">
-                <label class="question-label">8. Was hat dich positiv überrascht?</label>
-                <textarea name="q8" rows="2" placeholder="Deine Antwort …"></textarea>
-            </div>
-
-            <!-- Q9 -->
-            <div class="question">
-                <label class="question-label">9. Was hat dich gestört oder verwirrt?</label>
-                <textarea name="q9" rows="2" placeholder="Deine Antwort …"></textarea>
-            </div>
-        </div>
-
-        <hr class="divider">
-
-        <!-- TEIL 3 -->
-        <div class="section">
-            <div class="section-title">
-                Teil 3: Die Kernfunktionen
-                <span class="section-subtitle">Bitte teste jeden Schritt und bewerte ihn</span>
-            </div>
-
-            <!-- A: Anfrage -->
-            <div class="subsection">
-                <div class="subsection-title">A — Anfrage erfassen</div>
-                <div class="subsection-scenario">Szenario: Ein Neukunde ruft an. Du trägst ihn ein.</div>
-
-                <!-- Q10 -->
-                <div class="question">
-                    <label class="question-label">10. Wie einfach war es, eine neue Anfrage anzulegen?</label>
-                    <div class="rating-scale">
-                        <span class="rating-label">1 — sehr schwierig</span>
-                        <div class="rating-dots">
-                            <div class="rating-dot"><input type="radio" name="q10" value="1"><span>1</span></div>
-                            <div class="rating-dot"><input type="radio" name="q10" value="2"><span>2</span></div>
-                            <div class="rating-dot"><input type="radio" name="q10" value="3"><span>3</span></div>
-                            <div class="rating-dot"><input type="radio" name="q10" value="4"><span>4</span></div>
-                            <div class="rating-dot"><input type="radio" name="q10" value="5"><span>5</span></div>
-                        </div>
-                        <span class="rating-label">5 — kinderleicht</span>
-                    </div>
-                </div>
-
-                <!-- Q11 -->
-                <div class="question">
-                    <label class="question-label">11. Hast du alle Felder gefunden, die du brauchst?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q11" value="all">
-                            <span>Ja, alles da</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q11" value="mostly">
-                            <span>Meistens, aber es fehlt:&nbsp;<input class="option-inline-input" type="text" name="q11_mostly" placeholder="Was fehlt?"></span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q11" value="missing">
-                            <span>Wichtige Felder fehlen:&nbsp;<input class="option-inline-input" type="text" name="q11_missing" placeholder="Was fehlt?"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- B: Angebot -->
-            <div class="subsection">
-                <div class="subsection-title">B — Angebot erstellen</div>
-                <div class="subsection-scenario">Szenario: Du erstellst ein Angebot für den Kunden.</div>
-
-                <!-- Q12 -->
-                <div class="question">
-                    <label class="question-label">12. Wie lange hast du gebraucht, um dein erstes Angebot zu erstellen?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q12" value="<5min">
-                            <span>Unter 5 Minuten</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q12" value="5-15min">
-                            <span>5–15 Minuten</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q12" value="15-30min">
-                            <span>15–30 Minuten</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q12" value=">30min">
-                            <span>Länger als 30 Minuten — was hat so lang gedauert?&nbsp;<input class="option-inline-input" type="text" name="q12_reason" placeholder="Grund …"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q13 -->
-                <div class="question">
-                    <label class="question-label">13. Konntest du Positionen (Material, Arbeitszeit) so eintragen, wie du es brauchst?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q13" value="yes">
-                            <span>Ja, passt genau</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q13" value="partial">
-                            <span>Teilweise:&nbsp;<input class="option-inline-input" type="text" name="q13_partial" placeholder="Was fehlt?" style="width:260px"></span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q13" value="no">
-                            <span>Nein:&nbsp;<input class="option-inline-input" type="text" name="q13_no" placeholder="Was fehlt?" style="width:280px"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q14 -->
-                <div class="question">
-                    <label class="question-label">14. Würdest du dieses Angebot wirklich an einen echten Kunden schicken?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q14" value="yes">
-                            <span>Ja, sofort</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q14" value="adjustments">
-                            <span>Nach kleineren Anpassungen</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q14" value="no">
-                            <span>Nein — warum:&nbsp;<input class="option-inline-input" type="text" name="q14_why" placeholder="Warum nicht?" style="width:260px"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- C: Rechnung -->
-            <div class="subsection">
-                <div class="subsection-title">C — Rechnung schreiben</div>
-                <div class="subsection-scenario">Szenario: Der Auftrag ist fertig. Du stellst die Rechnung.</div>
-
-                <!-- Q15 -->
-                <div class="question">
-                    <label class="question-label">15. Wie einfach war die Umwandlung Angebot → Rechnung?</label>
-                    <div class="rating-scale">
-                        <span class="rating-label">1 — sehr schwierig</span>
-                        <div class="rating-dots">
-                            <div class="rating-dot"><input type="radio" name="q15" value="1"><span>1</span></div>
-                            <div class="rating-dot"><input type="radio" name="q15" value="2"><span>2</span></div>
-                            <div class="rating-dot"><input type="radio" name="q15" value="3"><span>3</span></div>
-                            <div class="rating-dot"><input type="radio" name="q15" value="4"><span>4</span></div>
-                            <div class="rating-dot"><input type="radio" name="q15" value="5"><span>5</span></div>
-                        </div>
-                        <span class="rating-label">5 — sehr einfach</span>
-                    </div>
-                </div>
-
-                <!-- Q16 -->
-                <div class="question">
-                    <label class="question-label">16. Sieht die Rechnung professionell aus?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q16" value="yes">
-                            <span>Ja, sehr</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q16" value="okay">
-                            <span>Geht so</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q16" value="no">
-                            <span>Nein — was fehlt:&nbsp;<input class="option-inline-input" type="text" name="q16_missing" placeholder="Was fehlt?" style="width:240px"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q17 -->
-                <div class="question">
-                    <label class="question-label">17. Fehlt etwas auf der Rechnung, das du gesetzlich brauchst? <span class="question-hint">(z.B. Steuernummer, IBAN)</span></label>
-                    <textarea name="q17" rows="2" placeholder="Deine Antwort …"></textarea>
-                </div>
-            </div>
-
-            <!-- D: KI -->
-            <div class="subsection">
-                <div class="subsection-title">D — KI-Funktionen <span style="font-weight:400;font-style:italic;text-transform:none">(falls getestet)</span></div>
-                <div class="subsection-scenario">Bon-Scanner, automatische E-Mail-Antworten, Mahnwesen</div>
-
-                <!-- Q18 -->
-                <div class="question">
-                    <label class="question-label">18. Hast du den Bon-Scanner / OCR-Upload ausprobiert?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q18" value="yes">
-                            <span>Ja → War es nützlich?&nbsp;<input class="option-inline-input" type="text" name="q18_yes" placeholder="Dein Eindruck …" style="width:240px"></span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q18" value="no">
-                            <span>Nein → Warum nicht?&nbsp;<input class="option-inline-input" type="text" name="q18_no" placeholder="Dein Eindruck …" style="width:240px"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q19 -->
-                <div class="question">
-                    <label class="question-label">19. Hat die KI etwas vorgeschlagen, das du direkt übernommen hast?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q19" value="multiple">
-                            <span>Ja, mehrfach</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q19" value="once">
-                            <span>Einmal</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q19" value="no">
-                            <span>Nein, ich hab alles selbst gemacht</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Q20 -->
-                <div class="question">
-                    <label class="question-label">20. Vertraust du der KI genug, um ihre Vorschläge (Texte, Zahlen) mit einem Klick freizugeben — ohne alles nochmal zu prüfen?</label>
-                    <div class="option-list">
-                        <label class="option-item">
-                            <input type="radio" name="q20" value="yes">
-                            <span>Ja, wenn die Zahlen stimmen</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q20" value="quick-check">
-                            <span>Nur nach kurzem Drüberschauen</span>
-                        </label>
-                        <label class="option-item">
-                            <input type="radio" name="q20" value="always-check">
-                            <span>Nein, ich prüfe immer alles selbst</span>
-                        </label>
-                    </div>
-                    <div class="note">Hinweis: Das System ist so gebaut, dass DU immer das letzte Wort hast — 95% macht die KI vor, 5% entscheidest du.</div>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="1"><span>Nur ich</span></label>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="2-5"><span>2–5</span></label>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="6-15"><span>6–15</span></label>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="15+"><span>Mehr als 15</span></label>
                 </div>
             </div>
         </div>
 
-        <hr class="divider">
+        <hr>
 
-        <!-- TEIL 4 -->
+        <!-- ========== TEIL 2: RECHNUNGEN ========== -->
         <div class="section">
             <div class="section-title">
-                Teil 4: Bedienbarkeit &amp; Technik
+                Teil 2: Rechnungen — so läuft es heute
+                <small>Damit wir deine Rechnungsvorlage, Steuersätze und Zahlungsbedingungen direkt richtig einstellen</small>
             </div>
 
-            <!-- Q21 -->
             <div class="question">
-                <label class="question-label">21. Auf welchem Gerät hast du hauptsächlich getestet?</label>
+                <label class="q-label"><span class="q-num">12</span> Womit schreibst du aktuell deine Rechnungen?</label>
+                <span class="q-hint">Mehrfachauswahl möglich</span>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q21" value="win">
-                        <span>PC / Laptop (Windows)</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q21" value="mac">
-                        <span>PC / Laptop (Mac)</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q21" value="linux">
-                        <span>PC / Laptop (Linux)</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q21" value="tablet">
-                        <span>Tablet</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q21" value="phone">
-                        <span>Smartphone</span>
-                    </label>
+                    <label class="option-item"><input type="checkbox" name="q12a"><span>Word / LibreOffice (Vorlage)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12b"><span>Excel-Tabelle</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12c"><span>Von Hand / Vordrucke</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12d"><span>DATEV über Steuerberater</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12e"><span>Software:&nbsp;<input class="inline-input" type="text" name="q12e_text" placeholder="Welche Software?"></span></label>
+                    <label class="option-item"><input type="checkbox" name="q12f"><span>Ich schreibe keine Rechnungen / läuft anders:&nbsp;<input class="inline-input" type="text" name="q12f_text" placeholder="Wie?"></span></label>
                 </div>
             </div>
 
-            <!-- Q22 -->
             <div class="question">
-                <label class="question-label">22. Hat die App auf deinem Gerät ruckelfrei funktioniert?</label>
+                <label class="q-label"><span class="q-num">13</span> Wie viele Rechnungen schreibst du ungefähr pro Monat?</label>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q22" value="smooth">
-                        <span>Ja, alles flüssig</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q22" value="minor">
-                        <span>Ein paar Hänger, aber okay</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q22" value="slow">
-                        <span>Träge / langsam</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q22" value="crash">
-                        <span>Abgestürzt / Fehler:&nbsp;<input class="option-inline-input" type="text" name="q22_error" placeholder="Was ist passiert?" style="width:260px"></span>
-                    </label>
+                    <label class="option-item"><input type="radio" name="q13" value="<10"><span>Unter 10</span></label>
+                    <label class="option-item"><input type="radio" name="q13" value="10-30"><span>10–30</span></label>
+                    <label class="option-item"><input type="radio" name="q13" value="30-60"><span>30–60</span></label>
+                    <label class="option-item"><input type="radio" name="q13" value=">60"><span>Mehr als 60</span></label>
                 </div>
             </div>
 
-            <!-- Q23 -->
             <div class="question">
-                <label class="question-label">23. Hast du Fehler oder unerwartetes Verhalten bemerkt?</label>
-                <textarea name="q23" rows="3" placeholder="Deine Antwort …"></textarea>
+                <label class="q-label"><span class="q-num">14</span> Wie lange sitzt du ungefähr für eine Rechnung?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q14" value="<15"><span>Unter 15 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q14" value="15-30"><span>15–30 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q14" value="30-60"><span>30–60 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q14" value=">60"><span>Über 1 Stunde</span></label>
+                </div>
             </div>
 
-            <!-- Q24 -->
             <div class="question">
-                <label class="question-label">24. Wie empfindest du die Geschwindigkeit der App insgesamt?</label>
-                <div class="rating-scale">
-                    <span class="rating-label">1 — sehr langsam</span>
-                    <div class="rating-dots">
-                        <div class="rating-dot"><input type="radio" name="q24" value="1"><span>1</span></div>
-                        <div class="rating-dot"><input type="radio" name="q24" value="2"><span>2</span></div>
-                        <div class="rating-dot"><input type="radio" name="q24" value="3"><span>3</span></div>
-                        <div class="rating-dot"><input type="radio" name="q24" value="4"><span>4</span></div>
-                        <div class="rating-dot"><input type="radio" name="q24" value="5"><span>5</span></div>
-                    </div>
-                    <span class="rating-label">5 — sehr schnell</span>
+                <label class="q-label"><span class="q-num">15</span> Was steht bei dir auf einer typischen Rechnung? Was berechnest du ab?</label>
+                <span class="q-hint">Alles ankreuzen, was du verwendest</span>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q15a"><span>Arbeitszeit (Stunden × Stundenlohn)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15b"><span>Pauschalpreise (Festpreis pro Leistung)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15c"><span>Material (einzeln aufgelistet)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15d"><span>Material (als Pauschale)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15e"><span>Fahrtkosten</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15f"><span>Auslagen / Fremdleistungen</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15g"><span>Aufmaß-Positionen (m², lfm, Stück …)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15h"><span>Sonstiges:&nbsp;<input class="inline-input" type="text" name="q15h_text" placeholder="Was noch?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">16</span> Welche Stundensätze verwendest du? <span style="font-weight:400;color:var(--text-muted)">(falls zutreffend)</span></label>
+                <div class="rate-grid">
+                    <div class="rate-item"><span>Geselle</span><input type="text" name="satz_geselle" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                    <div class="rate-item"><span>Meister / du</span><input type="text" name="satz_meister" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                    <div class="rate-item"><span>Auszubildender</span><input type="text" name="satz_azubi" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                    <div class="rate-item"><span>Notdienst</span><input type="text" name="satz_notdienst" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">17</span> Wie ist dein Standardzahlungsziel?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q17" value="sofort"><span>Sofort / bei Übergabe</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="7"><span>7 Tage</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="14"><span>14 Tage</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="30"><span>30 Tage</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="individuell"><span>Individuell:&nbsp;<input class="inline-input inline-input-sm" type="text" name="q17_text" placeholder="z.B. 21 Tage"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">18</span> Bietest du Skonto an?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q18" value="nein"><span>Nein</span></label>
+                    <label class="option-item"><input type="radio" name="q18" value="ja"><span>Ja:&nbsp;<input class="inline-input inline-input-sm" type="text" name="q18_pct" placeholder="z.B. 2">% bei Zahlung innerhalb von&nbsp;<input class="inline-input inline-input-sm" type="text" name="q18_tage" placeholder="z.B. 10">&nbsp;Tagen</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">19</span> Wie schickst du Rechnungen an Kunden?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q19a"><span>Per Post (Papier)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19b"><span>Per E-Mail (PDF)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19c"><span>Per WhatsApp</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19d"><span>Ich übergebe sie persönlich</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19e"><span>Sonstiges:&nbsp;<input class="inline-input" type="text" name="q19e_text" placeholder="Wie?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">20</span> Wo landen deine ausgestellten Rechnungen danach?</label>
+                <span class="q-hint">Wie speicherst / archivierst du sie?</span>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q20a"><span>Physischer Ordner / Ablage</span></label>
+                    <label class="option-item"><input type="checkbox" name="q20b"><span>Ordner auf dem PC / Laptop</span></label>
+                    <label class="option-item"><input type="checkbox" name="q20c"><span>Cloud (Google Drive, Dropbox, OneDrive …):&nbsp;<input class="inline-input inline-input-sm" type="text" name="q20c_text" placeholder="Welcher?"></span></label>
+                    <label class="option-item"><input type="checkbox" name="q20d"><span>E-Mail-Postfach (als gesendete E-Mail)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q20e"><span>In einer Software:&nbsp;<input class="inline-input" type="text" name="q20e_text" placeholder="Welche?"></span></label>
+                    <label class="option-item"><input type="checkbox" name="q20f"><span>Gar nicht / nur beim Kunden</span></label>
                 </div>
             </div>
         </div>
 
-        <hr class="divider">
+        <hr>
 
-        <!-- TEIL 5 -->
+        <!-- ========== TEIL 3: ANGEBOTE ========== -->
         <div class="section">
-            <div class="section-title">Teil 5: Das Große Bild</div>
-
-            <!-- Q25 -->
-            <div class="question">
-                <label class="question-label">25. Was ist die eine Funktion, die du täglich nutzen würdest?</label>
-                <textarea name="q25" rows="2" placeholder="Deine Antwort …"></textarea>
+            <div class="section-title">
+                Teil 3: Angebote — so läuft es heute
+                <small>Damit wir deine Angebotsvorlage und deinen Workflow korrekt abbilden</small>
             </div>
 
-            <!-- Q26 -->
             <div class="question">
-                <label class="question-label">26. Was ist die eine Funktion, die dir am meisten fehlt?</label>
-                <textarea name="q26" rows="2" placeholder="Deine Antwort …"></textarea>
+                <label class="q-label"><span class="q-num">21</span> Schreibst du Angebote, bevor du einen Auftrag annimmst?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q21" value="immer"><span>Ja, immer</span></label>
+                    <label class="option-item"><input type="radio" name="q21" value="manchmal"><span>Manchmal / bei größeren Jobs</span></label>
+                    <label class="option-item"><input type="radio" name="q21" value="selten"><span>Selten / kaum</span></label>
+                    <label class="option-item"><input type="radio" name="q21" value="nein"><span>Nein, wir einigen uns mündlich</span></label>
+                </div>
             </div>
 
-            <!-- Q27 -->
             <div class="question">
-                <label class="question-label">27. Gibt es etwas im System, das du sofort wieder löschen würdest?</label>
-                <textarea name="q27" rows="2" placeholder="Deine Antwort …"></textarea>
+                <label class="q-label"><span class="q-num">22</span> Womit erstellst du Angebote? <span style="font-weight:400;color:var(--text-muted)">(falls zutreffend)</span></label>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q22a"><span>Word / LibreOffice</span></label>
+                    <label class="option-item"><input type="checkbox" name="q22b"><span>Excel</span></label>
+                    <label class="option-item"><input type="checkbox" name="q22c"><span>Gleiche Software wie Rechnungen:&nbsp;<input class="inline-input inline-input-sm" type="text" name="q22c_text" placeholder="Name?"></span></label>
+                    <label class="option-item"><input type="checkbox" name="q22d"><span>Von Hand</span></label>
+                    <label class="option-item"><input type="checkbox" name="q22e"><span>Sonstiges:&nbsp;<input class="inline-input" type="text" name="q22e_text" placeholder="Was?"></span></label>
+                </div>
             </div>
 
-            <!-- Q28 -->
             <div class="question">
-                <label class="question-label">28. Stell dir vor, du könntest mit FreyAI folgendes automatisch erledigen — wie wichtig ist dir das jeweils?</label>
-                <table class="priority-table">
+                <label class="q-label"><span class="q-num">23</span> Wie lange brauchst du für ein typisches Angebot?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q23" value="<15"><span>Unter 15 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q23" value="15-30"><span>15–30 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q23" value="30-60"><span>30–60 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q23" value=">60"><span>Über 1 Stunde</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">24</span> Wie verschickst du Angebote?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q24a"><span>Per E-Mail</span></label>
+                    <label class="option-item"><input type="checkbox" name="q24b"><span>Per Post</span></label>
+                    <label class="option-item"><input type="checkbox" name="q24c"><span>Per WhatsApp</span></label>
+                    <label class="option-item"><input type="checkbox" name="q24d"><span>Mündlich / telefonisch</span></label>
+                    <label class="option-item"><input type="checkbox" name="q24e"><span>Persönlich übergeben</span></label>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 4: KUNDENVERWALTUNG ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 4: Kundenverwaltung
+                <small>Damit wir deine Kundendaten importieren und die Felder richtig aufbauen können</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">25</span> Wo sind deine Kundendaten gespeichert?</label>
+                <span class="q-hint">Mehrfachauswahl möglich</span>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q25a"><span>Im Handy (Kontakte-App)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25b"><span>Auf Papier / Karteikarten</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25c"><span>Excel- / Tabellendatei</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25d"><span>In meiner Rechnungssoftware</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25e"><span>Im Kopf / gar nicht strukturiert</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25f"><span>CRM-System:&nbsp;<input class="inline-input" type="text" name="q25f_text" placeholder="Welches?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">26</span> Wie viele aktive Kunden hast du ungefähr?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q26" value="<20"><span>Unter 20</span></label>
+                    <label class="option-item"><input type="radio" name="q26" value="20-100"><span>20–100</span></label>
+                    <label class="option-item"><input type="radio" name="q26" value="100-500"><span>100–500</span></label>
+                    <label class="option-item"><input type="radio" name="q26" value=">500"><span>Über 500</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">27</span> Hast du eine exportierbare Kundenliste? <span style="font-weight:400;color:var(--text-muted)">(z.B. Excel, CSV)</span></label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q27" value="ja-digital"><span>Ja, könnte ich bereitstellen</span></label>
+                    <label class="option-item"><input type="radio" name="q27" value="ja-papier"><span>Ja, aber nur als Papierliste</span></label>
+                    <label class="option-item"><input type="radio" name="q27" value="nein"><span>Nein</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">28</span> Trennst du Privat- und Gewerbekunden?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q28" value="ja"><span>Ja</span></label>
+                    <label class="option-item"><input type="radio" name="q28" value="nein"><span>Nein, alles gemischt</span></label>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 5: MAHNWESEN ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 5: Mahnwesen
+                <small>Damit wir Mahnstufen, Fristen und Texte passend für dich einstellen</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">29</span> Wie oft zahlen Kunden zu spät?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q29" value="selten"><span>Selten — unter 10 % der Rechnungen</span></label>
+                    <label class="option-item"><input type="radio" name="q29" value="manchmal"><span>Manchmal — 10–30 %</span></label>
+                    <label class="option-item"><input type="radio" name="q29" value="oft"><span>Oft — über 30 %</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">30</span> Was machst du aktuell, wenn eine Rechnung nicht bezahlt wird?</label>
+                <span class="q-hint">Mehrfachauswahl möglich</span>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q30a"><span>Ich rufe an</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30b"><span>Ich schreibe eine Erinnerung per WhatsApp / E-Mail</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30c"><span>Ich schicke eine formelle Mahnung (Brief / PDF)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30d"><span>Ich vergesse es / mache nichts</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30e"><span>Ich gebe es ans Inkasso / Anwalt</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">31</span> Wie lange wartest du, bis du mahnst?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q31" value="<1w"><span>Unter 1 Woche nach Fälligkeit</span></label>
+                    <label class="option-item"><input type="radio" name="q31" value="1-2w"><span>1–2 Wochen</span></label>
+                    <label class="option-item"><input type="radio" name="q31" value="3-4w"><span>3–4 Wochen</span></label>
+                    <label class="option-item"><input type="radio" name="q31" value=">1m"><span>Über 1 Monat / wenn ich dran denke</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">32</span> Wie viel Geld hast du aktuell ungefähr in offenen / überfälligen Rechnungen?</label>
+                <div class="field-row" style="max-width:280px">
+                    <span class="field-label">Ca.</span>
+                    <input type="text" name="q32_offen" placeholder="0">
+                    <span class="field-label" style="min-width:auto">€ offen</span>
+                </div>
+                <div class="note">Diese Info bleibt vertraulich — sie hilft, die Mahnstufen und Eskalationsfristen richtig einzustellen.</div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 6: TERMINPLANUNG ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 6: Terminplanung
+                <small>Damit wir Kalender, Baustellen-Zuordnung und Mitarbeiterplanung korrekt aufsetzen</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">33</span> Womit planst du deine Termine und Baustellen?</label>
+                <span class="q-hint">Mehrfachauswahl möglich</span>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q33a"><span>Papier-Kalender / Wandkalender</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33b"><span>Handy-Kalender (Apple, Google …)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33c"><span>Whiteboard / Tafel im Büro</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33d"><span>Excel / Tabelle</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33e"><span>Im Kopf</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33f"><span>Software:&nbsp;<input class="inline-input" type="text" name="q33f_text" placeholder="Welche?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">34</span> Wie nimmst du neue Terminanfragen an?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q34a"><span>Telefon</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34b"><span>WhatsApp</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34c"><span>E-Mail</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34d"><span>Über meine Website</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34e"><span>Persönlich / vor Ort</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">35</span> Wie viele aktive Baustellen / Aufträge hast du gleichzeitig ungefähr?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q35" value="1-3"><span>1–3</span></label>
+                    <label class="option-item"><input type="radio" name="q35" value="4-10"><span>4–10</span></label>
+                    <label class="option-item"><input type="radio" name="q35" value=">10"><span>Mehr als 10</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">36</span> Koordinierst du auch Mitarbeiter-Einsätze über den Kalender?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q36" value="nein"><span>Nein, nur für mich</span></label>
+                    <label class="option-item"><input type="radio" name="q36" value="ja"><span>Ja — wie teilst du das mit deinen Leuten?&nbsp;<input class="inline-input" type="text" name="q36_text" placeholder="z.B. WhatsApp-Gruppe, Aushang …"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 7: ABLAGE & DOKUMENTE ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 7: Dokumente &amp; Ablage
+                <small>Damit wir wissen, was importiert oder gescannt werden muss</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">37</span> Wo bewahrst du folgende Dokumente auf?</label>
+                <table class="ablage-table">
                     <thead>
                         <tr>
-                            <th>Funktion</th>
-                            <th>1<br><small>unwichtig</small></th>
-                            <th>2</th>
-                            <th>3</th>
-                            <th>4</th>
-                            <th>5<br><small>sehr wichtig</small></th>
+                            <th>Dokument</th>
+                            <th>Papier-<br>Ordner</th>
+                            <th>PC-<br>Ordner</th>
+                            <th>Cloud</th>
+                            <th>E-Mail</th>
+                            <th>Software</th>
+                            <th>Gar<br>nicht</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Rechnungen per Foto einlesen (OCR)</td>
-                            <td><input type="radio" name="q28_ocr" value="1"></td>
-                            <td><input type="radio" name="q28_ocr" value="2"></td>
-                            <td><input type="radio" name="q28_ocr" value="3"></td>
-                            <td><input type="radio" name="q28_ocr" value="4"></td>
-                            <td><input type="radio" name="q28_ocr" value="5"></td>
+                            <td>Rechnungen (ausgestellt)</td>
+                            <td><input type="radio" name="ablage_rechnungen" value="papier"></td>
+                            <td><input type="radio" name="ablage_rechnungen" value="pc"></td>
+                            <td><input type="radio" name="ablage_rechnungen" value="cloud"></td>
+                            <td><input type="radio" name="ablage_rechnungen" value="email"></td>
+                            <td><input type="radio" name="ablage_rechnungen" value="software"></td>
+                            <td><input type="radio" name="ablage_rechnungen" value="nein"></td>
                         </tr>
                         <tr>
-                            <td>Automatische Zahlungserinnerungen (Mahnungen)</td>
-                            <td><input type="radio" name="q28_dunning" value="1"></td>
-                            <td><input type="radio" name="q28_dunning" value="2"></td>
-                            <td><input type="radio" name="q28_dunning" value="3"></td>
-                            <td><input type="radio" name="q28_dunning" value="4"></td>
-                            <td><input type="radio" name="q28_dunning" value="5"></td>
+                            <td>Eingangsrechnungen / Belege</td>
+                            <td><input type="radio" name="ablage_belege" value="papier"></td>
+                            <td><input type="radio" name="ablage_belege" value="pc"></td>
+                            <td><input type="radio" name="ablage_belege" value="cloud"></td>
+                            <td><input type="radio" name="ablage_belege" value="email"></td>
+                            <td><input type="radio" name="ablage_belege" value="software"></td>
+                            <td><input type="radio" name="ablage_belege" value="nein"></td>
                         </tr>
                         <tr>
-                            <td>E-Mails automatisch beantworten lassen</td>
-                            <td><input type="radio" name="q28_email" value="1"></td>
-                            <td><input type="radio" name="q28_dunning" value="2"></td>
-                            <td><input type="radio" name="q28_email" value="3"></td>
-                            <td><input type="radio" name="q28_email" value="4"></td>
-                            <td><input type="radio" name="q28_email" value="5"></td>
+                            <td>Angebote</td>
+                            <td><input type="radio" name="ablage_angebote" value="papier"></td>
+                            <td><input type="radio" name="ablage_angebote" value="pc"></td>
+                            <td><input type="radio" name="ablage_angebote" value="cloud"></td>
+                            <td><input type="radio" name="ablage_angebote" value="email"></td>
+                            <td><input type="radio" name="ablage_angebote" value="software"></td>
+                            <td><input type="radio" name="ablage_angebote" value="nein"></td>
                         </tr>
                         <tr>
-                            <td>Termine automatisch eintragen</td>
-                            <td><input type="radio" name="q28_cal" value="1"></td>
-                            <td><input type="radio" name="q28_cal" value="2"></td>
-                            <td><input type="radio" name="q28_cal" value="3"></td>
-                            <td><input type="radio" name="q28_cal" value="4"></td>
-                            <td><input type="radio" name="q28_cal" value="5"></td>
+                            <td>Verträge / Auftragsbestätigungen</td>
+                            <td><input type="radio" name="ablage_vertraege" value="papier"></td>
+                            <td><input type="radio" name="ablage_vertraege" value="pc"></td>
+                            <td><input type="radio" name="ablage_vertraege" value="cloud"></td>
+                            <td><input type="radio" name="ablage_vertraege" value="email"></td>
+                            <td><input type="radio" name="ablage_vertraege" value="software"></td>
+                            <td><input type="radio" name="ablage_vertraege" value="nein"></td>
                         </tr>
                         <tr>
-                            <td>Bankeingang mit Rechnung automatisch abgleichen</td>
-                            <td><input type="radio" name="q28_bank" value="1"></td>
-                            <td><input type="radio" name="q28_bank" value="2"></td>
-                            <td><input type="radio" name="q28_bank" value="3"></td>
-                            <td><input type="radio" name="q28_bank" value="4"></td>
-                            <td><input type="radio" name="q28_bank" value="5"></td>
-                        </tr>
-                        <tr>
-                            <td>Angebote per Sprache diktieren</td>
-                            <td><input type="radio" name="q28_voice" value="1"></td>
-                            <td><input type="radio" name="q28_voice" value="2"></td>
-                            <td><input type="radio" name="q28_voice" value="3"></td>
-                            <td><input type="radio" name="q28_voice" value="4"></td>
-                            <td><input type="radio" name="q28_voice" value="5"></td>
-                        </tr>
-                        <tr>
-                            <td>DATEV-Export für Steuerberater</td>
-                            <td><input type="radio" name="q28_datev" value="1"></td>
-                            <td><input type="radio" name="q28_datev" value="2"></td>
-                            <td><input type="radio" name="q28_datev" value="3"></td>
-                            <td><input type="radio" name="q28_datev" value="4"></td>
-                            <td><input type="radio" name="q28_datev" value="5"></td>
+                            <td>Lieferscheine</td>
+                            <td><input type="radio" name="ablage_lieferscheine" value="papier"></td>
+                            <td><input type="radio" name="ablage_lieferscheine" value="pc"></td>
+                            <td><input type="radio" name="ablage_lieferscheine" value="cloud"></td>
+                            <td><input type="radio" name="ablage_lieferscheine" value="email"></td>
+                            <td><input type="radio" name="ablage_lieferscheine" value="software"></td>
+                            <td><input type="radio" name="ablage_lieferscheine" value="nein"></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
 
-        <hr class="divider">
-
-        <!-- TEIL 6 -->
-        <div class="section">
-            <div class="section-title">Teil 6: Preis &amp; Wert</div>
-
-            <!-- Q29 -->
             <div class="question">
-                <label class="question-label">29. Was wäre für dich ein fairer monatlicher Preis für dieses System — wenn es alles wie versprochen kann?</label>
+                <label class="q-label"><span class="q-num">38</span> Was machst du mit Kassenquittungen und Belegen? <span style="font-weight:400;color:var(--text-muted)">(z.B. Tankquittungen, Baumarkt)</span></label>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q29" value="free">
-                        <span>Nichts — das mache ich lieber selbst</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q29" value="<20">
-                        <span>Bis 20 €/Monat</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q29" value="20-50">
-                        <span>20–50 €/Monat</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q29" value="50-100">
-                        <span>50–100 €/Monat</span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q29" value=">100">
-                        <span>Über 100 €/Monat, wenn es mir wirklich Zeit spart</span>
-                    </label>
+                    <label class="option-item"><input type="radio" name="q38" value="sammeln"><span>Ich sammle sie und gebe sie dem Steuerberater</span></label>
+                    <label class="option-item"><input type="radio" name="q38" value="foto"><span>Ich fotografiere sie und speichere sie irgendwo</span></label>
+                    <label class="option-item"><input type="radio" name="q38" value="ignore"><span>Ich schmeiße sie weg / ignoriere sie</span></label>
+                    <label class="option-item"><input type="radio" name="q38" value="sonstige"><span>Sonstiges:&nbsp;<input class="inline-input" type="text" name="q38_text" placeholder="Was?"></span></label>
                 </div>
-            </div>
-
-            <!-- Q30 -->
-            <div class="question">
-                <label class="question-label">30. Mit wie vielen Stunden Büroarbeit pro Woche könntest du rechnen, wenn FreyAI 95% davon übernimmt?</label>
-                <div class="time-box">
-                    Aktuell verbringe ich ca.&nbsp;
-                    <input type="text" name="q30_current" placeholder="0">&nbsp;Stunden/Woche mit Bürokram.<br>
-                    Davon würde FreyAI mir ca.&nbsp;
-                    <input type="text" name="q30_saved" placeholder="0">&nbsp;Stunden sparen.
-                </div>
-            </div>
-
-            <!-- Q31 -->
-            <div class="question">
-                <label class="question-label">31. Würdest du FreyAI einem Kollegen / Handwerkerkumpel empfehlen?</label>
-                <div class="nps-scale">
-                    <div class="nps-item"><input type="radio" name="q31" value="0"><span>0</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="1"><span>1</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="2"><span>2</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="3"><span>3</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="4"><span>4</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="5"><span>5</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="6"><span>6</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="7"><span>7</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="8"><span>8</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="9"><span>9</span></div>
-                    <div class="nps-item"><input type="radio" name="q31" value="10"><span>10</span></div>
-                </div>
-                <div class="nps-labels">
-                    <span>0 — auf keinen Fall</span>
-                    <span>10 — sofort</span>
-                </div>
-            </div>
-
-            <div class="question" style="margin-top:16px">
-                <label class="question-label">Warum diese Note?</label>
-                <textarea name="q31_why" rows="2" placeholder="Deine Antwort …"></textarea>
             </div>
         </div>
 
-        <hr class="divider">
+        <hr>
 
-        <!-- TEIL 7 -->
+        <!-- ========== TEIL 8: KOMMUNIKATION ========== -->
         <div class="section">
-            <div class="section-title">Teil 7: Abschluss</div>
+            <div class="section-title">
+                Teil 8: Kommunikation mit Kunden
+                <small>Damit wir E-Mail-Vorlagen, WhatsApp-Texte und Kommunikationskanäle richtig einrichten</small>
+            </div>
 
-            <!-- Q32 -->
             <div class="question">
-                <label class="question-label">32. Darf ich dich in 4 Wochen nochmal kontaktieren, um zu hören wie es läuft?</label>
+                <label class="q-label"><span class="q-num">39</span> Über welchen Kanal kommunizierst du am häufigsten mit Kunden?</label>
                 <div class="option-list">
-                    <label class="option-item">
-                        <input type="radio" name="q32" value="yes">
-                        <span>Ja, gerne — am besten per:&nbsp;<input class="option-inline-input" type="text" name="q32_contact" placeholder="E-Mail / Telefon / WhatsApp …" style="width:260px"></span>
-                    </label>
-                    <label class="option-item">
-                        <input type="radio" name="q32" value="no">
-                        <span>Lieber nicht</span>
-                    </label>
+                    <label class="option-item"><input type="radio" name="q39" value="telefon"><span>Telefon</span></label>
+                    <label class="option-item"><input type="radio" name="q39" value="whatsapp"><span>WhatsApp</span></label>
+                    <label class="option-item"><input type="radio" name="q39" value="email"><span>E-Mail</span></label>
+                    <label class="option-item"><input type="radio" name="q39" value="persoenlich"><span>Persönlich vor Ort</span></label>
                 </div>
             </div>
 
-            <!-- Q33 -->
             <div class="question">
-                <label class="question-label">33. Hast du noch etwas auf dem Herzen, das du loswerden möchtest?</label>
-                <textarea name="q33" rows="4" placeholder="Alles raus …"></textarea>
+                <label class="q-label"><span class="q-num">40</span> Standard-Texte (Auftragsbestätigung, Terminbestätigung, Angebots-Begleittext) — wie machst du das?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q40" value="neu"><span>Ich schreibe jeden Text neu</span></label>
+                    <label class="option-item"><input type="radio" name="q40" value="vorlagen"><span>Ich habe Vorlagen in Word / E-Mail</span></label>
+                    <label class="option-item"><input type="radio" name="q40" value="kopieren"><span>Ich kopiere alte Nachrichten und passe sie an</span></label>
+                    <label class="option-item"><input type="radio" name="q40" value="software"><span>Das macht meine Software</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">41</span> Hast du Texte / Standardformulierungen, die regelmäßig verwendest und in die App übernommen werden sollen?</label>
+                <span class="q-hint">z.B. „Vielen Dank für Ihren Auftrag, wir beginnen am …" oder dein Angebots-Einleitungstext</span>
+                <textarea name="q41" rows="4" placeholder="Einfach reinschreiben oder leer lassen …"></textarea>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 9: BUCHHALTUNG ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 9: Buchhaltung &amp; Steuer
+                <small>Damit wir DATEV-Export, Steuerberater-Schnittstelle und Buchhaltungsform richtig konfigurieren</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">42</span> Wer macht deine Buchhaltung?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q42" value="ich"><span>Ich selbst</span></label>
+                    <label class="option-item"><input type="radio" name="q42" value="familie"><span>Meine Frau / Familie</span></label>
+                    <label class="option-item"><input type="radio" name="q42" value="stb"><span>Ein Steuerberater:&nbsp;<input class="inline-input" type="text" name="q42_stb" placeholder="Name / Kanzlei …"></span></label>
+                    <label class="option-item"><input type="radio" name="q42" value="buchhalter"><span>Ein externer Buchhalter</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">43</span> Nutzt du DATEV?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q43" value="direkt"><span>Ja, direkt</span></label>
+                    <label class="option-item"><input type="radio" name="q43" value="stb"><span>Mein Steuerberater nutzt DATEV, ich liefere Belege</span></label>
+                    <label class="option-item"><input type="radio" name="q43" value="nein"><span>Nein</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">44</span> Wie übergibst du Belege an deinen Steuerberater?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q44" value="physisch"><span>Physisch (Ordner, Briefumschlag)</span></label>
+                    <label class="option-item"><input type="radio" name="q44" value="email"><span>Per E-Mail / Upload-Portal</span></label>
+                    <label class="option-item"><input type="radio" name="q44" value="datev-online"><span>DATEV Unternehmen Online</span></label>
+                    <label class="option-item"><input type="radio" name="q44" value="unstrukturiert"><span>Gar nicht strukturiert</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">45</span> Welche Steuerform nutzt du?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q45" value="euer"><span>EÜR (Einnahmen-Überschuss-Rechnung)</span></label>
+                    <label class="option-item"><input type="radio" name="q45" value="bilanz"><span>Bilanz / doppelte Buchführung</span></label>
+                    <label class="option-item"><input type="radio" name="q45" value="weiss-nicht"><span>Weiß ich nicht genau</span></label>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 10: MATERIAL ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 10: Material &amp; Lager
+                <small>Nur ausfüllen, wenn du Material einkaufst und ggf. lagerst</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">46</span> Bestellst du regelmäßig Material für Baustellen / Aufträge?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q46" value="oft"><span>Ja, oft</span></label>
+                    <label class="option-item"><input type="radio" name="q46" value="manchmal"><span>Manchmal</span></label>
+                    <label class="option-item"><input type="radio" name="q46" value="nein"><span>Nein, ich rechne nur Arbeitszeit ab</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">47</span> Führst du einen Lagerbestand?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q47" value="nein"><span>Nein</span></label>
+                    <label class="option-item"><input type="radio" name="q47" value="kopf"><span>Ja, auf Papier / im Kopf</span></label>
+                    <label class="option-item"><input type="radio" name="q47" value="excel"><span>Ja, in Excel</span></label>
+                    <label class="option-item"><input type="radio" name="q47" value="software"><span>Ja, in einer Software</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">48</span> Hast du Stammlieferanten, bei denen du regelmäßig bestellst?</label>
+                <div class="field-grid" style="max-width:420px">
+                    <input type="text" name="lieferant1" placeholder="Lieferant 1 …">
+                    <input type="text" name="lieferant2" placeholder="Lieferant 2 …">
+                    <input type="text" name="lieferant3" placeholder="Lieferant 3 …">
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== TEIL 11: TECHNIK ========== -->
+        <div class="section">
+            <div class="section-title">
+                Teil 11: Technik &amp; Geräte
+                <small>Damit wir die App auf dein Haupt-Gerät und dein Tech-Niveau optimieren</small>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">49</span> Welche Geräte nutzt du beruflich?</label>
+                <span class="q-hint">Mehrfachauswahl möglich</span>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q49a"><span>Smartphone (Android)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49b"><span>Smartphone (iPhone)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49c"><span>Tablet</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49d"><span>Laptop / PC (Windows)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49e"><span>Laptop / PC (Mac)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49f"><span>Ich arbeite hauptsächlich nur mit dem Handy</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">50</span> Wie würdest du deinen Umgang mit Apps und Software einschätzen?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q50" value="basic"><span>Nicht so mein Ding — lieber so einfach wie möglich</span></label>
+                    <label class="option-item"><input type="radio" name="q50" value="mittel"><span>Ich komme klar, solange es nicht zu kompliziert ist</span></label>
+                    <label class="option-item"><input type="radio" name="q50" value="fit"><span>Kein Problem, ich lerne neue Sachen schnell</span></label>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- ========== ABSCHLUSS ========== -->
+        <div class="section">
+            <div class="section-title">Abschluss</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">51</span> Was ist das Größte, das dir im Büro-Alltag Zeit frisst oder Stress macht?</label>
+                <textarea name="q51" rows="3" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">52</span> Gibt es etwas Spezielles in deinem Betrieb, das ich wissen sollte, damit die App für dich funktioniert?</label>
+                <span class="q-hint">z.B. bestimmte Abrechnungsformen, Besonderheiten deines Gewerks, spezielle Anforderungen</span>
+                <textarea name="q52" rows="4" placeholder="Deine Antwort …"></textarea>
             </div>
         </div>
 
@@ -1160,10 +962,14 @@
 
     <!-- FOOTER -->
     <div class="footer">
-        <div class="footer-thanks">Vielen Dank — du bist Beta-Tester #001 und das bedeutet mir ehrlich gesagt viel.</div>
-        <div class="footer-note">Alle Antworten sind vertraulich und werden nur zur Produktverbesserung genutzt.</div>
-        <button class="print-btn" onclick="window.print()">Drucken / Als PDF speichern</button>
-        <div class="footer-meta" style="margin-top:20px">FreyAI Visions · Beta v1.0 · Fragebogen-Version 1.0 · Feb 2026</div>
+        <div class="footer-thanks">Vielen Dank.</div>
+        <div class="footer-note">
+            Mit diesen Angaben richte ich FreyAI so ein, dass du von Tag 1 produktiv arbeitest —<br>
+            ohne Stunden in Einstellungen zu verlieren.<br><br>
+            <em>Alle Angaben sind vertraulich und werden ausschließlich zur Einrichtung deiner App verwendet.</em>
+        </div>
+        <button class="btn btn-primary" onclick="window.print()">Drucken / Als PDF speichern</button>
+        <div class="footer-meta">FreyAI Visions · Betriebs-Aufnahmebogen V1 · Feb 2026</div>
     </div>
 
 </div><!-- /page -->
