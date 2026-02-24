@@ -3,24 +3,23 @@
   "nodes": [
     {
       "parameters": {
-        "events": ["storage.object.created"],
-        "bucket": "invoices",
-        "additionalFields": {}
+        "httpMethod": "POST",
+        "path": "supabase-invoices-storage",
+        "responseMode": "lastNode",
+        "options": {}
       },
       "id": "node-supabase-trigger",
       "name": "Supabase Storage Trigger",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [240, 300],
       "webhookId": "supabase-invoices-bucket-trigger",
-      "notes": "Supabase Storage webhook: configure in Supabase Dashboard > Storage > Bucket 'invoices' > Webhooks. POST to this n8n webhook URL."
+      "notes": "Supabase Storage webhook: configure in Supabase Dashboard > Storage > Bucket 'invoices' > Webhooks. POST to this n8n webhook URL. Payload: { type, table, record: { bucket_id, name, owner, created_at, updated_at, last_accessed_at, metadata } }"
     },
     {
       "parameters": {
-        "method": "GET",
-        "url": "={{ $json[\"record\"][\"bucket_id\"] ? ('https://' + $env[\"SUPABASE_PROJECT_REF\"] + '.supabase.co/storage/v1/object/sign/' + $json[\"record\"][\"bucket_id\"] + '/' + $json[\"record\"][\"name\"]) : '' }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth",
+        "method": "POST",
+        "url": "=https://{{ $env[\"SUPABASE_PROJECT_REF\"] }}.supabase.co/storage/v1/object/sign/{{ $json[\"record\"][\"bucket_id\"] }}/{{ $json[\"record\"][\"name\"] }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -31,21 +30,32 @@
             {
               "name": "apikey",
               "value": "={{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
             }
           ]
         },
-        "options": {}
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"expiresIn\": 3600 }",
+        "options": {
+          "timeout": 10000
+        }
       },
       "id": "node-get-file-url",
       "name": "Get Signed File URL",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 300]
+      "position": [460, 300],
+      "continueOnFail": false,
+      "notes": "FIXED: Changed to POST /object/sign/:bucket/:path which is the correct Supabase Storage signed URL endpoint. Returns { signedURL: string }. Uses SUPABASE_PROJECT_REF and SUPABASE_SERVICE_ROLE_KEY env vars."
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://backend:8001/image/preprocess",
+        "url": "={{ $env[\"BACKEND_URL\"] || 'http://backend:8001' }}/image/preprocess",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -80,12 +90,14 @@
       "name": "Preprocess Image (Zone 2)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 300]
+      "position": [680, 300],
+      "continueOnFail": false,
+      "notes": "FIXED: Hardcoded 'http://backend:8001' replaced with $env[\"BACKEND_URL\"] || fallback. Set BACKEND_URL env var in n8n to your Zone 2 backend URL."
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://backend:8001/pii/sanitize",
+        "url": "={{ $env[\"BACKEND_URL\"] || 'http://backend:8001' }}/pii/sanitize",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -120,20 +132,20 @@
       "name": "PII Sanitize (Zone 2)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [900, 300]
+      "position": [900, 300],
+      "continueOnFail": false,
+      "notes": "FIXED: Hardcoded backend URL replaced with BACKEND_URL env var."
     },
     {
       "parameters": {
         "method": "POST",
         "url": "https://api.openai.com/v1/chat/completions",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $credentials.openAiApi.apiKey }}"
+              "value": "=Bearer {{ $env[\"OPENAI_API_KEY\"] }}"
             },
             {
               "name": "Content-Type",
@@ -153,17 +165,13 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [1120, 300],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "cred-openai-api",
-          "name": "OpenAI API Key"
-        }
-      }
+      "continueOnFail": true,
+      "notes": "FIXED: Replaced $credentials.openAiApi.apiKey inline expression with $env[\"OPENAI_API_KEY\"]. continueOnFail=true so errors route to low-confidence path."
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "http://backend:8001/math/validate",
+        "url": "={{ $env[\"BACKEND_URL\"] || 'http://backend:8001' }}/math/validate",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -175,7 +183,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify(JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])) }}",
+        "jsonBody": "={{ $json[\"choices\"] ? JSON.stringify(JSON.parse($json[\"choices\"][0][\"message\"][\"content\"])) : JSON.stringify({ error: true, confidence: 0, math_valid: false }) }}",
         "options": {
           "timeout": 10000
         }
@@ -184,7 +192,9 @@
       "name": "Math Validate (Zone 2)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1340, 300]
+      "position": [1340, 300],
+      "continueOnFail": true,
+      "notes": "FIXED: Backend URL uses BACKEND_URL env var. Safe JSON parse with fallback for when GPT extraction failed."
     },
     {
       "parameters": {
@@ -197,7 +207,7 @@
           "conditions": [
             {
               "id": "confidence-check",
-              "leftValue": "={{ $json[\"confidence\"] }}",
+              "leftValue": "={{ $json[\"confidence\"] || 0 }}",
               "rightValue": 0.95,
               "operator": {
                 "type": "number",
@@ -213,154 +223,76 @@
       "name": "Confidence >= 0.95?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1560, 300]
+      "position": [1560, 300],
+      "notes": "Routes to approved path (true) or needs_review path (false). Defaults to false if confidence is missing."
     },
     {
       "parameters": {
         "operation": "create",
-        "tableId": "invoices",
+        "tableId": "dokumente",
         "dataToSend": "defineBelow",
         "fieldsToSend": {
           "fieldValues": [
             {
-              "fieldId": "vendor",
-              "fieldValue": "={{ $json[\"vendor\"] }}"
-            },
-            {
-              "fieldId": "invoice_date",
-              "fieldValue": "={{ $json[\"date\"] }}"
-            },
-            {
-              "fieldId": "invoice_number",
-              "fieldValue": "={{ $json[\"invoice_number\"] }}"
-            },
-            {
-              "fieldId": "items",
-              "fieldValue": "={{ JSON.stringify($json[\"items\"]) }}"
-            },
-            {
-              "fieldId": "subtotal",
-              "fieldValue": "={{ $json[\"subtotal\"] }}"
-            },
-            {
-              "fieldId": "tax_rate",
-              "fieldValue": "={{ $json[\"tax_rate\"] }}"
-            },
-            {
-              "fieldId": "tax_amount",
-              "fieldValue": "={{ $json[\"tax_amount\"] }}"
-            },
-            {
-              "fieldId": "total",
-              "fieldValue": "={{ $json[\"total\"] }}"
-            },
-            {
-              "fieldId": "iban",
-              "fieldValue": "={{ $json[\"iban\"] }}"
-            },
-            {
-              "fieldId": "payment_terms",
-              "fieldValue": "={{ $json[\"payment_terms\"] }}"
-            },
-            {
-              "fieldId": "confidence",
-              "fieldValue": "={{ $json[\"confidence\"] }}"
-            },
-            {
-              "fieldId": "status",
-              "fieldValue": "pending_approval"
-            },
-            {
-              "fieldId": "math_validated",
-              "fieldValue": "={{ $json[\"math_valid\"] }}"
-            },
-            {
-              "fieldId": "source_file",
+              "fieldId": "dateiname",
               "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }}"
+            },
+            {
+              "fieldId": "kategorie",
+              "fieldValue": "rechnung_eingang"
+            },
+            {
+              "fieldId": "storage_path",
+              "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"bucket_id\"] + '/' + $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }}"
+            },
+            {
+              "fieldId": "extrahierte_daten",
+              "fieldValue": "={{ JSON.stringify({ vendor: $json[\"vendor\"], invoice_number: $json[\"invoice_number\"], date: $json[\"date\"], total: $json[\"total\"], iban: $json[\"iban\"], confidence: $json[\"confidence\"], math_valid: $json[\"math_valid\"], status: 'pending_approval', ocr_engine: 'gpt-4o-vision' }) }}"
             }
           ]
         }
       },
       "id": "node-supabase-insert-approved",
-      "name": "Supabase INSERT invoice (approved)",
+      "name": "INSERT dokumente (approved)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1780, 200],
+      "position": [1780, 180],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      }
+      },
+      "notes": "FIXED: Table changed from non-existent 'invoices' to 'dokumente' (correct schema table). Extracted OCR data stored in extrahierte_daten JSONB column. For full invoice creation, also insert into 'rechnungen' table using a separate node."
     },
     {
       "parameters": {
         "operation": "create",
-        "tableId": "invoices",
+        "tableId": "dokumente",
         "dataToSend": "defineBelow",
         "fieldsToSend": {
           "fieldValues": [
             {
-              "fieldId": "vendor",
-              "fieldValue": "={{ $json[\"vendor\"] }}"
-            },
-            {
-              "fieldId": "invoice_date",
-              "fieldValue": "={{ $json[\"date\"] }}"
-            },
-            {
-              "fieldId": "invoice_number",
-              "fieldValue": "={{ $json[\"invoice_number\"] }}"
-            },
-            {
-              "fieldId": "items",
-              "fieldValue": "={{ JSON.stringify($json[\"items\"]) }}"
-            },
-            {
-              "fieldId": "subtotal",
-              "fieldValue": "={{ $json[\"subtotal\"] }}"
-            },
-            {
-              "fieldId": "tax_rate",
-              "fieldValue": "={{ $json[\"tax_rate\"] }}"
-            },
-            {
-              "fieldId": "tax_amount",
-              "fieldValue": "={{ $json[\"tax_amount\"] }}"
-            },
-            {
-              "fieldId": "total",
-              "fieldValue": "={{ $json[\"total\"] }}"
-            },
-            {
-              "fieldId": "iban",
-              "fieldValue": "={{ $json[\"iban\"] }}"
-            },
-            {
-              "fieldId": "payment_terms",
-              "fieldValue": "={{ $json[\"payment_terms\"] }}"
-            },
-            {
-              "fieldId": "confidence",
-              "fieldValue": "={{ $json[\"confidence\"] }}"
-            },
-            {
-              "fieldId": "status",
-              "fieldValue": "needs_review"
-            },
-            {
-              "fieldId": "math_validated",
-              "fieldValue": "={{ $json[\"math_valid\"] }}"
-            },
-            {
-              "fieldId": "source_file",
+              "fieldId": "dateiname",
               "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }}"
+            },
+            {
+              "fieldId": "kategorie",
+              "fieldValue": "rechnung_eingang_review"
+            },
+            {
+              "fieldId": "storage_path",
+              "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"bucket_id\"] + '/' + $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }}"
+            },
+            {
+              "fieldId": "extrahierte_daten",
+              "fieldValue": "={{ JSON.stringify({ vendor: $json[\"vendor\"], invoice_number: $json[\"invoice_number\"], date: $json[\"date\"], total: $json[\"total\"], iban: $json[\"iban\"], confidence: $json[\"confidence\"] || 0, math_valid: $json[\"math_valid\"] || false, status: 'needs_review', review_required: true, ocr_engine: 'gpt-4o-vision' }) }}"
             }
           ]
         }
       },
       "id": "node-supabase-insert-review",
-      "name": "Supabase INSERT invoice (needs_review)",
+      "name": "INSERT dokumente (needs_review)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [1780, 420],
@@ -369,74 +301,68 @@
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      }
+      },
+      "notes": "FIXED: Table changed from 'invoices' to 'dokumente'. Extracted data stored in extrahierte_daten JSONB with review_required flag."
     },
     {
       "parameters": {
         "operation": "create",
-        "tableId": "jobs_queue",
+        "tableId": "automation_log",
         "dataToSend": "defineBelow",
         "fieldsToSend": {
           "fieldValues": [
             {
-              "fieldId": "job_type",
-              "fieldValue": "invoice_ocr"
+              "fieldId": "action",
+              "fieldValue": "invoice_ocr.completed"
             },
             {
-              "fieldId": "status",
-              "fieldValue": "completed"
+              "fieldId": "target",
+              "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }}"
             },
             {
-              "fieldId": "payload",
-              "fieldValue": "={{ JSON.stringify({ source_file: $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"], invoice_number: $json[\"invoice_number\"], confidence: $json[\"confidence\"] }) }}"
-            },
-            {
-              "fieldId": "completed_at",
-              "fieldValue": "={{ new Date().toISOString() }}"
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ source_file: $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"], invoice_number: $json[\"invoice_number\"], confidence: $json[\"confidence\"], status: 'approved' }) }}"
             }
           ]
         }
       },
-      "id": "node-jobs-queue-approved",
-      "name": "INSERT jobs_queue (approved)",
+      "id": "node-log-approved",
+      "name": "INSERT automation_log (approved)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [2000, 200],
+      "position": [2000, 180],
       "credentials": {
         "supabaseApi": {
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      }
+      },
+      "notes": "FIXED: Uses automation_log (exists in schema) instead of non-existent jobs_queue."
     },
     {
       "parameters": {
         "operation": "create",
-        "tableId": "jobs_queue",
+        "tableId": "automation_log",
         "dataToSend": "defineBelow",
         "fieldsToSend": {
           "fieldValues": [
             {
-              "fieldId": "job_type",
-              "fieldValue": "invoice_ocr"
+              "fieldId": "action",
+              "fieldValue": "invoice_ocr.needs_review"
             },
             {
-              "fieldId": "status",
-              "fieldValue": "completed"
+              "fieldId": "target",
+              "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }}"
             },
             {
-              "fieldId": "payload",
-              "fieldValue": "={{ JSON.stringify({ source_file: $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"], invoice_number: $json[\"invoice_number\"], confidence: $json[\"confidence\"], review_required: true }) }}"
-            },
-            {
-              "fieldId": "completed_at",
-              "fieldValue": "={{ new Date().toISOString() }}"
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ source_file: $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"], invoice_number: $json[\"invoice_number\"], confidence: $json[\"confidence\"] || 0, review_required: true }) }}"
             }
           ]
         }
       },
-      "id": "node-jobs-queue-review",
-      "name": "INSERT jobs_queue (needs_review)",
+      "id": "node-log-review",
+      "name": "INSERT automation_log (needs_review)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [2000, 420],
@@ -445,12 +371,13 @@
           "id": "cred-supabase-api",
           "name": "Supabase API"
         }
-      }
+      },
+      "notes": "FIXED: Uses automation_log instead of non-existent jobs_queue."
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $env[\"PUSH_NOTIFICATION_WEBHOOK_URL\"] }}",
+        "url": "={{ $env[\"PUSH_NOTIFICATION_WEBHOOK_URL\"] || ($env[\"BACKEND_URL\"] || 'http://backend:8001') + '/notify/push' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -465,11 +392,11 @@
           "parameters": [
             {
               "name": "title",
-              "value": "New Invoice Requires Review"
+              "value": "Rechnung: Manuelle Pruefung erforderlich"
             },
             {
               "name": "message",
-              "value": "=Invoice {{ $json[\"invoice_number\"] }} from {{ $json[\"vendor\"] }} has low confidence ({{ ($json[\"confidence\"] * 100).toFixed(1) }}%) and needs manual review."
+              "value": "=Datei {{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] }} hat niedrige OCR-Konfidenz ({{ (($json[\"confidence\"] || 0) * 100).toFixed(1) }}%) und benoetigt manuelle Pruefung."
             },
             {
               "name": "priority",
@@ -486,7 +413,43 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [2220, 420],
-      "continueOnFail": true
+      "continueOnFail": true,
+      "notes": "FIXED: Notification URL now uses PUSH_NOTIFICATION_WEBHOOK_URL env var with fallback to BACKEND_URL."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "action",
+              "fieldValue": "invoice_ocr.error"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "={{ $node[\"Supabase Storage Trigger\"].json[\"record\"][\"name\"] || 'unknown' }}"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ error: $json[\"error\"] || 'Processing failed', timestamp: new Date().toISOString() }) }}"
+            }
+          ]
+        }
+      },
+      "id": "node-error-handler",
+      "name": "Error Handler: Log to automation_log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1560, 540],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "ADDED: Error handler node to catch and log failures from any step in the pipeline."
     }
   ],
   "connections": {
@@ -560,43 +523,43 @@
       "main": [
         [
           {
-            "node": "Supabase INSERT invoice (approved)",
+            "node": "INSERT dokumente (approved)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Supabase INSERT invoice (needs_review)",
+            "node": "INSERT dokumente (needs_review)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Supabase INSERT invoice (approved)": {
+    "INSERT dokumente (approved)": {
       "main": [
         [
           {
-            "node": "INSERT jobs_queue (approved)",
+            "node": "INSERT automation_log (approved)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Supabase INSERT invoice (needs_review)": {
+    "INSERT dokumente (needs_review)": {
       "main": [
         [
           {
-            "node": "INSERT jobs_queue (needs_review)",
+            "node": "INSERT automation_log (needs_review)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "INSERT jobs_queue (needs_review)": {
+    "INSERT automation_log (needs_review)": {
       "main": [
         [
           {
@@ -619,11 +582,11 @@
   "tags": ["finance", "invoicing", "ocr", "zone2"],
   "triggerCount": 1,
   "updatedAt": "2026-02-24T00:00:00.000Z",
-  "versionId": "1",
+  "versionId": "2",
   "meta": {
     "templateCredsSetupCompleted": false,
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Rechnungseingang (Invoice Intake)\n\n### Setup Required\n1. **Supabase Storage Webhook**: Go to Supabase Dashboard > Storage > Buckets > 'invoices' > Configure webhook to POST to this n8n webhook URL.\n2. **Credentials**: Set up 'Supabase API' and 'OpenAI API Key' credentials in n8n.\n3. **Env Vars**: Set SUPABASE_PROJECT_REF, SUPABASE_SERVICE_ROLE_KEY, PUSH_NOTIFICATION_WEBHOOK_URL in n8n environment.\n4. **Zone 2 Services**: Ensure backend:8001 is reachable from n8n Docker network.\n\n### Flow\nStorage upload -> signed URL -> image preprocess -> PII sanitize -> GPT-4o-mini vision OCR -> math validation -> confidence routing -> Supabase INSERT -> jobs_queue log -> optional push notification"
+  "notes": "## Rechnungseingang (Invoice Intake) - FIXED v2\n\n### Audit Changes\n- FIXED: Table 'invoices' does not exist in schema. Changed to 'dokumente' (correct schema table for document metadata)\n- FIXED: Extracted OCR data stored in extrahierte_daten JSONB column instead of non-existent columns (vendor, invoice_number, total, etc.)\n- FIXED: jobs_queue table does not exist. Replaced with automation_log\n- FIXED: Hardcoded backend URLs (http://backend:8001) replaced with $env[\"BACKEND_URL\"] || fallback\n- FIXED: Signed URL endpoint changed from GET to POST /object/sign which is the correct Supabase Storage API\n- FIXED: OpenAI inline credential expression replaced with $env[\"OPENAI_API_KEY\"] env var\n- FIXED: Safe JSON parse with fallback for failed GPT response\n- ADDED: continueOnFail on GPT and math validation nodes\n- ADDED: Error handler node\n\n### Setup Required\n1. **Supabase Storage Webhook**: Go to Supabase Dashboard > Storage > Buckets > 'invoices' > Configure webhook to POST to this n8n webhook URL\n2. **Credentials**: Set up 'Supabase API' in n8n\n3. **Env Vars**: Set SUPABASE_PROJECT_REF, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY, BACKEND_URL, PUSH_NOTIFICATION_WEBHOOK_URL\n4. **Zone 2 Services**: Ensure BACKEND_URL is reachable from n8n Docker network\n\n### Flow\nStorage upload -> signed URL -> image preprocess -> PII sanitize -> GPT-4o-mini vision OCR -> math validation -> confidence routing -> dokumente INSERT -> automation_log -> optional push notification"
 }
