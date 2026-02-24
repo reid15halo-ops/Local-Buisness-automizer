@@ -4,6 +4,7 @@
 
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -416,17 +417,18 @@ async function processWithGemini(
         .select()
         .single()
 
-    // 4. Generate PDF (simplified - would need actual PDF library)
-    const pdfUrl = await generateAngebotPDF(angebot, analysis, email)
+    // 4. Generate PDF and upload to Supabase Storage
+    const { url: pdfUrl, bytes: pdfBytes } = await generateAngebotPDF(supabase, angebot, analysis, email)
 
-    // 5. Send response email with offer
+    // 5. Send response email with offer (PDF attached)
     await sendAngebotEmail(
         email.from.email,
         analysis.kunde.name,
         angebotNummer,
         pdfUrl,
         enrichedPositionen,
-        { netto, mwst, brutto }
+        { netto, mwst, brutto },
+        pdfBytes
     )
 
     // 6. Update email record
@@ -461,33 +463,144 @@ async function processWithGemini(
 }
 
 // ============================================
-// PDF Generation (Simplified)
+// PDF Generation
 // ============================================
-async function generateAngebotPDF(angebot: any, analysis: GeminiAnalysisResult, email: InboundEmail): Promise<string> {
-    // In production, this would use a PDF library
-    // For now, return a placeholder URL
-    // TODO: Implement actual PDF generation with jsPDF or similar
+async function generateAngebotPDF(
+    supabase: any,
+    angebot: any,
+    analysis: GeminiAnalysisResult,
+    email: InboundEmail
+): Promise<{ url: string, bytes: Uint8Array }> {
+    const pdfDoc = await PDFDocument.create()
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
-    const pdfContent = {
-        type: 'angebot',
-        nummer: angebot.nummer,
-        datum: new Date().toISOString().split('T')[0],
-        kunde: {
-            name: analysis.kunde.name,
-            firma: analysis.kunde.firma,
-            email: email.from.email
-        },
-        positionen: angebot.positionen,
-        summen: {
-            netto: angebot.netto,
-            mwst: angebot.mwst,
-            brutto: angebot.brutto
+    const pageWidth = 595.28  // A4
+    const pageHeight = 841.89
+    const margin = 50
+    const darkBlue = rgb(0.17, 0.24, 0.31)
+    const accentBlue = rgb(0.20, 0.60, 0.86)
+    const grey = rgb(0.5, 0.5, 0.5)
+
+    let currentPage = pdfDoc.addPage([pageWidth, pageHeight])
+    let y = pageHeight - margin
+
+    const addPageIfNeeded = () => {
+        if (y < 120) {
+            currentPage = pdfDoc.addPage([pageWidth, pageHeight])
+            y = pageHeight - margin
         }
     }
 
-    // Store PDF data in Supabase Storage or return inline
-    // For now, we'll include it in the email as text
-    return 'inline' // Placeholder
+    // Header bar
+    currentPage.drawRectangle({ x: 0, y: pageHeight - 80, width: pageWidth, height: 80, color: darkBlue })
+    currentPage.drawText('FreyAI Visions', { x: margin, y: pageHeight - 48, size: 20, font: fontBold, color: rgb(1, 1, 1) })
+    currentPage.drawText(`Angebot ${angebot.nummer}`, { x: margin, y: pageHeight - 68, size: 11, font: fontRegular, color: rgb(0.8, 0.8, 0.8) })
+
+    y = pageHeight - 105
+
+    // Date + number (top right)
+    const datum = new Date().toLocaleDateString('de-DE')
+    currentPage.drawText(`Datum: ${datum}`, { x: pageWidth - margin - 130, y: y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(`Angebot-Nr.: ${angebot.nummer}`, { x: pageWidth - margin - 130, y: y - 14, size: 10, font: fontRegular, color: darkBlue })
+
+    // Customer block
+    currentPage.drawText('An:', { x: margin, y, size: 10, font: fontBold, color: darkBlue })
+    const addressLines = [analysis.kunde.name, analysis.kunde.firma, email.from.email].filter(Boolean) as string[]
+    addressLines.forEach((line, i) => {
+        currentPage.drawText(line, { x: margin + 30, y: y - i * 14, size: 10, font: fontRegular, color: darkBlue })
+    })
+    y -= addressLines.length * 14 + 25
+
+    // Section divider
+    currentPage.drawText('Leistungsübersicht', { x: margin, y, size: 13, font: fontBold, color: darkBlue })
+    y -= 8
+    currentPage.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, thickness: 1, color: accentBlue })
+    y -= 18
+
+    // Column headers
+    const col = { pos: margin, desc: margin + 35, qty: 330, unit: 370, price: 415, total: 490 }
+    ;[
+        { x: col.pos, text: 'Pos.' },
+        { x: col.desc, text: 'Beschreibung' },
+        { x: col.qty, text: 'Menge' },
+        { x: col.unit, text: 'Einh.' },
+        { x: col.price, text: 'Einzelpr.' },
+        { x: col.total, text: 'Gesamt' },
+    ].forEach(({ x, text }) => {
+        currentPage.drawText(text, { x, y, size: 9, font: fontBold, color: darkBlue })
+    })
+    y -= 12
+
+    // Positions
+    const positionen: any[] = angebot.positionen || []
+    for (const pos of positionen) {
+        addPageIfNeeded()
+
+        const desc = String(pos.beschreibung || '')
+        const line1 = desc.substring(0, 52)
+        const line2 = desc.length > 52 ? desc.substring(52, 104) : ''
+        const rowHeight = line2 ? 24 : 14
+
+        currentPage.drawText(String(pos.position ?? ''), { x: col.pos, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(line1, { x: col.desc, y, size: 9, font: fontRegular, color: darkBlue })
+        if (line2) currentPage.drawText(line2, { x: col.desc, y: y - 11, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(String(pos.menge ?? ''), { x: col.qty, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(String(pos.einheit || ''), { x: col.unit, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(pdfCurrency(pos.einzelpreis), { x: col.price, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(pdfCurrency(pos.gesamt), { x: col.total, y, size: 9, font: fontRegular, color: darkBlue })
+        y -= rowHeight
+    }
+
+    // Totals
+    y -= 8
+    currentPage.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, thickness: 0.5, color: grey })
+    y -= 16
+
+    currentPage.drawText('Netto:', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(pdfCurrency(angebot.netto), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
+    y -= 14
+
+    currentPage.drawText('MwSt. (19%):', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(pdfCurrency(angebot.mwst), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
+    y -= 6
+
+    currentPage.drawLine({ start: { x: col.price - 5, y }, end: { x: pageWidth - margin, y }, thickness: 1, color: darkBlue })
+    y -= 16
+
+    currentPage.drawText('Gesamtbetrag:', { x: col.price, y, size: 11, font: fontBold, color: darkBlue })
+    currentPage.drawText(pdfCurrency(angebot.brutto), { x: col.total, y, size: 11, font: fontBold, color: darkBlue })
+    y -= 30
+
+    // Terms
+    currentPage.drawText('Gültigkeitsdauer: 30 Tage ab Angebotsdatum', { x: margin, y, size: 9, font: fontRegular, color: grey })
+    y -= 13
+    currentPage.drawText('Zahlungsbedingungen: 14 Tage netto nach Erhalt der Rechnung', { x: margin, y, size: 9, font: fontRegular, color: grey })
+
+    // Footer
+    currentPage.drawLine({ start: { x: margin, y: 60 }, end: { x: pageWidth - margin, y: 60 }, thickness: 0.5, color: grey })
+    currentPage.drawText('FreyAI Visions  |  info@freyai-visions.de', { x: margin, y: 44, size: 8, font: fontRegular, color: grey })
+
+    const bytes = await pdfDoc.save()
+
+    // Upload to Supabase Storage
+    const fileName = `${angebot.nummer}.pdf`
+    const { error: uploadError } = await supabase.storage
+        .from('angebote')
+        .upload(fileName, bytes, { contentType: 'application/pdf', upsert: true })
+
+    if (uploadError) {
+        console.error('PDF upload to storage failed:', uploadError)
+        return { url: 'inline', bytes }
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('angebote').getPublicUrl(fileName)
+    return { url: publicUrl, bytes }
+}
+
+function pdfCurrency(amount: number): string {
+    if (amount == null || isNaN(amount)) return '0,00 €'
+    return `${amount.toFixed(2).replace('.', ',')} €`
 }
 
 // ============================================
@@ -499,7 +612,8 @@ async function sendAngebotEmail(
     angebotNummer: string,
     pdfUrl: string,
     positionen: any[],
-    summen: { netto: number, mwst: number, brutto: number }
+    summen: { netto: number, mwst: number, brutto: number },
+    pdfBytes?: Uint8Array
 ) {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
@@ -563,6 +677,8 @@ async function sendAngebotEmail(
                     <p><strong>Gültigkeitsdauer:</strong> 30 Tage ab Angebotsdatum</p>
                     <p><strong>Zahlungsbedingungen:</strong> 14 Tage netto nach Erhalt der Rechnung</p>
 
+                    ${pdfUrl && pdfUrl !== 'inline' ? `<p><a href="${escapeHtml(pdfUrl)}" style="display:inline-block;background:#2c3e50;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">📄 Angebot als PDF herunterladen</a></p>` : ''}
+
                     <p>Bei Fragen oder für weitere Informationen stehen wir Ihnen gerne zur Verfügung.</p>
 
                     <p>Mit freundlichen Grüßen<br>
@@ -581,6 +697,13 @@ async function sendAngebotEmail(
         </html>
     `
 
+    let pdfBase64: string | undefined
+    if (pdfBytes) {
+        let binary = ''
+        pdfBytes.forEach(b => binary += String.fromCharCode(b))
+        pdfBase64 = btoa(binary)
+    }
+
     await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -592,7 +715,13 @@ async function sendAngebotEmail(
             to: [to],
             subject: `Ihr Angebot ${angebotNummer} - FreyAI Visions`,
             html: htmlBody,
-            reply_to: 'info@handwerkflow.de'
+            reply_to: 'info@handwerkflow.de',
+            ...(pdfBase64 && {
+                attachments: [{
+                    filename: `${angebotNummer}.pdf`,
+                    content: pdfBase64
+                }]
+            })
         }),
     })
 }
