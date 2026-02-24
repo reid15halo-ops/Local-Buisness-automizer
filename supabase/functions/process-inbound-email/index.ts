@@ -4,11 +4,28 @@
 
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// ============================================
+// Configurable business defaults (override via env vars or admin_settings)
+// ============================================
+// Tax rate: set DEFAULT_TAX_RATE env var to override (e.g. 0.07 for reduced rate)
+const DEFAULT_TAX_RATE = parseFloat(Deno.env.get('DEFAULT_TAX_RATE') ?? '0.19')
+
+// Hourly rate fallback: admin_settings.stundensatz > env var > 65 EUR
+const DEFAULT_STUNDENSATZ = parseFloat(Deno.env.get('DEFAULT_STUNDENSATZ') ?? '65')
+
+// Sender addresses: configure per-deployment via env vars
+const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') ?? 'angebote@handwerkflow.de'
+const REPLY_TO_EMAIL = Deno.env.get('REPLY_TO_EMAIL') ?? 'info@handwerkflow.de'
+
+// Company phone shown in email footers (leave empty to omit)
+const COMPANY_PHONE = Deno.env.get('COMPANY_PHONE') ?? ''
 
 // ============================================
 // Types
@@ -74,6 +91,41 @@ function escapeHtml(s: string | null | undefined): string {
 }
 
 // ============================================
+// Document Number Generator
+// ============================================
+function generateDocumentNumber(prefix: string): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+    return `${prefix}-${year}${month}${day}-${random}`;
+}
+
+// ============================================
+// Rate Limiter (in-memory, resets on cold start)
+// ============================================
+
+// Simple in-memory rate limiter (resets on function cold start)
+const rateLimitMap = new Map<string, { count: number; windowStart: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 20; // max 20 emails per sender per minute
+
+function checkRateLimit(senderEmail: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(senderEmail);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(senderEmail, { count: 1, windowStart: now });
+    return true; // allowed
+  }
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false; // rate limited
+  }
+  entry.count++;
+  return true; // allowed
+}
+
+// ============================================
 // Main Handler
 // ============================================
 serve(async (req) => {
@@ -82,25 +134,59 @@ serve(async (req) => {
     }
 
     // C-1: Webhook signature verification via shared secret
+    // C-1: Webhook signature verification via shared secret
+    // Hard-fail if RESEND_WEBHOOK_SECRET is not configured — unauthenticated requests are never allowed.
     const webhookSecret = Deno.env.get('RESEND_WEBHOOK_SECRET')
-    if (webhookSecret) {
-        const authHeader = req.headers.get('Authorization')
-        if (authHeader !== `Bearer ${webhookSecret}`) {
-            return new Response(
-                JSON.stringify({ error: 'Unauthorized' }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
-        }
-    } else {
-        console.warn('process-inbound-email: RESEND_WEBHOOK_SECRET is not set - webhook requests are unauthenticated')
+    if (!webhookSecret) {
+        console.error('process-inbound-email: RESEND_WEBHOOK_SECRET is not set - rejecting all requests')
+        return new Response(
+            JSON.stringify({ error: 'Server misconfiguration: webhook secret not configured' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+    }
+    const authHeader = req.headers.get('Authorization')
+    if (authHeader !== `Bearer ${webhookSecret}`) {
+        return new Response(
+            JSON.stringify({ error: 'Unauthorized' }),
+            { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
     }
 
     try {
         const email: InboundEmail = await req.json()
 
+        // Extract fields for validation
+        const fromEmail: string = email.from?.email ?? ''
+        let subject: string = email.subject ?? ''
+        let body: string = email.text ?? ''
+
+        // Validate inbound email fields
+        const MAX_SUBJECT_LENGTH = 500;
+        const MAX_BODY_LENGTH = 50000;
+        const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!fromEmail || !EMAIL_REGEX.test(fromEmail)) {
+          console.warn('[webhook] Invalid or missing from email:', fromEmail);
+          return new Response(JSON.stringify({ error: 'Invalid sender email' }), { status: 400 });
+        }
+        if (subject && subject.length > MAX_SUBJECT_LENGTH) {
+          console.warn('[webhook] Subject too long, truncating');
+          subject = subject.slice(0, MAX_SUBJECT_LENGTH);
+        }
+        if (body && body.length > MAX_BODY_LENGTH) {
+          console.warn('[webhook] Body too long, truncating to', MAX_BODY_LENGTH, 'chars');
+          body = body.slice(0, MAX_BODY_LENGTH);
+        }
+
+        // Rate limit check (after email is validated)
+        if (!checkRateLimit(fromEmail)) {
+          console.warn('[webhook] Rate limit exceeded for sender:', fromEmail);
+          return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), { status: 429 });
+        }
+
         console.log('Inbound email received:', {
-            from: email.from.email,
-            subject: email.subject
+            from: fromEmail,
+            subject: subject
         })
 
         // Initialize Supabase with service role (no auth required for webhooks)
@@ -302,13 +388,25 @@ Beispiel 2 - UNVOLLSTÄNDIG:
         throw new Error('No response from Gemini')
     }
 
-    // Extract JSON from response (remove markdown if present)
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
-    if (!jsonMatch) {
-        throw new Error('Invalid JSON response from Gemini')
-    }
+    return extractJsonFromGeminiResponse(text)
+}
 
-    return JSON.parse(jsonMatch[0])
+function extractJsonFromGeminiResponse(text: string): unknown {
+  // Try to find JSON block wrapped in ```json ... ``` or ``` ... ```
+  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlockMatch) {
+    try { return JSON.parse(codeBlockMatch[1].trim()); } catch {}
+  }
+  // Try to find raw JSON object or array
+  const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+  if (jsonMatch) {
+    try { return JSON.parse(jsonMatch[1]); } catch {}
+  }
+  // Try parsing the entire text as JSON
+  try { return JSON.parse(text.trim()); } catch {}
+
+  console.error('[extractJson] Failed to extract JSON from Gemini response, first 200 chars:', text.slice(0, 200));
+  throw new Error('Could not extract valid JSON from Gemini response');
 }
 
 // ============================================
@@ -320,6 +418,21 @@ async function processWithGemini(
     analysis: GeminiAnalysisResult,
     emailRecordId: string
 ) {
+    // M-4: Resolve user_id from recipient email for multi-tenancy
+    const toEmail = email.to
+    let resolvedUserId: string | null = null;
+    if (toEmail) {
+      const { data: userMapping } = await supabase
+        .from('email_routing')
+        .select('user_id')
+        .eq('email', toEmail)
+        .single();
+      resolvedUserId = userMapping?.user_id ?? null;
+      if (!resolvedUserId) {
+        console.warn('[processWithGemini] No user_id found for recipient:', toEmail);
+      }
+    }
+
     // 1. Create or find customer
     const { data: existingCustomer } = await supabase
         .from('kunden')
@@ -352,7 +465,8 @@ async function processWithGemini(
                 firma: analysis.kunde.firma,
                 email: email.from.email,
                 telefon: analysis.kunde.telefon,
-                quelle: 'email-automation'
+                quelle: 'email-automation',
+                ...(resolvedUserId ? { user_id: resolvedUserId } : {})
             })
             .select()
             .single()
@@ -361,8 +475,8 @@ async function processWithGemini(
     }
 
     // 2. Create Anfrage
-    const anfrageNummer = `ANF-${Date.now()}`
-    const { data: anfrage } = await supabase
+    const anfrageNummer = generateDocumentNumber('ANF')
+    const { data: anfrage, error: anfrageError } = await supabase
         .from('anfragen')
         .insert({
             nummer: anfrageNummer,
@@ -372,13 +486,26 @@ async function processWithGemini(
             budget: analysis.anfrage.budget,
             termin: analysis.anfrage.termin,
             status: 'neu',
-            quelle: 'email'
+            quelle: 'email',
+            ...(resolvedUserId ? { user_id: resolvedUserId } : {})
         })
         .select()
         .single()
+    if (anfrageError || !anfrage) {
+        console.error('[processWithGemini] Failed to insert anfrage:', anfrageError)
+        throw new Error('Failed to create anfrage record')
+    }
 
-    // 3. Calculate prices and create Angebot
-    const stundensatz = 65 // Default hourly rate
+    // 3. Fetch admin settings (for configurable business values)
+    // Falls back to env var DEFAULT_STUNDENSATZ, then hardcoded 65 as last resort
+    const { data: adminSettings } = await supabase
+        .from('admin_settings')
+        .select('stundensatz, payment_days')
+        .single()
+
+    // 4. Calculate prices and create Angebot
+    // Priority: admin_settings.stundensatz > DEFAULT_STUNDENSATZ env var > 65
+    const stundensatz = adminSettings?.stundensatz ?? DEFAULT_STUNDENSATZ
 
     // Calculate totals
     let netto = 0
@@ -395,11 +522,11 @@ async function processWithGemini(
         }
     })
 
-    const mwst = netto * 0.19
+    const mwst = netto * DEFAULT_TAX_RATE
     const brutto = netto + mwst
 
-    const angebotNummer = `ANG-${Date.now()}`
-    const { data: angebot } = await supabase
+    const angebotNummer = generateDocumentNumber('ANG')
+    const { data: angebot, error: angebotError } = await supabase
         .from('angebote')
         .insert({
             nummer: angebotNummer,
@@ -411,22 +538,28 @@ async function processWithGemini(
             brutto: brutto,
             status: 'versendet',
             arbeitszeit: analysis.geschaetzteStunden,
-            versanddatum: new Date().toISOString()
+            versanddatum: new Date().toISOString(),
+            ...(resolvedUserId ? { user_id: resolvedUserId } : {})
         })
         .select()
         .single()
+    if (angebotError || !angebot) {
+        console.error('[processWithGemini] Failed to insert angebot:', angebotError)
+        throw new Error('Failed to create angebot record')
+    }
 
-    // 4. Generate PDF (simplified - would need actual PDF library)
-    const pdfUrl = await generateAngebotPDF(angebot, analysis, email)
+    // 4. Generate PDF and upload to Supabase Storage
+    const { url: pdfUrl, bytes: pdfBytes } = await generateAngebotPDF(supabase, angebot, analysis, email)
 
-    // 5. Send response email with offer
+    // 5. Send response email with offer (PDF attached)
     await sendAngebotEmail(
         email.from.email,
         analysis.kunde.name,
         angebotNummer,
         pdfUrl,
         enrichedPositionen,
-        { netto, mwst, brutto }
+        { netto, mwst, brutto },
+        pdfBytes
     )
 
     // 6. Update email record
@@ -461,34 +594,145 @@ async function processWithGemini(
 }
 
 // ============================================
-// PDF Generation (Simplified)
+// PDF Generation
 // ============================================
-async function generateAngebotPDF(angebot: any, analysis: GeminiAnalysisResult, email: InboundEmail): Promise<string> {
-    // In production, this would use a PDF library
-    // For now, return a placeholder URL
-    // TODO: Implement actual PDF generation with jsPDF or similar
+async function generateAngebotPDF(
+    supabase: any,
+    angebot: any,
+    analysis: GeminiAnalysisResult,
+    email: InboundEmail
+): Promise<{ url: string, bytes: Uint8Array }> {
+    const pdfDoc = await PDFDocument.create()
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
-    const pdfContent = {
-        type: 'angebot',
-        nummer: angebot.nummer,
-        datum: new Date().toISOString().split('T')[0],
-        kunde: {
-            name: analysis.kunde.name,
-            firma: analysis.kunde.firma,
-            email: email.from.email
-        },
-        positionen: angebot.positionen,
-        summen: {
-            netto: angebot.netto,
-            mwst: angebot.mwst,
-            brutto: angebot.brutto
+    const pageWidth = 595.28  // A4
+    const pageHeight = 841.89
+    const margin = 50
+    const darkBlue = rgb(0.17, 0.24, 0.31)
+    const accentBlue = rgb(0.20, 0.60, 0.86)
+    const grey = rgb(0.5, 0.5, 0.5)
+
+    let currentPage = pdfDoc.addPage([pageWidth, pageHeight])
+    let y = pageHeight - margin
+
+    const addPageIfNeeded = () => {
+        if (y < 120) {
+            currentPage = pdfDoc.addPage([pageWidth, pageHeight])
+            y = pageHeight - margin
         }
     }
 
-    // Store PDF data in Supabase Storage or return inline
-    // For now, we'll include it in the email as text
-    return 'inline' // Placeholder
+    // Header bar
+    currentPage.drawRectangle({ x: 0, y: pageHeight - 80, width: pageWidth, height: 80, color: darkBlue })
+    currentPage.drawText('FreyAI Visions', { x: margin, y: pageHeight - 48, size: 20, font: fontBold, color: rgb(1, 1, 1) })
+    currentPage.drawText(`Angebot ${angebot.nummer}`, { x: margin, y: pageHeight - 68, size: 11, font: fontRegular, color: rgb(0.8, 0.8, 0.8) })
+
+    y = pageHeight - 105
+
+    // Date + number (top right)
+    const datum = new Date().toLocaleDateString('de-DE')
+    currentPage.drawText(`Datum: ${datum}`, { x: pageWidth - margin - 130, y: y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(`Angebot-Nr.: ${angebot.nummer}`, { x: pageWidth - margin - 130, y: y - 14, size: 10, font: fontRegular, color: darkBlue })
+
+    // Customer block
+    currentPage.drawText('An:', { x: margin, y, size: 10, font: fontBold, color: darkBlue })
+    const addressLines = [analysis.kunde.name, analysis.kunde.firma, email.from.email].filter(Boolean) as string[]
+    addressLines.forEach((line, i) => {
+        currentPage.drawText(line, { x: margin + 30, y: y - i * 14, size: 10, font: fontRegular, color: darkBlue })
+    })
+    y -= addressLines.length * 14 + 25
+
+    // Section divider
+    currentPage.drawText('Leistungsübersicht', { x: margin, y, size: 13, font: fontBold, color: darkBlue })
+    y -= 8
+    currentPage.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, thickness: 1, color: accentBlue })
+    y -= 18
+
+    // Column headers
+    const col = { pos: margin, desc: margin + 35, qty: 330, unit: 370, price: 415, total: 490 }
+    ;[
+        { x: col.pos, text: 'Pos.' },
+        { x: col.desc, text: 'Beschreibung' },
+        { x: col.qty, text: 'Menge' },
+        { x: col.unit, text: 'Einh.' },
+        { x: col.price, text: 'Einzelpr.' },
+        { x: col.total, text: 'Gesamt' },
+    ].forEach(({ x, text }) => {
+        currentPage.drawText(text, { x, y, size: 9, font: fontBold, color: darkBlue })
+    })
+    y -= 12
+
+    // Positions
+    const positionen: any[] = angebot.positionen || []
+    for (const pos of positionen) {
+        addPageIfNeeded()
+
+        const desc = String(pos.beschreibung || '')
+        const line1 = desc.substring(0, 52)
+        const line2 = desc.length > 52 ? desc.substring(52, 104) : ''
+        const rowHeight = line2 ? 24 : 14
+
+        currentPage.drawText(String(pos.position ?? ''), { x: col.pos, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(line1, { x: col.desc, y, size: 9, font: fontRegular, color: darkBlue })
+        if (line2) currentPage.drawText(line2, { x: col.desc, y: y - 11, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(String(pos.menge ?? ''), { x: col.qty, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(String(pos.einheit || ''), { x: col.unit, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(formatCurrency(pos.einzelpreis), { x: col.price, y, size: 9, font: fontRegular, color: darkBlue })
+        currentPage.drawText(formatCurrency(pos.gesamt), { x: col.total, y, size: 9, font: fontRegular, color: darkBlue })
+        y -= rowHeight
+    }
+
+    // Totals
+    y -= 8
+    currentPage.drawLine({ start: { x: margin, y }, end: { x: pageWidth - margin, y }, thickness: 0.5, color: grey })
+    y -= 16
+
+    currentPage.drawText('Netto:', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(formatCurrency(angebot.netto), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
+    y -= 14
+
+    currentPage.drawText('MwSt. (19%):', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(formatCurrency(angebot.mwst), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
+    y -= 6
+
+    currentPage.drawLine({ start: { x: col.price - 5, y }, end: { x: pageWidth - margin, y }, thickness: 1, color: darkBlue })
+    y -= 16
+
+    currentPage.drawText('Gesamtbetrag:', { x: col.price, y, size: 11, font: fontBold, color: darkBlue })
+    currentPage.drawText(formatCurrency(angebot.brutto), { x: col.total, y, size: 11, font: fontBold, color: darkBlue })
+    y -= 30
+
+    // Terms
+    // Payment terms read from admin_settings, fallback to DEFAULT_PAYMENT_DAYS env var, then 30
+    const validityDays = adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '30'
+    const paymentTerms = adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '14'
+    currentPage.drawText(`Gültigkeitsdauer: ${validityDays} Tage ab Angebotsdatum`, { x: margin, y, size: 9, font: fontRegular, color: grey })
+    y -= 13
+    currentPage.drawText(`Zahlungsbedingungen: ${paymentTerms} Tage netto nach Erhalt der Rechnung`, { x: margin, y, size: 9, font: fontRegular, color: grey })
+
+    // Footer
+    currentPage.drawLine({ start: { x: margin, y: 60 }, end: { x: pageWidth - margin, y: 60 }, thickness: 0.5, color: grey })
+    currentPage.drawText('FreyAI Visions  |  info@freyai-visions.de', { x: margin, y: 44, size: 8, font: fontRegular, color: grey })
+
+    const bytes = await pdfDoc.save()
+
+    // Upload to Supabase Storage
+    const fileName = `${angebot.nummer}.pdf`
+    const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('angebote')
+        .upload(fileName, bytes, { contentType: 'application/pdf', upsert: true })
+
+    if (uploadError) {
+        console.error('[uploadPDF] Storage upload failed:', uploadError)
+        throw new Error(`PDF upload failed: ${uploadError.message}`)
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('angebote').getPublicUrl(fileName)
+    return { url: publicUrl, bytes }
 }
+
+// NOTE: pdfCurrency() removed - use formatCurrency() for all currency formatting in this file
 
 // ============================================
 // Email Responses
@@ -499,12 +743,13 @@ async function sendAngebotEmail(
     angebotNummer: string,
     pdfUrl: string,
     positionen: any[],
-    summen: { netto: number, mwst: number, brutto: number }
+    summen: { netto: number, mwst: number, brutto: number },
+    pdfBytes?: Uint8Array
 ) {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    const senderEmail = Deno.env.get('SENDER_EMAIL') || 'angebote@handwerkflow.de'
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'angebote@handwerkflow.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -560,8 +805,10 @@ async function sendAngebotEmail(
                         </div>
                     </div>
 
-                    <p><strong>Gültigkeitsdauer:</strong> 30 Tage ab Angebotsdatum</p>
-                    <p><strong>Zahlungsbedingungen:</strong> 14 Tage netto nach Erhalt der Rechnung</p>
+                    <p><strong>Gültigkeitsdauer:</strong> ${adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '30'} Tage ab Angebotsdatum</p>
+                    <p><strong>Zahlungsbedingungen:</strong> ${adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '14'} Tage netto nach Erhalt der Rechnung</p>
+
+                    ${pdfUrl && pdfUrl !== 'inline' ? `<p><a href="${escapeHtml(pdfUrl)}" style="display:inline-block;background:#2c3e50;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">📄 Angebot als PDF herunterladen</a></p>` : ''}
 
                     <p>Bei Fragen oder für weitere Informationen stehen wir Ihnen gerne zur Verfügung.</p>
 
@@ -572,7 +819,7 @@ async function sendAngebotEmail(
                 <div class="footer">
                     <p>
                         FreyAI Visions<br>
-                        Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de<br>
+                        ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de<br>
                         Zertifiziert nach DIN EN 1090
                     </p>
                 </div>
@@ -581,20 +828,39 @@ async function sendAngebotEmail(
         </html>
     `
 
-    await fetch('https://api.resend.com/emails', {
+    let pdfBase64: string | undefined
+    if (pdfBytes) {
+        let binary = ''
+        pdfBytes.forEach(b => binary += String.fromCharCode(b))
+        pdfBase64 = btoa(binary)
+    }
+
+    const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${resendKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Angebote <${senderEmail}>`,
+            from: `FreyAI Visions Angebote <${SENDER_EMAIL}>`,
             to: [to],
             subject: `Ihr Angebot ${angebotNummer} - FreyAI Visions`,
             html: htmlBody,
-            reply_to: 'info@handwerkflow.de'
+            reply_to: REPLY_TO_EMAIL,
+            ...(pdfBase64 && {
+                attachments: [{
+                    filename: `${angebotNummer}.pdf`,
+                    content: pdfBase64
+                }]
+            })
         }),
     })
+    const resendResult = await resendResponse.json().catch(() => ({}))
+    if (!resendResponse.ok || resendResult.error) {
+        console.error('[sendAngebotEmail] Resend API error:', resendResult.error)
+        throw new Error(`Email delivery failed: ${resendResult.error?.message ?? resendResponse.statusText}`)
+    }
+    console.log('[sendAngebotEmail] Email sent successfully, id:', resendResult.id)
 }
 
 // ============================================
@@ -609,7 +875,7 @@ async function sendFollowUpQuestions(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    const senderEmail = Deno.env.get('SENDER_EMAIL') || 'info@handwerkflow.de'
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
 
     const questionsHTML = questions.map((q, i) =>
         `<li style="margin-bottom: 12px;"><strong>${i + 1}.</strong> ${escapeHtml(q)}</li>`
@@ -644,26 +910,32 @@ async function sendFollowUpQuestions(
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
                     FreyAI Visions<br>
-                    Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de
+                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de
                 </p>
             </div>
         </body>
         </html>
     `
 
-    await fetch('https://api.resend.com/emails', {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${resendKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Info <${senderEmail}>`,
+            from: `FreyAI Visions Info <${SENDER_EMAIL}>`,
             to: [to],
             subject: 'Rückfrage zu Ihrer Anfrage',
             html: htmlBody
         })
     })
+    const resendResult = await resendResponse.json().catch(() => ({}))
+    if (!resendResponse.ok || resendResult.error) {
+        console.error('[sendFollowUpQuestions] Resend API error:', resendResult.error)
+        throw new Error(`Email delivery failed: ${resendResult.error?.message ?? resendResponse.statusText}`)
+    }
+    console.log('[sendFollowUpQuestions] Email sent successfully, id:', resendResult.id)
 
     return { follow_up_sent: true, questions_count: questions.length }
 }
@@ -675,7 +947,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    const senderEmail = Deno.env.get('SENDER_EMAIL') || 'info@handwerkflow.de'
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -697,34 +969,38 @@ async function sendSimpleConfirmation(to: string, name: string) {
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
                     FreyAI Visions<br>
-                    Tel: +49 (0) xxx xxx xxx | Email: info@freyai-visions.de
+                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de
                 </p>
             </div>
         </body>
         </html>
     `
 
-    await fetch('https://api.resend.com/emails', {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${resendKey}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Info <${senderEmail}>`,
+            from: `FreyAI Visions Info <${SENDER_EMAIL}>`,
             to: [to],
             subject: 'Ihre Anfrage bei FreyAI Visions',
             html: htmlBody
         }),
     })
+    const resendResult = await resendResponse.json().catch(() => ({}))
+    if (!resendResponse.ok || resendResult.error) {
+        console.error('[sendSimpleConfirmation] Resend API error:', resendResult.error)
+        throw new Error(`Email delivery failed: ${resendResult.error?.message ?? resendResponse.statusText}`)
+    }
+    console.log('[sendSimpleConfirmation] Email sent successfully, id:', resendResult.id)
 }
 
 // ============================================
 // Utilities
 // ============================================
+// NOTE: This mirrors formatCurrency() in js/app.js - both format EUR amounts
 function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('de-DE', {
-        style: 'currency',
-        currency: 'EUR'
-    }).format(amount)
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount)
 }

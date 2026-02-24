@@ -70,7 +70,9 @@ class SupabaseClientService {
             this._isConfigured = true;
 
             // Test connectivity (non-blocking — don't fail init if offline)
-            this._checkConnection().catch(() => {});
+            this._checkConnection().catch((err) => {
+                console.warn('[SupabaseClient] Initial connection check failed:', err?.message ?? err);
+            });
 
             // Start periodic connection checks (every 30s)
             this._startConnectionMonitor();

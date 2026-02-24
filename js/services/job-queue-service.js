@@ -151,7 +151,9 @@ class JobQueueService {
                         watchers.forEach(cb => { try { cb(job); } catch (e) {} });
                         this._pendingWatchers.delete(jobId);
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.error('[JobQueueService] Unhandled error:', e);
+                }
             }, 2000);
 
             // Check immediately if job already done
@@ -161,7 +163,9 @@ class JobQueueService {
                 if (job && (job.status === 'done' || job.status === 'failed' || job.status === 'cancelled')) {
                     settle(job);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error('[JobQueueService] Unhandled error:', e);
+            }
         });
     }
 
@@ -409,7 +413,9 @@ class JobQueueService {
      */
     destroy() {
         if (this._realtimeUnsub) {
-            try { this._realtimeUnsub(); } catch (e) {}
+            try { this._realtimeUnsub(); } catch (e) {
+                console.error('[JobQueueService] Unhandled error:', e);
+            }
             this._realtimeUnsub = null;
         }
         this._pendingWatchers.clear();

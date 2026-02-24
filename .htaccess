@@ -6,10 +6,35 @@
 <IfModule mod_headers.c>
     # Content Security Policy (CSP)
     # Prevents XSS, injection attacks, and unauthorized resource loading
-    # TODO: Remove 'unsafe-inline' from script-src once event delegation is fully in place
+    #
+    # Directive explanations:
+    #   default-src 'self'        - Baseline: only load resources from same origin
+    #   script-src                - Controls JavaScript execution sources
+    #     'self'                  - Scripts from same origin only (no unsafe-inline)
+    #     cdn.sheetjs.com         - SheetJS (Excel export functionality)
+    #     cdnjs.cloudflare.com    - cdnjs hosted libraries
+    #     cdn.jsdelivr.net        - jsDelivr hosted libraries
+    #   style-src 'self' 'unsafe-inline' - Inline styles needed for dynamic UI components
+    #   font-src 'self'           - Web fonts from same origin only
+    #   img-src 'self' data: blob: - Images, base64 data URIs, and blob URLs (PDF previews)
+    #   connect-src               - Fetch/XHR destinations
+    #     googleapis.com          - Gemini AI API
+    #     *.supabase.co           - Supabase backend (auth, database, storage)
+    #   worker-src 'self' blob:   - Web Workers including blob-created workers
+    #   frame-src 'none'          - Disallow all iframes (clickjacking protection)
+    #   object-src 'none'         - Disallow Flash/plugin objects
+    #   base-uri 'self'           - Prevent base tag injection attacks
+    #   form-action 'self'        - Forms may only submit to same origin
+    #   upgrade-insecure-requests - Auto-upgrade HTTP to HTTPS
+    #
+    # TODO: Remove 'unsafe-inline' from script-src once all inline scripts are
+    #       converted to event delegation (tracked in GitHub issue)
+    # TODO: Remove 'unsafe-eval' if present after verifying no eval() usage
+    # Each source in script-src must be explicitly reviewed before production
     Header set Content-Security-Policy "\
         default-src 'self'; \
-        script-src 'self' 'unsafe-inline' https://cdn.sheetjs.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; \
+        # TODO: nonces required before removing unsafe-inline from style-src
+        script-src 'self' https://cdn.sheetjs.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; \
         style-src 'self' 'unsafe-inline'; \
         font-src 'self'; \
         img-src 'self' data: blob:; \

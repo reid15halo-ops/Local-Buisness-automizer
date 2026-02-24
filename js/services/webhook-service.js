@@ -145,6 +145,7 @@ class WebhookService {
             this.save();
 
         } catch (error) {
+            console.error('[WebhookService] Webhook delivery failed:', error);
             logEntry.status = 'error';
             logEntry.error = error.message;
             webhook.failureCount++;

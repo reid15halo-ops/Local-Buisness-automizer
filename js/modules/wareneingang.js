@@ -51,7 +51,10 @@ function updateStats() {
         try {
             const txs = window.bankingService.getTransactions({ type: 'debit', category: 'material', matched: false });
             bankPending = txs.length;
-        } catch (e) { /* service not ready */ }
+        } catch (e) {
+            // service not ready — using fallback
+            console.warn('[Wareneingang] Service unavailable, using fallback:', e?.message ?? e);
+        }
     }
     if (elBankPending) {elBankPending.textContent = bankPending;}
 
@@ -65,7 +68,10 @@ function updateStats() {
 // ============================================
 function getWareneingaengeList() {
     if (window.bonScannerService && typeof window.bonScannerService.getWareneingaenge === 'function') {
-        try { return window.bonScannerService.getWareneingaenge() || []; } catch (e) { /* fallback */ }
+        try { return window.bonScannerService.getWareneingaenge() || []; } catch (e) {
+            // service not ready — using fallback
+            console.warn('[Wareneingang] Service unavailable, using fallback:', e?.message ?? e);
+        }
     }
     return store.wareneingaenge || [];
 }
@@ -296,7 +302,10 @@ function renderBankTab() {
             } else {
                 transactions = window.bankingService.getTransactions({ type: 'debit', category: 'material', matched: false });
             }
-        } catch (e) { /* service not ready */ }
+        } catch (e) {
+            // service not ready — using fallback
+            console.warn('[Wareneingang] Service unavailable, using fallback:', e?.message ?? e);
+        }
     }
 
     if (transactions.length === 0) {
@@ -768,14 +777,20 @@ function saveWareneingangLocally(data) {
 // ============================================
 function getAllMaterials() {
     if (window.materialService && typeof window.materialService.getAllMaterials === 'function') {
-        try { return window.materialService.getAllMaterials(); } catch (e) { /* fallback */ }
+        try { return window.materialService.getAllMaterials(); } catch (e) {
+            // service not ready — using fallback
+            console.warn('[Wareneingang] Service unavailable, using fallback:', e?.message ?? e);
+        }
     }
     return [];
 }
 
 function searchMaterials(query) {
     if (window.materialService && typeof window.materialService.searchMaterials === 'function') {
-        try { return window.materialService.searchMaterials(query); } catch (e) { /* fallback */ }
+        try { return window.materialService.searchMaterials(query); } catch (e) {
+            // service not ready — using fallback
+            console.warn('[Wareneingang] Service unavailable, using fallback:', e?.message ?? e);
+        }
     }
     return [];
 }

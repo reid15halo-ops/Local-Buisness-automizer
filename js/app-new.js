@@ -3,6 +3,8 @@
    Complete Quote-to-Invoice Workflow
    Modular Architecture Entry Point
    ============================================ */
+// TODO: read from company settings
+const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
 
 // Module-level convenience shortcuts
 const {
@@ -215,6 +217,10 @@ function initSettings() {
 
     document.getElementById('btn-save-gemini')?.addEventListener('click', () => {
         const key = document.getElementById('gemini-api-key').value.trim();
+        // SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
+        // It is currently stored here for development convenience only.
+        // Production deployment MUST proxy Gemini calls through the backend service
+        // (services/backend/main.py) so the key never reaches the browser.
         localStorage.setItem('gemini_api_key', key);
         window.geminiService = new GeminiService(key);
         updateSettingsStatus();
@@ -534,7 +540,9 @@ function generateSenderEmail() {
         slug = 'firma-' + crypto.randomUUID().substring(0, 8);
     }
 
-    const baseEmail = localStorage.getItem('proton_base_email') || 'noreply@freyai-visions.de';
+    // TODO: NOREPLY_EMAIL should come from company settings, not be hardcoded here
+    const noReplyEmail = settings?.noreply_email ?? 'noreply@handwerkflow.de';
+    const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;
 
@@ -662,8 +670,8 @@ async function runDemoWorkflow() {
         arbeitszeit: demoAuftrag.arbeitszeit,
         materialKosten: demoAuftrag.materialKosten,
         netto: demoAuftrag.netto + demoAuftrag.materialKosten,
-        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * 0.19,
-        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * 1.19,
+        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * DEFAULT_TAX_RATE,
+        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + DEFAULT_TAX_RATE),
         status: 'offen',
         createdAt: new Date().toISOString()
     };

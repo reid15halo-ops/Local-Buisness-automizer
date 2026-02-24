@@ -163,6 +163,10 @@ Antworte NUR im JSON-Format:
 }`;
 
         try {
+            // SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
+            // It is currently read here for development convenience only.
+            // Production deployment MUST proxy Gemini calls through the backend service
+            // (services/backend/main.py) so the key never reaches the browser.
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localStorage.getItem('gemini_api_key')}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

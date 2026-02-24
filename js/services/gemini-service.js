@@ -342,4 +342,8 @@ ${companyName}`
 }
 
 // Create global instance
+// SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
+// It is currently read here for development convenience only.
+// Production deployment MUST proxy Gemini calls through the backend service
+// (services/backend/main.py) so the key never reaches the browser.
 window.geminiService = new GeminiService(localStorage.getItem('gemini_api_key'));

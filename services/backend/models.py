@@ -168,22 +168,46 @@ class CSVRow(BaseModel):
     konto: str = Field(..., description="Account number (Konto)")
     gegenkonto: str = Field(..., description="Counter-account number (Gegenkonto)")
     # Optional extra fields passed through unchanged
-    extra: dict[str, str] = Field(default_factory=dict, description="Any additional CSV columns")
+    extra: dict[str, str] = Field(
+        default_factory=dict, description="Any additional CSV columns"
+    )
 
     @field_validator("betrag", mode="before")
     @classmethod
     def parse_german_decimal(cls, v: Any) -> Decimal:
-        """Accept German-locale decimal strings like '1.234,56' or plain '-123,45'."""
+        """
+        Accept German-locale decimal strings like '1.234,56' or English '999.99'.
+
+        Locale detection:
+          - Both comma and dot present: rightmost separator is the decimal sep.
+          - Only comma: German decimal comma (e.g. '123,45').
+          - Only dot: English decimal point (e.g. '999.99').
+        """
         if isinstance(v, Decimal):
             return v
         if isinstance(v, (int, float)):
             return Decimal(str(v))
-        # str: replace German thousands separator, then decimal comma
-        s = str(v).strip().replace(".", "").replace(",", ".")
+        s = str(v).strip()
+        has_comma = "," in s
+        has_dot = "." in s
+        if has_comma and has_dot:
+            last_comma = s.rfind(",")
+            last_dot = s.rfind(".")
+            if last_comma > last_dot:
+                # German: "1.234,56"
+                s = s.replace(".", "").replace(",", ".")
+            else:
+                # English: "1,234.56"
+                s = s.replace(",", "")
+        elif has_comma:
+            s = s.replace(",", ".")
+        # else only dot or plain integer → use as-is
         try:
             return Decimal(s)
         except Exception as exc:
-            raise ValueError(f"Cannot parse amount '{v}' as Decimal: {exc}") from exc
+            raise ValueError(
+                f"Cannot parse amount '{v}' as Decimal: {exc}"
+            ) from exc
 
 
 class ParseResult(BaseModel):
@@ -205,8 +229,13 @@ class GoBDTransaction(BaseModel):
 
     datum: str = Field(..., description="Date in DD.MM.YYYY format")
     belegnummer: str = Field(..., description="Sequential document number")
-    buchungstext: str = Field(..., description="Booking text (max 60 chars in DATEV)")
-    betrag: Decimal = Field(..., description="Amount (positive = Soll, negative = Haben)")
+    buchungstext: str = Field(
+        ..., description="Booking text (max 60 chars in DATEV)"
+    )
+    betrag: Decimal = Field(
+        ...,
+        description="Amount (always positive; direction indicated by soll_haben)",
+    )
     soll_haben: str = Field(
         ...,
         description="Debit/credit indicator: 'S' (Soll) or 'H' (Haben)",
@@ -216,7 +245,10 @@ class GoBDTransaction(BaseModel):
     gegenkonto: str = Field(..., description="Counter-account")
     fiscal_year: int = Field(..., description="Fiscal year (YYYY)")
     period: int = Field(..., ge=1, le=12, description="Fiscal period (month 1-12)")
-    created_at: Optional[str] = Field(None, description="ISO-8601 creation timestamp for immutability check")
+    created_at: Optional[str] = Field(
+        None,
+        description="ISO-8601 creation timestamp for immutability check",
+    )
 
 
 class DATEVExportRequest(BaseModel):
@@ -242,7 +274,7 @@ class DATEVExportRequest(BaseModel):
         4,
         ge=4,
         le=8,
-        description="Account number length (Sachkontenlänge), typically 4",
+        description="Account number length (Sachkontenlaenge), typically 4",
     )
     description: str = Field("", description="Optional export description / Bezeichnung")
 
@@ -306,11 +338,24 @@ class InvoiceValidateRequest(BaseModel):
             return v
         if isinstance(v, (int, float)):
             return Decimal(str(v))
-        s = str(v).strip().replace(".", "").replace(",", ".")
+        s = str(v).strip()
+        has_comma = "," in s
+        has_dot = "." in s
+        if has_comma and has_dot:
+            last_comma = s.rfind(",")
+            last_dot = s.rfind(".")
+            if last_comma > last_dot:
+                s = s.replace(".", "").replace(",", ".")
+            else:
+                s = s.replace(",", "")
+        elif has_comma:
+            s = s.replace(",", ".")
         try:
             return Decimal(s)
         except Exception as exc:
-            raise ValueError(f"Cannot parse amount '{v}' as Decimal: {exc}") from exc
+            raise ValueError(
+                f"Cannot parse amount '{v}' as Decimal: {exc}"
+            ) from exc
 
 
 class InvoiceValidateResponse(BaseModel):

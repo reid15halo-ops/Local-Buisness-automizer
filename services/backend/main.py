@@ -38,6 +38,7 @@ logger = logging.getLogger(__name__)
 # Router imports (after logging is configured so routers can log at import)
 # ---------------------------------------------------------------------------
 
+from gobd_csv import router as gobd_router  # noqa: E402
 from image_processor import router as image_router  # noqa: E402
 from math_guardrail import router as math_router  # noqa: E402
 from models import ErrorDetail, ErrorResponse, HealthResponse  # noqa: E402
@@ -122,10 +123,12 @@ app = FastAPI(
 # CORS Middleware
 # ---------------------------------------------------------------------------
 
+# ALLOWED_ORIGINS is read from the ALLOWED_ORIGINS env var (comma-separated list).
+# The wildcard Supabase regex has been removed; list every trusted origin explicitly
+# in ALLOWED_ORIGINS so the allowed-origin set is auditable and not open-ended.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://.*\.supabase\.co",  # all Supabase projects
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -242,13 +245,36 @@ async def custom_validation_exception_handler(
         request_id,
         exc.errors(),
     )
+
+    # Pydantic v2 error dicts may contain non-JSON-serializable objects (e.g.
+    # ValueError instances inside the 'ctx' key).  Sanitise them to strings.
+    def _sanitize_errors(errors: list) -> list:
+        safe = []
+        for err in errors:
+            safe_err = {}
+            for k, v in err.items():
+                if k == "ctx" and isinstance(v, dict):
+                    safe_err[k] = {
+                        ck: str(cv) if not isinstance(cv, (str, int, float, bool, type(None))) else cv
+                        for ck, cv in v.items()
+                    }
+                elif isinstance(v, (str, int, float, bool, list, dict, type(None))):
+                    safe_err[k] = v
+                else:
+                    safe_err[k] = str(v)
+            safe.append(safe_err)
+        return safe
+
     return JSONResponse(
         status_code=422,
         content=ErrorResponse(
             error=ErrorDetail(
                 code="VALIDATION_ERROR",
                 message="Request body failed validation",
-                details={"errors": exc.errors(), "request_id": request_id},
+                details={
+                    "errors": _sanitize_errors(exc.errors()),
+                    "request_id": request_id,
+                },
             )
         ).model_dump(),
     )
@@ -291,6 +317,21 @@ async def health_check() -> HealthResponse:
     )
 
 
+@app.get(
+    "/api/health",
+    response_model=HealthResponse,
+    tags=["System"],
+    summary="API health check (versioned path)",
+)
+async def api_health_check() -> HealthResponse:
+    """Alias of /health at the /api prefix for clients that use the versioned API path."""
+    return HealthResponse(
+        status="ok",
+        version=APP_VERSION,
+        services={"gobd_csv": "ok", "math_guardrail": "ok", "pii_sanitizer": "ok"},
+    )
+
+
 # ---------------------------------------------------------------------------
 # Mount routers
 # ---------------------------------------------------------------------------
@@ -298,6 +339,7 @@ async def health_check() -> HealthResponse:
 app.include_router(math_router)
 app.include_router(pii_router)
 app.include_router(image_router)
+app.include_router(gobd_router)
 
 # ---------------------------------------------------------------------------
 # Root redirect to docs
