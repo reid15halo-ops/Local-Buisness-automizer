@@ -8,6 +8,11 @@ set -e  # Exit on error
 
 echo "🚀 Starting Production Deployment..."
 
+# 0. Generate service-worker cache version from git commit hash
+echo "🔑 Step 0: Generating build-time cache version..."
+node build-sw.js
+echo "✅ Service worker cache version updated"
+
 # 1. Build Check
 echo "📋 Step 1: Checking build files..."
 if [ ! -f "index.html" ]; then
@@ -36,6 +41,7 @@ cp offline.html dist/
 # Copy configuration and manifest files
 cp manifest.json dist/
 cp service-worker.js dist/
+cp -r icons dist/
 cp .htaccess dist/
 cp netlify.toml dist/
 

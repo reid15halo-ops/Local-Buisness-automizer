@@ -2,7 +2,6 @@
    Material Management Service
    Excel Import & Price Calculation
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class MaterialService {
     constructor() {

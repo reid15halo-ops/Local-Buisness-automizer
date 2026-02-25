@@ -2,7 +2,6 @@
    Store Service
    Centralized state management
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class StoreService {
     constructor() {

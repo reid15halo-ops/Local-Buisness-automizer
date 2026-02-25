@@ -211,3 +211,7 @@ class CompanySettingsService {
 }
 
 window.companySettings = new CompanySettingsService();
+
+// Global tax rate helper — single source of truth.
+// All modules must call window._getTaxRate() instead of defining their own copy.
+window._getTaxRate = () => window.companySettings?.getTaxRate?.() ?? 0.19;

@@ -449,6 +449,130 @@ FreyAI Visions`
     }
 
     // ============================================
+    // Outgoing Email (via VPS Email Relay)
+    // ============================================
+
+    /**
+     * Send an email through the configured VPS email relay.
+     *
+     * Relay URL and HMAC secret are read from window.APP_CONFIG (populated
+     * by config/app-config.js from .env) with a localStorage fallback for
+     * installations that configure via the setup wizard.
+     *
+     * @param {string} to        - Recipient email address
+     * @param {string} subject   - Email subject line
+     * @param {string} html      - HTML body (plain text auto-derived for non-HTML clients)
+     * @param {Object} [opts]    - Optional overrides: { from, fromName, replyTo, attachments }
+     * @returns {Promise<{success:boolean, messageId?:string, error?:string}>}
+     */
+    async sendEmail(to, subject, html, opts = {}) {
+        const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
+            || localStorage.getItem('freyai_email_relay_url');
+        const secret   = window.APP_CONFIG?.EMAIL_RELAY_SECRET
+            || localStorage.getItem('freyai_email_relay_secret');
+        const companyInfo = window.companySettings
+            ? await window.companySettings.load()
+            : {};
+
+        if (!relayUrl) {
+            console.warn('[EmailService] EMAIL_RELAY_URL not configured — email not sent.');
+            return { success: false, error: 'E-Mail-Relay nicht konfiguriert.' };
+        }
+
+        const fromAddress = opts.from
+            || companyInfo?.noReplyEmail
+            || window.APP_CONFIG?.COMPANY_EMAIL
+            || localStorage.getItem('freyai_company_email')
+            || '';
+        const fromName = opts.fromName
+            || companyInfo?.companyName
+            || window.APP_CONFIG?.COMPANY_NAME
+            || 'FreyAI Visions';
+
+        const payload = {
+            to,
+            subject,
+            html,
+            from: fromAddress,
+            fromName,
+            ...(opts.replyTo  ? { replyTo: opts.replyTo } : {}),
+            ...(opts.attachments ? { attachments: opts.attachments } : {})
+        };
+
+        try {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (secret) {
+                headers['X-Relay-Secret'] = secret;
+            }
+
+            const response = await fetch(`${relayUrl}/send-email`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const msg = result.error || `HTTP ${response.status}`;
+                console.error('[EmailService] Relay error:', msg);
+                return { success: false, error: msg };
+            }
+
+            console.log('[EmailService] Email sent:', subject, '→', to);
+            if (window.storeService) {
+                window.storeService.addActivity('📧', `E-Mail gesendet: ${subject} → ${to}`);
+            }
+            return { success: true, messageId: result.messageId };
+        } catch (err) {
+            console.error('[EmailService] Network error sending email:', err);
+            return { success: false, error: err.message };
+        }
+    }
+
+    /**
+     * Send bulk emails (uses /send-bulk endpoint with relay-side rate limiting).
+     * @param {Array<{to, subject, html}>} messages
+     * @param {Object} [opts]
+     * @returns {Promise<{sent:number, failed:number}>}
+     */
+    async sendBulkEmails(messages, opts = {}) {
+        const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
+            || localStorage.getItem('freyai_email_relay_url');
+        const secret   = window.APP_CONFIG?.EMAIL_RELAY_SECRET
+            || localStorage.getItem('freyai_email_relay_secret');
+
+        if (!relayUrl) {
+            return { sent: 0, failed: messages.length };
+        }
+
+        const companyInfo = window.companySettings
+            ? await window.companySettings.load()
+            : {};
+        const fromAddress = opts.from || companyInfo?.noReplyEmail || '';
+        const fromName    = opts.fromName || companyInfo?.companyName || 'FreyAI Visions';
+
+        const enriched = messages.map(m => ({
+            ...m,
+            from: m.from || fromAddress,
+            fromName: m.fromName || fromName
+        }));
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (secret) headers['X-Relay-Secret'] = secret;
+
+        const response = await fetch(`${relayUrl}/send-bulk`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ messages: enriched })
+        });
+        const result = await response.json().catch(() => ({ sent: 0, failed: messages.length }));
+        return { sent: result.sent ?? 0, failed: result.failed ?? messages.length };
+    }
+
+    // ============================================
     // Email Actions
     // ============================================
     markAsRead(emailId) {

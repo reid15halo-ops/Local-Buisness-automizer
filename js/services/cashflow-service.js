@@ -1,7 +1,6 @@
 /* ============================================
    Cash Flow Service - Forecasting & Predictions
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class CashFlowService {
     constructor() {

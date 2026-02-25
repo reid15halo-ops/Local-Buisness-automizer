@@ -3,7 +3,6 @@
    Complete Quote-to-Invoice Workflow
    Modular Architecture Entry Point
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 // Module-level convenience shortcuts
 const {

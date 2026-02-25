@@ -3,7 +3,6 @@
    Visual drag-and-drop workflow automation engine
    with triggers, conditions, actions, and execution
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class WorkflowBuilderService {
     constructor() {

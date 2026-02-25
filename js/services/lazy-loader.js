@@ -25,6 +25,7 @@ class LazyLoader {
             // CRM & Customer Management - load when Kunden view opened
             crm: [
                 'customer-service',
+                'customer-portal-service',
                 'lead-service',
                 'communication-service',
                 'unified-comm-service',
@@ -142,7 +143,9 @@ class LazyLoader {
             ],
 
             // Agent Workflows & AI Automation (includes agentic executor for automation levels)
+            // approval-queue-service must load before agentic-executor-service initialises
             'agent-workflows': [
+                'approval-queue-service',
                 'agent-workflow-service',
                 'agentic-executor-service'
             ],
@@ -166,9 +169,16 @@ class LazyLoader {
         // UI scripts that need loading after their service
         this.uiGroups = {
             'agent-workflows': ['agent-workflow-ui'],
-            'field-app': ['field-app-ui'],
+            // field-app loads both desktop and mobile UIs; each self-selects based on screen size
+            'field-app': ['field-app-ui', 'field-app-mobile-ui'],
             'aufmass': ['aufmass-ui'],
-            'workflow-builder': ['workflow-builder-ui']
+            'workflow-builder': ['workflow-builder-ui'],
+            // Photo gallery rendered inside job/document detail views
+            'documents': ['photo-gallery-ui'],
+            // Dashboard widgets companion UI for the charts group
+            'charts': ['dashboard-widget-ui'],
+            // Fragebogen import wizard button — injected when setup wizard is active
+            'settings': ['fragebogen-import-ui']
         };
 
         // View to service group mapping
@@ -202,13 +212,16 @@ class LazyLoader {
     }
 
     /**
-     * Load a single service script
+     * Load a single service script with automatic retry (3 attempts, exponential backoff).
+     * After all retries are exhausted the user sees a friendly German error message.
      * @param {string} serviceName - Name of the service file (without .js)
      * @param {string} path - Path prefix (default: 'js/services/')
      * @returns {Promise} Resolves when script is loaded
      */
     async loadScript(serviceName, path = 'js/services/') {
         const fullName = path + serviceName;
+        const MAX_RETRIES = 3;
+        const BACKOFF_MS = [1000, 2000, 4000];
 
         // Already loaded
         if (this.loaded.has(fullName)) {
@@ -220,30 +233,77 @@ class LazyLoader {
             return this.loading.get(fullName);
         }
 
-        // Create new loading promise
-        const promise = new Promise((resolve, reject) => {
+        const attemptLoad = (attempt) => new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = fullName + '.js';
+            // Cache-bust on retries so the browser doesn't serve a cached 404
+            script.src = attempt === 0 ? `${fullName}.js` : `${fullName}.js?_r=${attempt}`;
             script.async = true;
 
             script.onload = () => {
                 this.loaded.add(fullName);
                 this.loading.delete(fullName);
-                console.log(`✅ Lazy loaded: ${serviceName}`);
+                if (attempt > 0) {
+                    console.log(`✅ Lazy loaded after ${attempt} retry(s): ${serviceName}`);
+                } else {
+                    console.log(`✅ Lazy loaded: ${serviceName}`);
+                }
                 resolve();
             };
 
             script.onerror = () => {
-                this.loading.delete(fullName);
-                console.error(`❌ Failed to load: ${serviceName}`);
-                reject(new Error(`Failed to load ${serviceName}`));
+                script.remove();
+                reject(new Error(`Failed to load ${serviceName} (attempt ${attempt + 1})`));
             };
 
             document.body.appendChild(script);
         });
 
+        const promise = (async () => {
+            for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+                try {
+                    if (attempt > 0) {
+                        await new Promise(r => setTimeout(r, BACKOFF_MS[attempt - 1]));
+                        console.warn(`🔄 Retrying (${attempt}/${MAX_RETRIES}): ${serviceName}`);
+                    }
+                    return await attemptLoad(attempt);
+                } catch (err) {
+                    if (attempt === MAX_RETRIES) {
+                        this.loading.delete(fullName);
+                        console.error(`❌ Permanent load failure: ${serviceName}`);
+                        this._showLoadError(serviceName);
+                        throw err;
+                    }
+                }
+            }
+        })();
+
         this.loading.set(fullName, promise);
         return promise;
+    }
+
+    /**
+     * Show a friendly German error when a service cannot be loaded after all retries.
+     * @param {string} serviceName
+     */
+    _showLoadError(serviceName) {
+        const msg = `Eine Funktion konnte nicht geladen werden (${serviceName}). ` +
+                    `Bitte prüfen Sie Ihre Internetverbindung und laden Sie die Seite neu.`;
+        if (window.errorDisplayService?.showError) {
+            window.errorDisplayService.showError(msg);
+        } else if (window.showToast) {
+            window.showToast(msg, 'error');
+        } else {
+            const banner = document.createElement('div');
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;' +
+                'padding:12px 16px;z-index:99999;font-size:14px;text-align:center;';
+            banner.textContent = msg;
+            const close = document.createElement('button');
+            close.textContent = '✕';
+            close.style.cssText = 'margin-left:12px;background:transparent;border:none;color:#fff;cursor:pointer;font-size:16px;';
+            close.onclick = () => banner.remove();
+            banner.appendChild(close);
+            document.body?.appendChild(banner);
+        }
     }
 
     /**

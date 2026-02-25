@@ -139,19 +139,42 @@ class SmsReminderService {
         return result;
     }
 
-    // Send SMS via API (demo implementation)
+    /**
+     * Send an SMS via the configured gateway (Twilio, sipgate, or MessageBird).
+     * Provider and credentials are read from window.APP_CONFIG / localStorage.
+     *
+     * Supported providers (set SMS_PROVIDER env var):
+     *   twilio      — requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
+     *   sipgate     — requires SIPGATE_TOKEN_ID, SIPGATE_TOKEN, SIPGATE_SMS_ID
+     *   messagebird — requires MESSAGEBIRD_API_KEY, MESSAGEBIRD_ORIGINATOR
+     *
+     * Falls back to console-only logging when no provider is configured.
+     */
     async sendSms(phoneNumber, message) {
-        // Clean phone number
         const cleanNumber = phoneNumber.replace(/[\s\-\/\(\)]/g, '');
+        const provider    = window.APP_CONFIG?.SMS_PROVIDER
+            || localStorage.getItem('freyai_sms_provider')
+            || 'none';
 
-        // In production: Call sipgate.io, Twilio, or MessageBird API
-        // Demo mode: Log and simulate success
-        console.log(`📱 SMS an ${cleanNumber}:\n${message}`);
+        let result = { success: false, messageId: null, method: provider };
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            if (provider === 'twilio') {
+                result = await this._sendViaTwilio(cleanNumber, message);
+            } else if (provider === 'sipgate') {
+                result = await this._sendViaSipgate(cleanNumber, message);
+            } else if (provider === 'messagebird') {
+                result = await this._sendViaMessageBird(cleanNumber, message);
+            } else {
+                // No provider configured — log only (development / demo mode)
+                console.log(`📱 [SMS-Demo] → ${cleanNumber}:\n${message}`);
+                result = { success: true, messageId: 'demo-' + Date.now(), method: 'demo' };
+            }
+        } catch (err) {
+            console.error('[SmsReminderService] Send error:', err);
+            result = { success: false, error: err.message, method: provider };
+        }
 
-        // Log to communication service
         if (window.communicationService) {
             window.communicationService.logMessage({
                 type: 'sms',
@@ -159,15 +182,69 @@ class SmsReminderService {
                 from: this.settings.senderName,
                 to: cleanNumber,
                 content: message,
-                status: 'sent'
+                status: result.success ? 'sent' : 'failed'
             });
         }
 
-        return {
-            success: true,
-            messageId: 'sms-' + Date.now(),
-            method: 'demo'
-        };
+        return result;
+    }
+
+    async _sendViaTwilio(to, body) {
+        const sid   = window.APP_CONFIG?.TWILIO_ACCOUNT_SID || localStorage.getItem('freyai_twilio_sid');
+        const token = window.APP_CONFIG?.TWILIO_AUTH_TOKEN  || localStorage.getItem('freyai_twilio_token');
+        const from  = window.APP_CONFIG?.TWILIO_FROM_NUMBER || localStorage.getItem('freyai_twilio_from');
+        if (!sid || !token || !from) throw new Error('Twilio credentials nicht konfiguriert');
+
+        const response = await fetch(
+            `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(`${sid}:${token}`),
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ To: to, From: from, Body: body })
+            }
+        );
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || `Twilio HTTP ${response.status}`);
+        return { success: true, messageId: data.sid, method: 'twilio' };
+    }
+
+    async _sendViaSipgate(to, message) {
+        const tokenId = window.APP_CONFIG?.SIPGATE_TOKEN_ID || localStorage.getItem('freyai_sipgate_token_id');
+        const token   = window.APP_CONFIG?.SIPGATE_TOKEN    || localStorage.getItem('freyai_sipgate_token');
+        const smsId   = window.APP_CONFIG?.SIPGATE_SMS_ID   || localStorage.getItem('freyai_sipgate_sms_id');
+        if (!tokenId || !token) throw new Error('sipgate credentials nicht konfiguriert');
+
+        const response = await fetch('https://api.sipgate.com/v2/sessions/sms', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + btoa(`${tokenId}:${token}`),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ smsId: smsId || 's0', recipient: to, message })
+        });
+        if (!response.ok) throw new Error(`sipgate HTTP ${response.status}`);
+        return { success: true, messageId: 'sipgate-' + Date.now(), method: 'sipgate' };
+    }
+
+    async _sendViaMessageBird(to, body) {
+        const apiKey     = window.APP_CONFIG?.MESSAGEBIRD_API_KEY   || localStorage.getItem('freyai_messagebird_key');
+        const originator = window.APP_CONFIG?.MESSAGEBIRD_ORIGINATOR || localStorage.getItem('freyai_messagebird_from') || 'FreyAI';
+        if (!apiKey) throw new Error('MessageBird API-Key nicht konfiguriert');
+
+        const response = await fetch('https://rest.messagebird.com/messages', {
+            method: 'POST',
+            headers: {
+                'Authorization': `AccessKey ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recipients: [to], originator, body })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.errors?.[0]?.description || `MessageBird HTTP ${response.status}`);
+        return { success: true, messageId: data.id, method: 'messagebird' };
     }
 
     // Handle incoming SMS reply
