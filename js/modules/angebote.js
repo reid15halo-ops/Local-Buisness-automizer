@@ -2,7 +2,6 @@
    Angebote Module
    Angebote (quotes) CRUD and UI
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h, showToast } = window.AppUtils;
 
@@ -141,7 +140,12 @@ function initAngebotForm() {
 
             saveStore();
             addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
-            showToast('Angebot erfolgreich erstellt', 'success');
+            showToast('Angebot erfolgreich erstellt — vorläufige Version wird versendet…', 'success');
+
+            // Auto-send preliminary quote in background (non-blocking)
+            sendVorlaeufigAngebot(angebot, anfrage).catch(err =>
+                console.warn('[Angebote] Vorläufiger Versand fehlgeschlagen:', err)
+            );
         }
 
         // Reset modal title back to create mode
@@ -1189,11 +1193,35 @@ function showAngebotDetail(angebotId) {
         </div>`;
     }
 
+    // Kundenportal — generate link for this Angebot if service available
+    const portalToken = window.customerPortalService?.generateAccessToken
+        ? (() => {
+            try {
+                const customerId = angebot.kunde?.id || angebot.kunde?.email || angebot.anfrageId;
+                const existing = window.customerPortalService.tokens?.find(
+                    t => t.customerId === customerId && t.isActive && t.scope === 'quote'
+                );
+                return existing || window.customerPortalService.generateAccessToken(customerId, 'quote', { expiresInDays: 30 });
+            } catch { return null; }
+        })()
+        : null;
+    const portalBase = window.location.origin + window.location.pathname.replace('index.html', '') + 'customer-portal.html';
+    const portalUrl  = portalToken ? `${portalBase}?token=${encodeURIComponent(portalToken.token)}&ref=${h(angebot.id)}` : null;
+
     // Actions
     const actionsHtml = `
-        <div class="form-actions">
+        <div class="form-actions" style="flex-wrap:wrap;gap:8px;">
             <button type="button" class="btn btn-secondary" onclick="closeModal('modal-angebot-detail')">Schliessen</button>
             ${angebot.status === 'offen' ? `<button type="button" class="btn btn-success" onclick="acceptAngebot('${h(angebot.id)}'); closeModal('modal-angebot-detail');">Auftrag erteilen</button>` : ''}
+            ${portalUrl ? `
+            <button type="button" class="btn btn-secondary" title="Kundenportal öffnen"
+                onclick="window.open('${portalUrl}', '_blank')">
+                🔗 Portal öffnen
+            </button>
+            <button type="button" class="btn btn-secondary" title="Direkt-Link kopieren"
+                onclick="navigator.clipboard.writeText('${portalUrl}').then(()=>window.showToast?.('Link kopiert', 'success'))">
+                📋 Link kopieren
+            </button>` : ''}
         </div>`;
 
     // Render
@@ -1257,6 +1285,166 @@ function exportAngebotPDF(id) {
     </body></html>`);
     printWindow.document.close();
     printWindow.print();
+}
+
+// ============================================
+// Vorläufiges Angebot — Auto-Send
+// ============================================
+
+/**
+ * Automatically send a preliminary (vorläufig) quote to the customer immediately
+ * after it is created. The Handwerker gets an in-app notification so they can
+ * supervise and edit before the customer responds.
+ *
+ * Flow:
+ *  1. Generate a PDF preview (if pdfGenerationService is available)
+ *  2. Email the preliminary quote to the customer (if emailService is available)
+ *  3. Create an in-app supervisor notification
+ *  4. Set angebot.status → 'vorläufig_gesendet'
+ *  5. Save the updated status to the store
+ *
+ * Failures in step 1 or 2 are non-fatal: the notification (step 3) still fires
+ * and the Handwerker can send manually if needed.
+ *
+ * @param {Object} angebot - Newly created Angebot object
+ * @param {Object} anfrage - Parent Anfrage object
+ */
+async function sendVorlaeufigAngebot(angebot, anfrage) {
+    const kundeEmail = angebot.kunde?.email || anfrage?.kunde?.email;
+    const kundeName  = angebot.kunde?.name  || anfrage?.kunde?.name || 'Kunde';
+
+    let emailSent = false;
+
+    // 1. Try to send via email relay
+    if (kundeEmail && window.emailService?.sendEmail) {
+        const companyInfo = window.companySettings
+            ? await window.companySettings.load().catch(() => ({}))
+            : {};
+        const companyName = companyInfo?.companyName || 'FreyAI Visions';
+
+        // ── Portal CTA ────────────────────────────────────────────────────
+        let portalUrl = null;
+        if (window.customerPortalService) {
+            try {
+                const tokenRecord = window.customerPortalService.generateAccessToken(
+                    angebot.kunde?.id || angebot.kundeId || '',
+                    'quote'
+                );
+                if (tokenRecord?.token) {
+                    portalUrl = `${location.origin}/customer-portal.html?token=${encodeURIComponent(tokenRecord.token)}`;
+                }
+            } catch (_) { /* portal not available */ }
+        }
+
+        // ── Build body fragment (positions + totals) ──────────────────────
+        const eur = n => Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+        const posRows = (angebot.positionen || []).map(p =>
+            `<tr>
+               <td style="padding:7px 8px">${p.menge} ${p.einheit}</td>
+               <td style="padding:7px 8px">${p.beschreibung}</td>
+               <td style="padding:7px 8px;text-align:right">${eur(p.preis)}</td>
+               <td style="padding:7px 8px;text-align:right">${eur((p.menge||0)*(p.preis||0))}</td>
+             </tr>`
+        ).join('');
+
+        const bodyHtml = `
+            <p style="margin:0 0 16px">Sehr geehrte(r) ${kundeName},</p>
+            <p style="margin:0 0 20px">
+              vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser
+              <strong>vorläufiges Angebot (Nr. ${angebot.id})</strong>.<br>
+              Sobald wir Ihre Rückmeldung erhalten, erstellen wir das verbindliche Angebot für Sie.
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0"
+                   style="border-collapse:collapse;font-size:13px;margin-bottom:16px">
+              <thead>
+                <tr style="background:#0f172a;color:#fff">
+                  <th style="padding:8px;text-align:left">Menge</th>
+                  <th style="padding:8px;text-align:left">Beschreibung</th>
+                  <th style="padding:8px;text-align:right">Einzelpreis</th>
+                  <th style="padding:8px;text-align:right">Gesamt</th>
+                </tr>
+              </thead>
+              <tbody style="border:1px solid #e5e7eb">${posRows}</tbody>
+            </table>
+            <table cellpadding="0" cellspacing="0" style="margin-left:auto;font-size:13px">
+              <tr><td style="padding:4px 8px;color:#6b7280">Netto</td>
+                  <td style="padding:4px 8px;text-align:right">${eur(angebot.netto)}</td></tr>
+              <tr><td style="padding:4px 8px;color:#6b7280">MwSt. 19 %</td>
+                  <td style="padding:4px 8px;text-align:right">${eur(angebot.mwst)}</td></tr>
+              <tr style="font-weight:700">
+                <td style="padding:8px;border-top:2px solid #0f172a">Gesamtbetrag</td>
+                <td style="padding:8px;text-align:right;border-top:2px solid #0f172a">${eur(angebot.brutto)}</td>
+              </tr>
+            </table>
+            ${angebot.text ? `<p style="margin:16px 0;padding:12px 16px;background:#f8fafc;border-left:3px solid #6366f1;border-radius:4px">${angebot.text.replace(/\n/g,'<br>')}</p>` : ''}
+            <p style="margin:20px 0 0;font-size:12px;color:#9ca3af">
+              Dieses Angebot ist <strong>vorläufig und unverbindlich</strong>.
+              Es wird erst nach schriftlicher Bestätigung durch uns verbindlich.
+            </p>`;
+
+        // ── Render via DocumentTemplateService ────────────────────────────
+        let html;
+        if (window.documentTemplateService) {
+            html = await window.documentTemplateService.renderEmail(
+                `Vorläufiges Angebot ${angebot.id}`,
+                bodyHtml,
+                {
+                    company:      companyInfo,
+                    portalUrl,
+                    portalCtaLabel: 'Angebot ansehen &amp; freigeben →'
+                }
+            );
+        } else {
+            // Minimal fallback (documentTemplateService not yet loaded)
+            html = `<html><body style="font-family:sans-serif;padding:24px">${bodyHtml}</body></html>`;
+        }
+
+        const result = await window.emailService.sendEmail(
+            kundeEmail,
+            `Vorläufiges Angebot ${angebot.id} – ${companyName}`,
+            html
+        );
+        emailSent = result.success;
+    }
+
+    // 2. Update angebot status
+    const savedAngebot = store.angebote.find(a => a.id === angebot.id);
+    if (savedAngebot) {
+        savedAngebot.status = 'vorläufig_gesendet';
+        savedAngebot.vorlaeufigGesendetAt = new Date().toISOString();
+        savedAngebot.vorlaeufigEmailSent = emailSent;
+        saveStore();
+    }
+
+    // 3. Activity log
+    addActivity('📨', `Vorläufiges Angebot ${angebot.id} ${emailSent ? 'an ' + kundeEmail + ' gesendet' : 'erstellt (E-Mail nicht konfiguriert)'}`);
+
+    // 4. Supervisor notification — Handwerker must review/edit before customer confirms
+    if (window.notificationService?.addNotification) {
+        const emailNote = emailSent
+            ? `E-Mail wurde automatisch an ${kundeEmail} gesendet.`
+            : 'E-Mail konnte nicht automatisch gesendet werden — bitte manuell senden.';
+        window.notificationService.addNotification(
+            'angebot_vorlaeufig',
+            `Vorläufiges Angebot ${angebot.id} gesendet`,
+            `${kundeName} • ${angebot.brutto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })} • ${emailNote} Bitte prüfen Sie das Angebot und passen Sie es bei Bedarf an.`,
+            { angebotId: angebot.id, kundeEmail, requiresAction: true }
+        );
+    }
+
+    // 5. Create a supervisor task for the Handwerker
+    if (window.taskService?.addTask) {
+        window.taskService.addTask({
+            title: `Vorläufiges Angebot prüfen: ${kundeName}`,
+            description: `Angebot ${angebot.id} wurde automatisch als vorläufige Version ${emailSent ? 'an ' + kundeEmail + ' gesendet' : 'erstellt'}. ` +
+                         `Bitte prüfen Sie das Angebot und passen Sie es bei Bedarf an, bevor der Kunde antwortet.`,
+            priority: 'normal',
+            status: 'offen',
+            source: 'auto',
+            sourceId: angebot.id,
+            dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        });
+    }
 }
 
 // Export angebote functions

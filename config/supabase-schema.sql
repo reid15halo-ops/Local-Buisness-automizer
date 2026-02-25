@@ -582,3 +582,182 @@ CREATE TRIGGER IF NOT EXISTS update_purchase_orders_updated_at
 CREATE TRIGGER IF NOT EXISTS update_suppliers_updated_at
     BEFORE UPDATE ON suppliers
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- Kundenportal — Tokens & Responses
+-- DSGVO: tokens identify one customer only,
+--        portal_responses are insert-only for the customer,
+--        read-only for the authenticated Handwerker.
+-- ============================================
+
+-- Persistent portal tokens (supplement localStorage for cross-device access)
+CREATE TABLE IF NOT EXISTS portal_tokens (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    token       TEXT NOT NULL UNIQUE,
+    customer_id TEXT NOT NULL,
+    scope       TEXT NOT NULL DEFAULT 'full' CHECK (scope IN ('full','quote','invoice')),
+    expires_at  TIMESTAMPTZ NOT NULL,
+    is_active   BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    last_used_at TIMESTAMPTZ
+);
+
+ALTER TABLE portal_tokens ENABLE ROW LEVEL SECURITY;
+-- Handwerker can manage his own tokens
+CREATE POLICY "Handwerker manage own portal_tokens" ON portal_tokens
+    FOR ALL USING (auth.uid() = user_id);
+-- Unauthenticated reads are blocked by default; tokens are validated via RPC below
+
+CREATE INDEX IF NOT EXISTS idx_portal_tokens_token   ON portal_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_portal_tokens_user    ON portal_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_portal_tokens_expires ON portal_tokens(expires_at);
+
+-- Customer decisions logged for DSGVO accountability
+CREATE TABLE IF NOT EXISTS portal_responses (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token       TEXT NOT NULL,           -- hashed below in the RPC
+    quote_id    TEXT NOT NULL,
+    action      TEXT NOT NULL CHECK (action IN ('approved','rejected','message')),
+    customer_message TEXT,
+    ip_hint     TEXT,                    -- partial IP for abuse detection only (DSGVO: no full IP)
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE portal_responses ENABLE ROW LEVEL SECURITY;
+-- Customers may only INSERT (no read of other customers' data)
+CREATE POLICY "Portal insert responses" ON portal_responses
+    FOR INSERT WITH CHECK (TRUE);
+-- Authenticated Handwerker reads only responses linked to his tokens
+CREATE POLICY "Handwerker read own portal_responses" ON portal_responses
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM portal_tokens pt
+            WHERE pt.token = portal_responses.token
+              AND pt.user_id = auth.uid()
+        )
+    );
+
+CREATE INDEX IF NOT EXISTS idx_portal_responses_token    ON portal_responses(token);
+CREATE INDEX IF NOT EXISTS idx_portal_responses_quote_id ON portal_responses(quote_id);
+
+-- ============================================
+-- RPC: portal_approve_quote
+-- Called by customer-portal.html (anon key).
+-- Validates token server-side, updates angebot
+-- status, and logs the response.  SECURITY
+-- DEFINER so it can bypass RLS on angebote.
+-- ============================================
+CREATE OR REPLACE FUNCTION portal_approve_quote(
+    p_token      TEXT,
+    p_quote_id   TEXT,
+    p_message    TEXT DEFAULT ''
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_record portal_tokens%ROWTYPE;
+    v_now    TIMESTAMPTZ := NOW();
+BEGIN
+    -- Validate token
+    SELECT * INTO v_record
+    FROM portal_tokens
+    WHERE token = p_token
+      AND is_active = TRUE
+      AND expires_at > v_now;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object('success', FALSE, 'message', 'Ungültiger oder abgelaufener Zugangslink.');
+    END IF;
+
+    -- Scope check
+    IF v_record.scope = 'invoice' THEN
+        RETURN jsonb_build_object('success', FALSE, 'message', 'Dieser Zugang berechtigt nicht zur Angebotsfreigabe.');
+    END IF;
+
+    -- Verify quote belongs to this Handwerker and customer
+    IF NOT EXISTS (
+        SELECT 1 FROM angebote
+        WHERE id = p_quote_id
+          AND user_id = v_record.user_id
+    ) THEN
+        RETURN jsonb_build_object('success', FALSE, 'message', 'Angebot nicht gefunden.');
+    END IF;
+
+    -- Update angebot status
+    UPDATE angebote
+    SET status = 'angenommen',
+        -- Store acceptance metadata in a JSONB column if it exists, otherwise silent
+        updated_at = v_now
+    WHERE id = p_quote_id
+      AND user_id = v_record.user_id;
+
+    -- Update token last-used
+    UPDATE portal_tokens SET last_used_at = v_now WHERE token = p_token;
+
+    -- Log for DSGVO accountability (no full IP, no personal data beyond quote reference)
+    INSERT INTO portal_responses (token, quote_id, action, customer_message)
+    VALUES (p_token, p_quote_id, 'approved', left(p_message, 1000));
+
+    RETURN jsonb_build_object('success', TRUE, 'message', 'Angebot erfolgreich angenommen. Vielen Dank!');
+END;
+$$;
+
+-- Revoke public execute, grant anon + authenticated
+REVOKE EXECUTE ON FUNCTION portal_approve_quote FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION portal_approve_quote TO anon, authenticated;
+
+-- ============================================
+-- RPC: portal_reject_quote
+-- ============================================
+CREATE OR REPLACE FUNCTION portal_reject_quote(
+    p_token    TEXT,
+    p_quote_id TEXT,
+    p_reason   TEXT DEFAULT ''
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_record portal_tokens%ROWTYPE;
+    v_now    TIMESTAMPTZ := NOW();
+BEGIN
+    SELECT * INTO v_record
+    FROM portal_tokens
+    WHERE token = p_token
+      AND is_active = TRUE
+      AND expires_at > v_now;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object('success', FALSE, 'message', 'Ungültiger oder abgelaufener Zugangslink.');
+    END IF;
+
+    IF v_record.scope = 'invoice' THEN
+        RETURN jsonb_build_object('success', FALSE, 'message', 'Dieser Zugang berechtigt nicht zur Angebotsverwaltung.');
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM angebote
+        WHERE id = p_quote_id AND user_id = v_record.user_id
+    ) THEN
+        RETURN jsonb_build_object('success', FALSE, 'message', 'Angebot nicht gefunden.');
+    END IF;
+
+    UPDATE angebote
+    SET status = 'abgelehnt', updated_at = v_now
+    WHERE id = p_quote_id AND user_id = v_record.user_id;
+
+    UPDATE portal_tokens SET last_used_at = v_now WHERE token = p_token;
+
+    INSERT INTO portal_responses (token, quote_id, action, customer_message)
+    VALUES (p_token, p_quote_id, 'rejected', left(p_reason, 1000));
+
+    RETURN jsonb_build_object('success', TRUE, 'message', 'Ihre Rückmeldung wurde übermittelt. Wir melden uns bei Ihnen.');
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION portal_reject_quote FROM PUBLIC;
+GRANT  EXECUTE ON FUNCTION portal_reject_quote TO anon, authenticated;

@@ -182,8 +182,10 @@ const STATIC_ASSETS = [
     '/js/i18n/en.js',
     '/js/i18n/i18n-ui.js',
 
-    // --- PWA Manifest ---
-    '/manifest.json'
+    // --- PWA Manifest & Icons ---
+    '/manifest.json',
+    '/icons/icon-192x192.png',
+    '/icons/icon-512x512.png'
 ];
 
 // External CDN resources to cache

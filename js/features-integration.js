@@ -197,10 +197,24 @@ function renderCustomers() {
     }
 
     const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
-    container.innerHTML = customers.map(c => `
+    const portalBase = window.location.origin
+        + window.location.pathname.replace('index.html', '')
+        + 'customer-portal.html';
+
+    container.innerHTML = customers.map(c => {
+        // Check for an existing active portal token for this customer
+        const existingToken = window.customerPortalService?.tokens?.find(
+            t => t.customerId === c.id && t.isActive
+        );
+        const portalActive = !!existingToken;
+        const portalBadge = portalActive
+            ? `<span style="display:inline-block;background:#34c759;color:#fff;font-size:10px;border-radius:4px;padding:1px 5px;margin-left:6px;">Portal aktiv</span>`
+            : '';
+
+        return `
         <div class="customer-card" data-id="${esc(c.id)}">
             <div class="customer-avatar">${esc((c.name || '?').charAt(0).toUpperCase())}</div>
-            <div class="customer-name">${esc(c.name || 'Unbekannt')}</div>
+            <div class="customer-name">${esc(c.name || 'Unbekannt')}${portalBadge}</div>
             <div class="customer-company">${esc(c.firma || '')}</div>
             <div class="customer-contact">
                 ${c.email ? `<a href="mailto:${esc(c.email)}">📧 ${esc(c.email)}</a>` : ''}
@@ -210,10 +224,23 @@ function renderCustomers() {
                 <span>💰 ${formatCurrency(c.umsatzGesamt || 0)}</span>
                 <span>📦 ${c.anzahlAuftraege || 0} Aufträge</span>
             </div>
-        </div>
-    `).join('');
+            <div class="customer-portal-actions" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-secondary customer-portal-btn"
+                    data-customer-id="${esc(c.id)}"
+                    data-customer-name="${esc(c.name || '')}"
+                    title="Kundenportal öffnen">
+                    🔗 Portal
+                </button>
+                <button class="btn btn-sm btn-secondary customer-portal-copy-btn"
+                    data-customer-id="${esc(c.id)}"
+                    title="Portal-Link kopieren">
+                    📋 Link
+                </button>
+            </div>
+        </div>`;
+    }).join('');
 
-    // Bind phone call handlers via data attributes instead of inline onclick
+    // Bind phone call handlers
     container.querySelectorAll('.phone-call-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -221,6 +248,53 @@ function renderCustomers() {
             const id = link.dataset.customerId;
             const name = link.dataset.customerName;
             window.phoneService?.makeCall(phone, {id, name});
+        });
+    });
+
+    // Bind portal open buttons
+    container.querySelectorAll('.customer-portal-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const customerId = btn.dataset.customerId;
+            if (!window.customerPortalService) {
+                window.showToast?.('Kundenportal-Service nicht verfügbar', 'error');
+                return;
+            }
+            try {
+                const existing = window.customerPortalService.tokens?.find(
+                    t => t.customerId === customerId && t.isActive
+                );
+                const tokenRecord = existing
+                    || window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
+                const url = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
+                window.open(url, '_blank');
+            } catch (err) {
+                window.showToast?.('Portal-Link konnte nicht erstellt werden', 'error');
+                console.error('[Kunden] Portal token error:', err);
+            }
+        });
+    });
+
+    // Bind portal link copy buttons
+    container.querySelectorAll('.customer-portal-copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const customerId = btn.dataset.customerId;
+            if (!window.customerPortalService) {
+                window.showToast?.('Kundenportal-Service nicht verfügbar', 'error');
+                return;
+            }
+            try {
+                const existing = window.customerPortalService.tokens?.find(
+                    t => t.customerId === customerId && t.isActive
+                );
+                const tokenRecord = existing
+                    || window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
+                const url = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
+                navigator.clipboard.writeText(url)
+                    .then(() => window.showToast?.('Portal-Link kopiert', 'success'))
+                    .catch(() => window.showToast?.(`Link: ${url}`, 'info'));
+            } catch (err) {
+                window.showToast?.('Link konnte nicht kopiert werden', 'error');
+            }
         });
     });
 }

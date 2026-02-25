@@ -2926,6 +2926,9 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/i18n-service.js"></script>
     <script src="js/i18n/i18n-ui.js"></script>
 
+    <!-- App runtime config (must load before any service) -->
+    <script src="config/app-config.js"></script>
+
     <!-- =====================================
          Core Infrastructure (Always Loaded)
          ===================================== -->
@@ -2960,6 +2963,9 @@ Email: max.mustermann@example.com</textarea>
 
     <!-- Company Settings Service (Supabase-backed per-user business config) -->
     <script src="js/services/company-settings-service.js"></script>
+
+    <!-- Document Template Service (standard German business documents) -->
+    <script src="js/services/document-template-service.js"></script>
 
     <!-- Setup Wizard & Admin Settings -->
     <script src="js/services/setup-wizard-service.js"></script>

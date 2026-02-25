@@ -146,6 +146,15 @@
             Ihren Zugangscode erhalten Sie per E-Mail von uns. Bei Fragen: <span id="login-contact-email"></span>
         </p>
     </div>
+    <!-- DSGVO Notice -->
+    <div style="max-width:480px;margin:24px auto 0;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;color:var(--text-secondary);line-height:1.6">
+        <strong>Datenschutzhinweis</strong><br>
+        Dieses Portal verarbeitet ausschließlich Ihre eigenen Auftragsdaten.
+        Andere Kunden können Ihre Daten nicht einsehen.
+        Ihre Zugangsdaten sind personalisiert und dürfen nicht weitergegeben werden.
+        Der Zugangscode ist zeitlich begrenzt und wird nach Ablauf automatisch ungültig.
+        Weitere Informationen: <span id="login-privacy-link"></span>
+    </div>
 </div>
 
 <!-- Portal Content (shown after auth) -->
@@ -552,32 +561,100 @@ async function sendMessage() {
 // API Calls
 // ============================================
 
+/**
+ * Call a portal action.
+ * Priority:
+ *   1. Supabase RPC (writes directly to database — preferred, DSGVO-compliant)
+ *   2. Email relay webhook (fallback when Supabase is not configured)
+ *   3. Offline notice (no silent success/failure)
+ *
+ * The old edge-function approach and the window.customerPortalService
+ * local fallback have been removed: the service runs in the main app
+ * context and is not available inside this standalone portal page.
+ */
 async function callPortalAction(action, payload) {
-    const supabaseUrl = localStorage.getItem('supabase_url');
+    const supabaseUrl  = localStorage.getItem('supabase_url');
     const supabaseAnon = localStorage.getItem('supabase_anon_key');
 
+    // ── 1. Supabase RPC ───────────────────────────────────────────────────
     if (supabaseUrl && supabaseAnon) {
-        const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': supabaseAnon },
-            body: JSON.stringify({ token: currentToken, action, ...payload })
-        });
-        if (res.ok) { return res.json(); }
+        const rpcName =
+            action === 'approve-quote' ? 'portal_approve_quote' :
+            action === 'reject-quote'  ? 'portal_reject_quote'  : null;
+
+        if (rpcName) {
+            try {
+                const body = rpcName === 'portal_approve_quote'
+                    ? { p_token: currentToken, p_quote_id: payload.quoteId, p_message: payload.message || '' }
+                    : { p_token: currentToken, p_quote_id: payload.quoteId, p_reason:  payload.reason  || '' };
+
+                const res = await fetch(`${supabaseUrl}/rest/v1/rpc/${rpcName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey':        supabaseAnon,
+                        'Authorization': `Bearer ${supabaseAnon}`
+                    },
+                    body: JSON.stringify(body)
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    return result;
+                }
+                // Non-OK from Supabase — fall through to relay
+                console.warn('[Portal] Supabase RPC returned', res.status, '— trying relay fallback');
+            } catch (err) {
+                console.warn('[Portal] Supabase RPC failed:', err.message, '— trying relay fallback');
+            }
+        }
+
+        // send-message: insert directly into portal_responses
+        if (action === 'send-message' && payload.text) {
+            try {
+                const res = await fetch(`${supabaseUrl}/rest/v1/portal_responses`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey':        supabaseAnon,
+                        'Authorization': `Bearer ${supabaseAnon}`,
+                        'Prefer':        'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        token:            currentToken,
+                        quote_id:         'message',
+                        action:           'message',
+                        customer_message: payload.text.slice(0, 1000)
+                    })
+                });
+                if (res.ok) return { success: true, message: 'Nachricht wurde übermittelt.' };
+            } catch (_) { /* fall through */ }
+        }
     }
 
-    // Local fallback
-    if (window.customerPortalService) {
-        if (action === 'approve-quote') {
-            return window.customerPortalService.approveQuote(currentToken, payload.quoteId, payload.message);
-        }
-        if (action === 'reject-quote') {
-            return window.customerPortalService.rejectQuote(currentToken, payload.quoteId, payload.reason);
-        }
-        if (action === 'send-message') {
-            return window.customerPortalService.sendCustomerMessage(currentToken, payload.text);
-        }
+    // ── 2. Email relay webhook (fallback) ────────────────────────────────
+    const relayUrl    = localStorage.getItem('freyai_email_relay_url');
+    const relaySecret = localStorage.getItem('freyai_email_relay_secret');
+    if (relayUrl) {
+        try {
+            const res = await fetch(`${relayUrl}/portal-action`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(relaySecret ? { 'Authorization': `Bearer ${relaySecret}` } : {})
+                },
+                body: JSON.stringify({ token: currentToken, action, ...payload })
+            });
+            if (res.ok) return res.json();
+        } catch (_) { /* fall through */ }
     }
-    return { success: false, message: 'Aktion nicht verfügbar (offline).' };
+
+    // ── 3. Nothing available ─────────────────────────────────────────────
+    return {
+        success: false,
+        message: 'Ihre Rückmeldung konnte nicht übermittelt werden (keine Verbindung). ' +
+                 'Bitte kontaktieren Sie uns telefonisch oder per E-Mail.'
+    };
 }
 
 // ============================================

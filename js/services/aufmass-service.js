@@ -3,7 +3,6 @@
    Digital room/site measurement with calculations,
    material estimation, and quote integration.
    ============================================ */
-function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class AufmassService {
     constructor() {
