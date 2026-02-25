@@ -505,6 +505,65 @@ class CustomerPortalService {
     }
 
     /**
+     * Reject a quote via the customer portal.
+     * @param {string} token - Access token
+     * @param {string} quoteId - Angebot ID
+     * @param {string} reason - Optional reason from customer
+     * @returns {Object} { success, message }
+     */
+    rejectQuote(token, quoteId, reason = '') {
+        try {
+            const validation = this.validateToken(token);
+            if (!validation.valid) {
+                return { success: false, message: validation.error };
+            }
+
+            if (validation.scope === 'invoice') {
+                return { success: false, message: 'Dieser Zugang berechtigt nicht zur Angebotsverwaltung' };
+            }
+
+            const store = window.storeService?.state;
+            if (!store) {
+                return { success: false, message: 'Systemfehler: Store nicht verfügbar' };
+            }
+
+            const angebot = store.angebote?.find(a => a.id === quoteId);
+            if (!angebot) {
+                return { success: false, message: 'Angebot nicht gefunden' };
+            }
+
+            if (angebot.kunde?.name !== validation.customer.name &&
+                angebot.kunde?.id !== validation.customerId) {
+                return { success: false, message: 'Zugriff verweigert' };
+            }
+
+            if (angebot.status === 'abgelehnt') {
+                return { success: false, message: 'Dieses Angebot wurde bereits abgelehnt' };
+            }
+
+            angebot.status = 'abgelehnt';
+            angebot.rejectedAt = new Date().toISOString();
+            angebot.rejectedVia = 'portal';
+            if (reason) { angebot.rejectionReason = reason; }
+            window.storeService.save();
+
+            if (reason) {
+                this.sendCustomerMessage(token, `Angebot ${quoteId} abgelehnt: ${reason}`);
+            }
+
+            window.storeService.addActivity(
+                '❌',
+                `Angebot ${quoteId} vom Kunden ${validation.customer.name} über das Portal abgelehnt`
+            );
+
+            return { success: true, message: 'Angebot wurde abgelehnt. Wir melden uns bei Ihnen.' };
+        } catch (error) {
+            console.error('Quote rejection error:', error);
+            return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
+        }
+    }
+
+    /**
      * Request changes to a quote via the customer portal.
      * @param {string} token - Access token
      * @param {string} quoteId - Angebot ID

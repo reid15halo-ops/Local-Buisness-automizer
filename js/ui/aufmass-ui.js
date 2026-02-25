@@ -3,8 +3,7 @@
    Full UI for digital room measurement, material
    estimation, and quote integration.
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class AufmassUI {
     constructor() {
@@ -1736,8 +1735,8 @@ class AufmassUI {
                 leistungsart: 'aufmass',
                 positionen: positions,
                 netto: Math.round(netto * 100) / 100,
-                mwst: Math.round(netto * DEFAULT_TAX_RATE * 100) / 100,
-                brutto: Math.round(netto * (1 + DEFAULT_TAX_RATE) * 100) / 100,
+                mwst: Math.round(netto * _getTaxRate() * 100) / 100,
+                brutto: Math.round(netto * (1 + _getTaxRate()) * 100) / 100,
                 status: 'entwurf',
                 angebotText: `Aufma\u00DF-basiertes Angebot - ${project?.name || 'Projekt'}`,
                 createdAt: new Date().toISOString()
@@ -1766,8 +1765,8 @@ class AufmassUI {
 
             const netto = angebot.positionen.reduce((s, p) => s + (p.menge || 0) * (p.preis || 0), 0);
             angebot.netto = Math.round(netto * 100) / 100;
-            angebot.mwst = Math.round(netto * DEFAULT_TAX_RATE * 100) / 100;
-            angebot.brutto = Math.round(netto * (1 + DEFAULT_TAX_RATE) * 100) / 100;
+            angebot.mwst = Math.round(netto * _getTaxRate() * 100) / 100;
+            angebot.brutto = Math.round(netto * (1 + _getTaxRate()) * 100) / 100;
 
             window.storeService.save();
             this._showToast(`Positionen zu Angebot ${angebotId} hinzugef\u00FCgt`);

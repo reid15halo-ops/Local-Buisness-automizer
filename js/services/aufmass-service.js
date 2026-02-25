@@ -3,8 +3,7 @@
    Digital room/site measurement with calculations,
    material estimation, and quote integration.
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class AufmassService {
     constructor() {
@@ -903,8 +902,8 @@ class AufmassService {
         // Recalculate totals
         const netto = angebot.positionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
         angebot.netto = this._round(netto);
-        angebot.mwst = this._round(netto * DEFAULT_TAX_RATE);
-        angebot.brutto = this._round(netto * (1 + DEFAULT_TAX_RATE));
+        angebot.mwst = this._round(netto * _getTaxRate());
+        angebot.brutto = this._round(netto * (1 + _getTaxRate()));
 
         window.storeService.save();
         return true;
@@ -941,8 +940,8 @@ class AufmassService {
             leistungsart: 'aufmass',
             positionen: positions,
             netto: this._round(netto),
-            mwst: this._round(netto * DEFAULT_TAX_RATE),
-            brutto: this._round(netto * (1 + DEFAULT_TAX_RATE)),
+            mwst: this._round(netto * _getTaxRate()),
+            brutto: this._round(netto * (1 + _getTaxRate())),
             status: 'entwurf',
             angebotText: `Aufma\u00DF-basiertes Angebot f\u00FCr ${project.name}`,
             createdAt: new Date().toISOString()

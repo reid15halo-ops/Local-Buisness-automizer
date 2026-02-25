@@ -2,8 +2,7 @@
    Purchase Order (Bestellung) Service
    Supplier Management & PO Workflow
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class PurchaseOrderService {
     constructor() {
@@ -509,8 +508,8 @@ class PurchaseOrderService {
         );
 
         po.netto = netto;
-        po.mwst = netto * DEFAULT_TAX_RATE;
-        po.brutto = netto * (1 + DEFAULT_TAX_RATE);
+        po.mwst = netto * _getTaxRate();
+        po.brutto = netto * (1 + _getTaxRate());
 
         // Update position totals
         po.positionen.forEach(pos => {

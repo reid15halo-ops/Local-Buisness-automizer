@@ -74,6 +74,10 @@ class AgentWorkflowUI {
                         <span class="agent-tab-icon">&#9881;</span>
                         Einstellungen
                     </button>
+                    <button class="agent-tab" data-tab="automation">
+                        <span class="agent-tab-icon">&#9889;</span>
+                        Automatisierung
+                    </button>
                 </div>
 
                 <!-- Tab Content -->
@@ -89,6 +93,9 @@ class AgentWorkflowUI {
                     </div>
                     <div class="agent-tab-pane" id="agent-pane-config">
                         ${this._renderConfigPanel()}
+                    </div>
+                    <div class="agent-tab-pane" id="agent-pane-automation">
+                        ${this._renderAutomationPanel()}
                     </div>
                 </div>
 
@@ -657,7 +664,141 @@ class AgentWorkflowUI {
             case 'config':
                 pane.innerHTML = this._renderConfigPanel();
                 break;
+            case 'automation':
+                pane.innerHTML = this._renderAutomationPanel();
+                this._attachAutomationListeners();
+                break;
         }
+    }
+
+    // ============================================
+    // Automation Level Panel (AgenticExecutorService)
+    // ============================================
+
+    _renderAutomationPanel() {
+        const executor = window.agenticExecutorService;
+        if (!executor) {
+            return '<p class="agent-empty-state">Agentic Executor Service nicht verfuegbar.</p>';
+        }
+
+        const levels = [
+            { value: 'off',     label: 'Deaktiviert',        desc: 'Agent ist ausgeschaltet.',                      icon: '⬛' },
+            { value: 'suggest', label: 'Nur Vorschlaege',    desc: 'Agent analysiert und zeigt Empfehlungen an.',   icon: '💡' },
+            { value: 'confirm', label: 'Mit Bestaetigung',   desc: 'Aktionen werden zur manuellen Genehmigung vorgelegt.', icon: '✅' },
+            { value: 'auto',    label: 'Vollautomatisch',    desc: 'Agent handelt eigenstaendig (Rueckgaengig in 24h moeglich).', icon: '🤖' },
+        ];
+
+        // getAllConfigs() returns an object keyed by agentId; each entry has .id, .name, .level, .schedule, .description
+        const agents = Object.values(executor.getAllConfigs ? executor.getAllConfigs() : {});
+
+        const agentRows = agents.map(agent => {
+            const currentLevel = agent.level || 'off';
+            const schedule = agent.schedule || '';
+            return `
+                <div class="agent-automation-row" data-agent-id="${agent.id}">
+                    <div class="agent-automation-name">
+                        <strong>${agent.name || agent.id}</strong>
+                        <small>${agent.description || ''}</small>
+                    </div>
+                    <div class="agent-automation-level">
+                        <select class="agent-automation-select" data-agent-id="${agent.id}">
+                            ${levels.map(l => `<option value="${l.value}" ${currentLevel === l.value ? 'selected' : ''}>${l.icon} ${l.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="agent-automation-schedule">
+                        <input type="text" class="agent-automation-schedule-input"
+                            data-agent-id="${agent.id}"
+                            placeholder="z.B. 08:00 oder MON-08:00"
+                            value="${schedule || ''}"
+                            title="Ausfuehrungszeit: HH:MM oder WOCHENTAG-HH:MM" />
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const undoItems = executor.getUndoableActions ? executor.getUndoableActions() : [];
+        const undoSection = undoItems.length > 0 ? `
+            <div class="agent-automation-undo-section">
+                <h4>Rueckgaengig machen (24h Fenster)</h4>
+                ${undoItems.map(item => `
+                    <div class="agent-automation-undo-row">
+                        <span>${item.agentId} – ${item.actionType} (${new Date(item.executedAt).toLocaleString('de-DE')})</span>
+                        <button class="btn btn-sm btn-secondary agent-undo-btn" data-undo-id="${item.id}">Rueckgaengig</button>
+                    </div>
+                `).join('')}
+            </div>
+        ` : '';
+
+        return `
+            <div class="agent-automation-panel">
+                <div class="agent-automation-header">
+                    <h3>Automatisierungsstufen</h3>
+                    <p>Legen Sie fest, wie autonom jeder Agent handeln darf. Fuer "Vollautomatisch" ist die Rolle "Meister" erforderlich.</p>
+                </div>
+
+                <div class="agent-automation-legend">
+                    ${levels.map(l => `
+                        <div class="agent-automation-legend-item">
+                            <span class="agent-automation-legend-icon">${l.icon}</span>
+                            <div>
+                                <strong>${l.label}</strong>
+                                <small>${l.desc}</small>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="agent-automation-table">
+                    <div class="agent-automation-table-header">
+                        <span>Agent</span>
+                        <span>Stufe</span>
+                        <span>Zeitplan</span>
+                    </div>
+                    ${agentRows || '<p class="agent-empty-state">Keine Agenten konfiguriert.</p>'}
+                </div>
+
+                <div class="agent-automation-actions">
+                    <button class="btn btn-secondary" id="btn-automation-save">Einstellungen speichern</button>
+                    <button class="btn btn-primary" id="btn-automation-run-pending">Ausstehende Aktionen ausfuehren</button>
+                </div>
+
+                ${undoSection}
+            </div>
+        `;
+    }
+
+    _attachAutomationListeners() {
+        const executor = window.agenticExecutorService;
+        if (!executor) {return;}
+
+        document.getElementById('btn-automation-save')?.addEventListener('click', () => {
+            document.querySelectorAll('.agent-automation-select').forEach(sel => {
+                const agentId = sel.dataset.agentId;
+                if (executor.setAgentLevel) {executor.setAgentLevel(agentId, sel.value);}
+            });
+            document.querySelectorAll('.agent-automation-schedule-input').forEach(inp => {
+                const agentId = inp.dataset.agentId;
+                if (executor.setAgentSchedule) {executor.setAgentSchedule(agentId, inp.value.trim());}
+            });
+            window.errorHandler?.success?.('Automatisierungseinstellungen gespeichert');
+        });
+
+        document.getElementById('btn-automation-run-pending')?.addEventListener('click', async () => {
+            // startScheduler triggers a check of all due agents
+            if (executor.startScheduler) { executor.startScheduler(); }
+            window.errorHandler?.success?.('Scheduler gestartet – ausstehende Agenten werden geprueft');
+            this._refreshPane('automation');
+        });
+
+        document.querySelectorAll('.agent-undo-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const undoId = btn.dataset.undoId;
+                if (executor.undo) {
+                    await executor.undo(undoId);
+                    this._refreshPane('automation');
+                }
+            });
+        });
     }
 
     async _executeAgent(agentId) {

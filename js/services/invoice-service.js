@@ -2,8 +2,7 @@
    Invoice Service
    Orchestrates invoice creation and management
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class InvoiceService {
     constructor() {
@@ -66,8 +65,8 @@ class InvoiceService {
 
             // 3. Calculate totals
             const netto = auftrag.netto + (auftrag.materialKosten || 0);
-            const mwst = netto * DEFAULT_TAX_RATE;
-            const brutto = netto * (1 + DEFAULT_TAX_RATE);
+            const mwst = netto * _getTaxRate();
+            const brutto = netto * (1 + _getTaxRate());
 
             // 4. Create invoice object
             const invoice = {

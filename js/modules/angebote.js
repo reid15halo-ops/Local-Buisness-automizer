@@ -2,8 +2,7 @@
    Angebote Module
    Angebote (quotes) CRUD and UI
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h, showToast } = window.AppUtils;
 
@@ -98,7 +97,7 @@ function initAngebotForm() {
             return;
         }
 
-        const mwst = netto * DEFAULT_TAX_RATE;
+        const mwst = netto * _getTaxRate();
         const brutto = netto + mwst;
 
         // Check if we are editing an existing Angebot
@@ -294,7 +293,7 @@ function updateAngebotSummary() {
         netto += menge * preis;
     });
 
-    const mwst = netto * DEFAULT_TAX_RATE;
+    const mwst = netto * _getTaxRate();
     const brutto = netto + mwst;
 
     document.getElementById('angebot-netto').textContent = formatCurrency(netto);

@@ -141,9 +141,10 @@ class LazyLoader {
                 'data-export-service'
             ],
 
-            // Agent Workflows & AI Automation
+            // Agent Workflows & AI Automation (includes agentic executor for automation levels)
             'agent-workflows': [
-                'agent-workflow-service'
+                'agent-workflow-service',
+                'agentic-executor-service'
             ],
 
             // Field App (mobile on-site mode)

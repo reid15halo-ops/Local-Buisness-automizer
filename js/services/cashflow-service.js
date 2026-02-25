@@ -1,8 +1,7 @@
 /* ============================================
    Cash Flow Service - Forecasting & Predictions
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class CashFlowService {
     constructor() {
@@ -211,7 +210,7 @@ class CashFlowService {
                     date: date,
                     type: 'tax',
                     name: 'USt-Vorauszahlung',
-                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * DEFAULT_TAX_RATE * 0.5
+                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * _getTaxRate() * 0.5
                 });
             }
         });

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kundenportal – Angebote einsehen, freigeben und Rechnungen bezahlen">
+    <!-- Security headers (enforced additionally via netlify.toml / .htaccess) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <title>Kundenportal</title>
+    <style>
+        :root {
+            --bg: #f5f5f7;
+            --surface: #ffffff;
+            --surface-2: #f0f0f2;
+            --border: #e0e0e0;
+            --text: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --accent: #0071e3;
+            --accent-hover: #0077ed;
+            --success: #34c759;
+            --warning: #ff9500;
+            --error: #ff3b30;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 2px 16px rgba(0,0,0,.08);
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1c1c1e;
+                --surface: #2c2c2e;
+                --surface-2: #3a3a3c;
+                --border: #3a3a3c;
+                --text: #f5f5f7;
+                --text-secondary: #8e8e93;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 500; border: none; cursor: pointer; transition: opacity .15s; }
+        .btn:hover { opacity: .85; }
+        .btn:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger  { background: var(--error); color: #fff; }
+        .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+        /* Layout */
+        .portal-header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        .portal-logo { height: 36px; width: auto; object-fit: contain; }
+        .portal-company-name { font-size: 18px; font-weight: 600; }
+        .portal-header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text-secondary); }
+
+        .portal-main { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+        /* Sections */
+        .portal-section { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 24px; overflow: hidden; }
+        .portal-section-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .portal-section-title { font-size: 17px; font-weight: 600; }
+        .portal-section-body { padding: 0; }
+
+        /* Table */
+        .portal-table { width: 100%; border-collapse: collapse; }
+        .portal-table th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-secondary); background: var(--surface-2); }
+        .portal-table td { padding: 14px 16px; font-size: 14px; border-top: 1px solid var(--border); }
+        .portal-table tr:hover td { background: var(--surface-2); }
+
+        /* Status badges */
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .badge-offen      { background: #fff3cd; color: #664d00; }
+        .badge-angenommen { background: #d1e7dd; color: #0a3622; }
+        .badge-abgelehnt  { background: #f8d7da; color: #58151c; }
+        .badge-bezahlt    { background: #d1e7dd; color: #0a3622; }
+        .badge-aktiv      { background: #cfe2ff; color: #052c65; }
+
+        /* Approve modal */
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; }
+        .modal-backdrop.open { display: flex; }
+        .modal { background: var(--surface); border-radius: var(--radius); padding: 28px; max-width: 480px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+        .modal h3 { font-size: 20px; margin-bottom: 12px; }
+        .modal p  { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+        .modal textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text); font-size: 14px; resize: vertical; min-height: 80px; }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+
+        /* Login screen */
+        .portal-login { max-width: 420px; margin: 80px auto; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 40px; text-align: center; }
+        .portal-login h1 { font-size: 24px; margin-bottom: 8px; }
+        .portal-login p  { color: var(--text-secondary); margin-bottom: 28px; font-size: 15px; }
+
+        /* Messages */
+        .msg-thread { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 14px; }
+        .msg-bubble.from-customer { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-bubble.from-business  { background: var(--surface-2); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-bubble .msg-time { font-size: 11px; opacity: .6; margin-top: 4px; }
+        .msg-input-row { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+        .msg-input-row textarea { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text); font-size: 14px; resize: none; height: 52px; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #333; color: #fff; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; z-index: 999; opacity: 0; transform: translateY(12px); transition: all .25s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: none; }
+        .toast.success { background: var(--success); }
+        .toast.error   { background: var(--error); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .portal-main { padding: 16px; }
+            .portal-table th, .portal-table td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header (populated after auth) -->
+<header class="portal-header" id="portal-header" style="display:none;">
+    <img id="portal-logo" class="portal-logo" src="" alt="" style="display:none;">
+    <span class="portal-company-name" id="portal-company-name"></span>
+    <div class="portal-header-right">
+        <span id="portal-customer-greeting"></span>
+    </div>
+</header>
+
+<!-- Login / Token Entry -->
+<div id="portal-login-screen" class="portal-main">
+    <div class="portal-login">
+        <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+        <h1>Kundenportal</h1>
+        <p>Geben Sie Ihren persönlichen Zugangscode ein, um Angebote, Rechnungen und Nachrichten einzusehen.</p>
+        <input id="token-input" type="text" placeholder="cp-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            style="width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text);font-size:15px;margin-bottom:16px;text-align:center;">
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="portalLogin()">Einloggen</button>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:16px;">
+            Ihren Zugangscode erhalten Sie per E-Mail von uns. Bei Fragen: <span id="login-contact-email"></span>
+        </p>
+    </div>
+</div>
+
+<!-- Portal Content (shown after auth) -->
+<main class="portal-main" id="portal-content" style="display:none;">
+
+    <!-- Quotes (Angebote) -->
+    <section class="portal-section" id="section-quotes" style="display:none;">
+        <div class="portal-section-header">
+            <span class="portal-section-title">Ihre Angebote</span>
+        </div>
+        <div class="portal-section-body">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Nr.</th>
+                        <th>Leistung</th>
+                        <th>Betrag</th>
+                        <th>Datum</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="quotes-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Invoices (Rechnungen) -->
+    <section class="portal-section" id="section-invoices" style="display:none;">
+        <div class="portal-section-header">
+            <span class="portal-section-title">Ihre Rechnungen</span>
+        </div>
+        <div class="portal-section-body">
+            <table class="portal-table">
+                <thead>
+                    <tr>
+                        <th>Nr.</th>
+                        <th>Leistung</th>
+                        <th>Betrag</th>
+                        <th>Fällig</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="invoices-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Messages -->
+    <section class="portal-section" id="section-messages">
+        <div class="portal-section-header">
+            <span class="portal-section-title">Nachrichten</span>
+        </div>
+        <div class="portal-section-body">
+            <div class="msg-thread" id="msg-thread"></div>
+            <div class="msg-input-row">
+                <textarea id="msg-input" placeholder="Nachricht schreiben…"></textarea>
+                <button class="btn btn-primary" onclick="sendMessage()">Senden</button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Approve Quote Modal -->
+<div class="modal-backdrop" id="modal-approve">
+    <div class="modal">
+        <h3>Angebot annehmen</h3>
+        <p>Möchten Sie dieses Angebot verbindlich annehmen? Sie können optional eine Nachricht an uns senden.</p>
+        <textarea id="approve-message" placeholder="Optionale Nachricht (z.B. bevorzugter Starttermin)…"></textarea>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeApproveModal()">Abbrechen</button>
+            <button class="btn btn-success" onclick="confirmApprove()">Angebot annehmen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Quote Modal -->
+<div class="modal-backdrop" id="modal-reject">
+    <div class="modal">
+        <h3>Angebot ablehnen</h3>
+        <p>Bitte teilen Sie uns kurz mit, warum Sie das Angebot ablehnen möchten.</p>
+        <textarea id="reject-reason" placeholder="Begründung (optional)…"></textarea>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeRejectModal()">Abbrechen</button>
+            <button class="btn btn-danger" onclick="confirmReject()">Angebot ablehnen</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================
+   Customer Portal — client-side logic
+   Token-based, no login required beyond the link.
+   ============================================ */
+
+// Minimal inline implementations (no external JS dependencies needed for portal page)
+let currentToken = null;
+let portalData = null;
+let pendingQuoteId = null;
+
+// Read token from URL ?token=cp-xxx or #cp-xxx
+function getTokenFromUrl() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('token')) { return params.get('token'); }
+    const hash = location.hash.replace('#', '');
+    if (hash.startsWith('cp-')) { return hash; }
+    return null;
+}
+
+// Minimal HTML escaping
+function esc(str) {
+    if (!str) { return ''; }
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+function fmt(amount) {
+    return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount || 0);
+}
+
+function fmtDate(iso) {
+    if (!iso) { return '–'; }
+    return new Date(iso).toLocaleDateString('de-DE');
+}
+
+function showToast(msg, type = 'info') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast show' + (type !== 'info' ? ' ' + type : '');
+    setTimeout(() => { el.className = 'toast'; }, 3500);
+}
+
+// ============================================
+// Authentication
+// ============================================
+
+async function portalLogin() {
+    const raw = document.getElementById('token-input').value.trim();
+    if (!raw) { showToast('Bitte Zugangscode eingeben.', 'error'); return; }
+    await loadPortal(raw);
+}
+
+async function loadPortal(token) {
+    // Fetch data from the business app's API (same origin assumed for now)
+    // In production this would be a Supabase edge function call.
+    // For the self-hosted / same-origin case we call into the storeService via a shared endpoint.
+    try {
+        // Try to load portal data from the same Supabase project via edge function
+        const supabaseUrl = localStorage.getItem('supabase_url');
+        const supabaseAnon = localStorage.getItem('supabase_anon_key');
+
+        let data = null;
+
+        if (supabaseUrl && supabaseAnon) {
+            const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'apikey': supabaseAnon },
+                body: JSON.stringify({ token })
+            });
+            if (res.ok) {
+                data = await res.json();
+            }
+        }
+
+        // Fallback: read from localStorage (same-origin, offline/local mode)
+        if (!data) {
+            data = getPortalDataLocal(token);
+        }
+
+        if (!data || !data.customer) {
+            showToast('Ungültiger oder abgelaufener Zugangscode.', 'error');
+            return;
+        }
+
+        currentToken = token;
+        portalData = data;
+        renderPortal(data);
+
+    } catch (err) {
+        console.error('Portal load error:', err);
+        showToast('Fehler beim Laden. Bitte Seite neu laden.', 'error');
+    }
+}
+
+// Local fallback (offline / same-origin mode) — reads from customerPortalService if available
+function getPortalDataLocal(token) {
+    // The main app stores portal data via customerPortalService which writes to localStorage.
+    // We can call it directly if this page is served from the same origin.
+    if (window.customerPortalService) {
+        return window.customerPortalService.getPortalData(token);
+    }
+    // Try reading raw token store
+    try {
+        const tokens = JSON.parse(localStorage.getItem('freyai_portal_tokens') || '[]');
+        const record = tokens.find(t => t.token === token && t.isActive);
+        if (!record) { return null; }
+        if (new Date(record.expiresAt) < new Date()) { return null; }
+        return {
+            customer: { id: record.customerId, name: 'Kunde' },
+            scope: record.scope,
+            companyInfo: getCompanyInfoLocal(),
+            quotes: [],
+            invoices: [],
+            messages: [],
+            photos: []
+        };
+    } catch { return null; }
+}
+
+function getCompanyInfoLocal() {
+    try {
+        const s = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        return { name: s.company_name || 'Unternehmen', email: s.company_email || '', phone: s.company_phone || '', logo: s.company_logo || null };
+    } catch { return { name: 'Unternehmen' }; }
+}
+
+// ============================================
+// Rendering
+// ============================================
+
+function renderPortal(data) {
+    // Hide login, show content
+    document.getElementById('portal-login-screen').style.display = 'none';
+    document.getElementById('portal-content').style.display = 'block';
+    document.getElementById('portal-header').style.display = 'flex';
+
+    // Header
+    const company = data.companyInfo || {};
+    document.getElementById('portal-company-name').textContent = company.name || 'Kundenportal';
+    if (company.logo) {
+        const logo = document.getElementById('portal-logo');
+        logo.src = company.logo;
+        logo.alt = company.name;
+        logo.style.display = 'block';
+    }
+    document.getElementById('portal-customer-greeting').textContent =
+        'Willkommen, ' + esc(data.customer?.name || '');
+    document.getElementById('login-contact-email').textContent = company.email || '';
+
+    // Quotes
+    if (data.quotes && data.quotes.length > 0) {
+        document.getElementById('section-quotes').style.display = 'block';
+        renderQuotes(data.quotes);
+    }
+
+    // Invoices
+    if (data.invoices && data.invoices.length > 0) {
+        document.getElementById('section-invoices').style.display = 'block';
+        renderInvoices(data.invoices);
+    }
+
+    // Messages
+    renderMessages(data.messages || []);
+}
+
+function renderQuotes(quotes) {
+    const tbody = document.getElementById('quotes-tbody');
+    tbody.innerHTML = quotes.map(q => {
+        const statusLabel = { offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
+        const badge = `<span class="badge badge-${q.status}">${statusLabel[q.status] || q.status}</span>`;
+        const actions = q.status === 'offen' ? `
+            <button class="btn btn-sm btn-success" onclick="openApproveModal('${esc(q.id)}')">Annehmen</button>
+            <button class="btn btn-sm btn-danger" onclick="openRejectModal('${esc(q.id)}')">Ablehnen</button>
+        ` : '';
+        return `
+            <tr>
+                <td>${esc(q.id)}</td>
+                <td>${esc(q.leistungsart || 'Dienstleistung')}</td>
+                <td><strong>${fmt(q.brutto)}</strong></td>
+                <td>${fmtDate(q.createdAt)}</td>
+                <td>${badge}</td>
+                <td style="white-space:nowrap;">${actions}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderInvoices(invoices) {
+    const tbody = document.getElementById('invoices-tbody');
+    tbody.innerHTML = invoices.map(inv => {
+        const statusLabel = { offen: 'Offen', bezahlt: 'Bezahlt', storniert: 'Storniert' };
+        const badge = `<span class="badge badge-${inv.status}">${statusLabel[inv.status] || inv.status}</span>`;
+        const payBtn = inv.status === 'offen' && inv.stripePaymentUrl
+            ? `<a class="btn btn-sm btn-primary" href="${esc(inv.stripePaymentUrl)}" target="_blank" rel="noopener">Jetzt zahlen</a>`
+            : '';
+        return `
+            <tr>
+                <td>${esc(inv.nummer || inv.id)}</td>
+                <td>${esc(inv.leistungsart || 'Dienstleistung')}</td>
+                <td><strong>${fmt(inv.brutto)}</strong></td>
+                <td>${fmtDate(inv.faelligkeitsdatum || inv.datum)}</td>
+                <td>${badge}</td>
+                <td>${payBtn}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderMessages(messages) {
+    const thread = document.getElementById('msg-thread');
+    if (messages.length === 0) {
+        thread.innerHTML = '<p style="color:var(--text-secondary);font-size:14px;padding:8px;">Noch keine Nachrichten.</p>';
+        return;
+    }
+    thread.innerHTML = messages.map(m => {
+        const cls = m.fromCustomer ? 'from-customer' : 'from-business';
+        return `
+            <div class="msg-bubble ${cls}">
+                ${esc(m.text)}
+                <div class="msg-time">${fmtDate(m.createdAt)}</div>
+            </div>
+        `;
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+}
+
+// ============================================
+// Quote Approval
+// ============================================
+
+function openApproveModal(quoteId) {
+    pendingQuoteId = quoteId;
+    document.getElementById('approve-message').value = '';
+    document.getElementById('modal-approve').classList.add('open');
+}
+
+function closeApproveModal() {
+    document.getElementById('modal-approve').classList.remove('open');
+    pendingQuoteId = null;
+}
+
+async function confirmApprove() {
+    if (!pendingQuoteId) { return; }
+    const message = document.getElementById('approve-message').value.trim();
+    try {
+        const result = await callPortalAction('approve-quote', { quoteId: pendingQuoteId, message });
+        if (result.success) {
+            showToast('Angebot erfolgreich angenommen!', 'success');
+            closeApproveModal();
+            // Update local state
+            const q = portalData.quotes.find(x => x.id === pendingQuoteId);
+            if (q) { q.status = 'angenommen'; renderQuotes(portalData.quotes); }
+        } else {
+            showToast(result.message || 'Fehler beim Annehmen.', 'error');
+        }
+    } catch { showToast('Fehler. Bitte erneut versuchen.', 'error'); }
+}
+
+function openRejectModal(quoteId) {
+    pendingQuoteId = quoteId;
+    document.getElementById('reject-reason').value = '';
+    document.getElementById('modal-reject').classList.add('open');
+}
+
+function closeRejectModal() {
+    document.getElementById('modal-reject').classList.remove('open');
+    pendingQuoteId = null;
+}
+
+async function confirmReject() {
+    if (!pendingQuoteId) { return; }
+    const reason = document.getElementById('reject-reason').value.trim();
+    try {
+        const result = await callPortalAction('reject-quote', { quoteId: pendingQuoteId, reason });
+        if (result.success) {
+            showToast('Angebot abgelehnt.', 'success');
+            closeRejectModal();
+            const q = portalData.quotes.find(x => x.id === pendingQuoteId);
+            if (q) { q.status = 'abgelehnt'; renderQuotes(portalData.quotes); }
+        } else {
+            showToast(result.message || 'Fehler.', 'error');
+        }
+    } catch { showToast('Fehler. Bitte erneut versuchen.', 'error'); }
+}
+
+// ============================================
+// Messaging
+// ============================================
+
+async function sendMessage() {
+    const input = document.getElementById('msg-input');
+    const text = input.value.trim();
+    if (!text) { return; }
+    input.value = '';
+    try {
+        const result = await callPortalAction('send-message', { text });
+        if (result.success) {
+            const msg = { text, fromCustomer: true, createdAt: new Date().toISOString() };
+            portalData.messages = [...(portalData.messages || []), msg];
+            renderMessages(portalData.messages);
+        } else {
+            showToast(result.message || 'Nachricht konnte nicht gesendet werden.', 'error');
+            input.value = text;
+        }
+    } catch { showToast('Fehler beim Senden.', 'error'); input.value = text; }
+}
+
+// ============================================
+// API Calls
+// ============================================
+
+async function callPortalAction(action, payload) {
+    const supabaseUrl = localStorage.getItem('supabase_url');
+    const supabaseAnon = localStorage.getItem('supabase_anon_key');
+
+    if (supabaseUrl && supabaseAnon) {
+        const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': supabaseAnon },
+            body: JSON.stringify({ token: currentToken, action, ...payload })
+        });
+        if (res.ok) { return res.json(); }
+    }
+
+    // Local fallback
+    if (window.customerPortalService) {
+        if (action === 'approve-quote') {
+            return window.customerPortalService.approveQuote(currentToken, payload.quoteId, payload.message);
+        }
+        if (action === 'reject-quote') {
+            return window.customerPortalService.rejectQuote(currentToken, payload.quoteId, payload.reason);
+        }
+        if (action === 'send-message') {
+            return window.customerPortalService.sendCustomerMessage(currentToken, payload.text);
+        }
+    }
+    return { success: false, message: 'Aktion nicht verfügbar (offline).' };
+}
+
+// ============================================
+// Init
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if token is in URL
+    const urlToken = getTokenFromUrl();
+    if (urlToken) {
+        document.getElementById('token-input').value = urlToken;
+        loadPortal(urlToken);
+    }
+
+    // Allow pressing Enter in token field
+    document.getElementById('token-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { portalLogin(); }
+    });
+
+    // Close modals on backdrop click
+    document.querySelectorAll('.modal-backdrop').forEach(bd => {
+        bd.addEventListener('click', e => {
+            if (e.target === bd) { bd.classList.remove('open'); pendingQuoteId = null; }
+        });
+    });
+});
+</script>
+</body>
+</html>
