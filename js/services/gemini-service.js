@@ -341,9 +341,7 @@ ${companyName}`
     }
 }
 
-// Create global instance
-// SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
-// It is currently read here for development convenience only.
-// Production deployment MUST proxy Gemini calls through the backend service
-// (services/backend/main.py) so the key never reaches the browser.
-window.geminiService = new GeminiService(localStorage.getItem('gemini_api_key'));
+// Create global instance — API key is stored server-side in Supabase env var GEMINI_API_KEY.
+// All AI calls are proxied through the Supabase ai-proxy edge function.
+// No client-side key is required or accepted.
+window.geminiService = new GeminiService(null);

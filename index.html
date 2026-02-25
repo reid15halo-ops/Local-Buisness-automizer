@@ -850,15 +850,11 @@
                         <small>Die Anwendung wird neu geladen, wenn die Sprache geändert wird.</small>
                     </div>
                     <div class="settings-card">
-                        <h3>🤖 Gemini API</h3>
-                        <p>Für echte KI-Textgenerierung</p>
-                        <div class="form-group">
-                            <label for="gemini-api-key">API Key</label>
-                            <input type="password" id="gemini-api-key" placeholder="AIza...">
-                            <small>Hole deinen Key von <a href="https://aistudio.google.com/app/apikey"
-                                    target="_blank">Google AI Studio</a></small>
-                        </div>
-                        <button class="btn btn-primary" id="btn-save-gemini">Speichern</button>
+                        <h3>🤖 Gemini KI</h3>
+                        <p>KI-Textgenerierung läuft sicher über den Server (Supabase ai-proxy).</p>
+                        <p style="font-size:13px;color:var(--text-secondary);">
+                            Der API-Key wird ausschließlich als Supabase-Umgebungsvariable <code>GEMINI_API_KEY</code> gespeichert — niemals im Browser.
+                        </p>
                         <span class="status-indicator" id="gemini-status">● Nicht konfiguriert</span>
                     </div>
                     <div class="settings-card">
@@ -2961,6 +2957,9 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/excel-recognition-service.js"></script>
     <script src="js/ui/ui-helpers.js"></script>
     <script src="js/ui/excel-import-wizard.js"></script>
+
+    <!-- Company Settings Service (Supabase-backed per-user business config) -->
+    <script src="js/services/company-settings-service.js"></script>
 
     <!-- Setup Wizard & Admin Settings -->
     <script src="js/services/setup-wizard-service.js"></script>

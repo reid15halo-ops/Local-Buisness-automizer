@@ -4,7 +4,7 @@
    with triggers, conditions, actions, and execution
    ============================================ */
 // TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class WorkflowBuilderService {
     constructor() {
@@ -819,7 +819,7 @@ class WorkflowBuilderService {
 
         const positionen = auftrag.positionen || [];
         const netto = positionen.reduce((sum, p) => sum + ((p.menge || 1) * (p.preis || 0)), 0);
-        const mwst = netto * DEFAULT_TAX_RATE;
+        const mwst = netto * _getTaxRate();
         const brutto = netto + mwst;
 
         const rechnung = {

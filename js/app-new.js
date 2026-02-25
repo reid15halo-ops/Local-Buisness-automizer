@@ -4,7 +4,7 @@
    Modular Architecture Entry Point
    ============================================ */
 // TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 // Module-level convenience shortcuts
 const {
@@ -29,6 +29,9 @@ async function init() {
             }
         }
     }
+
+    // Load company settings from Supabase (tax rate, stundensatz, noreply email, etc.)
+    if (window.companySettings) { await window.companySettings.load(); }
 
     // Await store service load
     await window.storeService.load();
@@ -203,34 +206,21 @@ function renderMaterialList(materials) {
 // Settings (abbreviated - full version in original app.js)
 // ============================================
 function initSettings() {
-    const geminiKey = localStorage.getItem('gemini_api_key');
-    const stundensatz = localStorage.getItem('stundensatz') || '65';
+    const stundensatz = String(window.companySettings?.getStundensatz?.() ?? localStorage.getItem('stundensatz') ?? 65);
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
 
-    if (document.getElementById('gemini-api-key')) {
-        document.getElementById('gemini-api-key').value = geminiKey || '';
+    if (document.getElementById('stundensatz')) {
         document.getElementById('stundensatz').value = stundensatz;
-        document.getElementById('n8n-webhook-url').value = webhookUrl || '';
-
+        if (document.getElementById('n8n-webhook-url')) {
+            document.getElementById('n8n-webhook-url').value = webhookUrl || '';
+        }
         updateSettingsStatus();
     }
 
-    document.getElementById('btn-save-gemini')?.addEventListener('click', () => {
-        const key = document.getElementById('gemini-api-key').value.trim();
-        // SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
-        // It is currently stored here for development convenience only.
-        // Production deployment MUST proxy Gemini calls through the backend service
-        // (services/backend/main.py) so the key never reaches the browser.
-        localStorage.setItem('gemini_api_key', key);
-        window.geminiService = new GeminiService(key);
-        updateSettingsStatus();
-        showToast('✅ Gemini API Key gespeichert!', 'success');
-    });
-
-    document.getElementById('btn-save-stundensatz')?.addEventListener('click', () => {
-        const satz = document.getElementById('stundensatz').value;
-        localStorage.setItem('stundensatz', satz);
-        window.materialService?.setStundensatz(parseFloat(satz));
+    document.getElementById('btn-save-stundensatz')?.addEventListener('click', async () => {
+        const satz = parseFloat(document.getElementById('stundensatz').value);
+        window.materialService?.setStundensatz(satz);
+        await window.companySettings?.save?.({ stundensatz: satz });
         showToast('✅ Stundensatz gespeichert!', 'success');
     });
 
@@ -474,12 +464,13 @@ function initAutomationSettings() {
 }
 
 function updateSettingsStatus() {
-    const geminiKey = localStorage.getItem('gemini_api_key');
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
     const relayUrl = localStorage.getItem('email_relay_url');
     const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const emailConfigured = relayUrl && relaySecret;
     const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
+    // Gemini is now configured server-side via Supabase GEMINI_API_KEY env var
+    const geminiConfigured = window.supabaseConfig?.isConfigured?.() ?? false;
 
     const setStatus = (el, configured) => {
         if (!el) {return;}
@@ -487,7 +478,7 @@ function updateSettingsStatus() {
         el.className = 'status-indicator' + (configured ? ' connected' : '');
     };
 
-    setStatus(document.getElementById('gemini-status'), geminiKey);
+    setStatus(document.getElementById('gemini-status'), geminiConfigured);
     setStatus(document.getElementById('webhook-status'), webhookUrl);
     setStatus(document.getElementById('email-status'), emailConfigured);
     setStatus(document.getElementById('sms-status'), twilioSid);
@@ -540,8 +531,7 @@ function generateSenderEmail() {
         slug = 'firma-' + crypto.randomUUID().substring(0, 8);
     }
 
-    // TODO: NOREPLY_EMAIL should come from company settings, not be hardcoded here
-    const noReplyEmail = settings?.noreply_email ?? 'noreply@handwerkflow.de';
+    const noReplyEmail = settings?.noreply_email ?? window.companySettings?.getNoReplyEmail?.() ?? 'noreply@handwerkflow.de';
     const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;
@@ -670,8 +660,8 @@ async function runDemoWorkflow() {
         arbeitszeit: demoAuftrag.arbeitszeit,
         materialKosten: demoAuftrag.materialKosten,
         netto: demoAuftrag.netto + demoAuftrag.materialKosten,
-        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * DEFAULT_TAX_RATE,
-        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + DEFAULT_TAX_RATE),
+        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * _getTaxRate(),
+        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + _getTaxRate()),
         status: 'offen',
         createdAt: new Date().toISOString()
     };

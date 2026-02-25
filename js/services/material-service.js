@@ -2,13 +2,12 @@
    Material Management Service
    Excel Import & Price Calculation
    ============================================ */
-// TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class MaterialService {
     constructor() {
         this.bestand = JSON.parse(localStorage.getItem('material_bestand') || '[]');
-        this.stundensatz = parseFloat(localStorage.getItem('stundensatz') || '65');
+        this.stundensatz = window.companySettings?.getStundensatz?.() ?? parseFloat(localStorage.getItem('stundensatz') || '65');
         this.reservierungen = JSON.parse(localStorage.getItem('material_reservations') || '[]');
         this.lagerbewegungen = JSON.parse(localStorage.getItem('stock_movements') || '[]');
     }
@@ -198,8 +197,8 @@ class MaterialService {
             materialkosten: gesamtMaterial,
             arbeitskosten: gesamtArbeit,
             netto: gesamtMaterial + gesamtArbeit,
-            mwst: (gesamtMaterial + gesamtArbeit) * DEFAULT_TAX_RATE,
-            brutto: (gesamtMaterial + gesamtArbeit) * (1 + DEFAULT_TAX_RATE)
+            mwst: (gesamtMaterial + gesamtArbeit) * _getTaxRate(),
+            brutto: (gesamtMaterial + gesamtArbeit) * (1 + _getTaxRate())
         };
     }
 

@@ -295,11 +295,8 @@ class AdminPanelService {
         return {
             supabase_url: localStorage.getItem('supabase_url') || '',
             supabase_anon_key: localStorage.getItem('supabase_anon_key') || '',
-            // SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
-            // It is currently read here for development convenience only.
-            // Production deployment MUST proxy Gemini calls through the backend service
-            // (services/backend/main.py) so the key never reaches the browser.
-            gemini_api_key: localStorage.getItem('gemini_api_key') || '',
+            // gemini_api_key is stored server-side as Supabase env var GEMINI_API_KEY.
+            // It is proxied through the ai-proxy edge function and never exposed to the client.
             resend_api_key: localStorage.getItem('resend_api_key') || '',
             stripe_publishable_key: localStorage.getItem('stripe_publishable_key') || '',
             n8n_webhook_url: localStorage.getItem('n8n_webhook_url') || '',

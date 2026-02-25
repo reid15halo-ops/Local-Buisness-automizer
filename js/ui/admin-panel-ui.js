@@ -728,11 +728,11 @@ class AdminPanelUI {
 
             <div class="admin-panel-section">
                 <h3>🤖 KI & Automation</h3>
+                <p class="admin-panel-hint" style="margin-bottom:12px;font-size:13px;color:var(--text-muted);">
+                    Der Gemini API-Key wird serverseitig als Supabase-Umgebungsvariable <code>GEMINI_API_KEY</code> konfiguriert.
+                    Er wird nie im Browser gespeichert.
+                </p>
                 <div class="admin-panel-form-grid">
-                    <div class="admin-panel-field">
-                        <label for="ap-gemini-key">Google Gemini API Key</label>
-                        <input type="password" id="ap-gemini-key" class="admin-panel-input" value="${this._esc(settings.gemini_api_key)}" placeholder="AIzaSy..." />
-                    </div>
                     <div class="admin-panel-field">
                         <label for="ap-n8n-url">n8n Webhook URL</label>
                         <input type="url" id="ap-n8n-url" class="admin-panel-input" value="${this._esc(settings.n8n_webhook_url)}" placeholder="https://n8n.example.com/webhook/..." />
@@ -766,7 +766,6 @@ class AdminPanelUI {
             resend_api_key: 'ap-resend-key',
             email_relay_url: 'ap-email-relay-url',
             email_relay_secret: 'ap-email-relay-secret',
-            gemini_api_key: 'ap-gemini-key',
             n8n_webhook_url: 'ap-n8n-url',
             stripe_publishable_key: 'ap-stripe-key'
         };
@@ -884,7 +883,7 @@ class AdminPanelUI {
                     </div>
                     <div class="admin-panel-info-row">
                         <span>KI (Gemini)</span>
-                        <span class="admin-panel-status-indicator ${settings.gemini_api_key ? 'status-ok' : 'status-off'}">${settings.gemini_api_key ? '● Konfiguriert' : '○ Nicht konfiguriert'}</span>
+                        <span class="admin-panel-status-indicator ${window.supabaseConfig?.isConfigured?.() ? 'status-ok' : 'status-off'}">${window.supabaseConfig?.isConfigured?.() ? '● Serverseitig konfiguriert' : '○ Supabase nicht verbunden'}</span>
                     </div>
                     <div class="admin-panel-info-row">
                         <span>Zahlungen (Stripe)</span>

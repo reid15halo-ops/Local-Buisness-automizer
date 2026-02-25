@@ -80,7 +80,7 @@ class WorkEstimationService {
 
         // Budget als Anhaltspunkt (wenn vorhanden)
         if (anfrage.budget && anfrage.budget > 0) {
-            const stundensatz = parseFloat(localStorage.getItem('stundensatz') || '65');
+            const stundensatz = window.companySettings?.getStundensatz?.() ?? parseFloat(localStorage.getItem('stundensatz') || '65');
             const budgetStunden = anfrage.budget / stundensatz;
             // Gewichteter Durchschnitt
             stunden = (stunden * 0.3) + (budgetStunden * 0.7);
@@ -163,22 +163,12 @@ Antworte NUR im JSON-Format:
 }`;
 
         try {
-            // SECURITY TODO: gemini_api_key must NOT be stored in localStorage in production.
-            // It is currently read here for development convenience only.
-            // Production deployment MUST proxy Gemini calls through the backend service
-            // (services/backend/main.py) so the key never reaches the browser.
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localStorage.getItem('gemini_api_key')}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.3 }
-                })
+            // Route through the Supabase ai-proxy edge function (key is server-side only)
+            if (!window.geminiService) { throw new Error('Gemini service not available'); }
+            const data = await window.geminiService._callGeminiAPI({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.3 }
             });
-
-            if (!response.ok) {throw new Error('API Error');}
-
-            const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
             const jsonMatch = text.match(/\{[\s\S]*\}/);

@@ -17,7 +17,7 @@
    - Execution log persisted in localStorage by date
    ============================================ */
 // TODO: read from company settings
-const DEFAULT_TAX_RATE = 0.19; // Standard German VAT rate
+function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class AgentWorkflowService {
     constructor() {
@@ -956,7 +956,7 @@ Antworte NUR mit dem JSON.`;
         // Estimate based on leistungsart
         const basePrice = this._estimateBasePrice(anfrage.leistungsart);
         const netto = basePrice;
-        const mwst = Math.round(netto * DEFAULT_TAX_RATE * 100) / 100;
+        const mwst = Math.round(netto * _getTaxRate() * 100) / 100;
         const brutto = Math.round((netto + mwst) * 100) / 100;
 
         return {
