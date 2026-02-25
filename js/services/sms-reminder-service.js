@@ -10,6 +10,12 @@ class SmsReminderService {
         this.settings = JSON.parse(localStorage.getItem('freyai_sms_settings') || '{}');
         this.noShowTracking = JSON.parse(localStorage.getItem('freyai_noshow_tracking') || '[]');
 
+        // Throttle: minimum 5 minutes between any two SMS to the same number.
+        // In-memory only — resets on page reload (intentional: prevents
+        // a burst after a page reload but allows legitimate next-day sends).
+        // Map<normalizedNumber, lastSentTimestamp>
+        this._smsThrottle = new Map();
+
         // Default settings
         if (!this.settings.enabled) {this.settings.enabled = true;}
         if (!this.settings.reminder24h) {this.settings.reminder24h = true;}
@@ -84,17 +90,22 @@ class SmsReminderService {
         return reminder;
     }
 
-    // Check for due reminders
-    checkDueReminders() {
+    // Check for due reminders — serialised with 500 ms gap to avoid burst limits.
+    // The 5-minute per-number throttle in sendSms() provides the second guard.
+    async checkDueReminders() {
         const now = new Date();
         const dueReminders = this.reminders.filter(r =>
             r.status === 'scheduled' &&
             new Date(r.sendAt) <= now
         );
 
-        dueReminders.forEach(reminder => {
-            this.sendReminder(reminder);
-        });
+        for (const reminder of dueReminders) {
+            await this.sendReminder(reminder);
+            if (dueReminders.length > 1) {
+                // Brief pause between messages to avoid burst limits
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
 
         return dueReminders.length;
     }
@@ -156,6 +167,15 @@ class SmsReminderService {
             || localStorage.getItem('freyai_sms_provider')
             || 'none';
 
+        // ── 5-minute per-number throttle ─────────────────────────────────
+        const MIN_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+        const lastSent = this._smsThrottle.get(cleanNumber);
+        if (lastSent && (Date.now() - lastSent) < MIN_INTERVAL_MS) {
+            const waitSec = Math.ceil((MIN_INTERVAL_MS - (Date.now() - lastSent)) / 1000);
+            console.warn(`[SMS] Throttled (${cleanNumber}) — next allowed in ${waitSec}s`);
+            return { success: false, throttled: true, error: `Rate-Limit: Bitte ${waitSec}s warten` };
+        }
+
         let result = { success: false, messageId: null, method: provider };
 
         try {
@@ -174,6 +194,10 @@ class SmsReminderService {
             console.error('[SmsReminderService] Send error:', err);
             result = { success: false, error: err.message, method: provider };
         }
+
+        // Record send time for throttle regardless of success/fail
+        // (failed sends also count — the gateway already received the request)
+        this._smsThrottle.set(cleanNumber, Date.now());
 
         if (window.communicationService) {
             window.communicationService.logMessage({

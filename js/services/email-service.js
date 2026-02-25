@@ -8,6 +8,10 @@ class EmailService {
         this.emails = JSON.parse(localStorage.getItem('freyai_emails') || '[]');
         this.emailConfig = JSON.parse(localStorage.getItem('freyai_email_config') || '{}');
         this.templates = this.loadDefaultTemplates();
+
+        // Throttle: minimum 5 minutes between emails to the same address.
+        // In-memory — resets on page reload.  Map<normalizedAddress, lastSentTs>
+        this._emailThrottle = new Map();
         
         // Email categorization keywords
         this.categoryKeywords = {
@@ -479,6 +483,20 @@ FreyAI Visions`
             return { success: false, error: 'E-Mail-Relay nicht konfiguriert.' };
         }
 
+        // ── 5-minute per-address throttle ────────────────────────────────
+        // Bulk sends (sendBulkEmails) have relay-side rate limiting and are
+        // exempt here; only single sendEmail() calls are throttled.
+        if (!opts.skipThrottle) {
+            const MIN_INTERVAL_MS = 5 * 60 * 1000;
+            const normalizedTo = (to || '').toLowerCase().trim();
+            const lastSent = this._emailThrottle.get(normalizedTo);
+            if (lastSent && (Date.now() - lastSent) < MIN_INTERVAL_MS) {
+                const waitSec = Math.ceil((MIN_INTERVAL_MS - (Date.now() - lastSent)) / 1000);
+                console.warn(`[EmailService] Throttled (${normalizedTo}) — next in ${waitSec}s`);
+                return { success: false, throttled: true, error: `Rate-Limit: ${waitSec}s warten` };
+            }
+        }
+
         const fromAddress = opts.from
             || companyInfo?.noReplyEmail
             || window.APP_CONFIG?.COMPANY_EMAIL
@@ -520,6 +538,9 @@ FreyAI Visions`
                 console.error('[EmailService] Relay error:', msg);
                 return { success: false, error: msg };
             }
+
+            // Record send time for throttle
+            this._emailThrottle.set((to || '').toLowerCase().trim(), Date.now());
 
             console.log('[EmailService] Email sent:', subject, '→', to);
             if (window.storeService) {
