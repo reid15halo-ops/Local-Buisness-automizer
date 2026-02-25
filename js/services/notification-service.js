@@ -10,6 +10,7 @@ class NotificationService {
         this.notificationTypes = {
             anfrage_neu: { icon: '📥', color: '#3b82f6', label: 'Neue Anfrage eingegangen' },
             angebot_akzeptiert: { icon: '✅', color: '#10b981', label: 'Angebot wurde akzeptiert' },
+            angebot_vorlaeufig: { icon: '📨', color: '#6366f1', label: 'Vorläufiges Angebot gesendet — bitte prüfen' },
             rechnung_ueberfaellig: { icon: '⚠️', color: '#ef4444', label: 'Rechnung ist überfällig' },
             rechnung_bezahlt: { icon: '💰', color: '#10b981', label: 'Zahlung eingegangen' },
             termin_erinnerung: { icon: '⏰', color: '#f59e0b', label: 'Termin in 30 Minuten' },

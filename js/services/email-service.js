@@ -504,7 +504,7 @@ FreyAI Visions`
                 'Content-Type': 'application/json'
             };
             if (secret) {
-                headers['X-Relay-Secret'] = secret;
+                headers['Authorization'] = `Bearer ${secret}`;
             }
 
             const response = await fetch(`${relayUrl}/send-email`, {
@@ -561,7 +561,7 @@ FreyAI Visions`
         }));
 
         const headers = { 'Content-Type': 'application/json' };
-        if (secret) headers['X-Relay-Secret'] = secret;
+        if (secret) headers['Authorization'] = `Bearer ${secret}`;
 
         const response = await fetch(`${relayUrl}/send-bulk`, {
             method: 'POST',

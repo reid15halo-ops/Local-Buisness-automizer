@@ -1332,37 +1332,118 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
         const netto  = angebot.netto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
         const mwst   = angebot.mwst.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
 
+        // Build portal CTA if a portal token is available for the customer
+        let portalCta = '';
+        if (window.customerPortalService) {
+            try {
+                const tokenRecord = window.customerPortalService.generateAccessToken(
+                    angebot.kunde?.id || angebot.kundeId || '',
+                    angebot.kunde || {},
+                    'quote'
+                );
+                if (tokenRecord?.token) {
+                    const portalBase = `${location.origin}/customer-portal.html`;
+                    const portalUrl  = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
+                    portalCta = `
+  <div style="text-align:center;margin:28px 0">
+    <a href="${portalUrl}"
+       style="background:#6366f1;color:#fff;padding:14px 32px;border-radius:8px;font-size:16px;
+              font-weight:600;text-decoration:none;display:inline-block">
+      Angebot im Kundenportal ansehen &amp; freigeben →
+    </a>
+    <p style="font-size:12px;color:#6e6e73;margin-top:8px">
+      Der Link ist personalisiert und nur für Sie bestimmt.
+    </p>
+  </div>`;
+                }
+            } catch (_) { /* portal not available — skip CTA */ }
+        }
+
+        const logoHtml = companyInfo?.logoUrl
+            ? `<img src="${companyInfo.logoUrl}" alt="${companyName}" style="height:48px;object-fit:contain;margin-bottom:8px">`
+            : `<span style="font-size:22px;font-weight:700;color:#0f172a">${companyName}</span>`;
+
         const html = `
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"></head><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1d1d1f">
-  <h2 style="color:#0f172a">Vorläufiges Angebot — ${angebot.id}</h2>
-  <p>Sehr geehrte(r) ${kundeName},</p>
-  <p>vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser <strong>vorläufiges Angebot</strong>.
-     Sobald wir Ihre Rückmeldung erhalten, erstellen wir das verbindliche Angebot für Sie.</p>
-  <table style="width:100%;border-collapse:collapse;margin:16px 0">
-    <thead><tr style="background:#f0f0f2">
-      <th style="text-align:left;padding:8px">Menge</th>
-      <th style="text-align:left;padding:8px">Beschreibung</th>
-      <th style="text-align:right;padding:8px">Einzelpreis</th>
-      <th style="text-align:right;padding:8px">Gesamt</th>
-    </tr></thead>
-    <tbody>${posRows}</tbody>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1d1d1f">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f7;padding:32px 0">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08)">
+
+        <!-- Header -->
+        <tr><td style="background:#0f172a;padding:24px 32px;text-align:center">
+          ${logoHtml.replace(companyName, `<span style="color:#fff">${companyName}</span>`)}
+        </td></tr>
+
+        <!-- Body -->
+        <tr><td style="padding:32px">
+          <h2 style="margin:0 0 8px;font-size:22px;color:#0f172a">Vorläufiges Angebot</h2>
+          <p style="margin:0 0 4px;font-size:13px;color:#6e6e73">Angebotsnummer: <strong>${angebot.id}</strong></p>
+
+          <p style="margin:20px 0">Sehr geehrte(r) ${kundeName},</p>
+          <p style="margin:0 0 16px">vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser <strong>vorläufiges Angebot</strong>.
+             Sobald wir Ihre Rückmeldung erhalten, erstellen wir das verbindliche Angebot für Sie.</p>
+
+          <!-- Positions table -->
+          <table width="100%" cellpadding="0" cellspacing="0"
+                 style="border-collapse:collapse;margin:20px 0;font-size:14px">
+            <thead>
+              <tr style="background:#f0f0f2">
+                <th style="text-align:left;padding:10px 12px;font-weight:600">Menge</th>
+                <th style="text-align:left;padding:10px 12px;font-weight:600">Beschreibung</th>
+                <th style="text-align:right;padding:10px 12px;font-weight:600">Einzelpreis</th>
+                <th style="text-align:right;padding:10px 12px;font-weight:600">Gesamt</th>
+              </tr>
+            </thead>
+            <tbody>${posRows}</tbody>
+          </table>
+
+          <!-- Totals -->
+          <table cellpadding="0" cellspacing="0" style="margin-left:auto;font-size:14px">
+            <tr>
+              <td style="padding:4px 12px;color:#6e6e73">Netto:</td>
+              <td style="text-align:right;padding:4px 12px">${netto}</td>
+            </tr>
+            <tr>
+              <td style="padding:4px 12px;color:#6e6e73">MwSt. 19 %:</td>
+              <td style="text-align:right;padding:4px 12px">${mwst}</td>
+            </tr>
+            <tr style="font-weight:700;font-size:16px">
+              <td style="padding:8px 12px;border-top:2px solid #0f172a">Gesamtbetrag:</td>
+              <td style="text-align:right;padding:8px 12px;border-top:2px solid #0f172a">${brutto}</td>
+            </tr>
+          </table>
+
+          ${angebot.text ? `<p style="margin:20px 0;padding:16px;background:#f8f8fa;border-left:3px solid #6366f1;border-radius:4px">${angebot.text.replace(/\n/g, '<br>')}</p>` : ''}
+
+          ${portalCta}
+
+          <p style="margin:24px 0 0">Mit freundlichen Grüßen<br>
+          <strong>${companyName}</strong></p>
+        </td></tr>
+
+        <!-- Footer -->
+        <tr><td style="background:#f5f5f7;padding:20px 32px;font-size:12px;color:#6e6e73;border-top:1px solid #e0e0e0">
+          <p style="margin:0 0 6px">
+            Dieses Angebot ist <strong>vorläufig und unverbindlich</strong>.
+            Es wird erst nach schriftlicher Bestätigung durch uns verbindlich.
+          </p>
+          <p style="margin:0">
+            ${companyInfo?.address || ''} ${companyInfo?.phone ? '· Tel: ' + companyInfo.phone : ''}
+            ${companyInfo?.taxId ? '· USt-IdNr.: ' + companyInfo.taxId : ''}
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
   </table>
-  <table style="margin-left:auto;margin-right:0">
-    <tr><td style="padding:4px 8px">Netto:</td><td style="text-align:right;padding:4px 8px">${netto}</td></tr>
-    <tr><td style="padding:4px 8px">MwSt. 19 %:</td><td style="text-align:right;padding:4px 8px">${mwst}</td></tr>
-    <tr style="font-weight:bold;font-size:1.1em">
-      <td style="padding:4px 8px;border-top:2px solid #0f172a">Brutto:</td>
-      <td style="text-align:right;padding:4px 8px;border-top:2px solid #0f172a">${brutto}</td>
-    </tr>
-  </table>
-  ${angebot.text ? `<p style="margin-top:16px">${angebot.text.replace(/\n/g, '<br>')}</p>` : ''}
-  <hr style="margin:24px 0">
-  <p style="font-size:0.85em;color:#6e6e73">
-    Dieses Angebot ist vorläufig und unverbindlich. Bitte antworten Sie auf diese E-Mail
-    oder rufen Sie uns an, damit wir das Angebot verbindlich für Sie bestätigen können.
-  </p>
-  <p>Mit freundlichen Grüßen<br><strong>${companyName}</strong></p>
-</body></html>`;
+</body>
+</html>`;
 
         const result = await window.emailService.sendEmail(
             kundeEmail,
