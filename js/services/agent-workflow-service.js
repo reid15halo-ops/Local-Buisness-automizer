@@ -16,7 +16,6 @@
    - Graceful fallback if Gemini is unavailable
    - Execution log persisted in localStorage by date
    ============================================ */
-// TODO: read from company settings
 function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class AgentWorkflowService {

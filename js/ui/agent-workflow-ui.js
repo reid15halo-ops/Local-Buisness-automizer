@@ -688,11 +688,12 @@ class AgentWorkflowUI {
             { value: 'auto',    label: 'Vollautomatisch',    desc: 'Agent handelt eigenstaendig (Rueckgaengig in 24h moeglich).', icon: '🤖' },
         ];
 
-        const agents = executor.getAgentList ? executor.getAgentList() : [];
+        // getAllConfigs() returns an object keyed by agentId; each entry has .id, .name, .level, .schedule, .description
+        const agents = Object.values(executor.getAllConfigs ? executor.getAllConfigs() : {});
 
         const agentRows = agents.map(agent => {
-            const currentLevel = executor.getAgentLevel ? executor.getAgentLevel(agent.id) : 'off';
-            const schedule = executor.getAgentSchedule ? executor.getAgentSchedule(agent.id) : '';
+            const currentLevel = agent.level || 'off';
+            const schedule = agent.schedule || '';
             return `
                 <div class="agent-automation-row" data-agent-id="${agent.id}">
                     <div class="agent-automation-name">
@@ -783,10 +784,10 @@ class AgentWorkflowUI {
         });
 
         document.getElementById('btn-automation-run-pending')?.addEventListener('click', async () => {
-            if (executor.runPendingAgents) {
-                await executor.runPendingAgents();
-                this._refreshPane('automation');
-            }
+            // startScheduler triggers a check of all due agents
+            if (executor.startScheduler) { executor.startScheduler(); }
+            window.errorHandler?.success?.('Scheduler gestartet – ausstehende Agenten werden geprueft');
+            this._refreshPane('automation');
         });
 
         document.querySelectorAll('.agent-undo-btn').forEach(btn => {

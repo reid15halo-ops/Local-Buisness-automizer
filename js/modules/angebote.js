@@ -2,7 +2,6 @@
    Angebote Module
    Angebote (quotes) CRUD and UI
    ============================================ */
-// TODO: read from company settings
 function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h, showToast } = window.AppUtils;

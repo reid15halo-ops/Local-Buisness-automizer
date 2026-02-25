@@ -2,7 +2,6 @@
    Purchase Order (Bestellung) Service
    Supplier Management & PO Workflow
    ============================================ */
-// TODO: read from company settings
 function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class PurchaseOrderService {

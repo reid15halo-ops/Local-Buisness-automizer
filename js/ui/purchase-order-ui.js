@@ -2,7 +2,6 @@
    Purchase Order UI Module
    Handles all PO interface interactions
    ============================================ */
-// TODO: read from company settings
 function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class PurchaseOrderUI {

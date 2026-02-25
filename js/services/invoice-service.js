@@ -2,7 +2,6 @@
    Invoice Service
    Orchestrates invoice creation and management
    ============================================ */
-// TODO: read from company settings
 function _getTaxRate() { return window.companySettings?.getTaxRate?.() ?? 0.19; }
 
 class InvoiceService {
