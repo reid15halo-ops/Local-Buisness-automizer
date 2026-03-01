@@ -314,7 +314,7 @@ class SecurityBackupService {
     // =====================================================
 
     // Export all customer data (GDPR Article 20 - Data Portability)
-    exportCustomerData(customerId) {
+    async exportCustomerData(customerId) {
         const data = this.getAllData();
         const customerData = {
             exportedAt: new Date().toISOString(),
@@ -352,11 +352,24 @@ class SecurityBackupService {
             );
         }
 
+        // Also fetch from Supabase if available
+        const sb = window.supabaseConfig?.get?.();
+        if (sb) {
+            try {
+                const { data: sbKunde } = await sb.from('kunden').select('*').eq('id', customerId).single();
+                if (sbKunde) { customerData.customer = sbKunde; }
+                const { data: sbRech } = await sb.from('rechnungen').select('*').or(`kunde_id.eq.${customerId}`);
+                if (sbRech) { customerData.invoices = [...customerData.invoices, ...sbRech]; }
+                const { data: sbComm } = await sb.from('communication_log').select('*').eq('kunde_id', customerId);
+                if (sbComm) { customerData.communications = [...customerData.communications, ...sbComm]; }
+            } catch (e) { /* Supabase not available, local data only */ }
+        }
+
         return customerData;
     }
 
     // Delete all customer data (GDPR Article 17 - Right to Erasure)
-    deleteCustomerData(customerId) {
+    async deleteCustomerData(customerId) {
         const keysToCheck = [
             'freyai_customers',
             'freyai_rechnungen',
@@ -368,6 +381,7 @@ class SecurityBackupService {
 
         let deletedCount = 0;
 
+        // 1. Delete from localStorage
         keysToCheck.forEach(key => {
             const data = JSON.parse(localStorage.getItem(key) || '[]');
             if (Array.isArray(data)) {
@@ -380,6 +394,31 @@ class SecurityBackupService {
                 localStorage.setItem(key, JSON.stringify(filtered));
             }
         });
+
+        // 2. Delete from Supabase (cascade across all related tables)
+        const sb = window.supabaseConfig?.get?.();
+        if (sb) {
+            const supabaseTables = [
+                { table: 'communication_log', field: 'kunde_id' },
+                { table: 'zeiteintraege', field: 'auftrag_id' },
+                { table: 'rechnungen', field: 'kunde_name' },
+                { table: 'auftraege', field: 'kunde_name' },
+                { table: 'angebote', field: 'kunde_name' },
+                { table: 'anfragen', field: 'kunde_name' },
+                { table: 'kunden', field: 'id' }
+            ];
+            for (const { table, field } of supabaseTables) {
+                try {
+                    const { error } = await sb.from(table).delete().eq(field, customerId);
+                    if (!error) { deletedCount++; }
+                } catch (e) { /* table may not exist or field mismatch - continue */ }
+            }
+        }
+
+        // 3. Delete from IndexedDB via db-service
+        if (window.dbService?.deleteCustomer) {
+            try { await window.dbService.deleteCustomer(customerId); } catch (e) { /* OK */ }
+        }
 
         this.logActivity('gdpr_delete', { customerId, deletedCount });
 
@@ -422,7 +461,7 @@ class SecurityBackupService {
             action,
             details,
             timestamp: new Date().toISOString(),
-            user: 'admin' // Would be actual user in multi-user setup
+            user: window.adminPanelService?.getRoleLabel?.() || window.authService?.getUser?.()?.email || 'unknown'
         });
 
         // Keep last 1000 entries

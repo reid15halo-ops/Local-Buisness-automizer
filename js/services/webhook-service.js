@@ -85,7 +85,22 @@ class WebhookService {
     }
 
     // Send webhook request
+    _isAllowedUrl(url) {
+        try {
+            const parsed = new URL(url);
+            // Block internal/private network ranges
+            const blocked = ['localhost', '127.0.0.1', '0.0.0.0', '169.254.', '10.', '192.168.', '172.16.', '172.17.', '172.18.', '172.19.', '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.', '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.'];
+            if (blocked.some(b => parsed.hostname.startsWith(b) || parsed.hostname === b)) { return false; }
+            if (!['https:', 'http:'].includes(parsed.protocol)) { return false; }
+            return true;
+        } catch { return false; }
+    }
+
     async sendWebhook(webhook, eventType, payload, attempt = 1) {
+        if (!this._isAllowedUrl(webhook.url)) {
+            console.error('WebhookService: Blocked URL (private/internal network):', webhook.url);
+            return { success: false, error: 'URL blocked: private/internal network addresses not allowed' };
+        }
         const requestBody = {
             event: eventType,
             timestamp: new Date().toISOString(),

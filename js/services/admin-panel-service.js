@@ -46,7 +46,7 @@ class AdminPanelService {
      */
     isUsingDefaultCredentials(role) {
         const storedUser = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_username`);
-        const storedPass = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password`);
+        const storedPass = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password_hash`) || localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password`);
         // If nothing stored, defaults would be used
         return !storedUser || !storedPass;
     }
@@ -57,7 +57,7 @@ class AdminPanelService {
      * @param {Object} devCreds - { username, password }
      * @returns {{ success: boolean, errors: string[] }}
      */
-    completeFirstRunSetup(adminCreds, devCreds) {
+    async completeFirstRunSetup(adminCreds, devCreds) {
         const errors = [];
 
         // Validate admin credentials
@@ -150,24 +150,45 @@ class AdminPanelService {
             return { success: false, role: null, error: 'Ersteinrichtung erforderlich.' };
         }
 
+        // Brute-force protection: lockout after 5 failed attempts for 15 min
+        const lockoutKey = this.STORAGE_PREFIX + 'lockout';
+        const attemptsKey = this.STORAGE_PREFIX + 'failed_attempts';
+        const lockoutUntil = parseInt(localStorage.getItem(lockoutKey) || '0');
+        if (Date.now() < lockoutUntil) {
+            const mins = Math.ceil((lockoutUntil - Date.now()) / 60000);
+            return { success: false, role: null, error: `Zu viele Fehlversuche. Gesperrt f\u00fcr ${mins} Minuten.` };
+        }
+
         // Check developer credentials first (higher privilege)
         const devCreds = this._getCredentials(this.ROLES.DEVELOPER);
-        if (devCreds && username === devCreds.username && password === devCreds.password) {
+        if (devCreds && username === devCreds.username && (await this._hashPassword(password)) === devCreds.password) {
             this.currentRole = this.ROLES.DEVELOPER;
             this.sessionActive = true;
             this._startSessionTimer();
+            localStorage.setItem(attemptsKey, '0');
+            localStorage.removeItem(lockoutKey);
             return { success: true, role: this.ROLES.DEVELOPER, error: null };
         }
 
         // Check admin credentials
         const adminCreds = this._getCredentials(this.ROLES.ADMIN);
-        if (adminCreds && username === adminCreds.username && password === adminCreds.password) {
+        if (adminCreds && username === adminCreds.username && (await this._hashPassword(password)) === adminCreds.password) {
             this.currentRole = this.ROLES.ADMIN;
             this.sessionActive = true;
             this._startSessionTimer();
+            localStorage.setItem(attemptsKey, '0');
+            localStorage.removeItem(lockoutKey);
             return { success: true, role: this.ROLES.ADMIN, error: null };
         }
 
+        // Increment failed attempts
+        const attempts = parseInt(localStorage.getItem(attemptsKey) || '0') + 1;
+        localStorage.setItem(attemptsKey, String(attempts));
+        if (attempts >= 5) {
+            localStorage.setItem(lockoutKey, String(Date.now() + 15 * 60 * 1000));
+            localStorage.setItem(attemptsKey, '0');
+            return { success: false, role: null, error: 'Zu viele Fehlversuche. Gesperrt f\u00fcr 15 Minuten.' };
+        }
         return { success: false, role: null, error: 'Benutzername oder Passwort falsch.' };
     }
 
@@ -358,7 +379,7 @@ class AdminPanelService {
      * @param {string} newPassword
      * @returns {{ success: boolean, error: string|null }}
      */
-    changeCredentials(role, newUsername, newPassword) {
+    async changeCredentials(role, newUsername, newPassword) {
         // Only developer can change developer credentials
         if (role === this.ROLES.DEVELOPER && !this.isDeveloper()) {
             return { success: false, error: 'Nur Developer können Developer-Zugangsdaten ändern.' };
@@ -378,7 +399,10 @@ class AdminPanelService {
         }
 
         localStorage.setItem(`${this.STORAGE_PREFIX}${role}_username`, newUsername.trim());
-        localStorage.setItem(`${this.STORAGE_PREFIX}${role}_password`, newPassword.trim());
+        const hash = await this._hashPassword(newPassword.trim());
+        localStorage.setItem(`${this.STORAGE_PREFIX}${role}_password_hash`, hash);
+        // Remove old plaintext key if exists
+        localStorage.removeItem(`${this.STORAGE_PREFIX}${role}_password`);
 
         return { success: true, error: null };
     }

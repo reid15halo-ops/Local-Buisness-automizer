@@ -419,7 +419,7 @@ function renderQuotes(quotes) {
     const tbody = document.getElementById('quotes-tbody');
     tbody.innerHTML = quotes.map(q => {
         const statusLabel = { offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
-        const badge = `<span class="badge badge-${q.status}">${statusLabel[q.status] || q.status}</span>`;
+        const badge = `<span class="badge badge-${['offen','angenommen','abgelehnt','versendet','bezahlt','storniert'].includes(q.status) ? q.status : 'offen'}">${statusLabel[q.status] || q.status}</span>`;
         const actions = q.status === 'offen' ? `
             <button class="btn btn-sm btn-success" onclick="openApproveModal('${esc(q.id)}')">Annehmen</button>
             <button class="btn btn-sm btn-danger" onclick="openRejectModal('${esc(q.id)}')">Ablehnen</button>
@@ -441,9 +441,9 @@ function renderInvoices(invoices) {
     const tbody = document.getElementById('invoices-tbody');
     tbody.innerHTML = invoices.map(inv => {
         const statusLabel = { offen: 'Offen', bezahlt: 'Bezahlt', storniert: 'Storniert' };
-        const badge = `<span class="badge badge-${inv.status}">${statusLabel[inv.status] || inv.status}</span>`;
+        const badge = `<span class="badge badge-${['offen','bezahlt','storniert','ueberfaellig'].includes(inv.status) ? inv.status : 'offen'}">${statusLabel[inv.status] || inv.status}</span>`;
         const payBtn = inv.status === 'offen' && inv.stripePaymentUrl
-            ? `<a class="btn btn-sm btn-primary" href="${esc(inv.stripePaymentUrl)}" target="_blank" rel="noopener">Jetzt zahlen</a>`
+            ? `<a class="btn btn-sm btn-primary" href="${inv.stripePaymentUrl && inv.stripePaymentUrl.startsWith('https://') ? esc(inv.stripePaymentUrl) : '#'}" target="_blank" rel="noopener">Jetzt zahlen</a>`
             : '';
         return `
             <tr>

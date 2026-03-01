@@ -26,6 +26,9 @@
 </head>
 
 <body>
+    <!-- Supabase config must load BEFORE auth gate checks isConfigured() -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" integrity="sha384-MFRs3GOKG7baTTFnpuIH/OuWFhPB09hOFzj/S8byfOcSQiaXmD4bSMVE01zSrMSp" crossorigin="anonymous"></script>
+    <script src="js/services/supabase-config.js"></script>
     <!-- Auth Gate & Offline Mode Check -->
     <script>
         (async function checkAuth() {
@@ -2355,7 +2358,14 @@ Mit freundlichen Grüßen
 
                 <div class="form-group">
                     <label>Positionen</label>
-                    <p class="hint">💡 Tippe in die Beschreibung für Materialvorschläge aus dem Bestand</p>
+                    <p class="hint">Tippe in die Beschreibung für Materialvorschläge aus dem Bestand</p>
+                    <div class="positionen-header" style="display:grid;grid-template-columns:1fr 90px 90px 110px 36px;gap:10px;padding:0 16px 6px;font-size:12px;color:var(--text-muted);font-weight:600;">
+                        <span>Beschreibung</span>
+                        <span style="text-align:right">Menge</span>
+                        <span style="text-align:right">Einheit</span>
+                        <span style="text-align:right">Preis/Einheit</span>
+                        <span></span>
+                    </div>
                     <div class="positionen-list" id="positionen-list">
                         <!-- Dynamically added -->
                     </div>
@@ -2941,7 +2951,8 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/db-service.js"></script>
     <script src="js/services/demo-guard-service.js"></script>
     <script src="js/services/demo-data-service.js"></script>
-    <script src="js/services/supabase-config.js"></script>
+    <!-- supabase-config.js already loaded at line 30 -->
+    <script src="js/services/supabase-db-service.js"></script>
     <script src="js/services/sync-service.js"></script>
     <script src="js/services/auth-service.js"></script>
     <script src="js/services/store-service.js"></script>
@@ -3003,7 +3014,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/calendar-ui-service.js"></script>
 
     <!-- App Integration -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
     <script src="js/services/automation-api.js"></script>
     <script src="js/services/pdf-service.js"></script>
     <script src="js/services/purchase-order-service.js"></script>

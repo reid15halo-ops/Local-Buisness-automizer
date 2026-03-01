@@ -65,6 +65,10 @@ window.UI = {
     // --- Security ---
 
     sanitize(str) {
+        // Prefer DOMPurify if available
+        if (typeof DOMPurify !== 'undefined') {
+            return DOMPurify.sanitize(str, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+        }
         if (!str) {return '';}
         const temp = document.createElement('div');
         temp.textContent = str;

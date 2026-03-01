@@ -131,6 +131,31 @@ class PushMessengerService {
     async _sendWhatsApp(message) {
         const { accountSid, authToken, fromNumber, toNumber } = this.config.whatsapp;
 
+        // Prefer server-side edge function to avoid exposing Twilio authToken in browser
+        const sbUrl = localStorage.getItem('supabase_url');
+        const sbKey = localStorage.getItem('supabase_anon_key');
+        if (sbUrl && sbKey) {
+            try {
+                const efResp = await fetch(`${sbUrl}/functions/v1/send-sms`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sbKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ to: `whatsapp:${toNumber}`, message, from: `whatsapp:${fromNumber}` })
+                });
+                const efData = await efResp.json();
+                if (efData.success) {
+                    console.log('PushMessenger: WhatsApp sent via edge function');
+                    return { success: true };
+                }
+                console.warn('PushMessenger: Edge function failed, trying direct Twilio...');
+            } catch (e) {
+                console.warn('PushMessenger: Edge function unavailable');
+            }
+        }
+
+        // Fallback: direct Twilio (only if edge function unavailable)
         try {
             const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
             const auth = btoa(`${accountSid}:${authToken}`);

@@ -473,7 +473,7 @@ FreyAI Visions`
         const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
             || localStorage.getItem('freyai_email_relay_url');
         const secret   = window.APP_CONFIG?.EMAIL_RELAY_SECRET
-            || localStorage.getItem('freyai_email_relay_secret');
+            || (sessionStorage.getItem('freyai_email_relay_secret') || localStorage.getItem('freyai_email_relay_secret'));
         const companyInfo = window.companySettings
             ? await window.companySettings.load()
             : {};
@@ -563,7 +563,7 @@ FreyAI Visions`
         const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
             || localStorage.getItem('freyai_email_relay_url');
         const secret   = window.APP_CONFIG?.EMAIL_RELAY_SECRET
-            || localStorage.getItem('freyai_email_relay_secret');
+            || (sessionStorage.getItem('freyai_email_relay_secret') || localStorage.getItem('freyai_email_relay_secret'));
 
         if (!relayUrl) {
             return { sent: 0, failed: messages.length };
