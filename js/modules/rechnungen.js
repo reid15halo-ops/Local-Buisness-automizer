@@ -414,37 +414,37 @@ function showRechnung(rechnungId) {
         : '';
 
     modal.querySelector('.modal-content').innerHTML = `
-        <div style="padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="detail-view-content">
+            <div class="detail-header">
                 <h2 style="${textStyle}">${window.UI.sanitize(rechnung.id)}</h2>
                 <button class="modal-close">×</button>
             </div>
 
             ${modalTrailHTML}
 
-            <div style="margin-bottom: 20px;">
+            <div class="detail-section">
                 <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde.name)}</span><br>
                 <strong>Leistungsart:</strong> <span style="${textStyle}">${getLeistungsartLabel(rechnung.leistungsart)}</span><br>
                 <strong>Status:</strong> ${statusHTML}
             </div>
 
             <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; ${textStyle}">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div class="detail-info-row">
                     <span>Netto:</span>
                     <strong>${formatCurrency(rechnung.netto || 0)}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div class="detail-info-row">
                     <span>MwSt (19%):</span>
                     <strong>${formatCurrency(rechnung.mwst || 0)}</strong>
                 </div>
                 <hr style="margin: 8px 0; border: none; border-top: 1px solid var(--border-color);">
-                <div style="display: flex; justify-content: space-between;">
+                <div class="detail-info-row">
                     <span style="font-size: 16px; font-weight: bold;">Gesamt:</span>
                     <strong style="font-size: 16px;">${formatCurrency(rechnung.brutto || 0)}</strong>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
+            <div class="detail-actions">
                 <button class="btn btn-secondary" id="btn-download-pdf">
                     📄 PDF herunterladen
                 </button>

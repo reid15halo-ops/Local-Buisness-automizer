@@ -404,7 +404,7 @@ class CommunicationHubController {
 
     async sendMessage() {
         if (!this.currentConversation) {
-            alert('Bitte wählen Sie zunächst ein Gespräch');
+            (window.showToast || window.errorHandler?.warning)?.('Bitte wählen Sie zunächst ein Gespräch', 'warning');
             return;
         }
 
@@ -412,7 +412,7 @@ class CommunicationHubController {
         const message = textarea?.value?.trim();
 
         if (!message) {
-            alert('Nachricht darf nicht leer sein');
+            (window.showToast || window.errorHandler?.warning)?.('Nachricht darf nicht leer sein', 'warning');
             return;
         }
 
@@ -420,7 +420,7 @@ class CommunicationHubController {
         if (this.selectedChannel === 'sms') {
             const smsInfo = window.unifiedCommService?.calculateSmsLength(message);
             if (smsInfo?.segments > 6) {
-                alert('SMS zu lang (max. 6 Teile)');
+                (window.showToast || window.errorHandler?.warning)?.('SMS zu lang (max. 6 Teile)', 'warning');
                 return;
             }
         }
@@ -436,7 +436,7 @@ class CommunicationHubController {
                 );
 
                 if (!result?.success) {
-                    alert('Fehler beim Versenden: ' + (result?.error || 'Unbekannter Fehler'));
+                    (window.showToast || window.errorHandler?.handle)?.('Fehler beim Versenden: ' + (result?.error || 'Unbekannter Fehler'), 'error');
                     return;
                 }
             } else {
@@ -467,7 +467,7 @@ class CommunicationHubController {
 
         } catch (error) {
             console.error('Send error:', error);
-            alert('Fehler beim Versenden der Nachricht');
+            (window.showToast || window.errorHandler?.handle)?.(new Error('Fehler beim Versenden'), 'CommHub');
         }
     }
 
@@ -506,7 +506,7 @@ class CommunicationHubController {
 
     exportConversation() {
         if (!this.currentConversation) {
-            alert('Bitte wählen Sie zunächst ein Gespräch');
+            (window.showToast || window.errorHandler?.warning)?.('Bitte wählen Sie zunächst ein Gespräch', 'warning');
             return;
         }
 
@@ -515,7 +515,7 @@ class CommunicationHubController {
         );
 
         if (!exportData) {
-            alert('Keine Daten zum Exportieren');
+            (window.showToast || window.errorHandler?.warning)?.('Keine Daten zum Exportieren', 'warning');
             return;
         }
 
@@ -530,7 +530,7 @@ class CommunicationHubController {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
 
-        alert(`Exportiert: ${exportData.filename}`);
+        (window.showToast || window.errorHandler?.success)?.(`Exportiert: ${exportData.filename}`, 'success');
     }
 
     showConversationInfo() {
@@ -539,14 +539,8 @@ class CommunicationHubController {
         const messages = window.unifiedCommService?.getConversationMessages(this.currentConversation.id) || [];
         const stats = window.unifiedCommService?.getStatistics() || {};
 
-        alert(`
-Kunde: ${this.currentConversation.customerName}
-Telefon: ${this.currentConversation.customerPhone}
-E-Mail: ${this.currentConversation.customerEmail}
-
-Nachrichtenanzahl: ${messages.length}
-Letzte Nachricht: ${this.currentConversation.lastMessageTime ? new Date(this.currentConversation.lastMessageTime).toLocaleString('de-DE') : 'Keine'}
-        `);
+        const info = `Kunde: ${this.currentConversation.customerName} | Tel: ${this.currentConversation.customerPhone || '-'} | E-Mail: ${this.currentConversation.customerEmail || '-'}`;
+        (window.showToast || window.errorHandler?.info)?.(info, 'info');
     }
 
     updateBadges() {

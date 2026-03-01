@@ -43,22 +43,10 @@
             if (!isConfigured) {
                 // Offline mode - show a notice
                 const offlineBanner = document.createElement('div');
-                offlineBanner.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    background: #1e40af;
-                    color: white;
-                    padding: 10px 20px;
-                    text-align: center;
-                    z-index: 10000;
-                    font-size: 13px;
-                    font-weight: 500;
-                `;
+                offlineBanner.className = 'offline-banner';
                 offlineBanner.innerHTML = '🛜 Offline-Modus — Daten nur lokal gespeichert';
                 document.body.appendChild(offlineBanner);
-                document.body.style.paddingTop = '40px';
+                document.body.classList.add('has-offline-banner');
                 return; // Allow access
             }
 

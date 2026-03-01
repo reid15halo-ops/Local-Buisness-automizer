@@ -46,24 +46,24 @@ function initQuickActions() {
                     <h3 style="margin-bottom: 12px; color: var(--accent-primary-hover);">Dein Workflow in 4 Schritten</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
                         <div style="text-align: center; padding: 12px;">
-                            <div style="font-size: 32px;">1. 📥</div>
+                            <div class="quick-action-icon">1. 📥</div>
                             <div style="font-weight: 600; margin: 4px 0;">Anfrage</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Kundenanfrage erfassen</div>
+                            <div class="quick-action-label">Kundenanfrage erfassen</div>
                         </div>
                         <div style="text-align: center; padding: 12px;">
-                            <div style="font-size: 32px;">2. 📝</div>
+                            <div class="quick-action-icon">2. 📝</div>
                             <div style="font-weight: 600; margin: 4px 0;">Angebot</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">KI erstellt Angebot</div>
+                            <div class="quick-action-label">KI erstellt Angebot</div>
                         </div>
                         <div style="text-align: center; padding: 12px;">
-                            <div style="font-size: 32px;">3. ✅</div>
+                            <div class="quick-action-icon">3. ✅</div>
                             <div style="font-weight: 600; margin: 4px 0;">Auftrag</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Angebot angenommen</div>
+                            <div class="quick-action-label">Angebot angenommen</div>
                         </div>
                         <div style="text-align: center; padding: 12px;">
-                            <div style="font-size: 32px;">4. 💰</div>
+                            <div class="quick-action-icon">4. 💰</div>
                             <div style="font-weight: 600; margin: 4px 0;">Rechnung</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Automatisch erstellt</div>
+                            <div class="quick-action-label">Automatisch erstellt</div>
                         </div>
                     </div>
                     <p style="text-align: center; margin-top: 12px; font-size: 13px; color: var(--text-secondary);">

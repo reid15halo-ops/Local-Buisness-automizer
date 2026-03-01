@@ -1363,7 +1363,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
             <table width="100%" cellpadding="0" cellspacing="0"
                    style="border-collapse:collapse;font-size:13px;margin-bottom:16px">
               <thead>
-                <tr style="background:#0f172a;color:#fff">
+                <tr style="background:#0f172a;color:#fff" /* Email: inline styles required, CSS vars not supported */>
                   <th style="padding:8px;text-align:left">Menge</th>
                   <th style="padding:8px;text-align:left">Beschreibung</th>
                   <th style="padding:8px;text-align:right">Einzelpreis</th>

@@ -40,12 +40,19 @@ class DemoGuardService {
 
     // Show confirmation dialog before loading demo data
     async confirmDemoLoad(title = 'Demo-Daten laden') {
-        return new Promise((resolve) => {
-            const confirmed = confirm(
-                `⚠️ ${title}\n\nDiese Aktion erstellt Testdaten in Ihrer Datenbank. Nur für Testzwecke verwenden!\n\nFortfahren?`
-            );
-            resolve(confirmed);
-        });
+        if (window.confirmDialogService) {
+            return new Promise((resolve) => {
+                window.confirmDialogService.showConfirmDialog({
+                    title: title,
+                    message: 'Diese Aktion erstellt Testdaten in Ihrer Datenbank. Nur f\u00fcr Testzwecke verwenden!',
+                    confirmText: 'Ja, fortfahren',
+                    destructive: true,
+                    onConfirm: () => resolve(true),
+                    onCancel: () => resolve(false)
+                });
+            });
+        }
+        return confirm(`\u26a0\ufe0f ${title}\n\nDiese Aktion erstellt Testdaten in Ihrer Datenbank. Nur f\u00fcr Testzwecke verwenden!\n\nFortfahren?`);
     }
 
     // Show banner indicating demo mode is active

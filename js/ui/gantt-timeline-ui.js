@@ -321,7 +321,7 @@ class GanttTimelineUI {
             const emptyRow = document.createElement('div');
             emptyRow.className = 'gantt-label-row';
             emptyRow.style.height = '80px';
-            emptyRow.innerHTML = `<span style="color:#71717a;font-size:13px;">Keine geplanten Auftr\u00E4ge</span>`;
+            emptyRow.innerHTML = `<span style="color:var(--text-muted, #71717a);font-size:13px;">Keine geplanten Auftr\u00E4ge</span>`;
             labelCol.appendChild(emptyRow);
         } else {
             scheduled.forEach(a => {

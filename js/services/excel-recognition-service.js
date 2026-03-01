@@ -795,7 +795,7 @@ class ExcelRecognitionService {
         // Verwende SheetJS (XLSX) zum Erstellen der Datei
         if (!window.XLSX) {
             console.error('SheetJS (XLSX) Library nicht geladen!');
-            alert('Excel-Export benötigt die XLSX-Library. Bitte Seite neu laden.');
+            (window.showToast || window.errorHandler?.warning)?.('Excel-Export benötigt die XLSX-Library. Bitte Seite neu laden.', 'warning');
             return;
         }
 

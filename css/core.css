@@ -2617,3 +2617,5 @@ body:has(.demo-mode-banner) {
     font-size: 14px;
     color: var(--text-muted);
 }
+
+.has-offline-banner { padding-top: 40px; }

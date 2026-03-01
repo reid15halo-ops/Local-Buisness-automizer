@@ -321,7 +321,7 @@ function renderBankTab() {
                     <h3 class="item-title">${h(tx.name || tx.supplier || 'Unbekannt')}</h3>
                     <span class="item-id">${h(tx.id)}</span>
                 </div>
-                <span class="we-tx-amount" style="font-weight:700; color:var(--danger, #ef4444);">
+                <span class="we-tx-amount" style="font-weight:700; color:var(--accent-danger, #ef4444);">
                     ${formatCurrency(Math.abs(tx.amount || 0))}
                 </span>
             </div>
@@ -580,7 +580,7 @@ function buildResultsTable(results, source) {
 
     (results.items || []).forEach((item, idx) => {
         const confidence = item.matchConfidence != null ? item.matchConfidence : (item.confidence != null ? item.confidence : 0);
-        const confidenceColor = confidence > 0.8 ? '#22c55e' : (confidence > 0.5 ? '#f59e0b' : '#ef4444');
+        const confidenceColor = confidence > 0.8 ? 'var(--accent-success, #22c55e)' : (confidence > 0.5 ? 'var(--accent-warning, #f59e0b)' : 'var(--accent-danger, #ef4444)');
         const gesamt = (parseFloat(item.menge) || 0) * (parseFloat(item.einzelpreis) || 0);
         const prefix = source; // 'bon' or 'csv'
 

@@ -307,7 +307,7 @@ class InvoicePaymentIntegration {
             // Fallback
             if (type === 'error') {
                 console.error(`${title}: ${message}`);
-                alert(`${title}\n\n${message}`);
+                (window.showToast || window.errorHandler?.handle)?.(message, type === 'error' ? 'error' : 'info');
             } else if (type !== 'loading') {
                 console.log(`${title}: ${message}`);
             }

@@ -7245,3 +7245,251 @@ textarea {
 .btn-freigabe:hover {
     background: var(--accent-hover, #818cf8);
 }
+
+/* Material Picker Styles (moved from JS injection) */
+.material-picker-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: var(--z-overlay, 9999);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.material-picker-content {
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    color: var(--text-primary, #fff);
+}
+.material-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin: 16px 0;
+}
+.material-picker-item {
+    padding: 12px;
+    background: var(--bg-secondary, #2a2a32);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+}
+.material-picker-item:hover {
+    border-color: var(--accent-primary, #6366f1);
+    background: rgba(99, 102, 241, 0.1);
+}
+.material-picker-item.selected {
+    border-color: var(--accent-primary, #6366f1);
+    background: rgba(99, 102, 241, 0.15);
+}
+
+/* Activity Indicator Styles (moved from JS injection) */
+.activity-indicator {
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    z-index: var(--z-toast, 2000);
+}
+.activity-indicator-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-card, #2a2a32);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-secondary, #a1a1aa);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.activity-indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-success, #22c55e);
+    animation: activityPulse 1.5s ease infinite;
+}
+@keyframes activityPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Onboarding Tutorial Styles (moved from JS injection) */
+.onboarding-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--bg-secondary, #1c1c21);
+    z-index: var(--z-top, 10000);
+}
+.onboarding-progress-fill {
+    height: 100%;
+    background: var(--accent-primary, #6366f1);
+    transition: width 0.5s ease;
+}
+.onboarding-tooltip {
+    position: absolute;
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--accent-primary, #6366f1);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 320px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: var(--z-top, 10000);
+    color: var(--text-primary, #fff);
+}
+.onboarding-tooltip-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.onboarding-tooltip-text {
+    font-size: 13px;
+    color: var(--text-secondary, #a1a1aa);
+    line-height: 1.5;
+}
+
+/* Fragebogen Import UI Styles (moved from JS injection) */
+.fragebogen-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: var(--z-overlay, 9999);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.fragebogen-dialog {
+    background: var(--bg-card, #1c1c21);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    color: var(--text-primary, #fff);
+}
+
+/* Toast Notification Fallback (moved from JS injection) */
+.toast-notification {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: var(--z-top, 10000);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideInRight 0.3s ease;
+    color: #fff;
+}
+.toast-notification.success {
+    background: var(--accent-success, #22c55e);
+}
+.toast-notification.error {
+    background: var(--accent-danger, #ef4444);
+}
+.toast-notification.info {
+    background: var(--accent-primary, #6366f1);
+}
+
+/* Detail View Layout Classes (replaces inline styles) */
+.detail-view-content {
+    padding: 24px;
+}
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.detail-section {
+    margin-bottom: 20px;
+}
+.detail-info-box {
+    padding: 12px;
+    background: var(--bg-secondary, #1a1a2e);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.detail-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.detail-info-row:last-child {
+    margin-bottom: 0;
+}
+.detail-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+/* Quick Actions step icons */
+.quick-action-icon {
+    font-size: 32px;
+}
+.quick-action-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Communication Hub form elements */
+.comm-form-label {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+.comm-form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+/* PO Status Badge */
+.badge-status-offen { background: var(--accent-warning, #f59e0b); }
+.badge-status-bestellt { background: var(--accent-info, #3b82f6); }
+.badge-status-geliefert { background: var(--accent-success, #22c55e); }
+.badge-status-storniert { background: var(--accent-danger, #ef4444); }
+.badge-status-teilgeliefert { background: var(--color-purple, #a78bfa); }
+
+/* Offline Banner */
+.offline-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #1e40af;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    z-index: var(--z-top, 10000);
+    font-size: 13px;
+    font-weight: 500;
+}

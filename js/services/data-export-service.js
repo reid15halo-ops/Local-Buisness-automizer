@@ -630,10 +630,18 @@ class DataExportService {
      * @private
      */
     async showConfirmation(message, title) {
-        return new Promise((resolve) => {
-            const confirmed = confirm(`${title}\n\n${message}`);
-            resolve(confirmed);
-        });
+        if (window.confirmDialogService) {
+            return new Promise((resolve) => {
+                window.confirmDialogService.showConfirmDialog({
+                    title: title,
+                    message: message,
+                    confirmText: 'Ja, fortfahren',
+                    onConfirm: () => resolve(true),
+                    onCancel: () => resolve(false)
+                });
+            });
+        }
+        return confirm(`${title}\n\n${message}`);
     }
 
     /**
@@ -642,9 +650,11 @@ class DataExportService {
      */
     showError(message) {
         if (window.errorHandler) {
-            window.errorHandler.error(message);
+            window.errorHandler.handle(new Error(message), 'DataExport');
+        } else if (window.showToast) {
+            window.showToast(message, 'error');
         } else {
-            alert(`Fehler: ${message}`);
+            console.error('DataExport:', message);
         }
     }
 }

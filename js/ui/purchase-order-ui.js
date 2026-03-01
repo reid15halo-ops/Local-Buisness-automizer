@@ -352,7 +352,7 @@ class PurchaseOrderUI {
                 <td style="padding: 12px; font-weight: 600;">${po.nummer}</td>
                 <td style="padding: 12px;">${window.UI?.sanitize?.(po.lieferant.name) || po.lieferant.name}</td>
                 <td style="padding: 12px; text-align: center;">
-                    <span class="badge" style="background: ${statusBadgeColor};">${statusLabel}</span>
+                    <span class="badge" class="badge-status-${po.status}">${statusLabel}</span>
                 </td>
                 <td style="padding: 12px; text-align: right;">${brutto}</td>
                 <td style="padding: 12px; text-align: center;">
@@ -375,7 +375,7 @@ class PurchaseOrderUI {
 
         // Header
         document.getElementById('po-detail-nummer').textContent = `Bestellung ${po.nummer}`;
-        document.getElementById('po-detail-status').innerHTML = `<span class="badge" style="background: ${this.getStatusColor(po.status)};">${this.getStatusLabel(po.status)}</span>`;
+        document.getElementById('po-detail-status').innerHTML = `<span class="badge" class="badge-status-${po.status}">${this.getStatusLabel(po.status)}</span>`;
         document.getElementById('po-detail-bestelldatum').textContent = this.formatDate(po.bestelldatum);
         document.getElementById('po-detail-lieferdatum-erwartet').textContent = this.formatDate(po.lieferdatum_erwartet);
 

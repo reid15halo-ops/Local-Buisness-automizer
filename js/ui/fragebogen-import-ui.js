@@ -26,30 +26,7 @@ class FragebogenImportUI {
         if (document.getElementById('fragebogen-import-btn')) {return;}
 
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'text-align:center; margin-top:18px; margin-bottom:6px;';
-        wrapper.innerHTML = `
-            <button type="button" id="fragebogen-import-btn"
-                    style="
-                        background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
-                        color: #fff;
-                        border: none;
-                        border-radius: 8px;
-                        padding: 10px 22px;
-                        font-size: 13.5px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: opacity 0.15s;
-                        box-shadow: 0 2px 8px rgba(99,102,241,0.18);
-                    "
-                    onmouseover="this.style.opacity='0.88'"
-                    onmouseout="this.style.opacity='1'"
-            >
-                Import aus Aufnahmebogen
-            </button>
-            <div style="font-size:11.5px; color:#7070a0; margin-top:6px;">
-                Daten aus dem Betriebs-Aufnahmebogen automatisch eintragen
-            </div>
-        `;
+        wrapper.className = 'fragebogen-overlay';
 
         wizardBody.appendChild(wrapper);
 
@@ -313,28 +290,10 @@ class FragebogenImportUI {
 
         const overlay = document.createElement('div');
         overlay.id = 'fragebogen-import-dialog';
-        overlay.style.cssText = `
-            position: fixed;
-            inset: 0;
-            z-index: 100000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.45);
-            animation: fragebogenFadeIn 0.2s ease;
-        `;
+        overlay.className = 'fragebogen-overlay';
 
         const dialog = document.createElement('div');
-        dialog.style.cssText = `
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.2);
-            max-width: 520px;
-            width: 92%;
-            max-height: 85vh;
-            overflow-y: auto;
-            animation: fragebogenSlideUp 0.25s ease;
-        `;
+        dialog.className = 'fragebogen-dialog';
         dialog.innerHTML = innerHTML;
 
         overlay.appendChild(dialog);
@@ -406,23 +365,7 @@ class FragebogenImportUI {
         const esc = this._esc;
 
         const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            z-index: 100001;
-            background: ${cfg.bg};
-            color: #fff;
-            padding: 14px 22px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
-            max-width: 380px;
-            line-height: 1.5;
-            animation: fragebogenSlideUp 0.25s ease;
-            cursor: pointer;
-        `;
+        toast.className = 'toast-notification success';
         toast.textContent = message;
 
         document.body.appendChild(toast);

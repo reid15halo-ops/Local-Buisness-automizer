@@ -1342,7 +1342,19 @@ class CalendarUIService {
 
         // Delete button
         document.getElementById('btn-modal-delete').onclick = () => {
-            if (confirm('Termin wirklich löschen?')) {
+            if (window.confirmDialogService) {
+                window.confirmDialogService.showConfirmDialog({
+                    title: 'Termin löschen',
+                    message: 'Termin wirklich löschen?',
+                    confirmText: 'Ja, löschen',
+                    destructive: true,
+                    onConfirm: () => {
+                        window.calendarService.deleteAppointment(eventId);
+                        this.closeEventModal();
+                        this.renderCurrentView();
+                    }
+                });
+            } else if (confirm('Termin wirklich löschen?')) {
                 window.calendarService.deleteAppointment(eventId);
                 this.closeEventModal();
                 this.renderCurrentView();

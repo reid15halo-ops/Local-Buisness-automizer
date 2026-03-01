@@ -556,20 +556,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Use existing notification system or create simple alert
         if (window.showToast) {
             window.showToast(message, type);
+        } else if (window.errorHandler?.showToast) {
+            window.errorHandler.showToast(message, type);
         } else {
             console.log(`[${type.toUpperCase()}] ${message}`);
-            // Simple visual notification
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px; padding: 16px 24px;
-                background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#6366f1'};
-                color: white; border-radius: 8px; z-index: 9999; font-size: 14px;
-                animation: fadeIn 0.3s ease;
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
         }
     }
 });
