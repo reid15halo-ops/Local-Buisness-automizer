@@ -23,19 +23,23 @@
             "purpose": "any"
         },
         {
-            "src": "icons/icon-192x192.png",
+            "src": "icons/icon-192x192-maskable.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "maskable"
         },
         {
-            "src": "icons/icon-512x512.png",
+            "src": "icons/icon-512x512-maskable.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
         }
     ],
-    "categories": ["business", "productivity", "finance"],
+    "categories": [
+        "business",
+        "productivity",
+        "finance"
+    ],
     "lang": "de-DE",
     "dir": "ltr",
     "shortcuts": [
@@ -43,19 +47,34 @@
             "name": "Neue Anfrage",
             "short_name": "Anfrage",
             "url": "/index.html#anfragen",
-            "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📥</text></svg>", "sizes": "96x96" }]
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📥</text></svg>",
+                    "sizes": "96x96"
+                }
+            ]
         },
         {
             "name": "Rechnungen",
             "short_name": "Rechnungen",
             "url": "/index.html#rechnungen",
-            "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>💰</text></svg>", "sizes": "96x96" }]
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>💰</text></svg>",
+                    "sizes": "96x96"
+                }
+            ]
         },
         {
             "name": "Kalender",
             "short_name": "Termine",
             "url": "/index.html#kalender",
-            "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📅</text></svg>", "sizes": "96x96" }]
+            "icons": [
+                {
+                    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>📅</text></svg>",
+                    "sizes": "96x96"
+                }
+            ]
         }
     ],
     "screenshots": [

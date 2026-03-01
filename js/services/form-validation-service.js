@@ -105,7 +105,7 @@ class FormValidationService {
             const errEl = document.createElement('span');
             errEl.className = 'field-error';
             errEl.textContent = error;
-            errEl.style.cssText = 'color: var(--color-error, #ef4444); font-size: 12px; display: block; margin-top: 2px;';
+            errEl.style.cssText = 'color: var(--accent-danger, #ef4444); font-size: 12px; display: block; margin-top: 2px;';
             el.parentElement?.appendChild(errEl);
         }
     }

@@ -93,7 +93,7 @@ function renderAnfragen() {
 
     if (anfragen.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+            <div class="empty-state" class="empty-state">
                 <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
                 <h3 style="margin-bottom: 8px;">Keine Anfragen vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">

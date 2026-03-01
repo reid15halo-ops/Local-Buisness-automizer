@@ -407,7 +407,7 @@ function renderAngebote() {
 
     if (allAngebote.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+            <div class="empty-state" class="empty-state">
                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
@@ -448,7 +448,7 @@ function renderAngebote() {
         const filterLabel = currentAngeboteFilter !== 'alle' ? ` mit Status "${currentAngeboteFilter}"` : '';
         const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
         container.innerHTML = `
-            <div class="empty-state" style="padding: 40px 20px; text-align: center;">
+            <div class="empty-state" class="empty-state empty-state-small">
                 <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote gefunden</h3>
                 <p style="color: var(--text-secondary);">
@@ -643,7 +643,7 @@ function deleteAngebot(id) {
         );
     } else {
         // Last resort: simple confirm
-        if (confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
+        if (await window.confirmDialogService?.confirm(`Angebot ${angebot.id} wirklich löschen?`, {title: 'Löschen bestätigen', type: 'danger'}) ?? confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
             store.angebote = store.angebote.filter(a => a.id !== id);
             saveStore();
             showToast('Angebot gelöscht', 'info');
@@ -744,7 +744,7 @@ function initAngeboteFilters() {
 // ============================================
 
 // Inject CSS for entwurf status badge and preview modal
-(function injectEntwurfStyles() {
+(function injectEntwurfStyles() { return; /* styles moved to components.css */ } function _oldInjectEntwurfStyles() {
     if (document.getElementById('entwurf-styles')) {return;}
     const style = document.createElement('style');
     style.id = 'entwurf-styles';

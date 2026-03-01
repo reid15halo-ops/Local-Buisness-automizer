@@ -1,3 +1,26 @@
+:root {
+    /* Portal uses light theme by default, dark via prefers-color-scheme */
+    --portal-bg: #f5f5f7;
+    --portal-surface: #ffffff;
+    --portal-text: #1e293b;
+    --portal-text-secondary: #64748b;
+    --portal-border: #e2e8f0;
+    --portal-accent: #6366f1;
+    --portal-success: #22c55e;
+    --portal-warning: #f59e0b;
+    --portal-danger: #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --portal-bg: #1c1c1e;
+        --portal-surface: #2c2c2e;
+        --portal-text: #f5f5f7;
+        --portal-text-secondary: #8e8e93;
+        --portal-border: #3a3a3c;
+    }
+}
+
 /* ============================================
    Customer Portal Styles
    Standalone portal page + Admin token management
@@ -10,7 +33,7 @@
     margin: 0 auto;
     padding: 24px 20px 60px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #1e293b;
+    color: var(--portal-text);
     line-height: 1.6;
 }
 
@@ -47,13 +70,13 @@
 .portal-header h1 {
     font-size: 22px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--portal-text);
     margin: 0 0 4px;
 }
 
 .portal-header-subtitle {
     font-size: 14px;
-    color: #64748b;
+    color: var(--portal-text-secondary);
     margin: 0;
 }
 
@@ -65,13 +88,13 @@
     border-radius: 20px;
     font-size: 13px;
     font-weight: 500;
-    color: #334155;
+    color: var(--portal-text);
 }
 
 /* ---- Portal Sections ---- */
 .portal-section {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 20px;
@@ -81,7 +104,7 @@
 .portal-section-title {
     font-size: 16px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--portal-text);
     margin: 0 0 16px;
     display: flex;
     align-items: center;
@@ -174,7 +197,7 @@
 .portal-status-label {
     font-size: 11px;
     font-weight: 500;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
     white-space: nowrap;
     text-align: center;
 }
@@ -196,19 +219,19 @@
 .portal-status-info {
     text-align: center;
     padding: 12px;
-    background: #f8fafc;
+    background: var(--portal-bg);
     border-radius: 8px;
     font-size: 14px;
     color: #475569;
 }
 
 .portal-status-info strong {
-    color: #0f172a;
+    color: var(--portal-text);
 }
 
 /* ---- Quote Card ---- */
 .portal-quote-card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 16px;
@@ -223,19 +246,19 @@
     justify-content: space-between;
     align-items: center;
     padding: 14px 16px;
-    background: #f8fafc;
+    background: var(--portal-bg);
     border-bottom: 1px solid #e2e8f0;
 }
 
 .portal-quote-id {
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--portal-text);
 }
 
 .portal-quote-date {
     font-size: 12px;
-    color: #64748b;
+    color: var(--portal-text-secondary);
 }
 
 .portal-quote-body {
@@ -252,7 +275,7 @@
 .portal-quote-table th {
     text-align: left;
     font-weight: 600;
-    color: #64748b;
+    color: var(--portal-text-secondary);
     padding: 8px 10px;
     border-bottom: 1px solid #e2e8f0;
     font-size: 11px;
@@ -263,7 +286,7 @@
 .portal-quote-table td {
     padding: 10px;
     border-bottom: 1px solid #f1f5f9;
-    color: #334155;
+    color: var(--portal-text);
 }
 
 .portal-quote-table .text-right {
@@ -286,7 +309,7 @@
 .portal-quote-total-row.grand-total {
     font-size: 16px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--portal-text);
     padding-top: 8px;
     margin-top: 4px;
     border-top: 1px solid #e2e8f0;
@@ -331,7 +354,7 @@
 .portal-change-request {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     border-radius: 8px;
     font-size: 13px;
     font-family: inherit;
@@ -339,7 +362,7 @@
     min-height: 80px;
     margin-top: 10px;
     background: #fff;
-    color: #334155;
+    color: var(--portal-text);
     transition: border-color 0.2s;
 }
 
@@ -360,7 +383,7 @@
 
 /* ---- Invoice Card ---- */
 .portal-invoice-card {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 16px;
@@ -375,14 +398,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 14px 16px;
-    background: #f8fafc;
+    background: var(--portal-bg);
     border-bottom: 1px solid #e2e8f0;
 }
 
 .portal-invoice-id {
     font-size: 14px;
     font-weight: 600;
-    color: #0f172a;
+    color: var(--portal-text);
 }
 
 .portal-invoice-status {
@@ -410,7 +433,7 @@
 
 .portal-invoice-status.storniert {
     background: rgba(100, 116, 139, 0.1);
-    color: #64748b;
+    color: var(--portal-text-secondary);
 }
 
 .portal-invoice-body {
@@ -426,13 +449,13 @@
 }
 
 .portal-invoice-detail-row .label {
-    color: #64748b;
+    color: var(--portal-text-secondary);
 }
 
 .portal-invoice-amount {
     font-size: 22px;
     font-weight: 700;
-    color: #0f172a;
+    color: var(--portal-text);
     text-align: center;
     padding: 16px 0 12px;
 }
@@ -542,12 +565,12 @@
 .portal-message-input {
     flex: 1;
     padding: 10px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     border-radius: 8px;
     font-size: 14px;
     font-family: inherit;
     background: #fff;
-    color: #334155;
+    color: var(--portal-text);
     transition: border-color 0.2s;
 }
 
@@ -582,21 +605,21 @@
 
 .portal-message-item.outbound {
     background: #f1f5f9;
-    color: #334155;
+    color: var(--portal-text);
     align-self: flex-end;
     border-bottom-right-radius: 4px;
 }
 
 .portal-message-meta {
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
     margin-top: 4px;
 }
 
 .portal-message-empty {
     text-align: center;
     padding: 24px;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
     font-size: 13px;
 }
 
@@ -612,16 +635,16 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     border-radius: 8px;
     text-decoration: none;
-    color: #334155;
+    color: var(--portal-text);
     transition: all 0.2s;
     cursor: pointer;
 }
 
 .portal-document-item:hover {
-    background: #f8fafc;
+    background: var(--portal-bg);
     border-color: #cbd5e1;
 }
 
@@ -645,7 +668,7 @@
 .portal-document-name {
     font-size: 14px;
     font-weight: 500;
-    color: #0f172a;
+    color: var(--portal-text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -653,7 +676,7 @@
 
 .portal-document-detail {
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
 }
 
 .portal-document-download {
@@ -676,7 +699,7 @@
     overflow: hidden;
     aspect-ratio: 1;
     cursor: pointer;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--portal-border);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -706,7 +729,7 @@
 .portal-photo-empty {
     text-align: center;
     padding: 32px;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
     font-size: 13px;
     grid-column: 1 / -1;
 }
@@ -734,7 +757,7 @@
 .portal-empty {
     text-align: center;
     padding: 24px 16px;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
     font-size: 13px;
 }
 
@@ -749,7 +772,7 @@
     text-align: center;
     padding: 20px;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--portal-text-secondary);
     border-top: 1px solid #e2e8f0;
     margin-top: 32px;
     line-height: 1.6;
@@ -772,7 +795,7 @@
     justify-content: center;
     min-height: 60vh;
     gap: 16px;
-    color: #64748b;
+    color: var(--portal-text-secondary);
     font-size: 15px;
 }
 
@@ -806,13 +829,13 @@
 
 .portal-error h2 {
     font-size: 20px;
-    color: #0f172a;
+    color: var(--portal-text);
     font-weight: 600;
 }
 
 .portal-error p {
     font-size: 14px;
-    color: #64748b;
+    color: var(--portal-text-secondary);
     max-width: 400px;
 }
 
@@ -1064,7 +1087,7 @@
     }
 
     .portal-status-label {
-        font-size: 9px;
+        font-size: 11px;
     }
 
     .portal-status-dot {

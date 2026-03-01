@@ -39,7 +39,7 @@ class ErrorHandler {
         this.showToast(message, 'warning');
     }
 
-    // Render Toast Notification
+    // Render Toast Notification (uses CSS classes from core.css)
     showToast(message, type = 'info') {
         const container = document.getElementById('toast-container') || this.createToastContainer();
 
@@ -49,36 +49,22 @@ class ErrorHandler {
         const icon = this.getIconForType(type);
 
         toast.innerHTML = `
-            <span class="toast-icon">${icon}</span>
-            <span class="toast-message">${this.sanitize(message)}</span>
-            <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-        `;
-
-        // CSS for Toast (injected here for self-containment, but ideally in styles.css)
-        toast.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 280px;
-            max-width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-card, #1c1c21);
-            border: 1px solid var(--border-color, #27272a);
-            border-left: 4px solid ${this.getColorForType(type)};
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            color: var(--text-primary, #fff);
-            font-size: 14px;
-            animation: slideInRight 0.3s ease;
-            position: relative;
-            z-index: 10000;
+            <div class="toast-content">
+                <div class="toast-header">
+                    <span class="toast-icon">${icon}</span>
+                    <span class="toast-message">${this.sanitize(message)}</span>
+                    <button class="toast-close" onclick="this.parentElement.closest('.toast').remove()">&times;</button>
+                </div>
+            </div>
         `;
 
         container.appendChild(toast);
+        // Trigger visibility for CSS transition
+        requestAnimationFrame(() => toast.classList.add('visible'));
 
         // Auto remove after 5s
         setTimeout(() => {
-            toast.style.animation = 'fadeOut 0.3s ease forwards';
+            toast.classList.add('removing');
             setTimeout(() => toast.remove(), 300);
         }, 5000);
     }
@@ -86,38 +72,7 @@ class ErrorHandler {
     createToastContainer() {
         const container = document.createElement('div');
         container.id = 'toast-container';
-        container.style.cssText = `
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-width: 400px;
-            pointer-events: none; /* Allow clicking through container */
-        `;
         document.body.appendChild(container);
-
-        // Inject animation keyframes
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from { opacity: 0; transform: translateX(100%); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-            @keyframes fadeOut {
-                to { opacity: 0; transform: translateY(10px); }
-            }
-            .toast { pointer-events: auto; }
-            .toast-close { background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; margin-left: auto; min-width: 32px; min-height: 32px; }
-            .toast-close:hover { color: #fff; }
-            @media (max-width: 640px) {
-                #toast-container { left: 12px; right: 12px; bottom: 12px; max-width: none; }
-            }
-        `;
-        document.head.appendChild(style);
-
         return container;
     }
 
@@ -139,10 +94,10 @@ class ErrorHandler {
 
     getColorForType(type) {
         switch (type) {
-            case 'success': return '#22c55e';
-            case 'error': return '#ef4444';
-            case 'warning': return '#f59e0b';
-            default: return '#3b82f6';
+            case 'success': return 'var(--accent-success, #22c55e)';
+            case 'error': return 'var(--accent-danger, #ef4444)';
+            case 'warning': return 'var(--accent-warning, #f59e0b)';
+            default: return 'var(--accent-info, #3b82f6)';
         }
     }
 }

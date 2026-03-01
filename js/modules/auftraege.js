@@ -14,47 +14,47 @@ let currentDetailAuftragId = null;
 // Status configuration
 const AUFTRAG_STATUS_CONFIG = {
     geplant: {
-        label: 'Geplant', icon: '📋', color: '#60a5fa', order: 1,
+        label: 'Geplant', icon: '📋', color: 'var(--accent-info, #60a5fa)', order: 1,
         description: 'Auftrag erfasst, Planung läuft',
         erlaubteUebergaenge: ['material_bestellt', 'in_bearbeitung', 'pausiert', 'storniert']
     },
     material_bestellt: {
-        label: 'Material bestellt', icon: '📦', color: '#a78bfa', order: 2,
+        label: 'Material bestellt', icon: '📦', color: 'var(--color-purple, #a78bfa)', order: 2,
         description: 'Material wurde bestellt, wartet auf Lieferung',
         erlaubteUebergaenge: ['in_bearbeitung', 'geplant', 'pausiert', 'storniert'],
         autoAktion: 'materialCheck'
     },
     in_bearbeitung: {
-        label: 'In Bearbeitung', icon: '🔧', color: '#f59e0b', order: 3,
+        label: 'In Bearbeitung', icon: '🔧', color: 'var(--accent-warning, #f59e0b)', order: 3,
         description: 'Arbeiten laufen',
         erlaubteUebergaenge: ['qualitaetskontrolle', 'abnahme', 'pausiert', 'storniert'],
         autoAktion: 'zeitStart'
     },
     qualitaetskontrolle: {
-        label: 'Qualitätskontrolle', icon: '🔍', color: '#06b6d4', order: 4,
+        label: 'Qualitätskontrolle', icon: '🔍', color: 'var(--color-cyan, #06b6d4)', order: 4,
         description: 'Arbeiten fertig, Qualitätsprüfung',
         erlaubteUebergaenge: ['in_bearbeitung', 'abnahme', 'pausiert']
     },
     abnahme: {
-        label: 'Abnahme', icon: '✋', color: '#8b5cf6', order: 5,
+        label: 'Abnahme', icon: '✋', color: 'var(--color-violet, #8b5cf6)', order: 5,
         description: 'Wartet auf Kundenabnahme',
         erlaubteUebergaenge: ['abgeschlossen', 'in_bearbeitung', 'qualitaetskontrolle'],
         autoAktion: 'kundeNotify'
     },
     abgeschlossen: {
-        label: 'Abgeschlossen', icon: '✅', color: '#22c55e', order: 6,
+        label: 'Abgeschlossen', icon: '✅', color: 'var(--accent-success, #22c55e)', order: 6,
         description: 'Auftrag fertig, Rechnung kann erstellt werden',
         erlaubteUebergaenge: [],
         autoAktion: 'rechnungReady'
     },
     pausiert: {
-        label: 'Pausiert', icon: '⏸️', color: '#94a3b8', order: 0,
+        label: 'Pausiert', icon: '⏸️', color: 'var(--text-muted, #94a3b8)', order: 0,
         description: 'Auftrag unterbrochen',
         erlaubteUebergaenge: ['geplant', 'material_bestellt', 'in_bearbeitung', 'storniert'],
         brauchtGrund: true
     },
     storniert: {
-        label: 'Storniert', icon: '❌', color: '#ef4444', order: 0,
+        label: 'Storniert', icon: '❌', color: 'var(--accent-danger, #ef4444)', order: 0,
         description: 'Auftrag abgebrochen',
         erlaubteUebergaenge: ['geplant'],
         brauchtGrund: true
@@ -298,7 +298,7 @@ function renderAuftragCard(a) {
     const dauerTage = Math.floor(dauerMs / 86400000);
     const dauerText = dauerTage > 0 ? `${dauerTage}d` : `${Math.floor(dauerMs / 3600000)}h`;
 
-    const grundHtml = a.statusGrund ? `<div style="font-size:11px;color:${statusCfg?.color || '#94a3b8'};margin-top:4px;font-style:italic;">${h(a.statusGrund)}</div>` : '';
+    const grundHtml = a.statusGrund ? `<div style="font-size:11px;color:${statusCfg?.color || 'var(--text-muted, #94a3b8)'};margin-top:4px;font-style:italic;">${h(a.statusGrund)}</div>` : '';
 
     return `
         <div class="auftrag-card" onclick="openAuftragDetail('${a.id}')">
@@ -345,7 +345,7 @@ function renderAuftraegeList(auftraege) {
 
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding:60px 20px;text-align:center;">
+            <div class="empty-state" class="empty-state">
                 <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
                 <h3 style="margin-bottom:8px;">Keine Aufträge</h3>
                 <p style="color:var(--text-secondary);margin-bottom:24px;">Aufträge entstehen aus angenommenen Angeboten.</p>
@@ -374,7 +374,7 @@ function renderAuftraegeList(auftraege) {
                     <span>${formatCurrency(a.angebotsWert)}</span>
                 </div>
                 <div class="item-progress-bar">
-                    <div class="progress-fill ${progressClass}" style="width:${fortschritt}%"></div>
+                    <div class="auftrag-progress-fill ${progressClass}" style="width:${fortschritt}%"></div>
                 </div>
             </div>
         `;

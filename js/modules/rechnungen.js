@@ -33,11 +33,11 @@ function getEffectiveStatus(rechnung) {
  */
 function getStatusBorderColor(effectiveStatus) {
     switch (effectiveStatus) {
-        case 'bezahlt':    return '#22c55e'; // green
-        case 'offen':      return '#f59e0b'; // orange
-        case 'ueberfaellig': return '#ef4444'; // red
-        case 'storniert':  return '#9ca3af'; // gray
-        default:           return '#f59e0b';
+        case 'bezahlt':    return 'var(--accent-success, #22c55e)'; // green
+        case 'offen':      return 'var(--accent-warning, #f59e0b)'; // orange
+        case 'ueberfaellig': return 'var(--accent-danger, #ef4444)'; // red
+        case 'storniert':  return 'var(--text-muted, #9ca3af)'; // gray
+        default:           return 'var(--accent-warning, #f59e0b)';
     }
 }
 
@@ -164,7 +164,7 @@ function renderRechnungen() {
 
     if (allRechnungen.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+            <div class="empty-state" class="empty-state">
                 <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
                 <h3 style="margin-bottom: 8px;">Keine Rechnungen vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
@@ -200,7 +200,7 @@ function renderRechnungen() {
         const filterLabel = currentRechnungenFilter !== 'alle' ? ` mit Status "${labelMap[currentRechnungenFilter] || currentRechnungenFilter}"` : '';
         const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
         container.innerHTML = `
-            <div class="empty-state" style="padding: 40px 20px; text-align: center;">
+            <div class="empty-state" class="empty-state empty-state-small">
                 <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
                 <h3 style="margin-bottom: 8px;">Keine Rechnungen gefunden</h3>
                 <p style="color: var(--text-secondary);">
@@ -320,7 +320,7 @@ function cancelRechnung(rechnungId) {
         });
     } else {
         // Absolute fallback: native confirm
-        if (confirm(`Rechnung ${rechnungId} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.`)) {
+        if ((await window.confirmDialogService?.confirm(`Rechnung ${rechnungId} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.`, {title: 'Stornieren bestätigen', type: 'danger'}) ?? confirm(`Rechnung ${rechnungId} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.`))) {
             doCancel();
         }
     }

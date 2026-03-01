@@ -556,7 +556,7 @@ class PhotoService {
             line-height: 1.6;
         }
         .baudoku-header {
-            border-bottom: 3px solid #6366f1;
+            border-bottom: 3px solid var(--accent-primary, #6366f1);
             padding-bottom: 16px;
             margin-bottom: 24px;
         }
@@ -590,14 +590,14 @@ class PhotoService {
         }
         .baudoku-summary-item strong {
             font-size: 20px;
-            color: #6366f1;
+            color: var(--accent-primary, #6366f1);
         }
         .baudoku-category {
             margin-bottom: 32px;
         }
         .baudoku-category-title {
             font-size: 18px;
-            color: #6366f1;
+            color: var(--accent-primary, #6366f1);
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 8px;
             margin-bottom: 16px;
@@ -617,7 +617,7 @@ class PhotoService {
             position: absolute;
             top: 8px;
             left: 8px;
-            background: #6366f1;
+            background: var(--accent-primary, #6366f1);
             color: #fff;
             width: 28px;
             height: 28px;
@@ -653,7 +653,7 @@ class PhotoService {
         }
         .baudoku-notes {
             font-size: 12px;
-            color: #6366f1;
+            color: var(--accent-primary, #6366f1);
             margin-top: 4px;
         }
         .baudoku-footer {
@@ -702,7 +702,7 @@ class PhotoService {
             var btn = document.createElement('button');
             btn.textContent = 'Drucken';
             btn.className = 'no-print';
-            btn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 24px;background:#6366f1;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;z-index:9999;';
+            btn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 24px;background:var(--accent-primary, #6366f1);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;z-index:9999;';
             btn.onclick = function() { window.print(); };
             document.body.appendChild(btn);
         });

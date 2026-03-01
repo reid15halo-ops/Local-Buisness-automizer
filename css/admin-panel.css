@@ -397,3 +397,24 @@
         padding: 16px;
     }
 }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-panel {
+        padding: 12px;
+    }
+    .admin-panel h2 {
+        font-size: 18px;
+    }
+    .admin-panel .form-group input,
+    .admin-panel .form-group select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+}
