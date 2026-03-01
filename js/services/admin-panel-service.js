@@ -86,18 +86,45 @@ class AdminPanelService {
             return { success: false, errors };
         }
 
-        // Save credentials
+        // Save credentials (hashed with salt)
+        const adminSalt = this._generateSalt();
+        const devSalt = this._generateSalt();
+        const adminHash = await this._hashPassword(adminCreds.password.trim(), adminSalt);
+        const devHash = await this._hashPassword(devCreds.password.trim(), devSalt);
+
         localStorage.setItem(`${this.STORAGE_PREFIX}admin_username`, adminCreds.username.trim());
-        const adminHash = await this._hashPassword(adminCreds.password.trim());
-            localStorage.setItem(`${this.STORAGE_PREFIX}admin_password_hash`, adminHash);
+        localStorage.setItem(`${this.STORAGE_PREFIX}admin_password_hash`, adminHash);
+        localStorage.setItem(`${this.STORAGE_PREFIX}admin_password_salt`, adminSalt);
+        localStorage.removeItem(`${this.STORAGE_PREFIX}admin_password`);
+
         localStorage.setItem(`${this.STORAGE_PREFIX}developer_username`, devCreds.username.trim());
-        const devHash = await this._hashPassword(devCreds.password.trim());
-            localStorage.setItem(`${this.STORAGE_PREFIX}developer_password_hash`, devHash);
+        localStorage.setItem(`${this.STORAGE_PREFIX}developer_password_hash`, devHash);
+        localStorage.setItem(`${this.STORAGE_PREFIX}developer_password_salt`, devSalt);
+        localStorage.removeItem(`${this.STORAGE_PREFIX}developer_password`);
+
 
         // Mark setup as complete
         localStorage.setItem(this.SETUP_COMPLETE_KEY, 'true');
 
         return { success: true, errors: [] };
+    }
+
+    // ============================================
+    // Password Hashing (SHA-256 + Salt)
+    // ============================================
+
+    async _hashPassword(password, salt) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(salt + password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    _generateSalt() {
+        const arr = new Uint8Array(16);
+        crypto.getRandomValues(arr);
+        return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     // ============================================
@@ -108,7 +135,7 @@ class AdminPanelService {
      * Get stored credentials for a role.
      * Returns null if setup is not complete (no defaults exposed).
      * @param {string} role - 'admin' or 'developer'
-     * @returns {{ username: string, password: string }|null}
+     * @returns {{ username: string, passwordHash: string, salt: string }|null}
      */
     _getCredentials(role) {
         if (!this.isFirstRunSetupComplete()) {
@@ -116,16 +143,36 @@ class AdminPanelService {
         }
 
         const storedUser = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_username`);
-        const storedPass = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password`);
+        const storedHash = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password_hash`);
+        const storedSalt = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password_salt`);
 
-        if (!storedUser || !storedPass) {
+        if (!storedUser || !storedHash || !storedSalt) {
+            // Check for legacy plaintext password and migrate on next login
+            const legacyPass = localStorage.getItem(`${this.STORAGE_PREFIX}${role}_password`);
+            if (storedUser && legacyPass) {
+                return { username: storedUser, legacyPassword: legacyPass };
+            }
             return null;
         }
 
         return {
             username: storedUser,
-            password: storedPass
+            passwordHash: storedHash,
+            salt: storedSalt
         };
+    }
+
+    /**
+     * Migrate a legacy plaintext password to hashed format.
+     * @param {string} role
+     * @param {string} password - the verified plaintext password
+     */
+    async _migrateLegacyPassword(role, password) {
+        const salt = this._generateSalt();
+        const hash = await this._hashPassword(password, salt);
+        localStorage.setItem(`${this.STORAGE_PREFIX}${role}_password_hash`, hash);
+        localStorage.setItem(`${this.STORAGE_PREFIX}${role}_password_salt`, salt);
+        localStorage.removeItem(`${this.STORAGE_PREFIX}${role}_password`);
     }
 
     /**
@@ -133,18 +180,8 @@ class AdminPanelService {
      * Requires first-run setup to be complete.
      * @param {string} username
      * @param {string} password
-     * @returns {{ success: boolean, role: string|null, error: string|null }}
+     * @returns {Promise<{ success: boolean, role: string|null, error: string|null }>}
      */
-
-    // Security: Hash passwords before storing
-    async _hashPassword(password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password + '_freyai_salt_2026');
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
     async authenticate(username, password) {
         if (!this.isFirstRunSetupComplete()) {
             return { success: false, role: null, error: 'Ersteinrichtung erforderlich.' };
@@ -161,24 +198,26 @@ class AdminPanelService {
 
         // Check developer credentials first (higher privilege)
         const devCreds = this._getCredentials(this.ROLES.DEVELOPER);
-        if (devCreds && username === devCreds.username && (await this._hashPassword(password)) === devCreds.password) {
-            this.currentRole = this.ROLES.DEVELOPER;
-            this.sessionActive = true;
-            this._startSessionTimer();
-            localStorage.setItem(attemptsKey, '0');
-            localStorage.removeItem(lockoutKey);
-            return { success: true, role: this.ROLES.DEVELOPER, error: null };
+        if (devCreds && username === devCreds.username) {
+            if (await this._verifyPassword(password, devCreds)) {
+                if (devCreds.legacyPassword) await this._migrateLegacyPassword(this.ROLES.DEVELOPER, password);
+                this.currentRole = this.ROLES.DEVELOPER;
+                this.sessionActive = true;
+                this._startSessionTimer();
+                return { success: true, role: this.ROLES.DEVELOPER, error: null };
+            }
         }
 
         // Check admin credentials
         const adminCreds = this._getCredentials(this.ROLES.ADMIN);
-        if (adminCreds && username === adminCreds.username && (await this._hashPassword(password)) === adminCreds.password) {
-            this.currentRole = this.ROLES.ADMIN;
-            this.sessionActive = true;
-            this._startSessionTimer();
-            localStorage.setItem(attemptsKey, '0');
-            localStorage.removeItem(lockoutKey);
-            return { success: true, role: this.ROLES.ADMIN, error: null };
+        if (adminCreds && username === adminCreds.username) {
+            if (await this._verifyPassword(password, adminCreds)) {
+                if (adminCreds.legacyPassword) await this._migrateLegacyPassword(this.ROLES.ADMIN, password);
+                this.currentRole = this.ROLES.ADMIN;
+                this.sessionActive = true;
+                this._startSessionTimer();
+                return { success: true, role: this.ROLES.ADMIN, error: null };
+            }
         }
 
         // Increment failed attempts
@@ -190,6 +229,14 @@ class AdminPanelService {
             return { success: false, role: null, error: 'Zu viele Fehlversuche. Gesperrt f\u00fcr 15 Minuten.' };
         }
         return { success: false, role: null, error: 'Benutzername oder Passwort falsch.' };
+    }
+
+    async _verifyPassword(password, creds) {
+        if (creds.legacyPassword) {
+            return password === creds.legacyPassword;
+        }
+        const hash = await this._hashPassword(password, creds.salt);
+        return hash === creds.passwordHash;
     }
 
     /**

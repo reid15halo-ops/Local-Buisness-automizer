@@ -115,6 +115,8 @@ class DocumentService {
         return new Promise((resolve) => {
             const script = document.createElement('script');
             script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
+            script.integrity = 'sha384-+56qagDlzJ3YYkDcyAXRdhrP7/+ai8qJcS6HpjACl2idDoCyCqRf5VVi7E/XkGae';
+            script.crossOrigin = 'anonymous';
             script.onload = () => { this.ocrLibLoaded = true; resolve(true); };
             script.onerror = () => resolve(false);
             document.head.appendChild(script);

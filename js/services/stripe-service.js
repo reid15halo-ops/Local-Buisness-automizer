@@ -124,6 +124,7 @@ class StripeService {
             });
             if (stripeError) {throw stripeError;}
         } else if (data.url) {
+            this._validateRedirectUrl(data.url);
             window.location.href = data.url;
         }
     }
@@ -142,7 +143,21 @@ class StripeService {
         if (error) {throw error;}
 
         if (data.url) {
+            this._validateRedirectUrl(data.url);
             window.location.href = data.url;
+        }
+    }
+
+    _validateRedirectUrl(url) {
+        const allowed = ['checkout.stripe.com', 'billing.stripe.com'];
+        try {
+            const parsed = new URL(url);
+            if (!allowed.includes(parsed.hostname)) {
+                throw new Error(`Ungültige Redirect-URL: ${parsed.hostname} ist nicht erlaubt`);
+            }
+        } catch (e) {
+            if (e.message.includes('Ungültige')) throw e;
+            throw new Error('Ungültige URL für Stripe-Redirect');
         }
     }
 

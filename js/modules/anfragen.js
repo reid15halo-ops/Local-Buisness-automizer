@@ -4,7 +4,7 @@
    ============================================ */
 (function() {
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView } = window.AppUtils;
+const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h } = window.AppUtils;
 
 function initAnfrageForm() {
     const btn = document.getElementById('btn-neue-anfrage');
@@ -124,10 +124,10 @@ function renderAnfragen() {
             ${a.budget ? `<p class="item-description">💰 Budget: ${formatCurrency(a.budget)}</p>` : ''}
             <div class="item-actions">
                 <span class="status-badge status-neu">● Neu</span>
-                <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${a.id}')">
+                <button class="btn btn-primary" onclick="createAngebotFromAnfrage('${h(a.id)}')">
                     📝 Angebot erstellen
                 </button>
-                <button class="btn btn-secondary btn-small" onclick="deleteAnfrage('${a.id}')" title="Anfrage löschen">
+                <button class="btn btn-secondary btn-small" onclick="deleteAnfrage('${h(a.id)}')" title="Anfrage löschen">
                     🗑️
                 </button>
             </div>

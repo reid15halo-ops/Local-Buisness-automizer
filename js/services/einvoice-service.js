@@ -523,6 +523,8 @@ ${positionen.map((pos, i) => {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+            script.integrity = 'sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI';
+            script.crossOrigin = 'anonymous';
             script.onload = () => resolve(window.PDFLib);
             script.onerror = () => reject(new Error('pdf-lib konnte nicht geladen werden'));
             document.head.appendChild(script);

@@ -26,7 +26,7 @@ function renderEmails() {
         return;
     }
 
-    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     container.innerHTML = emails.map(email => `
         <div class="email-item ${email.read ? '' : 'unread'}" data-id="${sanitize(email.id)}">
             <div class="email-category-icon">${window.emailService.getCategoryIcon(email.category)}</div>
@@ -130,7 +130,7 @@ function renderTasks() {
         if (!container) {return;}
 
         const tasks = kanban[status] || [];
-        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         container.innerHTML = tasks.map(task => `
             <div class="kanban-task" data-id="${san(task.id)}">
                 <div class="kanban-task-priority">${window.taskService.getPriorityIcon(task.priority)}</div>
@@ -196,7 +196,7 @@ function renderCustomers() {
         return;
     }
 
-    const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+    const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     const portalBase = window.location.origin
         + window.location.pathname.replace('index.html', '')
         + 'customer-portal.html';
@@ -649,6 +649,8 @@ async function ensureChartJS() {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js';
+        script.integrity = 'sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC';
+        script.crossOrigin = 'anonymous';
         script.onload = resolve;
         script.onerror = () => reject(new Error('Chart.js konnte nicht geladen werden'));
         document.head.appendChild(script);
@@ -759,8 +761,9 @@ async function generateReport() {
     if (report.topCustomers?.length > 0) {
         html += '<h4 style="margin-top:20px;">Top-Kunden nach Umsatz</h4>';
         html += '<table class="report-table"><thead><tr><th>Kunde</th><th>Rechnungen</th><th class="text-right">Umsatz</th></tr></thead><tbody>';
+        const reportSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         report.topCustomers.forEach(c => {
-            html += `<tr><td>${c.name}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
+            html += `<tr><td>${reportSan(c.name)}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
         });
         html += '</tbody></table>';
     }
@@ -1017,7 +1020,7 @@ function appendAiMessage(role, content) {
     if (!container) {return;}
     const msgDiv = document.createElement('div');
     msgDiv.className = `ai-message ${role}`;
-    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     msgDiv.innerHTML = sanitize(content).replace(/\n/g, '<br>');
     container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;

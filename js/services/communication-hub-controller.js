@@ -120,7 +120,7 @@ class CommunicationHubController {
             return;
         }
 
-        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         listContainer.innerHTML = conversations.map(conv => {
             const time = new Date(conv.lastMessageTime || conv.createdAt).toLocaleTimeString('de-DE', {
                 hour: '2-digit',
@@ -213,7 +213,7 @@ class CommunicationHubController {
 
     linkify(text) {
         // Sanitize text first, then linkify URLs
-        const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         const safeText = sanitize(text);
         return safeText.replace(/(https?:\/\/[^\s&]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">$1</a>');
     }
@@ -493,11 +493,12 @@ class CommunicationHubController {
                 minute: '2-digit'
             });
 
+            const convSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch]));
             return `
                 <div class="comm-item ${this.currentConversation?.id === conv.id ? 'active' : ''}"
-                     data-conversation-id="${conv.id}">
-                    <div class="comm-item-name">${conv.customerName}</div>
-                    <div class="comm-item-preview">${conv.lastMessage || 'Keine Nachrichten'}</div>
+                     data-conversation-id="${convSan(conv.id)}">
+                    <div class="comm-item-name">${convSan(conv.customerName)}</div>
+                    <div class="comm-item-preview">${convSan(conv.lastMessage || 'Keine Nachrichten')}</div>
                     <div class="comm-item-time">${time}</div>
                 </div>
             `;

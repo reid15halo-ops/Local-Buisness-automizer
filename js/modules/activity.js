@@ -12,11 +12,12 @@ function renderActivities() {
         return;
     }
 
+    const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     container.innerHTML = activities.slice(0, 10).map(activity => `
         <div class="activity-item">
-            <span class="activity-icon">${activity.icon}</span>
+            <span class="activity-icon">${san(activity.icon)}</span>
             <div class="activity-content">
-                <div class="activity-title">${activity.title}</div>
+                <div class="activity-title">${san(activity.title)}</div>
                 <div class="activity-time">${window.UI.getRelativeTime(activity.time)}</div>
             </div>
         </div>

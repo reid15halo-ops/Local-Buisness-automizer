@@ -213,62 +213,35 @@ class SmsReminderService {
         return result;
     }
 
-    async _sendViaTwilio(to, body) {
-        const sid   = window.APP_CONFIG?.TWILIO_ACCOUNT_SID || localStorage.getItem('freyai_twilio_sid');
-        const token = window.APP_CONFIG?.TWILIO_AUTH_TOKEN  || localStorage.getItem('freyai_twilio_token');
-        const from  = window.APP_CONFIG?.TWILIO_FROM_NUMBER || localStorage.getItem('freyai_twilio_from');
-        if (!sid || !token || !from) {throw new Error('Twilio credentials nicht konfiguriert');}
+    /**
+     * Send SMS via Supabase Edge Function (send-sms).
+     * API keys are stored server-side in the Edge Function, NOT client-side.
+     * The Edge Function handles provider routing (Twilio/sipgate/MessageBird).
+     */
+    async _sendViaEdgeFunction(to, body, provider) {
+        const supabase = window.supabaseConfig?.get();
+        if (!supabase) {throw new Error('Supabase nicht konfiguriert');}
 
-        const response = await fetch(
-            `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
-            {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Basic ' + btoa(`${sid}:${token}`),
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({ To: to, From: from, Body: body })
-            }
-        );
-        const data = await response.json();
-        if (!response.ok) {throw new Error(data.message || `Twilio HTTP ${response.status}`);}
-        return { success: true, messageId: data.sid, method: 'twilio' };
+        const { data, error } = await supabase.functions.invoke('send-sms', {
+            body: { to, message: body, provider }
+        });
+
+        if (error) {throw new Error(error.message || 'Edge Function Fehler');}
+        if (!data?.success) {throw new Error(data?.error || 'SMS konnte nicht gesendet werden');}
+
+        return { success: true, messageId: data.messageId || ('edge-' + Date.now()), method: provider };
+    }
+
+    async _sendViaTwilio(to, body) {
+        return this._sendViaEdgeFunction(to, body, 'twilio');
     }
 
     async _sendViaSipgate(to, message) {
-        const tokenId = window.APP_CONFIG?.SIPGATE_TOKEN_ID || localStorage.getItem('freyai_sipgate_token_id');
-        const token   = window.APP_CONFIG?.SIPGATE_TOKEN    || localStorage.getItem('freyai_sipgate_token');
-        const smsId   = window.APP_CONFIG?.SIPGATE_SMS_ID   || localStorage.getItem('freyai_sipgate_sms_id');
-        if (!tokenId || !token) {throw new Error('sipgate credentials nicht konfiguriert');}
-
-        const response = await fetch('https://api.sipgate.com/v2/sessions/sms', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Basic ' + btoa(`${tokenId}:${token}`),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ smsId: smsId || 's0', recipient: to, message })
-        });
-        if (!response.ok) {throw new Error(`sipgate HTTP ${response.status}`);}
-        return { success: true, messageId: 'sipgate-' + Date.now(), method: 'sipgate' };
+        return this._sendViaEdgeFunction(to, message, 'sipgate');
     }
 
     async _sendViaMessageBird(to, body) {
-        const apiKey     = window.APP_CONFIG?.MESSAGEBIRD_API_KEY   || localStorage.getItem('freyai_messagebird_key');
-        const originator = window.APP_CONFIG?.MESSAGEBIRD_ORIGINATOR || localStorage.getItem('freyai_messagebird_from') || 'FreyAI';
-        if (!apiKey) {throw new Error('MessageBird API-Key nicht konfiguriert');}
-
-        const response = await fetch('https://rest.messagebird.com/messages', {
-            method: 'POST',
-            headers: {
-                'Authorization': `AccessKey ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ recipients: [to], originator, body })
-        });
-        const data = await response.json();
-        if (!response.ok) {throw new Error(data.errors?.[0]?.description || `MessageBird HTTP ${response.status}`);}
-        return { success: true, messageId: data.id, method: 'messagebird' };
+        return this._sendViaEdgeFunction(to, body, 'messagebird');
     }
 
     // Handle incoming SMS reply

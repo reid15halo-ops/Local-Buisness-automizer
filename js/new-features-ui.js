@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('workflow-templates');
         const templates = window.workflowService.getTemplates();
 
-        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         container.innerHTML = templates.map((t, i) => `
             <div class="template-card" data-template="${i}">
                 <h4>⚡ ${san(t.name)}</h4>
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const wfSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const wfSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         container.innerHTML = workflows.map(w => `
             <div class="workflow-item" data-id="${wfSan(w.id)}">
                 <div class="workflow-item-info">
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const logSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const logSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         container.innerHTML = log.map(l => `
             <div class="log-entry">
                 <span class="log-time">${new Date(l.timestamp).toLocaleTimeString('de-DE')}</span>
@@ -294,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const scanSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const scanSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         container.innerHTML = docs.map(doc => `
             <div class="scanned-doc-card" data-id="${scanSan(doc.id)}">
                 ${doc.imageData ? `<img src="${scanSan(doc.imageData)}" class="doc-preview" alt="Preview">` : '<div class="doc-preview"></div>'}
@@ -447,11 +447,12 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const actSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         container.innerHTML = log.map(l => `
             <div class="activity-log-item">
                 <span class="log-time">${new Date(l.timestamp).toLocaleTimeString('de-DE')}</span>
-                <span>${l.action}</span>
-                <span style="color:var(--text-muted)">${JSON.stringify(l.details).slice(0, 50)}</span>
+                <span>${actSan(l.action)}</span>
+                <span style="color:var(--text-muted)">${actSan(JSON.stringify(l.details).slice(0, 50))}</span>
             </div>
         `).join('');
     }
@@ -500,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function populateCustomerSelects() {
         const customers = window.customerService?.getCustomers() || [];
-        const gdprSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+        const gdprSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         const options = customers.map(c => `<option value="${gdprSan(c.id)}">${gdprSan(c.name)}</option>`).join('');
 
         const gdprExport = document.getElementById('gdpr-customer-select');

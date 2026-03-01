@@ -20,6 +20,8 @@ class PDFService {
             if (window.jspdf) { this.loaded = true; resolve(); return; }
             const script = document.createElement('script');
             script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+            script.integrity = 'sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk';
+            script.crossOrigin = 'anonymous';
             script.onload = () => { this.loaded = true; resolve(); };
             script.onerror = () => reject(new Error('jsPDF konnte nicht geladen werden'));
             document.head.appendChild(script);

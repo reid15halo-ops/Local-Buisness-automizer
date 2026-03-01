@@ -484,25 +484,55 @@ class SecurityBackupService {
     // ACCESS CONTROL (Basic)
     // =====================================================
 
-    // Simple PIN protection
-    setPinCode(pin) {
-        const hash = this.hashPin(pin);
+    // PIN protection with SHA-256 + Salt
+    async setPinCode(pin) {
+        const salt = this._generatePinSalt();
+        const hash = await this._hashPin(pin, salt);
         this.settings.pinHash = hash;
+        this.settings.pinSalt = salt;
         this.saveSettings();
         return { success: true };
     }
 
-    verifyPin(pin) {
+    async verifyPin(pin) {
         if (!this.settings.pinHash) {return true;} // No PIN set
-        return this.hashPin(pin) === this.settings.pinHash;
+
+        // Migrate legacy DJB2 hash (no salt) → SHA-256 + salt
+        if (!this.settings.pinSalt) {
+            const legacyHash = this._legacyHashPin(pin);
+            if (legacyHash === this.settings.pinHash) {
+                await this.setPinCode(pin); // Re-hash with SHA-256
+                return true;
+            }
+            return false;
+        }
+
+        const hash = await this._hashPin(pin, this.settings.pinSalt);
+        return hash === this.settings.pinHash;
     }
 
-    async hashPin(pin) {
+    async _hashPin(pin, salt) {
         const encoder = new TextEncoder();
-        const data = encoder.encode(pin + '_freyai_pin_salt');
+        const data = encoder.encode(salt + pin);
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    _generatePinSalt() {
+        const arr = new Uint8Array(16);
+        crypto.getRandomValues(arr);
+        return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    _legacyHashPin(pin) {
+        let hash = 0;
+        for (let i = 0; i < pin.length; i++) {
+            const char = pin.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+        return hash.toString(16);
     }
 
     // =====================================================

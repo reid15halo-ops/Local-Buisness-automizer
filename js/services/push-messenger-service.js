@@ -96,98 +96,50 @@ class PushMessengerService {
 
     /* ===== TELEGRAM ===== */
 
-    async _sendTelegram(message) {
-        const { botToken, chatId } = this.config.telegram;
+    /**
+     * Send notification via Supabase Edge Function (send-notification).
+     * Bot tokens and API keys are stored server-side, NOT client-side.
+     */
+    async _sendViaEdgeFunction(channel, message) {
+        const supabase = window.supabaseConfig?.get();
+        if (!supabase) {throw new Error('Supabase nicht konfiguriert');}
 
         try {
-            const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: message,
-                    parse_mode: 'HTML',
-                    disable_web_page_preview: true
-                })
+            const { data, error } = await supabase.functions.invoke('send-notification', {
+                body: {
+                    channel,
+                    message,
+                    chatId: this.config.telegram?.chatId || undefined,
+                    toNumber: this.config.whatsapp?.toNumber || undefined
+                }
             });
 
-            const data = await response.json();
+            if (error) {
+                console.error(`PushMessenger: ${channel} Edge Function error:`, error);
+                return { success: false, error: error.message };
+            }
 
-            if (data.ok) {
-                console.log('PushMessenger: Telegram message sent successfully');
+            if (data?.success) {
+                console.log(`PushMessenger: ${channel} message sent via Edge Function`);
                 return { success: true };
             } else {
-                console.error('PushMessenger: Telegram error:', data.description);
-                return { success: false, error: data.description };
+                console.error(`PushMessenger: ${channel} error:`, data?.error);
+                return { success: false, error: data?.error || 'Unbekannter Fehler' };
             }
         } catch (error) {
-            console.error('PushMessenger: Telegram send failed:', error);
+            console.error(`PushMessenger: ${channel} send failed:`, error);
             return { success: false, error: error.message };
         }
     }
 
-    /* ===== WHATSAPP VIA TWILIO ===== */
+    async _sendTelegram(message) {
+        return this._sendViaEdgeFunction('telegram', message);
+    }
+
+    /* ===== WHATSAPP VIA EDGE FUNCTION ===== */
 
     async _sendWhatsApp(message) {
-        const { accountSid, authToken, fromNumber, toNumber } = this.config.whatsapp;
-
-        // Prefer server-side edge function to avoid exposing Twilio authToken in browser
-        const sbUrl = localStorage.getItem('supabase_url');
-        const sbKey = localStorage.getItem('supabase_anon_key');
-        if (sbUrl && sbKey) {
-            try {
-                const efResp = await fetch(`${sbUrl}/functions/v1/send-sms`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${sbKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ to: `whatsapp:${toNumber}`, message, from: `whatsapp:${fromNumber}` })
-                });
-                const efData = await efResp.json();
-                if (efData.success) {
-                    console.log('PushMessenger: WhatsApp sent via edge function');
-                    return { success: true };
-                }
-                console.warn('PushMessenger: Edge function failed, trying direct Twilio...');
-            } catch (e) {
-                console.warn('PushMessenger: Edge function unavailable');
-            }
-        }
-
-        // Fallback: direct Twilio (only if edge function unavailable)
-        try {
-            const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
-            const auth = btoa(`${accountSid}:${authToken}`);
-
-            const body = new URLSearchParams({
-                From: `whatsapp:${fromNumber}`,
-                To: `whatsapp:${toNumber}`,
-                Body: message
-            });
-
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Basic ${auth}`,
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: body.toString()
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                console.log('PushMessenger: WhatsApp message sent via Twilio');
-                return { success: true, sid: data.sid };
-            } else {
-                console.error('PushMessenger: Twilio error:', data.message);
-                return { success: false, error: data.message };
-            }
-        } catch (error) {
-            console.error('PushMessenger: WhatsApp send failed:', error);
-            return { success: false, error: error.message };
-        }
+        return this._sendViaEdgeFunction('whatsapp', message);
     }
 
     /* ===== DEDUPLICATION ===== */

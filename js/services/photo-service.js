@@ -460,7 +460,7 @@ class PhotoService {
                 return { success: false, error: 'Kein Ordner f\u00fcr diesen Auftrag gefunden' };
             }
 
-            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
 
             const jobTitle = san(folder.jobTitle || 'Auftrag');
             const createdDate = new Date(folder.createdAt).toLocaleDateString('de-DE');

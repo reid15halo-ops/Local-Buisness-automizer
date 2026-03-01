@@ -194,7 +194,12 @@ class AdminPanelUI {
                 this.renderLogin();
             });
         } else {
-            errorDiv.innerHTML = result.errors.map(e => `<div>${e}</div>`).join('');
+            errorDiv.textContent = '';
+            result.errors.forEach(e => {
+                const div = document.createElement('div');
+                div.textContent = e;
+                errorDiv.appendChild(div);
+            });
             errorDiv.style.display = 'block';
         }
     }

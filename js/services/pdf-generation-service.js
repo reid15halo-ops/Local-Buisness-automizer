@@ -39,11 +39,15 @@ class PDFGenerationService {
         this.loadingPromise = new Promise((resolve, reject) => {
             const script1 = document.createElement('script');
             script1.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js';
+            script1.integrity = 'sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7';
+            script1.crossOrigin = 'anonymous';
             script1.async = true;
 
             script1.onload = () => {
                 const script2 = document.createElement('script');
                 script2.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.min.js';
+                script2.integrity = 'sha384-dWs4+zGqy/KS6giKxiK+6iowhidQwjVFaiE1lMar36QwIulE44VyBSQp0brMCx4D';
+                script2.crossOrigin = 'anonymous';
                 script2.async = true;
 
                 script2.onload = () => {

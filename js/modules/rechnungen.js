@@ -33,11 +33,11 @@ function getEffectiveStatus(rechnung) {
  */
 function getStatusBorderColor(effectiveStatus) {
     switch (effectiveStatus) {
-        case 'bezahlt':    return 'var(--accent-success, #22c55e)'; // green
-        case 'offen':      return 'var(--accent-warning, #f59e0b)'; // orange
-        case 'ueberfaellig': return 'var(--accent-danger, #ef4444)'; // red
-        case 'storniert':  return 'var(--text-muted, #9ca3af)'; // gray
-        default:           return 'var(--accent-warning, #f59e0b)';
+        case 'bezahlt':    return '#22c55e'; // green
+        case 'offen':      return '#f59e0b'; // orange
+        case 'ueberfaellig': return '#ef4444'; // red
+        case 'storniert':  return '#9ca3af'; // gray
+        default:           return '#f59e0b';
     }
 }
 
@@ -164,7 +164,7 @@ function renderRechnungen() {
 
     if (allRechnungen.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
                 <div style="font-size: 48px; margin-bottom: 16px;">💰</div>
                 <h3 style="margin-bottom: 8px;">Keine Rechnungen vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
@@ -200,7 +200,7 @@ function renderRechnungen() {
         const filterLabel = currentRechnungenFilter !== 'alle' ? ` mit Status "${labelMap[currentRechnungenFilter] || currentRechnungenFilter}"` : '';
         const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
         container.innerHTML = `
-            <div class="empty-state" class="empty-state empty-state-small">
+            <div class="empty-state" style="padding: 40px 20px; text-align: center;">
                 <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
                 <h3 style="margin-bottom: 8px;">Keine Rechnungen gefunden</h3>
                 <p style="color: var(--text-secondary);">
@@ -224,23 +224,25 @@ function renderRechnungen() {
         const rechnungTrailHTML = buildRechnungTrail(r, true);
 
         // Action buttons: Stornieren and Korrektur only for 'offen' (or ueberfaellig which is still technically offen)
+        const safeId = h(r.id);
+
         const canCancel = r.status === 'offen';
         const canCorrect = r.status === 'offen';
 
         const cancelBtn = canCancel
-            ? `<button class="btn btn-danger btn-small" onclick="event.stopPropagation(); cancelRechnung('${r.id}')" title="Rechnung stornieren">
+            ? `<button class="btn btn-danger btn-small" onclick="event.stopPropagation(); cancelRechnung('${safeId}')" title="Rechnung stornieren">
                     ❌ Stornieren
                 </button>`
             : '';
 
         const correctBtn = canCorrect
-            ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); duplicateRechnung('${r.id}')" title="Korrekturrechnung erstellen">
+            ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); duplicateRechnung('${safeId}')" title="Korrekturrechnung erstellen">
                     📝 Korrektur
                 </button>`
             : '';
 
         return `
-            <div class="item-card" onclick="showRechnung('${r.id}')" style="cursor:pointer; border-left: 4px solid ${borderColor};">
+            <div class="item-card" onclick="showRechnung('${safeId}')" style="cursor:pointer; border-left: 4px solid ${borderColor};">
                 <div class="item-header">
                     <h3 class="item-title" style="${textStyle}">${window.UI.sanitize(r.kunde.name)}</h3>
                     <span class="item-id">${window.UI.sanitize(r.id)}</span>
@@ -255,13 +257,13 @@ function renderRechnungen() {
                 <p class="item-description" style="${textStyle}">${getLeistungsartLabel(r.leistungsart)}</p>
                 <div class="item-actions">
                     <span class="status-badge ${statusBadgeClass}">● ${statusLabel}</span>
-                    <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); downloadInvoicePDF('${r.id}')" title="PDF herunterladen">
+                    <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); downloadInvoicePDF('${safeId}')" title="PDF herunterladen">
                         📄 PDF
                     </button>
-                    <button class="btn btn-secondary btn-small" data-action="xrechnung" data-id="${r.id}" onclick="event.stopPropagation();" title="XRechnung XML exportieren">
+                    <button class="btn btn-secondary btn-small" data-action="xrechnung" data-id="${safeId}" onclick="event.stopPropagation();" title="XRechnung XML exportieren">
                         🔐 XRechnung
                     </button>
-                    <button class="btn btn-secondary btn-small" data-action="zugferd" data-id="${r.id}" onclick="event.stopPropagation();" title="ZUGFeRD PDF exportieren">
+                    <button class="btn btn-secondary btn-small" data-action="zugferd" data-id="${safeId}" onclick="event.stopPropagation();" title="ZUGFeRD PDF exportieren">
                         📎 ZUGFeRD
                     </button>
                     ${cancelBtn}
@@ -320,7 +322,7 @@ function cancelRechnung(rechnungId) {
         });
     } else {
         // Absolute fallback: native confirm
-        if ((await window.confirmDialogService?.confirm(`Rechnung ${rechnungId} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.`, {title: 'Stornieren bestätigen', type: 'danger'}) ?? confirm(`Rechnung ${rechnungId} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.`))) {
+        if (confirm(`Rechnung ${rechnungId} wirklich stornieren? Dies kann nicht rückgängig gemacht werden.`)) {
             doCancel();
         }
     }
@@ -414,37 +416,37 @@ function showRechnung(rechnungId) {
         : '';
 
     modal.querySelector('.modal-content').innerHTML = `
-        <div class="detail-view-content">
-            <div class="detail-header">
+        <div style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 style="${textStyle}">${window.UI.sanitize(rechnung.id)}</h2>
                 <button class="modal-close">×</button>
             </div>
 
             ${modalTrailHTML}
 
-            <div class="detail-section">
+            <div style="margin-bottom: 20px;">
                 <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde.name)}</span><br>
                 <strong>Leistungsart:</strong> <span style="${textStyle}">${getLeistungsartLabel(rechnung.leistungsart)}</span><br>
                 <strong>Status:</strong> ${statusHTML}
             </div>
 
             <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; ${textStyle}">
-                <div class="detail-info-row">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span>Netto:</span>
                     <strong>${formatCurrency(rechnung.netto || 0)}</strong>
                 </div>
-                <div class="detail-info-row">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <span>MwSt (19%):</span>
                     <strong>${formatCurrency(rechnung.mwst || 0)}</strong>
                 </div>
                 <hr style="margin: 8px 0; border: none; border-top: 1px solid var(--border-color);">
-                <div class="detail-info-row">
+                <div style="display: flex; justify-content: space-between;">
                     <span style="font-size: 16px; font-weight: bold;">Gesamt:</span>
                     <strong style="font-size: 16px;">${formatCurrency(rechnung.brutto || 0)}</strong>
                 </div>
             </div>
 
-            <div class="detail-actions">
+            <div style="display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
                 <button class="btn btn-secondary" id="btn-download-pdf">
                     📄 PDF herunterladen
                 </button>
@@ -601,7 +603,7 @@ function initRechnungActions() {
             case 'mark-paid':
                 if (rechnung.status === 'offen') {
                     rechnung.status = 'bezahlt';
-                    rechnung.paidAt = new Date().toISOString();
+                    rechnung.bezahltAm = new Date().toISOString();
                     saveStore();
                     addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
                     renderRechnungen();
@@ -649,11 +651,36 @@ window.RechnungenModule = {
     duplicateRechnung
 };
 
+// PDF download for invoices
+async function downloadInvoicePDF(id) {
+    const rechnung = store.rechnungen.find(r => r.id === id);
+    if (!rechnung) return;
+    // Try pdfGenerationService first (pdfMake), then pdfService (jsPDF)
+    if (window.pdfGenerationService) {
+        try {
+            await window.pdfGenerationService.downloadPDF(rechnung);
+            if (window.showToast) showToast('PDF heruntergeladen', 'success');
+        } catch (err) {
+            if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+        }
+    } else if (window.pdfService?.generateRechnung) {
+        try {
+            await window.pdfService.generateRechnung(rechnung);
+            if (window.showToast) showToast('PDF heruntergeladen', 'success');
+        } catch (err) {
+            if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+        }
+    } else {
+        if (window.showToast) showToast('PDF-Service nicht verfügbar', 'error');
+    }
+}
+
 // Make globally available
 window.renderRechnungen = renderRechnungen;
 window.showRechnung = showRechnung;
 window.initRechnungenFilters = initRechnungenFilters;
 window.cancelRechnung = cancelRechnung;
 window.duplicateRechnung = duplicateRechnung;
+window.downloadInvoicePDF = downloadInvoicePDF;
 
 })();

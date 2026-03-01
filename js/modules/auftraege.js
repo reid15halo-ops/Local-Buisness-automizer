@@ -301,7 +301,7 @@ function renderAuftragCard(a) {
     const grundHtml = a.statusGrund ? `<div style="font-size:11px;color:${statusCfg?.color || 'var(--text-muted, #94a3b8)'};margin-top:4px;font-style:italic;">${h(a.statusGrund)}</div>` : '';
 
     return `
-        <div class="auftrag-card" onclick="openAuftragDetail('${a.id}')">
+        <div class="auftrag-card" onclick="openAuftragDetail('${h(a.id)}')">
             <div class="auftrag-card-header">
                 <span class="auftrag-card-title">${h(a.kunde.name)}</span>
                 <span class="auftrag-card-id" title="Im Status seit ${dauerText}">${dauerText}</span>
@@ -363,7 +363,7 @@ function renderAuftraegeList(auftraege) {
         const workers = (a.mitarbeiter || []).join(', ');
 
         return `
-            <div class="item-card" onclick="openAuftragDetail('${a.id}')" style="cursor:pointer;">
+            <div class="item-card" onclick="openAuftragDetail('${h(a.id)}')" style="cursor:pointer;">
                 <div class="item-header">
                     <h3 class="item-title">${h(a.kunde.name)}</h3>
                     <span class="item-id">${a.id}</span>

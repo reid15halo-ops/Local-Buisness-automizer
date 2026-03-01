@@ -37,7 +37,7 @@ class PhotoGalleryUI {
             this.currentJobId = jobId;
             this.currentCategory = 'alle';
 
-            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
 
             // Ensure folder exists
             if (window.photoService && !window.photoService.folders[jobId]) {
@@ -263,7 +263,7 @@ class PhotoGalleryUI {
             const emptyState = document.getElementById('pg-empty');
             if (!grid) { return; }
 
-            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
             const labels = PhotoService.CATEGORY_LABELS;
 
             let photos;
@@ -439,7 +439,7 @@ class PhotoGalleryUI {
             if (!photo) { return; }
 
             this.lightboxPhoto = photo;
-            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
 
             const title = san(photo.title || 'Foto');
             const description = san(photo.description || '');
@@ -726,7 +726,7 @@ class PhotoGalleryUI {
             const photo = window.photoService?.getPhoto(photoId);
             if (!photo) { return; }
 
-            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => s);
+            const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
             const existingNote = photo.notes || '';
 
             // Remove existing dialog

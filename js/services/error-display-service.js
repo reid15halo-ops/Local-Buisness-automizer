@@ -115,15 +115,16 @@ class ErrorDisplayService {
 
         buttonsHTML += `<button class="toast-btn toast-btn-dismiss" data-action="dismiss">Schließen</button>`;
 
+        const toastSan = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
         toastEl.innerHTML = `
             <div class="toast-content">
                 <div class="toast-header">
-                    <span class="toast-icon">${errorMsg.icon}</span>
-                    <h3 class="toast-title">${errorMsg.title}</h3>
+                    <span class="toast-icon">${toastSan(errorMsg.icon)}</span>
+                    <h3 class="toast-title">${toastSan(errorMsg.title)}</h3>
                     <button class="toast-close" data-action="dismiss" aria-label="Schließen">×</button>
                 </div>
-                <p class="toast-message">${errorMsg.message}</p>
-                ${errorMsg.fieldError ? `<p class="toast-field-error">Feld: ${errorMsg.fieldError}</p>` : ''}
+                <p class="toast-message">${toastSan(errorMsg.message)}</p>
+                ${errorMsg.fieldError ? `<p class="toast-field-error">Feld: ${toastSan(errorMsg.fieldError)}</p>` : ''}
                 <div class="toast-actions">
                     ${buttonsHTML}
                 </div>
