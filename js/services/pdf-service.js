@@ -7,6 +7,8 @@
 class PDFService {
     constructor() {
         this.loaded = false;
+        this.logoBase64 = null;
+        this.logoLoaded = false;
         this.margin = { top: 20, left: 20, right: 20, bottom: 25 };
         this.pageWidth = 210; // A4 mm
         this.contentWidth = 170; // 210 - 20 - 20
@@ -17,11 +19,38 @@ class PDFService {
         await new Promise((resolve, reject) => {
             if (window.jspdf) { this.loaded = true; resolve(); return; }
             const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
             script.onload = () => { this.loaded = true; resolve(); };
             script.onerror = () => reject(new Error('jsPDF konnte nicht geladen werden'));
             document.head.appendChild(script);
         });
+        await this.loadLogo();
+    }
+
+    async loadLogo() {
+        if (this.logoLoaded) return;
+        // Try localStorage first (base64)
+        const stored = localStorage.getItem('company_logo');
+        if (stored) {
+            this.logoBase64 = stored.startsWith('data:') ? stored : `data:image/png;base64,${stored}`;
+            this.logoLoaded = true;
+            return;
+        }
+        // Fetch from img/logo.png
+        try {
+            const resp = await fetch('img/logo.png');
+            if (!resp.ok) throw new Error('Logo not found');
+            const blob = await resp.blob();
+            this.logoBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+            });
+            this.logoLoaded = true;
+        } catch (e) {
+            console.warn('Logo konnte nicht geladen werden:', e.message);
+            this.logoLoaded = true; // Don't retry
+        }
     }
 
     // --- Shared PDF helpers ---
@@ -34,32 +63,48 @@ class PDFService {
     getSettings() {
         const store = window.storeService?.state?.settings || {};
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        // Also check individual localStorage keys (setup wizard stores them directly)
+        const ls = (key) => localStorage.getItem(key) || '';
         return {
-            companyName: ap.company_name || store.companyName || '',
-            owner: ap.owner_name || store.owner || '',
-            address: ap.address_street ? `${ap.address_street}, ${ap.address_postal || ''} ${ap.address_city || ''}`.trim() : (store.address || ''),
-            taxId: ap.tax_number || store.taxId || '',
+            companyName: ap.company_name || store.companyName || ls('company_name') || 'FreyAI Visions',
+            owner: ap.owner_name || store.owner || ls('owner_name') || '',
+            address: ap.address_street
+                ? `${ap.address_street}, ${ap.address_postal || ''} ${ap.address_city || ''}`.trim()
+                : (store.address || (ls('address_street') ? `${ls('address_street')}, ${ls('address_postal')} ${ls('address_city')}`.trim() : '')),
+            taxId: ap.tax_number || store.taxId || ls('tax_number') || '',
             vatId: ap.vat_id || store.vatId || '',
-            phone: ap.company_phone || store.phone || '',
-            email: ap.company_email || store.email || '',
-            iban: ap.bank_iban || store.iban || '',
-            bank: ap.bank_name || store.bank || ''
+            phone: ap.company_phone || store.phone || ls('company_phone') || '',
+            email: ap.company_email || store.email || ls('company_email') || '',
+            iban: ap.bank_iban || store.iban || ls('bank_iban') || '',
+            bank: ap.bank_name || store.bank || ls('bank_name') || ''
         };
     }
 
     drawHeader(doc, title, docNumber) {
         const s = this.getSettings();
         const m = this.margin;
+        const logoSize = 16; // mm
+        let textLeft = m.left;
+
+        // Logo
+        if (this.logoBase64) {
+            try {
+                doc.addImage(this.logoBase64, 'PNG', m.left, m.top, logoSize, logoSize);
+                textLeft = m.left + logoSize + 4;
+            } catch (e) {
+                console.warn('Logo konnte nicht ins PDF eingefügt werden:', e.message);
+            }
+        }
 
         // Company name
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(18);
-        doc.text(s.companyName, m.left, m.top + 8);
+        doc.text(s.companyName, textLeft, m.top + 8);
 
         // Subtitle
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(9);
-        doc.text(`${s.address} · Tel: ${s.phone}`, m.left, m.top + 14);
+        doc.text(`${s.address} · Tel: ${s.phone}`, textLeft, m.top + 14);
 
         // Document type + number (right-aligned)
         doc.setFont('helvetica', 'bold');
@@ -70,7 +115,7 @@ class PDFService {
         doc.text(docNumber, this.pageWidth - m.right, m.top + 14, { align: 'right' });
 
         // Separator line
-        doc.setDrawColor(100, 102, 241); // accent color
+        doc.setDrawColor(45, 212, 168); // FreyAI Visions teal accent
         doc.setLineWidth(0.8);
         doc.line(m.left, m.top + 18, this.pageWidth - m.right, m.top + 18);
 

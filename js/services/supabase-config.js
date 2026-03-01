@@ -10,8 +10,8 @@
 const SUPABASE_CONFIG = {
     // Diese Werte aus den Supabase-Projekteinstellungen holen:
     // Settings > API > Project URL & anon/public key
-    url: localStorage.getItem('supabase_url') || '',
-    anonKey: localStorage.getItem('supabase_anon_key') || '',
+    url: localStorage.getItem('supabase_url') || 'https://incbhhaiiayohrjqevog.supabase.co',
+    anonKey: localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY2JoaGFpaWF5b2hyanFldm9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNzExNjMsImV4cCI6MjA4Njc0NzE2M30.aTZ6qX_gvqOUyPvJYmQ1_cD9yZCO0gd6pdODxSODnGM',
 };
 
 // Expose for landing page waitlist
