@@ -25,8 +25,8 @@ const STATIC_ASSETS = [
     '/offline.html',
     '/booking.html',
     '/portal.html',
-    '/setup-credentials.html',
-    '/test-invoice-system.html',
+    
+    
 
     // --- CSS files ---
     '/css/core.css',

@@ -232,7 +232,7 @@ class SearchService {
             `;
         } else {
             this.resultsContainer.innerHTML = results.map(result => `
-                <div class="search-result-item" onclick="window.searchService.navigateToResult('${result.type}', '${result.id}', '${result.view}')">
+                <div class="search-result-item" onclick="window.searchService.navigateToResult('${(result.type||'').replace(/'/g,'\\&#39;')}', '${(result.id||'').replace(/'/g,'\\&#39;')}', '${(result.view||'').replace(/'/g,'\\&#39;')}')">
                     <div class="search-result-icon">${result.icon}</div>
                     <div class="search-result-content">
                         <div class="search-result-title">${window.UI.sanitize(result.title)}</div>

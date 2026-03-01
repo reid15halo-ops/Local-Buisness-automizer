@@ -88,9 +88,11 @@ class AdminPanelService {
 
         // Save credentials
         localStorage.setItem(`${this.STORAGE_PREFIX}admin_username`, adminCreds.username.trim());
-        localStorage.setItem(`${this.STORAGE_PREFIX}admin_password`, adminCreds.password.trim());
+        const adminHash = await this._hashPassword(adminCreds.password.trim());
+            localStorage.setItem(`${this.STORAGE_PREFIX}admin_password_hash`, adminHash);
         localStorage.setItem(`${this.STORAGE_PREFIX}developer_username`, devCreds.username.trim());
-        localStorage.setItem(`${this.STORAGE_PREFIX}developer_password`, devCreds.password.trim());
+        const devHash = await this._hashPassword(devCreds.password.trim());
+            localStorage.setItem(`${this.STORAGE_PREFIX}developer_password_hash`, devHash);
 
         // Mark setup as complete
         localStorage.setItem(this.SETUP_COMPLETE_KEY, 'true');
@@ -133,7 +135,17 @@ class AdminPanelService {
      * @param {string} password
      * @returns {{ success: boolean, role: string|null, error: string|null }}
      */
-    authenticate(username, password) {
+
+    // Security: Hash passwords before storing
+    async _hashPassword(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password + '_freyai_salt_2026');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    async authenticate(username, password) {
         if (!this.isFirstRunSetupComplete()) {
             return { success: false, role: null, error: 'Ersteinrichtung erforderlich.' };
         }

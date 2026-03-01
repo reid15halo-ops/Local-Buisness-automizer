@@ -38,7 +38,7 @@ class SecurityBackupService {
         return await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
-                salt: encoder.encode('freyai-salt-2024'),
+                salt: crypto.getRandomValues(new Uint8Array(16)),
                 iterations: 100000,
                 hash: 'SHA-256'
             },
@@ -458,15 +458,12 @@ class SecurityBackupService {
         return this.hashPin(pin) === this.settings.pinHash;
     }
 
-    hashPin(pin) {
-        // Simple hash for PIN (in production, use proper hashing)
-        let hash = 0;
-        for (let i = 0; i < pin.length; i++) {
-            const char = pin.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return hash.toString(16);
+    async hashPin(pin) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(pin + '_freyai_pin_salt');
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     // =====================================================
