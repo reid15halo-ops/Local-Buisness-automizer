@@ -3,6 +3,7 @@
    Complete Quote-to-Invoice Workflow
    Modular Architecture Entry Point
    ============================================ */
+(function() {
 
 // Module-level convenience shortcuts
 const {
@@ -723,3 +724,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     await init();
     initAutomations();
 });
+
+})();

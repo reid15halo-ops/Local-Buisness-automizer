@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v14';
+const CACHE_NAME = 'freyai-visions-v16';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -24,6 +24,7 @@ const STATIC_ASSETS = [
     '/landing.html',
     '/offline.html',
     '/booking.html',
+    '/portal.html',
     '/setup-credentials.html',
     '/test-invoice-system.html',
 
@@ -156,6 +157,8 @@ const STATIC_ASSETS = [
     '/js/services/work-estimation-service.js',
     '/js/services/workflow-builder-service.js',
     '/js/services/workflow-service.js',
+    '/js/services/portal-service.js',
+    '/js/services/offline-sync-service.js',
 
     // --- JS UI Components ---
     '/js/ui/admin-panel-ui.js',
@@ -340,12 +343,13 @@ self.addEventListener('sync', (event) => {
 async function syncOfflineData() {
     console.log('[SW] Syncing offline data...');
 
-    // Get pending sync items from IndexedDB
-    // In real implementation, this would sync with a server
-
-    // Notify client that sync is complete
+    // Notify clients to trigger their OfflineSyncService.processQueue()
     const clients = await self.clients.matchAll();
     clients.forEach(client => {
+        client.postMessage({
+            type: 'PROCESS_OFFLINE_QUEUE',
+            timestamp: new Date().toISOString()
+        });
         client.postMessage({
             type: 'SYNC_COMPLETE',
             timestamp: new Date().toISOString()

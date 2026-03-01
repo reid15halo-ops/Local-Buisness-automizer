@@ -2,6 +2,7 @@
    Anfragen Module
    Anfragen (requests/inquiries) CRUD and UI
    ============================================ */
+(function() {
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView } = window.AppUtils;
 
@@ -168,3 +169,5 @@ window.AnfragenModule = {
 
 // Make globally available
 window.renderAnfragen = renderAnfragen;
+
+})();

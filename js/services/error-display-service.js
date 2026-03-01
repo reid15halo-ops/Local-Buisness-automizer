@@ -5,6 +5,8 @@
    German messages and recovery paths. No technical
    jargon shown to the user.
    ============================================ */
+if (typeof window.ErrorDisplay !== 'undefined') { /* already loaded */ } else {
+(function() {
 
 class ErrorDisplayService {
     constructor() {
@@ -401,3 +403,6 @@ window.ErrorDisplay = new ErrorDisplayService();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ErrorDisplayService;
 }
+
+})();
+} // end redeclaration guard

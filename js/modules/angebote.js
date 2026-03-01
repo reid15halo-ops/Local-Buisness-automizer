@@ -2,6 +2,7 @@
    Angebote Module
    Angebote (quotes) CRUD and UI
    ============================================ */
+(function() {
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, switchView, h, showToast } = window.AppUtils;
 
@@ -503,6 +504,9 @@ function renderAngebote() {
                 </button>
                 ${isOffen ? `<button class="btn btn-success" onclick="event.stopPropagation(); acceptAngebot('${h(a.id)}')">
                     Auftrag erteilen
+                </button>` : ''}
+                ${isOffen && a.kunde?.id ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); copyPortalLinkForKunde('${h(a.kunde.id)}')" title="Portal-Link kopieren">
+                    Portal-Link
                 </button>` : ''}
             `;
         }
@@ -1253,8 +1257,8 @@ function exportAngebotPDF(id) {
     if (!angebot) {return;}
 
     // Use PDF service if available
-    if (window.pdfService?.exportAngebot) {
-        window.pdfService.exportAngebot(angebot);
+    if (window.pdfService?.generateAngebot) {
+        window.pdfService.generateAngebot(angebot);
         return;
     }
 
@@ -1480,3 +1484,5 @@ window.closeAngebotPreview = closeAngebotPreview;
 window.freigebenAngebot = freigebenAngebot;
 window.showAngebotDetail = showAngebotDetail;
 window.exportAngebotPDF = exportAngebotPDF;
+
+})();

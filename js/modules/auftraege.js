@@ -2,6 +2,7 @@
    Aufträge Module
    Aufträge (orders/jobs) CRUD and UI management
    ============================================ */
+(function() {
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, h } = window.AppUtils;
 
@@ -514,3 +515,5 @@ window.AuftraegeModule = {
 window.renderAuftraege = renderAuftraege;
 window.changeAuftragStatus = changeAuftragStatus;
 window.openAuftragDetail = openAuftragDetail;
+
+})();

@@ -2,6 +2,7 @@
    Utility Module
    Shared formatting, helpers, and common functions
    ============================================ */
+(function() {
 
 // Lazy Core Service Shims (evaluated on access, not at parse time)
 const store = new Proxy({}, {
@@ -72,3 +73,5 @@ window.AppUtils = {
     delay,
     showToast
 };
+
+})();

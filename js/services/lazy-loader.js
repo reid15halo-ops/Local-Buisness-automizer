@@ -233,6 +233,13 @@ class LazyLoader {
             return this.loading.get(fullName);
         }
 
+        // Check if script already exists in DOM (loaded via <script> tag)
+        const existingSrc = fullName + '.js';
+        if (document.querySelector(`script[src="${existingSrc}"], script[src="/${existingSrc}"]`)) {
+            this.loaded.add(fullName);
+            return Promise.resolve();
+        }
+
         const attemptLoad = (attempt) => new Promise((resolve, reject) => {
             const script = document.createElement('script');
             // Cache-bust on retries so the browser doesn't serve a cached 404

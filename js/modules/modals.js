@@ -2,6 +2,7 @@
    Modals Module
    Modal open/close/form handling with focus trap
    ============================================ */
+(function() {
 
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -96,3 +97,5 @@ window.ModalsModule = {
     closeModal,
     initModals
 };
+
+})();

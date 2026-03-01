@@ -2,6 +2,7 @@
    Rechnungen Module
    Rechnungen (invoices) CRUD and UI
    ============================================ */
+(function() {
 
 const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h, switchView } = window.AppUtils;
 
@@ -257,8 +258,17 @@ function renderRechnungen() {
                     <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); downloadInvoicePDF('${r.id}')" title="PDF herunterladen">
                         📄 PDF
                     </button>
+                    <button class="btn btn-secondary btn-small" data-action="xrechnung" data-id="${r.id}" onclick="event.stopPropagation();" title="XRechnung XML exportieren">
+                        🔐 XRechnung
+                    </button>
+                    <button class="btn btn-secondary btn-small" data-action="zugferd" data-id="${r.id}" onclick="event.stopPropagation();" title="ZUGFeRD PDF exportieren">
+                        📎 ZUGFeRD
+                    </button>
                     ${cancelBtn}
                     ${correctBtn}
+                    ${r.kunde?.id ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); copyPortalLinkForKunde('${r.kunde.id}')" title="Portal-Link kopieren">
+                        Portal-Link
+                    </button>` : ''}
                 </div>
             </div>
         `;
@@ -438,6 +448,12 @@ function showRechnung(rechnungId) {
                 <button class="btn btn-secondary" id="btn-download-pdf">
                     📄 PDF herunterladen
                 </button>
+                <button class="btn btn-secondary" id="btn-xrechnung">
+                    🔐 XRechnung
+                </button>
+                <button class="btn btn-secondary" id="btn-zugferd">
+                    📎 ZUGFeRD
+                </button>
                 ${markPaidBtn}
                 ${cancelBtn}
                 ${correctBtn}
@@ -453,6 +469,46 @@ function showRechnung(rechnungId) {
         pdfBtn.addEventListener('click', () => {
             showToast('PDF wird erstellt...', 'info');
             downloadInvoicePDF(rechnung.id);
+        });
+    }
+
+    // XRechnung export
+    const xrBtn = modal.querySelector('#btn-xrechnung');
+    if (xrBtn) {
+        xrBtn.addEventListener('click', () => {
+            if (!window.eInvoiceService) {
+                showToast('E-Rechnung Service nicht verfügbar', 'error');
+                return;
+            }
+            const result = window.eInvoiceService.generateXRechnung(rechnung);
+            if (result.success) {
+                window.eInvoiceService.downloadXml(result.recordId);
+                showToast('XRechnung XML generiert', 'success');
+            } else {
+                showToast('XRechnung Fehler', 'error');
+            }
+        });
+    }
+
+    // ZUGFeRD export
+    const zfBtn = modal.querySelector('#btn-zugferd');
+    if (zfBtn) {
+        zfBtn.addEventListener('click', async () => {
+            if (!window.eInvoiceService) {
+                showToast('E-Rechnung Service nicht verfügbar', 'error');
+                return;
+            }
+            showToast('ZUGFeRD wird generiert...', 'info');
+            const result = await window.eInvoiceService.generateZugferd(rechnung);
+            if (result.success && result.pdfBytes) {
+                window.eInvoiceService.downloadZugferdPdf(result.recordId);
+                showToast('ZUGFeRD PDF generiert', 'success');
+            } else if (result.success) {
+                window.eInvoiceService.downloadXml(result.recordId);
+                showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');
+            } else {
+                showToast('ZUGFeRD Fehler', 'error');
+            }
         });
     }
 
@@ -599,3 +655,5 @@ window.showRechnung = showRechnung;
 window.initRechnungenFilters = initRechnungenFilters;
 window.cancelRechnung = cancelRechnung;
 window.duplicateRechnung = duplicateRechnung;
+
+})();

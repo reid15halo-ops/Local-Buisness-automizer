@@ -1,6 +1,7 @@
 /* ============================================
    Input Sanitization & XSS Protection
    ============================================ */
+if (typeof window.sanitize !== 'undefined') { /* already loaded */ } else {
 
 const SanitizeService = {
     // Escape HTML to prevent XSS when using innerHTML
@@ -97,3 +98,4 @@ const SanitizeService = {
 };
 
 window.sanitize = SanitizeService;
+}

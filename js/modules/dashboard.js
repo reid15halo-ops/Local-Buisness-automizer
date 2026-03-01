@@ -2,6 +2,7 @@
    Dashboard Module
    Dashboard rendering, stats, and charts
    ============================================ */
+(function() {
 
 const { store, renderActivities } = (() => {
     const store = window.storeService.state;
@@ -57,3 +58,5 @@ window.DashboardModule = {
         }
     }
 };
+
+})();
