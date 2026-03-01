@@ -10,7 +10,7 @@ echo "🚀 Starting Production Deployment..."
 
 # 0. Generate service-worker cache version from git commit hash
 echo "🔑 Step 0: Generating build-time cache version..."
-node build-sw.js
+node build-sw.cjs
 echo "✅ Service worker cache version updated"
 
 # 1. Build Check
