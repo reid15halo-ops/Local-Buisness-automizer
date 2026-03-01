@@ -582,7 +582,7 @@ FreyAI Visions`
         }));
 
         const headers = { 'Content-Type': 'application/json' };
-        if (secret) headers['Authorization'] = `Bearer ${secret}`;
+        if (secret) {headers['Authorization'] = `Bearer ${secret}`;}
 
         const response = await fetch(`${relayUrl}/send-bulk`, {
             method: 'POST',

@@ -122,8 +122,8 @@ class CompanySettingsService {
             const existing = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
             localStorage.setItem('freyai_admin_settings', JSON.stringify({ ...existing, ...settings }));
             // Also keep flat keys used by legacy code
-            if (settings.stundensatz)        localStorage.setItem('stundensatz', String(settings.stundensatz));
-            if (settings.company_name)       localStorage.setItem('company_name', settings.company_name);
+            if (settings.stundensatz)        {localStorage.setItem('stundensatz', String(settings.stundensatz));}
+            if (settings.company_name)       {localStorage.setItem('company_name', settings.company_name);}
         } catch { /* ignore storage errors */ }
     }
 

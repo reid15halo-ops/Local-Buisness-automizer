@@ -234,7 +234,7 @@ class DocumentTemplateService {
 
     /** Format a date string as de-DE */
     _date(s) {
-        if (!s) return '';
+        if (!s) {return '';}
         try {
             return new Date(s).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
         } catch (_) { return s; }
@@ -262,15 +262,15 @@ class DocumentTemplateService {
     /** Legal footer line with tax / registration data */
     _legalFooter(c) {
         const parts = [];
-        if (c.companyName) parts.push(this._esc(c.companyName));
-        if (c.address)     parts.push(this._esc(c.address));
-        if (c.zip || c.city) parts.push(this._esc(`${c.zip || ''} ${c.city || ''}`.trim()));
-        if (c.taxId)       parts.push('Steuernr.: ' + this._esc(c.taxId));
-        if (c.vatId)       parts.push('USt-IdNr.: ' + this._esc(c.vatId));
-        if (c.hrb)         parts.push('HRB: '       + this._esc(c.hrb));
-        if (c.iban)        parts.push('IBAN: '      + this._esc(c.iban));
-        if (c.bic)         parts.push('BIC: '       + this._esc(c.bic));
-        if (c.bank)        parts.push(this._esc(c.bank));
+        if (c.companyName) {parts.push(this._esc(c.companyName));}
+        if (c.address)     {parts.push(this._esc(c.address));}
+        if (c.zip || c.city) {parts.push(this._esc(`${c.zip || ''} ${c.city || ''}`.trim()));}
+        if (c.taxId)       {parts.push('Steuernr.: ' + this._esc(c.taxId));}
+        if (c.vatId)       {parts.push('USt-IdNr.: ' + this._esc(c.vatId));}
+        if (c.hrb)         {parts.push('HRB: '       + this._esc(c.hrb));}
+        if (c.iban)        {parts.push('IBAN: '      + this._esc(c.iban));}
+        if (c.bic)         {parts.push('BIC: '       + this._esc(c.bic));}
+        if (c.bank)        {parts.push(this._esc(c.bank));}
         const col1 = parts.slice(0, Math.ceil(parts.length / 2)).join(' · ');
         const col2 = parts.slice(Math.ceil(parts.length / 2)).join(' · ');
         return `

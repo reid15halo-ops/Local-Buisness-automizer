@@ -217,7 +217,7 @@ class SmsReminderService {
         const sid   = window.APP_CONFIG?.TWILIO_ACCOUNT_SID || localStorage.getItem('freyai_twilio_sid');
         const token = window.APP_CONFIG?.TWILIO_AUTH_TOKEN  || localStorage.getItem('freyai_twilio_token');
         const from  = window.APP_CONFIG?.TWILIO_FROM_NUMBER || localStorage.getItem('freyai_twilio_from');
-        if (!sid || !token || !from) throw new Error('Twilio credentials nicht konfiguriert');
+        if (!sid || !token || !from) {throw new Error('Twilio credentials nicht konfiguriert');}
 
         const response = await fetch(
             `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
@@ -231,7 +231,7 @@ class SmsReminderService {
             }
         );
         const data = await response.json();
-        if (!response.ok) throw new Error(data.message || `Twilio HTTP ${response.status}`);
+        if (!response.ok) {throw new Error(data.message || `Twilio HTTP ${response.status}`);}
         return { success: true, messageId: data.sid, method: 'twilio' };
     }
 
@@ -239,7 +239,7 @@ class SmsReminderService {
         const tokenId = window.APP_CONFIG?.SIPGATE_TOKEN_ID || localStorage.getItem('freyai_sipgate_token_id');
         const token   = window.APP_CONFIG?.SIPGATE_TOKEN    || localStorage.getItem('freyai_sipgate_token');
         const smsId   = window.APP_CONFIG?.SIPGATE_SMS_ID   || localStorage.getItem('freyai_sipgate_sms_id');
-        if (!tokenId || !token) throw new Error('sipgate credentials nicht konfiguriert');
+        if (!tokenId || !token) {throw new Error('sipgate credentials nicht konfiguriert');}
 
         const response = await fetch('https://api.sipgate.com/v2/sessions/sms', {
             method: 'POST',
@@ -249,14 +249,14 @@ class SmsReminderService {
             },
             body: JSON.stringify({ smsId: smsId || 's0', recipient: to, message })
         });
-        if (!response.ok) throw new Error(`sipgate HTTP ${response.status}`);
+        if (!response.ok) {throw new Error(`sipgate HTTP ${response.status}`);}
         return { success: true, messageId: 'sipgate-' + Date.now(), method: 'sipgate' };
     }
 
     async _sendViaMessageBird(to, body) {
         const apiKey     = window.APP_CONFIG?.MESSAGEBIRD_API_KEY   || localStorage.getItem('freyai_messagebird_key');
         const originator = window.APP_CONFIG?.MESSAGEBIRD_ORIGINATOR || localStorage.getItem('freyai_messagebird_from') || 'FreyAI';
-        if (!apiKey) throw new Error('MessageBird API-Key nicht konfiguriert');
+        if (!apiKey) {throw new Error('MessageBird API-Key nicht konfiguriert');}
 
         const response = await fetch('https://rest.messagebird.com/messages', {
             method: 'POST',
@@ -267,7 +267,7 @@ class SmsReminderService {
             body: JSON.stringify({ recipients: [to], originator, body })
         });
         const data = await response.json();
-        if (!response.ok) throw new Error(data.errors?.[0]?.description || `MessageBird HTTP ${response.status}`);
+        if (!response.ok) {throw new Error(data.errors?.[0]?.description || `MessageBird HTTP ${response.status}`);}
         return { success: true, messageId: data.id, method: 'messagebird' };
     }
 
