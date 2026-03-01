@@ -49,8 +49,8 @@ function initAngebotForm() {
     const addBtn = document.getElementById('btn-add-position');
     const aiBtn = document.getElementById('btn-ai-text');
 
-    addBtn.addEventListener('click', addPosition);
-    aiBtn.addEventListener('click', generateAIText);
+    if (addBtn) {addBtn.addEventListener('click', addPosition);}
+    if (aiBtn) {aiBtn.addEventListener('click', generateAIText);}
 
     form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -370,6 +370,8 @@ function getAngebotStatusBadge(status) {
         return '<span class="status-badge status-offen">● Wartet auf Annahme</span>';
     case 'angenommen':
         return '<span class="status-badge status-angenommen">● Angenommen</span>';
+    case 'vorläufig_gesendet':
+        return '<span class="status-badge status-offen">✉️ Vorläufig gesendet</span>';
     case 'abgelehnt':
         return '<span class="status-badge status-abgelehnt">● Abgelehnt</span>';
     default:
@@ -379,7 +381,7 @@ function getAngebotStatusBadge(status) {
 
 function updateAngeboteFilterBadges() {
     const allAngebote = store?.angebote || [];
-    const counts = { alle: allAngebote.length, entwurf: 0, offen: 0, angenommen: 0, abgelehnt: 0 };
+    const counts = { alle: allAngebote.length, entwurf: 0, offen: 0, angenommen: 0, abgelehnt: 0, 'vorläufig_gesendet': 0 };
     allAngebote.forEach(a => {
         const s = a.status || 'entwurf';
         if (counts[s] !== undefined) { counts[s]++; }

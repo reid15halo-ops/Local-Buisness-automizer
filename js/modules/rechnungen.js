@@ -601,7 +601,7 @@ function initRechnungActions() {
             case 'mark-paid':
                 if (rechnung.status === 'offen') {
                     rechnung.status = 'bezahlt';
-                    rechnung.bezahltAm = new Date().toISOString();
+                    rechnung.paidAt = new Date().toISOString();
                     saveStore();
                     addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
                     renderRechnungen();

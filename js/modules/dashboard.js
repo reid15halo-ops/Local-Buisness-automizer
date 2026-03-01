@@ -13,7 +13,7 @@ const { store, renderActivities } = (() => {
 function updateDashboard() {
     const offeneAnfragen = store?.anfragen?.filter(a => a.status === 'neu').length || 0;
     const wartendeAngebote = store?.angebote?.filter(a => a.status === 'offen').length || 0;
-    const aktiveAuftraege = store?.auftraege?.filter(a => a.status !== 'abgeschlossen').length || 0;
+    const aktiveAuftraege = store?.auftraege?.filter(a => !['abgeschlossen','storniert','pausiert'].includes(a.status)).length || 0;
     const offeneRechnungen = store?.rechnungen?.filter(r => r.status === 'offen').length || 0;
 
     const statAnfragen = document.getElementById('stat-anfragen');

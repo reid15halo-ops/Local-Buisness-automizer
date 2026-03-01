@@ -252,7 +252,7 @@ function initSettings() {
 function renderMahnwesen() {
     const container = document.getElementById('mahnwesen-list');
     if (!container) {return;}
-    const rechnungen = store?.rechnungen?.filter(r => r.status === 'offen') || [];
+    const rechnungen = store?.rechnungen?.filter(r => r.status === 'offen' || r.status === 'versendet') || [];
 
     if (rechnungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine offenen Rechnungen</p>';
@@ -375,7 +375,9 @@ function initAutomationSettings() {
         const url = document.getElementById('email-relay-url').value.trim();
         const secret = document.getElementById('email-relay-secret').value.trim();
         localStorage.setItem('email_relay_url', url);
+        localStorage.setItem('freyai_email_relay_url', url);
         sessionStorage.setItem("email_relay_secret", secret);
+        localStorage.setItem('freyai_email_relay_secret', secret);
         updateSettingsStatus();
         showToast('E-Mail-Konfiguration gespeichert', 'success');
     });
@@ -721,6 +723,8 @@ window.updateDashboard = window.DashboardModule?.updateDashboard;
 // Auto-initialization
 // ============================================
 document.addEventListener('DOMContentLoaded', async () => {
+    if (window._appInitialized) {return;}
+    window._appInitialized = true;
     await init();
     initAutomations();
 });

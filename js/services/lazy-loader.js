@@ -190,7 +190,7 @@ class LazyLoader {
             'rechnungen': ['workflow', 'finance', 'documents', 'automation'],
             'mahnwesen': ['workflow', 'finance', 'automation'],
             'buchhaltung': ['workflow', 'finance', 'reports', 'automation'],
-            'kunden': ['crm', 'communication', 'calendar'],
+            'kunden': ['crm', 'calendar'],
             'emails': ['crm', 'communication', 'automation'],
             'email-automation': ['crm', 'automation', 'ai'],
             'termine': ['calendar', 'automation', 'crm'],

@@ -83,7 +83,6 @@ function initAnfrageForm() {
         closeModal('modal-anfrage');
         if (window.showToast) { showToast('Anfrage erfolgreich erstellt', 'success'); }
         switchView('anfragen');
-        document.querySelector('[data-view="anfragen"]').click();
     });
 }
 

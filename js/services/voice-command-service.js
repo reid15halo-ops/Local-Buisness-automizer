@@ -347,7 +347,7 @@ class VoiceCommandService {
             const buchungen = window.bookkeepingService.buchungen.filter(b =>
                 b.datum === today && b.typ === 'einnahme'
             );
-            const total = buchungen.reduce((sum, b) => sum + b.betrag, 0);
+            const total = buchungen.reduce((sum, b) => sum + (b.brutto || 0), 0);
             const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
             return { response: `Der Umsatz heute beträgt ${formatted}` };
         }
@@ -364,7 +364,7 @@ class VoiceCommandService {
             const buchungen = window.bookkeepingService.buchungen.filter(b =>
                 b.datum >= weekStart && b.typ === 'einnahme'
             );
-            const total = buchungen.reduce((sum, b) => sum + b.betrag, 0);
+            const total = buchungen.reduce((sum, b) => sum + (b.brutto || 0), 0);
             const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
             return { response: `Der Wochenumsatz beträgt ${formatted}` };
         }
@@ -380,7 +380,7 @@ class VoiceCommandService {
             const buchungen = window.bookkeepingService.buchungen.filter(b =>
                 b.datum >= monthStart && b.typ === 'einnahme'
             );
-            const total = buchungen.reduce((sum, b) => sum + b.betrag, 0);
+            const total = buchungen.reduce((sum, b) => sum + (b.brutto || 0), 0);
             const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
             return { response: `Der Monatsumsatz beträgt ${formatted}` };
         }
@@ -391,7 +391,7 @@ class VoiceCommandService {
     queryOpenInvoices() {
         const rechnungen = store?.rechnungen || [];
         const open = rechnungen.filter(r => r.status === 'offen' || r.status === 'versendet');
-        const total = open.reduce((sum, r) => sum + (r.betrag || 0), 0);
+        const total = open.reduce((sum, r) => sum + (r.brutto || 0), 0);
         const formatted = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(total);
         return { response: `Sie haben ${open.length} offene Rechnungen im Wert von ${formatted}` };
     }

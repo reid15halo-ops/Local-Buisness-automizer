@@ -237,8 +237,10 @@ function renderAuftragPipeline(auftraege, counts) {
 
 function renderAuftraegeKanban(auftraege) {
     const kanbanContainer = document.getElementById('auftrag-kanban');
+    if (!kanbanContainer) {return;}
     kanbanContainer.style.display = '';
-    document.getElementById('auftraege-list').style.display = 'none';
+    const listEl = document.getElementById('auftraege-list');
+    if (listEl) {listEl.style.display = 'none';}
 
     const searchQuery = (document.getElementById('auftrag-search')?.value || '').toLowerCase();
 
@@ -323,8 +325,10 @@ function renderAuftragCard(a) {
 }
 
 function renderAuftraegeList(auftraege) {
-    document.getElementById('auftrag-kanban').style.display = 'none';
+    const kanbanEl = document.getElementById('auftrag-kanban');
+    if (kanbanEl) {kanbanEl.style.display = 'none';}
     const container = document.getElementById('auftraege-list');
+    if (!container) {return;}
     container.style.display = '';
 
     let filtered = [...auftraege];
@@ -463,8 +467,8 @@ function openAuftragDetail(auftragId) {
     const setEl = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = val || '-';} };
     setEl('ad-kunde-name', kunde.name || kunde.firma);
     setEl('ad-kunde-kontakt', [kunde.email, kunde.telefon].filter(Boolean).join(' · '));
-    setEl('ad-leistungsart', h(auftrag.leistungsart || ''));
-    setEl('ad-angebotswert', auftrag.angebotswert ? formatCurrency(auftrag.angebotswert) : '-');
+    setEl('ad-leistungsart', auftrag.leistungsart || '');
+    setEl('ad-angebotswert', auftrag.angebotsWert ? formatCurrency(auftrag.angebotsWert) : '-');
 
     // Status pipeline visual
     const pipeline = document.getElementById('ad-status-pipeline');
