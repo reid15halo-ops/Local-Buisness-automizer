@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website bearbeiten</title>
+    <style>
+        :root {
+            --bg: #f0f4f8;
+            --white: #ffffff;
+            --blue: #1e40af;
+            --blue-light: #3b82f6;
+            --green: #16a34a;
+            --green-light: #22c55e;
+            --orange: #d97706;
+            --red: #dc2626;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #cbd5e1;
+            --radius: 12px;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        /* ── TOPBAR ──────────────────────────────────────── */
+        .topbar {
+            background: var(--blue);
+            color: white;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .topbar h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .topbar p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* ── BUTTONS ─────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-save {
+            background: var(--green);
+            color: white;
+            font-size: 1.1rem;
+            padding: 16px 36px;
+        }
+        .btn-save:hover { background: #15803d; transform: scale(1.02); }
+
+        .btn-preview {
+            background: white;
+            color: var(--blue);
+        }
+        .btn-preview:hover { background: #eff6ff; }
+
+        .btn-download {
+            background: var(--orange);
+            color: white;
+        }
+        .btn-download:hover { background: #b45309; }
+
+        /* ── MAIN LAYOUT ─────────────────────────────────── */
+        .main {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 32px 24px 80px;
+        }
+
+        /* ── INFO BOX ────────────────────────────────────── */
+        .info-box {
+            background: #eff6ff;
+            border: 2px solid #93c5fd;
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 32px;
+            font-size: 1rem;
+            color: #1e3a8a;
+        }
+
+        .info-box strong { display: block; font-size: 1.1rem; margin-bottom: 6px; }
+
+        /* ── SECTION CARD ────────────────────────────────── */
+        .section-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .section-title {
+            background: var(--text);
+            color: white;
+            padding: 18px 24px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-body { padding: 28px 24px; }
+
+        /* ── FORM FIELDS ─────────────────────────────────── */
+        .field {
+            margin-bottom: 24px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .field .hint {
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 400;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .field input,
+        .field textarea {
+            width: 100%;
+            padding: 16px 18px;
+            font-size: 1.05rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            color: var(--text);
+            background: white;
+            transition: border-color 0.2s;
+            line-height: 1.5;
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--blue-light);
+        }
+
+        .field textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* ── SERVICE EDITOR ──────────────────────────────── */
+        .service-item {
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .service-number {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        /* ── IMAGE UPLOAD ────────────────────────────────── */
+        .image-upload-area {
+            border: 3px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--blue-light);
+            background: #eff6ff;
+        }
+
+        .image-upload-area.has-image {
+            border-style: solid;
+            border-color: var(--green);
+            padding: 0;
+        }
+
+        .image-upload-area img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: calc(var(--radius) - 3px);
+        }
+
+        .image-upload-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+        .image-upload-label { font-size: 1.1rem; font-weight: 700; color: var(--blue); display: block; }
+        .image-upload-hint { font-size: 0.9rem; color: var(--muted); margin-top: 4px; display: block; }
+
+        .image-upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .image-replace-btn {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 0 0 calc(var(--radius) - 3px) calc(var(--radius) - 3px);
+        }
+
+        /* ── STATS EDITOR ────────────────────────────────── */
+        .stat-item-edit {
+            background: #f8fafc;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        /* ── SAVE STATUS ─────────────────────────────────── */
+        .save-status {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            display: none;
+            z-index: 999;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .save-status.success {
+            background: var(--green);
+            color: white;
+            display: block;
+        }
+
+        .save-status.error {
+            background: var(--red);
+            color: white;
+            display: block;
+        }
+
+        /* ── BIG SAVE BUTTON AT BOTTOM ───────────────────── */
+        .bottom-save {
+            background: var(--green);
+            border: none;
+            color: white;
+            width: 100%;
+            padding: 22px;
+            font-size: 1.3rem;
+            font-weight: 800;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 32px;
+            letter-spacing: 0.02em;
+        }
+
+        .bottom-save:hover {
+            background: #15803d;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(22,163,74,0.3);
+        }
+
+        /* ── RESPONSIVE ──────────────────────────────────── */
+        @media (max-width: 640px) {
+            body { font-size: 16px; }
+            .topbar { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .topbar-actions { width: 100%; justify-content: space-between; }
+            .field-row { grid-template-columns: 1fr; }
+            .main { padding: 16px 12px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── TOPBAR ──────────────────────────────────────────── -->
+<div class="topbar">
+    <div>
+        <h1>✏️ Website bearbeiten</h1>
+        <p id="topbar-site-name">Wird geladen...</p>
+    </div>
+    <div class="topbar-actions">
+        <a href="index.html" target="_blank" class="btn btn-preview">👁️ Vorschau</a>
+        <button class="btn btn-save" onclick="saveConfig()">💾 Speichern</button>
+    </div>
+</div>
+
+<!-- ── MAIN ────────────────────────────────────────────── -->
+<div class="main">
+
+    <!-- Info -->
+    <div class="info-box">
+        <strong>📋 So funktioniert es:</strong>
+        Ändern Sie die Texte unten und klicken Sie auf <strong>💾 Speichern</strong>.
+        Die Website wird sofort aktualisiert. Bilder können Sie durch Anklicken ersetzen.
+    </div>
+
+    <!-- ── 1. FIRMA ────────────────────────────────────── -->
+    <div class="section-card">
+        <div class="section-title">🏢 1. Ihre Firma</div>
+        <div class="section-body">
+            <div class="field">
+                <label>Firmenname</label>
+                <input type="text" id="f-business-name" placeholder="Muster Handwerk GmbH">
+            </div>
+            <div class="field">
+                <label>Kurzbeschreibung <span class="hint">Wird unter dem Firmennamen angezeigt</span></label>
+                <input type="text" id="f-business-tagline" placeholder="Ihr zuverlässiger Handwerkspartner in München">
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>Telefonnummer</label>
+                    <input type="tel" id="f-business-phone" placeholder="+49 89 123 456 78">
+                </div>
+                <div class="field">
+                    <label>E-Mail</label>
+                    <input type="email" id="f-business-email" placeholder="info@firma.de">
+                </div>
+            </div>
+            <div class="field">
+                <label>Adresse</label>
+                <input type="text" id="f-business-address" placeholder="Musterstraße 1, 80333 München">
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 2. STARTBEREICH (HERO) ──────────────────────── -->
+    <div class="section-card">
+        <div class="section-title">🌟 2. Startbereich (Großes Bild oben)</div>
+        <div class="section-body">
+            <div class="field">
+                <label>Hauptüberschrift <span class="hint">Der große Slogan ganz oben</span></label>
+                <input type="text" id="f-hero-headline" placeholder="Qualität, die bleibt.">
+            </div>
+            <div class="field">
+                <label>Beschreibung darunter</label>
+                <textarea id="f-hero-sub" rows="3" placeholder="Seit über 20 Jahren..."></textarea>
+            </div>
+            <div class="field">
+                <label>Button-Text</label>
+                <input type="text" id="f-hero-cta" placeholder="Jetzt kostenlos anfragen">
+            </div>
+            <div class="field">
+                <label>Hintergrundbild <span class="hint">Empfohlen: mindestens 1920×1080 Pixel, JPG oder PNG</span></label>
+                <div class="image-upload-area" id="hero-upload-area">
+                    <input type="file" accept="image/*" id="hero-image-input" onchange="handleImage('hero', this)">
+                    <span class="image-upload-icon">🖼️</span>
+                    <span class="image-upload-label">Bild hier anklicken oder Datei hineinziehen</span>
+                    <span class="image-upload-hint">Schöne Fotos von Ihrer Arbeit oder Werkstatt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 3. LEISTUNGEN ───────────────────────────────── -->
+    <div class="section-card">
+        <div class="section-title">🔧 3. Ihre Leistungen</div>
+        <div class="section-body">
+            <p style="color:var(--muted); margin-bottom:20px; font-size:0.95rem;">
+                Sie können bis zu 6 Leistungen angeben. Lassen Sie Felder leer, um eine Leistung auszublenden.
+            </p>
+            <div id="services-editor"></div>
+        </div>
+    </div>
+
+    <!-- ── 4. ZAHLEN & FAKTEN ──────────────────────────── -->
+    <div class="section-card">
+        <div class="section-title">📊 4. Zahlen & Fakten</div>
+        <div class="section-body">
+            <p style="color:var(--muted); margin-bottom:20px; font-size:0.95rem;">
+                Diese Zahlen werden groß und auffällig angezeigt (z.B. "20+ Jahre Erfahrung").
+            </p>
+            <div id="stats-editor"></div>
+        </div>
+    </div>
+
+    <!-- ── 5. ÜBER UNS ─────────────────────────────────── -->
+    <div class="section-card">
+        <div class="section-title">👥 5. Über uns</div>
+        <div class="section-body">
+            <div class="field">
+                <label>Überschrift</label>
+                <input type="text" id="f-about-headline" placeholder="Handwerk mit Herz und Verstand.">
+            </div>
+            <div class="field">
+                <label>Ihr Text <span class="hint">Erzählen Sie von Ihrem Betrieb. Eine Leerzeile macht einen neuen Absatz.</span></label>
+                <textarea id="f-about-text" rows="8" placeholder="Als familiengeführtes Unternehmen..."></textarea>
+            </div>
+            <div class="field">
+                <label>Foto (Team oder Werkstatt) <span class="hint">Empfohlen: quadratisch oder 4:3 Format</span></label>
+                <div class="image-upload-area" id="about-upload-area">
+                    <input type="file" accept="image/*" id="about-image-input" onchange="handleImage('about', this)">
+                    <span class="image-upload-icon">📷</span>
+                    <span class="image-upload-label">Bild hier anklicken oder Datei hineinziehen</span>
+                    <span class="image-upload-hint">Teamfoto oder Werkstattfoto</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 6. KUNDENSTIMMEN ────────────────────────────── -->
+    <div class="section-card">
+        <div class="section-title">⭐ 6. Kundenstimmen</div>
+        <div class="section-body">
+            <p style="color:var(--muted); margin-bottom:20px; font-size:0.95rem;">
+                Echte Kundenbewertungen stärken das Vertrauen. Am besten von Google oder direkt vom Kunden fragen.
+            </p>
+            <div id="testimonials-editor"></div>
+        </div>
+    </div>
+
+    <!-- ── BIG SAVE BUTTON ─────────────────────────────── -->
+    <button class="bottom-save" onclick="saveConfig()">
+        💾 Alle Änderungen speichern
+    </button>
+
+    <p style="text-align:center; color:var(--muted); margin-top:16px; font-size:0.9rem;">
+        Nach dem Speichern: <a href="index.html" target="_blank" style="color:var(--blue-light);">Website in neuem Tab öffnen</a> um die Änderungen zu sehen.
+    </p>
+
+</div>
+
+<!-- ── SAVE STATUS ──────────────────────────────────────── -->
+<div class="save-status" id="save-status">✓ Gespeichert!</div>
+
+<!-- ── SCRIPTS ──────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script>
+/* ── STATE ──────────────────────────────────────── */
+let currentConfig = JSON.parse(JSON.stringify(CONFIG));
+let imageDataMap = {};   // { 'hero': base64..., 'about': base64... }
+
+/* ── INIT ───────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    loadConfigIntoForm();
+    buildServicesEditor();
+    buildStatsEditor();
+    buildTestimonialsEditor();
+    document.getElementById('topbar-site-name').textContent = CONFIG.business.name;
+});
+
+function loadConfigIntoForm() {
+    const C = currentConfig;
+    set('f-business-name',    C.business.name);
+    set('f-business-tagline', C.business.tagline);
+    set('f-business-phone',   C.business.phone);
+    set('f-business-email',   C.business.email);
+    set('f-business-address', C.business.address);
+    set('f-hero-headline',    C.hero.headline);
+    set('f-hero-sub',         C.hero.subheadline);
+    set('f-hero-cta',         C.hero.cta_text);
+    set('f-about-headline',   C.about.headline);
+    set('f-about-text',       C.about.text);
+}
+
+function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+}
+
+/* ── SERVICES EDITOR ────────────────────────────── */
+function buildServicesEditor() {
+    const container = document.getElementById('services-editor');
+    const services = currentConfig.services;
+    const ICONS = ['🔧','⚡','🏠','🪟','🎨','🔨','🚿','🌿','🛠️','🔑'];
+
+    for (let i = 0; i < 6; i++) {
+        const s = services[i] || { icon: ICONS[i] || '🔧', title: '', description: '' };
+        container.innerHTML += `
+        <div class="service-item">
+            <div class="service-number">Leistung ${i + 1}</div>
+            <div class="field-row">
+                <div class="field" style="flex:0 0 90px;">
+                    <label>Symbol</label>
+                    <input type="text" id="s-icon-${i}" value="${s.icon}" maxlength="4" style="text-align:center;font-size:1.8rem;">
+                </div>
+                <div class="field" style="flex:1;">
+                    <label>Name der Leistung</label>
+                    <input type="text" id="s-title-${i}" value="${s.title}" placeholder="z.B. Sanitär & Heizung">
+                </div>
+            </div>
+            <div class="field">
+                <label>Kurzbeschreibung</label>
+                <textarea id="s-desc-${i}" rows="2" placeholder="Kurze Beschreibung dieser Leistung...">${s.description}</textarea>
+            </div>
+        </div>`;
+    }
+}
+
+/* ── STATS EDITOR ───────────────────────────────── */
+function buildStatsEditor() {
+    const container = document.getElementById('stats-editor');
+    currentConfig.stats.forEach((s, i) => {
+        container.innerHTML += `
+        <div class="stat-item-edit">
+            <div class="field-row">
+                <div class="field">
+                    <label>Zahl / Wert</label>
+                    <input type="text" id="stat-val-${i}" value="${s.value}" placeholder="20+">
+                </div>
+                <div class="field">
+                    <label>Beschriftung</label>
+                    <input type="text" id="stat-lbl-${i}" value="${s.label}" placeholder="Jahre Erfahrung">
+                </div>
+            </div>
+        </div>`;
+    });
+}
+
+/* ── TESTIMONIALS EDITOR ────────────────────────── */
+function buildTestimonialsEditor() {
+    const container = document.getElementById('testimonials-editor');
+    const t = currentConfig.testimonials;
+    for (let i = 0; i < 3; i++) {
+        const item = t[i] || { name: '', text: '', stars: 5 };
+        container.innerHTML += `
+        <div class="service-item">
+            <div class="service-number">Bewertung ${i + 1}</div>
+            <div class="field">
+                <label>Name des Kunden</label>
+                <input type="text" id="t-name-${i}" value="${item.name}" placeholder="Klaus M., München">
+            </div>
+            <div class="field">
+                <label>Was hat der Kunde gesagt?</label>
+                <textarea id="t-text-${i}" rows="3" placeholder="Hier den Bewertungstext eintragen...">${item.text}</textarea>
+            </div>
+        </div>`;
+    }
+}
+
+/* ── IMAGE UPLOAD ───────────────────────────────── */
+function handleImage(type, input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        imageDataMap[type] = dataUrl;
+
+        const area = document.getElementById(`${type}-upload-area`);
+        area.classList.add('has-image');
+        area.innerHTML = `
+            <img src="${dataUrl}" alt="Vorschau">
+            <div class="image-replace-btn">📷 Anderes Bild wählen</div>
+            <input type="file" accept="image/*" onchange="handleImage('${type}', this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+        `;
+    };
+    reader.readAsDataURL(file);
+}
+
+/* ── COLLECT & SAVE ─────────────────────────────── */
+function collectFormData() {
+    const C = currentConfig;
+
+    C.business.name     = val('f-business-name');
+    C.business.tagline  = val('f-business-tagline');
+    C.business.phone    = val('f-business-phone');
+    C.business.email    = val('f-business-email');
+    C.business.address  = val('f-business-address');
+    C.business.logo_text = (C.business.name || 'FH').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+    C.hero.headline    = val('f-hero-headline');
+    C.hero.subheadline = val('f-hero-sub');
+    C.hero.cta_text    = val('f-hero-cta');
+
+    C.about.headline = val('f-about-headline');
+    C.about.text     = val('f-about-text');
+
+    // Services
+    C.services = [];
+    for (let i = 0; i < 6; i++) {
+        const title = val(`s-title-${i}`);
+        if (title) {
+            C.services.push({
+                icon:        val(`s-icon-${i}`) || '🔧',
+                title:       title,
+                description: val(`s-desc-${i}`)
+            });
+        }
+    }
+
+    // Stats
+    C.stats = [];
+    for (let i = 0; i < 4; i++) {
+        const v = val(`stat-val-${i}`);
+        const l = val(`stat-lbl-${i}`);
+        if (v && l) C.stats.push({ value: v, label: l });
+    }
+
+    // Testimonials
+    C.testimonials = [];
+    for (let i = 0; i < 3; i++) {
+        const name = val(`t-name-${i}`);
+        const text = val(`t-text-${i}`);
+        if (name && text) C.testimonials.push({ name, text, stars: 5 });
+    }
+
+    // Image paths (base64 stored as assets for export)
+    if (imageDataMap.hero) C.hero.hero_image = imageDataMap.hero;
+    if (imageDataMap.about) C.about.about_image = imageDataMap.about;
+
+    return C;
+}
+
+function val(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+}
+
+async function saveConfig() {
+    const C = collectFormData();
+    const configContent = generateConfigJS(C);
+
+    try {
+        const res = await fetch('/admin/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ config: configContent })
+        });
+
+        if (res.ok) {
+            showStatus('✓ Gespeichert! Website wurde aktualisiert.', 'success');
+            document.getElementById('topbar-site-name').textContent = C.business.name;
+        } else {
+            throw new Error('Server-Fehler');
+        }
+    } catch {
+        // Fallback: Download-Modus wenn Server nicht erreichbar
+        downloadConfig(configContent);
+    }
+}
+
+function downloadConfig(content) {
+    const blob = new Blob([content], { type: 'text/javascript' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'config.js';
+    a.click();
+    showStatus('📥 config.js heruntergeladen — bitte an FreyAI senden.', 'success');
+}
+
+function generateConfigJS(C) {
+    return `/* Automatisch generiert durch das Admin-Panel — ${new Date().toLocaleString('de-DE')} */\n\nconst CONFIG = ${JSON.stringify(C, null, 4)};\n`;
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('save-status');
+    el.textContent = msg;
+    el.className = `save-status ${type}`;
+    setTimeout(() => { el.className = 'save-status'; }, 4000);
+}
+</script>
+
+</body>
+</html>

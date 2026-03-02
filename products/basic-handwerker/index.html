@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="meta-title">Handwerk | Ihre Stadt</title>
+    <meta name="description" id="meta-desc" content="">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <!-- Self-hosted Inter font (DSGVO-konform) -->
+    <link rel="stylesheet" href="../../css/fonts.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ── NAVIGATION ────────────────────────────────────── -->
+<nav class="nav" id="nav">
+    <a href="#hero" class="nav-logo" id="nav-logo-link">
+        <div class="nav-logo-badge" id="nav-badge">MH</div>
+        <span class="nav-logo-name" id="nav-name">Muster Handwerk</span>
+    </a>
+    <div class="nav-phone" id="nav-phone-wrapper">
+        <span>📞</span>
+        <span id="nav-phone-number">+49 89 123 456 78</span>
+    </div>
+    <a href="#kontakt" class="btn btn-gold nav-cta">Anfragen</a>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────── -->
+<section class="hero" id="hero">
+    <div class="hero-bg-gradient"></div>
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="container hero-content">
+        <div class="hero-line fade-in fade-in-1"></div>
+        <h1 class="fade-in fade-in-2" id="hero-headline">Qualität,<br>die bleibt.</h1>
+        <p class="fade-in fade-in-3" id="hero-sub">
+            Seit über 20 Jahren Ihr verlässlicher Partner für Handwerksarbeiten aller Art — pünktlich, sauber, fair.
+        </p>
+        <div class="fade-in fade-in-4">
+            <a href="#kontakt" class="btn btn-gold" id="hero-cta">Jetzt kostenlos anfragen</a>
+        </div>
+    </div>
+</section>
+
+<!-- ── LEISTUNGEN ─────────────────────────────────────── -->
+<section id="leistungen">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Leistungen</span>
+            <h2>Was wir für Sie tun</h2>
+        </div>
+        <div class="services-grid" id="services-grid"></div>
+    </div>
+</section>
+
+<!-- ── ZAHLEN ─────────────────────────────────────────── -->
+<section id="zahlen">
+    <div class="container">
+        <div class="stats-grid" id="stats-grid"></div>
+    </div>
+</section>
+
+<!-- ── ÜBER UNS ───────────────────────────────────────── -->
+<section id="uber-uns">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-text">
+                <span class="section-label">Über uns</span>
+                <h2 id="about-headline">Handwerk mit Herz und Verstand.</h2>
+                <div id="about-text-content"></div>
+                <br>
+                <a href="#kontakt" class="btn btn-outline" style="margin-top:8px;">Kontakt aufnehmen</a>
+            </div>
+            <div class="about-image">
+                <div class="about-image-inner" id="about-image-container">
+                    <div class="img-placeholder">
+                        <span class="img-placeholder-icon">📷</span>
+                        <span>Teamfoto</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── STIMMEN ────────────────────────────────────────── -->
+<section id="stimmen">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-label">Kundenstimmen</span>
+            <h2>Das sagen unsere Kunden</h2>
+            <div class="divider"></div>
+        </div>
+        <div class="testimonials-grid" id="testimonials-grid"></div>
+    </div>
+</section>
+
+<!-- ── KONTAKT ────────────────────────────────────────── -->
+<section id="kontakt">
+    <div class="container">
+        <div class="contact-grid">
+            <div class="contact-info">
+                <span class="section-label">Kontakt</span>
+                <h2 id="contact-headline">Kostenlos anfragen</h2>
+                <p id="contact-sub">Wir melden uns innerhalb von 24 Stunden bei Ihnen.</p>
+
+                <div class="contact-detail">
+                    <div class="contact-detail-icon">📞</div>
+                    <div class="contact-detail-text">
+                        <strong>Telefon</strong>
+                        <span id="contact-phone"></span>
+                    </div>
+                </div>
+                <div class="contact-detail">
+                    <div class="contact-detail-icon">✉️</div>
+                    <div class="contact-detail-text">
+                        <strong>E-Mail</strong>
+                        <span id="contact-email"></span>
+                    </div>
+                </div>
+                <div class="contact-detail">
+                    <div class="contact-detail-icon">📍</div>
+                    <div class="contact-detail-text">
+                        <strong>Adresse</strong>
+                        <span id="contact-address"></span>
+                    </div>
+                </div>
+            </div>
+
+            <form class="contact-form" id="contact-form" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vorname</label>
+                        <input type="text" name="vorname" placeholder="Max" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nachname</label>
+                        <input type="text" name="nachname" placeholder="Mustermann" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Telefon</label>
+                    <input type="tel" name="telefon" placeholder="+49 89 123 456 78">
+                </div>
+                <div class="form-group">
+                    <label>E-Mail</label>
+                    <input type="email" name="email" placeholder="max@beispiel.de" required>
+                </div>
+                <div class="form-group">
+                    <label>Was kann ich für Sie tun?</label>
+                    <textarea name="nachricht" placeholder="Kurze Beschreibung Ihres Anliegens..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-gold form-submit" id="form-submit-btn">
+                    Anfrage senden →
+                </button>
+                <p style="font-size:0.75rem; color:var(--muted); margin-top:12px; text-align:center;">
+                    Keine Spam-Mails. Ihre Daten werden nicht weitergegeben.
+                </p>
+                <div id="form-feedback" style="display:none; margin-top:12px; padding:12px; border-radius:6px; font-size:0.875rem; text-align:center;"></div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────── -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="footer-badge" id="footer-badge">MH</div>
+            <span id="footer-name">Muster Handwerk GmbH</span>
+        </div>
+        <div class="footer-links">
+            <a href="#">Impressum</a>
+            <a href="#">Datenschutz</a>
+        </div>
+        <div class="footer-powered">
+            Website by <a href="https://freyaivisions.de" target="_blank" rel="noopener">FreyAI Visions</a>
+        </div>
+    </div>
+</footer>
+
+<!-- ── SCRIPTS ────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script>
+/* ── Populate from CONFIG ──────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    const C = CONFIG;
+
+    // SEO
+    document.title = C.seo.title;
+    document.getElementById('meta-title').textContent = C.seo.title;
+    document.getElementById('meta-desc').setAttribute('content', C.seo.description);
+
+    // Nav
+    document.getElementById('nav-badge').textContent = C.business.logo_text;
+    document.getElementById('nav-name').textContent = C.business.name;
+    document.getElementById('nav-phone-number').textContent = C.business.phone;
+
+    // Hero
+    document.getElementById('hero-headline').innerHTML = C.hero.headline.replace(',', ',<br>');
+    document.getElementById('hero-sub').textContent = C.hero.subheadline;
+    document.getElementById('hero-cta').textContent = C.hero.cta_text;
+
+    if (C.hero.hero_image) {
+        const bg = document.getElementById('hero-bg');
+        bg.style.backgroundImage = `url('${C.hero.hero_image}')`;
+        // Graceful fallback: if image fails, gradient stays visible
+        const img = new Image();
+        img.onerror = () => { bg.style.backgroundImage = ''; };
+        img.src = C.hero.hero_image;
+    }
+
+    // Services
+    const sg = document.getElementById('services-grid');
+    C.services.forEach(s => {
+        sg.innerHTML += `
+        <div class="service-card">
+            <span class="service-icon">${s.icon}</span>
+            <h3>${s.title}</h3>
+            <p>${s.description}</p>
+        </div>`;
+    });
+
+    // Stats
+    const stg = document.getElementById('stats-grid');
+    C.stats.forEach(s => {
+        stg.innerHTML += `
+        <div class="stat-item">
+            <span class="stat-value" data-target="${s.value}">${s.value}</span>
+            <span class="stat-label">${s.label}</span>
+        </div>`;
+    });
+
+    // About
+    document.getElementById('about-headline').textContent = C.about.headline;
+    const aboutContent = document.getElementById('about-text-content');
+    C.about.text.split('\n\n').forEach(para => {
+        if (para.trim()) {
+            const p = document.createElement('p');
+            p.textContent = para.trim();
+            p.style.cssText = 'color:var(--text);font-size:0.95rem;margin-bottom:0.8rem;';
+            aboutContent.appendChild(p);
+        }
+    });
+
+    if (C.about.about_image) {
+        const container = document.getElementById('about-image-container');
+        const img = new Image();
+        img.onload = () => {
+            container.innerHTML = '';
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+            container.appendChild(img);
+        };
+        img.src = C.about.about_image;
+    }
+
+    // Testimonials
+    const tg = document.getElementById('testimonials-grid');
+    C.testimonials.forEach(t => {
+        const stars = '★'.repeat(t.stars) + '☆'.repeat(5 - t.stars);
+        tg.innerHTML += `
+        <div class="testimonial-card">
+            <div class="stars">${stars}</div>
+            <p class="testimonial-text">"${t.text}"</p>
+            <span class="testimonial-name">— ${t.name}</span>
+        </div>`;
+    });
+
+    // Contact info
+    document.getElementById('contact-phone').textContent = C.business.phone;
+    document.getElementById('contact-email').textContent = C.business.email;
+    document.getElementById('contact-address').textContent = C.business.address;
+
+    // Footer
+    document.getElementById('footer-badge').textContent = C.business.logo_text;
+    document.getElementById('footer-name').textContent = C.business.name;
+
+    // Contact form
+    const form = document.getElementById('contact-form');
+    const endpoint = C.contact.form_endpoint;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('form-submit-btn');
+        const feedback = document.getElementById('form-feedback');
+        btn.textContent = 'Wird gesendet...';
+        btn.disabled = true;
+
+        const data = new FormData(form);
+
+        try {
+            if (endpoint && endpoint.startsWith('http')) {
+                // Formspree or custom endpoint
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    body: data,
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (res.ok) {
+                    showSuccess(feedback, btn, form);
+                } else {
+                    throw new Error('Server error');
+                }
+            } else {
+                // Mailto fallback
+                const vorname = data.get('vorname') || '';
+                const nachname = data.get('nachname') || '';
+                const email = data.get('email') || '';
+                const telefon = data.get('telefon') || '';
+                const nachricht = data.get('nachricht') || '';
+                const body = `Name: ${vorname} ${nachname}%0ATelefon: ${telefon}%0AE-Mail: ${email}%0A%0ANachricht:%0A${encodeURIComponent(nachricht)}`;
+                window.location.href = `mailto:${C.business.email}?subject=Anfrage von Website&body=${body}`;
+                showSuccess(feedback, btn, form);
+            }
+        } catch {
+            feedback.textContent = 'Fehler beim Senden. Bitte rufen Sie uns direkt an.';
+            feedback.style.cssText = 'display:block;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);padding:12px;border-radius:6px;';
+            btn.textContent = 'Anfrage senden →';
+            btn.disabled = false;
+        }
+    });
+
+    function showSuccess(feedback, btn, form) {
+        form.reset();
+        feedback.textContent = '✓ Anfrage gesendet! Wir melden uns innerhalb von 24 Stunden.';
+        feedback.style.cssText = 'display:block;background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.3);padding:12px;border-radius:6px;';
+        btn.textContent = '✓ Gesendet';
+    }
+});
+
+/* ── Scroll animations ─────────────────────────────── */
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.service-card, .stat-item, .testimonial-card, .about-grid, .contact-grid').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+});
+
+/* ── Nav scroll effect ─────────────────────────────── */
+window.addEventListener('scroll', () => {
+    const nav = document.getElementById('nav');
+    if (window.scrollY > 50) {
+        nav.style.background = 'rgba(11,15,25,0.97)';
+    } else {
+        nav.style.background = 'rgba(11,15,25,0.85)';
+    }
+}, { passive: true });
+</script>
+
+</body>
+</html>
