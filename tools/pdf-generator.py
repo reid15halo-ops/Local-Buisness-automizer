@@ -246,7 +246,7 @@ class GermanBusinessPDFGenerator:
             # Wrap long detail text at 400 chars per line gracefully
             parts.append(Paragraph(details, detail_style))
         if verantwortlich:
-            parts.append(Paragraph(f'Zustandig: {verantwortlich}', verantw_style))
+            parts.append(Paragraph(f'Ausfuehrung: {verantwortlich}', verantw_style))
 
         from reportlab.platypus import KeepTogether
         return parts
