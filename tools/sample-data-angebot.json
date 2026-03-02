@@ -2,9 +2,10 @@
   "type": "angebot",
   "number": "ANG-2024-001",
   "date": "2026-02-16T10:00:00",
+  "text": "Sehr geehrte Damen und Herren,\n\nvielen Dank fuer Ihre Anfrage. Gerne unterbreiten wir Ihnen das folgende detaillierte Angebot fuer die gewuenschten Arbeiten. Alle Leistungen werden durch qualifizierte Fachkraefte ausgefuehrt und entsprechen den geltenden Normen und Vorschriften.\n\nSelbstverstaendlich stehen wir Ihnen bei Rueckfragen zu einzelnen Positionen jederzeit zur Verfuegung.\n\nMit freundlichen Gruessen\nFreyAI Visions",
   "company": {
     "name": "FreyAI Visions",
-    "street": "Musterstraße 123",
+    "street": "Musterstrasse 123",
     "postal_code": "63843",
     "city": "Musterstadt",
     "phone": "+49 6029 9922964",
@@ -18,28 +19,42 @@
   "customer": {
     "company": "Musterfirma GmbH",
     "name": "Max Mustermann",
-    "street": "Kundenstraße 42",
+    "street": "Kundenstrasse 42",
     "postal_code": "60311",
     "city": "Frankfurt am Main"
   },
   "positions": [
     {
       "description": "Montage Hydraulikanlage inkl. Material",
+      "details": "Vollstaendige Demontage der alten Hydraulikanlage, fachgerechte Neuinstallation aller Rohrleitungen und Pumpenaggregate. Anschluss, Dichtheitspruefung unter Betriebsdruck, Spuelung des Leitungsnetzes sowie Inbetriebnahme mit Funktionstest. Uebergabe inkl. schriftlichem Abnahmeprotokoll.",
+      "verantwortlich": "Zertifizierter Hydraulik-Monteur",
       "quantity": 16,
       "unit": "Std.",
       "unit_price": 75.00
     },
     {
-      "description": "Hydrauliköl (Typ HL46) 205 Liter Fass",
+      "description": "Hydraulikoel (Typ HL46) 205 Liter Fass",
+      "details": "Hochwertiges Hydraulikoel HL46 nach DIN 51524 Teil 1. Geeignet fuer alle gaengigen Hydrauliksysteme. Lieferung und fachgerechte Bevorratung am Einsatzort inklusive Entsorgung des Altols gemaess gesetzlicher Vorschriften.",
+      "verantwortlich": "Lager- und Logistikfachkraft",
       "quantity": 2,
-      "unit": "Stück",
+      "unit": "Stueck",
       "unit_price": 145.50
     },
     {
-      "description": "Dichtungen und Verschleißteile",
+      "description": "Dichtungen und Verschleissteile",
+      "details": "Komplettes Dichtungsset fuer die gesamte Hydraulikanlage: O-Ringe, Flachdichtungen, Wellendichtringe und alle relevanten Verschleissteile nach Herstellervorgabe. Alle Teile sind OEM-kompatibel und entsprechen den technischen Anforderungen der bestehenden Anlage.",
+      "verantwortlich": "Hydraulik-Monteur",
       "quantity": 1,
       "unit": "Paket",
       "unit_price": 320.00
     }
+  ],
+  "trust_items": [
+    "Alle Arbeiten werden durch qualifizierte Fachkraefte mit nachgewiesener Berufserfahrung ausgefuehrt",
+    "Saemtliche eingesetzten Materialien entsprechen den aktuellen DIN-Normen und gesetzlichen Vorschriften",
+    "Nach Abschluss der Arbeiten erhalten Sie ein detailliertes Abnahmeprotokoll",
+    "Gesetzliche Gewaehrleistung auf alle ausgefuehrten Arbeiten (2 Jahre gemaess BGB)",
+    "Saubere und ordentliche Durchfuehrung – Ihr Eigentum wird waehrend der Arbeiten geschuetzt",
+    "Transparente Kommunikation – wir informieren Sie vor jeder Aenderung des Arbeitsumfangs"
   ]
 }

@@ -208,59 +208,170 @@ class GermanBusinessPDFGenerator:
 
         return elements
 
+    def _build_position_description(self, pos: Dict) -> 'Paragraph':
+        """Build a multi-line Paragraph for position description cell"""
+        desc_style = ParagraphStyle(
+            'PosDesc',
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            textColor=self.COLOR_TEXT,
+            leading=12,
+            spaceAfter=2
+        )
+        detail_style = ParagraphStyle(
+            'PosDetail',
+            fontName='Helvetica',
+            fontSize=8,
+            textColor=colors.HexColor('#555555'),
+            leading=11,
+            spaceBefore=3,
+            spaceAfter=2
+        )
+        verantw_style = ParagraphStyle(
+            'PosVerantw',
+            fontName='Helvetica-Bold',
+            fontSize=8,
+            textColor=self.COLOR_INDIGO,
+            leading=11,
+            spaceBefore=2
+        )
+
+        description = pos.get('description', '')
+        details = pos.get('details', '').strip()
+        verantwortlich = pos.get('verantwortlich', '').strip()
+
+        parts = []
+        parts.append(Paragraph(description, desc_style))
+        if details:
+            # Wrap long detail text at 400 chars per line gracefully
+            parts.append(Paragraph(details, detail_style))
+        if verantwortlich:
+            parts.append(Paragraph(f'Ausfuehrung: {verantwortlich}', verantw_style))
+
+        from reportlab.platypus import KeepTogether
+        return parts
+
     def create_positions_table(self) -> List:
-        """Create positions/line items table"""
+        """Create positions/line items table with detailed multi-line descriptions"""
         elements = []
 
-        # Table header
-        headers = ['Pos.', 'Beschreibung', 'Menge', 'Einheit', 'Einzelpreis', 'Gesamtpreis']
+        # Section header
+        section_style = ParagraphStyle(
+            'SectionHeader',
+            fontName='Helvetica-Bold',
+            fontSize=10,
+            textColor=self.COLOR_DARK,
+            leading=14,
+            spaceAfter=4
+        )
+        elements.append(Paragraph('Leistungsubersicht', section_style))
+        elements.append(Spacer(1, 2 * mm))
+
+        # Table header row
+        header_style = ParagraphStyle(
+            'TableHeader',
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            textColor=colors.white,
+            leading=12
+        )
+        headers = [
+            Paragraph('Pos.', header_style),
+            Paragraph('Leistung &amp; Beschreibung', header_style),
+            Paragraph('Menge', header_style),
+            Paragraph('Einheit', header_style),
+            Paragraph('Einzelpreis', header_style),
+            Paragraph('Gesamtpreis', header_style),
+        ]
 
         table_data = [headers]
 
-        # Add positions
+        normal_style = ParagraphStyle(
+            'TableCell',
+            fontName='Helvetica',
+            fontSize=9,
+            textColor=self.COLOR_TEXT,
+            leading=12
+        )
+        num_style = ParagraphStyle(
+            'TableNum',
+            fontName='Helvetica',
+            fontSize=9,
+            textColor=self.COLOR_TEXT,
+            leading=12,
+            alignment=2  # RIGHT
+        )
+
+        # Add positions — each position gets a KeepTogether group of Paragraphs
         for idx, pos in enumerate(self.positions, 1):
             quantity = float(pos.get('quantity', 1))
             unit_price = float(pos.get('unit_price', 0))
             total_price = quantity * unit_price
 
+            # Description column: multi-line (title + details + verantwortlich)
+            desc_parts = self._build_position_description(pos)
+
+            # Wrap description parts in a nested table so they stay together in the cell
+            if len(desc_parts) > 1:
+                inner_table = Table(
+                    [[p] for p in desc_parts],
+                    colWidths=[76 * mm]
+                )
+                inner_table.setStyle(TableStyle([
+                    ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                    ('TOPPADDING', (0, 0), (-1, -1), 1),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
+                ]))
+                desc_cell = inner_table
+            else:
+                desc_cell = desc_parts[0] if desc_parts else Paragraph('', normal_style)
+
             table_data.append([
-                str(idx),
-                pos.get('description', ''),
-                self.format_german_number(quantity),
-                pos.get('unit', 'Std.'),
-                self.format_currency(unit_price),
-                self.format_currency(total_price)
+                Paragraph(str(idx), normal_style),
+                desc_cell,
+                Paragraph(self.format_german_number(quantity), num_style),
+                Paragraph(pos.get('unit', 'Std.'), normal_style),
+                Paragraph(self.format_currency(unit_price), num_style),
+                Paragraph(self.format_currency(total_price), num_style),
             ])
 
-        # Create table
+        # colWidths: pos(8) + desc(78) + qty(15) + unit(16) + ep(26) + gp(27) = 170mm
         table = Table(table_data,
-                     colWidths=[8*mm, 60*mm, 15*mm, 15*mm, 25*mm, 30*mm])
+                      colWidths=[8 * mm, 78 * mm, 15 * mm, 16 * mm, 26 * mm, 27 * mm],
+                      repeatRows=1)
 
-        # Style table
-        table.setStyle(TableStyle([
+        row_styles = [
             # Header styling
-            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_INDIGO),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+            ('BACKGROUND', (0, 0), (-1, 0), self.COLOR_DARK),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('ALIGN', (0, 0), (-1, 0), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 9),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-            ('TOPPADDING', (0, 0), (-1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 9),
+            ('TOPPADDING', (0, 0), (-1, 0), 9),
 
-            # Data row styling
+            # Data rows
+            ('VALIGN', (0, 1), (-1, -1), 'TOP'),
             ('ALIGN', (0, 1), (0, -1), 'CENTER'),
             ('ALIGN', (2, 1), (-1, -1), 'RIGHT'),
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
             ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('TOPPADDING', (0, 1), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+            ('TOPPADDING', (0, 1), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 1), (-1, -1), 8),
+            ('LEFTPADDING', (0, 1), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 1), (-1, -1), 6),
 
             # Alternating row colors
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, self.COLOR_LIGHT_GRAY]),
 
             # Borders
-            ('GRID', (0, 0), (-1, -1), 0.5, self.COLOR_BORDER),
-        ]))
+            ('LINEBELOW', (0, 0), (-1, 0), 1, self.COLOR_DARK),
+            ('LINEBELOW', (0, 1), (-1, -1), 0.3, self.COLOR_BORDER),
+            ('BOX', (0, 0), (-1, -1), 0.5, self.COLOR_BORDER),
+        ]
+
+        table.setStyle(TableStyle(row_styles))
 
         elements.append(table)
         elements.append(Spacer(1, 8 * mm))
@@ -316,6 +427,84 @@ class GermanBusinessPDFGenerator:
         ]))
 
         elements.append(totals_table)
+        elements.append(Spacer(1, 6 * mm))
+
+        return elements
+
+    def create_intro_section(self) -> List:
+        """Create introductory text section from the quote's angebot text"""
+        elements = []
+        text = self.data.get('text', '').strip()
+        if not text:
+            return elements
+
+        intro_style = ParagraphStyle(
+            'IntroText',
+            fontName='Helvetica',
+            fontSize=9,
+            textColor=self.COLOR_TEXT,
+            leading=14,
+            spaceAfter=4
+        )
+
+        # Replace newlines with <br/> for ReportLab
+        formatted = text.replace('\n', '<br/>')
+        elements.append(Paragraph(formatted, intro_style))
+        elements.append(Spacer(1, 6 * mm))
+
+        return elements
+
+    def create_trust_section(self) -> List:
+        """Create trust-building section with guarantees after the totals"""
+        elements = []
+
+        if self.doc_type != 'angebot':
+            return elements
+
+        elements.append(Spacer(1, 4 * mm))
+
+        section_style = ParagraphStyle(
+            'TrustHeader',
+            fontName='Helvetica-Bold',
+            fontSize=9,
+            textColor=self.COLOR_DARK,
+            leading=12,
+            spaceAfter=4
+        )
+        item_style = ParagraphStyle(
+            'TrustItem',
+            fontName='Helvetica',
+            fontSize=8.5,
+            textColor=colors.HexColor('#166534'),
+            leading=13,
+            leftIndent=8,
+            spaceAfter=2
+        )
+
+        elements.append(Paragraph('Im Leistungsumfang enthalten:', section_style))
+        elements.append(Spacer(1, 2 * mm))
+
+        trust_items = self.data.get('trust_items', [
+            'Alle Arbeiten werden durch qualifizierte Fachkrafte mit nachgewiesener Berufserfahrung ausgefuhrt',
+            'Samtliche eingesetzten Materialien entsprechen den aktuellen DIN-Normen und gesetzlichen Vorschriften',
+            'Nach Abschluss der Arbeiten erhalten Sie ein detailliertes Abnahmeprotokoll',
+            'Gesetzliche Gewahrleistung auf alle ausgefuhrten Arbeiten (2 Jahre gemas BGB)',
+            'Saubere und ordentliche Durchfuhrung – Ihr Eigentum wird wahrend der Arbeiten geschutzt',
+            'Transparente Kommunikation – wir informieren Sie bei Bedarf vor jeder Anderung des Arbeitsumfangs',
+        ])
+
+        # Teal background box for trust items
+        trust_data = [[Paragraph(f'* {item}', item_style)] for item in trust_items]
+        trust_table = Table(trust_data, colWidths=[170 * mm])
+        trust_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f0fdf4')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#86efac')),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(trust_table)
         elements.append(Spacer(1, 6 * mm))
 
         return elements
@@ -424,11 +613,17 @@ class GermanBusinessPDFGenerator:
             # Add customer block
             elements.extend(self.create_customer_block())
 
+            # Add intro text (quote letter text) if present
+            elements.extend(self.create_intro_section())
+
             # Add positions table
             elements.extend(self.create_positions_table())
 
             # Add totals
             elements.extend(self.create_totals_block())
+
+            # Add trust/guarantee section (angebot only)
+            elements.extend(self.create_trust_section())
 
             # Add terms
             elements.extend(self.create_terms_section())
