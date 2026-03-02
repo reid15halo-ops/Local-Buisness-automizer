@@ -297,6 +297,142 @@ const POSITION_TEMPLATES = [
         beschreibung: 'Entsorgung / Altmaterial-Abfuhr',
         einheit: 'Pauschal',
         details: 'Fachgerechte Entsorgung aller anfallenden Abfälle und Altmaterialien gemäß Kreislaufwirtschaftsgesetz. Trennung nach Materialarten (Metall, Kunststoff, Restmüll, Sondermüll). Transport zu einem zugelassenen Entsorgungsbetrieb. Kosten für Entsorgungsgebühren sind im Preis enthalten. Entsorgungsnachweis auf Anfrage.'
+    },
+
+    // ── FREYAI VISIONS – KI-BERATUNG ────────────────────────────────────
+    {
+        category: 'KI-Beratung',
+        beschreibung: 'Erstgespräch & Betriebsanalyse',
+        einheit: 'Pauschal',
+        details: 'Kostenloses Erstgespräch (vor Ort oder per Video-Call, ca. 60–90 Min.) zur Aufnahme des aktuellen Betriebsstatus. Analyse der vorhandenen Prozesse, Werkzeuge und Schmerzpunkte (Excel-Chaos, Papierprozesse, Kommunikationsbrüche). Ergebnis: Kurze schriftliche Zusammenfassung mit konkretem Handlungspotenzial und einer ersten Orientierung zur passenden FreyAI-Lösung. Keine versteckten Kosten – Angebot folgt separat.'
+    },
+    {
+        category: 'KI-Beratung',
+        beschreibung: 'Digital-Audit (Detailanalyse & Lastenheft)',
+        einheit: 'Pauschal',
+        details: 'Tiefgehende Bestandsaufnahme aller digitalen und analogen Geschäftsprozesse: Angebots- und Rechnungsworkflow, Materiallager, Kundenkommunikation, Buchhaltungsvorbereitung und Datensicherung. Ergebnis: Detailliertes schriftliches Audit-Dokument mit Schwachstellen, Potenzial-Bewertung, empfohlener Lösung und Business-Case-Rechnung (ROI). Grundlage für den Implementierungsauftrag. Aufwand ca. 4–6 Stunden inkl. Vor-Ort-Termin.'
+    },
+    {
+        category: 'KI-Beratung',
+        beschreibung: 'Strategie-Session (laufende Beratung)',
+        einheit: 'Std.',
+        details: 'Individuelle Beratungseinheit zur strategischen Weiterentwicklung der digitalen Infrastruktur des Betriebs. Themen je nach Bedarf: Prozessoptimierung, neue Automatisierungen, Skalierbarkeit, Datenschutz (DSGVO), KI-Integration oder Systemerweiterungen. Ergebnis: Klare Handlungsempfehlung mit Priorisierung der nächsten Schritte. Protokoll der Session inklusive.'
+    },
+
+    // ── FREYAI VISIONS – KI-SETUP & IMPLEMENTIERUNG ──────────────────────
+    {
+        category: 'KI-Setup & Implementierung',
+        beschreibung: 'FreyAI Starter-Setup (Grundpaket)',
+        einheit: 'Pauschal',
+        details: 'Vollständige Einrichtung des FreyAI Business-Systems für Einzel- und Kleinstbetriebe (bis 2 Nutzer). Enthalten: Konfiguration aller Basis-Module (Angebote, Rechnungen, Kundenverwaltung, Materialstamm), Eingabe der Stammdaten (Firmenlogo, Bankdaten, Steuernummer, Stundensätze, Standardtexte), Einrichtung des PDF-Generators mit Firmen-CI. Setup-Dauer: ca. 1–2 Werktage. Inkl. 60 Min. Einweisung vor Ort oder per Video.'
+    },
+    {
+        category: 'KI-Setup & Implementierung',
+        beschreibung: 'FreyAI Professional-Setup',
+        einheit: 'Pauschal',
+        details: 'Vollständige Implementierung der FreyAI Business-Suite für Betriebe bis 5 Nutzer. Enthalten: Alle Starter-Leistungen + E-Mail-Automatisierung (Angebote, Rechnungen, Mahnungen), KI-Chatbot-Einrichtung mit betriebsspezifischer Wissensbasis, Materialstamm-Import (Excel/CSV), individuelle Dokumentvorlagen (Angebot, Rechnung, Lieferschein) im Firmen-Design, Einrichtung automatisierter Workflows. Setup-Dauer: ca. 3–5 Werktage. Inkl. Schulung (2 Stunden) und 30 Tage Priority-Support.'
+    },
+    {
+        category: 'KI-Setup & Implementierung',
+        beschreibung: 'FreyAI Enterprise-Setup (Full-Service)',
+        einheit: 'Pauschal',
+        details: 'Premium-Implementierung der kompletten FreyAI-Infrastruktur für wachsende Betriebe (5+ Nutzer). Enthalten: Alle Professional-Leistungen + Supabase-Datenbank-Einrichtung mit verschlüsselter Cloud-Synchronisation, Custom-Integrationen (Buchhaltungssoftware, DATEV-Export-Vorbereitung, Banktransaktions-CSV-Import), vollständige DSGVO-Dokumentation, individuell entwickelte Zusatzfunktionen nach Betriebsbedarf. Projektzeitraum: 2–4 Wochen. Inkl. umfangreicher Schulung, Dokumentation und 90 Tage Premium-Support.'
+    },
+    {
+        category: 'KI-Setup & Implementierung',
+        beschreibung: 'Datenmigration (Excel / Papier → FreyAI)',
+        einheit: 'Std.',
+        details: 'Strukturierte Überführung vorhandener Betriebsdaten in das FreyAI-System: Import von Kundendaten, Materialstamm, offenen Angeboten und Rechnungen aus Excel-Tabellen, Word-Dokumenten oder Papierlisten. Inkl. Datenbereinigung, Duplikat-Prüfung und Validierung. Abrechnung nach tatsächlichem Aufwand, Schätzung vorab. Übergabe mit vollständiger Datenprüfung und Abnahmebestätigung.'
+    },
+    {
+        category: 'KI-Setup & Implementierung',
+        beschreibung: 'Custom Feature / Sonderentwicklung',
+        einheit: 'Std.',
+        details: 'Individuelle Softwareentwicklung einer betriebsspezifischen Zusatzfunktion, die über den Standard-Funktionsumfang hinausgeht. Beispiele: branchenspezifische Kalkulationsmodule, Schnittstellen zu Drittsystemen, individuelle Berichts-Dashboards, automatisierte Sonderdokumente. Leistungsumfang wird vorab im Technischen Pflichtenheft definiert und festgepreist oder nach Aufwand abgerechnet. Abnahme nach Fertigstellung und Test.'
+    },
+
+    // ── FREYAI VISIONS – KI-AUTOMATISIERUNG ─────────────────────────────
+    {
+        category: 'KI-Automatisierung',
+        beschreibung: 'KI-Chatbot (Kundenkommunkation automatisieren)',
+        einheit: 'Pauschal',
+        details: 'Einrichtung und Anpassung des KI-gestützten Kundenkommunikations-Assistenten: Befüllung der betriebsspezifischen Wissensbasis (Preise, Leistungen, Öffnungszeiten, FAQ), Training auf häufige Kundenanfragen, Einstellung von Geschäftszeiten und automatischen Antwortzeiten. Der Chatbot beantwortet Standardanfragen rund um die Uhr, qualifiziert Leads und kann Angebote vorbereiten. Inklusive 1 Monat Feinabstimmung nach Live-Gang.'
+    },
+    {
+        category: 'KI-Automatisierung',
+        beschreibung: 'E-Mail-Automatisierung (Angebote, Rechnungen, Mahnungen)',
+        einheit: 'Pauschal',
+        details: 'Vollständige Einrichtung der automatisierten E-Mail-Strecken: Professionelle HTML-E-Mail-Vorlagen im Firmen-Design für Angebots-Versand, Auftragsbestätigung, Rechnungs-Versand mit PDF-Anhang, Zahlungserinnerung (1. Mahnstufe sanft, 2. Mahnstufe förmlich, 3. Mahnstufe mit Verzugszins-Berechnung). Alle Texte werden individuell auf den Betrieb abgestimmt. Automatischer Versand über hinterlegte SMTP-Zugangsdaten (kein Cloud-Zwang).'
+    },
+    {
+        category: 'KI-Automatisierung',
+        beschreibung: 'Angebots-KI (automatische Positionsvorschläge)',
+        einheit: 'Pauschal',
+        details: 'Konfiguration des KI-gestützten Angebotssystems: Einrichtung der betriebsspezifischen Leistungsvorlagen (Leistungsbeschreibungen, Einheiten, Richtwerte), Integration der Materialpreisliste für automatische Positionsvorschläge, KI-Textgenerierung für Angebotsbeschreibungen. Das System schlägt passende Positionen vor, sobald ein Leistungstyp eingegeben wird – drastische Reduktion der manuellen Angebotserstellungszeit (Ziel: < 5 Minuten pro Angebot).'
+    },
+    {
+        category: 'KI-Automatisierung',
+        beschreibung: 'Buchhaltungsvorbereitung & GOBD-Export',
+        einheit: 'Pauschal',
+        details: 'Einrichtung der automatisierten GoBD-konformen Buchhaltungsvorbereitung: Konfiguration des CSV-Exports für DATEV oder Steuerberater, automatische Kategorisierung von Einnahmen und Ausgaben nach Kontenrahmen SKR03/SKR04, Prüfung auf Vollständigkeit und Plausibilität vor Export. Inkl. monatliche Export-Automatisierung auf freigegebenen Cloud-Speicher. Reduziert den Zeitaufwand für den Steuerberater und damit die Steuerberatungskosten.'
+    },
+    {
+        category: 'KI-Automatisierung',
+        beschreibung: 'Mahnwesen-Automatisierung (vollständig)',
+        einheit: 'Pauschal',
+        details: 'Komplette Einrichtung der automatisierten Mahnprozess-Kette: Überwachung aller offenen Posten, automatische Fälligkeitsprüfung täglich, gestufter Mahnversand (sanfte Erinnerung nach 3 Tagen Überfälligkeit, formale Mahnung nach 14 Tagen mit Verzugszinsberechnung §288 BGB, Letztmahnung nach 30 Tagen). Vollständige Protokollierung aller Mahnvorgänge. Opt-out für Stammkunden möglich. Durchschnittliche Zahlungsziel-Reduzierung: -12 Tage.'
+    },
+    {
+        category: 'KI-Automatisierung',
+        beschreibung: 'Lager & Materialstamm-Automatisierung',
+        einheit: 'Pauschal',
+        details: 'Einrichtung der automatisierten Lagerverwaltung: Konfiguration von Mindestbeständen und automatischer Warnmeldung bei Unterschreitung, automatische Preisaktualisierung beim Materialimport, Zuordnung von Lieferanten-Artikelnummern zu internen Materialstammsätzen. Optional: automatische Bestelllisten-Generierung bei Mindestbestand-Unterschreitung. Inkl. Einrichtung der Lieferanten-Stammdaten.'
+    },
+
+    // ── FREYAI VISIONS – SCHULUNG & SUPPORT ─────────────────────────────
+    {
+        category: 'Schulung & Support',
+        beschreibung: 'Einweisung & Schulung vor Ort',
+        einheit: 'Std.',
+        details: 'Persönliche Schulungseinheit direkt im Betrieb. Praxisorientierte Einführung in alle relevanten Module des FreyAI-Systems: Angebote erstellen, Rechnungen stellen, Kundenverwaltung, Materialwirtschaft und Auswertungen. Inkl. Übungsbeispiele mit echten Betriebsdaten, Q&A-Runde und schriftlichem Kurzleitfaden zum Mitnehmen (2–4 Seiten DIN A4). Empfehlung: 2 Stunden für Grundschulung, 1 Stunde Aufbaumodul.'
+    },
+    {
+        category: 'Schulung & Support',
+        beschreibung: 'Online-Schulung (Video-Call)',
+        einheit: 'Std.',
+        details: 'Geführte Schulungseinheit per Video-Call (Zoom, Teams oder Google Meet). Inkl. Screen-Sharing und Live-Demonstration aller Funktionen. Aufzeichnung der Session auf Wunsch als MP4 zur späteren Nutzung verfügbar. Flexibler Terminvorschlag innerhalb von 3 Werktagen. Ideal für Auffrischungen, neue Mitarbeiter-Einweisung oder Einführung neuer Module. Dauer: 30–90 Minuten je Themenblock.'
+    },
+    {
+        category: 'Schulung & Support',
+        beschreibung: 'Individuelles Benutzerhandbuch',
+        einheit: 'Pauschal',
+        details: 'Erstellung eines maßgeschneiderten Benutzerhandbuchs für das FreyAI-System im Betrieb. Inhalt: bebilderte Schritt-für-Schritt-Anleitungen für alle im Betrieb genutzten Funktionen, häufige Fehlerquellen und Lösungen, Kontaktinformationen für Support. Format: digitales PDF (inkl. Lesezeichen und Suchfunktion) + optional Druck-Version. Lieferzeit: 5 Werktage nach Abnahme der Konfiguration.'
+    },
+    {
+        category: 'Schulung & Support',
+        beschreibung: 'Priority-Support (Incident)',
+        einheit: 'Std.',
+        details: 'Sofort-Hilfe bei dringendem technischen Problem außerhalb des regulären Retainers. Reaktionszeit: < 2 Stunden (Werktage 08:00–18:00 Uhr). Diagnose, Ursachenanalyse und Lösung des Problems per Remote-Zugriff oder Telefon. Abrechnung nach tatsächlichem Aufwand in 15-Minuten-Takt. Inkl. kurzer schriftlicher Zusammenfassung (Incident Report) des Problems und der durchgeführten Maßnahmen.'
+    },
+
+    // ── FREYAI VISIONS – MONATLICHER RETAINER ───────────────────────────
+    {
+        category: 'Monatlicher Retainer',
+        beschreibung: 'FreyAI Basis-Retainer',
+        einheit: 'Monat',
+        details: 'Monatlicher Basis-Wartungs- und Betreuungsvertrag (Mindestlaufzeit 12 Monate). Enthalten: Software-Updates und Sicherheits-Patches, E-Mail-Support mit Reaktionszeit < 24 Stunden (Werktage), monatliches Status-Update mit Systemstatus und Empfehlungen, Datensicherung auf deutschem Server (Hetzner/Supabase EU). Nicht enthalten: Neu-Konfigurationen, Custom Features, Schulungen (werden gesondert berechnet).'
+    },
+    {
+        category: 'Monatlicher Retainer',
+        beschreibung: 'FreyAI Professional-Retainer',
+        einheit: 'Monat',
+        details: 'Umfassender monatlicher Betreuungsvertrag für professionelle Betriebe (Mindestlaufzeit 12 Monate). Enthalten: Alle Basis-Leistungen + Telefon-Support (Reaktionszeit < 4 Stunden, Werktage), monatliches Optimierungsgespräch (30 Min. Video-Call), Anpassung von E-Mail-Texten und Dokumentvorlagen, 1 Schulungsstunde/Monat, Monitoring der Automatisierungen mit Fehler-Alarm, proaktive Empfehlungen zur Prozessverbesserung. Kein Aufpreis für Minor-Anpassungen.'
+    },
+    {
+        category: 'Monatlicher Retainer',
+        beschreibung: 'FreyAI Premium-Retainer (Full-Service)',
+        einheit: 'Monat',
+        details: 'Full-Service-Betreuungspaket – das System läuft, Sie arbeiten (Mindestlaufzeit 12 Monate). Enthalten: Alle Professional-Leistungen + Priority-Hotline (Reaktionszeit < 2 Stunden inkl. Mo–Sa), bis zu 3 Stunden Custom-Entwicklung/Monat rollierend, quartalsweise Strategy-Session (1 Std.), vollständiges Monitoring mit automatischem Failover, DSGVO-Compliance-Check halbjährlich, direkter Draht zu Jonas Frey (Entwickler). Für Betriebe, die auf das System angewiesen sind.'
     }
 ];
 

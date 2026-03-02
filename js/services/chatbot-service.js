@@ -48,6 +48,40 @@ class ChatbotService {
                     schlauchAnfertigung: { min: 25, max: 150, unit: '€/Stk', note: 'je nach DN und Länge' },
                     zylinderReparatur: { min: 200, max: 1500, unit: '€/Stk', note: 'ohne Ersatzteile' },
                     anfahrt: { base: 45, perKm: 0.80, unit: '€' }
+                },
+                // ── FREYAI VISIONS EIGENE PRODUKTPREISE ──────────────────────────
+                freyaiProdukte: {
+                    beratung: {
+                        erstgespraech: { preis: 0, unit: 'kostenlos', note: 'ca. 60-90 Min., vor Ort oder Video-Call' },
+                        digitalAudit: { min: 490, max: 890, unit: '€ Pauschal', note: 'ca. 4-6h inkl. Vor-Ort-Termin, schriftliches Audit-Dokument' },
+                        strategieSession: { preis: 120, unit: '€/Std', note: 'laufende Beratung, inkl. Protokoll' }
+                    },
+                    setup: {
+                        starter: { min: 1500, max: 2500, unit: '€ Einmalig', note: 'bis 2 Nutzer, Basis-Module, 60 Min. Einweisung' },
+                        professional: { min: 3500, max: 5500, unit: '€ Einmalig', note: 'bis 5 Nutzer, E-Mail-Auto, Chatbot, 2h Schulung, 30T Support' },
+                        enterprise: { min: 5500, max: 8500, unit: '€ Einmalig', note: 'unbegrenzte Nutzer, Custom-Integration, DSGVO-Paket, 90T Support' },
+                        datenmigration: { preis: 95, unit: '€/Std', note: 'Excel/Papier → FreyAI, inkl. Bereinigung und Validierung' },
+                        customFeature: { preis: 110, unit: '€/Std', note: 'Sonderentwicklung nach Pflichtenheft, Festpreis auf Anfrage' }
+                    },
+                    automatisierung: {
+                        kiChatbot: { min: 490, max: 990, unit: '€ Einmalig', note: 'Einrichtung inkl. Wissensbasis, 1 Monat Feinabstimmung' },
+                        emailAutomatisierung: { min: 390, max: 690, unit: '€ Einmalig', note: 'Angebot, Rechnung, 3-stufiges Mahnwesen, individuelle Texte' },
+                        angebotKI: { min: 290, max: 490, unit: '€ Einmalig', note: 'Leistungsvorlagen, Materialintegration, KI-Textvorschläge' },
+                        buchhaltungExport: { min: 390, max: 690, unit: '€ Einmalig', note: 'GoBD-konform, DATEV-CSV, monatliche Automatisierung' },
+                        mahnwesenVollstaendig: { min: 390, max: 590, unit: '€ Einmalig', note: '3-stufig, Verzugszinsberechnung §288 BGB, Protokoll' },
+                        lagerAutomatisierung: { min: 290, max: 490, unit: '€ Einmalig', note: 'Mindestbestand-Alarm, Preisupdate, Bestellliste' }
+                    },
+                    schulung: {
+                        vorOrt: { preis: 120, unit: '€/Std', note: 'inkl. Kurzleitfaden, 2h Grundschulung empfohlen' },
+                        online: { preis: 90, unit: '€/Std', note: 'per Video-Call, Aufzeichnung auf Anfrage' },
+                        handbuch: { min: 290, max: 490, unit: '€ Pauschal', note: 'individuell, PDF + optional Druck, Lieferzeit 5 Werktage' },
+                        prioritySupport: { preis: 120, unit: '€/Std', note: 'Reaktionszeit < 2h, inkl. Incident Report, 15-Min.-Takt' }
+                    },
+                    retainer: {
+                        basis: { preis: 149, unit: '€/Monat', mindestlaufzeit: '12 Monate', note: 'Updates, E-Mail-Support 24h, Server-Backup EU' },
+                        professional: { preis: 299, unit: '€/Monat', mindestlaufzeit: '12 Monate', note: 'Telefon-Support 4h, monatl. Optimierungs-Call, 1h Schulung/Monat' },
+                        premium: { preis: 499, unit: '€/Monat', mindestlaufzeit: '12 Monate', note: 'Full-Service, Priority-Hotline Mo-Sa, 3h Dev/Monat, Quartal Strategy' }
+                    }
                 }
             },
 
