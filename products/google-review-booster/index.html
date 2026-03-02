@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Review Booster — Mehr Bewertungen, mehr Neukunden | FreyAI Visions</title>
+    <meta name="description" content="Automatisiert Google-Bewertungen sammeln. Speziell für Handwerker. 30 Tage kostenlos testen. Ab €29/Monat.">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #111114;
+            --bg-card: #18181b;
+            --bg-card-hover: #1e1e22;
+            --border: #27272a;
+            --border-light: #3f3f46;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --accent-glow-strong: rgba(99, 102, 241, 0.3);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --radius-lg: 16px;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- NAV --- */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.5rem;
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .nav-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-cta {
+            background: var(--accent);
+            color: #fff !important;
+            padding: 0.5rem 1.25rem;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .nav-cta:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .nav-mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* --- CONTAINER --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section-label {
+            color: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            line-height: 1.7;
+        }
+
+        .section-center {
+            text-align: center;
+        }
+
+        .section-center .section-subtitle {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- BUTTONS --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: var(--font);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 24px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 32px var(--accent-glow-strong);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-lg {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* --- HERO --- */
+        .hero {
+            padding-top: 10rem;
+            padding-bottom: 6rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--accent-glow-strong) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 0.4rem 1rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero-badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.25rem, 6vw, 3.75rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-social-proof {
+            margin-top: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .hero-social-proof span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stars {
+            color: var(--warning);
+            letter-spacing: 2px;
+        }
+
+        /* --- PROBLEM --- */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .problem-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .problem-card:hover {
+            border-color: var(--border-light);
+            transform: translateY(-2px);
+        }
+
+        .problem-card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .problem-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .problem-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* --- STEPS --- */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .step-number {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin: 0 auto 1.5rem;
+            color: #fff;
+        }
+
+        .step h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .step p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .step-arrow {
+            display: none;
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        /* --- COMPARISON TABLE --- */
+        .comparison {
+            margin-top: 3rem;
+            overflow-x: auto;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table thead th {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .comparison-table th:nth-child(2),
+        .comparison-table td:nth-child(2) {
+            color: var(--text-muted);
+            background: rgba(239, 68, 68, 0.03);
+        }
+
+        .comparison-table th:nth-child(3),
+        .comparison-table td:nth-child(3) {
+            color: var(--success);
+            background: rgba(34, 197, 94, 0.03);
+        }
+
+        .comparison-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: var(--bg-card);
+        }
+
+        .comparison-metric {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* --- PRICING --- */
+        .pricing-card {
+            max-width: 480px;
+            margin: 3rem auto 0;
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 48px var(--accent-glow);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: #fff;
+            padding: 0.35rem 1.25rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-price {
+            margin: 1.5rem 0;
+        }
+
+        .pricing-amount {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .pricing-currency {
+            font-size: 1.5rem;
+            font-weight: 600;
+            vertical-align: super;
+            margin-right: 0.25rem;
+        }
+
+        .pricing-period {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            text-align: left;
+            margin: 2rem 0;
+        }
+
+        .pricing-features li {
+            padding: 0.6rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .pricing-features li::before {
+            content: '\2713';
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .pricing-cta {
+            width: 100%;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .pricing-note {
+            margin-top: 1rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* --- TESTIMONIALS --- */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .testimonial {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+        }
+
+        .testimonial-stars {
+            color: var(--warning);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .testimonial-avatar {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-glow-strong);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--accent);
+        }
+
+        .testimonial-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .testimonial-role {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* --- FAQ --- */
+        .faq-list {
+            max-width: 700px;
+            margin: 3rem auto 0;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 1.25rem 0;
+            text-align: left;
+            color: var(--text-primary);
+            font-family: var(--font);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: color 0.2s;
+        }
+
+        .faq-question:hover {
+            color: var(--accent);
+        }
+
+        .faq-icon {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--border-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: transform 0.3s, background 0.2s;
+        }
+
+        .faq-item.open .faq-icon {
+            transform: rotate(45deg);
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding-bottom: 1.25rem;
+        }
+
+        .faq-answer p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* --- FINAL CTA --- */
+        .final-cta {
+            text-align: center;
+            padding: 6rem 0;
+            position: relative;
+        }
+
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .final-cta h2 {
+            font-size: clamp(1.75rem, 4vw, 2.75rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .final-cta p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .final-cta .btn {
+            position: relative;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 0;
+        }
+
+        .footer-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-brand {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-secondary);
+        }
+
+        /* --- MOBILE --- */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: var(--bg-primary);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+
+            .nav-links.open {
+                display: flex;
+            }
+
+            .nav-mobile-toggle {
+                display: block;
+            }
+
+            .hero {
+                padding-top: 8rem;
+                padding-bottom: 4rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .hero-social-proof {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .section {
+                padding: 3.5rem 0;
+            }
+
+            .pricing-card {
+                padding: 2rem;
+            }
+
+            .step-arrow {
+                display: none !important;
+            }
+
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (min-width: 900px) {
+            .step-arrow {
+                display: block;
+            }
+
+            .steps .step:last-child .step-arrow {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="#" class="nav-logo">
+            <span class="nav-logo-icon">RB</span>
+            FreyAI Review Booster
+        </a>
+        <button class="nav-mobile-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+        <ul class="nav-links">
+            <li><a href="#problem">Problem</a></li>
+            <li><a href="#loesung">Loesung</a></li>
+            <li><a href="#preise">Preise</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="app.html" class="nav-cta">Jetzt starten</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero container">
+    <div class="hero-inner">
+        <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            Speziell entwickelt fuer Handwerker
+        </div>
+        <h1>
+            Mehr Google-Bewertungen.<br>
+            Mehr Neukunden.<br>
+            <span class="highlight">Null Aufwand.</span>
+        </h1>
+        <p>
+            Senden Sie nach jedem Auftrag einen Link an Ihren Kunden. Zufriedene Kunden bewerten Sie auf Google &mdash; unzufriedene geben privat Feedback. So einfach war es noch nie.
+        </p>
+        <div class="hero-buttons">
+            <a href="app.html" class="btn btn-primary btn-lg">30 Tage kostenlos testen</a>
+            <a href="#loesung" class="btn btn-outline btn-lg">So funktioniert&rsquo;s</a>
+        </div>
+        <div class="hero-social-proof">
+            <span><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span> 4,9 von 5 Sternen</span>
+            <span>127+ Handwerker vertrauen uns</span>
+            <span>&#8709; 3,2x mehr Bewertungen</span>
+        </div>
+    </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="section" id="problem">
+    <div class="container">
+        <div class="section-label">Das Problem</div>
+        <h2 class="section-title">Warum haben Sie zu wenig Google-Bewertungen?</h2>
+        <p class="section-subtitle">Es liegt nicht an Ihrer Arbeit. Es liegt am System.</p>
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="problem-card-icon">&#128556;</div>
+                <h3>Unangenehm zu fragen</h3>
+                <p>&bdquo;Koennten Sie mir vielleicht eine Bewertung schreiben?&ldquo; &mdash; Das fragt niemand gerne. Besonders nicht nach einem langen Arbeitstag.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-icon">&#128164;</div>
+                <h3>Der Kunde vergisst es</h3>
+                <p>Selbst wenn der Kunde zustimmt: Im Alltag geht die Bewertung unter. Ohne Erinnerung passiert nichts.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-icon">&#128078;</div>
+                <h3>Nur Unzufriedene bewerten</h3>
+                <p>Zufriedene Kunden schweigen. Unzufriedene schreiben sofort. Das Ergebnis: Ihre Google-Note spiegelt nicht Ihre echte Arbeit wider.</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-card-icon">&#128200;</div>
+                <h3>Die Konkurrenz zieht vorbei</h3>
+                <p>Ihr Mitbewerber hat 120 Bewertungen mit 4,8 Sternen. Sie haben 8 Bewertungen mit 3,5. Raten Sie, wen Google empfiehlt.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="section" id="loesung" style="background: var(--bg-secondary);">
+    <div class="container section-center">
+        <div class="section-label">Die Loesung</div>
+        <h2 class="section-title">3 Schritte zu mehr Bewertungen</h2>
+        <p class="section-subtitle">Kein technisches Wissen noetig. Funktioniert auf jedem Handy.</p>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Kundennamen eingeben</h3>
+                <p>Nach dem Auftrag oeffnen Sie die App und tippen den Namen Ihres Kunden ein. Dauert 10 Sekunden.</p>
+                <span class="step-arrow">&#8594;</span>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Link versenden</h3>
+                <p>Per WhatsApp, SMS oder E-Mail &mdash; ein Klick genuegt. Der Kunde bekommt eine freundliche Nachricht.</p>
+                <span class="step-arrow">&#8594;</span>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Bewertung erhalten</h3>
+                <p>Zufriedene Kunden landen direkt auf Google. Unzufriedene geben Ihnen privat Feedback &mdash; bevor es oeffentlich wird.</p>
+            </div>
+        </div>
+        <div style="margin-top: 3rem;">
+            <a href="app.html" class="btn btn-primary btn-lg">Jetzt kostenlos testen</a>
+        </div>
+    </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="section" id="vergleich">
+    <div class="container section-center">
+        <div class="section-label">Vorher / Nachher</div>
+        <h2 class="section-title">Der Unterschied ist messbar</h2>
+        <p class="section-subtitle">Was passiert, wenn Handwerker den Review Booster 3 Monate nutzen.</p>
+        <div class="comparison">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Vorher</th>
+                        <th>Nach 3 Monaten</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="comparison-metric">Google-Bewertungen</td>
+                        <td>8 Bewertungen</td>
+                        <td>35+ Bewertungen</td>
+                    </tr>
+                    <tr>
+                        <td class="comparison-metric">Durchschnittliche Note</td>
+                        <td>3,5 Sterne</td>
+                        <td>4,7 Sterne</td>
+                    </tr>
+                    <tr>
+                        <td class="comparison-metric">Neukunden pro Monat</td>
+                        <td>2&ndash;3 ueber Google</td>
+                        <td>6&ndash;8 ueber Google</td>
+                    </tr>
+                    <tr>
+                        <td class="comparison-metric">Aufwand pro Woche</td>
+                        <td>0 Min. (es passiert nichts)</td>
+                        <td>5 Min. (Links senden)</td>
+                    </tr>
+                    <tr>
+                        <td class="comparison-metric">Negative Bewertungen</td>
+                        <td>Oeffentlich auf Google</td>
+                        <td>Privat als Feedback</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="preise" style="background: var(--bg-secondary);">
+    <div class="container section-center">
+        <div class="section-label">Preise</div>
+        <h2 class="section-title">Einfach. Transparent. Fair.</h2>
+        <p class="section-subtitle">Keine versteckten Kosten. Keine Vertragsbindung. Jederzeit kuendbar.</p>
+        <div class="pricing-card">
+            <div class="pricing-badge">Beliebteste Wahl</div>
+            <h3 style="font-size: 1.25rem; font-weight: 700;">Review Booster Pro</h3>
+            <div class="pricing-price">
+                <span class="pricing-currency">&euro;</span><span class="pricing-amount">29</span>
+                <span class="pricing-period">/ Monat</span>
+            </div>
+            <ul class="pricing-features">
+                <li>Unbegrenzt Bewertungs-Links senden</li>
+                <li>Automatische Weiterleitung zu Google</li>
+                <li>Privates Feedback-System</li>
+                <li>Dashboard mit Statistiken</li>
+                <li>WhatsApp, SMS &amp; E-Mail Versand</li>
+                <li>30 Tage kostenlos testen</li>
+                <li>Keine Einrichtungsgebuehr</li>
+                <li>Jederzeit monatlich kuendbar</li>
+            </ul>
+            <a href="app.html" class="btn btn-primary btn-lg pricing-cta">30 Tage gratis starten</a>
+            <p class="pricing-note">Keine Kreditkarte erforderlich. Kein Risiko.</p>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section" id="stimmen">
+    <div class="container section-center">
+        <div class="section-label">Kundenstimmen</div>
+        <h2 class="section-title">Was Handwerker sagen</h2>
+        <p class="section-subtitle">Echte Ergebnisse von echten Handwerksbetrieben.</p>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="testimonial-text">
+                    &bdquo;In 2 Monaten von 12 auf 47 Bewertungen. Meine Google-Note ist von 3,8 auf 4,7 gestiegen. Seitdem bekomme ich doppelt so viele Anfragen. Bestes Investment seit langem.&ldquo;
+                </p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">MK</div>
+                    <div>
+                        <div class="testimonial-name">Markus Kellner</div>
+                        <div class="testimonial-role">Kellner Elektrotechnik, Muenchen</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="testimonial-text">
+                    &bdquo;Ich habe mich nie getraut, Kunden nach Bewertungen zu fragen. Jetzt schicke ich nach jedem Auftrag einfach den Link per WhatsApp. Die meisten bewerten innerhalb einer Stunde.&ldquo;
+                </p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">SW</div>
+                    <div>
+                        <div class="testimonial-name">Stefan Weber</div>
+                        <div class="testimonial-role">Weber Sanitaer &amp; Heizung, Koeln</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="testimonial-text">
+                    &bdquo;Das Beste: Ein unzufriedener Kunde hat privat Feedback gegeben statt eine 1-Stern-Bewertung. Ich konnte das Problem loesen und er hat dann 5 Sterne gegeben.&ldquo;
+                </p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">AL</div>
+                    <div>
+                        <div class="testimonial-name">Andrea Lehmann</div>
+                        <div class="testimonial-role">Lehmann Malerbetrieb, Hamburg</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" style="background: var(--bg-secondary);">
+    <div class="container section-center">
+        <div class="section-label">Haeufige Fragen</div>
+        <h2 class="section-title">Noch Fragen?</h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                    Brauche ich technisches Wissen?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Nein, ueberhaupt nicht. Wenn Sie WhatsApp bedienen koennen, koennen Sie den Review Booster nutzen. Sie geben den Kundennamen ein, klicken auf Senden &mdash; fertig.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                    Was passiert nach den 30 Tagen Testphase?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Nach 30 Tagen wird der regulaere Preis von 29 Euro pro Monat faellig. Keine automatische Verlaengerung ohne Ihre Zustimmung. Sie koennen jederzeit kuendigen &mdash; mit einem Klick.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                    Funktioniert das auch fuer meinen Betrieb?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Der Review Booster funktioniert fuer jeden lokalen Betrieb mit einem Google-Business-Profil: Elektriker, Sanitaer, Maler, Dachdecker, Schreiner, Fliesenleger und viele mehr.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                    Ist das legal / DSGVO-konform?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Ja. Sie bitten Ihre bestehenden Kunden um eine ehrliche Bewertung &mdash; das ist voellig legal. Wir kaufen keine Bewertungen und manipulieren nichts. Die Weiterleitung basiert auf der freiwilligen Entscheidung des Kunden.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                    Kann ich jederzeit kuendigen?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Ja, jederzeit. Monatlich kuendbar, keine Mindestlaufzeit, kein Kleingedrucktes. Ein Klick genuegt.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question" onclick="this.parentElement.classList.toggle('open')">
+                    Wie schnell sehe ich Ergebnisse?
+                    <span class="faq-icon">+</span>
+                </button>
+                <div class="faq-answer">
+                    <p>Die meisten Handwerker bekommen ihre erste neue Google-Bewertung innerhalb von 24 Stunden. Nach 4 Wochen haben unsere Nutzer im Schnitt 15 neue Bewertungen.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta container">
+    <h2>Bereit fuer mehr Bewertungen?</h2>
+    <p>Starten Sie heute &mdash; kostenlos fuer 30 Tage. Keine Kreditkarte. Kein Risiko.</p>
+    <a href="app.html" class="btn btn-primary btn-lg">Jetzt kostenlos starten</a>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-inner">
+            <div class="footer-brand">&copy; 2026 FreyAI Visions. Alle Rechte vorbehalten.</div>
+            <ul class="footer-links">
+                <li><a href="#">Impressum</a></li>
+                <li><a href="#">Datenschutz</a></li>
+                <li><a href="#">AGB</a></li>
+                <li><a href="#">Kontakt</a></li>
+            </ul>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
