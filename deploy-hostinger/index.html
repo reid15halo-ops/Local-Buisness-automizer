@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <title>FreyAI Visions | KI-Automatisierung f&uuml;r Handwerksbetriebe</title>
+    <meta name="description" content="Anfrage, Angebot, Rechnung &ndash; KI-gesteuert in unter 5 Minuten. Premium-Digitalisierung f&uuml;r deutsche Handwerksbetriebe. Kostenlose Erstberatung.">
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --bg-card-hover: #1f1f23;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #27272a;
+            --radius: 16px;
+            --radius-sm: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ---- Navigation ---- */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 16px;
+            border-radius: var(--radius);
+        }
+
+        /* ---- Hero Section ---- */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 80px;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 800px; height: 600px;
+            background: radial-gradient(ellipse, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 32px;
+        }
+
+        .hero-badge .dot {
+            width: 6px; height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 68px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            max-width: 820px;
+        }
+
+        .hero h1 .gradient {
+            background: linear-gradient(135deg, var(--accent), #3b82f6, var(--accent-hover));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin-bottom: 48px;
+            line-height: 1.8;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            margin-top: 80px;
+            padding-top: 48px;
+            border-top: 1px solid var(--border);
+        }
+
+        .hero-stat { text-align: center; }
+
+        .hero-stat .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .hero-stat .label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ---- Section Styles ---- */
+        .section-label {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 64px;
+        }
+
+        /* ---- Problem Section ---- */
+        .problem-section {
+            padding: 100px 24px;
+            text-align: center;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .problem-card {
+            padding: 28px 24px;
+            background: rgba(239, 68, 68, 0.04);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-radius: var(--radius);
+            text-align: left;
+        }
+
+        .problem-card .icon { font-size: 28px; margin-bottom: 12px; }
+
+        .problem-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #fca5a5;
+        }
+
+        .problem-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ---- Workflow ---- */
+        .workflow-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .workflow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .workflow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 24px 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            min-width: 140px;
+            transition: all 0.3s;
+        }
+
+        .workflow-step:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+        }
+
+        .workflow-step .icon { font-size: 32px; }
+        .workflow-step .name { font-weight: 600; font-size: 14px; }
+        .workflow-arrow { font-size: 24px; color: var(--text-muted); }
+
+        /* ---- Features Grid ---- */
+        .features-section {
+            padding: 120px 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            padding: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            width: 48px; height: 48px;
+            background: var(--accent-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .feature-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 16px;
+        }
+
+        .feature-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 100px;
+            color: var(--accent-hover);
+        }
+
+        /* ---- Beta Launch Section ---- */
+        .launch-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .launch-box {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(99, 102, 241, 0.06));
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 24px;
+            position: relative;
+        }
+
+        .launch-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #4ade80;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+
+        .launch-benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin: 32px 0;
+            text-align: left;
+        }
+
+        .launch-benefit {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+        }
+
+        .launch-benefit .icon { font-size: 20px; flex-shrink: 0; }
+
+        .launch-benefit .text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .launch-benefit .text strong {
+            color: var(--text);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .launch-progress {
+            margin: 28px 0 8px;
+        }
+
+        .launch-progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .launch-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), #4ade80);
+            border-radius: 100px;
+            transition: width 1s ease;
+        }
+
+        .launch-progress-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .launch-progress-text strong { color: var(--text); }
+
+        /* ---- Pricing ---- */
+        .pricing-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1060px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            padding: 40px 28px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: left;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--accent);
+            box-shadow: 0 0 60px rgba(99, 102, 241, 0.1);
+        }
+
+        .pricing-card.featured::before {
+            content: 'Beliebteste Wahl';
+            position: absolute;
+            top: -12px; left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 16px;
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 100px;
+            white-space: nowrap;
+        }
+
+        .pricing-card:hover { transform: translateY(-4px); }
+
+        .pricing-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .pricing-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .pricing-price-block { margin-bottom: 8px; }
+
+        .pricing-original {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-decoration: line-through;
+            margin-bottom: 4px;
+        }
+
+        .pricing-price {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .pricing-price .amount {
+            font-size: 42px;
+            font-weight: 800;
+        }
+
+        .pricing-price .currency {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .pricing-price .period {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .pricing-retainer {
+            font-size: 14px;
+            color: var(--accent-hover);
+            font-weight: 600;
+            margin: 8px 0 24px;
+        }
+
+        .pricing-retainer .free {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 0;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .pricing-features li .check { color: var(--success); font-weight: bold; }
+
+        .pricing-cta {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .pricing-note {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 32px auto 0;
+            line-height: 1.6;
+        }
+
+        /* ---- Guarantees ---- */
+        .guarantees-section {
+            padding: 80px 24px;
+        }
+
+        .guarantees-grid {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .guarantee-card {
+            flex: 1;
+            min-width: 240px;
+            max-width: 280px;
+            padding: 28px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        .guarantee-card .icon { font-size: 36px; margin-bottom: 14px; }
+
+        .guarantee-card h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .guarantee-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* ---- CTA ---- */
+        .cta-section {
+            padding: 120px 24px;
+            text-align: center;
+        }
+
+        .cta-box {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 64px 48px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(59, 130, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 24px;
+        }
+
+        .cta-box h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        /* ---- Footer ---- */
+        .footer {
+            padding: 48px 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .footer-links a:hover { color: var(--text); }
+
+        .footer-copy {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .nav { padding: 12px 16px; }
+            .nav-links { display: none; }
+            .hero { padding: 100px 16px 60px; }
+            .hero-stats { flex-direction: column; gap: 24px; }
+            .workflow-steps { flex-direction: column; }
+            .workflow-arrow { transform: rotate(90deg); }
+            .features-grid { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .problem-grid { grid-template-columns: 1fr; }
+            .launch-benefits { grid-template-columns: 1fr; }
+            .launch-box { padding: 32px 20px; }
+            .cta-box { padding: 40px 24px; }
+            .guarantees-grid { flex-direction: column; align-items: center; }
+        }
+
+        /* ---- Scroll animations ---- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="landing.html" class="nav-brand">FreyAI Visions</a>
+        <div class="nav-links">
+            <a href="#problem">Problem</a>
+            <a href="#features">Funktionen</a>
+            <a href="#pricing">Preise</a>
+            <a href="#launch">Start-Angebot</a>
+            <a href="booking.html" class="btn btn-success">Kostenlose Beratung</a>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            Beta-Phase &mdash; Limitierte Pl&auml;tze verf&uuml;gbar
+        </div>
+        <h1>
+            Dein Handwerksbetrieb.<br>
+            <span class="gradient">Vollautomatisiert.</span>
+        </h1>
+        <p>
+            Von der Anfrage bis zur bezahlten Rechnung &ndash; KI-gest&uuml;tzt, papierlos, professionell.
+            Wir richten dein komplettes digitales B&uuml;ro ein. Du arbeitest, der Rest l&auml;uft.
+        </p>
+        <div class="hero-actions">
+            <a href="booking.html" class="btn btn-success btn-large">Kostenlose Erstberatung buchen</a>
+            <a href="#pricing" class="btn btn-outline btn-large">Preise ansehen &darr;</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="number">21+</div>
+                <div class="label">Module</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">100%</div>
+                <div class="label">DATEV-kompatibel</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">&lt; 5 Min</div>
+                <div class="label">pro Angebot</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">30 Tage</div>
+                <div class="label">Geld-zur&uuml;ck-Garantie</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem -->
+    <section class="problem-section fade-in" id="problem">
+        <div class="section-label">Kommt dir das bekannt vor?</div>
+        <h2 class="section-title">Der Alltag ohne System</h2>
+        <p class="section-subtitle">
+            Du bist gut in deinem Handwerk. Aber das B&uuml;ro frisst deine Zeit und Nerven.
+        </p>
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="icon">&#x23F0;</div>
+                <h3>Angebote dauern ewig</h3>
+                <p>Abends am K&uuml;chentisch Excel &ouml;ffnen, Preise raussuchen, formatieren, als PDF exportieren, per Mail verschicken &hellip; und das f&uuml;r jedes einzelne Angebot.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">&#x1F4C4;</div>
+                <h3>Excel-Chaos bei Rechnungen</h3>
+                <p>Rechnungsnummern durcheinander, keine &Uuml;bersicht &uuml;ber offene Posten, Mahnungen vergessen. Der Steuerberater schimpft jedes Quartal.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">&#x1F4B8;</div>
+                <h3>Geld bleibt liegen</h3>
+                <p>Kunden zahlen sp&auml;t oder gar nicht, weil niemand mahnt. Kein &Uuml;berblick, wer was schuldet. Am Jahresende fehlt Liquidit&auml;t.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">&#x1F4E6;</div>
+                <h3>Lager im Kopf</h3>
+                <p>Welches Material ist noch da? Was muss nachbestellt werden? Alles im Kopf oder auf Zetteln &ndash; bis es zu sp&auml;t ist.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow -->
+    <section class="workflow-section fade-in" id="workflow">
+        <div class="section-label">Die L&ouml;sung</div>
+        <h2 class="section-title">Ein Workflow. Null Papierkram.</h2>
+        <p class="section-subtitle">
+            FreyAI digitalisiert deinen kompletten Gesch&auml;ftsprozess &ndash; von der ersten Kundenanfrage bis zum Zahlungseingang.
+        </p>
+        <div class="workflow-steps">
+            <div class="workflow-step">
+                <span class="icon">&#x1F4E5;</span>
+                <span class="name">Anfrage</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x1F916;</span>
+                <span class="name">KI-Angebot</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x2705;</span>
+                <span class="name">Auftrag</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x1F4B0;</span>
+                <span class="name">Rechnung</span>
+            </div>
+            <span class="workflow-arrow">&rarr;</span>
+            <div class="workflow-step">
+                <span class="icon">&#x1F3E6;</span>
+                <span class="name">Zahlung</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section fade-in" id="features">
+        <div class="section-label" style="text-align:center;">Was du bekommst</div>
+        <h2 class="section-title" style="text-align:center;">21+ Module. Ein System. Dein digitales B&uuml;ro.</h2>
+        <p class="section-subtitle" style="text-align:center;">
+            Kein Zusammenst&uuml;ckeln von 10 verschiedenen Tools. Alles aus einer Hand &ndash; eingerichtet, konfiguriert und betreut von FreyAI Visions.
+        </p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CA;</div>
+                <h3>Kompletter Workflow</h3>
+                <p>Anfrage &rarr; Angebot &rarr; Auftrag &rarr; Rechnung &rarr; Mahnung. Automatisch, mit einem Klick. Kein Copy-Paste mehr.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Angebotserstellung</span>
+                    <span class="feature-tag">Rechnungen</span>
+                    <span class="feature-tag">Mahnwesen</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F916;</div>
+                <h3>KI-Assistent</h3>
+                <p>Angebots-Texte per KI generieren, Preise kalkulieren, Leistungsbeschreibungen aus 37+ Vorlagen w&auml;hlen. In unter 5 Minuten fertig.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Textgenerierung</span>
+                    <span class="feature-tag">Preiskalkulation</span>
+                    <span class="feature-tag">37+ Vorlagen</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4B0;</div>
+                <h3>Buchhaltung &amp; DATEV</h3>
+                <p>E&Uuml;R-Berechnung, DATEV-Export (SKR03/04), USt-VA-Vorbereitung. Dein Steuerberater bekommt alles fix und fertig.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">E&Uuml;R</span>
+                    <span class="feature-tag">DATEV-Export</span>
+                    <span class="feature-tag">GoBD</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4E7;</div>
+                <h3>E-Mail-Automatisierung</h3>
+                <p>Angebote, Rechnungen und Mahnungen automatisch per E-Mail &ndash; professionell formatiert, mit deinem Logo und deinen Texten.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Angebotsversand</span>
+                    <span class="feature-tag">Rechnungsversand</span>
+                    <span class="feature-tag">3-Stufen-Mahnung</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F465;</div>
+                <h3>CRM &amp; Kunden</h3>
+                <p>Kundenverwaltung, komplette Kontakthistorie, Umsatz pro Kunde. Nie wieder Excel-Listen durchsuchen.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Kundenverwaltung</span>
+                    <span class="feature-tag">Kontakthistorie</span>
+                    <span class="feature-tag">Umsatz-Tracking</span>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4C5;</div>
+                <h3>Kalender &amp; Buchung</h3>
+                <p>Online-Terminbuchung f&uuml;r deine Kunden, Zeiterfassung, Kalender&uuml;bersicht. Professionell wie beim Arzt.</p>
+                <div class="feature-tags">
+                    <span class="feature-tag">Online-Buchung</span>
+                    <span class="feature-tag">Zeiterfassung</span>
+                    <span class="feature-tag">Kalender</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Beta Launch Offer -->
+    <section class="launch-section fade-in" id="launch">
+        <div class="section-label">Exklusives Startangebot</div>
+        <h2 class="section-title">Beta-Programm f&uuml;r Pioniere</h2>
+        <p class="section-subtitle">
+            Du bist einer der Ersten? Dann profitierst du am meisten.
+            Limitiert auf 10 Betriebe &ndash; danach gelten Normalpreise.
+        </p>
+
+        <div class="launch-box">
+            <div class="launch-badge">&#x1F680; Nur f&uuml;r Beta-Kunden</div>
+            <h3 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Das bekommst du als Beta-Kunde</h3>
+            <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Voller Funktionsumfang zum reduzierten Preis &ndash; gegen ehrliches Feedback.</p>
+
+            <div class="launch-benefits">
+                <div class="launch-benefit">
+                    <span class="icon">&#x2705;</span>
+                    <div class="text">
+                        <strong>Kostenlose Erstberatung</strong>
+                        60&ndash;90 Min. vor Ort oder per Video. Unverbindlich, kein Risiko.
+                    </div>
+                </div>
+                <div class="launch-benefit">
+                    <span class="icon">&#x1F50D;</span>
+                    <div class="text">
+                        <strong>Kostenloser Digital-Audit</strong>
+                        Normalpreis 490&ndash;890 &euro;. F&uuml;r Beta-Kunden komplett kostenlos.
+                    </div>
+                </div>
+                <div class="launch-benefit">
+                    <span class="icon">&#x1F4B0;</span>
+                    <div class="text">
+                        <strong>30% Rabatt auf alle Setup-Pakete</strong>
+                        Starter ab 1.290 &euro; statt 1.900 &euro;.
+                    </div>
+                </div>
+                <div class="launch-benefit">
+                    <span class="icon">&#x1F381;</span>
+                    <div class="text">
+                        <strong>1. Monat Retainer gratis</strong>
+                        Erst testen, dann bezahlen. Kein Risiko.
+                    </div>
+                </div>
+                <div class="launch-benefit">
+                    <span class="icon">&#x1F6E1;</span>
+                    <div class="text">
+                        <strong>30 Tage Geld-zur&uuml;ck-Garantie</strong>
+                        Wenn du nicht zufrieden bist, bekommst du den Retainer zur&uuml;ck.
+                    </div>
+                </div>
+                <div class="launch-benefit">
+                    <span class="icon">&#x1F91D;</span>
+                    <div class="text">
+                        <strong>Direkter Draht zum Entwickler</strong>
+                        Pers&ouml;nliche Betreuung durch Jonas Frey. Keine Hotline, kein Callcenter.
+                    </div>
+                </div>
+            </div>
+
+            <div class="launch-progress">
+                <div class="launch-progress-bar">
+                    <div class="launch-progress-fill" style="width: 10%;"></div>
+                </div>
+                <p class="launch-progress-text">
+                    <strong>9 von 10 Pl&auml;tzen</strong> noch verf&uuml;gbar
+                </p>
+            </div>
+
+            <div style="margin-top: 28px;">
+                <a href="booking.html" class="btn btn-success btn-large">Jetzt Beta-Platz sichern</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing-section fade-in" id="pricing">
+        <div class="section-label">Transparente Preise</div>
+        <h2 class="section-title">Ein System. Drei Pakete. Kein Kleingedrucktes.</h2>
+        <p class="section-subtitle">
+            Einmalige Einrichtung + monatliche Betreuung. Alle Preise netto zzgl. MwSt.
+        </p>
+        <div class="pricing-grid">
+            <!-- Starter -->
+            <div class="pricing-card">
+                <div class="pricing-name">Starter</div>
+                <div class="pricing-desc">F&uuml;r Solo-Handwerker und Kleinstbetriebe (1&ndash;2 Nutzer)</div>
+                <div class="pricing-price-block">
+                    <div class="pricing-original">Normalpreis: 1.900 &euro;</div>
+                    <div class="pricing-price">
+                        <span class="currency">&euro;</span>
+                        <span class="amount">1.290</span>
+                        <span class="period">/ einmalig</span>
+                    </div>
+                </div>
+                <div class="pricing-retainer">
+                    + 149 &euro;/Monat <span class="free">1. Monat gratis</span>
+                </div>
+                <ul class="pricing-features">
+                    <li><span class="check">&#x2713;</span> Alle Basis-Module (Angebote, Rechnungen, Kunden)</li>
+                    <li><span class="check">&#x2713;</span> PDF-Generator im Firmen-Design</li>
+                    <li><span class="check">&#x2713;</span> Materialstamm-Verwaltung</li>
+                    <li><span class="check">&#x2713;</span> DATEV-Export &amp; E&Uuml;R</li>
+                    <li><span class="check">&#x2713;</span> 60 Min. Einweisung</li>
+                    <li><span class="check">&#x2713;</span> E-Mail-Support (&lt; 24h)</li>
+                </ul>
+                <a href="booking.html" class="btn btn-outline btn-large pricing-cta">Beratung buchen</a>
+            </div>
+
+            <!-- Professional -->
+            <div class="pricing-card featured">
+                <div class="pricing-name">Professional</div>
+                <div class="pricing-desc">F&uuml;r Betriebe bis 5 Nutzer &ndash; mit KI und Automatisierung</div>
+                <div class="pricing-price-block">
+                    <div class="pricing-original">Normalpreis: 4.500 &euro;</div>
+                    <div class="pricing-price">
+                        <span class="currency">&euro;</span>
+                        <span class="amount">2.990</span>
+                        <span class="period">/ einmalig</span>
+                    </div>
+                </div>
+                <div class="pricing-retainer">
+                    + 299 &euro;/Monat <span class="free">1. Monat gratis</span>
+                </div>
+                <ul class="pricing-features">
+                    <li><span class="check">&#x2713;</span> Alles aus Starter</li>
+                    <li><span class="check">&#x2713;</span> KI-Chatbot f&uuml;r Kundenanfragen</li>
+                    <li><span class="check">&#x2713;</span> E-Mail-Automatisierung (Angebote, Rechnungen, Mahnungen)</li>
+                    <li><span class="check">&#x2713;</span> Material-Import aus Excel/CSV</li>
+                    <li><span class="check">&#x2713;</span> Individuelle Dokumentvorlagen</li>
+                    <li><span class="check">&#x2713;</span> 2 Std. Schulung + 30 Tage Priority-Support</li>
+                    <li><span class="check">&#x2713;</span> Telefon-Support (&lt; 4h)</li>
+                </ul>
+                <a href="booking.html" class="btn btn-primary btn-large pricing-cta">Beratung buchen</a>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="pricing-card">
+                <div class="pricing-name">Enterprise</div>
+                <div class="pricing-desc">Full-Service f&uuml;r wachsende Betriebe (5+ Nutzer)</div>
+                <div class="pricing-price-block">
+                    <div class="pricing-original">Normalpreis: 7.500 &euro;</div>
+                    <div class="pricing-price">
+                        <span class="currency">&euro;</span>
+                        <span class="amount">4.990</span>
+                        <span class="period">/ einmalig</span>
+                    </div>
+                </div>
+                <div class="pricing-retainer">
+                    + 499 &euro;/Monat <span class="free">1. Monat gratis</span>
+                </div>
+                <ul class="pricing-features">
+                    <li><span class="check">&#x2713;</span> Alles aus Professional</li>
+                    <li><span class="check">&#x2713;</span> Cloud-Synchronisation (EU-Server)</li>
+                    <li><span class="check">&#x2713;</span> Custom-Integrationen (DATEV, Buchhaltung, Bank)</li>
+                    <li><span class="check">&#x2713;</span> DSGVO-Dokumentation komplett</li>
+                    <li><span class="check">&#x2713;</span> Individuelle Sonderfunktionen</li>
+                    <li><span class="check">&#x2713;</span> Benutzerhandbuch + 90 Tage Premium-Support</li>
+                    <li><span class="check">&#x2713;</span> Priority-Hotline Mo&ndash;Sa (&lt; 2h)</li>
+                </ul>
+                <a href="booking.html" class="btn btn-outline btn-large pricing-cta">Beratung buchen</a>
+            </div>
+        </div>
+        <p class="pricing-note">
+            Alle Preise netto zzgl. 19% MwSt. Beta-Rabatt (30%) gilt f&uuml;r die ersten 10 Kunden.
+            Retainer-Mindestlaufzeit 12 Monate, danach monatlich k&uuml;ndbar.
+            Erstberatung und Digital-Audit f&uuml;r Beta-Kunden kostenlos.
+        </p>
+    </section>
+
+    <!-- Guarantees -->
+    <section class="guarantees-section fade-in">
+        <div class="guarantees-grid">
+            <div class="guarantee-card">
+                <div class="icon">&#x1F4AC;</div>
+                <h3>Kostenlose Erstberatung</h3>
+                <p>60&ndash;90 Min. ohne Verpflichtung. Vor Ort oder per Video-Call. Du entscheidest danach.</p>
+            </div>
+            <div class="guarantee-card">
+                <div class="icon">&#x1F6E1;</div>
+                <h3>30 Tage Geld-zur&uuml;ck</h3>
+                <p>Nicht zufrieden mit dem Retainer? Volle R&uuml;ckerstattung innerhalb von 30 Tagen. Ohne Diskussion.</p>
+            </div>
+            <div class="guarantee-card">
+                <div class="icon">&#x1F512;</div>
+                <h3>DSGVO-konform</h3>
+                <p>Deine Daten bleiben in Deutschland. EU-Server, verschl&uuml;sselt, keine US-Cloud. Datensouver&auml;nit&auml;t garantiert.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="start">
+        <div class="cta-box fade-in">
+            <h2>Bereit, den Papierkram loszuwerden?</h2>
+            <p>
+                Kostenlose Erstberatung. Unverbindlich. Kein Verkaufsdruck.<br>
+                Wir schauen uns deinen Betrieb an und zeigen dir, was m&ouml;glich ist.
+            </p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a href="booking.html" class="btn btn-success btn-large">Kostenloses Erstgespr&auml;ch buchen</a>
+                <a href="mailto:info@freyai-visions.de" class="btn btn-outline btn-large">info@freyai-visions.de</a>
+            </div>
+            <p style="margin-top: 20px; font-size: 13px; color: var(--text-muted);">
+                &#x1F4DE; +49 6029 9922964 &nbsp;&middot;&nbsp; Mo&ndash;Fr 08:00&ndash;18:00
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="booking.html">Termin buchen</a>
+            <a href="mailto:info@freyai-visions.de">Kontakt</a>
+            <a href="#">Impressum</a>
+            <a href="#">Datenschutz</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 FreyAI Visions &mdash; Jonas Frey &middot; Premium-Digitalisierung f&uuml;r Handwerksbetriebe &middot; Made in Germany</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
