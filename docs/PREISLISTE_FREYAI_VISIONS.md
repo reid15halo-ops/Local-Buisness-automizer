@@ -3,12 +3,22 @@
 
 ---
 
+> **BETA-PROGRAMM AKTIV** — Die ersten 10 Kunden profitieren von:
+> - Kostenlose Erstberatung (unbegrenzt)
+> - Kostenloser Digital-Audit (Wert: 490–890 €)
+> - 30% Rabatt auf alle Setup-Pakete
+> - 1. Monat Retainer gratis
+> - 30 Tage Geld-zurück-Garantie auf den Retainer
+> - Direkter Draht zum Entwickler (Jonas Frey)
+
+---
+
 ## 1. Beratung & Analyse
 
-| Leistung | Preis | Einheit | Details |
-|---|---|---|---|
-| Erstgespräch & Betriebsanalyse | **kostenlos** | Pauschal | Ca. 60–90 Min., vor Ort oder Video-Call. Schriftliche Zusammenfassung. |
-| Digital-Audit (Detailanalyse + Lastenheft) | **490 – 890 €** | Pauschal | Ca. 4–6h inkl. Vor-Ort-Termin. Schriftliches Audit-Dokument mit ROI-Rechnung. |
+| Leistung | Normalpreis | Beta-Preis | Einheit | Details |
+|---|---|---|---|---|
+| Erstgespräch & Betriebsanalyse | kostenlos | **kostenlos** | Pauschal | Ca. 60–90 Min., vor Ort oder Video-Call. Schriftliche Zusammenfassung. |
+| Digital-Audit (Detailanalyse + Lastenheft) | 490 – 890 € | **kostenlos** (Beta) | Pauschal | Ca. 4–6h inkl. Vor-Ort-Termin. Schriftliches Audit-Dokument mit ROI-Rechnung. |
 | Strategie-Session (laufend) | **120 €** | /Std. | Prozessoptimierung, KI-Strategie, Erweiterungen. Inkl. Protokoll. |
 
 ---
@@ -16,7 +26,7 @@
 ## 2. Setup-Pakete (Einmalig)
 
 ### 2.1 Starter-Setup
-> **1.500 – 2.500 €** · Einmalig
+> Normalpreis: **1.500 – 2.500 €** · **Beta-Preis: ab 1.290 €** (-30%)
 
 Für Einzel- und Kleinstbetriebe (bis 2 Nutzer).
 - Konfiguration aller Basis-Module (Angebote, Rechnungen, Kunden, Materialstamm)
@@ -28,7 +38,7 @@ Für Einzel- und Kleinstbetriebe (bis 2 Nutzer).
 ---
 
 ### 2.2 Professional-Setup
-> **3.500 – 5.500 €** · Einmalig ⭐ *Bestseller*
+> Normalpreis: **3.500 – 5.500 €** · **Beta-Preis: ab 2.990 €** (-30%) ⭐ *Bestseller*
 
 Für Handwerksbetriebe bis 5 Nutzer.
 - **Alles aus Starter** +
@@ -42,7 +52,7 @@ Für Handwerksbetriebe bis 5 Nutzer.
 ---
 
 ### 2.3 Enterprise-Setup (Full-Service)
-> **5.500 – 8.500 €** · Einmalig
+> Normalpreis: **5.500 – 8.500 €** · **Beta-Preis: ab 4.990 €** (-30%)
 
 Für wachsende Betriebe, 5+ Nutzer.
 - **Alles aus Professional** +
@@ -83,13 +93,13 @@ Für wachsende Betriebe, 5+ Nutzer.
 
 ## 5. Monatliche Retainer-Pakete (Mindestlaufzeit 12 Monate)
 
-### 5.1 Basis-Retainer — 149 €/Monat
+### 5.1 Basis-Retainer — 149 €/Monat (1. Monat gratis für Beta-Kunden)
 - Software-Updates & Sicherheits-Patches
 - E-Mail-Support (Reaktionszeit < 24h, Werktage)
 - Monatliches Status-Update
 - Datensicherung auf EU-Server (Hetzner/Supabase)
 
-### 5.2 Professional-Retainer — 299 €/Monat ⭐ *Empfohlen*
+### 5.2 Professional-Retainer — 299 €/Monat ⭐ *Empfohlen* (1. Monat gratis für Beta-Kunden)
 - **Alles aus Basis** +
 - Telefon-Support (Reaktionszeit < 4h, Werktage)
 - Monatliches Optimierungsgespräch (30 Min. Video-Call)
@@ -98,7 +108,7 @@ Für wachsende Betriebe, 5+ Nutzer.
 - Monitoring der Automatisierungen mit Fehler-Alarm
 - Proaktive Prozessoptimierungsempfehlungen
 
-### 5.3 Premium-Retainer (Full-Service) — 499 €/Monat
+### 5.3 Premium-Retainer (Full-Service) — 499 €/Monat (1. Monat gratis für Beta-Kunden)
 - **Alles aus Professional** +
 - Priority-Hotline Mo–Sa (Reaktionszeit < 2h)
 - Bis zu 3 Stunden Custom-Entwicklung/Monat rollierend
@@ -110,37 +120,39 @@ Für wachsende Betriebe, 5+ Nutzer.
 
 ## 6. Typische Pakete / Beispiel-Angebote
 
-### Beispiel A: Kleiner Handwerksbetrieb, schnell starten
+### Beispiel A: Solo-Handwerker, schnell starten (Beta-Preis)
 ```
-Starter-Setup Professional         2.200 €
-E-Mail-Automatisierung             490 €
-Schulung vor Ort (2 Std.)          240 €
-─────────────────────────────────────────
-Einmalig (netto)                 2.930 €
-+ Basis-Retainer                   149 €/Monat
-```
-
-### Beispiel B: Wachsender Betrieb, volle Automatisierung
-```
-Professional-Setup                 4.500 €
-Buchhaltung & GoBD-Export          590 €
-Mahnwesen-Automatisierung          490 €
-Lager-Automatisierung              390 €
-Schulung vor Ort (2 Std.)          240 €
-─────────────────────────────────────────
-Einmalig (netto)                 6.210 €
-+ Professional-Retainer            299 €/Monat
+Starter-Setup                      1.290 €  (statt 1.900 €)
+Digital-Audit                          0 €  (Beta: kostenlos)
+E-Mail-Automatisierung               390 €
+Schulung vor Ort (2 Std.)            240 €
+───────────────────────────────────────────
+Einmalig (netto)                   1.920 €
++ Basis-Retainer                     149 €/Monat (1. Monat gratis)
 ```
 
-### Beispiel C: Vollausstattung (Enterprise)
+### Beispiel B: Kleiner Betrieb, volle Automatisierung (Beta-Preis)
 ```
-Enterprise-Setup                   7.000 €
-KI-Chatbot                         890 €
-Angebots-KI                        490 €
+Professional-Setup                 2.990 €  (statt 4.500 €)
+Digital-Audit                          0 €  (Beta: kostenlos)
+Buchhaltung & GoBD-Export            490 €
+Mahnwesen-Automatisierung            390 €
+Schulung vor Ort (2 Std.)            240 €
+───────────────────────────────────────────
+Einmalig (netto)                   4.110 €
++ Professional-Retainer              299 €/Monat (1. Monat gratis)
+```
+
+### Beispiel C: Vollausstattung Enterprise (Beta-Preis)
+```
+Enterprise-Setup                   4.990 €  (statt 7.500 €)
+Digital-Audit                          0 €  (Beta: kostenlos)
+KI-Chatbot                           790 €
+Angebots-KI                          390 €
 Custom Feature (Kalkulations-Tool) 4 × 110 €  = 440 €
-─────────────────────────────────────────
-Einmalig (netto)                 8.820 €
-+ Premium-Retainer                 499 €/Monat
+───────────────────────────────────────────
+Einmalig (netto)                   6.610 €
++ Premium-Retainer                   499 €/Monat (1. Monat gratis)
 ```
 
 ---
@@ -156,6 +168,8 @@ Einmalig (netto)                 8.820 €
 | Stundensatz außerhalb Retainer | 120 €/Std. (15-Min.-Takt) |
 | Zahlungsziel | 14 Tage netto |
 | Rabatt bei Jahres-Vorauszahlung (Retainer) | −10% |
+| **Geld-zurück-Garantie (Retainer)** | **30 Tage — volle Rückerstattung, keine Fragen** |
+| Beta-Rabatt | 30% auf Setup-Pakete (limitiert auf 10 Kunden) |
 
 ---
 
