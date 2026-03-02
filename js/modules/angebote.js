@@ -67,8 +67,11 @@ function initAngebotForm() {
             const preis = parseFloat(row.querySelector('.pos-preis').value) || 0;
             const materialId = beschreibungInput.dataset.materialId || null;
 
+            const details = row.querySelector('.pos-details')?.value?.trim() || '';
+            const verantwortlich = row.querySelector('.pos-verantwortlich')?.value?.trim() || '';
+
             if (beschreibung && menge && preis) {
-                const position = { beschreibung, menge, einheit, preis };
+                const position = { beschreibung, menge, einheit, preis, details, verantwortlich };
 
                 // Add material-specific fields
                 if (materialId) {
@@ -195,6 +198,16 @@ function addPosition(prefill = null) {
             ${prefill?.materialId ? `<button type="button" class="position-material-clear" data-position-id="${uniqueId}">✕</button>` : ''}
         </div>
         <button type="button" class="position-remove" onclick="this.parentElement.remove(); updateAngebotSummary();">×</button>
+        <div class="position-extra-details" style="flex:0 0 100%;width:100%;grid-column:1/-1;padding:10px 4px 6px;margin-top:6px;border-top:1px dashed #d1d5db;display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:start;">
+            <div>
+                <label style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Leistungsbeschreibung für den Kunden <span style="color:#6366f1;">(empfohlen – mehr Details = mehr Vertrauen)</span></label>
+                <textarea class="pos-details" rows="2" placeholder="Was genau wird gemacht? Was ist im Preis enthalten? Z.B.: Vollständige Demontage der alten Anlage, fachgerechte Neuinstallation inkl. Dichtheitsprüfung, Spülung aller Leitungen und Übergabe-Protokoll. Alle Arbeiten werden durch einen zertifizierten Fachmann ausgeführt." style="width:100%;resize:vertical;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;color:#374151;line-height:1.5;">${(window.UI?.sanitize || String)(prefill?.details || '')}</textarea>
+            </div>
+            <div>
+                <label style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Zuständige Fachkraft / Rolle</label>
+                <input type="text" class="pos-verantwortlich" placeholder="z.B. Monteur, Elektriker, Schreiner, Projektleiter" value="${(window.UI?.sanitize || String)(prefill?.verantwortlich || '')}" style="width:100%;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;color:#374151;">
+            </div>
+        </div>
     `;
     container.appendChild(row);
 
@@ -329,17 +342,40 @@ function generateAIText() {
         const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || '';
         const signoff = companyName ? `\nMit freundlichen Grüßen\n${companyName}` : '\nMit freundlichen Grüßen';
 
+        // Collect current positions from the form for context
+        const currentPositionen = [];
+        document.querySelectorAll('.position-row').forEach(row => {
+            const desc = row.querySelector('.pos-beschreibung')?.value?.trim();
+            const verantw = row.querySelector('.pos-verantwortlich')?.value?.trim();
+            const detail = row.querySelector('.pos-details')?.value?.trim();
+            if (desc) { currentPositionen.push({ desc, verantw, detail }); }
+        });
+
+        const positionenLines = currentPositionen.length > 0
+            ? '\n\nDie beauftragten Leistungen im Einzelnen:\n' +
+              currentPositionen.map((p, i) => {
+                  let line = `  ${i + 1}. ${p.desc}`;
+                  if (p.verantw) { line += ` – ausgeführt durch: ${p.verantw}`; }
+                  if (p.detail) { line += `\n     → ${p.detail}`; }
+                  return line;
+              }).join('\n')
+            : '';
+
         const text = `Sehr geehrte Damen und Herren,
 
-vielen Dank für Ihre Anfrage vom ${formatDate(anfrage.createdAt)}${anfrage.beschreibung ? ` bezüglich ${anfrage.beschreibung.substring(0, 60)}` : ''}.
+vielen Dank für Ihre Anfrage vom ${formatDate(anfrage.createdAt)}${anfrage.beschreibung ? ` bezüglich "${anfrage.beschreibung.substring(0, 80)}"` : ''}.
 
-Gerne unterbreiten wir Ihnen folgendes Angebot für die gewünschten Arbeiten. Wir garantieren höchste Qualitätsstandards und fachgerechte Ausführung.
+Gerne unterbreiten wir Ihnen das folgende detaillierte Angebot für die gewünschten Arbeiten. Alle Leistungen werden durch qualifizierte Fachkräfte ausgeführt und entsprechen den geltenden Normen und Vorschriften.${positionenLines}
 
-Das Angebot umfasst alle notwendigen Materialien und Arbeitsleistungen. Änderungen im Arbeitsumfang werden nach Aufwand berechnet.
+Selbstverständlich stehen wir Ihnen bei Rückfragen zu einzelnen Positionen jederzeit zur Verfügung – wir erläutern Ihnen gerne jeden Schritt persönlich.
 
-Alle Preise verstehen sich zzgl. 19% MwSt. Das Angebot gilt 30 Tage.
+Hinweise:
+– Alle Preise verstehen sich zzgl. 19 % MwSt.
+– Das Angebot gilt 30 Tage ab Erstellungsdatum.
+– Änderungen im Arbeitsumfang werden nach tatsächlichem Aufwand berechnet und vorab kommuniziert.
+– Nach Abschluss der Arbeiten erhalten Sie ein detailliertes Abnahmeprotokoll.
 
-Bei Fragen stehen wir Ihnen gerne zur Verfügung.
+Wir freuen uns auf eine gute Zusammenarbeit.
 ${signoff}`;
         document.getElementById('angebot-text').value = text;
 
@@ -582,7 +618,9 @@ function editAngebot(id) {
                 menge: pos.menge,
                 einheit: pos.einheit,
                 preis: pos.preis,
-                materialId: pos.materialId || null
+                materialId: pos.materialId || null,
+                details: pos.details || '',
+                verantwortlich: pos.verantwortlich || ''
             });
         });
     } else {
@@ -940,12 +978,16 @@ function previewAngebot(id) {
         const gesamt = (pos.menge || 0) * (pos.preis || 0);
         return `
             <tr>
-                <td>${idx + 1}</td>
-                <td>${window.UI.sanitize(pos.beschreibung)}</td>
-                <td class="text-right">${pos.menge}</td>
-                <td>${window.UI.sanitize(pos.einheit || 'Stk.')}</td>
-                <td class="text-right">${formatCurrency(pos.preis)}</td>
-                <td class="text-right">${formatCurrency(gesamt)}</td>
+                <td style="vertical-align:top;padding-top:12px;">${idx + 1}</td>
+                <td style="vertical-align:top;">
+                    <strong style="font-size:14px;">${window.UI.sanitize(pos.beschreibung)}</strong>
+                    ${pos.details ? `<div style="font-size:12px;color:#6b7280;margin-top:5px;line-height:1.5;">${window.UI.sanitize(pos.details)}</div>` : ''}
+                    ${pos.verantwortlich ? `<div style="font-size:11px;color:#6366f1;margin-top:4px;font-weight:600;">&#128100; Zuständig: ${window.UI.sanitize(pos.verantwortlich)}</div>` : ''}
+                </td>
+                <td class="text-right" style="vertical-align:top;padding-top:12px;">${pos.menge}</td>
+                <td style="vertical-align:top;padding-top:12px;">${window.UI.sanitize(pos.einheit || 'Stk.')}</td>
+                <td class="text-right" style="vertical-align:top;padding-top:12px;">${formatCurrency(pos.preis)}</td>
+                <td class="text-right" style="vertical-align:top;padding-top:12px;">${formatCurrency(gesamt)}</td>
             </tr>
         `;
     }).join('');
@@ -1145,12 +1187,16 @@ function showAngebotDetail(angebotId) {
                 <tbody>
                     ${(angebot.positionen || []).map((p, i) => `
                         <tr>
-                            <td>${i + 1}</td>
-                            <td>${window.UI.sanitize(p.beschreibung)}</td>
-                            <td>${p.menge}</td>
-                            <td>${window.UI.sanitize(p.einheit)}</td>
-                            <td class="text-right">${formatCurrency(p.preis)}</td>
-                            <td class="text-right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
+                            <td style="vertical-align:top;">${i + 1}</td>
+                            <td style="vertical-align:top;">
+                                <strong>${window.UI.sanitize(p.beschreibung)}</strong>
+                                ${p.details ? `<div style="font-size:12px;color:var(--text-muted,#6b7280);margin-top:4px;line-height:1.5;">${window.UI.sanitize(p.details)}</div>` : ''}
+                                ${p.verantwortlich ? `<div style="font-size:11px;color:#6366f1;margin-top:3px;font-weight:600;">&#128100; Zuständig: ${window.UI.sanitize(p.verantwortlich)}</div>` : ''}
+                            </td>
+                            <td style="vertical-align:top;">${p.menge}</td>
+                            <td style="vertical-align:top;">${window.UI.sanitize(p.einheit)}</td>
+                            <td class="text-right" style="vertical-align:top;">${formatCurrency(p.preis)}</td>
+                            <td class="text-right" style="vertical-align:top;">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1275,7 +1321,18 @@ function exportAngebotPDF(id) {
     }
 
     const posRows = (angebot.positionen || []).map((p, i) =>
-        `<tr><td>${i + 1}</td><td>${window.UI.sanitize(p.beschreibung)}</td><td>${p.menge}</td><td>${window.UI.sanitize(p.einheit)}</td><td style="text-align:right">${formatCurrency(p.preis)}</td><td style="text-align:right">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td></tr>`
+        `<tr>
+            <td style="vertical-align:top;padding-top:10px;">${i + 1}</td>
+            <td style="vertical-align:top;">
+                <strong>${window.UI.sanitize(p.beschreibung)}</strong>
+                ${p.details ? `<div style="font-size:11px;color:#6b7280;margin-top:5px;line-height:1.5;">${window.UI.sanitize(p.details)}</div>` : ''}
+                ${p.verantwortlich ? `<div style="font-size:11px;color:#6366f1;margin-top:4px;font-weight:600;">Zuständig: ${window.UI.sanitize(p.verantwortlich)}</div>` : ''}
+            </td>
+            <td style="vertical-align:top;padding-top:10px;">${p.menge}</td>
+            <td style="vertical-align:top;padding-top:10px;">${window.UI.sanitize(p.einheit)}</td>
+            <td style="text-align:right;vertical-align:top;padding-top:10px;">${formatCurrency(p.preis)}</td>
+            <td style="text-align:right;vertical-align:top;padding-top:10px;">${formatCurrency((p.menge || 0) * (p.preis || 0))}</td>
+        </tr>`
     ).join('');
 
     printWindow.document.write(`<!DOCTYPE html><html><head><title>Angebot ${window.UI.sanitize(angebot.id)}</title>
@@ -1344,48 +1401,65 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
 
         // ── Build body fragment (positions + totals) ──────────────────────
         const eur = n => Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
-        const posRows = (angebot.positionen || []).map(p =>
-            `<tr>
-               <td style="padding:7px 8px">${p.menge} ${p.einheit}</td>
-               <td style="padding:7px 8px">${p.beschreibung}</td>
-               <td style="padding:7px 8px;text-align:right">${eur(p.preis)}</td>
-               <td style="padding:7px 8px;text-align:right">${eur((p.menge||0)*(p.preis||0))}</td>
+        const posRows = (angebot.positionen || []).map((p, idx) =>
+            `<tr style="background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+               <td style="padding:10px 8px;color:#9ca3af;font-size:12px;vertical-align:top;border-bottom:1px solid #e5e7eb;">${idx + 1}</td>
+               <td style="padding:10px 8px;vertical-align:top;border-bottom:1px solid #e5e7eb;">
+                 <strong style="font-size:13px;color:#1f2937;">${p.beschreibung}</strong>
+                 ${p.details ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.6;">${p.details}</div>` : ''}
+                 ${p.verantwortlich ? `<div style="font-size:11px;color:#6366f1;margin-top:5px;font-weight:600;">&#128100; Zuständige Fachkraft: ${p.verantwortlich}</div>` : ''}
+               </td>
+               <td style="padding:10px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${p.menge} ${p.einheit}</td>
+               <td style="padding:10px 8px;text-align:right;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${eur(p.preis)}</td>
+               <td style="padding:10px 8px;text-align:right;vertical-align:top;border-bottom:1px solid #e5e7eb;font-weight:600;color:#1f2937;">${eur((p.menge||0)*(p.preis||0))}</td>
              </tr>`
         ).join('');
 
         const bodyHtml = `
-            <p style="margin:0 0 16px">Sehr geehrte(r) ${kundeName},</p>
-            <p style="margin:0 0 20px">
-              vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser
-              <strong>vorläufiges Angebot (Nr. ${angebot.id})</strong>.<br>
+            <p style="margin:0 0 16px;font-size:15px;">Sehr geehrte(r) ${kundeName},</p>
+            <p style="margin:0 0 20px;line-height:1.6;color:#374151;">
+              vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen unser
+              <strong>vorläufiges Angebot (Nr. ${angebot.id})</strong>.
+              Im Folgenden finden Sie eine detaillierte Aufstellung aller Leistungen und Materialien
+              mit den zuständigen Fachkräften – damit Sie genau wissen, was wir für Sie tun.<br><br>
               Sobald wir Ihre Rückmeldung erhalten, erstellen wir das verbindliche Angebot für Sie.
             </p>
+            ${angebot.text ? `<div style="margin:0 0 20px;padding:14px 18px;background:#f8fafc;border-left:4px solid #6366f1;border-radius:4px;font-size:13px;color:#374151;line-height:1.6;">${angebot.text.replace(/\n/g,'<br>')}</div>` : ''}
+            <h3 style="margin:0 0 10px;font-size:14px;color:#0f172a;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #0f172a;padding-bottom:6px;">Leistungsübersicht</h3>
             <table width="100%" cellpadding="0" cellspacing="0"
-                   style="border-collapse:collapse;font-size:13px;margin-bottom:16px">
+                   style="border-collapse:collapse;font-size:13px;margin-bottom:20px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
               <thead>
-                <tr style="background:#0f172a;color:#fff" /* Email: inline styles required, CSS vars not supported */>
-                  <th style="padding:8px;text-align:left">Menge</th>
-                  <th style="padding:8px;text-align:left">Beschreibung</th>
-                  <th style="padding:8px;text-align:right">Einzelpreis</th>
-                  <th style="padding:8px;text-align:right">Gesamt</th>
+                <tr style="background:#0f172a;color:#fff;">
+                  <th style="padding:10px 8px;text-align:left;font-weight:600;">Nr.</th>
+                  <th style="padding:10px 8px;text-align:left;font-weight:600;">Leistung &amp; Details</th>
+                  <th style="padding:10px 8px;text-align:left;font-weight:600;">Menge</th>
+                  <th style="padding:10px 8px;text-align:right;font-weight:600;">Einzelpreis</th>
+                  <th style="padding:10px 8px;text-align:right;font-weight:600;">Gesamt</th>
                 </tr>
               </thead>
-              <tbody style="border:1px solid #e5e7eb">${posRows}</tbody>
+              <tbody>${posRows}</tbody>
             </table>
-            <table cellpadding="0" cellspacing="0" style="margin-left:auto;font-size:13px">
-              <tr><td style="padding:4px 8px;color:#6b7280">Netto</td>
-                  <td style="padding:4px 8px;text-align:right">${eur(angebot.netto)}</td></tr>
-              <tr><td style="padding:4px 8px;color:#6b7280">MwSt. 19 %</td>
-                  <td style="padding:4px 8px;text-align:right">${eur(angebot.mwst)}</td></tr>
-              <tr style="font-weight:700">
-                <td style="padding:8px;border-top:2px solid #0f172a">Gesamtbetrag</td>
-                <td style="padding:8px;text-align:right;border-top:2px solid #0f172a">${eur(angebot.brutto)}</td>
+            <table cellpadding="0" cellspacing="0" style="margin-left:auto;font-size:13px;min-width:260px;">
+              <tr><td style="padding:5px 12px;color:#6b7280;">Netto</td>
+                  <td style="padding:5px 12px;text-align:right;color:#374151;">${eur(angebot.netto)}</td></tr>
+              <tr><td style="padding:5px 12px;color:#6b7280;">MwSt. 19 %</td>
+                  <td style="padding:5px 12px;text-align:right;color:#374151;">${eur(angebot.mwst)}</td></tr>
+              <tr style="font-weight:700;font-size:15px;">
+                <td style="padding:10px 12px;border-top:2px solid #0f172a;color:#0f172a;">Gesamtbetrag</td>
+                <td style="padding:10px 12px;text-align:right;border-top:2px solid #0f172a;color:#0f172a;">${eur(angebot.brutto)}</td>
               </tr>
             </table>
-            ${angebot.text ? `<p style="margin:16px 0;padding:12px 16px;background:#f8fafc;border-left:3px solid #6366f1;border-radius:4px">${angebot.text.replace(/\n/g,'<br>')}</p>` : ''}
-            <p style="margin:20px 0 0;font-size:12px;color:#9ca3af">
+            <div style="margin:24px 0 0;padding:14px 18px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:12px;color:#166534;">
+              <strong>Im Leistungsumfang enthalten:</strong><br>
+              &#10003; Alle Arbeiten durch qualifizierte Fachkräfte<br>
+              &#10003; Sämtliche Materialien entsprechen aktuellen Normen und Vorschriften<br>
+              &#10003; Abnahmeprotokoll nach Fertigstellung<br>
+              &#10003; Garantie auf alle ausgeführten Arbeiten gemäß gesetzlichen Bestimmungen
+            </div>
+            <p style="margin:20px 0 0;font-size:11px;color:#9ca3af;line-height:1.5;">
               Dieses Angebot ist <strong>vorläufig und unverbindlich</strong>.
               Es wird erst nach schriftlicher Bestätigung durch uns verbindlich.
+              Das Angebot gilt 30 Tage ab Erstellungsdatum.
             </p>`;
 
         // ── Render via DocumentTemplateService ────────────────────────────
