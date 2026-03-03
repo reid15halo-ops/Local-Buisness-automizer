@@ -1,0 +1,61 @@
+version: "3.8"
+# Postiz — Open-Source Social Media Scheduling
+# Deploy: docker compose up -d
+# UI: http://localhost:5000 (hinter nginx reverse proxy)
+
+services:
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:latest
+    container_name: postiz
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://postiz:${POSTIZ_DB_PASS}@postiz-db:5432/postiz
+      - REDIS_URL=redis://postiz-redis:6379
+      - JWT_SECRET=${POSTIZ_JWT_SECRET}
+      - FRONTEND_URL=https://content.freyaivisions.de
+      - NEXT_PUBLIC_BACKEND_URL=https://content.freyaivisions.de/api
+      - BACKEND_INTERNAL_URL=http://localhost:3000
+      - IS_GENERAL=true
+      # Social Media API Keys (in .env konfigurieren)
+      - X_API_KEY=${X_API_KEY:-}
+      - LINKEDIN_CLIENT_ID=${LINKEDIN_CLIENT_ID:-}
+      - LINKEDIN_CLIENT_SECRET=${LINKEDIN_CLIENT_SECRET:-}
+    volumes:
+      - postiz-config:/config
+      - postiz-uploads:/uploads
+    depends_on:
+      - postiz-db
+      - postiz-redis
+    networks:
+      - postiz-net
+
+  postiz-db:
+    image: postgres:16-alpine
+    container_name: postiz-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postiz
+      - POSTGRES_PASSWORD=${POSTIZ_DB_PASS}
+      - POSTGRES_DB=postiz
+    volumes:
+      - postiz-pgdata:/var/lib/postgresql/data
+    networks:
+      - postiz-net
+
+  postiz-redis:
+    image: redis:7-alpine
+    container_name: postiz-redis
+    restart: unless-stopped
+    networks:
+      - postiz-net
+
+volumes:
+  postiz-config:
+  postiz-uploads:
+  postiz-pgdata:
+
+networks:
+  postiz-net:
+    driver: bridge
