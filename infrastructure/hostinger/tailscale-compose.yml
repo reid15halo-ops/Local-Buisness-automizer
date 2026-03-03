@@ -1,0 +1,51 @@
+version: "3.8"
+
+# =============================================================================
+# Tailscale — Hostinger VPS (srv1352751.hstgr.cloud)
+#
+# This container joins the FreyAI Tailscale mesh and allows the VPS to:
+#   - SSH into local network devices (192.168.1.0/24) via pi4-guardian
+#   - Reach thinkcenter-m75n, nas-vault, hp-t640-kiosk by Tailscale hostname
+#
+# Setup:
+#   1. Copy .env.example to .env and fill in TS_AUTHKEY
+#   2. Run: docker compose -f tailscale-compose.yml up -d
+#   3. In Tailscale admin approve the subnet route from pi4-guardian
+#      https://login.tailscale.com/admin/machines
+#   4. Test: docker exec tailscale-vps tailscale ssh pi@pi4-guardian
+# =============================================================================
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale-vps
+    hostname: hostinger-vps
+    restart: unless-stopped
+    # Host networking lets Tailscale manage routing for the whole VPS
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+    environment:
+      # Get an auth key at https://login.tailscale.com/admin/settings/keys
+      # Use a reusable, tagged key: tag:zone2-vps
+      TS_AUTHKEY: "${TS_AUTHKEY}"
+      TS_HOSTNAME: "hostinger-vps"
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      # Accept routes advertised by pi4-guardian (192.168.1.0/24)
+      TS_EXTRA_ARGS: "--accept-routes --accept-dns=false"
+    healthcheck:
+      test: ["CMD", "tailscale", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+volumes:
+  tailscale-state:
+    driver: local
