@@ -1,0 +1,63 @@
+# SSH Config Template for Local Business Automizer Network
+# Copy this to ~/.ssh/config and customize with your actual IPs and usernames
+
+# Zone3 Infrastructure
+
+Host pi4
+    HostName 192.168.1.100
+    User pi
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+    StrictHostKeyChecking accept-new
+
+Host gaming-rig
+    HostName 192.168.1.101
+    User localadmin
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+
+Host hp-kiosk
+    HostName 192.168.1.102
+    User kiosk
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+
+Host thinkcenter
+    HostName 192.168.1.103
+    User admin
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+
+Host nas-backup
+    HostName 192.168.1.104
+    User nas-admin
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+
+# Cloud Infrastructure
+
+Host hetzner-vps
+    HostName INSERT_HETZNER_IP_HERE
+    User root
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+
+Host email-relay
+    HostName INSERT_EMAIL_VPS_IP_HERE
+    User deploy
+    IdentityFile ~/.ssh/lba-network
+    Port 22
+
+# Tailscale Mesh Network
+
+Host pi4-tailscale
+    HostName INSERT_PI4_TAILSCALE_IP_HERE
+    User pi
+    IdentityFile ~/.ssh/lba-network
+
+# Global settings
+Host *
+    AddKeysToAgent yes
+    IdentitiesOnly yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
