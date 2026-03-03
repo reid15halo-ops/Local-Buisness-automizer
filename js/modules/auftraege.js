@@ -345,7 +345,7 @@ function renderAuftraegeList(auftraege) {
 
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state">
                 <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
                 <h3 style="margin-bottom:8px;">Keine Aufträge</h3>
                 <p style="color:var(--text-secondary);margin-bottom:24px;">Aufträge entstehen aus angenommenen Angeboten.</p>

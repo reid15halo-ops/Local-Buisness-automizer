@@ -551,7 +551,7 @@
 }
 
 .btn-ai {
-    background: linear-gradient(135deg, #8b5cf6, #2dd4a8);
+    background: linear-gradient(135deg, var(--accent-purple, #8b5cf6), var(--accent-primary));
     color: white;
     padding: 8px 16px;
 }
@@ -1176,8 +1176,9 @@ textarea {
     background: linear-gradient(135deg, var(--accent-danger), #dc2626);
     color: white;
 }
-
-
+.btn-danger:hover {
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+}
 
 /* ============================================
    Mahnwesen
@@ -3429,29 +3430,9 @@ textarea {
     border-bottom: none;
 }
 
-/* Danger Button */
-.btn-danger {
-    background: linear-gradient(135deg, var(--accent-danger), #dc2626);
-    color: white;
-}
-
-.btn-danger:hover {
-    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
-}
-
-/* Warning Button */
-.btn-warning {
-    background: linear-gradient(135deg, var(--accent-warning), #d97706);
-    color: white;
-}
-
-.btn-warning:hover {
-    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
-}
-
 /* Badge New */
 .badge-new {
-    background: linear-gradient(135deg, #8b5cf6, #2dd4a8);
+    background: linear-gradient(135deg, var(--accent-purple, #8b5cf6), var(--accent-primary));
     font-size: 9px;
     padding: 2px 6px;
 }

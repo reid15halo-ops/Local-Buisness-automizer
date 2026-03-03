@@ -339,6 +339,20 @@ Mit freundlichen Grüßen
         return baseValue;
     }
 
+    /**
+     * Render template placeholders with actual data
+     */
+    renderTemplate(template, data = {}) {
+        const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+        const defaults = {
+            'kunde.name': data.customerName || 'Kunde',
+            'firma.name': ap.company_name || localStorage.getItem('freyai_company_name') || 'FreyAI Visions',
+            'firma.email': ap.company_email || '',
+            'firma.telefon': ap.company_phone || ''
+        };
+        return template.replace(/\{([^}]+)\}/g, (match, key) => defaults[key] ?? data[key] ?? match);
+    }
+
     generateId() {
         return 'email_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }

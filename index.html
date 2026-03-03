@@ -651,7 +651,7 @@
                             <p class="subtitle">Generierte Rechnungen (GoBD-konform)</p>
                         </div>
                         <div class="header-actions">
-                            <button class="btn btn-secondary" onclick="document.querySelector('.nav-item[data-view=\\'einstellungen\\']').click()">
+                            <button class="btn btn-secondary" data-navigate="einstellungen">
                                 ⚙️ Vorlagen
                             </button>
                             <label class="btn btn-secondary" for="bank-csv-import">
@@ -1130,8 +1130,8 @@ Mit freundlichen Grüßen
                         <h3>🗑️ Daten</h3>
                         <p>Alle lokal gespeicherten Daten</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
-                            <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
+                            <button class="btn btn-secondary" id="btn-export-data">📤 Daten exportieren</button>
+                            <button class="btn btn-secondary" id="btn-import-data">📥 Daten importieren</button>
                             <input type="file" id="import-data-file" accept=".json" class="u-file-input-hidden" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
                                 style="background: linear-gradient(135deg, #2dd4a8, #4f46e5); border:none;">🚀 App-Reset
@@ -1214,7 +1214,7 @@ Mit freundlichen Grüßen
                                 📤 CSV Import
                                 <input type="file" id="buchung-csv-import" accept=".csv" class="u-file-input-hidden">
                             </label>
-                            <button class="btn btn-secondary" id="btn-export-csv">📥 CSV Export</button>
+                            <button class="btn btn-secondary" id="btn-export-csv">📤 CSV Export</button>
                             <button class="btn btn-primary" id="btn-export-datev">📤 DATEV Export</button>
                         </div>
                     </div>
@@ -2142,7 +2142,7 @@ Mit freundlichen Grüßen
                                 <label for="datev-to">Bis</label>
                                 <input type="date" id="datev-to" value="">
                             </div>
-                            <button class="btn btn-primary" id="btn-datev-export">📥 DATEV Export</button>
+                            <button class="btn btn-primary" id="btn-datev-export">📤 DATEV Export</button>
                             <button class="btn btn-secondary" id="btn-euer-report">📊 EÜR Übersicht</button>
                         </div>
                     </div>
@@ -2781,7 +2781,7 @@ Mit freundlichen Grüßen
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="modal-angebot-detail-title">Angebot Details</h2>
-                <button class="modal-close" aria-label="Dialog schliessen">&times;</button>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div id="angebot-detail-content">
                 <!-- Dynamically generated -->

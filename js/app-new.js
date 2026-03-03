@@ -95,7 +95,7 @@ function renderMaterial() {
                     <button class="btn btn-secondary" onclick="window.materialService.loadDemoMaterials(); renderMaterial();">
                         🎲 Demo-Daten laden
                     </button>
-                    <button class="btn btn-primary" onclick="document.getElementById('material-import').click()">
+                    <button class="btn btn-primary" onclick="document.getElementById('excel-import').click()">
                         📊 Excel importieren
                     </button>
                 </div>
@@ -595,6 +595,7 @@ async function runDemoWorkflow() {
         createdAt: new Date().toISOString()
     };
 
+    if (!store.anfragen) { store.anfragen = []; }
     store.anfragen.push(demoAnfrage);
     saveStore();
     addActivity('📥', `Demo-Anfrage von ${demoAnfrage.kunde.name}`);
@@ -619,6 +620,7 @@ async function runDemoWorkflow() {
         createdAt: new Date().toISOString()
     };
 
+    if (!store.angebote) { store.angebote = []; }
     store.angebote.push(demoAngebot);
     demoAnfrage.status = 'angebot-erstellt';
     saveStore();
@@ -640,6 +642,7 @@ async function runDemoWorkflow() {
         createdAt: new Date().toISOString()
     };
 
+    if (!store.auftraege) { store.auftraege = []; }
     store.auftraege.push(demoAuftrag);
     saveStore();
     addActivity('✅', `Auftrag ${demoAuftrag.id} erteilt`);
@@ -661,12 +664,13 @@ async function runDemoWorkflow() {
         arbeitszeit: demoAuftrag.arbeitszeit,
         materialKosten: demoAuftrag.materialKosten,
         netto: demoAuftrag.netto + demoAuftrag.materialKosten,
-        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * _getTaxRate(),
-        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + _getTaxRate()),
+        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * (typeof _getTaxRate === 'function' ? _getTaxRate() : 0.19),
+        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + (typeof _getTaxRate === 'function' ? _getTaxRate() : 0.19)),
         status: 'offen',
         createdAt: new Date().toISOString()
     };
 
+    if (!store.rechnungen) { store.rechnungen = []; }
     store.rechnungen.push(demoRechnung);
     saveStore();
     addActivity('💰', `Rechnung ${demoRechnung.id} erstellt`);
