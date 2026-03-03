@@ -46,12 +46,12 @@ BEGIN
     ) VALUES (
         gen_random_uuid(),
         v_user_id,
-        'FreyAI Visions GmbH',
-        'Musterstraße 42, 80331 München',
-        'DE123456789',
-        'DE89370400440532013000',
-        'COBADEFFXXX',
-        'Commerzbank AG',
+        'Metallbau Buchert',
+        'Industriestraße 12, 63571 Gelnhausen',
+        '26/123/45678',
+        'DE00 5069 0000 0000 0000 00',
+        'GENODE51GEL',
+        'Volksbank Main-Kinzig-Büdingen eG',
         'RE-',
         'AN-',
         0.19

@@ -269,13 +269,16 @@ class DemoDataService {
                 { icon: '⚙️', title: 'System-Initialisierung abgeschlossen', time: tenDaysAgo }
             ],
             settings: {
-                companyName: 'FreyAI Visions',
-                owner: 'Max Mustermann',
-                address: 'Handwerkerring 38a, 63776 Mömbris',
-                taxId: '12/345/67890',
-                vatId: 'DE123456789',
-                phone: '+49 6029 9922964',
-                email: 'info@freyai-visions.de',
+                companyName: 'Metallbau Buchert',
+                owner: 'Buchert',
+                address: 'Industriestraße 12, 63571 Gelnhausen',
+                taxId: '26/123/45678',
+                vatId: 'DE987654321',
+                phone: '+49 6051 12345',
+                email: 'info@metallbau-buchert.de',
+                website: 'www.metallbau-buchert.de',
+                branche: 'metallbau',
+                stundensatz: 65,
                 theme: 'dark'
             }
         };

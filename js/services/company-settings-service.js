@@ -13,16 +13,20 @@ class CompanySettingsService {
         this._loaded = false;
         this._loadPromise = null;
 
-        // Defaults — used when Supabase is unreachable and nothing is in localStorage
+        // Defaults — Metallbau Buchert Mandantendaten
         this._defaults = {
-            company_name: '',
-            owner_name: '',
-            company_email: '',
-            company_phone: '',
-            company_website: '',
-            company_address: '',
-            tax_id: '',
-            noreply_email: 'noreply@handwerkflow.de',
+            company_name: 'Metallbau Buchert',
+            owner_name: 'Buchert',
+            company_email: 'info@metallbau-buchert.de',
+            company_phone: '+49 6051 12345',
+            company_website: 'www.metallbau-buchert.de',
+            company_address: 'Industriestraße 12, 63571 Gelnhausen',
+            address_street: 'Industriestraße 12',
+            address_postal: '63571',
+            address_city: 'Gelnhausen',
+            tax_id: '26/123/45678',
+            vat_id: 'DE987654321',
+            noreply_email: 'noreply@metallbau-buchert.de',
             stundensatz: 65.00,
             default_tax_rate: 0.19,
             payment_terms_days: 14,
@@ -30,9 +34,10 @@ class CompanySettingsService {
             invoice_prefix: 'RE-',
             quote_prefix: 'AN-',
             logo_url: null,
-            bank_name: '',
-            bank_iban: '',
-            bank_bic: '',
+            bank_name: 'Volksbank Main-Kinzig-Büdingen eG',
+            bank_iban: 'DE00 5069 0000 0000 0000 00',
+            bank_bic: 'GENODE51GEL',
+            branche: 'metallbau',
         };
     }
 

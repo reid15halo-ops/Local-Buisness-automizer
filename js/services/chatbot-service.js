@@ -158,13 +158,13 @@ class ChatbotService {
                 },
                 // Value propositions to weave in
                 valueProps: [
-                    'Als Meisterbetrieb garantieren wir höchste Qualität',
-                    'Über 500 zufriedene Kunden im Raum Main-Kinzig',
-                    'Kostenlose Beratung und Aufmaß vor Ort',
+                    'Metallbau Buchert – Ihr Meisterbetrieb für Stahlbau und Metallkonstruktion',
+                    'Jahrzehntelange Erfahrung im Raum Main-Kinzig-Kreis',
+                    'Kostenlose Beratung und Aufmaß vor Ort in Gelnhausen und Umgebung',
                     'Faire Festpreise – keine versteckten Kosten',
                     'Lokaler Familienbetrieb mit persönlichem Service',
                     'Schnelle Reaktionszeiten, auch bei Notfällen',
-                    'Qualität made in Germany – keine Billigimporte'
+                    'Qualität made in Germany – Tor, Geländer, Treppe nach Maß'
                 ],
                 // Upsell options per product
                 upsells: {
@@ -195,15 +195,15 @@ class ChatbotService {
         const address = (street && city) ? `${street}, ${postal} ${city}` : '';
         return {
             name: name,
-            owner: ap.owner_name || 'Inhaber',
-            experience: '15+ Jahre Erfahrung',
+            owner: ap.owner_name || 'Buchert',
+            experience: '15+ Jahre Erfahrung im Metallbau',
             team: '5 Fachkräfte inkl. Meister und Gesellen',
-            certifications: ['Schweißfachbetrieb nach DIN EN 1090', 'DVS-zertifiziert', 'Hydraulik-Fachbetrieb'],
-            serviceArea: '50km Radius',
-            address: address,
-            phone: ap.company_phone || bd.phone || '',
-            email: ap.company_email || bd.email || '',
-            hours: { weekday: '08:00-18:00', saturday: 'nach Vereinbarung', emergency: '24/7 Notdienst' }
+            certifications: ['Schweißfachbetrieb nach DIN EN 1090', 'DVS-zertifiziert', 'Metallbauermeister IHK'],
+            serviceArea: '50 km rund um Gelnhausen (Main-Kinzig-Kreis)',
+            address: address || 'Industriestraße 12, 63571 Gelnhausen',
+            phone: ap.company_phone || bd.phone || '+49 6051 12345',
+            email: ap.company_email || bd.email || 'info@metallbau-buchert.de',
+            hours: { weekday: '07:00-17:00', saturday: 'nach Vereinbarung', emergency: 'Notdienst auf Anfrage' }
         };
     }
 
