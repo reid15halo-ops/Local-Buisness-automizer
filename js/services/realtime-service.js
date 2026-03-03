@@ -1,7 +1,7 @@
 /* ============================================
    Realtime Service
    Supabase Realtime subscription manager
-   FreyAI Visions - 95/5 Architecture
+   Metallbau Buchert - 95/5 Architecture
    
    Manages all WebSocket subscriptions to
    Supabase Realtime channels. Provides clean

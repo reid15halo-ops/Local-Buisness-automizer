@@ -1,5 +1,5 @@
 -- ============================================================
--- FreyAI Visions 95/5 Architecture — Zone 1
+-- Metallbau Buchert 95/5 Architecture — Zone 1
 -- seed.sql: Development seed data
 -- ============================================================
 -- IMPORTANT: This seed file uses a fixed test user UUID.
@@ -61,7 +61,7 @@ BEGIN
             updated_at      = NOW();
 
     -- ========================================================
-    -- CUSTOMER: Mustermann GmbH
+    -- CUSTOMER: Müller Bau GmbH
     -- ========================================================
     INSERT INTO customers (
         id, user_id,
@@ -72,15 +72,15 @@ BEGIN
     ) VALUES (
         v_customer_id,
         v_user_id,
-        'Mustermann GmbH',
-        'Max Mustermann',
-        'max@mustermann-gmbh.de',
-        '+49 89 12345678',
-        'Industriestraße 7',
-        'München',
-        '80339',
+        'Müller Bau GmbH',
+        'Thomas Müller',
+        'mueller@mueller-bau.de',
+        '+49 6051 987654',
+        'Bahnhofstraße 7',
+        'Gelnhausen',
+        '63571',
         'DE',
-        'DE987654321',
+        'DE111222333',
         'Stammkunde seit 2022. Zahlt zuverlässig innerhalb 14 Tagen.'
     )
     ON CONFLICT DO NOTHING;
@@ -316,12 +316,12 @@ BEGIN
         'Anfrage: Reparatur Schweißgerät',
         'Guten Tag, wir haben ein defektes Schweißgerät (Fronius TransSynergic 3200) '
         'und benötigen dringend einen Servicetermin. Können Sie nächste Woche? '
-        'MfG, Max Mustermann',
-        'Sehr geehrter Herr Mustermann, vielen Dank für Ihre Anfrage. '
+        'MfG, Thomas Müller',
+        'Sehr geehrter Herr Müller, vielen Dank für Ihre Anfrage. '
         'Wir können gerne einen Servicetermin für Ihr Fronius TransSynergic 3200 vereinbaren. '
         'Nächste Woche hätten wir Dienstag, den 03.03.2026 ab 09:00 Uhr frei. '
         'Bitte bestätigen Sie diesen Termin oder nennen Sie einen alternativen Zeitraum. '
-        'Mit freundlichen Grüßen, FreyAI Visions GmbH',
+        'Mit freundlichen Grüßen, Metallbau Buchert GmbH',
         'draft',
         'service_request'
     )
@@ -356,7 +356,7 @@ BEGIN
     ON CONFLICT DO NOTHING;
 
     RAISE NOTICE 'Seed data inserted successfully for dev user %', v_user_id;
-    RAISE NOTICE 'Customer: % (ID: %)', 'Mustermann GmbH', v_customer_id;
+    RAISE NOTICE 'Customer: % (ID: %)', 'Müller Bau GmbH', v_customer_id;
     RAISE NOTICE 'Quote: AN-2026-001 (ID: %)', v_quote_id;
     RAISE NOTICE 'Order: AUF-2026-001 (ID: %)', v_order_id;
     RAISE NOTICE 'Invoice: RE-2026-001 status=pending_approval (ID: %)', v_invoice_id;

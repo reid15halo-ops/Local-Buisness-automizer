@@ -534,7 +534,7 @@ class TeamManagementService {
                 return;
             }
 
-            const companyName = window.storeService?.store?.settings?.companyName || 'FreyAI Visions';
+            const companyName = window.storeService?.store?.settings?.companyName || 'Metallbau Buchert';
             const inviteUrl = `${window.location.origin}${window.location.pathname}?invite=${invite.token}`;
             const roleLabel = this.ROLES[invite.role]?.label || invite.role;
 

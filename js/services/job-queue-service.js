@@ -1,7 +1,7 @@
 /* ============================================
    Job Queue Service
    Async buffer between frontend and backend
-   FreyAI Visions - 95/5 Architecture
+   Metallbau Buchert - 95/5 Architecture
    
    This is the CRITICAL component that enables
    the 95/5 model: AI handles 95% of work by

@@ -20,7 +20,7 @@ class ChatbotService {
     }
 
     // =====================================================
-    // EXPERT KNOWLEDGE BASE - FreyAI Visions Business Master
+    // EXPERT KNOWLEDGE BASE - Metallbau Buchert Business Master
     // =====================================================
     initKnowledgeBase() {
         return {
@@ -188,7 +188,7 @@ class ChatbotService {
     _loadCompanyInfo() {
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         const bd = window.eInvoiceService?.settings?.businessData || {};
-        const name = ap.company_name || bd.name || 'FreyAI Visions';
+        const name = ap.company_name || bd.name || 'Metallbau Buchert';
         const street = ap.address_street || bd.street || '';
         const postal = ap.address_postal || bd.postalCode || '';
         const city = ap.address_city || bd.city || '';
@@ -397,7 +397,7 @@ class ChatbotService {
             if (lowerMsg.match(/\bmig\b|\bmag\b/)) {
                 return `🔥 **MIG/MAG-Schweißen**\n\n**MAG (CO2/Mischgas):**\n• Für Baustahl, Edelstahl\n• Schnell, wirtschaftlich\n\n**MIG (Argon):**\n• Für Aluminium\n• Sauberes Nahtbild\n\n**Vorteile:**\n✅ Hohe Abschmelzleistung\n✅ Wirtschaftlich für Serien\n✅ Bis zu 30mm Materialstärke\n\n**Typische Arbeiten:**\n• Stahlkonstruktionen\n• Treppen, Geländer\n• Behälter, Tanks\n• Fahrzeugbau\n\nFür welches Material/Projekt benötigen Sie Schweißarbeiten?`;
             }
-            return `🔥 **Schweißtechnik bei FreyAI Visions**\n\n**Verfahren:**\n• **WIG/TIG:** Edelstahl, Alu, Sichtnaht (höchste Qualität)\n• **MIG/MAG:** Baustahl, Edelstahl (schnell, wirtschaftlich)\n• **E-Hand:** Outdoor, Reparatur (flexibel)\n• **Autogen:** Brennschneiden, Löten\n\n**Materialien:**\nStahl, Edelstahl, Aluminium, Gusseisen\n\n**Zertifizierung:**\n✅ ${kb.company.certifications[0]}\n✅ DVS-zertifizierte Schweißer\n\n**Stundensatz:** ${kb.pricing.hourlyRates.schweissen.min}-${kb.pricing.hourlyRates.schweissen.max} €/Std\n\nFür welche Arbeit benötigen Sie Schweißen?`;
+            return `🔥 **Schweißtechnik bei Metallbau Buchert**\n\n**Verfahren:**\n• **WIG/TIG:** Edelstahl, Alu, Sichtnaht (höchste Qualität)\n• **MIG/MAG:** Baustahl, Edelstahl (schnell, wirtschaftlich)\n• **E-Hand:** Outdoor, Reparatur (flexibel)\n• **Autogen:** Brennschneiden, Löten\n\n**Materialien:**\nStahl, Edelstahl, Aluminium, Gusseisen\n\n**Zertifizierung:**\n✅ ${kb.company.certifications[0]}\n✅ DVS-zertifizierte Schweißer\n\n**Stundensatz:** ${kb.pricing.hourlyRates.schweissen.min}-${kb.pricing.hourlyRates.schweissen.max} €/Std\n\nFür welche Arbeit benötigen Sie Schweißen?`;
         }
 
         // === MATERIALBERATUNG ===
@@ -414,7 +414,7 @@ class ChatbotService {
         // === PREISE ALLGEMEIN ===
         if (lowerMsg.match(/preis|kosten|was kostet|teuer|günstig|budget|€|euro/)) {
             const hr = kb.pricing.hourlyRates;
-            return `💰 **Preisübersicht FreyAI Visions**\n\n**Stundensätze:**\n• Metallbau: ${hr.metallbau.min}-${hr.metallbau.max} €/Std\n• Schweißen: ${hr.schweissen.min}-${hr.schweissen.max} €/Std\n• Hydraulik: ${hr.hydraulik.min}-${hr.hydraulik.max} €/Std\n• Montage: ${hr.montage.min}-${hr.montage.max} €/Std\n\n**Produkte (Richtwerte):**\n• Geländer: ab 150 €/lfm\n• Treppen: ab 3.500€\n• Tore: ab 1.200€\n• Carports: ab 2.500€\n• Hydraulikschläuche: ab 25€\n\n✅ **Kostenlose Beratung + Aufmaß!**\n\n_Endpreise nach Aufmaß vor Ort._\n\nFür welches Projekt brauchen Sie Preise?`;
+            return `💰 **Preisübersicht Metallbau Buchert**\n\n**Stundensätze:**\n• Metallbau: ${hr.metallbau.min}-${hr.metallbau.max} €/Std\n• Schweißen: ${hr.schweissen.min}-${hr.schweissen.max} €/Std\n• Hydraulik: ${hr.hydraulik.min}-${hr.hydraulik.max} €/Std\n• Montage: ${hr.montage.min}-${hr.montage.max} €/Std\n\n**Produkte (Richtwerte):**\n• Geländer: ab 150 €/lfm\n• Treppen: ab 3.500€\n• Tore: ab 1.200€\n• Carports: ab 2.500€\n• Hydraulikschläuche: ab 25€\n\n✅ **Kostenlose Beratung + Aufmaß!**\n\n_Endpreise nach Aufmaß vor Ort._\n\nFür welches Projekt brauchen Sie Preise?`;
         }
 
         // === ÖFFNUNGSZEITEN ===

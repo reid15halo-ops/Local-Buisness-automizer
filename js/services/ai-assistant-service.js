@@ -181,7 +181,7 @@ class AiAssistantService {
     // Generate AI response using Gemini
     async generateAiResponse(question, data, analysis) {
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
-        const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+        const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || 'Metallbau Buchert';
         const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
         const systemPrompt = `Du bist ein hilfreicher Business-Assistent für einen deutschen ${bizType} (${companyName}).
 Antworte kurz und präzise in deutscher Sprache.

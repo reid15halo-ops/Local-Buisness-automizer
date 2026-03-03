@@ -1,5 +1,5 @@
 """
-FreyAI Visions 95/5 Architecture – Zone 2 Backend
+Metallbau Buchert 95/5 Architecture – Zone 2 Backend
 FastAPI application entry point.
 
 Ports: 8001 (HTTP)

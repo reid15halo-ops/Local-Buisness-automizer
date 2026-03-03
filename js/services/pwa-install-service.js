@@ -143,7 +143,7 @@ class PWAInstallService {
                             font-weight: 600;
                             font-size: 14px;
                             margin-bottom: 2px;
-                        ">FreyAI Visions</div>
+                        ">Metallbau Buchert</div>
                         <div style="
                             font-size: 12px;
                             color: #cbd5e1;

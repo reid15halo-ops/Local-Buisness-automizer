@@ -1201,7 +1201,7 @@ class WhatsAppService {
     _getBusinessName() {
         if (this.config.businessName) { return this.config.businessName; }
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
-        return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+        return ap.company_name || window.storeService?.state?.settings?.companyName || 'Metallbau Buchert';
     }
 
     /**

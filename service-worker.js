@@ -1,9 +1,9 @@
 /* ============================================
-   Service Worker for FreyAI Visions PWA
+   Service Worker for Metallbau Buchert PWA
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v20';
+const CACHE_NAME = 'metallbau-buchert-v20';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -375,7 +375,7 @@ async function syncTimeEntries() {
 self.addEventListener('push', (event) => {
     console.log('[SW] Push notification received');
 
-    let data = { title: 'FreyAI Visions', body: 'Neue Benachrichtigung' };
+    let data = { title: 'Metallbau Buchert', body: 'Neue Benachrichtigung' };
 
     if (event.data) {
         try {

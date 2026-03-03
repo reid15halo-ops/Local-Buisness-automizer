@@ -1,6 +1,6 @@
 /* ============================================
    Supabase Client Service - Singleton
-   FreyAI Visions - 95/5 Architecture
+   Metallbau Buchert - 95/5 Architecture
    
    Loads config from:
    1. window.SUPABASE_URL / window.SUPABASE_ANON_KEY (set at build/runtime)

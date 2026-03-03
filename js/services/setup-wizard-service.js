@@ -12,7 +12,7 @@ class SetupWizardService {
             {
                 id: 'welcome',
                 type: 'user',
-                title: 'Willkommen bei FreyAI Visions!',
+                title: 'Willkommen bei Metallbau Buchert!',
                 description: 'Bevor es losgeht, brauchen wir ein paar Angaben für Ihre Angebote und Rechnungen.',
                 required: true,
                 fields: [
@@ -78,7 +78,7 @@ class SetupWizardService {
                 id: 'complete',
                 type: 'user',
                 title: 'Fertig! ✓',
-                description: 'Ihre Firmendaten wurden gespeichert. Sie können jetzt direkt mit FreyAI Visions arbeiten.',
+                description: 'Ihre Firmendaten wurden gespeichert. Sie können jetzt direkt mit Metallbau Buchert arbeiten.',
                 required: false,
                 fields: []
             }

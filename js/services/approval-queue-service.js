@@ -1,7 +1,7 @@
 /* ============================================
    Approval Queue Service
    The 5% human interaction layer
-   FreyAI Visions - 95/5 Architecture
+   Metallbau Buchert - 95/5 Architecture
    
    Manages the queue of AI-prepared items that
    need human approval. Fetches from multiple

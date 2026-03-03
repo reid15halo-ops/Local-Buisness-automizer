@@ -1,5 +1,5 @@
 /* ============================================
-   FreyAI Visions Demo - Application Orchestrator
+   Metallbau Buchert Demo - Application Orchestrator
    Complete Quote-to-Invoice Workflow
    Modular Architecture Entry Point
    ============================================ */
@@ -395,7 +395,7 @@ function initAutomationSettings() {
         }
         showToast('Sende Test-E-Mail...', 'info');
         const result = await window.automationAPI.sendEmail(
-            email, 'FreyAI Test', 'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand funktioniert.'
+            email, 'Metallbau Buchert Test', 'Diese Test-E-Mail bestätigt, dass der E-Mail-Versand funktioniert.'
         );
         showToast(result.success ? 'Test-E-Mail gesendet!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
     });
@@ -532,7 +532,7 @@ function generateSenderEmail() {
         slug = 'firma-' + crypto.randomUUID().substring(0, 8);
     }
 
-    const noReplyEmail = settings?.noreply_email ?? window.companySettings?.getNoReplyEmail?.() ?? 'noreply@handwerkflow.de';
+    const noReplyEmail = settings?.noreply_email ?? window.companySettings?.getNoReplyEmail?.() ?? 'noreply@metallbau-buchert.de';
     const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;

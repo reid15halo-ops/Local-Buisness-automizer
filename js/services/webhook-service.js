@@ -293,7 +293,7 @@ class WebhookService {
         if (!webhook) {return { success: false, error: 'Webhook not found' };}
 
         return await this.sendWebhook(webhook, 'test.ping', {
-            message: 'Test webhook from FreyAI Visions',
+            message: 'Test webhook from Metallbau Buchert',
             timestamp: new Date().toISOString()
         });
     }

@@ -1,6 +1,6 @@
 """
 Pydantic models for all request/response schemas.
-Zone 2 - FreyAI Visions 95/5 Architecture
+Zone 2 - Metallbau Buchert 95/5 Architecture
 """
 
 from __future__ import annotations

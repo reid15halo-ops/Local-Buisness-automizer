@@ -107,7 +107,7 @@ Sollte sich Ihre Zahlung mit diesem Schreiben überschnitten haben, betrachten S
 Wir bitten um Überweisung innerhalb der nächsten 14 Tage.
 
 Mit freundlichen Grüßen
-FreyAI Visions`,
+Metallbau Buchert`,
 
             'mahnung1': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -122,7 +122,7 @@ Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + 5.00)}
 Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von 14 Tagen zu begleichen.
 
 Mit freundlichen Grüßen
-FreyAI Visions`,
+Metallbau Buchert`,
 
             'mahnung2': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -138,7 +138,7 @@ Gesamtbetrag: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehre
 Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, weitere rechtliche Schritte einzuleiten.
 
 Mit freundlichen Grüßen
-FreyAI Visions`,
+Metallbau Buchert`,
 
             'mahnung3': `Sehr geehrte(r) ${rechnung.kunde.name},
 
@@ -163,7 +163,7 @@ Bank: Sparkasse Aschaffenburg
 IBAN: DE00 0000 0000 0000 0000 00
 Verwendungszweck: ${rechnung.id}
 
-FreyAI Visions`,
+Metallbau Buchert`,
 
             'inkasso': `ÜBERGABE AN INKASSO
 

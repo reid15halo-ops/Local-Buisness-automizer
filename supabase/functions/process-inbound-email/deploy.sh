@@ -106,7 +106,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             "name": "Test User",
             "email": "test@example.com"
         },
-        "to": "anfragen@handwerkflow.de",
+        "to": "anfragen@metallbau-buchert.de",
         "subject": "Test Anfrage",
         "text": "Ich benötige ein Metalltor, 2m breit, feuerverzinkt. Budget ca. 1500 Euro."
     }'
@@ -134,7 +134,7 @@ echo "2. Configure DNS Records for your domain:"
 echo "   - MX: mx.resend.com (Priority: 10)"
 echo "   - TXT (SPF): v=spf1 include:_spf.resend.com ~all"
 echo ""
-echo "3. Send test email to: anfragen@handwerkflow.de"
+echo "3. Send test email to: anfragen@metallbau-buchert.de"
 echo ""
 echo "4. Monitor logs:"
 echo "   supabase functions logs process-inbound-email --follow"

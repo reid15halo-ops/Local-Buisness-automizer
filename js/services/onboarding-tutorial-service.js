@@ -15,7 +15,7 @@ class OnboardingTutorialService {
         this.steps = [
             {
                 id: 'welcome',
-                title: 'Willkommen bei FreyAI Visions!',
+                title: 'Willkommen bei Metallbau Buchert!',
                 description: 'Diese App hilft dir, deine Handwerksfirma zu organisieren. Von Anfragen über Angebote bis zu Rechnungen – alles an einem Ort.',
                 targetSelector: null, // Full screen for welcome
                 highlightClass: null,
@@ -385,7 +385,7 @@ class OnboardingTutorialService {
         this.stop();
 
         // Show completion toast
-        this.showToast('🎉 Tutorial abgeschlossen! Viel Spaß mit FreyAI Visions!', 'success');
+        this.showToast('🎉 Tutorial abgeschlossen! Viel Spaß mit Metallbau Buchert!', 'success');
     }
 
     /**

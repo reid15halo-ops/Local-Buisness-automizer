@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions 95/5 Architecture — Zone 3
+# Metallbau Buchert 95/5 Architecture — Zone 3
 # Component 3.2: Lenovo ThinkCentre M75n Nano (Edge Compute Node)
 # Roles: Docker host, Coolify, n8n staging, Portainer
 #

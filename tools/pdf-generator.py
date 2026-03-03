@@ -646,12 +646,12 @@ def load_sample_data(doc_type: str) -> Dict:
     """Load sample data for testing"""
 
     base_company = {
-        'name': 'FreyAI Visions',
-        'street': 'Musterstraße 123',
+        'name': 'Metallbau Buchert',
+        'street': 'Industriestraße 12',
         'postal_code': '63843',
         'city': 'Musterstadt',
         'phone': '+49 6029 9922964',
-        'email': 'info@freyai-visions.de',
+        'email': 'info@metallbau-buchert.de',
         'tax_id': '12 345 678 901',
         'vat_id': 'DE123456789',
         'iban': 'DE89 3704 0044 0532 0130 00',
@@ -661,7 +661,7 @@ def load_sample_data(doc_type: str) -> Dict:
 
     base_customer = {
         'company': 'Musterfirma GmbH',
-        'name': 'Max Mustermann',
+        'name': 'Thomas Müller',
         'street': 'Kundenstraße 42',
         'postal_code': '60311',
         'city': 'Frankfurt am Main'

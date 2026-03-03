@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions 95/5 Architecture — Zone 3
+# Metallbau Buchert 95/5 Architecture — Zone 3
 # Component 3.3: Raspberry Pi 4 (Network Guardian)
 # Roles: Tailscale subnet router, Pi-hole DNS, Uptime Kuma monitoring
 #

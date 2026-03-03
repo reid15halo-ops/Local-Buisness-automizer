@@ -1934,7 +1934,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
         const companyInfo = window.companySettings
             ? await window.companySettings.load().catch(() => ({}))
             : {};
-        const companyName = companyInfo?.companyName || 'FreyAI Visions';
+        const companyName = companyInfo?.companyName || 'Metallbau Buchert';
 
         // ── Portal CTA ────────────────────────────────────────────────────
         let portalUrl = null;

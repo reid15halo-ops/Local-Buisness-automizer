@@ -209,7 +209,7 @@ describe('ApprovalQueueService', () => {
         id: 'inv-001',
         nummer: 'RE-2026-001',
         brutto: 1190.00,
-        kunde: { name: 'Max Mustermann GmbH' },
+        kunde: { name: 'Müller Bau GmbH' },
         status: 'pending_approval',
         ai_confidence: 0.88,
         positionen: [{ beschreibung: 'Arbeit', einzelpreis: 1000, menge: 1 }],
@@ -249,7 +249,7 @@ describe('ApprovalQueueService', () => {
 
         it('should include customer name in invoice summary', () => {
             const item = service._mapInvoiceToApproval(MOCK_INVOICE);
-            expect(item.summary).toContain('Max Mustermann GmbH');
+            expect(item.summary).toContain('Müller Bau GmbH');
         });
 
         it('should format amount in German currency format', () => {

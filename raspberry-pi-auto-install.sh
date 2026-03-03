@@ -16,7 +16,7 @@
 
 set -e
 
-echo "🍓 Raspberry Pi - FreyAI Visions Auto-Installation"
+echo "🍓 Raspberry Pi - Metallbau Buchert Auto-Installation"
 echo "========================================"
 echo ""
 
@@ -83,7 +83,7 @@ echo "✅ Firewall aktiv"
 
 # 8. Test
 echo "🧪 Step 8/8: Installation testen..."
-if curl -s http://localhost | grep -q "FreyAI"; then
+if curl -s http://localhost | grep -q "Metallbau Buchert"; then
     echo "✅ Installation erfolgreich!"
 else
     echo "⚠️ Warnung: Test nicht vollständig erfolgreich"

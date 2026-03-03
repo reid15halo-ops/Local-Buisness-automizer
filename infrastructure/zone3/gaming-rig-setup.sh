@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions 95/5 Architecture — Zone 3
+# Metallbau Buchert 95/5 Architecture — Zone 3
 # Component 3.6: Gaming Rig (Heavy Forge)
 # Hardware: AMD Ryzen Zen3 + NVIDIA RTX 3060 Ti
 # OS      : Linux Mint (Ubuntu 22.04 base)

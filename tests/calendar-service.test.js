@@ -230,7 +230,7 @@ class CalendarService {
         const lines = [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
-            'PRODID:-//FreyAI Visions//Calendar//DE',
+            'PRODID:-//Metallbau Buchert//Calendar//DE',
             'CALSCALE:GREGORIAN'
         ];
 
@@ -294,9 +294,9 @@ describe('CalendarService', () => {
                 startTime: '10:00',
                 endTime: '12:00',
                 description: 'Heizungsreparatur',
-                location: 'Musterstraße 1',
+                location: 'Bahnhofstraße 7',
                 customerId: 'CUST-001',
-                customerName: 'Max Mustermann',
+                customerName: 'Thomas Müller',
                 auftragId: 'AUF-001',
                 type: 'reparatur',
                 status: 'bestaetigt',
@@ -304,7 +304,7 @@ describe('CalendarService', () => {
             });
 
             expect(apt.description).toBe('Heizungsreparatur');
-            expect(apt.location).toBe('Musterstraße 1');
+            expect(apt.location).toBe('Bahnhofstraße 7');
             expect(apt.customerId).toBe('CUST-001');
             expect(apt.type).toBe('reparatur');
             expect(apt.reminderMinutes).toBe(30);

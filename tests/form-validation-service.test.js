@@ -359,7 +359,7 @@ describe('FormValidationService', () => {
     describe('Form-Level Validation (validateForm)', () => {
         it('should validate all fields in a schema', () => {
             const data = {
-                name: 'Max Mustermann',
+                name: 'Thomas Müller',
                 email: 'max@example.de',
                 plz: '80331'
             };
@@ -436,7 +436,7 @@ describe('FormValidationService', () => {
 
         it('should validate a Handwerker invoice form', () => {
             const data = {
-                kundenname: 'Mustermann GmbH',
+                kundenname: 'Müller Bau GmbH',
                 email: 'rechnungen@mustermann.de',
                 plz: '10115',
                 netto: '1500',

@@ -466,7 +466,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"to\": \"{{ $node[\"Resolve Customer Record\"].json[\"resolved_telefon\"] }}\",\n  \"message\": \"Willkommen {{ $node[\"Resolve Customer Record\"].json[\"resolved_name\"] }}! Ihr Kundenkonto wurde eingerichtet. Bei Fragen: info@freyai-visions.de\"\n}",
+        "jsonBody": "={\n  \"to\": \"{{ $node[\"Resolve Customer Record\"].json[\"resolved_telefon\"] }}\",\n  \"message\": \"Willkommen {{ $node[\"Resolve Customer Record\"].json[\"resolved_name\"] }}! Ihr Kundenkonto wurde eingerichtet. Bei Fragen: info@metallbau-buchert.de\"\n}",
         "options": {
           "timeout": 15000
         }

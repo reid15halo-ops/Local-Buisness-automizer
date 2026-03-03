@@ -29,7 +29,7 @@ class DataExportService {
                 exportDate: new Date().toISOString(),
                 version: this.exportVersion,
                 exportType: 'full-backup',
-                company: store.settings?.companyName || 'FreyAI Visions',
+                company: store.settings?.companyName || 'Metallbau Buchert',
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             },
             data: {

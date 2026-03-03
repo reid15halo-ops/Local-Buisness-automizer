@@ -192,7 +192,7 @@ class InvoiceTemplateService {
         // Fallback: try admin panel settings
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         return {
-            name: ap.company_name || 'FreyAI Visions',
+            name: ap.company_name || 'Metallbau Buchert',
             strasse: ap.address_street || '',
             ort: ap.address_city || '',
             plz: ap.address_postal || '',

@@ -404,7 +404,7 @@ vor einigen Tagen haben wir Ihnen unser Angebot {{angebotId}} zugesendet.
 Haben Sie noch Fragen zu unserem Angebot? Gerne stehen wir Ihnen für ein persönliches Gespräch zur Verfügung.
 
 Mit freundlichen Grüßen
-FreyAI Visions`
+Metallbau Buchert`
             },
             termin_bestaetigung: {
                 name: 'Terminbestätigung',
@@ -419,7 +419,7 @@ Ansprechpartner: {{mitarbeiter}}
 Bei Fragen erreichen Sie uns unter +49 6029 99 22 96 4.
 
 Mit freundlichen Grüßen
-FreyAI Visions`
+Metallbau Buchert`
             },
             rechnung_erinnerung: {
                 name: 'Zahlungserinnerung',
@@ -431,7 +431,7 @@ bei der Durchsicht unserer Buchhaltung ist uns aufgefallen, dass die Rechnung {{
 Wir bitten Sie, den Betrag in den nächsten Tagen zu überweisen.
 
 Mit freundlichen Grüßen
-FreyAI Visions`
+Metallbau Buchert`
             }
         };
     }
@@ -506,7 +506,7 @@ FreyAI Visions`
         const fromName = opts.fromName
             || companyInfo?.companyName
             || window.APP_CONFIG?.COMPANY_NAME
-            || 'FreyAI Visions';
+            || 'Metallbau Buchert';
 
         const payload = {
             to,
@@ -575,7 +575,7 @@ FreyAI Visions`
             ? await window.companySettings.load()
             : {};
         const fromAddress = opts.from || companyInfo?.noReplyEmail || '';
-        const fromName    = opts.fromName || companyInfo?.companyName || 'FreyAI Visions';
+        const fromName    = opts.fromName || companyInfo?.companyName || 'Metallbau Buchert';
 
         const enriched = messages.map(m => ({
             ...m,

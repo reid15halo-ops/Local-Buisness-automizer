@@ -105,7 +105,7 @@ class SecurityBackupService {
     // BACKUP SYSTEM
     // =====================================================
 
-    // Get all FreyAI Visions data from localStorage
+    // Get all Metallbau Buchert data from localStorage
     getAllData() {
         const data = {};
         const keys = Object.keys(localStorage).filter(k => k.startsWith('freyai_'));

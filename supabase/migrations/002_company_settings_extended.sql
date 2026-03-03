@@ -8,7 +8,7 @@ ALTER TABLE company_settings
     ADD COLUMN IF NOT EXISTS company_email       TEXT NOT NULL DEFAULT '',
     ADD COLUMN IF NOT EXISTS company_phone       TEXT NOT NULL DEFAULT '',
     ADD COLUMN IF NOT EXISTS company_website     TEXT NOT NULL DEFAULT '',
-    ADD COLUMN IF NOT EXISTS noreply_email       TEXT NOT NULL DEFAULT 'noreply@handwerkflow.de',
+    ADD COLUMN IF NOT EXISTS noreply_email       TEXT NOT NULL DEFAULT 'noreply@metallbau-buchert.de',
     ADD COLUMN IF NOT EXISTS stundensatz         NUMERIC(10, 2) NOT NULL DEFAULT 65.00,
     ADD COLUMN IF NOT EXISTS payment_terms_days  INTEGER NOT NULL DEFAULT 14,
     ADD COLUMN IF NOT EXISTS kleinunternehmer    BOOLEAN NOT NULL DEFAULT FALSE,

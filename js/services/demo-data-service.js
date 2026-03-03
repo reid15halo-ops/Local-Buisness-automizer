@@ -1,6 +1,6 @@
 /* ============================================
    Demo Data Service
-   Provides rich initial state for the FreyAI Visions application
+   Provides rich initial state for the Metallbau Buchert application
    ============================================ */
 
 class DemoDataService {

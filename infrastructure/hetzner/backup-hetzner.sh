@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions – Hetzner VPS Backup Script
+# Metallbau Buchert – Hetzner VPS Backup Script
 # Destination: NAS via Tailscale + Restic (SFTP)
 # Schedule: Daily cron at 02:00 UTC
 # =============================================================================

@@ -21,8 +21,8 @@ const DEFAULT_TAX_RATE = parseFloat(Deno.env.get('DEFAULT_TAX_RATE') ?? '0.19')
 const DEFAULT_STUNDENSATZ = parseFloat(Deno.env.get('DEFAULT_STUNDENSATZ') ?? '65')
 
 // Sender addresses: configure per-deployment via env vars
-const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') ?? 'angebote@handwerkflow.de'
-const REPLY_TO_EMAIL = Deno.env.get('REPLY_TO_EMAIL') ?? 'info@handwerkflow.de'
+const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') ?? 'angebote@metallbau-buchert.de'
+const REPLY_TO_EMAIL = Deno.env.get('REPLY_TO_EMAIL') ?? 'info@metallbau-buchert.de'
 
 // Company phone shown in email footers (leave empty to omit)
 const COMPANY_PHONE = Deno.env.get('COMPANY_PHONE') ?? ''
@@ -335,7 +335,7 @@ Antworte NUR im JSON-Format (ohne Markdown):
 
 Beispiel 1 - VOLLSTÄNDIG:
 {
-  "kunde": {"name": "Max Mustermann", "firma": "Beispiel GmbH", "telefon": "+49123456789"},
+  "kunde": {"name": "Thomas Müller", "firma": "Müller Bau GmbH", "telefon": "+49 6051 987654"},
   "anfrage": {"leistungsart": "metallbau", "beschreibung": "Metalltor 2x2m, feuerverzinkt", "budget": 1500, "termin": "2026-03-15"},
   "vollstaendig": true,
   "fehlende_infos": [],
@@ -625,7 +625,7 @@ async function generateAngebotPDF(
 
     // Header bar
     currentPage.drawRectangle({ x: 0, y: pageHeight - 80, width: pageWidth, height: 80, color: darkBlue })
-    currentPage.drawText('FreyAI Visions', { x: margin, y: pageHeight - 48, size: 20, font: fontBold, color: rgb(1, 1, 1) })
+    currentPage.drawText('Metallbau Buchert', { x: margin, y: pageHeight - 48, size: 20, font: fontBold, color: rgb(1, 1, 1) })
     currentPage.drawText(`Angebot ${angebot.nummer}`, { x: margin, y: pageHeight - 68, size: 11, font: fontRegular, color: rgb(0.8, 0.8, 0.8) })
 
     y = pageHeight - 105
@@ -713,7 +713,7 @@ async function generateAngebotPDF(
 
     // Footer
     currentPage.drawLine({ start: { x: margin, y: 60 }, end: { x: pageWidth - margin, y: 60 }, thickness: 0.5, color: grey })
-    currentPage.drawText('FreyAI Visions  |  info@freyai-visions.de', { x: margin, y: 44, size: 8, font: fontRegular, color: grey })
+    currentPage.drawText('Metallbau Buchert  |  info@metallbau-buchert.de', { x: margin, y: 44, size: 8, font: fontRegular, color: grey })
 
     const bytes = await pdfDoc.save()
 
@@ -749,7 +749,7 @@ async function sendAngebotEmail(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'angebote@handwerkflow.de')
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'angebote@metallbau-buchert.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -771,7 +771,7 @@ async function sendAngebotEmail(
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>FreyAI Visions</h1>
+                    <h1>Metallbau Buchert</h1>
                     <p>Ihr Angebot ${escapeHtml(angebotNummer)}</p>
                 </div>
 
@@ -813,13 +813,13 @@ async function sendAngebotEmail(
                     <p>Bei Fragen oder für weitere Informationen stehen wir Ihnen gerne zur Verfügung.</p>
 
                     <p>Mit freundlichen Grüßen<br>
-                    Ihr Team von FreyAI Visions</p>
+                    Ihr Team von Metallbau Buchert</p>
                 </div>
 
                 <div class="footer">
                     <p>
-                        FreyAI Visions<br>
-                        ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de<br>
+                        Metallbau Buchert<br>
+                        ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@metallbau-buchert.de<br>
                         Zertifiziert nach DIN EN 1090
                     </p>
                 </div>
@@ -842,9 +842,9 @@ async function sendAngebotEmail(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Angebote <${SENDER_EMAIL}>`,
+            from: `Metallbau Buchert Angebote <${SENDER_EMAIL}>`,
             to: [to],
-            subject: `Ihr Angebot ${angebotNummer} - FreyAI Visions`,
+            subject: `Ihr Angebot ${angebotNummer} - Metallbau Buchert`,
             html: htmlBody,
             reply_to: REPLY_TO_EMAIL,
             ...(pdfBase64 && {
@@ -875,7 +875,7 @@ async function sendFollowUpQuestions(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@metallbau-buchert.de')
 
     const questionsHTML = questions.map((q, i) =>
         `<li style="margin-bottom: 12px;"><strong>${i + 1}.</strong> ${escapeHtml(q)}</li>`
@@ -904,13 +904,13 @@ async function sendFollowUpQuestions(
                 <p>Bei dringenden Fragen erreichen Sie uns auch telefonisch.</p>
 
                 <p>Mit freundlichen Grüßen<br>
-                Ihr Team von FreyAI Visions</p>
+                Ihr Team von Metallbau Buchert</p>
 
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
-                    FreyAI Visions<br>
-                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de
+                    Metallbau Buchert<br>
+                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@metallbau-buchert.de
                 </p>
             </div>
         </body>
@@ -924,7 +924,7 @@ async function sendFollowUpQuestions(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Info <${SENDER_EMAIL}>`,
+            from: `Metallbau Buchert Info <${SENDER_EMAIL}>`,
             to: [to],
             subject: 'Rückfrage zu Ihrer Anfrage',
             html: htmlBody
@@ -947,7 +947,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@metallbau-buchert.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -963,13 +963,13 @@ async function sendSimpleConfirmation(to: string, name: string) {
                 <p>Ein Mitarbeiter wird sich in Kürze bei Ihnen melden.</p>
 
                 <p>Mit freundlichen Grüßen<br>
-                Ihr Team von FreyAI Visions</p>
+                Ihr Team von Metallbau Buchert</p>
 
                 <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
 
                 <p style="font-size: 0.9em; color: #7f8c8d;">
-                    FreyAI Visions<br>
-                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@freyai-visions.de
+                    Metallbau Buchert<br>
+                    ${COMPANY_PHONE ? `Tel: ${COMPANY_PHONE} | ` : ''}Email: info@metallbau-buchert.de
                 </p>
             </div>
         </body>
@@ -983,9 +983,9 @@ async function sendSimpleConfirmation(to: string, name: string) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: `FreyAI Visions Info <${SENDER_EMAIL}>`,
+            from: `Metallbau Buchert Info <${SENDER_EMAIL}>`,
             to: [to],
-            subject: 'Ihre Anfrage bei FreyAI Visions',
+            subject: 'Ihre Anfrage bei Metallbau Buchert',
             html: htmlBody
         }),
     })

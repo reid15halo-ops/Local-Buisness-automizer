@@ -637,7 +637,7 @@ Antworte NUR mit dem Mahntext.`;
     }
 
     _getFallbackDunningText(mahnung) {
-        const firma = window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+        const firma = window.storeService?.state?.settings?.companyName || 'Metallbau Buchert';
         const neueFrist = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('de-DE');
 
         if (mahnung.severity === 'freundlich') {
@@ -814,7 +814,7 @@ Antworte NUR mit dem Nachfass-Text.`;
     }
 
     _getFallbackFollowUpText(followup) {
-        const firma = window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+        const firma = window.storeService?.state?.settings?.companyName || 'Metallbau Buchert';
 
         return `Sehr geehrte(r) ${followup.kunde},\n\n` +
             `vor ${followup.tageOffen} Tagen haben Sie uns eine Anfrage ` +
@@ -1460,7 +1460,7 @@ Antworte NUR mit dem JSON-Array.`;
             ap = {};
         }
         const storeSettings = window.storeService?.state?.settings || {};
-        return ap.company_name || storeSettings.companyName || 'FreyAI Visions';
+        return ap.company_name || storeSettings.companyName || 'Metallbau Buchert';
     }
 
     /**

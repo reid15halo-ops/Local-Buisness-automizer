@@ -18,7 +18,7 @@ class EInvoiceService {
         // Default business data
         if (!this.settings.businessData) {
             this.settings.businessData = {
-                name: 'FreyAI Visions',
+                name: 'Metallbau Buchert',
                 street: '',
                 city: '',
                 postalCode: '',
@@ -574,8 +574,8 @@ ${positionen.map((pos, i) => {
             // Set PDF metadata for ZUGFeRD
             pdfDoc.setTitle(`Rechnung ${invoice.nummer || invoice.id}`);
             pdfDoc.setSubject('ZUGFeRD 2.2 COMFORT');
-            pdfDoc.setProducer('FreyAI Visions E-Rechnung');
-            pdfDoc.setCreator('FreyAI Visions');
+            pdfDoc.setProducer('Metallbau Buchert E-Rechnung');
+            pdfDoc.setCreator('Metallbau Buchert');
 
             // Embed the XML as a file attachment (ZUGFeRD standard filename)
             const xmlBytes = new TextEncoder().encode(xml);

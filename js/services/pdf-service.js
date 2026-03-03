@@ -68,7 +68,7 @@ class PDFService {
         // Also check individual localStorage keys (setup wizard stores them directly)
         const ls = (key) => localStorage.getItem(key) || '';
         return {
-            companyName: ap.company_name || store.companyName || ls('company_name') || 'FreyAI Visions',
+            companyName: ap.company_name || store.companyName || ls('company_name') || 'Metallbau Buchert',
             owner: ap.owner_name || store.owner || ls('owner_name') || '',
             address: ap.address_street
                 ? `${ap.address_street}, ${ap.address_postal || ''} ${ap.address_city || ''}`.trim()
@@ -117,7 +117,7 @@ class PDFService {
         doc.text(docNumber, this.pageWidth - m.right, m.top + 14, { align: 'right' });
 
         // Separator line
-        doc.setDrawColor(45, 212, 168); // FreyAI Visions teal accent
+        doc.setDrawColor(45, 212, 168); // Metallbau Buchert teal accent
         doc.setLineWidth(0.8);
         doc.line(m.left, m.top + 18, this.pageWidth - m.right, m.top + 18);
 

@@ -473,10 +473,10 @@ class PhotoService {
             let companyAddress = '';
             try {
                 const settings = window.storeService?.state?.settings || window.storeService?.store?.settings || {};
-                companyName = san(settings.companyName || 'FreyAI Visions');
+                companyName = san(settings.companyName || 'Metallbau Buchert');
                 companyAddress = san(settings.address || '');
             } catch (e) {
-                companyName = 'FreyAI Visions';
+                companyName = 'Metallbau Buchert';
             }
 
             // Build category sections
@@ -693,7 +693,7 @@ class PhotoService {
     ${categorySections}
 
     <div class="baudoku-footer">
-        Erstellt am ${now} &mdash; ${companyName} &mdash; Generiert mit FreyAI Visions
+        Erstellt am ${now} &mdash; ${companyName} &mdash; Generiert mit Metallbau Buchert
     </div>
 
     <script class="no-print">

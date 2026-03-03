@@ -200,7 +200,7 @@ class BookingService {
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         const store = window.storeService?.state?.settings || {};
         return {
-            name: ap.company_name || store.companyName || 'FreyAI Visions',
+            name: ap.company_name || store.companyName || 'Metallbau Buchert',
             phone: ap.company_phone || store.phone || '',
             email: ap.company_email || store.email || ''
         };

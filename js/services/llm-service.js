@@ -54,7 +54,7 @@ class LLMService {
         if (!this.isConfigured) {return null;}
 
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
-        const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+        const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || 'Metallbau Buchert';
         const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
 
         const systemPrompt = `Du bist ein erfahrener Fachberater für die Firma ${companyName} (${bizType}).

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions 95/5 Architecture — Zone 3
+# Metallbau Buchert 95/5 Architecture — Zone 3
 # Component 3.1: UGREEN NAS 2300 (Sovereign Vault)
 # Role: Restic backup receiver — pulls encrypted backups from Hetzner VPS
 #

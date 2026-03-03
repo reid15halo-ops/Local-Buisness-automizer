@@ -11,7 +11,7 @@ class EmailAutomationService {
         this.defaultConfig = {
             enabled: false,
             requireApproval: true,
-            inboundAddress: 'anfragen@handwerkflow.de',
+            inboundAddress: 'anfragen@metallbau-buchert.de',
             replyTemplate: `Sehr geehrte/r {kunde.name},
 
 vielen Dank für Ihre Anfrage. Anbei erhalten Sie unser Angebot.

@@ -264,13 +264,13 @@ describe('CustomerService', () => {
   describe('CRUD Operations', () => {
     it('should add a new customer', () => {
       const customer = service.addCustomer({
-        name: 'Max Mustermann',
+        name: 'Thomas Müller',
         firma: 'ABC GmbH',
         email: 'max@example.com'
       });
 
       expect(customer).toHaveProperty('id');
-      expect(customer.name).toBe('Max Mustermann');
+      expect(customer.name).toBe('Thomas Müller');
       expect(customer.firma).toBe('ABC GmbH');
       expect(customer.status).toBe('aktiv');
     });
@@ -406,7 +406,7 @@ describe('CustomerService', () => {
 
     it('should detect duplicate by name and firma', () => {
       service.addCustomer({
-        name: 'Max Mustermann',
+        name: 'Thomas Müller',
         firma: 'ABC GmbH'
       });
 
@@ -442,7 +442,7 @@ describe('CustomerService', () => {
       });
 
       const secondary = service.addCustomer({
-        name: 'Max Mustermann',
+        name: 'Thomas Müller',
         mobil: '789012',
         telefon: '',
         umsatzGesamt: 500,
@@ -510,7 +510,7 @@ describe('CustomerService', () => {
   describe('Search and Filter', () => {
     beforeEach(() => {
       service.addCustomer({
-        name: 'Max Mustermann',
+        name: 'Thomas Müller',
         firma: 'ABC GmbH',
         email: 'max@example.com',
         adresse: { ort: 'Berlin' },
@@ -537,7 +537,7 @@ describe('CustomerService', () => {
     it('should search by name', () => {
       const results = service.searchCustomers('Max');
       expect(results.length).toBe(1);
-      expect(results[0].name).toBe('Max Mustermann');
+      expect(results[0].name).toBe('Thomas Müller');
     });
 
     it('should search by firma', () => {

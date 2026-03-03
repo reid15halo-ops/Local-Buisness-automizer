@@ -28,7 +28,7 @@ class BookkeepingService {
       this.einstellungen = {
         kleinunternehmer: false,
         umsatzsteuersatz: 19,
-        firmenName: 'FreyAI Visions',
+        firmenName: 'Metallbau Buchert',
         steuernummer: '',
         ustIdNr: '',
         finanzamt: '',
@@ -675,7 +675,7 @@ describe('BookkeepingService', () => {
     it('should create buchung from invoice', () => {
       const rechnung = {
         id: 'RE-2024-001',
-        kunde: { name: 'Max Mustermann' },
+        kunde: { name: 'Thomas Müller' },
         brutto: 1190,
         createdAt: new Date().toISOString()
       };

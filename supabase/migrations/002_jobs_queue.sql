@@ -1,5 +1,5 @@
 -- ============================================================
--- FreyAI Visions 95/5 Architecture — Zone 1
+-- Metallbau Buchert 95/5 Architecture — Zone 1
 -- Migration 002: Async Jobs Queue + Notifications
 -- ============================================================
 -- CRITICAL: The jobs_queue table is the backbone of the 95/5

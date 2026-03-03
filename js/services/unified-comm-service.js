@@ -27,7 +27,7 @@ class UnifiedCommService {
                 name: 'Terminbestätigung',
                 category: 'appointment',
                 icon: '📅',
-                template: 'Guten Tag {{kunde_name}},\n\nwir bestätigen Ihren Termin:\nDatum: {{termin_datum}}\nUhrzeit: {{termin_uhrzeit}}\nOrt: {{termin_ort}}\n\nBei Rückfragen: {{kontakt_telefon}}\n\nMit freundlichen Grüßen\nFreyAI Visions',
+                template: 'Guten Tag {{kunde_name}},\n\nwir bestätigen Ihren Termin:\nDatum: {{termin_datum}}\nUhrzeit: {{termin_uhrzeit}}\nOrt: {{termin_ort}}\n\nBei Rückfragen: {{kontakt_telefon}}\n\nMit freundlichen Grüßen\nMetallbau Buchert',
                 variables: ['kunde_name', 'termin_datum', 'termin_uhrzeit', 'termin_ort', 'kontakt_telefon'],
                 smsVariant: 'Hallo {{kunde_name}}, Terminbestätigung: {{termin_datum}} um {{termin_uhrzeit}}. Bei Absage bitte Rückmeldung.'
             },
@@ -35,7 +35,7 @@ class UnifiedCommService {
                 name: 'Angebotsversand',
                 category: 'quote',
                 icon: '📊',
-                template: 'Guten Tag {{kunde_name}},\n\nanbei erhalten Sie unser Angebot {{angebot_nr}} für {{projekt_beschreibung}}.\n\nAngebotssumme: {{angebot_betrag}}€\n\nGerne beantworten wir Ihre Fragen.\n\nMit freundlichen Grüßen\nFreyAI Visions',
+                template: 'Guten Tag {{kunde_name}},\n\nanbei erhalten Sie unser Angebot {{angebot_nr}} für {{projekt_beschreibung}}.\n\nAngebotssumme: {{angebot_betrag}}€\n\nGerne beantworten wir Ihre Fragen.\n\nMit freundlichen Grüßen\nMetallbau Buchert',
                 variables: ['kunde_name', 'angebot_nr', 'projekt_beschreibung', 'angebot_betrag'],
                 smsVariant: 'Hallo {{kunde_name}}, Angebot {{angebot_nr}} versendet. Betrag: {{angebot_betrag}}€. Fragen? Gerne helfen wir!'
             },
@@ -43,7 +43,7 @@ class UnifiedCommService {
                 name: 'Rechnungserinnerung',
                 category: 'invoice',
                 icon: '💰',
-                template: 'Guten Tag {{kunde_name}},\n\nfreundliche Erinnerung: Rechnung {{rechnung_nr}} vom {{rechnung_datum}} über {{rechnung_betrag}}€ ist noch offen.\n\nZahlungsziel: {{zahlungsziel}}\n\nDank für schnelle Begleichung.\n\nMit freundlichen Grüßen\nFreyAI Visions',
+                template: 'Guten Tag {{kunde_name}},\n\nfreundliche Erinnerung: Rechnung {{rechnung_nr}} vom {{rechnung_datum}} über {{rechnung_betrag}}€ ist noch offen.\n\nZahlungsziel: {{zahlungsziel}}\n\nDank für schnelle Begleichung.\n\nMit freundlichen Grüßen\nMetallbau Buchert',
                 variables: ['kunde_name', 'rechnung_nr', 'rechnung_datum', 'rechnung_betrag', 'zahlungsziel'],
                 smsVariant: 'Erinnerung: Rechnung {{rechnung_nr}} über {{rechnung_betrag}}€ ist fällig. Zahlungsziel: {{zahlungsziel}}.'
             },
@@ -51,7 +51,7 @@ class UnifiedCommService {
                 name: 'Auftragsupdate',
                 category: 'order',
                 icon: '🔧',
-                template: 'Guten Tag {{kunde_name}},\n\nAuftrags-Update zu Auftrag {{auftrag_nr}}:\n{{update_beschreibung}}\n\nStatus: {{status}}\nVoraussichtlicher Abschluss: {{auftrag_fertig_datum}}\n\nBei Rückfragen: {{kontakt_telefon}}\n\nMit freundlichen Grüßen\nFreyAI Visions',
+                template: 'Guten Tag {{kunde_name}},\n\nAuftrags-Update zu Auftrag {{auftrag_nr}}:\n{{update_beschreibung}}\n\nStatus: {{status}}\nVoraussichtlicher Abschluss: {{auftrag_fertig_datum}}\n\nBei Rückfragen: {{kontakt_telefon}}\n\nMit freundlichen Grüßen\nMetallbau Buchert',
                 variables: ['kunde_name', 'auftrag_nr', 'update_beschreibung', 'status', 'auftrag_fertig_datum', 'kontakt_telefon'],
                 smsVariant: 'Hallo {{kunde_name}}, Auftrags-Update zu {{auftrag_nr}}: {{status}}. Fertig ca. {{auftrag_fertig_datum}}.'
             },
@@ -59,9 +59,9 @@ class UnifiedCommService {
                 name: 'Willkommensnachricht',
                 category: 'welcome',
                 icon: '👋',
-                template: 'Hallo {{kunde_name}},\n\nherzlich willkommen bei FreyAI Visions!\n\nWir freuen uns, Sie als neuen Kunden begrüßen zu dürfen. Für Fragen und Wünsche stehen wir gerne zur Verfügung.\n\nKontakt: {{kontakt_telefon}} oder {{kontakt_email}}\n\nViele Grüße\nDas Team der FreyAI Visions',
+                template: 'Hallo {{kunde_name}},\n\nherzlich willkommen bei Metallbau Buchert!\n\nWir freuen uns, Sie als neuen Kunden begrüßen zu dürfen. Für Fragen und Wünsche stehen wir gerne zur Verfügung.\n\nKontakt: {{kontakt_telefon}} oder {{kontakt_email}}\n\nViele Grüße\nDas Team der Metallbau Buchert',
                 variables: ['kunde_name', 'kontakt_telefon', 'kontakt_email'],
-                smsVariant: 'Willkommen {{kunde_name}}! Schön, Sie als Kunde bei FreyAI Visions begrüßen zu können. Rufen Sie an: {{kontakt_telefon}}'
+                smsVariant: 'Willkommen {{kunde_name}}! Schön, Sie als Kunde bei Metallbau Buchert begrüßen zu können. Rufen Sie an: {{kontakt_telefon}}'
             }
         };
     }
@@ -269,7 +269,7 @@ class UnifiedCommService {
                 body: {
                     to: cleanPhone,
                     message: message,
-                    from: 'FreyAI Visions'
+                    from: 'Metallbau Buchert'
                 }
             });
 
@@ -310,7 +310,7 @@ class UnifiedCommService {
                 window.communicationService.logMessage({
                     type: 'sms',
                     direction: 'outbound',
-                    from: 'FreyAI Visions',
+                    from: 'Metallbau Buchert',
                     to: cleanPhone,
                     content: message,
                     customerId: customerId,

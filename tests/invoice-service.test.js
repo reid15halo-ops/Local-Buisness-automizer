@@ -225,7 +225,7 @@ describe('InvoiceService', () => {
 
     describe('Invoice Creation', () => {
         it('should create invoice with correct status offen', () => {
-            const invoice = manager.createInvoice({ kunde: { name: 'Max Mustermann' }, netto: 1000 });
+            const invoice = manager.createInvoice({ kunde: { name: 'Thomas Müller' }, netto: 1000 });
             expect(invoice.status).toBe('offen');
         });
 

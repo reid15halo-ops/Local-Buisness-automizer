@@ -1,6 +1,6 @@
 """
 GoBD CSV / DATEV Export Router
-FreyAI Visions - Zone 2 Backend
+Metallbau Buchert - Zone 2 Backend
 
 Endpoints:
   POST /api/csv/parse          - Parse German-locale CSV, validate GoBD fields

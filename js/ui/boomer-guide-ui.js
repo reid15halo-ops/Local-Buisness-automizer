@@ -464,7 +464,7 @@ class BoomerGuideUI {
 
         // Build message
         const lines = critical.map(item => `${item.icon} ${item.title} — ${item.detail}`);
-        const message = `🚨 FreyAI Visions — Dringende Meldungen:\n\n${lines.join('\n')}`;
+        const message = `🚨 Metallbau Buchert — Dringende Meldungen:\n\n${lines.join('\n')}`;
 
         // Send via configured channels
         window.pushMessengerService.sendAlert(message);

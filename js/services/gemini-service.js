@@ -337,7 +337,7 @@ ${companyName}`
 
     _getCompanyName() {
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
-        return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
+        return ap.company_name || window.storeService?.state?.settings?.companyName || 'Metallbau Buchert';
     }
 }
 

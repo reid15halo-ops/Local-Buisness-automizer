@@ -17,7 +17,7 @@ class EmailTemplateService {
         if (window.eInvoiceService && window.eInvoiceService.settings.businessData) {
             const bd = window.eInvoiceService.settings.businessData;
             return {
-                name: bd.name || 'FreyAI Visions',
+                name: bd.name || 'Metallbau Buchert',
                 street: bd.street || '',
                 city: bd.city || '',
                 postalCode: bd.postalCode || '',
@@ -33,7 +33,7 @@ class EmailTemplateService {
         // Fallback: try admin panel settings
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         return {
-            name: ap.company_name || 'FreyAI Visions',
+            name: ap.company_name || 'Metallbau Buchert',
             street: ap.address_street || '',
             city: ap.address_city || '',
             postalCode: ap.address_postal || '',

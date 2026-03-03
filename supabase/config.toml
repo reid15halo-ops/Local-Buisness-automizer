@@ -1,5 +1,5 @@
 # ============================================================
-# FreyAI Visions — Supabase Project Configuration
+# Metallbau Buchert — Supabase Project Configuration
 # Zone 1: Database & Realtime
 # ============================================================
 # Local development: supabase start
@@ -90,16 +90,16 @@ double_confirm_changes = true
 enable_confirmations = false   # set true in production
 
 [auth.email.template.invite]
-subject = "Du wurdest zu FreyAI Visions eingeladen"
+subject = "Du wurdest zu Metallbau Buchert eingeladen"
 
 [auth.email.template.confirmation]
-subject = "Bestätige deine FreyAI Visions E-Mail"
+subject = "Bestätige deine Metallbau Buchert E-Mail"
 
 [auth.email.template.recovery]
-subject = "FreyAI Visions — Passwort zurücksetzen"
+subject = "Metallbau Buchert — Passwort zurücksetzen"
 
 [auth.email.template.magic_link]
-subject = "FreyAI Visions — Magic Link Login"
+subject = "Metallbau Buchert — Magic Link Login"
 
 [auth.sms]
 enable_signup = false

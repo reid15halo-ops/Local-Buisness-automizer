@@ -80,8 +80,8 @@ class StoreService {
       rechnungen: [],
       activities: [],
       settings: {
-        companyName: 'FreyAI Visions',
-        owner: 'Max Mustermann',
+        companyName: 'Metallbau Buchert',
+        owner: 'Thomas Müller',
         address: 'Handwerkerring 38a, 12345 Musterstadt',
         taxId: '12/345/67890',
         vatId: 'DE123456789',
@@ -591,7 +591,7 @@ class BookkeepingService {
       this.einstellungen = {
         kleinunternehmer: false,
         umsatzsteuersatz: 19,
-        firmenName: 'FreyAI Visions',
+        firmenName: 'Metallbau Buchert',
         steuernummer: '',
         ustIdNr: '',
         finanzamt: '',
@@ -1667,7 +1667,7 @@ describe('Integration: Full Money Path (Anfrage → Angebot → Auftrag → Rech
       id: storeService.generateId('ANF'),
       kunde: {
         name: 'Konstruktionsbau Müller',
-        address: 'Müller-Straße 42, 80331 München',
+        address: 'Industriestraße 12, 63571 Gelnhausen',
         email: 'info@mueller.de',
         phone: '+49 89 123456'
       },

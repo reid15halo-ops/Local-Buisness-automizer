@@ -295,8 +295,8 @@ const SAMPLE_INVOICE = {
     netto: 1000,
     mwstSatz: 0.19,
     kunde: {
-        name: 'Max Mustermann GmbH',
-        firma: 'Max Mustermann GmbH',
+        name: 'Müller Bau GmbH',
+        firma: 'Müller Bau GmbH',
         strasse: 'Kundenstraße 1',
         plz: '10115',
         ort: 'Berlin'
@@ -326,7 +326,7 @@ describe('PDFGenerationService', () => {
             const vars = service.prepareTemplateVariables(SAMPLE_INVOICE, SAMPLE_COMPANY);
 
             expect(vars.rechnung.nummer).toBe('RE-2026-001');
-            expect(vars.kunde.name).toBe('Max Mustermann GmbH');
+            expect(vars.kunde.name).toBe('Müller Bau GmbH');
             expect(vars.summe.mwstSatz).toBe('19%');
         });
 
@@ -434,7 +434,7 @@ describe('PDFGenerationService', () => {
     describe('Customer Address Building', () => {
         it('should use firma when provided', () => {
             const addr = service.buildCustomerAddress(SAMPLE_INVOICE.kunde, DEFAULT_LAYOUT);
-            expect(addr.stack[0].text).toBe('Max Mustermann GmbH');
+            expect(addr.stack[0].text).toBe('Müller Bau GmbH');
         });
 
         it('should fall back to name when no firma', () => {

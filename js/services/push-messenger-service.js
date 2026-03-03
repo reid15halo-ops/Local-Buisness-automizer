@@ -55,7 +55,7 @@ class PushMessengerService {
      * @returns {Promise<Object>} { success: boolean, error?: string }
      */
     async testConnection(channel) {
-        const testMsg = '✅ FreyAI Visions — Test-Nachricht erfolgreich!\n\nIhre Benachrichtigungen sind aktiv.';
+        const testMsg = '✅ Metallbau Buchert — Test-Nachricht erfolgreich!\n\nIhre Benachrichtigungen sind aktiv.';
 
         if (channel === 'telegram') {
             return this._sendTelegram(testMsg);

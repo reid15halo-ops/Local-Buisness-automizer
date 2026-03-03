@@ -15,7 +15,7 @@ class PaymentService {
             if (!this.settings.depositRequired) {this.settings.depositRequired = false;}
             if (!this.settings.depositThreshold) {this.settings.depositThreshold = 1000;} // Require deposit over €1000
             if (!this.settings.paymentMethods) {this.settings.paymentMethods = ['bank', 'paypal'];}
-            if (!this.settings.businessName) {this.settings.businessName = 'FreyAI Visions';}
+            if (!this.settings.businessName) {this.settings.businessName = 'Metallbau Buchert';}
         } catch (error) {
             console.error('PaymentService initialization error:', error);
             if (window.errorHandler) {
@@ -29,7 +29,7 @@ class PaymentService {
                 depositRequired: false,
                 depositThreshold: 1000,
                 paymentMethods: ['bank', 'paypal'],
-                businessName: 'FreyAI Visions'
+                businessName: 'Metallbau Buchert'
             };
         }
     }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions – Hetzner VPS One-Shot Setup Script
+# Metallbau Buchert – Hetzner VPS One-Shot Setup Script
 # Target: Ubuntu 22.04 LTS (CPX31 or higher)
 # Run as root or with sudo on a fresh VPS
 # =============================================================================
@@ -40,7 +40,7 @@ cat << 'BANNER'
  | _| '_/ -_) || / |/ _ \ | |  |_|
  |_||_| \___|_, |_/_/ \_\|___| (_)
              |__/
- Hetzner VPS Setup – FreyAI Visions Zone 2
+ Hetzner VPS Setup – Metallbau Buchert Zone 2
 BANNER
 echo -e "${NC}"
 

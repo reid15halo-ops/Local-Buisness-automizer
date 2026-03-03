@@ -753,14 +753,14 @@ class ExcelRecognitionService {
         // Beispiel-Zeile mit Beispieldaten
         const exampleData = {
             // Kunden
-            'name': 'Max Mustermann',
-            'firma': 'Musterfirma GmbH',
-            'email': 'max@musterfirma.de',
-            'telefon': '+49 123 456789',
+            'name': 'Thomas Müller',
+            'firma': 'Müller Bau GmbH',
+            'email': 'mueller@mueller-bau.de',
+            'telefon': '+49 6051 987654',
             'mobil': '+49 171 1234567',
-            'strasse': 'Musterstraße 123',
-            'plz': '12345',
-            'ort': 'Musterstadt',
+            'strasse': 'Bahnhofstraße 7',
+            'plz': '63571',
+            'ort': 'Gelnhausen',
             'notizen': 'Wichtiger Kunde',
 
             // Material
@@ -775,8 +775,8 @@ class ExcelRecognitionService {
             'lieferant': 'Schrauben-Express',
 
             // Anfragen
-            'kunde.name': 'Max Mustermann',
-            'kunde.email': 'max@musterfirma.de',
+            'kunde.name': 'Thomas Müller',
+            'kunde.email': 'mueller@mueller-bau.de',
             'kunde.telefon': '+49 123 456789',
             'beschreibung': 'Reparatur der Hydraulikanlage',
             'budget': '5000',

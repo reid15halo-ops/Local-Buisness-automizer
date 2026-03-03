@@ -68,8 +68,8 @@ class StoreService {
       rechnungen: [],
       activities: [],
       settings: {
-        companyName: 'FreyAI Visions',
-        owner: 'Max Mustermann',
+        companyName: 'Metallbau Buchert',
+        owner: 'Thomas Müller',
         address: 'Handwerkerring 38a, 12345 Musterstadt',
         taxId: '12/345/67890',
         vatId: 'DE123456789',
@@ -369,7 +369,7 @@ describe('StoreService', () => {
     });
 
     it('should initialize with default settings', () => {
-      expect(service.store.settings.companyName).toBe('FreyAI Visions');
+      expect(service.store.settings.companyName).toBe('Metallbau Buchert');
       expect(service.store.settings.theme).toBe('dark');
     });
 

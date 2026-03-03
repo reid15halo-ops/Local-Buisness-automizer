@@ -21,7 +21,7 @@ class SmsReminderService {
         if (!this.settings.reminder24h) {this.settings.reminder24h = true;}
         if (!this.settings.reminder1h) {this.settings.reminder1h = true;}
         if (!this.settings.confirmationRequired) {this.settings.confirmationRequired = true;}
-        if (!this.settings.senderName) {this.settings.senderName = 'FreyAI Visions';}
+        if (!this.settings.senderName) {this.settings.senderName = 'Metallbau Buchert';}
 
         // Templates
         this.templates = {

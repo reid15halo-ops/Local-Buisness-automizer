@@ -370,7 +370,7 @@ class WorkflowService {
                     {
                         type: 'email.send', params: {
                             to: '{{email}}',
-                            subject: 'Willkommen bei FreyAI Visions!',
+                            subject: 'Willkommen bei Metallbau Buchert!',
                             body: 'Sehr geehrte/r {{name}},\n\nvielen Dank für Ihr Vertrauen...'
                         }
                     },
@@ -390,7 +390,7 @@ class WorkflowService {
                     {
                         type: 'sms.send', params: {
                             to: '{{customer.telefon}}',
-                            message: 'Erinnerung: Ihr Termin bei FreyAI Visions morgen um {{time}} Uhr. Bei Fragen: 06029-9922964'
+                            message: 'Erinnerung: Ihr Termin bei Metallbau Buchert morgen um {{time}} Uhr. Bei Fragen: 06029-9922964'
                         }
                     }
                 ]

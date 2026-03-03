@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions 95/5 Architecture — Zone 3
+# Metallbau Buchert 95/5 Architecture — Zone 3
 # Master Tailscale Mesh Configuration
 # Run this FIRST before setting up individual devices.
 #
@@ -137,7 +137,7 @@ do_acl() {
 
     cat > "${ACL_FILE}" <<'ACL_EOF'
 {
-  "//": "FreyAI Visions 95/5 — Tailscale ACL",
+  "//": "Metallbau Buchert 95/5 — Tailscale ACL",
   "//version": "2024-02",
 
   "tagOwners": {

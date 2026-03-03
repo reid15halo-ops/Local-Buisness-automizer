@@ -2,14 +2,14 @@
   "type": "angebot",
   "number": "ANG-2024-001",
   "date": "2026-02-16T10:00:00",
-  "text": "Sehr geehrte Damen und Herren,\n\nvielen Dank fuer Ihre Anfrage. Gerne unterbreiten wir Ihnen das folgende detaillierte Angebot fuer die gewuenschten Arbeiten. Alle Leistungen werden durch qualifizierte Fachkraefte ausgefuehrt und entsprechen den geltenden Normen und Vorschriften.\n\nSelbstverstaendlich stehen wir Ihnen bei Rueckfragen zu einzelnen Positionen jederzeit zur Verfuegung.\n\nMit freundlichen Gruessen\nFreyAI Visions",
+  "text": "Sehr geehrte Damen und Herren,\n\nvielen Dank fuer Ihre Anfrage. Gerne unterbreiten wir Ihnen das folgende detaillierte Angebot fuer die gewuenschten Arbeiten. Alle Leistungen werden durch qualifizierte Fachkraefte ausgefuehrt und entsprechen den geltenden Normen und Vorschriften.\n\nSelbstverstaendlich stehen wir Ihnen bei Rueckfragen zu einzelnen Positionen jederzeit zur Verfuegung.\n\nMit freundlichen Gruessen\nMetallbau Buchert",
   "company": {
-    "name": "FreyAI Visions",
+    "name": "Metallbau Buchert",
     "street": "Musterstrasse 123",
     "postal_code": "63843",
     "city": "Musterstadt",
     "phone": "+49 6029 9922964",
-    "email": "info@freyai-visions.de",
+    "email": "info@metallbau-buchert.de",
     "tax_id": "12 345 678 901",
     "vat_id": "DE123456789",
     "iban": "DE89 3704 0044 0532 0130 00",
@@ -18,7 +18,7 @@
   },
   "customer": {
     "company": "Musterfirma GmbH",
-    "name": "Max Mustermann",
+    "name": "Thomas Müller",
     "street": "Kundenstrasse 42",
     "postal_code": "60311",
     "city": "Frankfurt am Main"

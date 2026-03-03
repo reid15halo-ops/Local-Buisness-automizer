@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FreyAI Visions 95/5 Architecture — Zone 3
+# Metallbau Buchert 95/5 Architecture — Zone 3
 # Component 3.5: HP t640 Thin Client (Command Center Dashboard)
 # Roles: Kiosk display, 4-monitor array, Flutter dashboard, Grafana viewer
 #

@@ -63,7 +63,7 @@ class QrCodeService {
         const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
         const iban = (bd.iban || ap.bank_iban || this.settings.iban || '').replace(/\s/g, '');
         const bic = bd.bic || ap.bank_bic || this.settings.bic || '';
-        const recipient = bd.name || ap.company_name || this.settings.recipientName || 'FreyAI Visions';
+        const recipient = bd.name || ap.company_name || this.settings.recipientName || 'Metallbau Buchert';
         const reference = invoice.nummer || invoice.id;
 
         // EPC QR Code format
