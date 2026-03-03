@@ -1,0 +1,134 @@
+# ============================================
+# Deploy auf GitHub Pages
+# Landing Page + App sofort im Browser erreichbar
+# ============================================
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build combined site
+        run: |
+          mkdir -p _site
+
+          # ── Landing Page (root) ──────────────────
+          cp landing.html _site/index.html
+          cp booking.html _site/booking.html
+          cp manifest.json _site/manifest.json
+          cp favicon.ico _site/
+          cp favicon-32x32.png _site/
+          cp favicon.png _site/
+          cp apple-touch-icon.png _site/
+
+          # CSS for landing
+          mkdir -p _site/css
+          cp css/fonts.css _site/css/
+
+          # Fonts (DSGVO-konform)
+          mkdir -p _site/fonts
+          cp fonts/*.woff2 _site/fonts/
+
+          # Icons
+          mkdir -p _site/icons
+          cp icons/*.png _site/icons/
+
+          # JS for landing (booking)
+          mkdir -p _site/js/services
+          cp js/services/booking-service.js _site/js/services/
+
+          # ── App (unter /app/) ────────────────────
+          mkdir -p _site/app
+
+          # HTML
+          cp index.html _site/app/index.html
+          cp auth.html _site/app/auth.html
+          cp customer-portal.html _site/app/customer-portal.html
+          cp offline.html _site/app/offline.html
+
+          # CSS (all)
+          mkdir -p _site/app/css
+          cp css/*.css _site/app/css/
+
+          # JavaScript
+          mkdir -p _site/app/js
+          for f in js/*.js; do [ -f "$f" ] && cp "$f" _site/app/js/; done
+
+          mkdir -p _site/app/js/services
+          cp js/services/*.js _site/app/js/services/
+
+          mkdir -p _site/app/js/modules
+          cp js/modules/*.js _site/app/js/modules/
+
+          if [ -d js/ui ]; then
+            mkdir -p _site/app/js/ui
+            cp js/ui/*.js _site/app/js/ui/
+          fi
+
+          if [ -d js/i18n ]; then
+            mkdir -p _site/app/js/i18n
+            cp -r js/i18n/* _site/app/js/i18n/
+          fi
+
+          # Fonts
+          mkdir -p _site/app/fonts
+          cp fonts/*.woff2 _site/app/fonts/
+
+          # Icons & favicons
+          mkdir -p _site/app/icons
+          cp icons/*.png _site/app/icons/
+          cp favicon.ico _site/app/
+          cp favicon-32x32.png _site/app/
+          cp favicon.png _site/app/
+          cp apple-touch-icon.png _site/app/
+
+          # PWA
+          cp manifest.json _site/app/
+          cp service-worker.js _site/app/
+
+          # Config
+          mkdir -p _site/app/config
+          cp config/app-config.js _site/app/config/
+
+          # ── 404 fallback for SPA routing ─────────
+          cp _site/app/index.html _site/app/404.html
+
+          echo "Build complete!"
+          find _site -type f | wc -l
+          du -sh _site
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
