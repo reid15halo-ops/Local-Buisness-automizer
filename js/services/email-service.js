@@ -60,14 +60,14 @@ class EmailService {
     // ============================================
     async fetchEmails() {
         if (!this.isConfigured()) {
-            // Return demo emails for testing
-            return this.getDemoEmails();
+            console.warn('[EmailService] Not configured - returning empty list');
+            return [];
         }
-        
+
         // In a real implementation, this would use a backend service
         // or WebSocket to an IMAP proxy (browser can't do IMAP directly)
         console.log('Email fetch would use IMAP:', this.emailConfig.imapHost);
-        return this.getDemoEmails();
+        return [];
     }
 
     getDemoEmails() {

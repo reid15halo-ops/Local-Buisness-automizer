@@ -994,7 +994,7 @@ function renderAngebote() {
 
     if (allAngebote.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state">
                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
@@ -1035,7 +1035,7 @@ function renderAngebote() {
         const filterLabel = currentAngeboteFilter !== 'alle' ? ` mit Status "${currentAngeboteFilter}"` : '';
         const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
         container.innerHTML = `
-            <div class="empty-state" class="empty-state empty-state-small">
+            <div class="empty-state empty-state-small">
                 <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote gefunden</h3>
                 <p style="color: var(--text-secondary);">
@@ -1103,12 +1103,12 @@ function renderAngebote() {
         return `
         <div class="item-card" onclick="showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${h(a.id)}</span>
             </div>
             ${angebotTrailHTML}
             <div class="item-meta">
-                <span>${a.positionen.length} Positionen</span>
+                <span>${(a.positionen || []).length} Positionen</span>
                 <span>${formatCurrency(a.brutto)}</span>
                 <span>${formatDate(a.createdAt)}</span>
                 ${(() => {
@@ -1188,7 +1188,7 @@ function editAngebot(id) {
     openModal('modal-angebot');
 }
 
-function deleteAngebot(id) {
+async function deleteAngebot(id) {
     const angebot = store.angebote.find(a => a.id === id);
     if (!angebot) {return;}
 
@@ -1595,15 +1595,15 @@ function previewAngebot(id) {
                         <div class="angebot-preview-totals">
                             <div class="total-row">
                                 <span>Netto:</span>
-                                <span>${formatCurrency(angebot.netto)}</span>
+                                <span>${formatCurrency(angebot.netto || 0)}</span>
                             </div>
                             <div class="total-row">
                                 <span>MwSt. (19%):</span>
-                                <span>${formatCurrency(angebot.mwst)}</span>
+                                <span>${formatCurrency(angebot.mwst || 0)}</span>
                             </div>
                             <div class="total-row total-brutto">
                                 <span>Brutto:</span>
-                                <span>${formatCurrency(angebot.brutto)}</span>
+                                <span>${formatCurrency(angebot.brutto || 0)}</span>
                             </div>
                         </div>
                     </div>

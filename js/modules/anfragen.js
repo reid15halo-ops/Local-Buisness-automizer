@@ -93,7 +93,7 @@ function renderAnfragen() {
 
     if (anfragen.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state">
                 <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
                 <h3 style="margin-bottom: 8px;">Keine Anfragen vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
@@ -110,12 +110,12 @@ function renderAnfragen() {
     container.innerHTML = anfragen.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${a.id}</span>
             </div>
             <div class="item-meta">
-                <span>📧 ${window.UI.sanitize(a.kunde.email) || '-'}</span>
-                <span>📞 ${window.UI.sanitize(a.kunde.telefon) || '-'}</span>
+                <span>📧 ${window.UI.sanitize(a.kunde?.email || '-')}</span>
+                <span>📞 ${window.UI.sanitize(a.kunde?.telefon || '-')}</span>
                 <span>📅 ${formatDate(a.termin)}</span>
             </div>
             <p class="item-description">

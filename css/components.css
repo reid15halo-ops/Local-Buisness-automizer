@@ -430,6 +430,8 @@
 .item-title {
     font-size: 18px;
     font-weight: 600;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .item-id {
@@ -465,6 +467,7 @@
 .item-actions {
     display: flex;
     gap: 12px;
+    flex-wrap: wrap;
 }
 
 .status-badge {

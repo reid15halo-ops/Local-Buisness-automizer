@@ -94,21 +94,19 @@ class StoreService {
                 Object.assign(this.store, data);
                 this.checkStorageUsage();
 
-                // If store exists but is effectively empty, try Supabase then demo
+                // If store exists but is effectively empty, try Supabase sync
                 if (this.store.anfragen.length === 0 &&
                     this.store.angebote.length === 0 &&
                     this.store.auftraege.length === 0) {
-                    const synced = await this._syncFromSupabase();
-                    if (!synced) await this.resetToDemo();
+                    await this._syncFromSupabase();
                 }
             } catch (e) {
                 console.error('Failed to parse store data:', e);
-                await this.resetToDemo();
+                this._clearStore();
             }
         } else {
-            // No data saved yet -> Try Supabase first, then Demo
-            const synced = await this._syncFromSupabase();
-            if (!synced) await this.resetToDemo();
+            // No data saved yet -> Try Supabase sync (no demo fallback)
+            await this._syncFromSupabase();
         }
 
         this.notify();

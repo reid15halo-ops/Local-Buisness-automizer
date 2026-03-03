@@ -264,8 +264,8 @@ function renderAuftraegeKanban(auftraege) {
         let filtered = auftraege.filter(a => a.status === status);
         if (searchQuery) {
             filtered = filtered.filter(a =>
-                a.kunde.name.toLowerCase().includes(searchQuery) ||
-                a.id.toLowerCase().includes(searchQuery) ||
+                (a.kunde?.name || '').toLowerCase().includes(searchQuery) ||
+                (a.id || '').toLowerCase().includes(searchQuery) ||
                 (a.leistungsart || '').toLowerCase().includes(searchQuery)
             );
         }
@@ -303,7 +303,7 @@ function renderAuftragCard(a) {
     return `
         <div class="auftrag-card" onclick="openAuftragDetail('${h(a.id)}')">
             <div class="auftrag-card-header">
-                <span class="auftrag-card-title">${h(a.kunde.name)}</span>
+                <span class="auftrag-card-title">${h(a.kunde?.name || 'Unbekannt')}</span>
                 <span class="auftrag-card-id" title="Im Status seit ${dauerText}">${dauerText}</span>
             </div>
             <div class="auftrag-card-meta">
@@ -338,14 +338,14 @@ function renderAuftraegeList(auftraege) {
     const searchQuery = (document.getElementById('auftrag-search')?.value || '').toLowerCase();
     if (searchQuery) {
         filtered = filtered.filter(a =>
-            a.kunde.name.toLowerCase().includes(searchQuery) ||
-            a.id.toLowerCase().includes(searchQuery)
+            (a.kunde?.name || '').toLowerCase().includes(searchQuery) ||
+            (a.id || '').toLowerCase().includes(searchQuery)
         );
     }
 
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state">
                 <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
                 <h3 style="margin-bottom:8px;">Keine Aufträge</h3>
                 <p style="color:var(--text-secondary);margin-bottom:24px;">Aufträge entstehen aus angenommenen Angeboten.</p>
@@ -365,7 +365,7 @@ function renderAuftraegeList(auftraege) {
         return `
             <div class="item-card" onclick="openAuftragDetail('${h(a.id)}')" style="cursor:pointer;">
                 <div class="item-header">
-                    <h3 class="item-title">${h(a.kunde.name)}</h3>
+                    <h3 class="item-title">${h(a.kunde?.name || 'Unbekannt')}</h3>
                     <span class="item-id">${a.id}</span>
                 </div>
                 <div class="item-meta">
