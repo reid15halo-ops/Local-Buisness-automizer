@@ -51,7 +51,7 @@
                 if (typeof value === "string" && value.indexOf("<") !== -1) {
                     value = DOMPurify.sanitize(value, {
                         ADD_TAGS: ["style"],
-                        ADD_ATTR: ["onclick", "onchange", "oninput", "onsubmit", "onkeydown", "onkeyup", "onfocus", "onblur", "style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
+                        ADD_ATTR: ["style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
                         ALLOW_UNKNOWN_PROTOCOLS: false
                     });
                 }
@@ -120,7 +120,7 @@
         console.log("[Monitoring] Error tracking active");
     })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
     <script defer src="js/services/supabase-config.js"></script>
     <!-- Auth Gate & Offline Mode Check -->
     <script>

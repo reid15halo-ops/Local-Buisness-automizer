@@ -94,7 +94,8 @@ def stt(audio_file):
 def tts(text, output_file=None):
     """Text-to-Speech via freyai-voice API."""
     if output_file is None:
-        output_file = tempfile.mktemp(suffix=".wav")
+        fd, output_file = tempfile.mkstemp(suffix=".wav")
+        os.close(fd)
 
     payload = json.dumps({"text": text}).encode()
     req = urllib.request.Request(
@@ -168,15 +169,29 @@ def detect_smart_home_command(text):
     return None
 
 
+VALID_ROOMS = set(ROOM_ALIASES.values())
+VALID_SCENES = set(SCENE_KEYWORDS.values())
+
+
 def execute_smart_home(command):
     """Smart-Home-Befehl via ha_scenes.py ausführen."""
     if command["type"] == "scene":
+        if command["scene"] not in VALID_SCENES:
+            return f"Unbekannte Szene: {command['scene']}"
         args = ["python3", HA_SCENES_SCRIPT, "scene", command["scene"]]
     elif command["type"] == "light":
-        args = ["python3", HA_SCENES_SCRIPT, "light", command["room"], str(command["brightness"])]
+        if command["room"] not in VALID_ROOMS:
+            return f"Unbekannter Raum: {command['room']}"
+        args = ["python3", HA_SCENES_SCRIPT, "light", command["room"], str(int(command["brightness"]))]
     elif command["type"] == "climate":
-        args = ["python3", HA_SCENES_SCRIPT, "climate", command["room"], str(command["temperature"])]
+        if command["room"] not in VALID_ROOMS:
+            return f"Unbekannter Raum: {command['room']}"
+        args = ["python3", HA_SCENES_SCRIPT, "climate", command["room"], str(int(command["temperature"]))]
     elif command["type"] == "cover":
+        if command["room"] not in VALID_ROOMS:
+            return f"Unbekannter Raum: {command['room']}"
+        if command["position"] not in ("auf", "zu", "open", "close") and not command["position"].isdigit():
+            return f"Ungültige Position: {command['position']}"
         args = ["python3", HA_SCENES_SCRIPT, "cover", command["room"], command["position"]]
     else:
         return "Unbekannter Befehlstyp"

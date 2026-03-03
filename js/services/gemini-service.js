@@ -62,12 +62,9 @@ class GeminiService {
             // Get auth token from Supabase
             const { data: { session }, error } = await window.supabaseClient.auth.getSession();
             if (error || !session) {
-                console.warn('Supabase session not available, falling back to direct API (if key configured)');
-                if (!this.apiKey) {
-                    throw new Error('No authentication available and no API key configured');
-                }
-                // Fallback to direct
-                url = `${this.baseUrl}?key=${this.apiKey}`;
+                // Do not fall back to direct API key when proxy is configured —
+                // the key would be visible in browser dev tools / network logs.
+                throw new Error('Supabase session not available. Please log in to use AI features.');
             } else {
                 headers['Authorization'] = `Bearer ${session.access_token}`;
             }

@@ -70,7 +70,7 @@ BEGIN
     );
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -625,9 +625,10 @@ CREATE TABLE IF NOT EXISTS portal_responses (
 );
 
 ALTER TABLE portal_responses ENABLE ROW LEVEL SECURITY;
--- Customers may only INSERT (no read of other customers' data)
+-- Anonymous inserts blocked by default; portal_approve_quote and portal_reject_quote
+-- use SECURITY DEFINER to bypass RLS and insert responses server-side.
 CREATE POLICY "Portal insert responses" ON portal_responses
-    FOR INSERT WITH CHECK (TRUE);
+    FOR INSERT WITH CHECK (FALSE);
 -- Authenticated Handwerker reads only responses linked to his tokens
 CREATE POLICY "Handwerker read own portal_responses" ON portal_responses
     FOR SELECT USING (
@@ -656,6 +657,7 @@ CREATE OR REPLACE FUNCTION portal_approve_quote(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_record portal_tokens%ROWTYPE;
@@ -720,6 +722,7 @@ CREATE OR REPLACE FUNCTION portal_reject_quote(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_record portal_tokens%ROWTYPE;

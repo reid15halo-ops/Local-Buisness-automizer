@@ -240,7 +240,7 @@ async function openTicketDetail(ticketId) {
         try {
             await fetch(RELAY_URL + '/support/reply', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: await getHeaders(),
                 body: JSON.stringify({
                     ticket_id: ticketId,
                     body: text,

@@ -1115,9 +1115,7 @@ class CustomerPortalService {
                 result += chars[array[i] % chars.length];
             }
         } else {
-            for (let i = 0; i < length; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            throw new Error('crypto.getRandomValues is required for secure token generation');
         }
 
         return result;

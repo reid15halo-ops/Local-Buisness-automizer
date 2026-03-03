@@ -17,8 +17,12 @@ HA_URL = os.getenv("HA_URL", "http://127.0.0.1:8123")
 HA_TOKEN = os.getenv("HA_TOKEN", "")
 
 if not HA_TOKEN:
+    import stat
     token_file = os.path.expanduser("~/.ha_token")
     if os.path.exists(token_file):
+        mode = os.stat(token_file).st_mode
+        if mode & (stat.S_IRGRP | stat.S_IROTH):
+            print("WARNUNG: ~/.ha_token ist für andere Benutzer lesbar. Bitte ausführen: chmod 600 ~/.ha_token", file=sys.stderr)
         HA_TOKEN = open(token_file).read().strip()
 
 HEADERS = {

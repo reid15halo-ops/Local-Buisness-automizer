@@ -4,8 +4,13 @@ dist/
 
 # Environment & Secrets (NEVER commit real .env files)
 .env
+.env.*
+!.env.example
 .env.local
 .env.production
+.env.development
+.env.staging
+.env.test
 .env.*.local
 
 # AI / IDE
@@ -44,3 +49,12 @@ venv/
 # Credentials (never commit)
 .credentials
 *.credentials
+
+# Private keys & certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+id_rsa
+id_ed25519

@@ -33,7 +33,6 @@ function safeCompare(a, b) {
 // before passing them to nodemailer, preventing XSS payloads from reaching email clients.
 function sanitizeEmailHtml(html) {
     if (!html) return html;
-    // Strip script tags and inline event handlers to prevent XSS into email clients
     return html
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
         .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
@@ -43,6 +42,12 @@ function sanitizeEmailHtml(html) {
 // --- Config from environment ---
 const PORT = parseInt(process.env.PORT || '3100');
 const API_SECRET = process.env.API_SECRET || '';
+
+// Refuse to start without API_SECRET configured
+if (!API_SECRET) {
+    console.error('[email-relay] FATAL: API_SECRET not configured. Set it in .env');
+    process.exit(1);
+}
 
 const SMTP_HOST = process.env.SMTP_HOST || '127.0.0.1';
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '1025');
@@ -68,7 +73,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// --- Recipient Validator (TODO 4) ---
+// --- Recipient Validator ---
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_RECIPIENTS = 50;
 
@@ -81,21 +86,43 @@ function validateRecipients(recipients) {
   return { valid: true };
 }
 
-// --- Per-sender rate limiter for bulk endpoint (TODO 3) ---
-const senderRateLimits = new Map();
-const BULK_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
-const BULK_RATE_LIMIT_MAX = 200; // max 200 emails per sender per 5 min window
+// --- Rate limiter (keyed by authenticated API key hash) ---
+const rateLimits = new Map();
+const RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+const RATE_LIMIT_MAX_SINGLE = 100; // /send-email: max 100 per 5 min
+const RATE_LIMIT_MAX_BULK = 200; // /send-bulk: max 200 per 5 min
 
-function checkBulkRateLimit(senderKey) {
+// Periodic cleanup of expired rate limit entries (every 10 minutes)
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimits) {
+        if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+            rateLimits.delete(key);
+        }
+    }
+}, 10 * 60 * 1000);
+
+function checkRateLimit(key, max) {
   const now = Date.now();
-  const entry = senderRateLimits.get(senderKey);
-  if (!entry || now - entry.windowStart > BULK_RATE_LIMIT_WINDOW_MS) {
-    senderRateLimits.set(senderKey, { count: 1, windowStart: now });
+  const entry = rateLimits.get(key);
+  if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimits.set(key, { count: 1, windowStart: now });
     return true;
   }
-  if (entry.count >= BULK_RATE_LIMIT_MAX) return false;
+  if (entry.count >= max) return false;
   entry.count++;
   return true;
+}
+
+function getRateLimitKey(request, endpoint) {
+    // Key by authenticated token hash, not client-supplied data
+    const token = (request.headers['authorization'] || '').replace('Bearer ', '');
+    return crypto.createHash('sha256').update(token + endpoint).digest('hex').slice(0, 16);
+}
+
+// --- HTML detection (more robust than simple < > check) ---
+function looksLikeHtml(text) {
+    return /<[a-z][\s\S]*>/i.test(text);
 }
 
 // --- Fastify Server ---
@@ -109,14 +136,7 @@ app.addHook('onRequest', async (request, reply) => {
     const authHeader = request.headers['authorization'] || '';
     const token = authHeader.replace('Bearer ', '');
 
-    if (!API_SECRET) {
-        reply.code(500).send({ error: 'API_SECRET nicht konfiguriert' });
-        return;
-    }
-
     // Use constant-time comparison via SHA-256 hashes to prevent timing side-channel attacks.
-    // Hashing both values to equal fixed length avoids the length leak that an early-exit
-    // length check would introduce before timingSafeEqual.
     if (!safeCompare(token, API_SECRET)) {
         reply.code(401).send({ error: 'Ungültiger API Key' });
         return;
@@ -143,11 +163,17 @@ app.post('/send-email', async (request, reply) => {
         return reply.code(400).send({ error: '"to" und "subject" sind erforderlich' });
     }
 
-    // Validate recipients (TODO 4)
+    // Validate recipients
     const toArray = Array.isArray(to) ? to : [to];
     const recipientCheck = validateRecipients(toArray);
     if (!recipientCheck.valid) {
         return reply.code(400).send({ error: recipientCheck.error });
+    }
+
+    // Rate limit
+    const rlKey = getRateLimitKey(request, 'single');
+    if (!checkRateLimit(rlKey, RATE_LIMIT_MAX_SINGLE)) {
+        return reply.code(429).send({ error: 'Rate limit exceeded. Try again later.' });
     }
 
     if (!SMTP_USER) {
@@ -168,8 +194,7 @@ app.post('/send-email', async (request, reply) => {
         if (html) {
             mailOptions.html = sanitizeEmailHtml(html);
         } else if (body) {
-            // Auto-detect HTML or convert plain text
-            if (body.includes('<') && body.includes('>')) {
+            if (looksLikeHtml(body)) {
                 mailOptions.html = sanitizeEmailHtml(body);
             } else {
                 mailOptions.text = body;
@@ -185,16 +210,13 @@ app.post('/send-email', async (request, reply) => {
             accepted: info.accepted,
         };
     } catch (err) {
-        const recipient = Array.isArray(to) ? to.join(', ') : to;
-        const emailSubject = subject;
         console.error('[email-relay] Failed to send email', {
-            to: recipient,
-            subject: emailSubject,
+            to: Array.isArray(to) ? to.join(', ') : to,
+            subject,
             error: err?.message ?? err
         });
         return reply.code(500).send({
             error: 'E-Mail Versand fehlgeschlagen',
-            details: err.message,
         });
     }
 });
@@ -211,26 +233,39 @@ app.post('/send-bulk', async (request, reply) => {
         return reply.code(400).send({ error: 'Maximal 50 E-Mails pro Batch' });
     }
 
-    // Per-sender rate limit (TODO 3)
-    const senderKey = request.body?.from || request.ip;
-    if (!checkBulkRateLimit(senderKey)) {
+    // Rate limit keyed by authenticated API key hash
+    const rlKey = getRateLimitKey(request, 'bulk');
+    if (!checkRateLimit(rlKey, RATE_LIMIT_MAX_BULK)) {
         return reply.code(429).send({ error: 'Bulk rate limit exceeded. Try again later.' });
     }
 
     const results = [];
     for (const email of emails) {
+        // Validate each email in the batch
+        if (!email.to || !email.subject) {
+            results.push({ to: email.to || 'unknown', success: false, error: 'to and subject required' });
+            continue;
+        }
+        const toArray = Array.isArray(email.to) ? email.to : [email.to];
+        const recipientCheck = validateRecipients(toArray);
+        if (!recipientCheck.valid) {
+            results.push({ to: email.to, success: false, error: recipientCheck.error });
+            continue;
+        }
+
         try {
+            const sanitizedHtml = looksLikeHtml(email.body || '')
+                ? sanitizeEmailHtml(email.body)
+                : sanitizeEmailHtml(`<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;line-height:1.6;">${email.body || ''}</pre>`);
             const info = await transporter.sendMail({
                 from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
-                to: email.to,
+                to: Array.isArray(email.to) ? email.to.join(', ') : email.to,
                 subject: email.subject,
-                html: email.body?.includes('<')
-                    ? email.body
-                    : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;line-height:1.6;">${email.body}</pre>`,
+                html: sanitizedHtml,
             });
             results.push({ to: email.to, success: true, messageId: info.messageId });
         } catch (err) {
-            results.push({ to: email.to, success: false, error: err.message });
+            results.push({ to: email.to, success: false, error: 'Send failed' });
         }
 
         // Rate limit: 100ms between emails (Proton Bridge limit)
@@ -250,24 +285,25 @@ app.post('/send-bulk', async (request, reply) => {
 app.post('/test', async (request, reply) => {
     try {
         await transporter.verify();
-        return { success: true, message: 'SMTP-Verbindung zu Proton Mail Bridge OK' };
+        return { success: true, message: 'SMTP-Verbindung OK' };
     } catch (err) {
+        console.error('[email-relay] SMTP test failed', { error: err?.message ?? err });
         return reply.code(500).send({
             success: false,
             error: 'SMTP-Verbindung fehlgeschlagen',
-            details: err.message,
         });
     }
 });
 
 // --- Start ---
-app.listen({ port: PORT, host: '0.0.0.0' }, (err) => {
+const LISTEN_HOST = process.env.LISTEN_HOST || '127.0.0.1';
+app.listen({ port: PORT, host: LISTEN_HOST }, (err) => {
     if (err) {
         console.error('[email-relay] Failed to start server', {
             error: err?.message ?? err
         });
         process.exit(1);
     }
-    console.log(`Email Relay listening on port ${PORT}`);
-    console.log(`SMTP: ${SMTP_HOST}:${SMTP_PORT} (User: ${SMTP_USER || 'NOT SET'})`);
+    console.log(`Email Relay listening on ${LISTEN_HOST}:${PORT}`);
+    console.log(`SMTP: ${SMTP_HOST}:${SMTP_PORT} (configured: ${SMTP_USER ? 'yes' : 'no'})`);
 });
