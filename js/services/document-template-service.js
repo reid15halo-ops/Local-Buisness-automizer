@@ -50,14 +50,14 @@ class DocumentTemplateService {
                 justify-content: space-between;
                 align-items: flex-start;
                 padding-bottom: 24px;
-                border-bottom: 2px solid #0f172a;
+                border-bottom: 2px solid #0c1a1a;
                 margin-bottom: 32px;
             }
             .company-logo { height: 56px; width: auto; object-fit: contain; }
             .company-name-text {
                 font-size: 22px;
                 font-weight: 700;
-                color: #0f172a;
+                color: #0c1a1a;
                 line-height: 1.2;
             }
             .company-address {
@@ -73,7 +73,7 @@ class DocumentTemplateService {
             .doc-meta .doc-type {
                 font-size: 20px;
                 font-weight: 700;
-                color: #0f172a;
+                color: #0c1a1a;
             }
             .doc-meta .doc-number {
                 font-size: 13px;
@@ -109,7 +109,7 @@ class DocumentTemplateService {
             .doc-subject {
                 font-size: 16px;
                 font-weight: 700;
-                color: #0f172a;
+                color: #0c1a1a;
                 margin-bottom: 16px;
             }
             .doc-intro {
@@ -126,7 +126,7 @@ class DocumentTemplateService {
                 font-size: 12px;
             }
             .pos-table thead tr {
-                background: #0f172a;
+                background: #0c1a1a;
                 color: #fff;
             }
             .pos-table thead th {
@@ -166,14 +166,14 @@ class DocumentTemplateService {
             .totals tr.total td {
                 font-size: 14px;
                 font-weight: 700;
-                border-top: 2px solid #0f172a;
+                border-top: 2px solid #0c1a1a;
                 padding-top: 8px;
             }
 
             /* Notes / payment terms */
             .doc-notes {
                 background: #f8fafc;
-                border-left: 3px solid #6366f1;
+                border-left: 3px solid #2dd4a8;
                 padding: 12px 16px;
                 border-radius: 4px;
                 font-size: 12px;
@@ -745,7 +745,7 @@ ${this._css()}
         const cta = opts.portalUrl ? `
             <div style="text-align:center;margin:28px 0">
                 <a href="${this._esc(opts.portalUrl)}"
-                   style="background:#6366f1;color:#fff;padding:13px 30px;border-radius:8px;
+                   style="background:#2dd4a8;color:#fff;padding:13px 30px;border-radius:8px;
                           font-size:15px;font-weight:600;text-decoration:none;display:inline-block">
                     ${this._esc(opts.portalCtaLabel || 'Im Kundenportal ansehen →')}
                 </a>
@@ -775,13 +775,13 @@ ${this._css()}
        style="max-width:600px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,.08)">
 
     <!-- Email Header -->
-    <tr><td style="background:#0f172a;padding:20px 32px;text-align:center">
+    <tr><td style="background:#0c1a1a;padding:20px 32px;text-align:center">
         ${logo}
     </td></tr>
 
     <!-- Subject bar -->
     <tr><td style="background:#f8fafc;padding:14px 32px;border-bottom:1px solid #e5e7eb">
-        <span style="font-size:16px;font-weight:600;color:#0f172a">${this._esc(subject)}</span>
+        <span style="font-size:16px;font-weight:600;color:#0c1a1a">${this._esc(subject)}</span>
     </td></tr>
 
     <!-- Body -->

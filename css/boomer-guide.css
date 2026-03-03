@@ -69,7 +69,7 @@
 /* ===== NAV ITEM GLOW EFFECT ===== */
 .nav-item.boomer-glow {
     animation: boomer-glow-pulse 2s ease-in-out infinite;
-    border: 1px solid rgba(99, 102, 241, 0.4) !important;
+    border: 1px solid rgba(45, 212, 168, 0.4) !important;
     border-radius: 8px;
 }
 
@@ -87,12 +87,12 @@
 
 @keyframes boomer-glow-pulse {
     0%, 100% {
-        box-shadow: 0 0 5px rgba(99, 102, 241, 0.2),
-                    inset 0 0 5px rgba(99, 102, 241, 0.05);
+        box-shadow: 0 0 5px rgba(45, 212, 168, 0.2),
+                    inset 0 0 5px rgba(45, 212, 168, 0.05);
     }
     50% {
-        box-shadow: 0 0 20px rgba(99, 102, 241, 0.4),
-                    inset 0 0 10px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 20px rgba(45, 212, 168, 0.4),
+                    inset 0 0 10px rgba(45, 212, 168, 0.1);
     }
 }
 
@@ -224,7 +224,7 @@
     background: var(--bg-hover);
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     border-left: 4px solid transparent;
 }
 
@@ -327,7 +327,7 @@
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -342,7 +342,7 @@
 .boomer-splash-btn-primary:hover {
     background: #5558e6;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(45, 212, 168, 0.3);
 }
 
 .boomer-splash-btn-secondary {
@@ -369,17 +369,17 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 16px rgba(45, 212, 168, 0.4);
     z-index: 9000;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .boomer-guide-fab:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 6px 24px rgba(45, 212, 168, 0.5);
 }
 
 .boomer-guide-fab.has-updates {
@@ -387,8 +387,8 @@
 }
 
 @keyframes fab-attention {
-    0%, 100% { box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4); }
-    50% { box-shadow: 0 4px 30px rgba(99, 102, 241, 0.7), 0 0 0 8px rgba(99, 102, 241, 0.15); }
+    0%, 100% { box-shadow: 0 4px 16px rgba(45, 212, 168, 0.4); }
+    50% { box-shadow: 0 4px 30px rgba(45, 212, 168, 0.7), 0 0 0 8px rgba(45, 212, 168, 0.15); }
 }
 
 .boomer-guide-fab-badge {

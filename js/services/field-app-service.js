@@ -389,7 +389,7 @@ class FieldAppService {
         ctx.lineJoin = 'round';
 
         // White background
-        ctx.fillStyle = '#1c1c21';
+        ctx.fillStyle = '#0f2327';
         ctx.fillRect(0, 0, rect.width, rect.height);
 
         const getPos = (e) => {
@@ -439,7 +439,7 @@ class FieldAppService {
 
         return {
             clear: () => {
-                ctx.fillStyle = '#1c1c21';
+                ctx.fillStyle = '#0f2327';
                 ctx.fillRect(0, 0, rect.width, rect.height);
             },
             toDataURL: () => {

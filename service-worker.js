@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v16';
+const CACHE_NAME = 'freyai-visions-v20';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -24,7 +24,7 @@ const STATIC_ASSETS = [
     '/landing.html',
     '/offline.html',
     '/booking.html',
-    '/portal.html',
+    '',
     
     
 
@@ -38,9 +38,15 @@ const STATIC_ASSETS = [
     '/css/agent-workflows.css',
     '/css/boomer-guide.css',
     '/css/field-app.css',
+    '/css/field-app-mobile.css',
+    '/css/aufmass.css',
+    '/css/customer-portal.css',
+    '/css/dashboard-widgets.css',
+    '/css/conflict-resolution.css',
+    '/css/support.css',
 
     // --- Core JS ---
-    '/js/app.js',
+    '',
     '/js/app-new.js',
     '/js/features-integration.js',
     '/js/new-features-ui.js',
@@ -157,8 +163,6 @@ const STATIC_ASSETS = [
     '/js/services/work-estimation-service.js',
     '/js/services/workflow-builder-service.js',
     '/js/services/workflow-service.js',
-    '/js/services/portal-service.js',
-    '/js/services/offline-sync-service.js',
 
     // --- JS UI Components ---
     '/js/ui/admin-panel-ui.js',

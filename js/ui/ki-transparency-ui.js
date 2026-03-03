@@ -344,8 +344,8 @@ class KITransparencyUI {
     display: flex;
     gap: 8px;
     padding: 10px 16px;
-    background: #1c1c21;
-    border-top: 1px solid #2a2a32;
+    background: #0f2327;
+    border-top: 1px solid #1a3030;
     border-radius: 0 0 6px 6px;
     flex-wrap: wrap;
 }

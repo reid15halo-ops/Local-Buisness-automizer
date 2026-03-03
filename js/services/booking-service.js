@@ -295,7 +295,7 @@ ${ci.name}`
     }
 
     getStatusColor(status) {
-        const colors = { pending: '#f59e0b', confirmed: '#22c55e', completed: '#6366f1', cancelled: '#ef4444' };
+        const colors = { pending: '#f59e0b', confirmed: '#22c55e', completed: '#2dd4a8', cancelled: '#ef4444' };
         return colors[status] || '#64748b';
     }
 

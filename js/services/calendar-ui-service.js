@@ -11,7 +11,7 @@ class CalendarUIService {
         this.viewContainer = null;
         this.editingEvent = null;
         this.colors = {
-            termin: '#6366f1',
+            termin: '#2dd4a8',
             auftrag: '#f59e0b',
             deadline: '#ef4444',
             besichtigung: '#22c55e',
@@ -29,7 +29,7 @@ class CalendarUIService {
             /* Calendar Container */
             .calendar-ui-container {
                 width: 100%;
-                background: #0f0f12;
+                background: #0c1a1a;
                 color: #e4e4e7;
                 border-radius: 8px;
                 overflow: hidden;
@@ -43,16 +43,16 @@ class CalendarUIService {
                 display: flex;
                 gap: 8px;
                 padding: 16px;
-                border-bottom: 1px solid #2a2a32;
-                background: #1c1c21;
+                border-bottom: 1px solid #1a3030;
+                background: #0f2327;
                 flex-wrap: wrap;
             }
 
             .calendar-view-switcher button {
                 padding: 8px 16px;
-                border: 1px solid #3a3a42;
+                border: 1px solid #1f3a3a;
                 border-radius: 6px;
-                background: #1c1c21;
+                background: #0f2327;
                 color: #a1a1a8;
                 cursor: pointer;
                 transition: all 0.2s;
@@ -60,13 +60,13 @@ class CalendarUIService {
             }
 
             .calendar-view-switcher button.active {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: white;
-                border-color: #6366f1;
+                border-color: #2dd4a8;
             }
 
             .calendar-view-switcher button:hover:not(.active) {
-                border-color: #6366f1;
+                border-color: #2dd4a8;
                 color: #e4e4e7;
             }
 
@@ -76,8 +76,8 @@ class CalendarUIService {
                 align-items: center;
                 justify-content: space-between;
                 padding: 16px;
-                background: #1c1c21;
-                border-bottom: 1px solid #2a2a32;
+                background: #0f2327;
+                border-bottom: 1px solid #1a3030;
             }
 
             .calendar-nav-title {
@@ -95,9 +95,9 @@ class CalendarUIService {
 
             .calendar-nav-buttons button {
                 padding: 8px 12px;
-                border: 1px solid #3a3a42;
+                border: 1px solid #1f3a3a;
                 border-radius: 6px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 color: #a1a1a8;
                 cursor: pointer;
                 transition: all 0.2s;
@@ -105,8 +105,8 @@ class CalendarUIService {
             }
 
             .calendar-nav-buttons button:hover {
-                background: #2a2a32;
-                border-color: #6366f1;
+                background: #1a3030;
+                border-color: #2dd4a8;
                 color: #e4e4e7;
             }
 
@@ -115,7 +115,7 @@ class CalendarUIService {
                 display: grid;
                 grid-template-columns: repeat(7, 1fr);
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 padding: 1px;
                 flex: 1;
                 overflow: auto;
@@ -125,22 +125,22 @@ class CalendarUIService {
                 display: grid;
                 grid-template-columns: repeat(7, 1fr);
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 padding: 1px;
             }
 
             .calendar-month-day-header {
                 padding: 12px 8px;
-                background: #1c1c21;
+                background: #0f2327;
                 font-weight: 600;
                 font-size: 13px;
                 color: #a1a1a8;
                 text-align: center;
-                border-bottom: 2px solid #2a2a32;
+                border-bottom: 2px solid #1a3030;
             }
 
             .calendar-day-cell {
-                background: #0f0f12;
+                background: #0c1a1a;
                 padding: 8px;
                 min-height: 100px;
                 cursor: pointer;
@@ -155,7 +155,7 @@ class CalendarUIService {
             }
 
             .calendar-day-cell.today {
-                border: 2px solid #6366f1;
+                border: 2px solid #2dd4a8;
             }
 
             .calendar-day-cell.other-month {
@@ -216,14 +216,14 @@ class CalendarUIService {
                 display: grid;
                 grid-template-columns: 80px 1fr;
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 flex: 1;
                 overflow: auto;
             }
 
             .calendar-week-times {
-                background: #1c1c21;
-                border-right: 1px solid #2a2a32;
+                background: #0f2327;
+                border-right: 1px solid #1a3030;
                 display: flex;
                 flex-direction: column;
             }
@@ -234,22 +234,22 @@ class CalendarUIService {
                 font-size: 11px;
                 color: #a1a1a8;
                 text-align: right;
-                border-bottom: 1px solid #2a2a32;
+                border-bottom: 1px solid #1a3030;
                 display: flex;
                 align-items: flex-start;
-                background: #0f0f12;
+                background: #0c1a1a;
             }
 
             .calendar-week-grid {
                 display: grid;
                 grid-template-columns: repeat(7, 1fr);
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 position: relative;
             }
 
             .calendar-week-day {
-                background: #0f0f12;
+                background: #0c1a1a;
                 display: flex;
                 flex-direction: column;
                 position: relative;
@@ -257,8 +257,8 @@ class CalendarUIService {
 
             .calendar-week-day-header {
                 padding: 8px;
-                background: #1c1c21;
-                border-bottom: 1px solid #2a2a32;
+                background: #0f2327;
+                border-bottom: 1px solid #1a3030;
                 font-size: 12px;
                 font-weight: 600;
                 color: #e4e4e7;
@@ -270,7 +270,7 @@ class CalendarUIService {
             }
 
             .calendar-week-day-header.today {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: white;
             }
 
@@ -294,7 +294,7 @@ class CalendarUIService {
 
             .calendar-hour {
                 min-height: 40px;
-                border-bottom: 1px solid #2a2a32;
+                border-bottom: 1px solid #1a3030;
                 position: relative;
             }
 
@@ -336,15 +336,15 @@ class CalendarUIService {
                 display: flex;
                 flex-direction: column;
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 flex: 1;
                 overflow: auto;
             }
 
             .calendar-day-header {
                 padding: 16px;
-                background: #1c1c21;
-                border-bottom: 1px solid #2a2a32;
+                background: #0f2327;
+                border-bottom: 1px solid #1a3030;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -360,7 +360,7 @@ class CalendarUIService {
                 display: flex;
                 flex-direction: column;
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 padding: 1px;
             }
 
@@ -368,29 +368,29 @@ class CalendarUIService {
                 display: grid;
                 grid-template-columns: 80px 1fr;
                 gap: 1px;
-                background: #2a2a32;
+                background: #1a3030;
                 min-height: 80px;
             }
 
             .calendar-day-time {
-                background: #1c1c21;
+                background: #0f2327;
                 padding: 8px;
                 font-size: 12px;
                 color: #a1a1a8;
                 font-weight: 600;
-                border-right: 1px solid #2a2a32;
+                border-right: 1px solid #1a3030;
             }
 
             .calendar-day-hour {
-                background: #0f0f12;
+                background: #0c1a1a;
                 padding: 8px;
                 position: relative;
             }
 
             /* Event Cards */
             .calendar-event-card {
-                background: #1c1c21;
-                border: 1px solid #2a2a32;
+                background: #0f2327;
+                border: 1px solid #1a3030;
                 border-radius: 6px;
                 padding: 12px;
                 margin-bottom: 8px;
@@ -400,8 +400,8 @@ class CalendarUIService {
             }
 
             .calendar-event-card:hover {
-                border-color: #3a3a42;
-                background: #2a2a32;
+                border-color: #1f3a3a;
+                background: #1a3030;
                 transform: translateY(-2px);
             }
 
@@ -449,14 +449,14 @@ class CalendarUIService {
             }
 
             .calendar-modal-content {
-                background: #1c1c21;
+                background: #0f2327;
                 border-radius: 12px;
                 padding: 24px;
                 max-width: 500px;
                 width: 90%;
                 max-height: 90vh;
                 overflow-y: auto;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
             }
 
             .calendar-modal-header {
@@ -483,9 +483,9 @@ class CalendarUIService {
             .calendar-form-textarea {
                 width: 100%;
                 padding: 8px 12px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
                 border-radius: 6px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 color: #e4e4e7;
                 font-family: inherit;
                 font-size: 14px;
@@ -496,7 +496,7 @@ class CalendarUIService {
             .calendar-form-select:focus,
             .calendar-form-textarea:focus {
                 outline: none;
-                border-color: #6366f1;
+                border-color: #2dd4a8;
                 background: #131316;
             }
 
@@ -544,9 +544,9 @@ class CalendarUIService {
 
             .calendar-btn {
                 padding: 8px 16px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
                 border-radius: 6px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 color: #e4e4e7;
                 cursor: pointer;
                 transition: all 0.2s;
@@ -555,14 +555,14 @@ class CalendarUIService {
             }
 
             .calendar-btn:hover {
-                background: #2a2a32;
-                border-color: #3a3a42;
+                background: #1a3030;
+                border-color: #1f3a3a;
             }
 
             .calendar-btn-primary {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: white;
-                border-color: #6366f1;
+                border-color: #2dd4a8;
             }
 
             .calendar-btn-primary:hover {
@@ -583,10 +583,10 @@ class CalendarUIService {
 
             /* Mini Calendar */
             .calendar-mini {
-                background: #1c1c21;
+                background: #0f2327;
                 border-radius: 8px;
                 padding: 12px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
             }
 
             .calendar-mini-header {
@@ -612,23 +612,23 @@ class CalendarUIService {
                 border-radius: 4px;
                 cursor: pointer;
                 color: #a1a1a8;
-                background: #0f0f12;
+                background: #0c1a1a;
                 transition: all 0.2s;
             }
 
             .calendar-mini-day:hover {
-                background: #2a2a32;
+                background: #1a3030;
                 color: #e4e4e7;
             }
 
             .calendar-mini-day.today {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: white;
                 font-weight: 600;
             }
 
             .calendar-mini-day.selected {
-                border: 1px solid #6366f1;
+                border: 1px solid #2dd4a8;
             }
 
             .calendar-mini-day.other-month {
@@ -714,7 +714,7 @@ class CalendarUIService {
             }
 
             .calendar-status-abgeschlossen {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: white;
             }
 

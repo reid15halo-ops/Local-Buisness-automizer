@@ -298,7 +298,7 @@ class TenantService {
         <div class="tenant-panel" id="tenant-panel">
             <div class="tenant-panel-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
                 <h3 style="margin:0">Mandanten-Verwaltung</h3>
-                <button onclick="window.tenantService.showCreateDialog()" class="btn btn-primary" style="padding:8px 16px;border-radius:8px;border:none;background:#6366f1;color:#fff;cursor:pointer">
+                <button onclick="window.tenantService.showCreateDialog()" class="btn btn-primary" style="padding:8px 16px;border-radius:8px;border:none;background:#2dd4a8;color:#fff;cursor:pointer">
                     + Neuer Mandant
                 </button>
             </div>
@@ -436,7 +436,7 @@ class TenantService {
                     <button type="button" onclick="document.getElementById('tenant-form-overlay')?.remove()"
                         style="padding:10px 20px;border-radius:8px;border:1px solid #555;background:transparent;color:#fff;cursor:pointer">Abbrechen</button>
                     <button type="submit"
-                        style="padding:10px 20px;border-radius:8px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-weight:600">
+                        style="padding:10px 20px;border-radius:8px;border:none;background:#2dd4a8;color:#fff;cursor:pointer;font-weight:600">
                         ${isEdit ? 'Speichern' : 'Mandant anlegen'}
                     </button>
                 </div>

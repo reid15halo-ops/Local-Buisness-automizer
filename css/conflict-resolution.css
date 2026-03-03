@@ -50,7 +50,7 @@
     padding: 0 7px;
     border-radius: 12px;
     background: var(--accent-danger);
-    color: #ffffff;
+    color: #e0eeee;
     font-size: 12px;
     font-weight: 700;
     line-height: 1;
@@ -71,7 +71,7 @@
     padding: 0 5px;
     border-radius: 9px;
     background: var(--accent-danger);
-    color: #ffffff;
+    color: #e0eeee;
     font-size: 10px;
     font-weight: 700;
     line-height: 1;
@@ -515,7 +515,7 @@
     border-radius: var(--border-radius-sm);
     font-size: 14px;
     font-weight: 500;
-    color: #ffffff;
+    color: #e0eeee;
     z-index: 10000;
     opacity: 0;
     transform: translateY(16px);

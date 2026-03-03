@@ -79,29 +79,20 @@
         console.error('Failed to load workflow services:', error);
     }
 
-    // Preload commonly used groups in background (idle time)
-    const preloadGroups = ['crm', 'finance', 'documents', 'calendar', 'automation', 'ai'];
-
-    setTimeout(() => {
-        console.log('📦 Preloading service groups in background...');
-        preloadGroups.forEach(group => {
-            window.lazyLoader.preload(group);
-        });
-
-        // Initialize email automation service when loaded
-        setTimeout(() => {
+    // Services are loaded on-demand when views are opened (via navigation.js loadForView).
+    // No eager preloading — saves ~2.5 MB of JS on initial load.
+    // EmailAutomationService is initialized when the automation view is first opened.
+    document.addEventListener('viewchange', function initEmailAuto(e) {
+        if (e.detail?.view === 'automation' || e.detail?.view === 'workflows') {
             if (window.EmailAutomationService && !window.emailAutomationService) {
                 try {
                     window.emailAutomationService = new window.EmailAutomationService();
-                    window.emailAutomationService.init().catch(err => {
-                        console.error('Failed to init EmailAutomationService:', err);
-                    });
-                } catch (error) {
-                    console.warn('EmailAutomationService not yet available:', error.message);
-                }
+                    window.emailAutomationService.init().catch(() => {});
+                } catch (_) {}
             }
-        }, 500);
-    }, 1500);
+            document.removeEventListener('viewchange', initEmailAuto);
+        }
+    });
 
     // Log loading stats periodically
     setTimeout(() => {
