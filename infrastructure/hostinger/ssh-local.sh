@@ -2,11 +2,13 @@
 # =============================================================================
 # FreyAI Visions — SSH into local network devices from Hostinger VPS
 #
-# Prerequisites:
-#   - Tailscale running on this VPS (tailscale-compose.yml)
-#   - pi4-guardian enrolled and advertising 192.168.1.0/24 subnet route
-#   - Subnet route approved in Tailscale admin panel
-#   - SSH public key deployed to target device's ~/.ssh/authorized_keys
+# Two connection modes (auto-detected):
+#   REVERSE TUNNEL (default) — Pi runs reverse-tunnel-pi.sh, no Tailscale needed
+#   TAILSCALE                — Tailscale installed and pi4-guardian enrolled
+#
+# Prerequisites (reverse tunnel mode):
+#   1. On the Pi: sudo bash reverse-tunnel-pi.sh
+#   2. VPS public key (~/.ssh/id_ed25519.pub) is already baked into that script
 #
 # Usage:
 #   ./ssh-local.sh pi           — SSH into Raspberry Pi 4 (192.168.1.10)
@@ -14,7 +16,7 @@
 #   ./ssh-local.sh compute      — SSH into ThinkCentre (192.168.1.12)
 #   ./ssh-local.sh kiosk        — SSH into HP t640 kiosk (192.168.1.13)
 #   ./ssh-local.sh gaming       — SSH into Gaming Rig (192.168.1.20)
-#   ./ssh-local.sh status       — Show Tailscale mesh status
+#   ./ssh-local.sh status       — Show connection status
 #   ./ssh-local.sh check        — Ping all local devices
 # =============================================================================
 set -euo pipefail
@@ -35,29 +37,62 @@ TS_HOST[gaming]="gaming-forge";   LAN_IP[gaming]="192.168.1.20"; SSH_USER[gaming
 
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_ed25519}"
 SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=30"
+TUNNEL_PORT="${TUNNEL_PORT:-2222}"   # reverse tunnel port on localhost
 
-# ── Check Tailscale is running ────────────────────────────────────────────────
+# ── Detect connection mode ────────────────────────────────────────────────────
+# Returns "tunnel", "tailscale", or "none"
+detect_mode() {
+    # Check reverse tunnel first (Pi connected to port 2222)
+    if ss -tlnp 2>/dev/null | grep -q ":${TUNNEL_PORT}" || \
+       nc -z localhost "${TUNNEL_PORT}" 2>/dev/null; then
+        echo "tunnel"
+        return
+    fi
+    # Check Tailscale
+    if command -v tailscale &>/dev/null && tailscale status &>/dev/null 2>&1; then
+        echo "tailscale"
+        return
+    fi
+    if docker exec tailscale-vps tailscale status &>/dev/null 2>&1; then
+        echo "tailscale"
+        return
+    fi
+    echo "none"
+}
+
 check_tailscale() {
-    if ! command -v tailscale &>/dev/null; then
-        # Try via docker exec if running in container context
-        if docker exec tailscale-vps tailscale status &>/dev/null 2>&1; then
-            TS_CMD="docker exec tailscale-vps tailscale"
-        else
-            die "Tailscale not found. Start it: docker compose -f tailscale-compose.yml up -d"
-        fi
-    else
+    if command -v tailscale &>/dev/null; then
         TS_CMD="tailscale"
+    elif docker exec tailscale-vps tailscale status &>/dev/null 2>&1; then
+        TS_CMD="docker exec tailscale-vps tailscale"
+    else
+        die "Tailscale not found. Start it: docker compose -f tailscale-compose.yml up -d"
     fi
 }
 
 # ── status ────────────────────────────────────────────────────────────────────
 do_status() {
-    check_tailscale
-    info "Tailscale mesh status:"
-    ${TS_CMD} status
-    echo ""
-    info "This VPS Tailscale IP:"
-    ${TS_CMD} ip -4 2>/dev/null || echo "  (not connected)"
+    MODE=$(detect_mode)
+    info "Connection mode: ${MODE}"
+    case "${MODE}" in
+        tunnel)
+            success "Reverse tunnel active on localhost:${TUNNEL_PORT}"
+            ss -tlnp | grep ":${TUNNEL_PORT}" || true
+            ;;
+        tailscale)
+            check_tailscale
+            info "Tailscale mesh status:"
+            ${TS_CMD} status
+            echo ""
+            info "VPS Tailscale IP:"
+            ${TS_CMD} ip -4 2>/dev/null || echo "  (not connected)"
+            ;;
+        none)
+            warn "No connection to local network."
+            warn "Option 1: Run reverse-tunnel-pi.sh on the Pi"
+            warn "Option 2: Set up Tailscale via tailscale-compose.yml"
+            ;;
+    esac
 }
 
 # ── check — ping all local devices ───────────────────────────────────────────
@@ -90,7 +125,6 @@ do_check() {
 # ── ssh into a device ─────────────────────────────────────────────────────────
 do_ssh() {
     local DEVICE="$1"
-    [[ -z "${DEVICE_LIST[${DEVICE}]+_}" ]] 2>/dev/null || true
     if [[ -z "${TS_HOST[$DEVICE]+_}" ]]; then
         echo "Unknown device: ${DEVICE}"
         echo ""
@@ -98,28 +132,41 @@ do_ssh() {
         exit 1
     fi
 
-    check_tailscale
+    local HOST="${TS_HOST[$DEVICE]}"
+    local USER="${SSH_USER[$DEVICE]}"
+    local LAN="${LAN_IP[$DEVICE]}"
+    local KEY_FLAG=""
+    [[ -f "${SSH_KEY}" ]] && KEY_FLAG="-i ${SSH_KEY}"
 
-    HOST="${TS_HOST[$DEVICE]}"
-    USER="${SSH_USER[$DEVICE]}"
-    LAN="${LAN_IP[$DEVICE]}"
+    MODE=$(detect_mode)
+    info "Connecting to ${DEVICE} (${LAN}) via ${MODE}..."
 
-    info "Connecting to ${DEVICE} (${HOST} / ${LAN}) as ${USER}..."
-
-    # Try Tailscale hostname first, fall back to LAN IP via subnet route
-    if ${TS_CMD} ping --c=1 "${HOST}" &>/dev/null 2>&1; then
-        TARGET="${HOST}"
-    else
-        warn "Tailscale hostname unreachable, trying LAN IP ${LAN} via subnet route..."
-        TARGET="${LAN}"
-    fi
-
-    if [[ -f "${SSH_KEY}" ]]; then
-        ssh ${SSH_OPTS} -i "${SSH_KEY}" "${USER}@${TARGET}" "${@:2}"
-    else
-        warn "SSH key not found at ${SSH_KEY}. Trying without -i flag..."
-        ssh ${SSH_OPTS} "${USER}@${TARGET}" "${@:2}"
-    fi
+    case "${MODE}" in
+        tunnel)
+            if [[ "${DEVICE}" == "pi" ]]; then
+                # Direct — Pi is the tunnel endpoint
+                ssh ${SSH_OPTS} ${KEY_FLAG} -p "${TUNNEL_PORT}" "${USER}@localhost" "${@:2}"
+            else
+                # Jump through the Pi to reach other LAN devices
+                JUMP="-J ${SSH_USER[pi]}@localhost:${TUNNEL_PORT}"
+                [[ -f "${SSH_KEY}" ]] && JUMP="-J ${SSH_USER[pi]}@localhost:${TUNNEL_PORT} -i ${SSH_KEY}"
+                ssh ${SSH_OPTS} ${KEY_FLAG} ${JUMP} "${USER}@${LAN}" "${@:2}"
+            fi
+            ;;
+        tailscale)
+            check_tailscale
+            if ${TS_CMD} ping --c=1 "${HOST}" &>/dev/null 2>&1; then
+                TARGET="${HOST}"
+            else
+                warn "Tailscale hostname unreachable, trying LAN IP ${LAN}..."
+                TARGET="${LAN}"
+            fi
+            ssh ${SSH_OPTS} ${KEY_FLAG} "${USER}@${TARGET}" "${@:2}"
+            ;;
+        none)
+            die "No connection to local network. Run reverse-tunnel-pi.sh on the Pi first."
+            ;;
+    esac
 }
 
 # ── Dispatch ──────────────────────────────────────────────────────────────────
