@@ -31,7 +31,7 @@ async function fetchTickets() {
     let url = SB_URL + '/rest/v1/support_tickets?order=created_at.desc&limit=100&select=*';
     if (currentFilter.status) url += '&status=eq.' + currentFilter.status;
     if (currentFilter.priority) url += '&priority=eq.' + currentFilter.priority;
-    if (currentFilter.search) url += '&or=(ticket_number.ilike.*' + currentFilter.search + '*,subject.ilike.*' + currentFilter.search + '*,customer_email.ilike.*' + currentFilter.search + '*)';
+    if (currentFilter.search) url += '&or=(ticket_number.ilike.*' + encodeURIComponent(currentFilter.search) + '*,subject.ilike.*' + encodeURIComponent(currentFilter.search) + '*,customer_email.ilike.*' + encodeURIComponent(currentFilter.search) + '*)';
 
     try {
         const resp = await fetch(url, { headers: await getHeaders() });
