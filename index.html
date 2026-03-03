@@ -16,12 +16,13 @@
     <link rel="stylesheet" href="css/boomer-guide.css">
     <link rel="stylesheet" href="css/agent-workflows.css">
     <link rel="stylesheet" href="css/field-app.css">
+    <link rel="stylesheet" href="css/support.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com; frame-src https://checkout.stripe.com; font-src 'self' data:; worker-src 'self' blob:;">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#2dd4a8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <!-- Apple Splash Screens -->
@@ -272,6 +273,11 @@
 
                 <!-- Admin Panel (Pro Mode) -->
                 <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="support" data-mode="simple">
+                    <span class="nav-icon">🎫</span>
+                    Support
+                    <span class="badge" id="support-badge"></span>
+                </button>
                 <button class="nav-item" data-view="admin-panel" data-mode="pro">
                     <span class="nav-icon">🔐</span>
                     Verwaltung
@@ -1042,7 +1048,7 @@ Mit freundlichen Grüßen
                             <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
                             <input type="file" id="import-data-file" accept=".json" class="u-file-input-hidden" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
-                                style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
+                                style="background: linear-gradient(135deg, #2dd4a8, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
                             <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
                         </div>
@@ -1485,7 +1491,7 @@ Mit freundlichen Grüßen
                     }
 
                     .comm-message.sent .comm-message-bubble {
-                        background: #6366f1;
+                        background: #2dd4a8;
                         color: white;
                         border-bottom-right-radius: 4px;
                     }
@@ -2193,7 +2199,48 @@ Mit freundlichen Grüßen
             </section>
 
 
+
+            <!-- Support Dashboard -->
+            <section class="view" id="view-support">
+                <h2>Support Dashboard</h2>
+                <div class="support-stats" id="support-stats"></div>
+                <div class="support-tabs">
+                    <button class="support-tab-btn active" data-tab="tickets">Tickets</button>
+                    <button class="support-tab-btn" data-tab="kb">Knowledge Base</button>
+                </div>
+                <div class="support-tab-panel active" id="support-panel-tickets">
+                    <div class="support-toolbar">
+                        <select id="support-filter-status">
+                            <option value="">Alle Status</option>
+                            <option value="offen">Offen</option>
+                            <option value="in_bearbeitung">In Bearbeitung</option>
+                            <option value="warte_auf_kunde">Warte auf Kunde</option>
+                            <option value="geloest">Gelöst</option>
+                            <option value="geschlossen">Geschlossen</option>
+                        </select>
+                        <select id="support-filter-priority">
+                            <option value="">Alle Prioritäten</option>
+                            <option value="niedrig">Niedrig</option>
+                            <option value="normal">Normal</option>
+                            <option value="hoch">Hoch</option>
+                            <option value="dringend">Dringend</option>
+                        </select>
+                        <input type="text" id="support-filter-search" placeholder="Suche (Ticket#, Betreff, Email)...">
+                    </div>
+                    <div class="support-ticket-list" id="support-ticket-list"></div>
+                </div>
+                <div class="support-tab-panel" id="support-panel-kb">
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+                        <button id="support-new-kb" style="padding:8px 16px;border-radius:6px;border:none;background:var(--primary,#6366f1);color:white;cursor:pointer">+ Neuer Artikel</button>
+                    </div>
+                    <div id="support-kb-form-area"></div>
+                    <div class="support-kb-list" id="support-kb-list"></div>
+                </div>
+                <div class="support-detail-overlay" id="support-detail-overlay"></div>
+            </section>
+
         </main>
+
     </div>
 
     <!-- Modal: Ausgabe erfassen -->
@@ -3038,6 +3085,7 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/modules/rechnungen.js"></script>
     <script src="js/services/bon-scanner-service.js"></script>
     <script src="js/modules/wareneingang.js"></script>
+    <script src="js/modules/support.js"></script>
     <script src="js/app-new.js"></script>
 
     <!-- Main application (current production version - fallback) -->
