@@ -17,7 +17,7 @@
         if (btnDashboardImport) {
             btnDashboardImport.addEventListener('click', () => {
                 window.excelImportWizard.open(null, (results) => {
-                    console.log('Universal-Import abgeschlossen:', results);
+                    // Universal import completed
 
                     // Aktualisiere entsprechende Ansicht basierend auf importType
                     if (results.importType === 'material' && window.UI && window.UI.refreshMaterialView) {
@@ -37,7 +37,7 @@
         if (btnMaterialImport) {
             btnMaterialImport.addEventListener('click', () => {
                 window.excelImportWizard.open('material', (results) => {
-                    console.log('Material-Import abgeschlossen:', results);
+                    // Material import completed
 
                     // Aktualisiere Material-Ansicht
                     if (window.UI && window.UI.refreshMaterialView) {
@@ -55,7 +55,7 @@
         if (btnKundenImport) {
             btnKundenImport.addEventListener('click', () => {
                 window.excelImportWizard.open('kunden', (results) => {
-                    console.log('Kunden-Import abgeschlossen:', results);
+                    // Kunden import completed
 
                     // Aktualisiere Kunden-Ansicht
                     if (window.UI && window.UI.refreshCustomersView) {
@@ -73,7 +73,7 @@
         if (btnAnfragenImport) {
             btnAnfragenImport.addEventListener('click', () => {
                 window.excelImportWizard.open('anfragen', (results) => {
-                    console.log('Anfragen-Import abgeschlossen:', results);
+                    // Anfragen import completed
 
                     // Aktualisiere Anfragen-Ansicht
                     if (window.UI && window.UI.loadAnfragen) {

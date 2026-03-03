@@ -40,7 +40,7 @@ class SupabaseClientService {
             const anonKey = this._resolveConfig('SUPABASE_ANON_KEY', 'supabase_anon_key');
 
             if (!url || !anonKey) {
-                console.info('[SupabaseClient] Not configured — running in offline/localStorage mode.');
+                console.warn('[SupabaseClient] Not configured — running in offline/localStorage mode.');
                 this._isConfigured = false;
                 return false;
             }
@@ -81,7 +81,7 @@ class SupabaseClientService {
             window.addEventListener('online', () => this._onBrowserOnline());
             window.addEventListener('offline', () => this._onBrowserOffline());
 
-            console.info('[SupabaseClient] Initialized successfully.');
+            // SupabaseClient initialized successfully
             return true;
 
         } catch (err) {
@@ -181,7 +181,7 @@ class SupabaseClientService {
 
         try {
             // Lightweight ping: fetch auth session (doesn't require data access)
-            const { error } = await Promise.race([
+            await Promise.race([
                 this._client.auth.getSession(),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
             ]);
@@ -189,7 +189,7 @@ class SupabaseClientService {
             // If we get a response (even an auth error), we're connected
             this._isConnected = true;
             return true;
-        } catch (err) {
+        } catch {
             this._isConnected = false;
             return false;
         }
@@ -223,13 +223,13 @@ class SupabaseClientService {
     }
 
     _notifyOnline() {
-        console.info('[SupabaseClient] Connection restored.');
-        this._onlineListeners.forEach(cb => { try { cb(); } catch (e) {} });
+        console.warn('[SupabaseClient] Connection restored.');
+        this._onlineListeners.forEach(cb => { try { cb(); } catch { /* ignore */ } });
     }
 
     _notifyOffline() {
         console.warn('[SupabaseClient] Connection lost — switching to offline mode.');
-        this._offlineListeners.forEach(cb => { try { cb(); } catch (e) {} });
+        this._offlineListeners.forEach(cb => { try { cb(); } catch { /* ignore */ } });
     }
 
     /**

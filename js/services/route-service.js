@@ -27,7 +27,7 @@ class RouteService {
         }
 
         // Get coordinates for all addresses (demo mode)
-        const stops = await Promise.all(appointments.map(async (apt, index) => ({
+        const stops = await Promise.all(appointments.map(async (apt, _index) => ({
             id: apt.id,
             title: apt.title || apt.kunde?.name,
             address: apt.adresse || apt.location || apt.kunde?.adresse || 'Unbekannt',
@@ -64,7 +64,7 @@ class RouteService {
     }
 
     // Geocode address (demo - would use Google Maps/OpenStreetMap)
-    async geocodeAddress(address) {
+    async geocodeAddress(_address) {
         // Demo: Return random coordinates in Germany
         // In production: Use Google Maps Geocoding API or Nominatim
         return {
@@ -134,7 +134,7 @@ class RouteService {
     calculateTiming(stops) {
         let currentTime = this.parseTime(this.settings.workStartTime);
 
-        return stops.map((stop, index) => {
+        return stops.map((stop, _index) => {
             // Travel time from previous
             const distance = stop.distanceFromPrevious || 10;
             const travelTime = (distance / this.settings.avgTravelSpeed) * 60; // minutes

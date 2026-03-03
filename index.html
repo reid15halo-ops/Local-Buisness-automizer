@@ -74,9 +74,10 @@
             if (sending || errorQueue.length === 0) return;
             sending = true;
             var batch = errorQueue.splice(0, 10);
-            var url = (window.SUPABASE_URL || "https://incbhhaiiayohrjqevog.supabase.co") + "/rest/v1/client_errors";
+            var url = window.SUPABASE_URL;
             var key = window.SUPABASE_ANON_KEY || "";
-            if (!key) { sending = false; return; }
+            if (!url || !key) { sending = false; return; }
+            url = url + "/rest/v1/client_errors";
             fetch(url, {
                 method: "POST",
                 headers: {

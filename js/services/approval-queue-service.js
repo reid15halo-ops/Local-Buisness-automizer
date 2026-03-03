@@ -616,7 +616,6 @@ class ApprovalQueueService {
         // Also update mobile notification badge if available
         const notifBadge = document.getElementById('notification-badge');
         if (notifBadge && count > 0) {
-            const currentCount = parseInt(notifBadge.textContent || '0', 10);
             // Don't double-count, just show the approvals count separately
         }
     }
@@ -646,7 +645,7 @@ class ApprovalQueueService {
         } else if (window.UI && typeof window.UI.showToast === 'function') {
             window.UI.showToast(message, type);
         } else {
-            console.info(`[ApprovalQueue] ${type}: ${message}`);
+            console.warn(`[ApprovalQueue] ${type}: ${message}`);
         }
     }
 
@@ -668,7 +667,7 @@ class ApprovalQueueService {
 
     _notifyListeners() {
         this._listeners.forEach(cb => {
-            try { cb(this._queue); } catch (e) {}
+            try { cb(this._queue); } catch { /* ignore */ }
         });
     }
 
@@ -737,7 +736,7 @@ class ApprovalQueueService {
      */
     destroy() {
         if (this._realtimeUnsub) {
-            try { this._realtimeUnsub(); } catch (e) {}
+            try { this._realtimeUnsub(); } catch { /* ignore */ }
             this._realtimeUnsub = null;
         }
         this._listeners = [];

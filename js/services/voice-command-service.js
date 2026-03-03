@@ -202,7 +202,7 @@ class VoiceCommandService {
         try {
             this.recognition.start();
             this.isListening = true;
-            console.log('🎤 Spracherkennung aktiv');
+            // Voice recognition active
             return true;
         } catch (e) {
             console.error('Could not start recognition:', e);
@@ -220,7 +220,7 @@ class VoiceCommandService {
 
     // Process recognized speech
     processCommand(transcript) {
-        console.log('🗣️ Erkannt:', transcript);
+        // Speech recognized
 
         // Check for wake word if required
         if (this.settings.wakeWord && !transcript.startsWith(this.settings.wakeWord)) {

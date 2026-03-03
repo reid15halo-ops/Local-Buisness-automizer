@@ -140,7 +140,7 @@ class WebhookService {
 
             try {
                 logEntry.responseBody = await response.text();
-            } catch (e) { }
+            } catch { /* ignore */ }
 
             // Update webhook stats
             if (response.ok) {

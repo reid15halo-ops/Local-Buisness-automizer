@@ -57,6 +57,7 @@ function renderEmails() {
     });
 }
 
+window.createTaskFromEmail = createTaskFromEmail;
 function createTaskFromEmail(emailId) {
     const email = window.emailService.emails.find(e => e.id === emailId);
     if (email && window.taskService && window.emailService) {
@@ -67,6 +68,7 @@ function createTaskFromEmail(emailId) {
     }
 }
 
+window.createAnfrageFromEmail = createAnfrageFromEmail;
 function createAnfrageFromEmail(emailId) {
     const email = window.emailService.emails.find(e => e.id === emailId);
     if (email && window.emailService) {
@@ -292,7 +294,7 @@ function renderCustomers() {
                 navigator.clipboard.writeText(url)
                     .then(() => window.showToast?.('Portal-Link kopiert', 'success'))
                     .catch(() => window.showToast?.(`Link: ${url}`, 'info'));
-            } catch (err) {
+            } catch {
                 window.showToast?.('Link konnte nicht kopiert werden', 'error');
             }
         });
@@ -919,6 +921,7 @@ function renderReportChart(report) {
     }
 }
 
+window.exportReportCSV = exportReportCSV;
 function exportReportCSV() {
     if (!currentReport) {
         showToast('Bitte erst einen Bericht erstellen', 'warning');
@@ -1009,7 +1012,7 @@ async function sendAiMessage() {
 
         typing.remove();
         appendAiMessage('bot', response);
-    } catch (e) {
+    } catch {
         typing.remove();
         appendAiMessage('bot', "⚠️ Fehler bei der Verbindung zur KI. Bitte prüfen Sie die Einstellungen.");
     }
@@ -1142,12 +1145,7 @@ function initNewFeatures() {
     initChatbot();
     initAuftragViewToggle();
 
-    console.log('✅ Neue Features initialisiert:', [
-        'EmailService', 'TaskService', 'CustomerService', 'DocumentService',
-        'CalendarService', 'BookingService', 'TimeTrackingService',
-        'CommunicationService', 'PhoneService', 'ReportService', 'ChatbotService',
-        'GanttTimelineUI', 'WorkEstimationUI', 'KITransparencyUI'
-    ].filter(s => window[s.charAt(0).toLowerCase() + s.slice(1)]));
+    // New features initialized
 }
 
 // Auto-init when DOM ready

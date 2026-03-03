@@ -235,7 +235,7 @@ class ApprovalService {
 
     // Callback when approval complete
     onApprovalComplete(request) {
-        console.log(`✅ Freigabe erteilt: ${request.workflowName} für ${request.documentType} ${request.documentId}`);
+        console.warn(`Freigabe erteilt: ${request.workflowName} für ${request.documentType} ${request.documentId}`);
 
         // Create task or trigger action
         if (window.taskService) {
@@ -271,7 +271,7 @@ class ApprovalService {
         }
     }
 
-    notifyRejection(request, step) {
+    notifyRejection(request, _step) {
         const title = request.workflowName || `${request.documentType} ${request.documentId}`;
         const message = `Freigabe abgelehnt: ${title}`;
 

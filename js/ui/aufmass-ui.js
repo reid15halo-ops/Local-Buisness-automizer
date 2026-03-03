@@ -306,7 +306,6 @@ class AufmassUI {
         if (!room) { this.currentScreen = 'detail'; this.render(); return; }
 
         const calc = service.calculateRoom(room);
-        const typeDef = service.ROOM_TYPES[room.type] || service.ROOM_TYPES.rechteck;
 
         container.innerHTML = `
             <div class="aufmass-header">
@@ -594,7 +593,7 @@ class AufmassUI {
     // SVG Room Preview
     // ============================================
 
-    _renderRoomPreview(room, calc) {
+    _renderRoomPreview(room, _calc) {
         const svgWidth = 400;
         const svgHeight = 300;
         const padding = 40;
@@ -774,7 +773,7 @@ class AufmassUI {
         `;
     }
 
-    _svgDeductions(room, rx, ry, rw, rh, realL, realW) {
+    _svgDeductions(room, rx, ry, rw, rh, realL, _realW) {
         if (!room.deductions || room.deductions.length === 0) {return '';}
 
         const deductions = [];
@@ -849,7 +848,7 @@ class AufmassUI {
         `;
     }
 
-    _renderMaterialCard(mat, projectId, roomId) {
+    _renderMaterialCard(mat, _projectId, _roomId) {
         const wastePercent = ((mat.wasteFactor - 1) * 100).toFixed(0);
 
         return `
@@ -1071,16 +1070,13 @@ class AufmassUI {
             });
         });
 
-        const materialRows = Object.entries(materialSummary).map(([key, m]) => `
+        const materialRows = Object.entries(materialSummary).map(([_key, m]) => `
             <tr>
                 <td>${this._esc(m.label)}</td>
                 <td style="text-align: right;">${m.totalArea.toFixed(2)} m\u00B2</td>
                 <td style="text-align: right;">${m.totalWithWaste.toFixed(2)} ${this._esc(m.unit)}</td>
             </tr>
         `).join('');
-
-        // Generate printable HTML summary
-        const summaryHtml = service.exportProjectSummary ? service.exportProjectSummary(this.currentProjectId) : null;
 
         container.innerHTML = `
             <div class="aufmass-header">

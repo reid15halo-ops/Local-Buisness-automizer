@@ -8,8 +8,8 @@
 // Module-level convenience shortcuts
 const {
     store, saveStore, addActivity, generateId,
-    formatCurrency, formatDate, formatDateTime, getRelativeTime,
-    getLeistungsartLabel, openModal, closeModal, h,
+    formatCurrency, formatDate,
+    openModal, closeModal, h,
     switchView, delay, showToast
 } = window.AppUtils;
 
@@ -21,7 +21,7 @@ async function init() {
     if (window.setupWizard && !window.setupWizard.isSetupComplete()) {
         const missing = window.setupWizard.getMissingKeys();
         if (missing.length > 0) {
-            console.log('⚙️ Setup incomplete. Missing keys:', missing.map(k => k.name).join(', '));
+            console.warn('Setup incomplete. Missing keys:', missing.map(k => k.name).join(', '));
             if (window.setupWizardUI) {
                 window.setupWizardUI.show();
                 return;
@@ -720,6 +720,7 @@ window.renderAngebote = window.AngeboteModule?.renderAngebote;
 window.renderAuftraege = window.AuftraegeModule?.renderAuftraege;
 window.renderRechnungen = window.RechnungenModule?.renderRechnungen;
 window.renderMahnwesen = renderMahnwesen;
+window.openMahnungModal = openMahnungModal;
 window.renderBuchhaltung = renderBuchhaltung;
 window.updateDashboard = window.DashboardModule?.updateDashboard;
 

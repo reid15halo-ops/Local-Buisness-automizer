@@ -30,7 +30,7 @@ class PDFService {
     }
 
     async loadLogo() {
-        if (this.logoLoaded) return;
+        if (this.logoLoaded) {return;}
         // Try localStorage first (base64)
         const stored = localStorage.getItem('company_logo');
         if (stored) {
@@ -41,7 +41,7 @@ class PDFService {
         // Fetch from img/logo.png
         try {
             const resp = await fetch('img/logo.png');
-            if (!resp.ok) throw new Error('Logo not found');
+            if (!resp.ok) {throw new Error('Logo not found');}
             const blob = await resp.blob();
             this.logoBase64 = await new Promise((resolve) => {
                 const reader = new FileReader();

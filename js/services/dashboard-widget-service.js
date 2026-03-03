@@ -366,7 +366,7 @@ class DashboardWidgetService {
         if (window.cashFlowService) {
             try {
                 snapshot = window.cashFlowService.getCurrentSnapshot();
-            } catch (e) {
+            } catch {
                 // Cashflow service may not be ready
             }
         }
@@ -576,7 +576,7 @@ class DashboardWidgetService {
             if (thisWeek > lastWeek) { return 'up'; }
             if (thisWeek < lastWeek) { return 'down'; }
             return 'stable';
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -610,7 +610,7 @@ class DashboardWidgetService {
                 month: '2-digit',
                 year: 'numeric'
             });
-        } catch (e) {
+        } catch {
             return '';
         }
     }
@@ -626,7 +626,7 @@ class DashboardWidgetService {
         if (window.UI?.getRelativeTime) {
             try {
                 return window.UI.getRelativeTime(timeStr);
-            } catch (e) {
+            } catch {
                 // Fall through to built-in implementation
             }
         }
@@ -646,7 +646,7 @@ class DashboardWidgetService {
             if (diffHrs < 24) { return `vor ${diffHrs} Std.`; }
             if (diffDays < 7) { return `vor ${diffDays} Tag${diffDays > 1 ? 'en' : ''}`; }
             return this._formatDate(timeStr);
-        } catch (e) {
+        } catch {
             return '';
         }
     }

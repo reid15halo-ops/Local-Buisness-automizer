@@ -44,7 +44,7 @@ class JobQueueService {
             const watchers = this._pendingWatchers.get(job.id);
             if (watchers && (job.status === 'done' || job.status === 'failed' || job.status === 'cancelled')) {
                 watchers.forEach(resolve => {
-                    try { resolve(job); } catch (e) {}
+                    try { resolve(job); } catch { /* ignore */ }
                 });
                 this._pendingWatchers.delete(job.id);
             }
@@ -79,11 +79,11 @@ class JobQueueService {
 
         try {
             const job = await window.dbService.addJob(jobType, payload, priority);
-            console.info(`[JobQueue] Submitted job: ${jobType} (id: ${job.id}, priority: ${priority})`);
+            console.warn(`[JobQueue] Submitted job: ${jobType} (id: ${job.id}, priority: ${priority})`);
 
             // If running offline, mark job as 'local' so UI can show it
             if (!window.supabaseClient || !window.supabaseClient.isConfigured()) {
-                console.info(`[JobQueue] Offline mode: job ${job.id} stored locally.`);
+                console.warn(`[JobQueue] Offline mode: job ${job.id} stored locally.`);
             }
 
             return job;
@@ -118,7 +118,7 @@ class JobQueueService {
                 } else {
                     // Parse result if it's a JSON string
                     if (result.result && typeof result.result === 'string') {
-                        try { result.result = JSON.parse(result.result); } catch (e) {}
+                        try { result.result = JSON.parse(result.result); } catch { /* ignore */ }
                     }
                     resolve(result);
                 }
@@ -148,7 +148,7 @@ class JobQueueService {
                     const job = jobs.find(j => j.id === jobId);
                     if (job && (job.status === 'done' || job.status === 'failed' || job.status === 'cancelled')) {
                         const watchers = this._pendingWatchers.get(jobId) || [];
-                        watchers.forEach(cb => { try { cb(job); } catch (e) {} });
+                        watchers.forEach(cb => { try { cb(job); } catch { /* ignore */ } });
                         this._pendingWatchers.delete(jobId);
                     }
                 } catch (e) {
@@ -320,7 +320,7 @@ class JobQueueService {
     async getFailedJobs() {
         try {
             return await window.dbService.getJobsQueue('failed');
-        } catch (err) {
+        } catch {
             return [];
         }
     }
@@ -332,7 +332,7 @@ class JobQueueService {
     async getCompletedJobs() {
         try {
             return await window.dbService.getJobsQueue('done');
-        } catch (err) {
+        } catch {
             return [];
         }
     }
@@ -345,11 +345,11 @@ class JobQueueService {
     async cancelJob(jobId) {
         try {
             const result = await window.dbService.updateJobStatus(jobId, 'cancelled');
-            console.info(`[JobQueue] Job ${jobId} cancelled.`);
+            console.warn(`[JobQueue] Job ${jobId} cancelled.`);
 
             // Notify watchers
             const watchers = this._pendingWatchers.get(jobId) || [];
-            watchers.forEach(cb => { try { cb({ id: jobId, status: 'cancelled' }); } catch (e) {} });
+            watchers.forEach(cb => { try { cb({ id: jobId, status: 'cancelled' }); } catch { /* ignore */ } });
             this._pendingWatchers.delete(jobId);
 
             return result;
@@ -403,7 +403,7 @@ class JobQueueService {
             });
 
             return summary;
-        } catch (err) {
+        } catch {
             return { total: 0, pending: 0, processing: 0, done: 0, failed: 0, cancelled: 0 };
         }
     }

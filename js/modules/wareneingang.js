@@ -7,7 +7,7 @@
 (function() {
 'use strict';
 
-const { store, saveStore, formatCurrency, formatDate, h, showToast, openModal, closeModal } = window.AppUtils || {};
+const { store, saveStore, formatCurrency, formatDate, h, showToast } = window.AppUtils || {};
 
 // ============================================
 // Module State
@@ -421,11 +421,6 @@ function removeBankRow(idx) {
     if (bankQuickEntry.rows.length <= 1) {return;} // keep at least one row
     bankQuickEntry.rows.splice(idx, 1);
     renderBankTab();
-}
-
-function updateBankRowField(idx, field, value) {
-    if (!bankQuickEntry || !bankQuickEntry.rows[idx]) {return;}
-    bankQuickEntry.rows[idx][field] = value;
 }
 
 async function processBankEntry() {
@@ -1069,7 +1064,6 @@ function initWareneingang() {
 
         // Bank material search (live filter)
         if (target.classList.contains('we-bank-material-search')) {
-            const rowIdx = parseInt(target.getAttribute('data-row'), 10);
             const query = target.value.trim();
             const selectEl = target.parentElement ? target.parentElement.querySelector('.we-bank-mat-select') : null;
             if (selectEl && query.length >= 2) {

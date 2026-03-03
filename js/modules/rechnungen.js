@@ -4,7 +4,7 @@
    ============================================ */
 (function() {
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h, switchView } = window.AppUtils;
+const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h } = window.AppUtils;
 
 // Filter and search state
 let currentRechnungenFilter = 'alle';
@@ -654,24 +654,24 @@ window.RechnungenModule = {
 // PDF download for invoices
 async function downloadInvoicePDF(id) {
     const rechnung = store.rechnungen.find(r => r.id === id);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
     // Try pdfGenerationService first (pdfMake), then pdfService (jsPDF)
     if (window.pdfGenerationService) {
         try {
             await window.pdfGenerationService.downloadPDF(rechnung);
-            if (window.showToast) showToast('PDF heruntergeladen', 'success');
+            if (window.showToast) {showToast('PDF heruntergeladen', 'success');}
         } catch (err) {
-            if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+            if (window.showToast) {showToast('PDF-Fehler: ' + err.message, 'error');}
         }
     } else if (window.pdfService?.generateRechnung) {
         try {
             await window.pdfService.generateRechnung(rechnung);
-            if (window.showToast) showToast('PDF heruntergeladen', 'success');
+            if (window.showToast) {showToast('PDF heruntergeladen', 'success');}
         } catch (err) {
-            if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+            if (window.showToast) {showToast('PDF-Fehler: ' + err.message, 'error');}
         }
     } else {
-        if (window.showToast) showToast('PDF-Service nicht verfügbar', 'error');
+        if (window.showToast) {showToast('PDF-Service nicht verfügbar', 'error');}
     }
 }
 

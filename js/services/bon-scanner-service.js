@@ -875,7 +875,7 @@ class BonScannerService {
             this.wareneingaenge.push(wareneingang);
             this._save();
 
-            console.log(`Wareneingang ${wareneingang.id} erfasst: ${wareneingang.items.length} Positionen, ${stockUpdates.length} Bestände aktualisiert`);
+            console.warn(`Wareneingang ${wareneingang.id} erfasst: ${wareneingang.items.length} Positionen, ${stockUpdates.length} Bestände aktualisiert`);
 
             return {
                 success: true,
@@ -915,8 +915,6 @@ class BonScannerService {
         // Header-Zeile parsen
         const delimiter = this._detectCSVDelimiter(lines[0]);
         const headers = this._parseCSVLine(lines[0], delimiter).map(h => h.trim().toLowerCase());
-
-        const items = [];
 
         switch (supplierType.toLowerCase()) {
             case 'wuerth':

@@ -297,16 +297,11 @@ class ChatbotService {
     }
 
     // Expert response generator with comprehensive knowledge
-    getExpertResponse(message, history = [], customerData = {}) {
+    getExpertResponse(message, history = [], _customerData = {}) {
         const kb = this.kb;
         const lowerMsg = message.toLowerCase().trim();
         const lastBotMsg = history.filter(m => m.role === 'assistant').slice(-1)[0]?.content || '';
         const details = this.extractDetails(message);
-
-        let greeting = "";
-        if (customerData.name && !history.some(m => m.role === 'assistant')) {
-            greeting = `Hallo ${customerData.name}! 👋 `;
-        }
 
         // Context: User providing contact info
         if (lastBotMsg.includes('Ihren Namen') || lastBotMsg.includes('Kontaktdaten') || lastBotMsg.includes('Telefonnummer')) {

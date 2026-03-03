@@ -18,7 +18,7 @@
         return;
     }
 
-    console.log('🚀 Initializing lazy-loaded services architecture...');
+    // Initializing lazy-loaded services architecture
 
     // Register services that are already loaded via <script> tags
     // These should not be re-loaded by the lazy loader
@@ -63,18 +63,18 @@
 
     // Load core infrastructure services immediately (needed for app function)
     try {
-        console.log('📦 Loading core infrastructure services...');
+        // Loading core infrastructure services
         await window.lazyLoader.loadGroup('core');
-        console.log('✅ Core services loaded');
+        // Core services loaded
     } catch (error) {
         console.error('Failed to load core services:', error);
     }
 
     // Load workflow services immediately (needed for dashboard)
     try {
-        console.log('📦 Loading workflow services...');
+        // Loading workflow services
         await window.lazyLoader.loadGroup('workflow');
-        console.log('✅ Workflow services loaded');
+        // Workflow services loaded
     } catch (error) {
         console.error('Failed to load workflow services:', error);
     }
@@ -88,7 +88,7 @@
                 try {
                     window.emailAutomationService = new window.EmailAutomationService();
                     window.emailAutomationService.init().catch(() => {});
-                } catch (_) {}
+                } catch { /* ignore */ }
             }
             document.removeEventListener('viewchange', initEmailAuto);
         }
@@ -96,18 +96,12 @@
 
     // Log loading stats periodically
     setTimeout(() => {
-        const stats = window.lazyLoader.getStats();
-        console.log('📊 Lazy Loading Stats:', {
-            loadedCount: stats.loaded,
-            loadingCount: stats.loading,
-            totalAvailable: stats.total,
-            groups: stats.serviceGroups.length,
-            services: stats.loadedServices.slice(0, 10).map(s => s.replace('js/services/', ''))
-        });
+        window.lazyLoader.getStats();
+        // Lazy loading stats collected
     }, 3000);
 
     // Setup view-based lazy loading trigger
-    console.log('🎯 View-based lazy loading system ready');
+    // View-based lazy loading system ready
 
     // Initialize Onboarding Tutorial
     initOnboardingTutorial();
@@ -125,7 +119,7 @@ function initOnboardingTutorial() {
     // Create global tutorial instance
     if (!window.onboardingTutorial) {
         window.onboardingTutorial = new window.OnboardingTutorialService();
-        console.log('✅ Onboarding Tutorial Service initialized');
+        // Onboarding Tutorial Service initialized
     }
 
     // Setup tutorial button listeners
@@ -153,7 +147,7 @@ function initOnboardingTutorial() {
     setTimeout(() => {
         if (window.onboardingTutorial.shouldAutoStart()) {
             // Delay to avoid conflicts with other startup processes
-            console.log('📖 Starting onboarding tutorial for first-time user');
+            // Starting onboarding tutorial for first-time user
             window.onboardingTutorial.start();
         }
     }, 2000);

@@ -289,7 +289,6 @@ class TeamManagementService {
                 }
             }
 
-            const oldMember = { ...this.teamData.members[index] };
             Object.assign(this.teamData.members[index], updates);
             this._saveTeamData();
 

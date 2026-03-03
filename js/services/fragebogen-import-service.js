@@ -139,7 +139,7 @@ class FragebogenImportService {
             // 8. Mark import timestamp
             localStorage.setItem(this.IMPORT_TIMESTAMP_KEY, new Date().toISOString());
 
-            console.log('[FragebogenImport] Import abgeschlossen:', result);
+            console.warn('[FragebogenImport] Import abgeschlossen:', result);
         } catch (e) {
             console.error('[FragebogenImport] Unerwarteter Fehler:', e);
             result.errors.push({ field: 'Allgemein', reason: 'Unerwarteter Fehler beim Import.' });
@@ -253,7 +253,7 @@ class FragebogenImportService {
             if (!raw) {return false;}
             const data = JSON.parse(raw);
             return data && data._pendingImport === true;
-        } catch (e) {
+        } catch {
             return false;
         }
     }
@@ -303,7 +303,7 @@ class FragebogenImportService {
         try {
             const params = new URLSearchParams(window.location.search);
             return params.get('import') === 'fragebogen';
-        } catch (e) {
+        } catch {
             return false;
         }
     }
@@ -482,7 +482,7 @@ class FragebogenImportService {
         try {
             const raw = localStorage.getItem(this.STORAGE_KEY);
             return raw ? JSON.parse(raw) : null;
-        } catch (e) {
+        } catch {
             return null;
         }
     }

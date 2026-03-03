@@ -343,7 +343,6 @@ class PurchaseOrderUI {
     }
 
     renderPORow(po) {
-        const statusBadgeColor = this.getStatusColor(po.status);
         const statusLabel = this.getStatusLabel(po.status);
         const brutto = (po.brutto || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
 
@@ -461,7 +460,7 @@ class PurchaseOrderUI {
         document.getElementById('po-summary-brutto').textContent = brutto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
     }
 
-    filterPOList(query) {
+    filterPOList(_query) {
         this.renderPOList();
     }
 
@@ -521,7 +520,7 @@ class PurchaseOrderUI {
         try {
             const date = new Date(dateStr);
             return date.toLocaleDateString('de-DE');
-        } catch (e) {
+        } catch {
             return dateStr;
         }
     }

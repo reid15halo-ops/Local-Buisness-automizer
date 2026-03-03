@@ -229,7 +229,7 @@ class ContractService {
     }
 
     // Record service performed
-    recordService(contractId, serviceData) {
+    recordService(contractId, _serviceData) {
         const contract = this.contracts.find(c => c.id === contractId);
         if (!contract) {return { success: false };}
 

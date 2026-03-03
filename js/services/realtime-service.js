@@ -65,7 +65,7 @@ class RealtimeService {
 
         const client = this._getClient();
         if (!client) {
-            console.info('[RealtimeService] Supabase not configured — job queue updates via polling.');
+            console.warn('[RealtimeService] Supabase not configured — job queue updates via polling.');
             return () => this._removeListener(channelName, listener);
         }
 
@@ -99,7 +99,7 @@ class RealtimeService {
                         filter: `user_id=eq.${userId}`
                     },
                     (payload) => {
-                        console.debug('[RealtimeService] jobs_queue change:', payload.eventType, payload.new?.id);
+                        // jobs_queue change event received
                         const listeners = this.listeners.get(channelName) || [];
                         listeners.forEach(cb => {
                             try { cb(payload); } catch (e) { console.error('[RealtimeService] Listener error:', e); }
@@ -108,7 +108,7 @@ class RealtimeService {
                 )
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
-                        console.info(`[RealtimeService] Subscribed to ${channelName}`);
+                        // Subscribed to channel
                     } else if (status === 'CHANNEL_ERROR') {
                         console.warn(`[RealtimeService] Channel error on ${channelName}`);
                     } else if (status === 'TIMED_OUT') {
@@ -137,7 +137,7 @@ class RealtimeService {
 
         const client = this._getClient();
         if (!client) {
-            console.info('[RealtimeService] Supabase not configured — invoice updates unavailable.');
+            console.warn('[RealtimeService] Supabase not configured — invoice updates unavailable.');
             return () => this._removeListener(channelName, onUpdate);
         }
 
@@ -154,15 +154,15 @@ class RealtimeService {
                             filter: `user_id=eq.${userId}`
                         },
                         (payload) => {
-                            console.debug('[RealtimeService] invoice change:', payload.eventType, payload.new?.id);
+                            // Invoice change event received
                             const listeners = this.listeners.get(channelName) || [];
                             listeners.forEach(cb => {
                                 try { cb(payload); } catch (e) { console.error('[RealtimeService] Listener error:', e); }
                             });
                         }
                     )
-                    .subscribe((status) => {
-                        console.info(`[RealtimeService] invoices channel status: ${status}`);
+                    .subscribe((_status) => {
+                        // Invoices channel status updated
                     });
 
                 this.channels.set(channelName, channel);
@@ -195,7 +195,7 @@ class RealtimeService {
 
         const client = this._getClient();
         if (!client) {
-            console.info('[RealtimeService] Supabase not configured — push notifications unavailable.');
+            console.warn('[RealtimeService] Supabase not configured — push notifications unavailable.');
             return () => this._removeListener(channelName, onNotification);
         }
 
@@ -208,7 +208,7 @@ class RealtimeService {
                     .on('broadcast', { event: 'notification' }, (payload) => {
                         const listeners = this.listeners.get(channelName) || [];
                         listeners.forEach(cb => {
-                            try { cb({ type: 'broadcast', ...payload.payload }); } catch (e) {}
+                            try { cb({ type: 'broadcast', ...payload.payload }); } catch { /* ignore */ }
                         });
                     })
                     // Postgres: persistent notification records
@@ -223,12 +223,12 @@ class RealtimeService {
                         (payload) => {
                             const listeners = this.listeners.get(channelName) || [];
                             listeners.forEach(cb => {
-                                try { cb({ type: 'persistent', ...payload.new }); } catch (e) {}
+                                try { cb({ type: 'persistent', ...payload.new }); } catch { /* ignore */ }
                             });
                         }
                     )
-                    .subscribe((status) => {
-                        console.info(`[RealtimeService] notifications channel status: ${status}`);
+                    .subscribe((_status) => {
+                        // Notifications channel status updated
                     });
 
                 this.channels.set(channelName, channel);
@@ -277,7 +277,7 @@ class RealtimeService {
                     .channel(channelName)
                     .on('postgres_changes', changeConfig, (payload) => {
                         const listeners = this.listeners.get(channelName) || [];
-                        listeners.forEach(cb => { try { cb(payload); } catch (e) {} });
+                        listeners.forEach(cb => { try { cb(payload); } catch { /* ignore */ } });
                     })
                     .subscribe();
 
@@ -313,7 +313,7 @@ class RealtimeService {
             this.channels.delete(channelName);
         }
         this.listeners.delete(channelName);
-        console.info(`[RealtimeService] Unsubscribed from ${channelName}`);
+        // Unsubscribed from channel
     }
 
     /**
@@ -321,11 +321,11 @@ class RealtimeService {
      */
     unsubscribeAll() {
         const client = this._getClient();
-        this.channels.forEach((channel, name) => {
+        this.channels.forEach((channel, _name) => {
             if (client) {
-                try { client.removeChannel(channel); } catch (e) {}
+                try { client.removeChannel(channel); } catch { /* ignore */ }
             }
-            console.info(`[RealtimeService] Unsubscribed from ${name}`);
+            // Unsubscribed from channel
         });
         this.channels.clear();
         this.listeners.clear();
@@ -336,7 +336,7 @@ class RealtimeService {
      * @private
      */
     _resubscribeAll() {
-        console.info('[RealtimeService] Connection restored, re-subscribing to all channels...');
+        console.warn('[RealtimeService] Connection restored, re-subscribing to all channels...');
         const existingChannels = new Map(this.channels);
         // Clear and rebuild
         this.channels.clear();

@@ -289,9 +289,6 @@ class AdminSettingsUI {
 
         try {
             // Get all input values
-            const form = document.getElementById('admin-settings-form');
-            const formData = new FormData(form);
-
             const newPin = document.getElementById('setting-admin_pin').value;
             if (newPin && newPin.length < 4) {
                 throw new Error('Passwort muss mindestens 4 Zeichen lang sein.');

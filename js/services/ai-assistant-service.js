@@ -208,7 +208,7 @@ Antworte direkt und hilfreich:`;
                 intent: analysis.intent,
                 source: 'ai'
             };
-        } catch (error) {
+        } catch {
             return this.generateRuleBasedResponse(question, data, analysis);
         }
     }

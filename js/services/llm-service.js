@@ -157,7 +157,7 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
                 } else {
                     throw new Error('No Supabase session');
                 }
-            } catch (e) {
+            } catch {
                 console.warn('Supabase session not available for Gemini proxy, falling back to direct API');
                 if (!this.config.apiKey) {
                     throw new Error('No Gemini API key configured');

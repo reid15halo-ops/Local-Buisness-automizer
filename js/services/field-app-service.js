@@ -447,7 +447,6 @@ class FieldAppService {
             },
             isEmpty: () => {
                 // Simple check: see if canvas has only the background
-                const imageData = ctx.getImageData(0, 0, 1, 1);
                 // If it is just the background, it is "empty"
                 return true; // Simplified: user must confirm
             },
@@ -548,7 +547,7 @@ class FieldAppService {
             if (this.isRecording) {
                 try {
                     this.recognition.start();
-                } catch (e) {
+                } catch {
                     this.isRecording = false;
                     this._dispatchEvent('voiceStopped', { text: this.currentVoiceText });
                 }
@@ -571,7 +570,7 @@ class FieldAppService {
         if (this.recognition) {
             try {
                 this.recognition.stop();
-            } catch (e) {
+            } catch {
                 // Already stopped
             }
             this.recognition = null;

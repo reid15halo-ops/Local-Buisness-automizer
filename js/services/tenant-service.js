@@ -207,7 +207,6 @@ class TenantService {
         const profile = window.setupWizard?.getCompanyProfile();
         if (!profile?.company_name) {return null;}
 
-        const settings = window.setupWizard?.getAdminSettings() || {};
         const bizSettings = window.adminPanelService?.getBusinessSettings() || {};
 
         const tenantData = {

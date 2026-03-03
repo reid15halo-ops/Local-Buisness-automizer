@@ -194,12 +194,12 @@ class WorkflowService {
         // Legacy fallback (no automationAPI available)
         switch (action.type) {
             case 'email.send':
-                console.log('[Workflow] E-Mail senden (Supabase nicht verbunden):', params.to, params.subject);
+                console.warn('[Workflow] E-Mail senden (Supabase nicht verbunden):', params.to, params.subject);
                 if (window.showToast) {window.showToast(`E-Mail an ${params.to} benötigt Supabase-Verbindung`, 'warning');}
                 break;
 
             case 'sms.send':
-                console.log('[Workflow] SMS senden (Supabase nicht verbunden):', params.to);
+                console.warn('[Workflow] SMS senden (Supabase nicht verbunden):', params.to);
                 if (window.showToast) {window.showToast(`SMS an ${params.to} benötigt Supabase-Verbindung`, 'warning');}
                 break;
 
@@ -223,7 +223,7 @@ class WorkflowService {
                 break;
 
             case 'webhook.call':
-                console.log('[Workflow] Webhook (Supabase nicht verbunden):', params.url);
+                console.warn('[Workflow] Webhook (Supabase nicht verbunden):', params.url);
                 if (window.showToast) {window.showToast(`Webhook benötigt Supabase-Verbindung`, 'warning');}
                 break;
 
@@ -233,7 +233,7 @@ class WorkflowService {
                 break;
 
             case 'log':
-                console.log('[Workflow Log]', params.message, context);
+                console.warn('[Workflow Log]', params.message, context);
                 break;
         }
     }

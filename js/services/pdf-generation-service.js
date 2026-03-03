@@ -52,7 +52,7 @@ class PDFGenerationService {
 
                 script2.onload = () => {
                     this.pdfmakeLoaded = true;
-                    console.log('✅ pdfmake loaded');
+                    // pdfmake loaded
                     resolve();
                 };
 
@@ -132,7 +132,7 @@ class PDFGenerationService {
     async getPDFBase64(invoice, templateId = 'standard-de') {
         const pdf = await this.generateInvoicePDF(invoice, templateId);
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             pdf.getBase64((data) => {
                 resolve(data);
             });
@@ -148,7 +148,7 @@ class PDFGenerationService {
     async getPDFBlob(invoice, templateId = 'standard-de') {
         const pdf = await this.generateInvoicePDF(invoice, templateId);
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             pdf.getBlob((blob) => {
                 resolve(blob);
             });
@@ -161,7 +161,7 @@ class PDFGenerationService {
      * @returns {Object} pdfmake document definition
      */
     buildPdfDefinition(rendered) {
-        const { template, variables, positions, companyData, invoiceData } = rendered;
+        const { template, variables, positions, companyData } = rendered;
         const layout = template.layout;
 
         return {
@@ -247,7 +247,7 @@ class PDFGenerationService {
     /**
      * Build header section
      */
-    buildHeader(company, layout) {
+    buildHeader(company, _layout) {
         return {
             columns: [
                 {
@@ -272,7 +272,7 @@ class PDFGenerationService {
     /**
      * Build customer address
      */
-    buildCustomerAddress(kunde, layout) {
+    buildCustomerAddress(kunde, _layout) {
         return {
             stack: [
                 { text: kunde.firma || kunde.name, bold: true },
@@ -286,7 +286,7 @@ class PDFGenerationService {
     /**
      * Build invoice details section
      */
-    buildInvoiceDetails(rechnung, layout) {
+    buildInvoiceDetails(rechnung, _layout) {
         return {
             columns: [
                 {
@@ -358,7 +358,7 @@ class PDFGenerationService {
                 body: tableBody
             },
             layout: {
-                fillColor: function (rowIndex, node, columnIndex) {
+                fillColor: function (rowIndex, _node, _columnIndex) {
                     return (rowIndex === 0) ? layout.colors.primary : (rowIndex % 2 === 0 ? '#f9f9f9' : null);
                 }
             }
@@ -368,7 +368,7 @@ class PDFGenerationService {
     /**
      * Build totals section
      */
-    buildTotals(summe, layout) {
+    buildTotals(summe, _layout) {
         return {
             columns: [
                 { width: '*', text: '' },
@@ -404,7 +404,7 @@ class PDFGenerationService {
     /**
      * Build payment terms section
      */
-    buildPaymentTerms(company, rechnung, layout) {
+    buildPaymentTerms(company, rechnung, _layout) {
         return {
             stack: [
                 { text: 'Zahlungsbedingungen', bold: true, margin: [0, 0, 0, 5] },
@@ -436,7 +436,7 @@ class PDFGenerationService {
     /**
      * Build legal info / footer
      */
-    buildLegalInfo(company, layout) {
+    buildLegalInfo(company, _layout) {
         return {
             stack: [
                 { text: 'Angaben gemäß §14 UStG', bold: true, style: 'small', margin: [0, 0, 0, 5] },

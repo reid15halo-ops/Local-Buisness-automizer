@@ -615,9 +615,9 @@ class ActivityIndicatorService {
     /**
      * Execute action
      */
-    executeAction(action, state) {
+    executeAction(_action, _state) {
         // Reserved for future implementations
-        console.log('Action triggered:', action);
+        // Action triggered (reserved for future implementations)
     }
 
     /**

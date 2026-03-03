@@ -1189,7 +1189,7 @@ ${positionen.map((pos, i) => {
         try {
             await navigator.clipboard.writeText(record.xml);
             return { success: true };
-        } catch (err) {
+        } catch {
             // Fallback for older browsers
             const textarea = document.createElement('textarea');
             textarea.value = record.xml;
@@ -1201,7 +1201,7 @@ ${positionen.map((pos, i) => {
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
                 return { success: true };
-            } catch (e) {
+            } catch {
                 document.body.removeChild(textarea);
                 return { success: false, error: 'Kopieren fehlgeschlagen' };
             }
@@ -1336,7 +1336,7 @@ ${positionen.map((pos, i) => {
         }
 
         // In production: Call Peppol access point API
-        console.log('Peppol submission for', record.invoiceId);
+        console.warn('Peppol submission for', record.invoiceId);
 
         record.status = 'submitted';
         record.submittedAt = new Date().toISOString();

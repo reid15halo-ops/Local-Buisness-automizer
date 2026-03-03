@@ -601,7 +601,7 @@ function showPositionTemplatePicker(row) {
     let currentFiltered = [...POSITION_TEMPLATES];
 
     const getFiltered = (query) => {
-        if (!query || !query.trim()) return [...POSITION_TEMPLATES];
+        if (!query || !query.trim()) { return [...POSITION_TEMPLATES]; }
         const q = query.toLowerCase().trim();
         return POSITION_TEMPLATES.filter(t =>
             t.beschreibung.toLowerCase().includes(q) ||
@@ -1232,7 +1232,7 @@ function deleteAngebot(id) {
         );
     } else {
         // Last resort: simple confirm
-        if (await window.confirmDialogService?.confirm(`Angebot ${angebot.id} wirklich löschen?`, {title: 'Löschen bestätigen', type: 'danger'}) ?? confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
+        if (confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
             store.angebote = store.angebote.filter(a => a.id !== id);
             saveStore();
             showToast('Angebot gelöscht', 'info');
@@ -1332,8 +1332,8 @@ function initAngeboteFilters() {
 // Preview & Freigabe (Draft Review Workflow)
 // ============================================
 
-// Inject CSS for entwurf status badge and preview modal
-(function injectEntwurfStyles() { return; /* styles moved to components.css */ } function _oldInjectEntwurfStyles() {
+// Inject CSS for entwurf status badge and preview modal — styles moved to components.css
+(function _oldInjectEntwurfStyles() {
     if (document.getElementById('entwurf-styles')) {return;}
     const style = document.createElement('style');
     style.id = 'entwurf-styles';
@@ -1947,7 +1947,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
                 if (tokenRecord?.token) {
                     portalUrl = `${location.origin}/customer-portal.html?token=${encodeURIComponent(tokenRecord.token)}`;
                 }
-            } catch (_) { /* portal not available */ }
+            } catch { /* portal not available */ }
         }
 
         // ── Build body fragment (positions + totals) ──────────────────────

@@ -5,7 +5,7 @@
 (function() {
 'use strict';
 
-const SB_URL = window.SUPABASE_URL || 'https://incbhhaiiayohrjqevog.supabase.co';
+const SB_URL = window.SUPABASE_URL || '';
 const RELAY_URL = 'https://freyaivisions.de/api';
 
 let tickets = [];
@@ -21,22 +21,22 @@ async function getHeaders() {
     if (sb) {
         try {
             const { data } = await sb.auth.getSession();
-            if (data?.session?.access_token) token = data.session.access_token;
-        } catch (e) { /* fallback to anon key */ }
+            if (data?.session?.access_token) {token = data.session.access_token;}
+        } catch { /* fallback to anon key */ }
     }
     return { 'apikey': key, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
 }
 
 async function fetchTickets() {
     let url = SB_URL + '/rest/v1/support_tickets?order=created_at.desc&limit=100&select=*';
-    if (currentFilter.status) url += '&status=eq.' + currentFilter.status;
-    if (currentFilter.priority) url += '&priority=eq.' + currentFilter.priority;
-    if (currentFilter.search) url += '&or=(ticket_number.ilike.*' + encodeURIComponent(currentFilter.search) + '*,subject.ilike.*' + encodeURIComponent(currentFilter.search) + '*,customer_email.ilike.*' + encodeURIComponent(currentFilter.search) + '*)';
+    if (currentFilter.status) {url += '&status=eq.' + currentFilter.status;}
+    if (currentFilter.priority) {url += '&priority=eq.' + currentFilter.priority;}
+    if (currentFilter.search) {url += '&or=(ticket_number.ilike.*' + encodeURIComponent(currentFilter.search) + '*,subject.ilike.*' + encodeURIComponent(currentFilter.search) + '*,customer_email.ilike.*' + encodeURIComponent(currentFilter.search) + '*)';}
 
     try {
         const resp = await fetch(url, { headers: await getHeaders() });
         tickets = await resp.json();
-        if (!Array.isArray(tickets)) tickets = [];
+        if (!Array.isArray(tickets)) {tickets = [];}
     } catch (e) {
         console.error('Support: Failed to fetch tickets', e);
         tickets = [];
@@ -51,7 +51,7 @@ async function fetchMessages(ticketId) {
         );
         const msgs = await resp.json();
         return Array.isArray(msgs) ? msgs : [];
-    } catch (e) {
+    } catch {
         return [];
     }
 }
@@ -60,8 +60,8 @@ async function fetchKB() {
     try {
         const resp = await fetch(SB_URL + '/rest/v1/support_kb?order=sort_order.asc,created_at.desc&select=*', { headers: await getHeaders() });
         kbArticles = await resp.json();
-        if (!Array.isArray(kbArticles)) kbArticles = [];
-    } catch (e) {
+        if (!Array.isArray(kbArticles)) {kbArticles = [];}
+    } catch {
         kbArticles = [];
     }
 }
@@ -80,7 +80,7 @@ async function fetchStats() {
             ai: Array.isArray(aiR) ? aiR.length : 0,
             total: tickets.length
         };
-    } catch (e) {
+    } catch {
         return { open: 0, today: 0, ai: 0, total: 0 };
     }
 }
@@ -101,18 +101,18 @@ function channelIcon(ch) {
 }
 
 function timeAgo(dateStr) {
-    if (!dateStr) return '-';
+    if (!dateStr) {return '-';}
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return mins + ' Min.';
+    if (mins < 60) {return mins + ' Min.';}
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return hours + ' Std.';
+    if (hours < 24) {return hours + ' Std.';}
     return Math.floor(hours / 24) + ' Tage';
 }
 
 function esc(str) {
-    if (!str) return '';
-    if (typeof DOMPurify !== 'undefined') return DOMPurify.sanitize(str);
+    if (!str) {return '';}
+    if (typeof DOMPurify !== 'undefined') {return DOMPurify.sanitize(str);}
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
@@ -122,7 +122,7 @@ function esc(str) {
 
 function renderStats(stats) {
     const el = document.getElementById('support-stats');
-    if (!el) return;
+    if (!el) {return;}
     el.innerHTML = `
         <div class="support-stat-card"><div class="stat-value">${stats.open}</div><div class="stat-label">Offen</div></div>
         <div class="support-stat-card"><div class="stat-value">${stats.today}</div><div class="stat-label">Heute neu</div></div>
@@ -133,7 +133,7 @@ function renderStats(stats) {
 
 function renderTicketList() {
     const el = document.getElementById('support-ticket-list');
-    if (!el) return;
+    if (!el) {return;}
 
     if (tickets.length === 0) {
         el.innerHTML = '<div class="support-empty">Keine Tickets gefunden.</div>';
@@ -158,11 +158,11 @@ function renderTicketList() {
 
 async function openTicketDetail(ticketId) {
     currentTicket = tickets.find(t => t.id === ticketId);
-    if (!currentTicket) return;
+    if (!currentTicket) {return;}
 
     const messages = await fetchMessages(ticketId);
     const overlay = document.getElementById('support-detail-overlay');
-    if (!overlay) return;
+    if (!overlay) {return;}
 
     overlay.innerHTML = `
         <div class="support-detail-panel">
@@ -210,7 +210,7 @@ async function openTicketDetail(ticketId) {
         overlay.classList.remove('open');
     });
     overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('open');
+        if (e.target === overlay) {overlay.classList.remove('open');}
     });
 
     document.getElementById('support-save-meta').addEventListener('click', async () => {
@@ -226,16 +226,16 @@ async function openTicketDetail(ticketId) {
                     ...(newStatus === 'geschlossen' ? { resolved_at: new Date().toISOString() } : {})
                 })
             });
-            if (window.showToast) window.showToast('Ticket aktualisiert', 'success');
+            if (window.showToast) {window.showToast('Ticket aktualisiert', 'success');}
             await refresh();
-        } catch (e) {
-            if (window.showToast) window.showToast('Fehler beim Speichern', 'error');
+        } catch {
+            if (window.showToast) {window.showToast('Fehler beim Speichern', 'error');}
         }
     });
 
     document.getElementById('support-send-reply').addEventListener('click', async () => {
         const text = document.getElementById('support-reply-text').value.trim();
-        if (!text) return;
+        if (!text) {return;}
 
         try {
             await fetch(RELAY_URL + '/support/reply', {
@@ -248,21 +248,21 @@ async function openTicketDetail(ticketId) {
                     new_status: 'warte_auf_kunde'
                 })
             });
-            if (window.showToast) window.showToast('Antwort gesendet', 'success');
+            if (window.showToast) {window.showToast('Antwort gesendet', 'success');}
             openTicketDetail(ticketId);
-        } catch (e) {
-            if (window.showToast) window.showToast('Fehler beim Senden', 'error');
+        } catch {
+            if (window.showToast) {window.showToast('Fehler beim Senden', 'error');}
         }
     });
 
     // Scroll thread to bottom
     const thread = document.getElementById('support-thread');
-    if (thread) thread.scrollTop = thread.scrollHeight;
+    if (thread) {thread.scrollTop = thread.scrollHeight;}
 }
 
 function renderKBList() {
     const el = document.getElementById('support-kb-list');
-    if (!el) return;
+    if (!el) {return;}
 
     if (kbArticles.length === 0) {
         el.innerHTML = '<div class="support-empty">Keine KB-Artikel vorhanden.</div>';
@@ -291,7 +291,7 @@ function renderKBList() {
     el.querySelectorAll('.kb-delete-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (!confirm('KB-Artikel wirklich loeschen?')) return;
+            if (!confirm('KB-Artikel wirklich loeschen?')) {return;}
             await fetch(SB_URL + '/rest/v1/support_kb?id=eq.' + btn.dataset.id, {
                 method: 'DELETE',
                 headers: await getHeaders()
@@ -305,7 +305,7 @@ function renderKBList() {
 function editKBArticle(id) {
     const article = id ? kbArticles.find(a => a.id === id) : null;
     const formEl = document.getElementById('support-kb-form-area');
-    if (!formEl) return;
+    if (!formEl) {return;}
 
     formEl.innerHTML = `
         <div class="support-kb-form">
@@ -340,7 +340,7 @@ function editKBArticle(id) {
         };
 
         if (!data.title) {
-            if (window.showToast) window.showToast('Titel ist Pflichtfeld', 'warning');
+            if (window.showToast) {window.showToast('Titel ist Pflichtfeld', 'warning');}
             return;
         }
 
@@ -361,9 +361,9 @@ function editKBArticle(id) {
             formEl.innerHTML = '';
             await fetchKB();
             renderKBList();
-            if (window.showToast) window.showToast('KB-Artikel gespeichert', 'success');
-        } catch (e) {
-            if (window.showToast) window.showToast('Fehler beim Speichern', 'error');
+            if (window.showToast) {window.showToast('KB-Artikel gespeichert', 'success');}
+        } catch {
+            if (window.showToast) {window.showToast('Fehler beim Speichern', 'error');}
         }
     });
 }
@@ -375,39 +375,39 @@ async function refresh() {
     renderTicketList();
     // Update nav badge
     const badge = document.getElementById('support-badge');
-    if (badge) badge.textContent = stats.open || '';
+    if (badge) {badge.textContent = stats.open || '';}
 }
 
 let initialized = false;
 
 function bindListeners() {
-    if (initialized) return;
+    if (initialized) {return;}
     initialized = true;
 
     const statusFilter = document.getElementById('support-filter-status');
     const priorityFilter = document.getElementById('support-filter-priority');
     const searchInput = document.getElementById('support-filter-search');
 
-    if (statusFilter) statusFilter.addEventListener('change', async () => {
+    if (statusFilter) {statusFilter.addEventListener('change', async () => {
         currentFilter.status = statusFilter.value;
         await fetchTickets();
         renderTicketList();
-    });
-    if (priorityFilter) priorityFilter.addEventListener('change', async () => {
+    });}
+    if (priorityFilter) {priorityFilter.addEventListener('change', async () => {
         currentFilter.priority = priorityFilter.value;
         await fetchTickets();
         renderTicketList();
-    });
+    });}
 
     let searchTimeout;
-    if (searchInput) searchInput.addEventListener('input', () => {
+    if (searchInput) {searchInput.addEventListener('input', () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(async () => {
             currentFilter.search = searchInput.value.trim();
             await fetchTickets();
             renderTicketList();
         }, 400);
-    });
+    });}
 
     document.querySelectorAll('.support-tab-btn').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -415,12 +415,12 @@ function bindListeners() {
             document.querySelectorAll('.support-tab-panel').forEach(p => p.classList.remove('active'));
             tab.classList.add('active');
             const target = document.getElementById('support-panel-' + tab.dataset.tab);
-            if (target) target.classList.add('active');
+            if (target) {target.classList.add('active');}
         });
     });
 
     const newKBBtn = document.getElementById('support-new-kb');
-    if (newKBBtn) newKBBtn.addEventListener('click', () => editKBArticle(null));
+    if (newKBBtn) {newKBBtn.addEventListener('click', () => editKBArticle(null));}
 }
 
 async function init() {
@@ -433,7 +433,7 @@ async function init() {
     renderKBList();
 
     const badge = document.getElementById('support-badge');
-    if (badge) badge.textContent = stats.open || '';
+    if (badge) {badge.textContent = stats.open || '';}
 }
 
 // Expose globally

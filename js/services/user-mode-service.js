@@ -20,7 +20,7 @@ class UserModeService {
         // Initialize mode from localStorage
         this.currentMode = this.loadMode();
 
-        console.log('[UserModeService] Initialized with mode:', this.currentMode);
+        // UserModeService initialized
     }
 
     /**
@@ -76,7 +76,7 @@ class UserModeService {
 
         // Only trigger update if mode actually changed
         if (this.currentMode === mode) {
-            console.log('[UserModeService] Mode is already:', mode);
+            // Mode is already set
             return;
         }
 
@@ -92,7 +92,7 @@ class UserModeService {
         // Fire custom event so all components can react
         this.fireEvent(mode);
 
-        console.log('[UserModeService] Mode changed to:', mode);
+        // Mode changed
     }
 
     /**

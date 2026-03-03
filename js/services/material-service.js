@@ -204,7 +204,6 @@ class MaterialService {
     // Smart suggestion: which materials might be needed for a job description
     suggestMaterials(beschreibung) {
         const keywords = beschreibung.toLowerCase().split(/\s+/);
-        const suggestions = [];
         const matchScores = new Map();
 
         this.bestand.forEach(material => {

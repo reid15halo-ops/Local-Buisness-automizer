@@ -187,7 +187,7 @@ class SmsReminderService {
                 result = await this._sendViaMessageBird(cleanNumber, message);
             } else {
                 // No provider configured — log only (development / demo mode)
-                console.log(`📱 [SMS-Demo] → ${cleanNumber}:\n${message}`);
+                console.warn(`[SMS-Demo] → ${cleanNumber}:\n${message}`);
                 result = { success: true, messageId: 'demo-' + Date.now(), method: 'demo' };
             }
         } catch (err) {

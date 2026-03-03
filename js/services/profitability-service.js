@@ -243,8 +243,7 @@ class ProfitabilityService {
         const {
             revenueChange = 0, // % change
             laborRateChange = 0,
-            overheadChange = 0,
-            efficiencyImprovement = 0
+            overheadChange = 0
         } = changes;
 
         const currentStats = this.getOverallStatistics();
@@ -252,7 +251,6 @@ class ProfitabilityService {
         const newRevenue = currentStats.totalRevenue * (1 + revenueChange / 100);
         const newLaborCost = currentStats.totalLaborCost * (1 + laborRateChange / 100);
         const newOverhead = currentStats.totalOverhead * (1 + overheadChange / 100);
-        const newHours = currentStats.totalHours * (1 - efficiencyImprovement / 100);
 
         const newTotalCost = newLaborCost + newOverhead + currentStats.totalMaterialCost;
         const newProfit = newRevenue - newTotalCost;

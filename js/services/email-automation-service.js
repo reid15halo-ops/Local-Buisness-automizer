@@ -36,7 +36,7 @@ Mit freundlichen Grüßen
         }
 
         this.initialized = true;
-        console.log('✅ EmailAutomationService initialized');
+        // EmailAutomationService initialized
     }
 
     /**

@@ -71,7 +71,7 @@ class ReorderEngineService {
         this.settings.autoReorderEnabled = true;
         this.saveSettings();
 
-        console.log(`[ReorderEngine] Auto-reorder enabled. Check interval: ${this.settings.checkIntervalMinutes} minutes`);
+        console.warn(`[ReorderEngine] Auto-reorder enabled. Check interval: ${this.settings.checkIntervalMinutes} minutes`);
     }
 
     disable() {
@@ -83,7 +83,7 @@ class ReorderEngineService {
         this.settings.autoReorderEnabled = false;
         this.saveSettings();
 
-        console.log('[ReorderEngine] Auto-reorder disabled');
+        console.warn('[ReorderEngine] Auto-reorder disabled');
     }
 
     // ============================================
@@ -106,7 +106,7 @@ class ReorderEngineService {
         const lowStockItems = this._getLowStockItemsWithReorderPoint();
 
         if (lowStockItems.length === 0) {
-            console.log('[ReorderEngine] No items require reordering');
+            // No items require reordering
             return { created: 0, items: [], suppliers: [], timestamp: this.lastCheckTime };
         }
 
@@ -493,7 +493,7 @@ class ReorderEngineService {
                     duration: 5000
                 });
             } else {
-                console.log('[ReorderEngine] Notification:', `${pos.length} POs created`);
+                console.warn('[ReorderEngine] Notification:', `${pos.length} POs created`);
             }
         } catch (error) {
             console.error('[ReorderEngine] Notification error:', error);

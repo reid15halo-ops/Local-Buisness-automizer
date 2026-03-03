@@ -40,8 +40,6 @@ class I18nUI {
 
     // Translate page content
     translatePage() {
-        const t = window.t;
-
         // Translate navigation items
         this.translateNavigationItems();
 
@@ -214,8 +212,6 @@ class I18nUI {
             if (key) {
                 const translated = window.t(key);
                 // Replace only the text, preserve emojis
-                const emoji = btn.textContent.match(/[^\w\s]/g);
-                const prefix = emoji ? emoji[0] + ' ' : '';
                 if (btn.textContent.includes(text)) {
                     btn.textContent = btn.textContent.replace(text, translated);
                 }

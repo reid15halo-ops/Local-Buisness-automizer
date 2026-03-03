@@ -80,7 +80,7 @@ class ErrorBoundary {
         });
 
         window.addEventListener('online', () => {
-            console.log('[Network Online]');
+            // Network back online
             if (window.ErrorDisplay) {
                 window.ErrorDisplay.showSuccess(
                     'Verbindung wiederhergestellt ✅',

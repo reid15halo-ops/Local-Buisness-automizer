@@ -379,7 +379,7 @@ class ConflictResolutionService {
 
             const removed = before - this.conflicts.length;
             if (removed > 0) {
-                console.log(`ConflictResolutionService: Cleared ${removed} old resolved conflicts`);
+                console.warn(`ConflictResolutionService: Cleared ${removed} old resolved conflicts`);
             }
             return removed;
         } catch (err) {

@@ -513,7 +513,7 @@ class WorkflowBuilderUI {
         });
     }
 
-    _renderNode(node, workflow) {
+    _renderNode(node, _workflow) {
         const service = this._getService();
         let typeDef;
 
@@ -752,7 +752,7 @@ class WorkflowBuilderUI {
     // EDITOR EVENT BINDING
     // ================================================================
 
-    _bindEditorEvents(workflow) {
+    _bindEditorEvents(_workflow) {
         // Back button
         const btnBack = document.getElementById('wfb-btn-back');
         if (btnBack) {

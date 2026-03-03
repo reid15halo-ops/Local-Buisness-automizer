@@ -79,7 +79,7 @@ class PWAInstallService {
 
         // Listen for app installed event
         window.addEventListener('appinstalled', () => {
-            console.log('PWA app installed successfully');
+            // PWA app installed successfully
             this.isInstalled = true;
             localStorage.setItem('freyai_pwa_installed', 'true');
             this.hideInstallBanner();
@@ -275,13 +275,13 @@ class PWAInstallService {
             const { outcome } = await this.deferredPrompt.userChoice;
 
             if (outcome === 'accepted') {
-                console.log('App installation accepted');
+                // App installation accepted
                 this.isInstalled = true;
                 localStorage.setItem('freyai_pwa_installed', 'true');
                 this.hideInstallBanner();
                 this.showSuccessToast();
             } else {
-                console.log('App installation declined');
+                console.warn('App installation declined');
                 this.dismissBanner();
             }
 
@@ -401,7 +401,7 @@ class PWAInstallService {
         this.isInstalled = false;
         this.lastDismissalTime = null;
         this.hideInstallBanner();
-        console.log('PWA installation state reset');
+        // PWA installation state reset
     }
 }
 

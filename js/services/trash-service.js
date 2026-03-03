@@ -350,7 +350,7 @@ class TrashService {
 
         if (this.trash.length < before) {
             this.saveTrash();
-            console.log(`TrashService: Purged ${before - this.trash.length} items older than ${this.PURGE_DAYS} days`);
+            console.warn(`TrashService: Purged ${before - this.trash.length} items older than ${this.PURGE_DAYS} days`);
         }
     }
 

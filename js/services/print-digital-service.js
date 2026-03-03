@@ -76,7 +76,7 @@ class PrintDigitalService {
                 item.status = 'printed';
                 item.processedAt = new Date().toISOString();
                 this.save();
-                console.log(`🖨️ Gedruckt: ${item.documentTitle}`);
+                console.warn(`Gedruckt: ${item.documentTitle}`);
             }, 1000);
 
             return { success: true, method: 'print' };
@@ -107,7 +107,7 @@ class PrintDigitalService {
             });
         }
 
-        console.log(`📧 Digital gesendet: ${item.documentTitle} an ${item.recipient.email}`);
+        console.warn(`Digital gesendet: ${item.documentTitle} an ${item.recipient.email}`);
         return { success: true, method: 'email' };
     }
 
@@ -160,7 +160,7 @@ class PrintDigitalService {
                 status: 'sent'
             });
         }
-        console.log(`📠→📧 Fax weitergeleitet an ${this.settings.faxEmail}`);
+        console.warn(`Fax weitergeleitet an ${this.settings.faxEmail}`);
     }
 
     // Categorize fax content

@@ -352,7 +352,7 @@ class DashboardChartsService {
     /**
      * Update KPI Summary Cards with computed metrics
      */
-    updateSummaryCards(anfragen, angebote, auftraege, rechnungen, buchungen) {
+    updateSummaryCards(anfragen, angebote, auftraege, rechnungen, _buchungen) {
         // Total revenue this month
         const thisMonth = this._getCurrentMonth();
         const monthlyRevenue = this._getMonthlyRevenue(rechnungen, thisMonth);

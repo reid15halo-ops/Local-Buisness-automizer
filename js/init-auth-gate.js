@@ -39,7 +39,7 @@
         }
 
         // User is authenticated, continue loading the app
-        console.log('User authenticated:', session.user?.email);
+        // User authenticated
     } catch (error) {
         console.error('Auth check failed:', error);
         // On error, redirect to auth page to be safe

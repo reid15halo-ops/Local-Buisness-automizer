@@ -49,7 +49,7 @@ class DBService {
                 const oldVersion = event.oldVersion;
                 const transaction = event.target.transaction;
 
-                console.log(`[DBService] DB upgrade: ${oldVersion} → ${this.version}`);
+                console.warn(`[DBService] DB upgrade: ${oldVersion} → ${this.version}`);
 
                 // Version 1 → 2: Create users, sync_queue, user_default_data
                 if (oldVersion < 2) {
@@ -123,7 +123,7 @@ class DBService {
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                console.log('[DBService] IndexedDB v3 initialized.');
+                // IndexedDB v3 initialized
                 resolve(this.db);
             };
 
@@ -143,12 +143,6 @@ class DBService {
     }
 
     _getCurrentUserId() {
-        // Try Supabase auth first
-        if (window.supabaseClient && window.supabaseClient.client) {
-            const session = window.supabaseClient.client.auth.getSession
-                ? null  // async — we use cached user instead
-                : null;
-        }
         // Try auth service
         if (window.authService && window.authService.getUser()) {
             return window.authService.getUser().id;
@@ -229,7 +223,7 @@ class DBService {
         if (!supabase) { return; }
 
         this._syncInProgress = true;
-        console.info('[DBService] Syncing offline queue to Supabase...');
+        console.warn('[DBService] Syncing offline queue to Supabase...');
 
         try {
             const pending = await this.getUnsyncedQueue();
@@ -275,8 +269,8 @@ class DBService {
                 }
             }
 
-            console.info(`[DBService] Sync complete: ${synced} synced, ${failed} failed.`);
-            this._syncListeners.forEach(cb => { try { cb({ synced, failed, total: pending.length }); } catch (e) {} });
+            console.warn(`[DBService] Sync complete: ${synced} synced, ${failed} failed.`);
+            this._syncListeners.forEach(cb => { try { cb({ synced, failed, total: pending.length }); } catch { /* ignore */ } });
 
         } finally {
             this._syncInProgress = false;
@@ -346,7 +340,7 @@ class DBService {
             // Further fallback: storeService
             return window.storeService?.state?.anfragen?.map(a => a.kunde).filter(Boolean) || [];
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             const tx = this.db.transaction(['customers'], 'readonly');
             const store = tx.objectStore('customers');
             const index = store.index('userId');
@@ -947,7 +941,7 @@ class DBService {
         }
 
         // Fallback: poll every 5 seconds
-        console.info('[DBService] Realtime not available, using polling for job updates.');
+        console.warn('[DBService] Realtime not available, using polling for job updates.');
         let active = true;
         let lastCheck = Date.now();
 
@@ -960,7 +954,7 @@ class DBService {
                     lastCheck = Date.now();
                     recent.forEach(job => callback(job));
                 }
-            } catch (e) {}
+            } catch { /* ignore */ }
             setTimeout(poll, 5000);
         };
 

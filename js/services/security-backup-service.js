@@ -96,7 +96,7 @@ class SecurityBackupService {
                 success: true,
                 data: JSON.parse(decoder.decode(decrypted))
             };
-        } catch (error) {
+        } catch {
             return { success: false, error: 'Entschlüsselung fehlgeschlagen - falsches Passwort?' };
         }
     }
@@ -113,7 +113,7 @@ class SecurityBackupService {
         keys.forEach(key => {
             try {
                 data[key] = JSON.parse(localStorage.getItem(key));
-            } catch (e) {
+            } catch {
                 data[key] = localStorage.getItem(key);
             }
         });
@@ -301,7 +301,7 @@ class SecurityBackupService {
         }
 
         localStorage.setItem('freyai_auto_backups', JSON.stringify(existingAutoBackups));
-        console.log('Auto-backup created:', backup.id);
+        // Auto-backup created
     }
 
     // Get auto backups
@@ -362,7 +362,7 @@ class SecurityBackupService {
                 if (sbRech) { customerData.invoices = [...customerData.invoices, ...sbRech]; }
                 const { data: sbComm } = await sb.from('communication_log').select('*').eq('kunde_id', customerId);
                 if (sbComm) { customerData.communications = [...customerData.communications, ...sbComm]; }
-            } catch (e) { /* Supabase not available, local data only */ }
+            } catch { /* Supabase not available, local data only */ }
         }
 
         return customerData;
@@ -411,13 +411,13 @@ class SecurityBackupService {
                 try {
                     const { error } = await sb.from(table).delete().eq(field, customerId);
                     if (!error) { deletedCount++; }
-                } catch (e) { /* table may not exist or field mismatch - continue */ }
+                } catch { /* table may not exist or field mismatch - continue */ }
             }
         }
 
         // 3. Delete from IndexedDB via db-service
         if (window.dbService?.deleteCustomer) {
-            try { await window.dbService.deleteCustomer(customerId); } catch (e) { /* OK */ }
+            try { await window.dbService.deleteCustomer(customerId); } catch { /* OK */ }
         }
 
         this.logActivity('gdpr_delete', { customerId, deletedCount });

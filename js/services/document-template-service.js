@@ -237,7 +237,7 @@ class DocumentTemplateService {
         if (!s) {return '';}
         try {
             return new Date(s).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        } catch (_) { return s; }
+        } catch { return s; }
     }
 
     /** Render company block for header */
@@ -323,7 +323,7 @@ class DocumentTemplateService {
             if (window.companySettings?.load) {
                 return (await window.companySettings.load()) || {};
             }
-        } catch (_) {}
+        } catch { /* ignore */ }
         return {};
     }
 

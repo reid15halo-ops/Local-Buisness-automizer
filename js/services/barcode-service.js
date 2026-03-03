@@ -37,7 +37,7 @@ class BarcodeService {
                             this.handleScan(barcode.rawValue, barcode.format, onScan);
                         }
                     } catch (e) {
-                        console.log('Scan error:', e);
+                        console.error('Scan error:', e);
                     }
 
                     if (videoElement.srcObject) {
@@ -182,7 +182,7 @@ class BarcodeService {
     }
 
     // Generate barcode for product
-    generateBarcode(productId, type = 'custom') {
+    generateBarcode(productId, _type = 'custom') {
         // Generate a custom barcode (FreyAI prefix + timestamp)
         const code = `FREY${Date.now().toString().slice(-10)}`;
         return code;
@@ -204,8 +204,8 @@ class BarcodeService {
 
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.1);
-        } catch (e) {
-            console.log('Audio not available');
+        } catch {
+            console.warn('Audio not available');
         }
     }
 

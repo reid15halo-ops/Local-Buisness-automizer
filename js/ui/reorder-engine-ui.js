@@ -367,7 +367,6 @@ class ReorderEngineUI {
         if (!list) {return;}
 
         // Update summary
-        const totalQty = suggestions.reduce((sum, s) => sum + s.suggestedQty, 0);
         const totalValue = suggestions.reduce((sum, s) => {
             return sum + (s.suggestedQty * s.material.preis);
         }, 0);

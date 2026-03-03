@@ -355,15 +355,7 @@ class FragebogenImportUI {
      * @param {string} message
      * @param {'success'|'error'|'warning'} type
      */
-    _showNotification(message, type) {
-        const colors = {
-            success: { bg: '#10b981', icon: '\u2713' },
-            error:   { bg: '#ef4444', icon: '\u2717' },
-            warning: { bg: '#f59e0b', icon: '\u26A0' }
-        };
-        const cfg = colors[type] || colors.success;
-        const esc = this._esc;
-
+    _showNotification(message, _type) {
         const toast = document.createElement('div');
         toast.className = 'toast-notification success';
         toast.textContent = message;

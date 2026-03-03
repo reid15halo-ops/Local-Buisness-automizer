@@ -203,7 +203,6 @@ class PhoneService {
 
     // Statistics
     getStatistics() {
-        const today = new Date().toISOString().split('T')[0];
         const thisWeek = new Date();
         thisWeek.setDate(thisWeek.getDate() - 7);
 

@@ -353,7 +353,7 @@ class SecurityService {
 
         // Log to console in development
         if (process.env.NODE_ENV !== 'production') {
-            console.log('[Security Event]', logEntry);
+            console.warn('[Security Event]', logEntry);
         }
 
         // In production, you might send to a logging service

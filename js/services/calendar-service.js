@@ -152,7 +152,6 @@ class CalendarService {
         if (!workHours || !workHours.active) {return [];}
 
         const slots = [];
-        const existingApts = this.getAppointmentsForDay(date);
 
         let currentTime = this.timeToMinutes(workHours.start);
         const endTime = this.timeToMinutes(workHours.end);

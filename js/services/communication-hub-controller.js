@@ -537,9 +537,6 @@ class CommunicationHubController {
     showConversationInfo() {
         if (!this.currentConversation) {return;}
 
-        const messages = window.unifiedCommService?.getConversationMessages(this.currentConversation.id) || [];
-        const stats = window.unifiedCommService?.getStatistics() || {};
-
         const info = `Kunde: ${this.currentConversation.customerName} | Tel: ${this.currentConversation.customerPhone || '-'} | E-Mail: ${this.currentConversation.customerEmail || '-'}`;
         (window.showToast || window.errorHandler?.info)?.(info, 'info');
     }

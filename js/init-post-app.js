@@ -16,8 +16,8 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./service-worker.js')
-                .then(reg => console.log('\u2705 Service Worker registered'))
-                .catch(err => console.log('Service Worker registration failed:', err));
+                .then(() => { /* Service Worker registered */ })
+                .catch(err => console.error('Service Worker registration failed:', err));
         });
     }
 })();
@@ -50,7 +50,7 @@
         setTimeout(() => {
             if (window.calendarUIService) {
                 window.calendarUIService.mount('calendar-ui-mount');
-                console.log('\u2705 Calendar UI Service initialized');
+                // Calendar UI Service initialized
             } else {
                 console.warn('Calendar UI Service not available');
             }
@@ -86,7 +86,7 @@
     }
 
     // Subscribe to auth changes
-    window.authService.onAuthChange((user, session) => {
+    window.authService.onAuthChange((user, _session) => {
         if (user) {
             updateUserUI(user);
         } else {
@@ -131,7 +131,7 @@
         setTimeout(() => {
             if (window.boomerGuideUI) {
                 window.boomerGuideUI.init();
-                console.log('\u2705 Boomer Guide initialized');
+                // Boomer Guide initialized
             }
         }, 800);
     });

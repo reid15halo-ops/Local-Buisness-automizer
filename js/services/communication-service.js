@@ -81,7 +81,7 @@ class CommunicationService {
 
     // SMS (Demo Mode - would need Twilio/API)
     async sendSMS(to, message, customerId = null) {
-        console.log('SMS senden (Demo):', to, message);
+        console.warn('SMS senden (Demo):', to, message);
 
         // In production, this would call Twilio or similar API
         const smsEntry = this.logMessage({
@@ -99,7 +99,7 @@ class CommunicationService {
 
     // WhatsApp (Demo Mode - would need WhatsApp Business API)
     async sendWhatsApp(to, message, customerId = null) {
-        console.log('WhatsApp senden (Demo):', to, message);
+        console.warn('WhatsApp senden (Demo):', to, message);
 
         // Open WhatsApp Web as fallback
         const waUrl = `https://wa.me/${to.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;

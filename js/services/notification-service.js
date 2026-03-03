@@ -50,7 +50,7 @@ class NotificationService {
         if (Notification.permission !== 'denied') {
             try {
                 const permission = await Notification.requestPermission();
-                console.log(`Notification permission: ${permission}`);
+                console.warn(`Notification permission: ${permission}`);
                 return permission;
             } catch (error) {
                 console.error('Failed to request notification permission:', error);

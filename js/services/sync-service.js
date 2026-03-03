@@ -111,7 +111,7 @@ class SyncService {
             return { synced: 0, errors: 0 };
         }
 
-        console.log(`Processing ${queue.length} queued sync items...`);
+        console.warn(`Processing ${queue.length} queued sync items...`);
 
         let synced = 0;
         let errors = 0;
@@ -128,7 +128,7 @@ class SyncService {
 
         if (synced > 0) {
             this._clearSyncQueue();
-            console.log(`Sync complete: ${synced} synced, ${errors} errors`);
+            console.warn(`Sync complete: ${synced} synced, ${errors} errors`);
         }
 
         return { synced, errors };
@@ -414,7 +414,7 @@ class SyncService {
 
             // Emit event if conflicts were detected
             if (conflictsDetected > 0) {
-                console.log(`SyncService: ${conflictsDetected} conflict(s) detected in ${table}`);
+                console.warn(`SyncService: ${conflictsDetected} conflict(s) detected in ${table}`);
                 try {
                     window.dispatchEvent(new CustomEvent('sync-conflict-detected', {
                         detail: { table, count: conflictsDetected }
@@ -473,12 +473,12 @@ class SyncService {
     // ---- Event Handlers ----
 
     async _onOnline() {
-        console.log('Back online - processing sync queue...');
+        console.warn('Back online - processing sync queue...');
         await this.processSyncQueue();
     }
 
     _onOffline() {
-        console.log('Offline - will sync when reconnected');
+        console.warn('Offline - will sync when reconnected');
     }
 }
 

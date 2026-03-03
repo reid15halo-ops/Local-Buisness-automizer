@@ -34,7 +34,7 @@ class ThemeService {
     // Watch for system theme changes
     watchSystemTheme() {
         if (window.matchMedia) {
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (_e) => {
                 if (this.settings.theme === 'system') {
                     this.applyTheme();
                 }

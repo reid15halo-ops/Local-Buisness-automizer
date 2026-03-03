@@ -893,8 +893,6 @@ class AgenticExecutorService {
      * Returns result with optional undoData.
      */
     async _executeAction(actionId, params) {
-        const actionDescriptions = this._getActionDescriptions();
-
         switch (actionId) {
             case 'generate_briefing': {
                 // Briefing is already generated, just log it
@@ -1170,7 +1168,7 @@ class AgenticExecutorService {
                     source: 'agent'
                 });
                 localStorage.setItem('freyai_communications', JSON.stringify(comms));
-            } catch (e) {
+            } catch {
                 // Ignore localStorage errors
             }
 
@@ -1326,7 +1324,7 @@ class AgenticExecutorService {
 
         this.schedulerRunning = true;
         this.schedulerInterval = setInterval(() => this.checkSchedules(), 60000);
-        console.log('[AgenticExecutor] Scheduler gestartet');
+        // Scheduler started
         this._notifyListeners('scheduler_started', {});
     }
 
@@ -1339,7 +1337,7 @@ class AgenticExecutorService {
             this.schedulerInterval = null;
         }
         this.schedulerRunning = false;
-        console.log('[AgenticExecutor] Scheduler gestoppt');
+        // Scheduler stopped
         this._notifyListeners('scheduler_stopped', {});
     }
 
@@ -1380,7 +1378,7 @@ class AgenticExecutorService {
 
             // Run the agent
             try {
-                console.log(`[AgenticExecutor] Geplanter Agent ${agentId} wird ausgefuehrt (${currentTime})`);
+                console.warn(`[AgenticExecutor] Geplanter Agent ${agentId} wird ausgefuehrt (${currentTime})`);
                 await this.runAgent(agentId);
             } catch (error) {
                 console.error(`[AgenticExecutor] Geplanter Agent ${agentId} fehlgeschlagen:`, error);
