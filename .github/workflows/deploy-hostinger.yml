@@ -1,0 +1,174 @@
+# ============================================
+# Automatisches Deployment auf Hostinger
+# Landing Page → freyaivisions.de
+# App         → app.freyaivisions.de
+# ============================================
+#
+# SETUP: Gehe zu GitHub → Repository → Settings → Secrets and variables → Actions
+# Füge folgende Secrets hinzu:
+#
+#   HOSTINGER_FTP_SERVER    z.B. ftp.freyaivisions.de oder IP von Hostinger
+#   HOSTINGER_FTP_USERNAME  z.B. u123456789
+#   HOSTINGER_FTP_PASSWORD  dein FTP-Passwort
+#
+# Die FTP-Zugangsdaten findest du in Hostinger unter:
+#   hPanel → Dateien → FTP-Konten
+#
+# ============================================
+
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'auth.html'
+      - 'landing.html'
+      - 'booking.html'
+      - 'customer-portal.html'
+      - 'offline.html'
+      - 'css/**'
+      - 'js/**'
+      - 'fonts/**'
+      - 'icons/**'
+      - 'config/**'
+      - 'manifest.json'
+      - 'service-worker.js'
+      - '.htaccess'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Was deployen?'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - landing
+          - app
+
+jobs:
+  # ── Build ───────────────────────────────────
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Landing Page Package
+        run: |
+          mkdir -p build/landing
+          # Landing page files
+          cp landing.html build/landing/index.html
+          cp booking.html build/landing/booking.html
+          cp manifest.json build/landing/manifest.json
+          cp favicon.ico build/landing/
+          cp favicon-32x32.png build/landing/
+          cp favicon.png build/landing/
+          cp apple-touch-icon.png build/landing/
+          # CSS
+          mkdir -p build/landing/css
+          cp css/fonts.css build/landing/css/
+          # Fonts (DSGVO-konform)
+          mkdir -p build/landing/fonts
+          cp fonts/*.woff2 build/landing/fonts/
+          # Icons
+          mkdir -p build/landing/icons
+          cp icons/*.png build/landing/icons/
+          # JS (booking service)
+          mkdir -p build/landing/js/services
+          cp js/services/booking-service.js build/landing/js/services/
+          # .htaccess for landing
+          cat > build/landing/.htaccess << 'EOF'
+          RewriteEngine On
+          RewriteCond %{HTTPS} off
+          RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+          <IfModule mod_headers.c>
+              Header always set X-Frame-Options "SAMEORIGIN"
+              Header always set X-Content-Type-Options "nosniff"
+              Header always set X-XSS-Protection "1; mode=block"
+              Header always set Referrer-Policy "strict-origin-when-cross-origin"
+              Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+          </IfModule>
+
+          <IfModule mod_expires.c>
+              ExpiresActive On
+              ExpiresByType text/html "access plus 0 seconds"
+              ExpiresByType text/css "access plus 1 week"
+              ExpiresByType application/javascript "access plus 1 week"
+              ExpiresByType font/woff2 "access plus 1 year"
+              ExpiresByType image/png "access plus 1 month"
+          </IfModule>
+
+          <IfModule mod_deflate.c>
+              AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+          </IfModule>
+          EOF
+
+      - name: Build App Package
+        run: bash deploy-app.sh
+
+      - name: Upload Landing Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: landing-page
+          path: build/landing/
+          retention-days: 5
+
+      - name: Upload App Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app
+          path: deploy-hostinger-app/
+          retention-days: 5
+
+  # ── Deploy Landing Page → freyaivisions.de ──
+  deploy-landing:
+    needs: build
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'push' ||
+      github.event.inputs.target == 'both' ||
+      github.event.inputs.target == 'landing'
+    steps:
+      - name: Download Landing Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: landing-page
+          path: landing/
+
+      - name: Deploy Landing via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_SERVER }}
+          username: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          local-dir: landing/
+          server-dir: public_html/
+          dangerous-clean-slate: false
+
+  # ── Deploy App → app.freyaivisions.de ───────
+  deploy-app:
+    needs: build
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'push' ||
+      github.event.inputs.target == 'both' ||
+      github.event.inputs.target == 'app'
+    steps:
+      - name: Download App Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app
+          path: app/
+
+      - name: Deploy App via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_SERVER }}
+          username: ${{ secrets.HOSTINGER_FTP_USERNAME }}
+          password: ${{ secrets.HOSTINGER_FTP_PASSWORD }}
+          local-dir: app/
+          server-dir: domains/app.freyaivisions.de/public_html/
+          dangerous-clean-slate: false
