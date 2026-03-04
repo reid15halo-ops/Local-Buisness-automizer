@@ -210,17 +210,61 @@ Phase 3          Phase 4
 
 ---
 
-## Priorisierte Naechste Schritte
+## Abgeschlossene Arbeiten (Code-Fixes)
 
-**JETZT anfangen mit:**
+### Phase 1: Code-Hygiene ✅
+- 0 ESLint errors, 0 warnings
+- DSGVO compliance, dead code removed
 
-1. `npm run lint -- --fix` ausfuehren (50 auto-fixable Errors)
-2. Verbleibende 1 ESLint-Error manuell fixen
-3. Supabase-Projekt anlegen und `.env` konfigurieren
-4. Auth-Flow testen (Registrierung → Login → App)
-5. Anfrage-zu-Rechnung Workflow einmal komplett durchspielen
+### Phase 2: Backend Infrastructure ✅ (Code-Fixes)
+- Fixed: `supabase-config.js` loaded with `defer` (auth gate always showed offline)
+- Fixed: `supabase-client.js` never loaded in HTML
+- Fixed: Dual Supabase client instances (now delegates to singleton)
+- Fixed: `onAuthStateChange` listener leak
+- Fixed: `db-service.js` used English table names instead of German (kunden, rechnungen, etc.)
+- Fixed: `supabase-db-service.js` referenced non-existent `emails` table
+- Fixed: Sync queue cleared entirely even on partial failure (3 services)
+- Added: `stripe_payments` table in schema
+- Added: `setup-validation-service.js` for backend readiness checks
+
+### Phase 3: Kern-Workflow ✅ (Code-Fixes)
+- Fixed: `invoice-numbering-service.js` race condition (GoBD violation)
+- Fixed: `dunning-service.js` calculated overdue from creation date instead of due date
+- Fixed: `check-overdue` edge function same date calculation bug
+- Fixed: `stripe-webhook` used wrong table names, broken `.catch()` chains
+- Fixed: `process-inbound-email` adminSettings scope bug
+- Fixed: `timetracking-service.js` overnight shifts calculated as 0 hours
+- Fixed: `calendar-service.js` month view showed cancelled appointments
+- Fixed: `booking-service.js` always created 'besichtigung' type
+- Fixed: `bookkeeping-service.js` CSV import failed for amounts >= 1M
+- Fixed: `pdf-service.js` hardcoded 19% MwSt (now dynamic + Kleinunternehmer)
+- Fixed: PDF logo format detection (always assumed PNG, now detects JPEG/WEBP)
+- Fixed: PDF missing kunde guard on generateRechnung/Angebot/Mahnung
+- Fixed: Calendar UTC/local timezone shift in week view
+- Fixed: Timetracking stale timer detection (>24h without clock-out)
+- Fixed: DATEV export missing fiscal year header row
+- Fixed: Field app signature isEmpty() always returned true
+
+### Phase 4: Kommunikation & Integrationen ✅ (Code-Fixes)
+- Fixed: `_getTaxRate()` unguarded in 19 files (ReferenceError if company-settings not loaded)
+- Fixed: `create-checkout` and `create-portal-session` hardcoded `localhost:3000` fallback URLs
+- Fixed: `process-inbound-email` all hardcoded 'FreyAI Visions' replaced with COMPANY_NAME env var
+- Fixed: `process-inbound-email` hardcoded email replaced with COMPANY_INFO_EMAIL env var
+- Fixed: `run-automation` and `run-webhook` webhook calls had no timeout (added 10s AbortController)
+- Fixed: `email-template-service.js` missing optional chaining, localStorage corruption guard
+- Fixed: `einvoice-service.js` localStorage parse without try-catch
+- Fixed: `notification-service.js` missing deduplication (60s window)
+- Fixed: `reorder-engine-service.js` localStorage parse without try-catch
+- Fixed: `material-service.js` XLSX library existence check
+
+### Remaining (Manual/Deployment Tasks)
+- Phase 2: Supabase project setup, schema deployment, RLS activation, auth E2E testing
+- Phase 4: VPS email relay deployment, SMS provider setup, Stripe live mode, n8n workflows
+- Phase 5: Corporate design audit, mobile responsive testing, loading/empty states UI work
+- Phase 6: Hosting, domain, SSL, build pipeline, monitoring, landing page, security audit
 
 ---
 
-*Letzte Aktualisierung: 2026-03-03*
-*Basierend auf: 938 Tests (alle gruen), 30 Views, 94 Services, Git-History bis Commit e4a9c36*
+*Letzte Aktualisierung: 2026-03-04*
+*Basierend auf: 938 Tests (alle gruen), 0 ESLint errors, 30 Views, 94 Services*
+*Code-Fixes: 8 Commits auf branch claude/setup-smart-home-scenes-Qkj8g*
