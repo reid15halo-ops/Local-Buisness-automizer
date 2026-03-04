@@ -1115,7 +1115,7 @@ function renderAngebote() {
             </div>
             ${angebotTrailHTML}
             <div class="item-meta">
-                <span>${a.positionen.length} Positionen</span>
+                <span>${(a.positionen || []).length} Positionen</span>
                 <span>${formatCurrency(a.brutto)}</span>
                 <span>${formatDate(a.createdAt)}</span>
                 ${(() => {
