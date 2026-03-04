@@ -209,7 +209,7 @@ class CashFlowService {
                     date: date,
                     type: 'tax',
                     name: 'USt-Vorauszahlung',
-                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * _getTaxRate() * 0.5
+                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19) * 0.5
                 });
             }
         });

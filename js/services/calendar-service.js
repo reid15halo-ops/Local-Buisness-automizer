@@ -102,10 +102,10 @@ class CalendarService {
     }
 
     getUpcomingAppointments(days = 7) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = this._localDateStr(new Date());
         const future = new Date();
         future.setDate(future.getDate() + days);
-        const futureStr = future.toISOString().split('T')[0];
+        const futureStr = this._localDateStr(future);
 
         return this.appointments.filter(a =>
             a.date >= today && a.date <= futureStr && a.status !== 'abgesagt'
@@ -113,7 +113,7 @@ class CalendarService {
     }
 
     getTodaysAppointments() {
-        return this.getAppointmentsForDay(new Date().toISOString().split('T')[0]);
+        return this.getAppointmentsForDay(this._localDateStr(new Date()));
     }
 
     getAppointmentsForCustomer(customerId) {
@@ -209,21 +209,30 @@ class CalendarService {
         return reminders;
     }
 
+    // Helper: format date as YYYY-MM-DD in local timezone (avoids UTC shift)
+    _localDateStr(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
     // Week View Data
     getWeekViewData(startDate) {
         const days = [];
         const start = new Date(startDate);
+        const todayStr = this._localDateStr(new Date());
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(start);
             date.setDate(date.getDate() + i);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = this._localDateStr(date);
 
             days.push({
                 date: dateStr,
                 dayName: date.toLocaleDateString('de-DE', { weekday: 'short' }),
                 dayNumber: date.getDate(),
-                isToday: dateStr === new Date().toISOString().split('T')[0],
+                isToday: dateStr === todayStr,
                 appointments: this.getAppointmentsForDay(dateStr)
             });
         }

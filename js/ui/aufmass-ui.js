@@ -1730,8 +1730,8 @@ class AufmassUI {
                 leistungsart: 'aufmass',
                 positionen: positions,
                 netto: Math.round(netto * 100) / 100,
-                mwst: Math.round(netto * _getTaxRate() * 100) / 100,
-                brutto: Math.round(netto * (1 + _getTaxRate()) * 100) / 100,
+                mwst: Math.round(netto * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19) * 100) / 100,
+                brutto: Math.round(netto * (1 + ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19)) * 100) / 100,
                 status: 'entwurf',
                 angebotText: `Aufma\u00DF-basiertes Angebot - ${project?.name || 'Projekt'}`,
                 createdAt: new Date().toISOString()
@@ -1760,8 +1760,8 @@ class AufmassUI {
 
             const netto = angebot.positionen.reduce((s, p) => s + (p.menge || 0) * (p.preis || 0), 0);
             angebot.netto = Math.round(netto * 100) / 100;
-            angebot.mwst = Math.round(netto * _getTaxRate() * 100) / 100;
-            angebot.brutto = Math.round(netto * (1 + _getTaxRate()) * 100) / 100;
+            angebot.mwst = Math.round(netto * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19) * 100) / 100;
+            angebot.brutto = Math.round(netto * (1 + ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19)) * 100) / 100;
 
             window.storeService.save();
             this._showToast(`Positionen zu Angebot ${angebotId} hinzugef\u00FCgt`);

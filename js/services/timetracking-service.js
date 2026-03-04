@@ -109,12 +109,47 @@ class TimeTrackingService {
         const started = new Date(timer.startedAt);
         const now = new Date();
         const elapsedMinutes = Math.floor((now - started) / 60000);
+        const isStale = elapsedMinutes > 24 * 60; // >24h without clock-out
 
         return {
             ...timer,
             elapsedMinutes,
-            elapsedFormatted: this.formatDuration(elapsedMinutes)
+            elapsedFormatted: this.formatDuration(elapsedMinutes),
+            isStale
         };
+    }
+
+    // Detect and resolve stale timers (>24h without clock-out)
+    getStaleTimers() {
+        const stale = [];
+        const now = new Date();
+        for (const [empId, timer] of Object.entries(this.activeTimers)) {
+            const started = new Date(timer.startedAt);
+            const elapsedMinutes = Math.floor((now - started) / 60000);
+            if (elapsedMinutes > 24 * 60) {
+                stale.push({ employeeId: empId, ...timer, elapsedMinutes });
+            }
+        }
+        return stale;
+    }
+
+    autoResolveStaleTimer(employeeId, endTime = '17:00') {
+        const timer = this.activeTimers[employeeId];
+        if (!timer) {return null;}
+
+        // Create entry with assumed end time on the original date
+        const entry = this.addEntry({
+            employeeId,
+            date: timer.date,
+            startTime: timer.startTime,
+            endTime: endTime,
+            projectId: timer.projectId,
+            description: '[Auto-geschlossen: Timer vergessen]'
+        });
+
+        delete this.activeTimers[employeeId];
+        this.saveTimers();
+        return entry;
     }
 
     // Query Entries

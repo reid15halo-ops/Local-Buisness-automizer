@@ -233,6 +233,14 @@ class BookkeepingService {
     exportDATEV(jahr) {
         const buchungen = this.getBuchungenForJahr(jahr);
 
+        // DATEV header row (fiscal year, company info)
+        const fiscal = [
+            `"EXTF"`, `700`, `21`, `"Buchungsstapel"`, `7`,
+            `${jahr}0101`, `4`,
+            `"${(this.einstellungen.firmenName || '').replace(/"/g, '""')}"`,
+            `""`, `""`, `${jahr}0101`, `${jahr}1231`
+        ].join(';');
+
         // DATEV CSV Format (vereinfacht)
         const header = [
             'Umsatz', 'Soll/Haben', 'WKZ', 'Belegdatum', 'Belegfeld 1',
@@ -248,8 +256,8 @@ class BookkeepingService {
                 b.typ === 'einnahme' ? 'H' : 'S',               // Soll/Haben
                 'EUR',                                           // Währungskennzeichen
                 datevDatum,                                      // Belegdatum (DDMM)
-                b.belegnummer || b.id,                          // Belegfeld 1
-                b.beschreibung.substring(0, 60),                // Buchungstext (max 60)
+                (b.belegnummer || b.id).toString().replace(/;/g, ''),  // Belegfeld 1
+                (b.beschreibung || '').substring(0, 60).replace(/;/g, ''),  // Buchungstext (max 60)
                 b.typ === 'einnahme' ? '1200' : '1000',         // Gegenkonto (Bank/Kasse)
                 b.typ === 'einnahme' ? '8400' : '4400',         // Konto (Erlöse/Aufwand)
                 '',                                              // USt-ID
@@ -257,7 +265,7 @@ class BookkeepingService {
             ].join(';');
         });
 
-        return `${header}\n${rows.join('\n')}`;
+        return `${fiscal}\n${header}\n${rows.join('\n')}`;
     }
 
     // CSV Export (einfacheres Format)

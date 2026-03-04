@@ -525,7 +525,8 @@ function initAngebotForm() {
             return;
         }
 
-        const mwst = netto * _getTaxRate();
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = netto * taxRate;
         const brutto = netto + mwst;
 
         // Check if we are editing an existing Angebot
@@ -862,7 +863,8 @@ function updateAngebotSummary() {
         netto += menge * preis;
     });
 
-    const mwst = netto * _getTaxRate();
+    const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+    const mwst = netto * taxRate;
     const brutto = netto + mwst;
 
     document.getElementById('angebot-netto').textContent = formatCurrency(netto);

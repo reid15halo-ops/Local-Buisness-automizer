@@ -446,9 +446,21 @@ class FieldAppService {
                 return canvasElement.toDataURL('image/png');
             },
             isEmpty: () => {
-                // Simple check: see if canvas has only the background
-                // If it is just the background, it is "empty"
-                return true; // Simplified: user must confirm
+                // Check if canvas has only the background color by sampling pixels
+                try {
+                    const imgData = ctx.getImageData(0, 0, rect.width, rect.height).data;
+                    // Sample every 40th pixel for performance
+                    for (let i = 0; i < imgData.length; i += 40 * 4) {
+                        const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2];
+                        // Background color is #0f2327 → rgb(15, 35, 39)
+                        if (Math.abs(r - 15) > 10 || Math.abs(g - 35) > 10 || Math.abs(b - 39) > 10) {
+                            return false; // Found a non-background pixel
+                        }
+                    }
+                    return true;
+                } catch {
+                    return false; // If check fails, assume not empty
+                }
             },
             destroy: () => {
                 canvasElement.removeEventListener('touchstart', startDrawing);

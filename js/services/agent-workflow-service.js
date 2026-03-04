@@ -954,7 +954,8 @@ Antworte NUR mit dem JSON.`;
         // Estimate based on leistungsart
         const basePrice = this._estimateBasePrice(anfrage.leistungsart);
         const netto = basePrice;
-        const mwst = Math.round(netto * _getTaxRate() * 100) / 100;
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = Math.round(netto * taxRate * 100) / 100;
         const brutto = Math.round((netto + mwst) * 100) / 100;
 
         return {

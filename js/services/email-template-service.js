@@ -14,7 +14,7 @@ class EmailTemplateService {
      */
     getCompanyInfo() {
         // Try to get from eInvoiceService (synced from admin settings)
-        if (window.eInvoiceService && window.eInvoiceService.settings.businessData) {
+        if (window.eInvoiceService?.settings?.businessData) {
             const bd = window.eInvoiceService.settings.businessData;
             return {
                 name: bd.name || 'FreyAI Visions',
@@ -31,7 +31,8 @@ class EmailTemplateService {
         }
 
         // Fallback: try admin panel settings
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap = {};
+        try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { /* corrupted */ }
         return {
             name: ap.company_name || 'FreyAI Visions',
             street: ap.address_street || '',

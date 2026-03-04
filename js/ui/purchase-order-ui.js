@@ -452,8 +452,9 @@ class PurchaseOrderUI {
             netto += (pos.menge || 0) * (pos.ekPreis || 0);
         });
 
-        const mwst = netto * _getTaxRate();
-        const brutto = netto * (1 + _getTaxRate());
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = netto * taxRate;
+        const brutto = netto * (1 + taxRate);
 
         document.getElementById('po-summary-netto').textContent = netto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
         document.getElementById('po-summary-mwst').textContent = mwst.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });

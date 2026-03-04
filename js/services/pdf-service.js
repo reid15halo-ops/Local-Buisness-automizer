@@ -93,7 +93,14 @@ class PDFService {
         // Logo
         if (this.logoBase64) {
             try {
-                doc.addImage(this.logoBase64, 'PNG', m.left, m.top, logoSize, logoSize);
+                // Detect image format from data URI
+                let fmt = 'PNG';
+                if (this.logoBase64.startsWith('data:image/jpeg') || this.logoBase64.startsWith('data:image/jpg')) {
+                    fmt = 'JPEG';
+                } else if (this.logoBase64.startsWith('data:image/webp')) {
+                    fmt = 'WEBP';
+                }
+                doc.addImage(this.logoBase64, fmt, m.left, m.top, logoSize, logoSize);
                 textLeft = m.left + logoSize + 4;
             } catch (e) {
                 console.warn('Logo konnte nicht ins PDF eingefügt werden:', e.message);
@@ -277,6 +284,10 @@ class PDFService {
     // Rechnung (Invoice) PDF
     // ============================================
     async generateRechnung(rechnung) {
+        if (!rechnung?.kunde) {
+            console.error('Rechnung oder Kundendaten fehlen');
+            return false;
+        }
         await this.ensureLoaded();
         const doc = this.createDoc();
 
@@ -385,6 +396,10 @@ class PDFService {
     // Angebot (Quote) PDF
     // ============================================
     async generateAngebot(angebot) {
+        if (!angebot?.kunde) {
+            console.error('Angebot oder Kundendaten fehlen');
+            return false;
+        }
         await this.ensureLoaded();
         const doc = this.createDoc();
 
@@ -456,6 +471,10 @@ class PDFService {
     // Mahnung (Dunning Letter) PDF
     // ============================================
     async generateMahnung(rechnung, mahnLevel, mahnGebuehr) {
+        if (!rechnung?.kunde) {
+            console.error('Rechnung oder Kundendaten fehlen');
+            return false;
+        }
         await this.ensureLoaded();
         const doc = this.createDoc();
         const level = mahnLevel || 1;

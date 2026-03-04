@@ -507,8 +507,9 @@ class PurchaseOrderService {
         );
 
         po.netto = netto;
-        po.mwst = netto * _getTaxRate();
-        po.brutto = netto * (1 + _getTaxRate());
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        po.mwst = netto * taxRate;
+        po.brutto = netto * (1 + taxRate);
 
         // Update position totals
         po.positionen.forEach(pos => {

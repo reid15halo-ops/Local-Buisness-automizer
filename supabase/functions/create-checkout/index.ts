@@ -91,8 +91,8 @@ serve(async (req) => {
                     quantity: 1,
                 }
             ],
-            success_url: success_url || 'https://localhost:3000/payment-success?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url: cancel_url || 'https://localhost:3000/payment-cancelled',
+            success_url: success_url || `${Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: cancel_url || `${Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de'}/payment-cancelled`,
             metadata: {
                 invoice_id: invoice_id,
                 supabase_user_id: user.id,

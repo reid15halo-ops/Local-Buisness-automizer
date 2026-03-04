@@ -817,7 +817,8 @@ class WorkflowBuilderService {
 
         const positionen = auftrag.positionen || [];
         const netto = positionen.reduce((sum, p) => sum + ((p.menge || 1) * (p.preis || 0)), 0);
-        const mwst = netto * _getTaxRate();
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = netto * taxRate;
         const brutto = netto + mwst;
 
         const rechnung = {
