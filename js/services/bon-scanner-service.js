@@ -1441,7 +1441,7 @@ class BonScannerService {
             }
         }
 
-        return Math.min(1.0, matchCount / totalTokens);
+        return totalTokens > 0 ? Math.min(1.0, matchCount / totalTokens) : 0;
     }
 
     /**

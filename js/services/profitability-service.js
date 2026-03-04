@@ -317,9 +317,9 @@ class ProfitabilityService {
             totalLaborCost: totalLaborCost,
             totalOverhead: totalOverhead,
             totalMaterialCost: totalMaterialCost,
-            profitableJobsPercent: (profitableJobs / jobs.length) * 100,
-            onTimePercent: (onTimeJobs / jobs.length) * 100,
-            averageJobValue: totalRevenue / jobs.length,
+            profitableJobsPercent: jobs.length > 0 ? (profitableJobs / jobs.length) * 100 : 0,
+            onTimePercent: jobs.length > 0 ? (onTimeJobs / jobs.length) * 100 : 0,
+            averageJobValue: jobs.length > 0 ? totalRevenue / jobs.length : 0,
             effectiveHourlyRate: totalHours > 0 ? totalRevenue / totalHours : 0
         };
     }

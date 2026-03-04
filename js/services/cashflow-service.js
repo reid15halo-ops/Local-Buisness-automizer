@@ -37,9 +37,9 @@ class CashFlowService {
         // Get overdue invoices
         const overdueAmount = rechnungen
             .filter(r => {
-                if (r.status !== 'bezahlt') {
+                if (r.status !== 'bezahlt' && r.faelligkeitsdatum) {
                     const dueDate = new Date(r.faelligkeitsdatum);
-                    return dueDate < today;
+                    return !isNaN(dueDate.getTime()) && dueDate < today;
                 }
                 return false;
             })
