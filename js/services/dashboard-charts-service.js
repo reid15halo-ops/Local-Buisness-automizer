@@ -7,14 +7,14 @@ class DashboardChartsService {
     constructor() {
         this.colors = {
             // Theme colors - keep in sync with css/core.css :root vars
-            indigo: '#6366f1',
+            indigo: '#2dd4a8',
             green: '#22c55e',
             amber: '#f59e0b',
             red: '#ef4444',
             blue: '#3b82f6',
             slate: '#64748b',
-            dark: '#1c1c21',
-            darkBg: '#0f0f12',
+            dark: '#0f2327',
+            darkBg: '#0c1a1a',
             text: '#e4e4e7',
             textSecondary: '#a1a1aa'
         };

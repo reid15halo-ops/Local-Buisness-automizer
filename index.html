@@ -17,6 +17,12 @@
     <link rel="stylesheet" href="css/agent-workflows.css">
     <link rel="stylesheet" href="css/support.css">
     <link rel="stylesheet" href="css/field-app.css">
+    <link rel="stylesheet" href="css/support.css">
+    <link rel="stylesheet" href="css/aufmass.css">
+    <link rel="stylesheet" href="css/customer-portal.css">
+    <link rel="stylesheet" href="css/field-app-mobile.css">
+    <link rel="stylesheet" href="css/dashboard-widgets.css">
+    <link rel="stylesheet" href="css/conflict-resolution.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
@@ -29,13 +35,95 @@
     <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png">
     <meta name="apple-mobile-web-app-title" content="FreyAI Visions">
     <!-- SheetJS for Excel import (SRI verified 2026-02-21) -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" integrity="sha384-QCIdq2UMVEoSRhR3ZWZwdz2/pivLowr+eokFMdYyukq7qI26VYRxFa4Nl6FKetmL" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" integrity="sha384-QCIdq2UMVEoSRhR3ZWZwdz2/pivLowr+eokFMdYyukq7qI26VYRxFa4Nl6FKetmL" crossorigin="anonymous"></script>
 </head>
 
 <body>
     <!-- Supabase config must load BEFORE auth gate checks isConfigured() -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" integrity="sha384-MFRs3GOKG7baTTFnpuIH/OuWFhPB09hOFzj/S8byfOcSQiaXmD4bSMVE01zSrMSp" crossorigin="anonymous"></script>
-    <script src="js/services/supabase-config.js"></script>
+    <script>
+    /* Global innerHTML XSS protection via DOMPurify */
+    (function() {
+        if (typeof DOMPurify === "undefined") return;
+        var desc = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+        if (!desc || !desc.set) return;
+        var originalSet = desc.set;
+        Object.defineProperty(Element.prototype, "innerHTML", {
+            set: function(value) {
+                if (typeof value === "string" && value.indexOf("<") !== -1) {
+                    value = DOMPurify.sanitize(value, {
+                        ADD_TAGS: ["style"],
+                        ADD_ATTR: ["onclick", "onchange", "oninput", "onsubmit", "onkeydown", "onkeyup", "onfocus", "onblur", "style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
+                        ALLOW_UNKNOWN_PROTOCOLS: false
+                    });
+                }
+                originalSet.call(this, value);
+            },
+            get: desc.get,
+            configurable: true
+        });
+        console.log("[Security] innerHTML XSS protection active");
+    })();
+    </script>
+    <script>
+    /* Global Error Monitoring → Supabase client_errors table */
+    (function() {
+        var errorQueue = [];
+        var sending = false;
+        var sessionId = Math.random().toString(36).substr(2, 9);
+
+        function sendErrors() {
+            if (sending || errorQueue.length === 0) return;
+            sending = true;
+            var batch = errorQueue.splice(0, 10);
+            var url = (window.SUPABASE_URL || "https://incbhhaiiayohrjqevog.supabase.co") + "/rest/v1/client_errors";
+            var key = window.SUPABASE_ANON_KEY || "";
+            if (!key) { sending = false; return; }
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "apikey": key,
+                    "Authorization": "Bearer " + key,
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                body: JSON.stringify(batch)
+            }).catch(function(){}).finally(function(){ sending = false; });
+        }
+
+        function queueError(msg, source, line, col, stack) {
+            if (errorQueue.length >= 50) return;
+            errorQueue.push({
+                error_message: String(msg).substring(0, 1000),
+                error_source: source ? String(source).substring(0, 500) : null,
+                error_line: line || null,
+                error_col: col || null,
+                error_stack: stack ? String(stack).substring(0, 2000) : null,
+                user_agent: navigator.userAgent.substring(0, 500),
+                url: location.href.substring(0, 500),
+                session_id: sessionId,
+                app_version: "1.0"
+            });
+            if (errorQueue.length === 1) setTimeout(sendErrors, 2000);
+            else if (errorQueue.length >= 5) sendErrors();
+        }
+
+        window.onerror = function(msg, source, line, col, error) {
+            queueError(msg, source, line, col, error && error.stack);
+        };
+        window.addEventListener("unhandledrejection", function(e) {
+            var reason = e.reason || {};
+            queueError(
+                reason.message || String(reason).substring(0, 1000),
+                null, null, null,
+                reason.stack || null
+            );
+        });
+        console.log("[Monitoring] Error tracking active");
+    })();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
+    <script defer src="js/services/supabase-config.js"></script>
     <!-- Auth Gate & Offline Mode Check -->
     <script>
         (async function checkAuth() {
@@ -285,6 +373,11 @@
 
                 <!-- Admin Panel (Pro Mode) -->
                 <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="support" data-mode="simple">
+                    <span class="nav-icon">🎫</span>
+                    Support
+                    <span class="badge" id="support-badge"></span>
+                </button>
                 <button class="nav-item" data-view="admin-panel" data-mode="pro">
                     <span class="nav-icon">🔐</span>
                     Verwaltung
@@ -1098,7 +1191,7 @@ Mit freundlichen Grüßen
                             <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
                             <input type="file" id="import-data-file" accept=".json" class="u-file-input-hidden" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
-                                style="background: linear-gradient(135deg, #6366f1, #4f46e5); border:none;">🚀 App-Reset
+                                style="background: linear-gradient(135deg, #2dd4a8, #4f46e5); border:none;">🚀 App-Reset
                                 (Demo)</button>
                             <button class="btn btn-danger" id="btn-clear-data">🗑️ Alle Daten löschen</button>
                         </div>
@@ -1541,7 +1634,7 @@ Mit freundlichen Grüßen
                     }
 
                     .comm-message.sent .comm-message-bubble {
-                        background: #6366f1;
+                        background: #2dd4a8;
                         color: white;
                         border-bottom-right-radius: 4px;
                     }
@@ -2317,7 +2410,48 @@ Mit freundlichen Grüßen
             </section>
 
 
+
+            <!-- Support Dashboard -->
+            <section class="view" id="view-support">
+                <h2>Support Dashboard</h2>
+                <div class="support-stats" id="support-stats"></div>
+                <div class="support-tabs">
+                    <button class="support-tab-btn active" data-tab="tickets">Tickets</button>
+                    <button class="support-tab-btn" data-tab="kb">Knowledge Base</button>
+                </div>
+                <div class="support-tab-panel active" id="support-panel-tickets">
+                    <div class="support-toolbar">
+                        <select id="support-filter-status">
+                            <option value="">Alle Status</option>
+                            <option value="offen">Offen</option>
+                            <option value="in_bearbeitung">In Bearbeitung</option>
+                            <option value="warte_auf_kunde">Warte auf Kunde</option>
+                            <option value="geloest">Gelöst</option>
+                            <option value="geschlossen">Geschlossen</option>
+                        </select>
+                        <select id="support-filter-priority">
+                            <option value="">Alle Prioritäten</option>
+                            <option value="niedrig">Niedrig</option>
+                            <option value="normal">Normal</option>
+                            <option value="hoch">Hoch</option>
+                            <option value="dringend">Dringend</option>
+                        </select>
+                        <input type="text" id="support-filter-search" placeholder="Suche (Ticket#, Betreff, Email)...">
+                    </div>
+                    <div class="support-ticket-list" id="support-ticket-list"></div>
+                </div>
+                <div class="support-tab-panel" id="support-panel-kb">
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+                        <button id="support-new-kb" style="padding:8px 16px;border-radius:6px;border:none;background:var(--primary,#6366f1);color:white;cursor:pointer">+ Neuer Artikel</button>
+                    </div>
+                    <div id="support-kb-form-area"></div>
+                    <div class="support-kb-list" id="support-kb-list"></div>
+                </div>
+                <div class="support-detail-overlay" id="support-detail-overlay"></div>
+            </section>
+
         </main>
+
     </div>
 
     <!-- Modal: Ausgabe erfassen -->
@@ -3212,82 +3346,82 @@ Email: max.mustermann@example.com</textarea>
     <!-- =====================================
          Internationalization (i18n)
          ===================================== -->
-    <script src="js/i18n/de.js"></script>
-    <script src="js/i18n/en.js"></script>
-    <script src="js/services/i18n-service.js"></script>
-    <script src="js/i18n/i18n-ui.js"></script>
+    <script defer src="js/i18n/de.js"></script>
+    <script defer src="js/i18n/en.js"></script>
+    <script defer src="js/services/i18n-service.js"></script>
+    <script defer src="js/i18n/i18n-ui.js"></script>
 
     <!-- App runtime config (must load before any service) -->
-    <script src="config/app-config.js"></script>
+    <script defer src="config/app-config.js"></script>
 
     <!-- =====================================
          Core Infrastructure (Always Loaded)
          ===================================== -->
-    <script src="js/services/error-handler.js"></script>
-    <script src="js/services/error-handler-utils.js"></script>
-    <script src="js/services/error-display-service.js"></script>
-    <script src="js/modules/error-boundary.js"></script>
-    <script src="js/services/sanitize-service.js"></script>
-    <script src="js/services/security-service.js"></script>
-    <script src="js/services/db-service.js"></script>
-    <script src="js/services/demo-guard-service.js"></script>
-    <script src="js/services/demo-data-service.js"></script>
+    <script defer src="js/services/error-handler.js"></script>
+    <script defer src="js/services/error-handler-utils.js"></script>
+    <script defer src="js/services/error-display-service.js"></script>
+    <script defer src="js/modules/error-boundary.js"></script>
+    <script defer src="js/services/sanitize-service.js"></script>
+    <script defer src="js/services/security-service.js"></script>
+    <script defer src="js/services/db-service.js"></script>
+    <script defer src="js/services/demo-guard-service.js"></script>
+    <script defer src="js/services/demo-data-service.js"></script>
     <!-- supabase-config.js already loaded at line 30 -->
-    <script src="js/services/supabase-db-service.js"></script>
-    <script src="js/services/sync-service.js"></script>
-    <script src="js/services/auth-service.js"></script>
-    <script src="js/services/store-service.js"></script>
+    <script defer src="js/services/supabase-db-service.js"></script>
+    <script defer src="js/services/sync-service.js"></script>
+    <script defer src="js/services/auth-service.js"></script>
+    <script defer src="js/services/store-service.js"></script>
 
     <!-- Confirmation Dialog Service (for destructive actions) -->
-    <script src="js/services/confirm-dialog-service.js"></script>
+    <script defer src="js/services/confirm-dialog-service.js"></script>
 
     <!-- Trash Service (soft-delete + undo + orphan protection) -->
-    <script src="js/services/trash-service.js"></script>
+    <script defer src="js/services/trash-service.js"></script>
 
     <!-- User Mode Service (Progressive Disclosure - Simple vs Pro mode) -->
-    <script src="js/services/user-mode-service.js"></script>
-    <script src="js/ui/mode-toggle-ui.js"></script>
+    <script defer src="js/services/user-mode-service.js"></script>
+    <script defer src="js/ui/mode-toggle-ui.js"></script>
 
-    <script src="js/services/form-validation-service.js"></script>
-    <script src="js/services/excel-recognition-service.js"></script>
-    <script src="js/ui/ui-helpers.js"></script>
-    <script src="js/ui/excel-import-wizard.js"></script>
+    <script defer src="js/services/form-validation-service.js"></script>
+    <script defer src="js/services/excel-recognition-service.js"></script>
+    <script defer src="js/ui/ui-helpers.js"></script>
+    <script defer src="js/ui/excel-import-wizard.js"></script>
 
     <!-- Company Settings Service (Supabase-backed per-user business config) -->
-    <script src="js/services/company-settings-service.js"></script>
+    <script defer src="js/services/company-settings-service.js"></script>
 
     <!-- Document Template Service (standard German business documents) -->
-    <script src="js/services/document-template-service.js"></script>
+    <script defer src="js/services/document-template-service.js"></script>
 
     <!-- Setup Wizard & Admin Settings -->
-    <script src="js/services/setup-wizard-service.js"></script>
-    <script src="js/ui/setup-wizard-ui.js"></script>
-    <script src="js/ui/admin-settings-ui.js"></script>
+    <script defer src="js/services/setup-wizard-service.js"></script>
+    <script defer src="js/ui/setup-wizard-ui.js"></script>
+    <script defer src="js/ui/admin-settings-ui.js"></script>
 
     <!-- Admin Panel (Two-Tier: Admin & Developer) -->
-    <script src="js/services/admin-panel-service.js"></script>
-    <script src="js/ui/admin-panel-ui.js"></script>
+    <script defer src="js/services/admin-panel-service.js"></script>
+    <script defer src="js/ui/admin-panel-ui.js"></script>
 
     <!-- Onboarding Tutorial -->
-    <script src="js/services/onboarding-tutorial-service.js"></script>
+    <script defer src="js/services/onboarding-tutorial-service.js"></script>
 
     <!-- Lazy Loading System -->
-    <script src="js/services/lazy-loader.js"></script>
+    <script defer src="js/services/lazy-loader.js"></script>
 
     <!-- Navigation (needs to be loaded before app.js) -->
-    <script src="js/ui/navigation.js"></script>
-    <script src="js/ui/keyboard-shortcuts.js"></script>
-    <script src="js/services/search-service.js"></script>
-    <script src="js/services/theme-manager.js"></script>
-    <script src="js/services/activity-indicator-service.js"></script>
-    <script src="js/services/dashboard-charts-service.js"></script>
-    <script src="js/services/notification-service.js"></script>
-    <script src="js/services/push-messenger-service.js"></script>
-    <script src="js/services/boomer-guide-service.js"></script>
-    <script src="js/ui/boomer-guide-ui.js"></script>
-    <script src="js/services/data-export-service.js"></script>
-    <script src="js/services/email-template-service.js"></script>
-    <script src="js/services/pwa-install-service.js"></script>
+    <script defer src="js/ui/navigation.js"></script>
+    <script defer src="js/ui/keyboard-shortcuts.js"></script>
+    <script defer src="js/services/search-service.js"></script>
+    <script defer src="js/services/theme-manager.js"></script>
+    <script defer src="js/services/activity-indicator-service.js"></script>
+    <script defer src="js/services/dashboard-charts-service.js"></script>
+    <script defer src="js/services/notification-service.js"></script>
+    <script defer src="js/services/push-messenger-service.js"></script>
+    <script defer src="js/services/boomer-guide-service.js"></script>
+    <script defer src="js/ui/boomer-guide-ui.js"></script>
+    <script defer src="js/services/data-export-service.js"></script>
+    <script defer src="js/services/email-template-service.js"></script>
+    <script defer src="js/services/pwa-install-service.js"></script>
 
     <!-- Call Summary Service (Anruf-Zusammenfassungen) -->
     <script src="js/services/call-summary-service.js"></script>
@@ -3299,54 +3433,53 @@ Email: max.mustermann@example.com</textarea>
     <script src="js/services/offline-sync-service.js"></script>
 
     <!-- Calendar & Scheduling Services -->
-    <script src="js/services/calendar-service.js"></script>
-    <script src="js/services/booking-service.js"></script>
-    <script src="js/services/calendar-ui-service.js"></script>
+    <script defer src="js/services/calendar-service.js"></script>
+    <script defer src="js/services/booking-service.js"></script>
+    <script defer src="js/services/calendar-ui-service.js"></script>
 
     <!-- App Integration -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
-    <script src="js/services/automation-api.js"></script>
-    <script src="js/services/pdf-service.js"></script>
-    <script src="js/services/purchase-order-service.js"></script>
-    <script src="js/services/reorder-engine-service.js"></script>
-    <script src="js/ui/purchase-order-ui.js"></script>
-    <script src="js/ui/reorder-engine-ui.js"></script>
-    <script src="js/ui/work-estimation-ui.js"></script>
-    <script src="js/ui/ki-transparency-ui.js"></script>
-    <script src="js/ui/gantt-timeline-ui.js"></script>
-    <script src="js/features-integration.js"></script>
-    <script src="js/new-features-ui.js"></script>
-    <script src="js/excel-import-integration.js"></script>
+    <script defer src="js/services/automation-api.js"></script>
+    <script defer src="js/services/pdf-service.js"></script>
+    <script defer src="js/services/purchase-order-service.js"></script>
+    <script defer src="js/services/reorder-engine-service.js"></script>
+    <script defer src="js/ui/purchase-order-ui.js"></script>
+    <script defer src="js/ui/reorder-engine-ui.js"></script>
+    <script defer src="js/ui/work-estimation-ui.js"></script>
+    <script defer src="js/ui/ki-transparency-ui.js"></script>
+    <script defer src="js/ui/gantt-timeline-ui.js"></script>
+    <script defer src="js/features-integration.js"></script>
+    <script defer src="js/new-features-ui.js"></script>
+    <script defer src="js/excel-import-integration.js"></script>
 
     <!-- Agent Workflows, Field App, Aufmaß, Workflow Builder -->
     <!-- Lazy-loaded via lazy-loader.js when views are opened -->
 
     <!-- Modular Application Components - new architecture -->
-    <script src="js/modules/utils.js"></script>
-    <script src="js/modules/modals.js"></script>
-    <script src="js/modules/activity.js"></script>
-    <script src="js/modules/dashboard.js"></script>
-    <script src="js/modules/quick-actions.js"></script>
-    <script src="js/modules/anfragen.js"></script>
-    <script src="js/modules/material-picker.js"></script>
-    <script src="js/modules/angebote.js"></script>
-    <script src="js/modules/auftraege.js"></script>
-    <script src="js/modules/rechnungen.js"></script>
-    <script src="js/services/bon-scanner-service.js"></script>
-    <script src="js/modules/wareneingang.js"></script>
-    <script src="js/modules/support.js"></script>
-    <script src="js/app-new.js"></script>
+    <script defer src="js/modules/utils.js"></script>
+    <script defer src="js/modules/modals.js"></script>
+    <script defer src="js/modules/activity.js"></script>
+    <script defer src="js/modules/dashboard.js"></script>
+    <script defer src="js/modules/quick-actions.js"></script>
+    <script defer src="js/modules/anfragen.js"></script>
+    <script defer src="js/modules/material-picker.js"></script>
+    <script defer src="js/modules/angebote.js"></script>
+    <script defer src="js/modules/auftraege.js"></script>
+    <script defer src="js/modules/rechnungen.js"></script>
+    <script defer src="js/services/bon-scanner-service.js"></script>
+    <script defer src="js/modules/wareneingang.js"></script>
+    <script defer src="js/modules/support.js"></script>
+    <script defer src="js/app-new.js"></script>
 
     <!-- Main application (current production version - fallback) -->
     <!-- The modular version (app-new.js) is the primary entry point.
          If needed, app.js can be loaded as a fallback by uncommenting below.
          Both can coexist as app-new.js is designed to be a modular wrapper. -->
-    <!-- <script src="js/app.js"></script> -->
+    <!-- <script defer src="js/app.js"></script> -->
     <!-- Event Delegation System -->
-    <script src="js/modules/event-handlers.js"></script>
+    <script defer src="js/modules/event-handlers.js"></script>
 
     <!-- Initialize lazy-loaded services after app init -->
-    <script src="js/init-lazy-services.js"></script>
+    <script defer src="js/init-lazy-services.js"></script>
     <!-- PWA Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {

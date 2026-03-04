@@ -21,8 +21,8 @@ class WorkEstimationUI {
         style.textContent = `
             /* Panel Container */
             .we-panel {
-                background: #1c1c21;
-                border: 1px solid #2a2a32;
+                background: #0f2327;
+                border: 1px solid #1a3030;
                 border-radius: 10px;
                 padding: 20px;
                 margin: 16px 0;
@@ -31,7 +31,7 @@ class WorkEstimationUI {
             }
 
             .we-panel:hover {
-                border-color: #3a3a42;
+                border-color: #1f3a3a;
             }
 
             /* Header */
@@ -77,9 +77,9 @@ class WorkEstimationUI {
                 gap: 8px;
                 margin-bottom: 16px;
                 padding: 16px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 border-radius: 8px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
             }
 
             .we-estimate-value {
@@ -116,7 +116,7 @@ class WorkEstimationUI {
                 width: 60px;
                 height: 6px;
                 border-radius: 3px;
-                background: #2a2a32;
+                background: #1a3030;
                 overflow: hidden;
                 flex-shrink: 0;
             }
@@ -182,7 +182,7 @@ class WorkEstimationUI {
                 gap: 6px;
                 background: none;
                 border: none;
-                color: #6366f1;
+                color: #2dd4a8;
                 font-size: 13px;
                 cursor: pointer;
                 padding: 6px 0;
@@ -192,7 +192,7 @@ class WorkEstimationUI {
             }
 
             .we-reasoning-toggle:hover {
-                color: #818cf8;
+                color: #5eecc6;
             }
 
             .we-reasoning-toggle .we-arrow {
@@ -209,9 +209,9 @@ class WorkEstimationUI {
                 display: none;
                 padding: 12px 16px;
                 margin-bottom: 16px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 border-radius: 6px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
                 font-size: 13px;
                 color: #a1a1aa;
                 line-height: 1.6;
@@ -233,7 +233,7 @@ class WorkEstimationUI {
             }
 
             .we-reasoning-bullet {
-                color: #6366f1;
+                color: #2dd4a8;
                 flex-shrink: 0;
                 margin-top: 1px;
             }
@@ -252,9 +252,9 @@ class WorkEstimationUI {
             .we-breakdown {
                 margin-bottom: 16px;
                 padding: 12px 16px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 border-radius: 6px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
             }
 
             .we-breakdown-title {
@@ -271,7 +271,7 @@ class WorkEstimationUI {
                 justify-content: space-between;
                 align-items: center;
                 padding: 5px 0;
-                border-bottom: 1px solid #2a2a3210;
+                border-bottom: 1px solid #1a303010;
             }
 
             .we-breakdown-row:last-child {
@@ -293,9 +293,9 @@ class WorkEstimationUI {
             .we-override {
                 margin-bottom: 16px;
                 padding: 14px 16px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 border-radius: 8px;
-                border: 1px solid #2a2a32;
+                border: 1px solid #1a3030;
                 transition: background 0.3s ease, border-color 0.3s ease;
             }
 
@@ -324,8 +324,8 @@ class WorkEstimationUI {
                 font-size: 18px;
                 font-weight: 600;
                 text-align: center;
-                background: #1c1c21;
-                border: 1px solid #3a3a42;
+                background: #0f2327;
+                border: 1px solid #1f3a3a;
                 border-radius: 6px;
                 color: #e4e4e7;
                 outline: none;
@@ -334,7 +334,7 @@ class WorkEstimationUI {
             }
 
             .we-override-input:focus {
-                border-color: #6366f1;
+                border-color: #2dd4a8;
             }
 
             .we-override-input.we-modified {
@@ -397,13 +397,13 @@ class WorkEstimationUI {
             }
 
             .we-btn-dismiss {
-                background: #2a2a32;
+                background: #1a3030;
                 color: #a1a1aa;
-                border-color: #3a3a42;
+                border-color: #1f3a3a;
             }
 
             .we-btn-dismiss:hover {
-                background: #3a3a42;
+                background: #1f3a3a;
                 color: #e4e4e7;
             }
 
@@ -420,8 +420,8 @@ class WorkEstimationUI {
             .we-spinner {
                 width: 20px;
                 height: 20px;
-                border: 2px solid #2a2a32;
-                border-top-color: #6366f1;
+                border: 2px solid #1a3030;
+                border-top-color: #2dd4a8;
                 border-radius: 50%;
                 animation: we-spin 0.8s linear infinite;
             }
@@ -444,8 +444,8 @@ class WorkEstimationUI {
             /* Recommendation */
             .we-empfehlung {
                 padding: 10px 14px;
-                background: #6366f110;
-                border: 1px solid #6366f133;
+                background: #2dd4a810;
+                border: 1px solid #2dd4a833;
                 border-radius: 6px;
                 color: #a5b4fc;
                 font-size: 12px;

@@ -1072,7 +1072,7 @@ function renderReportChart(report) {
                 datasets: [{
                     label: 'Umsatz (Brutto)',
                     data: report.byMonth.map(m => m.sum),
-                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                    backgroundColor: 'rgba(45, 212, 168, 0.7)',
                     borderColor: 'rgb(99, 102, 241)',
                     borderWidth: 1,
                     borderRadius: 6
@@ -1104,7 +1104,7 @@ function renderReportChart(report) {
                 labels: report.topCustomers.map(c => c.name),
                 datasets: [{
                     data: report.topCustomers.map(c => c.revenue),
-                    backgroundColor: ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#64748b']
+                    backgroundColor: ['#2dd4a8', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#64748b']
                 }]
             },
             options: {
@@ -1142,7 +1142,7 @@ function renderReportChart(report) {
                 labels: ['Dringend', 'Hoch', 'Normal', 'Niedrig'],
                 datasets: [{
                     data: [report.byPriority.urgent || 0, report.byPriority.high || 0, report.byPriority.normal || 0, report.byPriority.low || 0],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#6366f1', '#64748b']
+                    backgroundColor: ['#ef4444', '#f59e0b', '#2dd4a8', '#64748b']
                 }]
             },
             options: {
@@ -1159,7 +1159,7 @@ function renderReportChart(report) {
                 datasets: [{
                     label: 'Betrag (€)',
                     data: [s.einnahmen || 0, s.ausgaben || 0, s.gewinn || 0],
-                    backgroundColor: ['rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)', 'rgba(99, 102, 241, 0.7)'],
+                    backgroundColor: ['rgba(34, 197, 94, 0.7)', 'rgba(239, 68, 68, 0.7)', 'rgba(45, 212, 168, 0.7)'],
                     borderColor: ['rgb(34, 197, 94)', 'rgb(239, 68, 68)', 'rgb(99, 102, 241)'],
                     borderWidth: 1,
                     borderRadius: 6

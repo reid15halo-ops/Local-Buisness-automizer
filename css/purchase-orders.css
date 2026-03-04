@@ -58,7 +58,7 @@
 .po-position-row select:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.1);
 }
 
 /* PO List */
@@ -184,7 +184,7 @@
 #modal-bestellung .form-group textarea:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.1);
 }
 
 #modal-bestellung .form-group textarea {
@@ -243,7 +243,7 @@
 .material-filter select:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.1);
 }
 
 /* Material Stats - PO specific customization
@@ -465,7 +465,7 @@
 #po-wareneingang-form input:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.1);
 }
 
 /* Modal Styles - See components.css for base .modal, .modal-overlay, .modal-content, .modal-header, .modal-close, .modal-body, .modal-footer

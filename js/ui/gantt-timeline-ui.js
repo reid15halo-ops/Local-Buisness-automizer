@@ -835,7 +835,7 @@ class GanttTimelineUI {
             /* ========== ROOT ========== */
             .gantt-root {
                 width: 100%;
-                background: #0f0f12;
+                background: #0c1a1a;
                 color: #e4e4e7;
                 border-radius: 8px;
                 overflow: hidden;
@@ -850,8 +850,8 @@ class GanttTimelineUI {
                 align-items: center;
                 justify-content: space-between;
                 padding: 14px 18px;
-                background: #1c1c21;
-                border-bottom: 1px solid #2a2a32;
+                background: #0f2327;
+                border-bottom: 1px solid #1a3030;
                 flex-wrap: wrap;
                 gap: 12px;
             }
@@ -884,9 +884,9 @@ class GanttTimelineUI {
             }
             .gantt-nav-btn {
                 padding: 7px 14px;
-                border: 1px solid #3a3a42;
+                border: 1px solid #1f3a3a;
                 border-radius: 6px;
-                background: #0f0f12;
+                background: #0c1a1a;
                 color: #a1a1aa;
                 cursor: pointer;
                 font-size: 13px;
@@ -894,14 +894,14 @@ class GanttTimelineUI {
                 white-space: nowrap;
             }
             .gantt-nav-btn:hover {
-                background: #2a2a32;
-                border-color: #6366f1;
+                background: #1a3030;
+                border-color: #2dd4a8;
                 color: #e4e4e7;
             }
             .gantt-heute-btn {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: #fff;
-                border-color: #6366f1;
+                border-color: #2dd4a8;
                 font-weight: 600;
             }
             .gantt-heute-btn:hover {
@@ -912,13 +912,13 @@ class GanttTimelineUI {
                 gap: 0;
                 border-radius: 6px;
                 overflow: hidden;
-                border: 1px solid #3a3a42;
+                border: 1px solid #1f3a3a;
             }
             .gantt-zoom-btn {
                 padding: 7px 12px;
                 border: none;
-                border-right: 1px solid #3a3a42;
-                background: #0f0f12;
+                border-right: 1px solid #1f3a3a;
+                background: #0c1a1a;
                 color: #a1a1aa;
                 cursor: pointer;
                 font-size: 13px;
@@ -929,11 +929,11 @@ class GanttTimelineUI {
                 border-right: none;
             }
             .gantt-zoom-btn.active {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: #fff;
             }
             .gantt-zoom-btn:hover:not(.active) {
-                background: #2a2a32;
+                background: #1a3030;
                 color: #e4e4e7;
             }
             .gantt-filter-toggle {
@@ -947,7 +947,7 @@ class GanttTimelineUI {
                 user-select: none;
             }
             .gantt-filter-toggle input[type="checkbox"] {
-                accent-color: #6366f1;
+                accent-color: #2dd4a8;
                 width: 16px;
                 height: 16px;
                 cursor: pointer;
@@ -974,8 +974,8 @@ class GanttTimelineUI {
             /* ========== LABEL COLUMN ========== */
             .gantt-label-col {
                 flex-shrink: 0;
-                background: #1c1c21;
-                border-right: 2px solid #2a2a32;
+                background: #0f2327;
+                border-right: 2px solid #1a3030;
                 overflow-y: auto;
                 z-index: 2;
             }
@@ -988,8 +988,8 @@ class GanttTimelineUI {
                 color: #71717a;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
-                background: #1c1c21;
-                border-bottom: 1px solid #2a2a32;
+                background: #0f2327;
+                border-bottom: 1px solid #1a3030;
                 box-sizing: border-box;
             }
             .gantt-label-row {
@@ -1045,8 +1045,8 @@ class GanttTimelineUI {
             /* ========== DAY HEADER ========== */
             .gantt-day-header-row {
                 display: flex;
-                border-bottom: 1px solid #2a2a32;
-                background: #1c1c21;
+                border-bottom: 1px solid #1a3030;
+                background: #0f2327;
                 position: sticky;
                 top: 0;
                 z-index: 1;
@@ -1220,9 +1220,9 @@ class GanttTimelineUI {
                 position: fixed;
                 display: none;
                 padding: 6px 12px;
-                background: #27272a;
+                background: #1a3535;
                 color: #e4e4e7;
-                border: 1px solid #3a3a42;
+                border: 1px solid #1f3a3a;
                 border-radius: 6px;
                 font-size: 12px;
                 font-weight: 500;
@@ -1234,9 +1234,9 @@ class GanttTimelineUI {
 
             /* ========== DROP ZONE ========== */
             .gantt-drop-active {
-                outline: 2px dashed #6366f1;
+                outline: 2px dashed #2dd4a8;
                 outline-offset: -2px;
-                background: rgba(99, 102, 241, 0.05) !important;
+                background: rgba(45, 212, 168, 0.05) !important;
             }
 
             /* ========== NO-SCHEDULED MESSAGE ========== */
@@ -1280,7 +1280,7 @@ class GanttTimelineUI {
 
             /* ========== UNPLANNED SECTION ========== */
             .gantt-unplanned-section {
-                border-top: 2px solid #2a2a32;
+                border-top: 2px solid #1a3030;
                 background: #131317;
                 padding: 14px 18px;
             }
@@ -1309,8 +1309,8 @@ class GanttTimelineUI {
                 align-items: center;
                 gap: 10px;
                 padding: 8px 14px;
-                background: #1c1c21;
-                border: 1px solid #2a2a32;
+                background: #0f2327;
+                border: 1px solid #1a3030;
                 border-radius: 8px;
                 cursor: grab;
                 transition: all 0.15s ease;
@@ -1318,7 +1318,7 @@ class GanttTimelineUI {
                 min-width: 180px;
             }
             .gantt-unplanned-card:hover {
-                border-color: #6366f1;
+                border-color: #2dd4a8;
                 background: #1a1a22;
                 transform: translateY(-1px);
                 box-shadow: 0 2px 8px rgba(0,0,0,0.3);

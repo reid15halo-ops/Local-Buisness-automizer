@@ -94,19 +94,21 @@ class StoreService {
                 Object.assign(this.store, data);
                 this.checkStorageUsage();
 
-                // If store exists but is effectively empty, load demo data
+                // If store exists but is effectively empty, try Supabase then demo
                 if (this.store.anfragen.length === 0 &&
                     this.store.angebote.length === 0 &&
                     this.store.auftraege.length === 0) {
-                    await this.resetToDemo();
+                    const synced = await this._syncFromSupabase();
+                    if (!synced) await this.resetToDemo();
                 }
             } catch (e) {
                 console.error('Failed to parse store data:', e);
                 await this.resetToDemo();
             }
         } else {
-            // No data saved yet -> Initial Demo Load
-            await this.resetToDemo();
+            // No data saved yet -> Try Supabase first, then Demo
+            const synced = await this._syncFromSupabase();
+            if (!synced) await this.resetToDemo();
         }
 
         this.notify();
@@ -459,6 +461,44 @@ class StoreService {
     // Alias for notifySubscribers (for consistency)
     notify() {
         this.notifySubscribers();
+    }
+
+    /**
+     * Sync data from Supabase cloud tables into local store.
+     * @returns {boolean} true if data was loaded from Supabase
+     */
+    async _syncFromSupabase() {
+        if (!window.supabaseDB || !window.supabaseDB.isOnline()) return false;
+        try {
+            console.log("[StoreService] Syncing from Supabase...");
+            const tables = ["anfragen", "angebote", "auftraege", "rechnungen"];
+            let totalRecords = 0;
+            for (const table of tables) {
+                const data = await window.supabaseDB.getAll(table);
+                if (data && data.length > 0) {
+                    this.store[table] = data;
+                    totalRecords += data.length;
+                }
+            }
+            try {
+                const kunden = await window.supabaseDB.getAll("kunden");
+                if (kunden && kunden.length > 0) {
+                    this.store.kunden = kunden;
+                    totalRecords += kunden.length;
+                }
+            } catch(e) { /* kunden table may not exist */ }
+
+            if (totalRecords > 0) {
+                console.log(`[StoreService] Loaded ${totalRecords} records from Supabase`);
+                await this.save();
+                this.notify();
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.warn("[StoreService] Supabase sync failed:", err.message);
+            return false;
+        }
     }
 }
 

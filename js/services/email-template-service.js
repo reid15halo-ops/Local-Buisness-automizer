@@ -71,10 +71,10 @@ class EmailTemplateService {
      */
     getHeader() {
         return `
-            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #0f172a; color: white; padding: 30px 0; border-bottom: 3px solid #6366f1;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #0c1a1a; color: white; padding: 30px 0; border-bottom: 3px solid #2dd4a8;">
                 <tr>
                     <td style="padding: 20px 40px; text-align: center;">
-                        <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px; color: #6366f1;">⚙️</div>
+                        <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px; color: #2dd4a8;">⚙️</div>
                         <h1 style="margin: 10px 0 5px 0; font-size: 24px; font-family: Arial, sans-serif; font-weight: bold;">${this.company.name}</h1>
                         <p style="margin: 0; font-size: 12px; color: #cbd5e1;">${this.company.street} | ${this.company.postalCode} ${this.company.city}</p>
                     </td>
@@ -88,7 +88,7 @@ class EmailTemplateService {
      */
     getFooter() {
         return `
-            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #1e293b; color: #cbd5e1; padding: 30px 40px; font-size: 11px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #0f2327; color: #cbd5e1; padding: 30px 40px; font-size: 11px;">
                 <tr>
                     <td>
                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
@@ -172,12 +172,12 @@ class EmailTemplateService {
 
                                 <!-- Main Content -->
                                 <tr>
-                                    <td class="email-body" style="padding: 40px; color: #1e293b;">
+                                    <td class="email-body" style="padding: 40px; color: #0f2327;">
                                         <!-- Invoice Number & Date -->
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 30px;">
                                             <tr>
                                                 <td>
-                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0f172a;">Angebot Nr. ${angebot.id || angebot.nummer || ''}</h2>
+                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Angebot Nr. ${angebot.id || angebot.nummer || ''}</h2>
                                                     <p style="margin: 5px 0; font-size: 13px; color: #64748b;">
                                                         Datum: ${this.formatDate(angebot.datum || new Date().toISOString())}
                                                     </p>
@@ -238,8 +238,8 @@ class EmailTemplateService {
                                                 <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">€&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
-                                                <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0f172a;">Gesamtbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #6366f1;">€&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Gesamtbetrag:</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">€&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                         </table>
 
@@ -342,12 +342,12 @@ class EmailTemplateService {
 
                                 <!-- Main Content -->
                                 <tr>
-                                    <td class="email-body" style="padding: 40px; color: #1e293b;">
+                                    <td class="email-body" style="padding: 40px; color: #0f2327;">
                                         <!-- Invoice Number & Date -->
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 30px;">
                                             <tr>
                                                 <td>
-                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0f172a;">Rechnung Nr. ${rechnung.id || rechnung.nummer || ''}</h2>
+                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Rechnung Nr. ${rechnung.id || rechnung.nummer || ''}</h2>
                                                     <p style="margin: 5px 0; font-size: 13px; color: #64748b;">
                                                         Rechnungsdatum: ${this.formatDate(rechnung.datum || new Date().toISOString())}
                                                     </p>
@@ -408,8 +408,8 @@ class EmailTemplateService {
                                                 <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">€&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
-                                                <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0f172a;">Rechnungsbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #6366f1;">€&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Rechnungsbetrag:</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">€&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                         </table>
 
@@ -543,7 +543,7 @@ class EmailTemplateService {
 
                                 <!-- Main Content -->
                                 <tr>
-                                    <td class="email-body" style="padding: 40px; color: #1e293b;">
+                                    <td class="email-body" style="padding: 40px; color: #0f2327;">
                                         <!-- Title -->
                                         <h2 style="margin: 0 0 20px 0; font-size: 18px; color: ${level.textColor};">${level.title}</h2>
 
@@ -664,9 +664,9 @@ class EmailTemplateService {
 
                                 <!-- Main Content -->
                                 <tr>
-                                    <td class="email-body" style="padding: 40px; color: #1e293b;">
+                                    <td class="email-body" style="padding: 40px; color: #0f2327;">
                                         <!-- Title -->
-                                        <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0f172a;">Terminbestätigung</h2>
+                                        <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Terminbestätigung</h2>
 
                                         <!-- Greeting -->
                                         <p style="margin: 20px 0; font-size: 14px; line-height: 1.6;">

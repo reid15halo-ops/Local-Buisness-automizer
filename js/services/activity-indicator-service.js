@@ -134,7 +134,7 @@ class ActivityIndicatorService {
             }
 
             .priority-action-item:hover {
-                background: #2a2a32;
+                background: #1a3030;
                 transform: translateX(4px);
             }
 

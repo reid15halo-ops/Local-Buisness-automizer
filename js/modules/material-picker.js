@@ -31,7 +31,7 @@ class MaterialPickerUI {
             }
 
             .material-picker-content {
-                background: #1c1c21;
+                background: #0f2327;
                 border-radius: 12px;
                 width: 100%;
                 max-width: 500px;
@@ -95,7 +95,7 @@ class MaterialPickerUI {
 
             .material-picker-search input:focus {
                 outline: none;
-                border-color: #6366f1;
+                border-color: #2dd4a8;
                 background: #333;
             }
 
@@ -118,7 +118,7 @@ class MaterialPickerUI {
 
             .material-picker-item:hover {
                 background: #333;
-                border-color: #6366f1;
+                border-color: #2dd4a8;
             }
 
             .material-picker-item-name {
@@ -175,7 +175,7 @@ class MaterialPickerUI {
 
             .position-material-badge {
                 display: inline-block;
-                background: #6366f1;
+                background: #2dd4a8;
                 color: white;
                 padding: 2px 8px;
                 border-radius: 4px;
@@ -207,7 +207,7 @@ class MaterialPickerUI {
 
             .position-margin-info {
                 font-size: 11px;
-                color: #6366f1;
+                color: #2dd4a8;
                 margin-top: 4px;
             }
 
@@ -218,8 +218,8 @@ class MaterialPickerUI {
             }
 
             .material-picker-item-selected {
-                background: #6366f1;
-                border-color: #6366f1;
+                background: #2dd4a8;
+                border-color: #2dd4a8;
             }
 
             .material-picker-no-results {

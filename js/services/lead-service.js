@@ -9,7 +9,7 @@ class LeadService {
             { id: 'neu', name: 'Neu', color: '#3b82f6' },
             { id: 'kontaktiert', name: 'Kontaktiert', color: '#8b5cf6' },
             { id: 'qualifiziert', name: 'Qualifiziert', color: '#f59e0b' },
-            { id: 'angebot', name: 'Angebot erstellt', color: '#6366f1' },
+            { id: 'angebot', name: 'Angebot erstellt', color: '#2dd4a8' },
             { id: 'verhandlung', name: 'Verhandlung', color: '#ec4899' },
             { id: 'gewonnen', name: 'Gewonnen', color: '#22c55e' },
             { id: 'verloren', name: 'Verloren', color: '#ef4444' }

@@ -32,31 +32,31 @@
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    background: var(--bg-card, #1c1c21);
-    border: 1px solid var(--border-color, #27272a);
+    background: var(--bg-card, #0f2327);
+    border: 1px solid var(--border-color, #1a3535);
     border-radius: var(--border-radius-sm, 8px);
     color: var(--text-secondary, #a1a1aa);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition-fast, 0.15s ease);
+    transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
     font-family: inherit;
 }
 
 .widget-toolbar-btn:hover {
-    background: var(--bg-hover, #24242a);
-    color: var(--text-primary, #ffffff);
-    border-color: var(--accent-primary, #6366f1);
+    background: var(--bg-hover, #173030);
+    color: var(--text-primary, #e0eeee);
+    border-color: var(--accent-primary, #2dd4a8);
 }
 
 .widget-toolbar-btn.active {
-    background: var(--accent-primary, #6366f1);
-    color: #ffffff;
-    border-color: var(--accent-primary, #6366f1);
+    background: var(--accent-primary, #2dd4a8);
+    color: #e0eeee;
+    border-color: var(--accent-primary, #2dd4a8);
 }
 
 .widget-toolbar-btn.active:hover {
-    background: var(--accent-primary-hover, #818cf8);
+    background: var(--accent-primary-hover, #5eecc6);
 }
 
 .widget-toolbar-icon {
@@ -88,8 +88,8 @@
    ============================================ */
 
 .widget-card {
-    background: var(--bg-card, #1c1c21);
-    border: 1px solid var(--border-color, #27272a);
+    background: var(--bg-card, #0f2327);
+    border: 1px solid var(--border-color, #1a3535);
     border-radius: var(--border-radius, 12px);
     overflow: hidden;
     transition: transform var(--transition, 0.25s ease),
@@ -133,24 +133,24 @@
 /* "Add widget" card */
 .widget-card-add {
     grid-column: span 1;
-    border: 2px dashed var(--border-color, #27272a);
+    border: 2px dashed var(--border-color, #1a3535);
     background: transparent;
     cursor: pointer;
     min-height: 140px;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--transition, 0.25s ease);
+    transition: opacity var(--transition, 0.25s ease), transform var(--transition, 0.25s ease), background-color var(--transition, 0.25s ease), border-color var(--transition, 0.25s ease);
 }
 
 .widget-card-add:hover,
 .widget-card-add:focus {
-    border-color: var(--accent-primary, #6366f1);
-    background: var(--accent-primary-alpha, rgba(99, 102, 241, 0.1));
+    border-color: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary-alpha, rgba(45, 212, 168, 0.1));
 }
 
 .widget-card-add:focus {
-    outline: 2px solid var(--accent-primary, #6366f1);
+    outline: 2px solid var(--accent-primary, #2dd4a8);
     outline-offset: 2px;
 }
 
@@ -159,14 +159,14 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
 }
 
 .widget-add-icon {
     font-size: 32px;
     font-weight: 300;
     line-height: 1;
-    color: var(--accent-primary, #6366f1);
+    color: var(--accent-primary, #2dd4a8);
 }
 
 .widget-add-label {
@@ -183,7 +183,7 @@
     align-items: center;
     gap: 8px;
     padding: 14px 16px 10px;
-    border-bottom: 1px solid var(--border-color, #27272a);
+    border-bottom: 1px solid var(--border-color, #1a3535);
 }
 
 .widget-header-icon {
@@ -221,7 +221,7 @@
 }
 
 .widget-no-data {
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     font-size: 13px;
     text-align: center;
     padding: 12px;
@@ -238,7 +238,7 @@
 .widget-details-link {
     background: none;
     border: none;
-    color: var(--accent-primary, #6366f1);
+    color: var(--accent-primary, #2dd4a8);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -248,7 +248,7 @@
 }
 
 .widget-details-link:hover {
-    color: var(--accent-primary-hover, #818cf8);
+    color: var(--accent-primary-hover, #5eecc6);
 }
 
 /* ============================================
@@ -267,7 +267,7 @@
     font-size: 36px;
     font-weight: 700;
     line-height: 1.1;
-    color: var(--text-primary, #ffffff);
+    color: var(--text-primary, #e0eeee);
 }
 
 .widget-kpi-value.negative {
@@ -276,13 +276,13 @@
 
 .widget-kpi-sub {
     font-size: 14px;
-    color: var(--accent-primary, #6366f1);
+    color: var(--accent-primary, #2dd4a8);
     font-weight: 600;
 }
 
 .widget-kpi-label {
     font-size: 12px;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     margin-top: 2px;
 }
 
@@ -323,11 +323,11 @@
     max-height: 300px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--border-color, #27272a) transparent;
+    scrollbar-color: var(--border-color, #1a3535) transparent;
 }
 
 .widget-list-empty {
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     font-size: 13px;
     text-align: center;
     padding: 16px 8px;
@@ -339,15 +339,15 @@
     align-items: flex-start;
     gap: 10px;
     padding: 10px 12px;
-    background: var(--bg-dark, #0f0f12);
+    background: var(--bg-dark, #0c1a1a);
     border-radius: var(--border-radius-sm, 8px);
     border: 1px solid transparent;
-    transition: all var(--transition-fast, 0.15s ease);
+    transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
 }
 
 .widget-list-item:hover {
-    background: var(--bg-hover, #24242a);
-    border-color: var(--border-color, #27272a);
+    background: var(--bg-hover, #173030);
+    border-color: var(--border-color, #1a3535);
 }
 
 .widget-list-item-danger {
@@ -359,7 +359,7 @@
 }
 
 .widget-list-item-new {
-    border-left: 3px solid var(--accent-primary, #6366f1);
+    border-left: 3px solid var(--accent-primary, #2dd4a8);
 }
 
 .widget-list-icon {
@@ -380,7 +380,7 @@
 .widget-list-title {
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-primary, #ffffff);
+    color: var(--text-primary, #e0eeee);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -396,14 +396,14 @@
 
 .widget-list-time {
     font-size: 11px;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
 }
 
 .widget-list-summary {
     padding: 10px 12px 4px;
     font-size: 13px;
     color: var(--text-secondary, #a1a1aa);
-    border-top: 1px solid var(--border-color, #27272a);
+    border-top: 1px solid var(--border-color, #1a3535);
     margin-top: 8px;
 }
 
@@ -440,13 +440,13 @@
 }
 
 .widget-edit-mode .widget-card:hover {
-    border-color: var(--accent-primary, #6366f1);
+    border-color: var(--accent-primary, #2dd4a8);
 }
 
 /* Drag handle */
 .widget-drag-handle {
     font-size: 20px;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     cursor: grab;
     user-select: none;
     line-height: 1;
@@ -455,7 +455,7 @@
 }
 
 .widget-drag-handle:hover {
-    color: var(--accent-primary, #6366f1);
+    color: var(--accent-primary, #2dd4a8);
 }
 
 .widget-drag-handle:active {
@@ -477,13 +477,13 @@
     font-weight: 600;
     cursor: pointer;
     flex-shrink: 0;
-    transition: all var(--transition-fast, 0.15s ease);
+    transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
     line-height: 1;
 }
 
 .widget-remove-btn:hover {
     background: var(--accent-danger, #ef4444);
-    color: #ffffff;
+    color: #e0eeee;
     transform: scale(1.1);
 }
 
@@ -496,9 +496,9 @@
 }
 
 .widget-drag-over {
-    border-color: var(--accent-primary, #6366f1) !important;
-    box-shadow: 0 0 0 2px var(--accent-primary-light, rgba(99, 102, 241, 0.15)),
-                inset 0 0 20px var(--accent-primary-alpha, rgba(99, 102, 241, 0.1)) !important;
+    border-color: var(--accent-primary, #2dd4a8) !important;
+    box-shadow: 0 0 0 2px var(--accent-primary-light, rgba(45, 212, 168, 0.15)),
+                inset 0 0 20px var(--accent-primary-alpha, rgba(45, 212, 168, 0.1)) !important;
 }
 
 /* ============================================
@@ -513,8 +513,8 @@
     justify-content: center;
     gap: 16px;
     padding: 48px 24px;
-    background: var(--bg-card, #1c1c21);
-    border: 2px dashed var(--border-color, #27272a);
+    background: var(--bg-card, #0f2327);
+    border: 2px dashed var(--border-color, #1a3535);
     border-radius: var(--border-radius, 12px);
     text-align: center;
 }
@@ -526,27 +526,27 @@
 
 .widget-empty-text {
     font-size: 16px;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     margin: 0;
 }
 
 .widget-empty-btn {
     padding: 12px 24px;
-    background: var(--accent-primary, #6366f1);
-    color: #ffffff;
+    background: var(--accent-primary, #2dd4a8);
+    color: #e0eeee;
     border: none;
     border-radius: var(--border-radius-sm, 8px);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--transition, 0.25s ease);
+    transition: opacity var(--transition, 0.25s ease), transform var(--transition, 0.25s ease), background-color var(--transition, 0.25s ease), border-color var(--transition, 0.25s ease);
     font-family: inherit;
 }
 
 .widget-empty-btn:hover {
-    background: var(--accent-primary-hover, #818cf8);
+    background: var(--accent-primary-hover, #5eecc6);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(45, 212, 168, 0.3);
 }
 
 /* ============================================
@@ -579,8 +579,8 @@
 }
 
 .widget-add-dialog {
-    background: var(--bg-card, #1c1c21);
-    border: 1px solid var(--border-color, #27272a);
+    background: var(--bg-card, #0f2327);
+    border: 1px solid var(--border-color, #1a3535);
     border-radius: var(--border-radius, 12px);
     width: 100%;
     max-width: 560px;
@@ -607,14 +607,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color, #27272a);
+    border-bottom: 1px solid var(--border-color, #1a3535);
 }
 
 .widget-add-dialog-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: var(--text-primary, #ffffff);
+    color: var(--text-primary, #e0eeee);
 }
 
 .widget-add-dialog-close {
@@ -623,18 +623,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-hover, #24242a);
+    background: var(--bg-hover, #173030);
     border: none;
     border-radius: 8px;
     color: var(--text-secondary, #a1a1aa);
     font-size: 20px;
     cursor: pointer;
-    transition: all var(--transition-fast, 0.15s ease);
+    transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
 }
 
 .widget-add-dialog-close:hover {
-    background: var(--bg-secondary, #24242a);
-    color: var(--text-primary, #ffffff);
+    background: var(--bg-secondary, #173030);
+    color: var(--text-primary, #e0eeee);
 }
 
 .widget-add-dialog-body {
@@ -644,7 +644,7 @@
 }
 
 .widget-add-empty {
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     text-align: center;
     padding: 24px;
     font-size: 14px;
@@ -663,7 +663,7 @@
 .widget-add-category-title {
     font-size: 12px;
     font-weight: 600;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: 0 0 10px 0;
@@ -680,11 +680,11 @@
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    background: var(--bg-dark, #0f0f12);
-    border: 1px solid var(--border-color, #27272a);
+    background: var(--bg-dark, #0c1a1a);
+    border: 1px solid var(--border-color, #1a3535);
     border-radius: var(--border-radius-sm, 8px);
     cursor: pointer;
-    transition: all var(--transition-fast, 0.15s ease);
+    transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
     font-family: inherit;
     color: inherit;
     text-align: left;
@@ -692,13 +692,13 @@
 }
 
 .widget-add-item:hover {
-    background: var(--bg-hover, #24242a);
-    border-color: var(--accent-primary, #6366f1);
+    background: var(--bg-hover, #173030);
+    border-color: var(--accent-primary, #2dd4a8);
     transform: translateX(4px);
 }
 
 .widget-add-item:focus {
-    outline: 2px solid var(--accent-primary, #6366f1);
+    outline: 2px solid var(--accent-primary, #2dd4a8);
     outline-offset: 2px;
 }
 
@@ -712,12 +712,12 @@
     flex: 1;
     font-size: 14px;
     font-weight: 500;
-    color: var(--text-primary, #ffffff);
+    color: var(--text-primary, #e0eeee);
 }
 
 .widget-add-item-size {
     font-size: 11px;
-    color: var(--text-muted, #8b8b94);
+    color: var(--text-muted, #8aacac);
     background: rgba(161, 161, 170, 0.1);
     padding: 3px 10px;
     border-radius: 20px;
@@ -750,8 +750,8 @@ body.light-theme .widget-chart-svg text {
 
 /* [data-theme="dark"] support (if used alongside body class) */
 [data-theme="dark"] .widget-card {
-    background: var(--bg-card, #1c1c21);
-    border-color: var(--border-color, #27272a);
+    background: var(--bg-card, #0f2327);
+    border-color: var(--border-color, #1a3535);
 }
 
 /* ============================================

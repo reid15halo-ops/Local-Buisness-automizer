@@ -208,7 +208,7 @@ select.aufmass-input {
 
 .aufmass-unit-toggle button.active {
     background: var(--accent-primary);
-    color: #ffffff;
+    color: #e0eeee;
 }
 
 .aufmass-unit-toggle button:hover:not(.active) {

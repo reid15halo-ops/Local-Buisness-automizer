@@ -244,7 +244,7 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--border-radius);
-    background: rgba(99, 102, 241, 0.1);
+    background: rgba(45, 212, 168, 0.1);
 }
 
 .stat-anfragen .stat-icon {
@@ -256,7 +256,7 @@
 }
 
 .stat-auftraege .stat-icon {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(45, 212, 168, 0.15);
 }
 
 .stat-rechnungen .stat-icon {
@@ -325,7 +325,7 @@
 
 .workflow-step:hover .step-icon {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 20px rgba(45, 212, 168, 0.3);
 }
 
 .step-label {
@@ -488,7 +488,7 @@
 }
 
 .status-badge.status-aktiv {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(45, 212, 168, 0.15);
     color: var(--accent-primary);
 }
 
@@ -520,7 +520,7 @@
 }
 
 .btn-primary:hover {
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 16px rgba(45, 212, 168, 0.4);
     transform: translateY(-1px);
 }
 
@@ -551,7 +551,7 @@
 }
 
 .btn-ai {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    background: linear-gradient(135deg, #8b5cf6, #2dd4a8);
     color: white;
     padding: 8px 16px;
 }
@@ -698,7 +698,7 @@ select:focus,
 textarea:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.15);
 }
 
 input::placeholder,
@@ -1414,7 +1414,7 @@ textarea {
 
 /* KI Stunden-Schätzung */
 .ai-estimation {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1));
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(45, 212, 168, 0.1));
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: var(--border-radius-sm);
     padding: 16px;
@@ -1468,11 +1468,11 @@ textarea {
     align-items: center;
     gap: 8px;
     padding: 16px;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1));
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(45, 212, 168, 0.1));
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: var(--border-radius);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     position: relative;
 }
 
@@ -1536,7 +1536,7 @@ textarea {
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 13px;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .ext-link:hover {
@@ -1555,7 +1555,7 @@ textarea {
 
 .stat-card.clickable {
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .stat-card.clickable:hover {
@@ -1738,7 +1738,7 @@ textarea {
     border-radius: var(--border-radius-sm);
     margin-bottom: 8px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .material-picker-item:hover {
@@ -1958,7 +1958,7 @@ textarea {
     padding: 8px 10px;
     border-radius: 6px;
     font-size: 12px;
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(45, 212, 168, 0.2);
     border-left: 3px solid var(--accent-primary);
 }
 
@@ -2023,7 +2023,7 @@ textarea {
 }
 
 .email-item.unread {
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(45, 212, 168, 0.05);
     border-color: var(--accent-primary);
 }
 
@@ -2404,7 +2404,7 @@ textarea {
 .upload-area:hover,
 .upload-area.drag-over {
     border-color: var(--accent-primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(45, 212, 168, 0.05);
 }
 
 .upload-icon {
@@ -2785,8 +2785,8 @@ textarea {
 }
 
 .conversation-item.active {
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: rgba(45, 212, 168, 0.15);
+    border: 1px solid rgba(45, 212, 168, 0.3);
 }
 
 .conversation-name {
@@ -3213,7 +3213,7 @@ textarea {
 }
 
 .log-type.action {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(45, 212, 168, 0.2);
     color: var(--accent-primary);
 }
 
@@ -3282,7 +3282,7 @@ textarea {
 .scanned-doc-card .doc-category {
     display: inline-block;
     padding: 4px 10px;
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(45, 212, 168, 0.15);
     color: var(--accent-primary);
     border-radius: 12px;
     font-size: 11px;
@@ -3451,7 +3451,7 @@ textarea {
 
 /* Badge New */
 .badge-new {
-    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    background: linear-gradient(135deg, #8b5cf6, #2dd4a8);
     font-size: 9px;
     padding: 2px 6px;
 }
@@ -3489,7 +3489,7 @@ textarea {
 
 .ai-llama-icon {
     font-size: 24px;
-    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+    filter: drop-shadow(0 0 8px rgba(45, 212, 168, 0.5));
 }
 
 .model-selector-wrapper {
@@ -3553,7 +3553,7 @@ textarea {
 
 .ai-message.user {
     align-self: flex-end;
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: linear-gradient(135deg, #2dd4a8, #4f46e5);
     color: white;
     border-bottom-right-radius: 4px;
 }
@@ -3579,12 +3579,12 @@ textarea {
     border-radius: 12px;
     padding: 8px 16px;
     gap: 12px;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .ai-input-container:focus-within {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 0 2px rgba(45, 212, 168, 0.2);
 }
 
 #ai-chat-input {
@@ -3653,7 +3653,7 @@ textarea {
 /* Light theme support */
 .light-theme .ai-window {
     background: rgba(255, 255, 255, 0.9);
-    color: #1e293b;
+    color: #0f2327;
     border-color: #e2e8f0;
 }
 
@@ -3664,7 +3664,7 @@ textarea {
 
 .light-theme .ai-message.bot {
     background: #f1f5f9;
-    color: #1e293b;
+    color: #0f2327;
     border-color: #cbd5e1;
 }
 
@@ -3674,12 +3674,12 @@ textarea {
 }
 
 .light-theme #ai-chat-input {
-    color: #1e293b;
+    color: #0f2327;
 }
 
 .light-theme #ai-model-select {
     background: #fff;
-    color: #1e293b;
+    color: #0f2327;
     border-color: #cbd5e1;
 }
 
@@ -3699,7 +3699,7 @@ textarea {
     grid-template-columns: 2fr 80px 60px 90px 90px 100px 36px;
     gap: 8px;
     padding: 10px 12px;
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(45, 212, 168, 0.08);
     border-bottom: 1px solid var(--border-color);
     font-size: 11px;
     font-weight: 600;
@@ -3801,7 +3801,7 @@ textarea {
     cursor: pointer;
     padding: 2px;
     border-radius: 4px;
-    transition: all 0.15s;
+    transition: opacity 0.15s, transform 0.15s, background-color 0.15s, border-color 0.15s;
     line-height: 1;
 }
 
@@ -3929,14 +3929,14 @@ textarea {
     padding: 30px 20px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .datatype-card:hover,
 .datatype-card:focus-visible {
     border-color: var(--accent-primary);
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 8px 20px rgba(45, 212, 168, 0.2);
     outline: none;
 }
 
@@ -3977,8 +3977,8 @@ textarea {
 .template-select {
     flex: 1;
     padding: 8px 12px;
-    background: var(--input-bg, #1e293b);
-    border: 1px solid var(--border-color, #334155);
+    background: var(--input-bg, #0f2327);
+    border: 1px solid var(--border-color, #173030);
     border-radius: 6px;
     color: var(--text-primary, #f1f5f9);
     font-size: 14px;
@@ -4601,7 +4601,7 @@ textarea {
     min-width: 80px;
     padding: 6px 4px;
     opacity: 0.4;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     position: relative;
 }
 
@@ -4714,7 +4714,7 @@ textarea {
 
 .email-history-item:hover {
     border-color: var(--accent-primary);
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 2px 8px rgba(45, 212, 168, 0.1);
 }
 
 .email-history-header {
@@ -5309,7 +5309,7 @@ textarea {
     border-radius: 8px;
     background: var(--bg-card);
     color: var(--text-primary);
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     min-height: 48px;
 }
 
@@ -5343,7 +5343,7 @@ textarea {
     border-radius: 8px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
     background: var(--bg-secondary);
 }
 
@@ -5512,7 +5512,7 @@ textarea {
     font-weight: 600;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-primary.btn-large {
@@ -5617,7 +5617,7 @@ textarea {
     border-radius: 6px;
     background: var(--bg-card);
     color: var(--text-primary);
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .admin-pin-input:focus {
@@ -5726,7 +5726,7 @@ textarea {
     border-radius: 6px;
     background: var(--bg-card);
     color: var(--text-primary);
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .admin-input:focus {
@@ -6154,13 +6154,13 @@ textarea {
 
 .notification-item:hover,
 .notification-item:focus-visible {
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(45, 212, 168, 0.05);
     outline: 2px solid var(--accent-primary);
     outline-offset: -2px;
 }
 
 .notification-item.unread {
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(45, 212, 168, 0.08);
     border-left: 3px solid var(--accent-primary);
     padding-left: 13px;
 }
@@ -6281,7 +6281,7 @@ textarea {
     cursor: pointer;
     font-size: 12px;
     white-space: nowrap;
-    transition: all 0.2s;
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s;
 }
 
 .position-material-picker:hover,
@@ -6542,7 +6542,7 @@ textarea {
     font-weight: 500;
     color: var(--text-secondary, #64748b);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6552,12 +6552,12 @@ textarea {
 
 .we-tab:hover {
     background: var(--bg-primary, #fff);
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
 }
 
 .we-tab.active {
     background: var(--bg-primary, #fff);
-    color: var(--accent-primary, #6366f1);
+    color: var(--accent-primary, #2dd4a8);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     font-weight: 600;
 }
@@ -6581,13 +6581,13 @@ textarea {
     border-radius: 16px;
     padding: 48px 24px;
     text-align: center;
-    transition: all 0.2s;
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s;
     cursor: pointer;
     background: var(--bg-secondary, #f8fafc);
 }
 
 .we-dropzone.drag-over {
-    border-color: var(--accent-primary, #6366f1);
+    border-color: var(--accent-primary, #2dd4a8);
     background: rgba(37, 99, 235, 0.05);
 }
 
@@ -6600,7 +6600,7 @@ textarea {
 .we-dropzone-text {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
     margin-bottom: 4px;
 }
 
@@ -6649,7 +6649,7 @@ textarea {
     width: 48px;
     height: 48px;
     border: 4px solid var(--border-color, #e2e8f0);
-    border-top-color: var(--accent-primary, #6366f1);
+    border-top-color: var(--accent-primary, #2dd4a8);
     border-radius: 50%;
     animation: we-spin 0.8s linear infinite;
     margin: 0 auto 16px;
@@ -6726,13 +6726,13 @@ textarea {
     border-radius: 6px;
     font-size: 0.85rem;
     background: var(--bg-primary, #fff);
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
 }
 
 .we-items-table input:focus,
 .we-items-table select:focus {
     outline: none;
-    border-color: var(--accent-primary, #6366f1);
+    border-color: var(--accent-primary, #2dd4a8);
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
@@ -6781,7 +6781,7 @@ textarea {
 
 .we-auftrag-suggestion {
     font-size: 0.8rem;
-    color: var(--accent-primary, #6366f1);
+    color: var(--accent-primary, #2dd4a8);
     padding: 2px 8px;
     background: rgba(37, 99, 235, 0.08);
     border-radius: 12px;
@@ -6800,7 +6800,7 @@ textarea {
 .we-total {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
     margin-right: auto;
     align-self: center;
 }
@@ -6811,7 +6811,7 @@ textarea {
     padding: 12px 16px;
     border-radius: 10px;
     margin-bottom: 16px;
-    border-left: 3px solid var(--accent-primary, #6366f1);
+    border-left: 3px solid var(--accent-primary, #2dd4a8);
 }
 
 .we-bank-info p {
@@ -6840,7 +6840,7 @@ textarea {
 
 .we-bank-item-supplier {
     font-weight: 600;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
 }
 
 .we-bank-item-purpose {
@@ -6918,7 +6918,7 @@ textarea {
 
 .we-history-title {
     font-weight: 600;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
 }
 
 .we-history-meta {
@@ -6928,7 +6928,7 @@ textarea {
 
 .we-history-value {
     font-weight: 700;
-    color: var(--text-primary, #1e293b);
+    color: var(--text-primary, #0f2327);
     white-space: nowrap;
 }
 
@@ -7124,7 +7124,7 @@ textarea {
 }
 
 .doc-chain-item.doc-chain-active {
-    background: rgba(99, 102, 241, 0.15);
+    background: rgba(45, 212, 168, 0.15);
     border-color: var(--accent-primary);
     color: var(--accent-primary);
     cursor: default;
@@ -7233,7 +7233,7 @@ textarea {
     border: 1px dashed #52525b;
 }
 .btn-freigabe {
-    background: var(--accent-primary, #6366f1);
+    background: var(--accent-primary, #2dd4a8);
     color: #fff;
     border: none;
     padding: 6px 16px;
@@ -7243,7 +7243,7 @@ textarea {
     transition: background 0.2s;
 }
 .btn-freigabe:hover {
-    background: var(--accent-hover, #818cf8);
+    background: var(--accent-hover, #5eecc6);
 }
 
 /* Material Picker Styles (moved from JS injection) */
@@ -7260,7 +7260,7 @@ textarea {
     justify-content: center;
 }
 .material-picker-content {
-    background: var(--bg-card, #1c1c21);
+    background: var(--bg-card, #0f2327);
     border: 1px solid var(--border-color, #333);
     border-radius: 12px;
     padding: 24px;
@@ -7283,15 +7283,15 @@ textarea {
     border-radius: 8px;
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s;
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s;
 }
 .material-picker-item:hover {
-    border-color: var(--accent-primary, #6366f1);
-    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--accent-primary, #2dd4a8);
+    background: rgba(45, 212, 168, 0.1);
 }
 .material-picker-item.selected {
-    border-color: var(--accent-primary, #6366f1);
-    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--accent-primary, #2dd4a8);
+    background: rgba(45, 212, 168, 0.15);
 }
 
 /* Activity Indicator Styles (moved from JS injection) */
@@ -7332,18 +7332,18 @@ textarea {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--bg-secondary, #1c1c21);
+    background: var(--bg-secondary, #0f2327);
     z-index: var(--z-top, 10000);
 }
 .onboarding-progress-fill {
     height: 100%;
-    background: var(--accent-primary, #6366f1);
+    background: var(--accent-primary, #2dd4a8);
     transition: width 0.5s ease;
 }
 .onboarding-tooltip {
     position: absolute;
-    background: var(--bg-card, #1c1c21);
-    border: 1px solid var(--accent-primary, #6366f1);
+    background: var(--bg-card, #0f2327);
+    border: 1px solid var(--accent-primary, #2dd4a8);
     border-radius: 12px;
     padding: 20px;
     max-width: 320px;
@@ -7376,7 +7376,7 @@ textarea {
     justify-content: center;
 }
 .fragebogen-dialog {
-    background: var(--bg-card, #1c1c21);
+    background: var(--bg-card, #0f2327);
     border: 1px solid var(--border-color, #333);
     border-radius: 12px;
     padding: 24px;
@@ -7407,7 +7407,7 @@ textarea {
     background: var(--accent-danger, #ef4444);
 }
 .toast-notification.info {
-    background: var(--accent-primary, #6366f1);
+    background: var(--accent-primary, #2dd4a8);
 }
 
 /* Detail View Layout Classes (replaces inline styles) */

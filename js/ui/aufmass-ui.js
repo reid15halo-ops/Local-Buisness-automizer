@@ -625,7 +625,7 @@ class AufmassUI {
             <svg class="aufmass-svg" viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(99,102,241,0.08)" stroke-width="0.5"/>
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(45,212,168,0.08)" stroke-width="0.5"/>
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" rx="8" />
@@ -652,7 +652,7 @@ class AufmassUI {
         let deductions = this._svgDeductions(room, rx, ry, rw, rh, l, w);
 
         return `
-            <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="2" rx="2" />
+            <rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="rgba(45,212,168,0.1)" stroke="#2dd4a8" stroke-width="2" rx="2" />
             ${deductions}
             <!-- Dimension labels -->
             <text x="${rx + rw / 2}" y="${ry - 8}" fill="#a1a1aa" font-size="12" text-anchor="middle" font-family="Inter, sans-serif">${l.toFixed(2)} m</text>
@@ -691,7 +691,7 @@ class AufmassUI {
         const area = (l1 * w1 + l2 * w2).toFixed(2);
 
         return `
-            <polygon points="${points}" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="2" />
+            <polygon points="${points}" fill="rgba(45,212,168,0.1)" stroke="#2dd4a8" stroke-width="2" />
             <text x="${W / 2}" y="${H / 2}" fill="#ffffff" font-size="14" text-anchor="middle" font-weight="600" font-family="Inter, sans-serif">${area} m\u00B2</text>
             <text x="${ox + (l1 * scale) / 2}" y="${oy - 8}" fill="#a1a1aa" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">${l1.toFixed(2)} m</text>
             <text x="${ox + (l2 * scale) / 2}" y="${oy + (w1 + w2) * scale + 16}" fill="#a1a1aa" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">${l2.toFixed(2)} m</text>
@@ -722,7 +722,7 @@ class AufmassUI {
         const area = (((a + b) / 2) * d).toFixed(2);
 
         return `
-            <polygon points="${points}" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="2" />
+            <polygon points="${points}" fill="rgba(45,212,168,0.1)" stroke="#2dd4a8" stroke-width="2" />
             <text x="${cx}" y="${oy - 8}" fill="#a1a1aa" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">${a.toFixed(2)} m</text>
             <text x="${cx}" y="${oy + d * scale + 16}" fill="#a1a1aa" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">${b.toFixed(2)} m</text>
             <text x="${cx}" y="${oy + (d * scale) / 2}" fill="#ffffff" font-size="14" text-anchor="middle" font-weight="600" font-family="Inter, sans-serif">${area} m\u00B2</text>
@@ -750,7 +750,7 @@ class AufmassUI {
         const area = ((base * th) / 2).toFixed(2);
 
         return `
-            <polygon points="${points}" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="2" />
+            <polygon points="${points}" fill="rgba(45,212,168,0.1)" stroke="#2dd4a8" stroke-width="2" />
             <text x="${cx}" y="${by + 16}" fill="#a1a1aa" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">${base.toFixed(2)} m</text>
             <text x="${cx}" y="${by - th * scale / 3}" fill="#ffffff" font-size="14" text-anchor="middle" font-weight="600" font-family="Inter, sans-serif">${area} m\u00B2</text>
         `;
@@ -767,7 +767,7 @@ class AufmassUI {
         const area = (Math.PI * r * r).toFixed(2);
 
         return `
-            <circle cx="${cx}" cy="${cy}" r="${drawR}" fill="rgba(99,102,241,0.1)" stroke="#6366f1" stroke-width="2" />
+            <circle cx="${cx}" cy="${cy}" r="${drawR}" fill="rgba(45,212,168,0.1)" stroke="#2dd4a8" stroke-width="2" />
             <line x1="${cx}" y1="${cy}" x2="${cx + drawR}" y2="${cy}" stroke="#a1a1aa" stroke-width="1" stroke-dasharray="4,4" />
             <text x="${cx + drawR / 2}" y="${cy - 6}" fill="#a1a1aa" font-size="11" text-anchor="middle" font-family="Inter, sans-serif">r = ${r.toFixed(2)} m</text>
             <text x="${cx}" y="${cy + 5}" fill="#ffffff" font-size="14" text-anchor="middle" font-weight="600" font-family="Inter, sans-serif">${area} m\u00B2</text>

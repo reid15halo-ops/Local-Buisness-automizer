@@ -471,7 +471,8 @@ FreyAI Visions`
      */
     async sendEmail(to, subject, html, opts = {}) {
         const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
-            || localStorage.getItem('freyai_email_relay_url');
+            || localStorage.getItem('freyai_email_relay_url')
+            || (window.location.origin + '/api');
         const secret   = window.APP_CONFIG?.EMAIL_RELAY_SECRET
             || (sessionStorage.getItem('freyai_email_relay_secret') || localStorage.getItem('freyai_email_relay_secret'));
         const companyInfo = window.companySettings
@@ -561,7 +562,8 @@ FreyAI Visions`
      */
     async sendBulkEmails(messages, opts = {}) {
         const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
-            || localStorage.getItem('freyai_email_relay_url');
+            || localStorage.getItem('freyai_email_relay_url')
+            || (window.location.origin + '/api');
         const secret   = window.APP_CONFIG?.EMAIL_RELAY_SECRET
             || (sessionStorage.getItem('freyai_email_relay_secret') || localStorage.getItem('freyai_email_relay_secret'));
 

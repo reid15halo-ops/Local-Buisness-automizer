@@ -13,7 +13,7 @@ class ThemeService {
             this.settings.theme = this.getSystemTheme();
         }
         if (!this.settings.accentColor) {
-            this.settings.accentColor = '#6366f1'; // Indigo
+            this.settings.accentColor = '#2dd4a8'; // Indigo
         }
 
         // Apply theme on load
@@ -77,7 +77,7 @@ class ThemeService {
             root.style.setProperty('--bg-secondary', '#f1f5f9');
             root.style.setProperty('--bg-card', '#ffffff');
             root.style.setProperty('--bg-card-hover', '#f8fafc');
-            root.style.setProperty('--text-primary', '#1e293b');
+            root.style.setProperty('--text-primary', '#0f2327');
             root.style.setProperty('--text-secondary', '#64748b');
             root.style.setProperty('--text-muted', '#94a3b8');
             root.style.setProperty('--border-color', '#e2e8f0');
@@ -86,14 +86,14 @@ class ThemeService {
             document.body.classList.add('theme-light');
         } else {
             // Dark theme colors (default)
-            root.style.setProperty('--bg-primary', '#0f172a');
-            root.style.setProperty('--bg-secondary', '#1e293b');
-            root.style.setProperty('--bg-card', '#1e293b');
-            root.style.setProperty('--bg-card-hover', '#334155');
+            root.style.setProperty('--bg-primary', '#0c1a1a');
+            root.style.setProperty('--bg-secondary', '#0f2327');
+            root.style.setProperty('--bg-card', '#0f2327');
+            root.style.setProperty('--bg-card-hover', '#173030');
             root.style.setProperty('--text-primary', '#f1f5f9');
             root.style.setProperty('--text-secondary', '#94a3b8');
             root.style.setProperty('--text-muted', '#64748b');
-            root.style.setProperty('--border-color', '#334155');
+            root.style.setProperty('--border-color', '#173030');
             root.style.setProperty('--shadow-color', 'rgba(0, 0, 0, 0.3)');
             document.body.classList.remove('theme-light');
             document.body.classList.add('theme-dark');
@@ -137,7 +137,7 @@ class ThemeService {
     // Preset accent colors
     getAccentPresets() {
         return [
-            { name: 'Indigo', color: '#6366f1' },
+            { name: 'Indigo', color: '#2dd4a8' },
             { name: 'Blue', color: '#3b82f6' },
             { name: 'Green', color: '#22c55e' },
             { name: 'Emerald', color: '#10b981' },

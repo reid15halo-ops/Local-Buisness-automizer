@@ -98,7 +98,7 @@
     font-size: 14px;
     font-weight: 500;
     white-space: nowrap;
-    transition: all var(--transition);
+    transition: opacity var(--transition), transform var(--transition), background-color var(--transition), border-color var(--transition);
     border-bottom: 3px solid transparent;
     margin-bottom: -2px;
 }
@@ -187,7 +187,7 @@
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 20px;
-    transition: all var(--transition);
+    transition: opacity var(--transition), transform var(--transition), background-color var(--transition), border-color var(--transition);
     position: relative;
     overflow: hidden;
 }
@@ -975,7 +975,7 @@
     background: var(--bg-hover);
     border-radius: 13px;
     border: 1px solid var(--border-color);
-    transition: all var(--transition);
+    transition: opacity var(--transition), transform var(--transition), background-color var(--transition), border-color var(--transition);
 }
 
 .agent-toggle-slider::before {
@@ -987,7 +987,7 @@
     bottom: 2px;
     background: var(--text-muted);
     border-radius: 50%;
-    transition: all var(--transition);
+    transition: opacity var(--transition), transform var(--transition), background-color var(--transition), border-color var(--transition);
 }
 
 .agent-toggle-input:checked + .agent-toggle-slider {

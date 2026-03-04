@@ -316,8 +316,8 @@ class DashboardWidgetUI {
         for (let i = 0; i <= 4; i++) {
             const y = padding.top + (chartHeight / 4) * i;
             const val = maxVal - (maxVal / 4) * i;
-            svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="var(--border-color, #27272a)" stroke-width="1"/>`;
-            svg += `<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" fill="var(--text-muted, #8b8b94)" font-size="10">${this._formatCurrencyShort(val)}</text>`;
+            svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" stroke="var(--border-color, #1a3535)" stroke-width="1"/>`;
+            svg += `<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" fill="var(--text-muted, #8aacac)" font-size="10">${this._formatCurrencyShort(val)}</text>`;
         }
 
         // Bars
@@ -326,7 +326,7 @@ class DashboardWidgetUI {
             const x = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
             const y = height - padding.bottom - barH;
 
-            svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" fill="var(--accent-primary, #6366f1)" rx="3" opacity="0.9">
+            svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" fill="var(--accent-primary, #2dd4a8)" rx="3" opacity="0.9">
                         <title>${item.label}: ${this._formatCurrencyShort(item.value)}</title>
                     </rect>`;
 

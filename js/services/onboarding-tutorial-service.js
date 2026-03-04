@@ -476,13 +476,13 @@ class OnboardingTutorialService {
             /* Tutorial Tooltip */
             .tutorial-tooltip {
                 position: fixed;
-                background: #1c1c21;
-                border: 2px solid #6366f1;
+                background: #0f2327;
+                border: 2px solid #2dd4a8;
                 border-radius: 12px;
                 padding: 24px;
                 max-width: 400px;
                 z-index: 9999;
-                box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 32px rgba(99, 102, 241, 0.15);
+                box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 32px rgba(45, 212, 168, 0.15);
                 opacity: 0;
                 transition: opacity 0.3s ease-out;
                 animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -521,7 +521,7 @@ class OnboardingTutorialService {
 
             .tutorial-progress-bar {
                 height: 4px;
-                background: #27272a;
+                background: #1a3535;
                 border-radius: 2px;
                 overflow: hidden;
                 width: 100%;
@@ -531,7 +531,7 @@ class OnboardingTutorialService {
                 content: '';
                 display: block;
                 height: 100%;
-                background: linear-gradient(90deg, #6366f1, #818cf8);
+                background: linear-gradient(90deg, #2dd4a8, #5eecc6);
                 border-radius: 2px;
                 width: 10%;
                 transition: width 0.4s ease-out;
@@ -580,16 +580,16 @@ class OnboardingTutorialService {
             }
 
             .tutorial-btn-primary {
-                background: #6366f1;
+                background: #2dd4a8;
                 color: #ffffff;
                 flex: 1.5;
                 font-weight: 600;
             }
 
             .tutorial-btn-primary:hover:not(:disabled) {
-                background: #818cf8;
+                background: #5eecc6;
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                box-shadow: 0 4px 12px rgba(45, 212, 168, 0.3);
             }
 
             .tutorial-btn-primary:active:not(:disabled) {
@@ -597,7 +597,7 @@ class OnboardingTutorialService {
             }
 
             .tutorial-btn-secondary {
-                background: #27272a;
+                background: #1a3535;
                 color: #a1a1aa;
                 border: 1px solid #36363c;
             }
@@ -611,7 +611,7 @@ class OnboardingTutorialService {
             /* Highlight Effect */
             .tutorial-highlight {
                 position: relative;
-                box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4), 0 0 0 8px rgba(99, 102, 241, 0.2) !important;
+                box-shadow: 0 0 0 4px rgba(45, 212, 168, 0.4), 0 0 0 8px rgba(45, 212, 168, 0.2) !important;
                 border-radius: 8px;
                 animation: pulse 2s ease-in-out infinite;
                 z-index: 9997;
@@ -619,10 +619,10 @@ class OnboardingTutorialService {
 
             @keyframes pulse {
                 0%, 100% {
-                    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4), 0 0 0 8px rgba(99, 102, 241, 0.2);
+                    box-shadow: 0 0 0 4px rgba(45, 212, 168, 0.4), 0 0 0 8px rgba(45, 212, 168, 0.2);
                 }
                 50% {
-                    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 0 0 12px rgba(99, 102, 241, 0.1);
+                    box-shadow: 0 0 0 4px rgba(45, 212, 168, 0.2), 0 0 0 12px rgba(45, 212, 168, 0.1);
                 }
             }
 
@@ -631,11 +631,11 @@ class OnboardingTutorialService {
                 position: fixed;
                 bottom: 24px;
                 right: 24px;
-                background: #1c1c21;
+                background: #0f2327;
                 color: #a1a1aa;
                 padding: 16px 24px;
                 border-radius: 8px;
-                border-left: 4px solid #6366f1;
+                border-left: 4px solid #2dd4a8;
                 font-size: 14px;
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
                 z-index: 10000;

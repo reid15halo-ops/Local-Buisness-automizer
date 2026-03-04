@@ -583,7 +583,7 @@ function initBuchhaltung() {
 // ============================================
 function initAutomationSettings() {
     // Load saved values
-    const relayUrl = localStorage.getItem('email_relay_url');
+    const relayUrl = localStorage.getItem('email_relay_url') || (window.location.origin + '/api');
     const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const senderEmail = localStorage.getItem('sender_email');
     const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
@@ -702,7 +702,7 @@ function initAutomationSettings() {
 
 function updateSettingsStatus() {
     const webhookUrl = localStorage.getItem('n8n_webhook_url');
-    const relayUrl = localStorage.getItem('email_relay_url');
+    const relayUrl = localStorage.getItem('email_relay_url') || (window.location.origin + '/api');
     const relaySecret = (sessionStorage.getItem("email_relay_secret") || localStorage.getItem("email_relay_secret"));
     const emailConfigured = relayUrl && relaySecret;
     const twilioSid = (sessionStorage.getItem("twilio_sid") || localStorage.getItem("twilio_sid"));
