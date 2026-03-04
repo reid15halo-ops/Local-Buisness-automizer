@@ -44,3 +44,13 @@ venv/
 # Credentials (never commit)
 .credentials
 *.credentials
+
+# Migration scripts with hardcoded tokens
+config/run-migration.py
+config/run-migration-single.py
+
+# Email relay .env (contains SMTP credentials)
+vps/email-relay/.env
+
+# Supabase CLI binary
+supabase.exe

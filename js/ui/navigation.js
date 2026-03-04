@@ -163,6 +163,59 @@ class NavigationController {
                     });
                 }
                 break;
+            // Views with render functions not triggered by viewchange event
+            case 'wareneingang':
+                if (window.WareneingangModule?.renderHistory) { window.WareneingangModule.renderHistory(); }
+                break;
+            case 'buchhaltung':
+                if (window.renderBuchhaltung) { window.renderBuchhaltung(); }
+                break;
+            case 'mahnwesen':
+                if (window.renderMahnwesen) { window.renderMahnwesen(); }
+                break;
+            case 'material':
+                if (window.renderMaterial) { window.renderMaterial(); }
+                break;
+            case 'bestellungen':
+                if (window.purchaseOrderUI) { window.purchaseOrderUI.render(); }
+                break;
+            case 'kommunikation':
+                if (window.communicationHubController?.init) { window.communicationHubController.init(); }
+                break;
+            // Features from features-integration.js
+            case 'emails':
+                if (window.renderEmails) { window.renderEmails(); }
+                break;
+            case 'aufgaben':
+                if (window.renderTasks) { window.renderTasks(); }
+                break;
+            case 'kunden':
+                if (window.renderCustomers) { window.renderCustomers(); }
+                break;
+            case 'kalender':
+                if (window.renderCalendar) { window.renderCalendar(); }
+                break;
+            case 'zeiterfassung':
+                if (window.renderTimeTracking) { window.renderTimeTracking(); }
+                break;
+            case 'gantt':
+                if (window.renderGanttFullView) { window.renderGanttFullView(); }
+                break;
+            case 'dokumente':
+                if (window.renderDocuments) { window.renderDocuments(); }
+                break;
+            case 'berichte':
+                if (window.initReports) { window.initReports(); }
+                break;
+            case 'chatbot':
+                if (window.renderChatbot) { window.renderChatbot(); }
+                break;
+            case 'email-automation':
+                if (window.renderEmailAutomation) { window.renderEmailAutomation(); }
+                break;
+            case 'support':
+                if (window.renderSupport) { window.renderSupport(); }
+                break;
             // New features (Self-initializing via their own listeners, but good to ensure)
             case 'workflows':
             case 'scanner':

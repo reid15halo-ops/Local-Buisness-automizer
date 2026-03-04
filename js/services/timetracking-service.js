@@ -90,6 +90,7 @@ class TimeTrackingService {
             startTime: timer.startTime,
             endTime: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
             projectId: timer.projectId,
+            auftragId: timer.auftragId || timer.projectId,
             description: description
         });
 

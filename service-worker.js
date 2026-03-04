@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v16';
+const CACHE_NAME = 'freyai-visions-v17';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -38,9 +38,13 @@ const STATIC_ASSETS = [
     '/css/agent-workflows.css',
     '/css/boomer-guide.css',
     '/css/field-app.css',
+    '/css/aufmass.css',
+    '/css/conflict-resolution.css',
+    '/css/customer-portal.css',
+    '/css/dashboard-widgets.css',
+    '/css/field-app-mobile.css',
 
     // --- Core JS ---
-    '/js/app.js',
     '/js/app-new.js',
     '/js/features-integration.js',
     '/js/new-features-ui.js',
@@ -159,6 +163,21 @@ const STATIC_ASSETS = [
     '/js/services/workflow-service.js',
     '/js/services/portal-service.js',
     '/js/services/offline-sync-service.js',
+    '/js/services/agentic-executor-service.js',
+    '/js/services/approval-queue-service.js',
+    '/js/services/boomer-guide-service.js',
+    '/js/services/company-settings-service.js',
+    '/js/services/conflict-resolution-service.js',
+    '/js/services/customer-portal-service.js',
+    '/js/services/dashboard-widget-service.js',
+    '/js/services/document-template-service.js',
+    '/js/services/fragebogen-import-service.js',
+    '/js/services/job-queue-service.js',
+    '/js/services/realtime-service.js',
+    '/js/services/supabase-client.js',
+    '/js/services/team-management-service.js',
+    '/js/services/tenant-service.js',
+    '/js/services/whatsapp-service.js',
 
     // --- JS UI Components ---
     '/js/ui/admin-panel-ui.js',
@@ -179,6 +198,11 @@ const STATIC_ASSETS = [
     '/js/ui/ui-helpers.js',
     '/js/ui/work-estimation-ui.js',
     '/js/ui/workflow-builder-ui.js',
+    '/js/ui/conflict-resolution-ui.js',
+    '/js/ui/dashboard-widget-ui.js',
+    '/js/ui/field-app-mobile-ui.js',
+    '/js/ui/fragebogen-import-ui.js',
+    '/js/ui/photo-gallery-ui.js',
 
     // --- i18n (Internationalization) ---
     '/js/i18n/de.js',

@@ -24,6 +24,8 @@
     // These should not be re-loaded by the lazy loader
     const criticalServices = [
         'error-handler',
+        'error-handler-utils',
+        'error-display-service',
         'db-service',
         'demo-data-service',
         'store-service',
@@ -34,6 +36,7 @@
         'auth-service',
         'supabase-config',
         'supabase-db-service',
+        'sanitize-service',
         'excel-recognition-service',
         'search-service',
         'theme-manager',
@@ -47,8 +50,14 @@
         'confirm-dialog-service',
         'trash-service',
         'user-mode-service',
+        'form-validation-service',
+        'company-settings-service',
+        'document-template-service',
+        'admin-panel-service',
         'dashboard-charts-service',
         'notification-service',
+        'push-messenger-service',
+        'boomer-guide-service',
         'data-export-service',
         'email-template-service',
         'pwa-install-service',
@@ -56,7 +65,10 @@
         'booking-service',
         'calendar-ui-service',
         'purchase-order-service',
-        'reorder-engine-service'
+        'reorder-engine-service',
+        'portal-service',
+        'offline-sync-service',
+        'bon-scanner-service'
     ];
 
     window.lazyLoader.registerCriticalServices(criticalServices);
