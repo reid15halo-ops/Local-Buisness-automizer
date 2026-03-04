@@ -502,6 +502,7 @@ class PurchaseOrderService {
      * @private
      */
     _calculatePOTotals(po) {
+        if (!po.positionen) {po.positionen = [];}
         const netto = po.positionen.reduce((sum, pos) =>
             sum + ((pos.menge || 0) * (pos.ekPreis || 0)), 0
         );

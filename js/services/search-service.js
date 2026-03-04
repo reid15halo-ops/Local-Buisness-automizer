@@ -36,7 +36,7 @@ class SearchService {
                 type: 'angebot',
                 id: item.id,
                 title: item.kunde?.name || '',
-                subtitle: `${item.positionen.length} Positionen`,
+                subtitle: `${(item.positionen || []).length} Positionen`,
                 description: window.UI.formatCurrency(item.brutto),
                 searchText: `${item.id} ${item.kunde?.name || ''} ${item.leistungsart}`.toLowerCase(),
                 icon: '📝',

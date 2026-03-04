@@ -452,15 +452,20 @@ function createAngebotFromAnfrage(anfrageId) {
     store.currentAnfrageId = anfrageId;
 
     // Fill modal info
-    document.getElementById('angebot-anfrage-id').value = anfrageId;
-    document.getElementById('angebot-kunde-info').innerHTML = `
-        <strong>${window.UI.sanitize(anfrage.kunde?.name || 'Unbekannt')}</strong><br>
-        ${getLeistungsartLabel(anfrage.leistungsart)}<br>
-        <small>${window.UI.sanitize((anfrage.beschreibung || '').substring(0, 100))}...</small>
-    `;
+    const anfrageIdEl = document.getElementById('angebot-anfrage-id');
+    if (anfrageIdEl) {anfrageIdEl.value = anfrageId;}
+    const kundeInfoEl = document.getElementById('angebot-kunde-info');
+    if (kundeInfoEl) {
+        kundeInfoEl.innerHTML = `
+            <strong>${window.UI.sanitize(anfrage.kunde?.name || 'Unbekannt')}</strong><br>
+            ${getLeistungsartLabel(anfrage.leistungsart)}<br>
+            <small>${window.UI.sanitize((anfrage.beschreibung || '').substring(0, 100))}...</small>
+        `;
+    }
 
     // Clear positions
-    document.getElementById('positionen-list').innerHTML = '';
+    const posListEl = document.getElementById('positionen-list');
+    if (posListEl) {posListEl.innerHTML = '';}
     addPosition();
 
     // Clear text

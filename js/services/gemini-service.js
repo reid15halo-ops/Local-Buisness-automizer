@@ -238,7 +238,7 @@ Antwort:`;
         const templates = {
             'metallbau': `Sehr geehrte Damen und Herren,
 
-vielen Dank für Ihre Anfrage bezüglich ${anfrage.beschreibung.substring(0, 50)}.
+vielen Dank für Ihre Anfrage bezüglich ${(anfrage.beschreibung || '').substring(0, 50)}.
 
 Gerne unterbreiten wir Ihnen folgendes Angebot für die gewünschten Arbeiten. Wir garantieren höchste Qualitätsstandards und fachgerechte Ausführung.
 
@@ -300,7 +300,7 @@ ${companyName}`
         let gesamtkosten = 0;
 
         positionen.forEach(pos => {
-            const beschreibung = pos.beschreibung.toLowerCase();
+            const beschreibung = (pos.beschreibung || '').toLowerCase();
 
             materialBestand.forEach(mat => {
                 const matBez = mat.bezeichnung.toLowerCase();
