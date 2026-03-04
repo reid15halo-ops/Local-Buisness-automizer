@@ -254,7 +254,8 @@ class TimeTrackingService {
                 csv += `${row.date};${row.dayName};;;;;\n`;
             } else {
                 row.entries.forEach(e => {
-                    csv += `${row.date};${row.dayName};${e.startTime};${e.endTime};${e.breakMinutes};${e.durationHours};${e.description}\n`;
+                    const desc = (e.description || '').replace(/"/g, '""');
+                    csv += `${row.date};${row.dayName};${e.startTime};${e.endTime};${e.breakMinutes};${e.durationHours};"${desc}"\n`;
                 });
             }
         });

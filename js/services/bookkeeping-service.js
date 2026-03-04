@@ -100,14 +100,17 @@ class BookkeepingService {
 
     // Ausgabe hinzufügen
     addAusgabe(daten) {
+        // Kleinunternehmer can not reclaim Vorsteuer (§19 UStG)
+        const rate = this.einstellungen.kleinunternehmer ? 0 : (this.einstellungen.umsatzsteuersatz || 19);
+        const divisor = 1 + rate / 100;
         const buchung = {
             typ: 'ausgabe',
             kategorie: daten.kategorie || 'Sonstige Ausgaben',
             beschreibung: daten.beschreibung,
             datum: daten.datum || new Date().toISOString(),
             brutto: daten.betrag,
-            netto: daten.betrag / 1.19,
-            vorsteuer: daten.betrag - (daten.betrag / 1.19),
+            netto: rate > 0 ? daten.betrag / divisor : daten.betrag,
+            vorsteuer: rate > 0 ? daten.betrag - (daten.betrag / divisor) : 0,
             belegnummer: daten.belegnummer || '',
             zahlungsart: daten.zahlungsart || 'Überweisung'
         };
@@ -458,8 +461,7 @@ class BookkeepingService {
     }
 
     getProfitByAuftrag(auftragId) {
-        const buchungen = this.buchungen.filter(b => b.auftragId === auftragId ||
-                                                      (b.rechnungId && this.findRechnungByBuchung(b)));
+        const buchungen = this.buchungen.filter(b => b.auftragId === auftragId);
 
         const einnahmen = buchungen.filter(b => b.typ === 'einnahme');
         const ausgaben = buchungen.filter(b => b.typ === 'ausgabe');

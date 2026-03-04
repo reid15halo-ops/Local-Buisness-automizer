@@ -78,7 +78,9 @@ class PDFService {
             phone: ap.company_phone || store.phone || ls('company_phone') || '',
             email: ap.company_email || store.email || ls('company_email') || '',
             iban: ap.bank_iban || store.iban || ls('bank_iban') || '',
-            bank: ap.bank_name || store.bank || ls('bank_name') || ''
+            bank: ap.bank_name || store.bank || ls('bank_name') || '',
+            kleinunternehmer: ap.kleinunternehmer || store.kleinunternehmer || false,
+            taxRate: parseFloat(ap.tax_rate || store.taxRate || '19')
         };
     }
 
@@ -330,11 +332,17 @@ class PDFService {
         y = this.drawTable(doc, y, headers, rows, colWidths);
 
         // Totals
-        y = this.drawTotals(doc, y, [
+        const pdfSettings = this.getSettings();
+        const totalsRows = [
             { label: 'Nettobetrag:', value: this.fmtCurrency(rechnung.netto) },
-            { label: 'MwSt. 19%:', value: this.fmtCurrency(rechnung.mwst) },
-            { label: 'Gesamtbetrag:', value: this.fmtCurrency(rechnung.brutto), bold: true }
-        ]);
+        ];
+        if (pdfSettings.kleinunternehmer) {
+            totalsRows.push({ label: 'Gem. §19 UStG keine MwSt.', value: '—' });
+        } else {
+            totalsRows.push({ label: `MwSt. ${pdfSettings.taxRate}%:`, value: this.fmtCurrency(rechnung.mwst) });
+        }
+        totalsRows.push({ label: 'Gesamtbetrag:', value: this.fmtCurrency(rechnung.brutto), bold: true });
+        y = this.drawTotals(doc, y, totalsRows);
 
         // Material margin info (internal - only shown if stueckliste exists)
         if (rechnung.stueckliste?.length > 0) {
@@ -415,11 +423,17 @@ class PDFService {
         y = this.drawTable(doc, y, headers, rows, colWidths);
 
         // Totals
-        y = this.drawTotals(doc, y, [
+        const quoteSettings = this.getSettings();
+        const quoteTotals = [
             { label: 'Nettobetrag:', value: this.fmtCurrency(angebot.netto) },
-            { label: 'MwSt. 19%:', value: this.fmtCurrency(angebot.mwst) },
-            { label: 'Angebotssumme:', value: this.fmtCurrency(angebot.brutto), bold: true }
-        ]);
+        ];
+        if (quoteSettings.kleinunternehmer) {
+            quoteTotals.push({ label: 'Gem. §19 UStG keine MwSt.', value: '—' });
+        } else {
+            quoteTotals.push({ label: `MwSt. ${quoteSettings.taxRate}%:`, value: this.fmtCurrency(angebot.mwst) });
+        }
+        quoteTotals.push({ label: 'Angebotssumme:', value: this.fmtCurrency(angebot.brutto), bold: true });
+        y = this.drawTotals(doc, y, quoteTotals);
 
         // Closing
         y += 6;
