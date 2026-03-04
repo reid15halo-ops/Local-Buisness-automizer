@@ -257,14 +257,28 @@ Phase 3          Phase 4
 - Fixed: `reorder-engine-service.js` localStorage parse without try-catch
 - Fixed: `material-service.js` XLSX library existence check
 
+### Phase 5: UX & Robustheit ✅ (Code-Fixes)
+- Fixed: `support.js` ticket fetch has no loading indicator or error toast
+- Fixed: `rechnungen.js` XRechnung/ZUGFeRD delegated handler missing loading toast and error feedback
+- Fixed: `angebote.js` duplicate `class=""` attribute in empty state HTML
+- Fixed: `angebote.js` template picker event listeners leaked on every search (replaced with delegation)
+- Fixed: `customer-portal.html` edge function call had no timeout (added 10s AbortSignal.timeout)
+- Fixed: `customer-portal.html` logo `alt=""` empty (now "Firmenlogo")
+- Fixed: 143 `JSON.parse(localStorage.getItem(...))` calls across 59 service files without try-catch
+- Fixed: `deploy-hostinger/booking-service.js` same localStorage crash risk
+- Fixed: `profitability-service.js` division by zero when jobs.length is 0 (percentages + averages)
+- Fixed: `dashboard-charts-service.js` funnel conversion division by zero when stage.count is 0
+- Fixed: `bon-scanner-service.js` token matching division by zero
+- Fixed: `cashflow-service.js` unsafe Date parsing on null/invalid faelligkeitsdatum
+
 ### Remaining (Manual/Deployment Tasks)
 - Phase 2: Supabase project setup, schema deployment, RLS activation, auth E2E testing
 - Phase 4: VPS email relay deployment, SMS provider setup, Stripe live mode, n8n workflows
-- Phase 5: Corporate design audit, mobile responsive testing, loading/empty states UI work
+- Phase 5: Corporate design audit, mobile responsive testing, accessibility review
 - Phase 6: Hosting, domain, SSL, build pipeline, monitoring, landing page, security audit
 
 ---
 
 *Letzte Aktualisierung: 2026-03-04*
 *Basierend auf: 938 Tests (alle gruen), 0 ESLint errors, 30 Views, 94 Services*
-*Code-Fixes: 8 Commits auf branch claude/setup-smart-home-scenes-Qkj8g*
+*Code-Fixes: 20 Commits auf branch claude/setup-smart-home-scenes-Qkj8g*
