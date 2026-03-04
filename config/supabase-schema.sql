@@ -764,3 +764,41 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION portal_reject_quote FROM PUBLIC;
 GRANT  EXECUTE ON FUNCTION portal_reject_quote TO anon, authenticated;
+
+-- ============================================
+-- Stripe Payments (Payment Audit Trail)
+-- Records every Stripe payment event from the
+-- stripe-webhook Edge Function.
+-- ============================================
+CREATE TABLE IF NOT EXISTS stripe_payments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    stripe_session_id TEXT,
+    stripe_customer_id TEXT,
+    invoice_id TEXT,
+    amount INTEGER,            -- amount in cents
+    currency TEXT DEFAULT 'eur',
+    payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'completed', 'failed', 'refunded')),
+    payment_method TEXT,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stripe_payments ENABLE ROW LEVEL SECURITY;
+
+-- Only service_role can insert (via stripe-webhook Edge Function)
+CREATE POLICY "Service role manages stripe_payments" ON stripe_payments
+    FOR ALL USING (auth.role() = 'service_role');
+
+-- Authenticated users can read payments linked to their invoices
+CREATE POLICY "Users read own stripe_payments" ON stripe_payments
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM rechnungen r
+            WHERE r.id = stripe_payments.invoice_id
+              AND r.user_id = auth.uid()
+        )
+    );
+
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_invoice ON stripe_payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_session ON stripe_payments(stripe_session_id);
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_status ON stripe_payments(payment_status);

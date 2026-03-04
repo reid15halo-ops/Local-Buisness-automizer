@@ -122,21 +122,28 @@
     })();
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
-    <script defer src="js/services/supabase-config.js"></script>
+    <script src="js/services/supabase-config.js"></script>
+    <script src="js/services/supabase-client.js"></script>
     <!-- Auth Gate & Offline Mode Check -->
     <script>
         (async function checkAuth() {
-            // Check if Supabase is configured
+            // supabase-config.js is loaded synchronously above, so it's available here
             const isConfigured = window.supabaseConfig?.isConfigured?.() || false;
 
             if (!isConfigured) {
-                // Offline mode - show a notice
-                const offlineBanner = document.createElement('div');
-                offlineBanner.className = 'offline-banner';
-                offlineBanner.innerHTML = '🛜 Offline-Modus — Daten nur lokal gespeichert';
-                document.body.appendChild(offlineBanner);
-                document.body.classList.add('has-offline-banner');
-                return; // Allow access
+                // Offline/demo mode - show a notice and allow access
+                document.addEventListener('DOMContentLoaded', () => {
+                    const offlineBanner = document.createElement('div');
+                    offlineBanner.className = 'offline-banner';
+                    offlineBanner.id = 'offline-mode-banner';
+                    offlineBanner.innerHTML = `
+                        <span>Offline-Modus &mdash; Daten nur lokal gespeichert</span>
+                        <a href="auth.html" style="color:inherit;margin-left:12px;text-decoration:underline;">Supabase einrichten</a>
+                    `;
+                    document.body.appendChild(offlineBanner);
+                    document.body.classList.add('has-offline-banner');
+                });
+                return; // Allow access without auth
             }
 
             // Supabase is configured, check for session
@@ -155,16 +162,11 @@
 
                 const session = await window.authService.getSession();
                 if (!session) {
-                    // No session, redirect to auth page
                     window.location.href = '/auth.html';
                     return;
                 }
-
-                // User is authenticated, continue loading the app
-                console.log('User authenticated:', session.user?.email);
             } catch (error) {
                 console.error('Auth check failed:', error);
-                // On error, redirect to auth page to be safe
                 window.location.href = '/auth.html';
             }
         })();

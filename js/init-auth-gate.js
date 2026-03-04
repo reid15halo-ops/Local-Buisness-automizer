@@ -1,6 +1,6 @@
 /**
  * Auth Gate & Offline Mode Check
- * Extracted from inline script in index.html (lines 30-86)
+ * Standalone version of the inline auth gate in index.html.
  * This script must run BEFORE the app loads — it blocks unauthenticated access.
  */
 (async function checkAuth() {
@@ -8,13 +8,20 @@
     const isConfigured = window.supabaseConfig?.isConfigured?.() || false;
 
     if (!isConfigured) {
-        // Offline mode - show a notice using CSS class instead of inline styles
-        const offlineBanner = document.createElement('div');
-        offlineBanner.className = 'offline-banner';
-        offlineBanner.innerHTML = '\uD83D\uDEDC Offline-Modus \u2014 Daten nur lokal gespeichert';
-        document.body.appendChild(offlineBanner);
-        document.body.classList.add('offline-banner-active');
-        return; // Allow access
+        // Offline/demo mode - show a notice and allow access
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('offline-mode-banner')) {return;} // Already shown by inline script
+            const offlineBanner = document.createElement('div');
+            offlineBanner.className = 'offline-banner';
+            offlineBanner.id = 'offline-mode-banner';
+            offlineBanner.innerHTML = `
+                <span>Offline-Modus &mdash; Daten nur lokal gespeichert</span>
+                <a href="auth.html" style="color:inherit;margin-left:12px;text-decoration:underline;">Supabase einrichten</a>
+            `;
+            document.body.appendChild(offlineBanner);
+            document.body.classList.add('has-offline-banner');
+        });
+        return; // Allow access without auth
     }
 
     // Supabase is configured, check for session
@@ -33,16 +40,11 @@
 
         const session = await window.authService.getSession();
         if (!session) {
-            // No session, redirect to auth page
             window.location.href = '/auth.html';
             return;
         }
-
-        // User is authenticated, continue loading the app
-        // User authenticated
     } catch (error) {
         console.error('Auth check failed:', error);
-        // On error, redirect to auth page to be safe
         window.location.href = '/auth.html';
     }
 })();
