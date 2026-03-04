@@ -446,10 +446,21 @@ class FieldAppService {
                 return canvasElement.toDataURL('image/png');
             },
             isEmpty: () => {
-                // Simple check: see if canvas has only the background
-                const imageData = ctx.getImageData(0, 0, 1, 1);
-                // If it is just the background, it is "empty"
-                return true; // Simplified: user must confirm
+                // Check if canvas has only the background color by sampling pixels
+                try {
+                    const imgData = ctx.getImageData(0, 0, rect.width, rect.height).data;
+                    // Sample every 40th pixel for performance
+                    for (let i = 0; i < imgData.length; i += 40 * 4) {
+                        const r = imgData[i], g = imgData[i + 1], b = imgData[i + 2];
+                        // Background color is #0f2327 → rgb(15, 35, 39)
+                        if (Math.abs(r - 15) > 10 || Math.abs(g - 35) > 10 || Math.abs(b - 39) > 10) {
+                            return false; // Found a non-background pixel
+                        }
+                    }
+                    return true;
+                } catch {
+                    return false; // If check fails, assume not empty
+                }
             },
             destroy: () => {
                 canvasElement.removeEventListener('touchstart', startDrawing);
@@ -548,7 +559,7 @@ class FieldAppService {
             if (this.isRecording) {
                 try {
                     this.recognition.start();
-                } catch (e) {
+                } catch {
                     this.isRecording = false;
                     this._dispatchEvent('voiceStopped', { text: this.currentVoiceText });
                 }
@@ -571,7 +582,7 @@ class FieldAppService {
         if (this.recognition) {
             try {
                 this.recognition.stop();
-            } catch (e) {
+            } catch {
                 // Already stopped
             }
             this.recognition = null;
@@ -863,17 +874,17 @@ class FieldAppService {
 
     load() {
         try {
-            this.timeEntries = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'time_entries') || '[]');
-            this.materialLogs = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'material_logs') || '[]');
-            this.voiceNotes = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'voice_notes') || '[]');
-            this.signatures = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'signatures') || '[]');
-            this.gpsCheckins = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'gps_checkins') || '[]');
-            this.offlineQueue = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'offline_queue') || '[]');
+            try { this.timeEntries = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'time_entries') || '[]'); } catch { this.timeEntries = []; }
+            try { this.materialLogs = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'material_logs') || '[]'); } catch { this.materialLogs = []; }
+            try { this.voiceNotes = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'voice_notes') || '[]'); } catch { this.voiceNotes = []; }
+            try { this.signatures = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'signatures') || '[]'); } catch { this.signatures = []; }
+            try { this.gpsCheckins = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'gps_checkins') || '[]'); } catch { this.gpsCheckins = []; }
+            try { this.offlineQueue = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'offline_queue') || '[]'); } catch { this.offlineQueue = []; }
 
             this._loadPhotos();
 
             // Restore field mode state
-            this.isFieldMode = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'mode') || 'false');
+            try { this.isFieldMode = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'mode') || 'false'); } catch { this.isFieldMode = 'false'; }
         } catch (error) {
             console.error('Fehler beim Laden der Felddaten:', error);
         }
@@ -903,7 +914,7 @@ class FieldAppService {
 
     _loadPhotos() {
         try {
-            const photoMeta = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'photo_meta') || '[]');
+            let photoMeta; try { photoMeta = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'photo_meta') || '[]'); } catch { photoMeta = []; }
             this.photoCaptures = photoMeta.map(meta => {
                 const dataUrl = localStorage.getItem(this.STORAGE_PREFIX + 'photo_data_' + meta.id);
                 return { ...meta, dataUrl: dataUrl || '' };

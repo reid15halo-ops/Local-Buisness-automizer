@@ -618,9 +618,7 @@ class WorkEstimationUI {
     _renderPanel(estimation, panelState) {
         const stunden = estimation.geschaetzteStunden;
         const konfidenz = estimation.konfidenz || 'mittel';
-        const komplexitaet = estimation.komplexitaet || 'mittel';
         const hatGemini = estimation.hatGemini || false;
-        const quelle = estimation.quelle || 'basis';
 
         // Badge text
         const badgeText = hatGemini ? 'KI-Vorschlag' : 'Automatische Schätzung';

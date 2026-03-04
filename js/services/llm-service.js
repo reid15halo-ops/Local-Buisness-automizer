@@ -53,7 +53,7 @@ class LLMService {
     async chat(message, history) {
         if (!this.isConfigured) {return null;}
 
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
         const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
 
@@ -157,7 +157,7 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
                 } else {
                     throw new Error('No Supabase session');
                 }
-            } catch (e) {
+            } catch {
                 console.warn('Supabase session not available for Gemini proxy, falling back to direct API');
                 if (!this.config.apiKey) {
                     throw new Error('No Gemini API key configured');

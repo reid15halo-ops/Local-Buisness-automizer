@@ -343,7 +343,6 @@ class PurchaseOrderUI {
     }
 
     renderPORow(po) {
-        const statusBadgeColor = this.getStatusColor(po.status);
         const statusLabel = this.getStatusLabel(po.status);
         const brutto = (po.brutto || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
 
@@ -453,15 +452,16 @@ class PurchaseOrderUI {
             netto += (pos.menge || 0) * (pos.ekPreis || 0);
         });
 
-        const mwst = netto * _getTaxRate();
-        const brutto = netto * (1 + _getTaxRate());
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = netto * taxRate;
+        const brutto = netto * (1 + taxRate);
 
         document.getElementById('po-summary-netto').textContent = netto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
         document.getElementById('po-summary-mwst').textContent = mwst.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
         document.getElementById('po-summary-brutto').textContent = brutto.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
     }
 
-    filterPOList(query) {
+    filterPOList(_query) {
         this.renderPOList();
     }
 
@@ -521,7 +521,7 @@ class PurchaseOrderUI {
         try {
             const date = new Date(dateStr);
             return date.toLocaleDateString('de-DE');
-        } catch (e) {
+        } catch {
             return dateStr;
         }
     }

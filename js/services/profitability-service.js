@@ -5,8 +5,8 @@
 
 class ProfitabilityService {
     constructor() {
-        this.jobAnalytics = JSON.parse(localStorage.getItem('freyai_job_analytics') || '[]');
-        this.overheadSettings = JSON.parse(localStorage.getItem('freyai_overhead_settings') || '{}');
+        try { this.jobAnalytics = JSON.parse(localStorage.getItem('freyai_job_analytics') || '[]'); } catch { this.jobAnalytics = []; }
+        try { this.overheadSettings = JSON.parse(localStorage.getItem('freyai_overhead_settings') || '{}'); } catch { this.overheadSettings = {}; }
 
         // Default overhead settings
         if (!this.overheadSettings.hourlyOverhead) {this.overheadSettings.hourlyOverhead = 25;} // €/hour
@@ -243,8 +243,7 @@ class ProfitabilityService {
         const {
             revenueChange = 0, // % change
             laborRateChange = 0,
-            overheadChange = 0,
-            efficiencyImprovement = 0
+            overheadChange = 0
         } = changes;
 
         const currentStats = this.getOverallStatistics();
@@ -252,7 +251,6 @@ class ProfitabilityService {
         const newRevenue = currentStats.totalRevenue * (1 + revenueChange / 100);
         const newLaborCost = currentStats.totalLaborCost * (1 + laborRateChange / 100);
         const newOverhead = currentStats.totalOverhead * (1 + overheadChange / 100);
-        const newHours = currentStats.totalHours * (1 - efficiencyImprovement / 100);
 
         const newTotalCost = newLaborCost + newOverhead + currentStats.totalMaterialCost;
         const newProfit = newRevenue - newTotalCost;
@@ -319,9 +317,9 @@ class ProfitabilityService {
             totalLaborCost: totalLaborCost,
             totalOverhead: totalOverhead,
             totalMaterialCost: totalMaterialCost,
-            profitableJobsPercent: (profitableJobs / jobs.length) * 100,
-            onTimePercent: (onTimeJobs / jobs.length) * 100,
-            averageJobValue: totalRevenue / jobs.length,
+            profitableJobsPercent: jobs.length > 0 ? (profitableJobs / jobs.length) * 100 : 0,
+            onTimePercent: jobs.length > 0 ? (onTimeJobs / jobs.length) * 100 : 0,
+            averageJobValue: jobs.length > 0 ? totalRevenue / jobs.length : 0,
             effectiveHourlyRate: totalHours > 0 ? totalRevenue / totalHours : 0
         };
     }

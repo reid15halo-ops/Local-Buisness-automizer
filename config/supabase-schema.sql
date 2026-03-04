@@ -70,7 +70,7 @@ BEGIN
     );
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
@@ -625,9 +625,10 @@ CREATE TABLE IF NOT EXISTS portal_responses (
 );
 
 ALTER TABLE portal_responses ENABLE ROW LEVEL SECURITY;
--- Customers may only INSERT (no read of other customers' data)
+-- Anonymous inserts blocked by default; portal_approve_quote and portal_reject_quote
+-- use SECURITY DEFINER to bypass RLS and insert responses server-side.
 CREATE POLICY "Portal insert responses" ON portal_responses
-    FOR INSERT WITH CHECK (TRUE);
+    FOR INSERT WITH CHECK (FALSE);
 -- Authenticated Handwerker reads only responses linked to his tokens
 CREATE POLICY "Handwerker read own portal_responses" ON portal_responses
     FOR SELECT USING (
@@ -656,6 +657,7 @@ CREATE OR REPLACE FUNCTION portal_approve_quote(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_record portal_tokens%ROWTYPE;
@@ -720,6 +722,7 @@ CREATE OR REPLACE FUNCTION portal_reject_quote(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_record portal_tokens%ROWTYPE;
@@ -761,6 +764,44 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION portal_reject_quote FROM PUBLIC;
 GRANT  EXECUTE ON FUNCTION portal_reject_quote TO anon, authenticated;
+
+-- ============================================
+-- Stripe Payments (Payment Audit Trail)
+-- Records every Stripe payment event from the
+-- stripe-webhook Edge Function.
+-- ============================================
+CREATE TABLE IF NOT EXISTS stripe_payments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    stripe_session_id TEXT,
+    stripe_customer_id TEXT,
+    invoice_id TEXT,
+    amount INTEGER,            -- amount in cents
+    currency TEXT DEFAULT 'eur',
+    payment_status TEXT DEFAULT 'pending' CHECK (payment_status IN ('pending', 'completed', 'failed', 'refunded')),
+    payment_method TEXT,
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE stripe_payments ENABLE ROW LEVEL SECURITY;
+
+-- Only service_role can insert (via stripe-webhook Edge Function)
+CREATE POLICY "Service role manages stripe_payments" ON stripe_payments
+    FOR ALL USING (auth.role() = 'service_role');
+
+-- Authenticated users can read payments linked to their invoices
+CREATE POLICY "Users read own stripe_payments" ON stripe_payments
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM rechnungen r
+            WHERE r.id = stripe_payments.invoice_id
+              AND r.user_id = auth.uid()
+        )
+    );
+
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_invoice ON stripe_payments(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_session ON stripe_payments(stripe_session_id);
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_status ON stripe_payments(payment_status);
 
 -- ============================================
 -- Call Summaries (Anruf-Zusammenfassungen)

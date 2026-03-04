@@ -4,8 +4,8 @@
 
 class CalendarService {
     constructor() {
-        this.appointments = JSON.parse(localStorage.getItem('freyai_appointments') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_calendar_settings') || '{}');
+        try { this.appointments = JSON.parse(localStorage.getItem('freyai_appointments') || '[]'); } catch { this.appointments = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_calendar_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default working hours
         if (!this.settings.workingHours) {
@@ -23,10 +23,14 @@ class CalendarService {
 
     // Appointment CRUD
     addAppointment(apt) {
-        // Check for conflicts
+        // Check for conflicts and warn (but allow force-add)
         const conflicts = this.checkConflicts(apt.date, apt.startTime, apt.endTime, apt.id);
-        if (conflicts.length > 0) {
+        if (conflicts.length > 0 && !apt.forceAdd) {
             console.warn('Terminkonflikt:', conflicts);
+            // Dispatch event so UI can show a warning
+            document.dispatchEvent(new CustomEvent('calendar:conflict', {
+                detail: { appointment: apt, conflicts }
+            }));
         }
 
         const newApt = {
@@ -94,14 +98,14 @@ class CalendarService {
 
     getAppointmentsForMonth(year, month) {
         const monthStr = `${year}-${String(month).padStart(2, '0')}`;
-        return this.appointments.filter(a => a.date.startsWith(monthStr));
+        return this.appointments.filter(a => a.date.startsWith(monthStr) && a.status !== 'abgesagt');
     }
 
     getUpcomingAppointments(days = 7) {
-        const today = new Date().toISOString().split('T')[0];
+        const today = this._localDateStr(new Date());
         const future = new Date();
         future.setDate(future.getDate() + days);
-        const futureStr = future.toISOString().split('T')[0];
+        const futureStr = this._localDateStr(future);
 
         return this.appointments.filter(a =>
             a.date >= today && a.date <= futureStr && a.status !== 'abgesagt'
@@ -109,7 +113,7 @@ class CalendarService {
     }
 
     getTodaysAppointments() {
-        return this.getAppointmentsForDay(new Date().toISOString().split('T')[0]);
+        return this.getAppointmentsForDay(this._localDateStr(new Date()));
     }
 
     getAppointmentsForCustomer(customerId) {
@@ -152,7 +156,6 @@ class CalendarService {
         if (!workHours || !workHours.active) {return [];}
 
         const slots = [];
-        const existingApts = this.getAppointmentsForDay(date);
 
         let currentTime = this.timeToMinutes(workHours.start);
         const endTime = this.timeToMinutes(workHours.end);
@@ -206,21 +209,30 @@ class CalendarService {
         return reminders;
     }
 
+    // Helper: format date as YYYY-MM-DD in local timezone (avoids UTC shift)
+    _localDateStr(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
     // Week View Data
     getWeekViewData(startDate) {
         const days = [];
         const start = new Date(startDate);
+        const todayStr = this._localDateStr(new Date());
 
         for (let i = 0; i < 7; i++) {
             const date = new Date(start);
             date.setDate(date.getDate() + i);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = this._localDateStr(date);
 
             days.push({
                 date: dateStr,
                 dayName: date.toLocaleDateString('de-DE', { weekday: 'short' }),
                 dayNumber: date.getDate(),
-                isToday: dateStr === new Date().toISOString().split('T')[0],
+                isToday: dateStr === todayStr,
                 appointments: this.getAppointmentsForDay(dateStr)
             });
         }

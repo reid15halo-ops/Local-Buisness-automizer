@@ -53,7 +53,7 @@
                 if (typeof value === "string" && value.indexOf("<") !== -1) {
                     value = DOMPurify.sanitize(value, {
                         ADD_TAGS: ["style"],
-                        ADD_ATTR: ["onclick", "onchange", "oninput", "onsubmit", "onkeydown", "onkeyup", "onfocus", "onblur", "style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
+                        ADD_ATTR: ["style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
                         ALLOW_UNKNOWN_PROTOCOLS: false
                     });
                 }
@@ -76,9 +76,10 @@
             if (sending || errorQueue.length === 0) return;
             sending = true;
             var batch = errorQueue.splice(0, 10);
-            var url = (window.SUPABASE_URL || "https://incbhhaiiayohrjqevog.supabase.co") + "/rest/v1/client_errors";
+            var url = window.SUPABASE_URL;
             var key = window.SUPABASE_ANON_KEY || "";
-            if (!key) { sending = false; return; }
+            if (!url || !key) { sending = false; return; }
+            url = url + "/rest/v1/client_errors";
             fetch(url, {
                 method: "POST",
                 headers: {
@@ -122,22 +123,29 @@
         console.log("[Monitoring] Error tracking active");
     })();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
-    <script defer src="js/services/supabase-config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
+    <script src="js/services/supabase-config.js"></script>
+    <script src="js/services/supabase-client.js"></script>
     <!-- Auth Gate & Offline Mode Check -->
     <script>
         (async function checkAuth() {
-            // Check if Supabase is configured
+            // supabase-config.js is loaded synchronously above, so it's available here
             const isConfigured = window.supabaseConfig?.isConfigured?.() || false;
 
             if (!isConfigured) {
-                // Offline mode - show a notice
-                const offlineBanner = document.createElement('div');
-                offlineBanner.className = 'offline-banner';
-                offlineBanner.innerHTML = '🛜 Offline-Modus — Daten nur lokal gespeichert';
-                document.body.appendChild(offlineBanner);
-                document.body.classList.add('has-offline-banner');
-                return; // Allow access
+                // Offline/demo mode - show a notice and allow access
+                document.addEventListener('DOMContentLoaded', () => {
+                    const offlineBanner = document.createElement('div');
+                    offlineBanner.className = 'offline-banner';
+                    offlineBanner.id = 'offline-mode-banner';
+                    offlineBanner.innerHTML = `
+                        <span>Offline-Modus &mdash; Daten nur lokal gespeichert</span>
+                        <a href="auth.html" style="color:inherit;margin-left:12px;text-decoration:underline;">Supabase einrichten</a>
+                    `;
+                    document.body.appendChild(offlineBanner);
+                    document.body.classList.add('has-offline-banner');
+                });
+                return; // Allow access without auth
             }
 
             // Supabase is configured, check for session
@@ -156,16 +164,11 @@
 
                 const session = await window.authService.getSession();
                 if (!session) {
-                    // No session, redirect to auth page
                     window.location.href = '/auth.html';
                     return;
                 }
-
-                // User is authenticated, continue loading the app
-                console.log('User authenticated:', session.user?.email);
             } catch (error) {
                 console.error('Auth check failed:', error);
-                // On error, redirect to auth page to be safe
                 window.location.href = '/auth.html';
             }
         })();
@@ -665,7 +668,7 @@
                             <p class="subtitle">Generierte Rechnungen (GoBD-konform)</p>
                         </div>
                         <div class="header-actions">
-                            <button class="btn btn-secondary" onclick="document.querySelector('.nav-item[data-view=\\'einstellungen\\']').click()">
+                            <button class="btn btn-secondary" data-navigate="einstellungen">
                                 ⚙️ Vorlagen
                             </button>
                             <label class="btn btn-secondary" for="bank-csv-import">
@@ -1187,8 +1190,8 @@ Mit freundlichen Grüßen
                         <h3>🗑️ Daten</h3>
                         <p>Alle lokal gespeicherten Daten</p>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary" id="btn-export-data">📥 Daten exportieren</button>
-                            <button class="btn btn-secondary" id="btn-import-data">📤 Daten importieren</button>
+                            <button class="btn btn-secondary" id="btn-export-data">📤 Daten exportieren</button>
+                            <button class="btn btn-secondary" id="btn-import-data">📥 Daten importieren</button>
                             <input type="file" id="import-data-file" accept=".json" class="u-file-input-hidden" aria-label="Daten importieren">
                             <button class="btn btn-danger" data-action="reset-app"
                                 style="background: linear-gradient(135deg, #2dd4a8, #4f46e5); border:none;">🚀 App-Reset
@@ -1271,7 +1274,7 @@ Mit freundlichen Grüßen
                                 📤 CSV Import
                                 <input type="file" id="buchung-csv-import" accept=".csv" class="u-file-input-hidden">
                             </label>
-                            <button class="btn btn-secondary" id="btn-export-csv">📥 CSV Export</button>
+                            <button class="btn btn-secondary" id="btn-export-csv">📤 CSV Export</button>
                             <button class="btn btn-primary" id="btn-export-datev">📤 DATEV Export</button>
                         </div>
                     </div>
@@ -2267,7 +2270,7 @@ Mit freundlichen Grüßen
                                 <label for="datev-to">Bis</label>
                                 <input type="date" id="datev-to" value="">
                             </div>
-                            <button class="btn btn-primary" id="btn-datev-export">📥 DATEV Export</button>
+                            <button class="btn btn-primary" id="btn-datev-export">📤 DATEV Export</button>
                             <button class="btn btn-secondary" id="btn-euer-report">📊 EÜR Übersicht</button>
                         </div>
                     </div>
@@ -2907,7 +2910,7 @@ Mit freundlichen Grüßen
         <div class="modal-content modal-large">
             <div class="modal-header">
                 <h2 id="modal-angebot-detail-title">Angebot Details</h2>
-                <button class="modal-close" aria-label="Dialog schliessen">&times;</button>
+                <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
             <div id="angebot-detail-content">
                 <!-- Dynamically generated -->

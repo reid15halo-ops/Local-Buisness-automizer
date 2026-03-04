@@ -4,8 +4,8 @@
 
 class CashFlowService {
     constructor() {
-        this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}');
+        try { this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]'); } catch { this.forecasts = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.monthsToForecast) {this.settings.monthsToForecast = 6;}
@@ -37,9 +37,9 @@ class CashFlowService {
         // Get overdue invoices
         const overdueAmount = rechnungen
             .filter(r => {
-                if (r.status !== 'bezahlt') {
+                if (r.status !== 'bezahlt' && r.faelligkeitsdatum) {
                     const dueDate = new Date(r.faelligkeitsdatum);
-                    return dueDate < today;
+                    return !isNaN(dueDate.getTime()) && dueDate < today;
                 }
                 return false;
             })
@@ -209,7 +209,7 @@ class CashFlowService {
                     date: date,
                     type: 'tax',
                     name: 'USt-Vorauszahlung',
-                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * _getTaxRate() * 0.5
+                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19) * 0.5
                 });
             }
         });

@@ -74,7 +74,7 @@ serve(async (req) => {
                     },
                     body: JSON.stringify({
                         to: Array.isArray(params.to) ? params.to.join(', ') : params.to,
-                        subject: params.subject || 'FreyAI Visions Benachrichtigung',
+                        subject: params.subject || 'HandwerkFlow Benachrichtigung',
                         body: params.body || '',
                     }),
                 })
@@ -131,12 +131,21 @@ serve(async (req) => {
                 }
 
                 const method = (params.method || 'POST').toUpperCase()
-                const whRes = await fetch(params.url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'FreyAI-Automation/1.0' },
-                    body: ['GET', 'HEAD'].includes(method) ? undefined : JSON.stringify(params.data || {}),
-                })
-                result = { success: whRes.ok, data: { status: whRes.status } }
+                const controller = new AbortController()
+                const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
+                try {
+                    const whRes = await fetch(params.url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json', 'User-Agent': 'HandwerkFlow-Automation/1.0' },
+                        body: ['GET', 'HEAD'].includes(method) ? undefined : JSON.stringify(params.data || {}),
+                        signal: controller.signal,
+                    })
+                    result = { success: whRes.ok, data: { status: whRes.status } }
+                } catch (fetchErr: unknown) {
+                    result = { success: false, error: fetchErr instanceof Error && fetchErr.name === 'AbortError' ? 'Webhook Timeout (10s)' : 'Webhook Fehler' }
+                } finally {
+                    clearTimeout(timeout)
+                }
                 break
             }
 
@@ -144,7 +153,7 @@ serve(async (req) => {
                 // Store notification in DB for the user
                 await supabase.from('notifications').insert({
                     user_id: user.id,
-                    title: params.title || 'FreyAI Visions',
+                    title: params.title || 'HandwerkFlow',
                     message: params.message || '',
                     type: params.type || 'info',
                     read: false,

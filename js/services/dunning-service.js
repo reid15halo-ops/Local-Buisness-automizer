@@ -5,8 +5,8 @@
 
 class DunningService {
     constructor() {
-        this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]');
-        this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]');
+        try { this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]'); } catch { this.mahnungen = []; }
+        try { this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]'); } catch { this.inkassoFaelle = []; }
 
         // Eskalationsstufen (Tage nach Rechnungsdatum)
         this.eskalationsStufen = [
@@ -27,9 +27,12 @@ class DunningService {
             return { stufe: null, typ: 'bezahlt', message: 'Rechnung bezahlt' };
         }
 
-        const rechnungsDatum = new Date(rechnung.createdAt);
+        // Calculate days overdue from due date (created + zahlungsziel), not creation date
+        const rechnungsDatum = new Date(rechnung.createdAt || rechnung.created_at);
+        const zahlungsziel = rechnung.zahlungsziel_tage || rechnung.zahlungsziel || 14;
+        const faelligAm = new Date(rechnungsDatum.getTime() + zahlungsziel * 86400000);
         const heute = new Date();
-        const tageOffen = Math.floor((heute - rechnungsDatum) / (1000 * 60 * 60 * 24));
+        const tageOffen = Math.floor((heute - faelligAm) / (1000 * 60 * 60 * 24));
 
         // Finde aktuelle Eskalationsstufe
         let aktuelleStufe = this.eskalationsStufen[0];
@@ -94,7 +97,7 @@ class DunningService {
     // ============================================
     generateMahnText(rechnung, stufe) {
         const templates = {
-            'erinnerung': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'erinnerung': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 bei Durchsicht unserer Buchhaltung haben wir festgestellt, dass die unten genannte Rechnung noch nicht beglichen wurde.
 
@@ -109,7 +112,7 @@ Wir bitten um Überweisung innerhalb der nächsten 14 Tage.
 Mit freundlichen Grüßen
 FreyAI Visions`,
 
-            'mahnung1': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'mahnung1': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 leider konnten wir trotz unserer Zahlungserinnerung keinen Zahlungseingang verzeichnen.
 
@@ -124,7 +127,7 @@ Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von 14 Tagen zu begle
 Mit freundlichen Grüßen
 FreyAI Visions`,
 
-            'mahnung2': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'mahnung2': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 trotz wiederholter Aufforderung ist die nachstehende Forderung immer noch offen.
 
@@ -140,7 +143,7 @@ Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir u
 Mit freundlichen Grüßen
 FreyAI Visions`,
 
-            'mahnung3': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'mahnung3': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 LETZTE MAHNUNG VOR GERICHTLICHEM MAHNVERFAHREN
 
@@ -159,8 +162,7 @@ Dies ist unsere letzte außergerichtliche Mahnung. Sollte der Betrag nicht inner
 3. Alle entstehenden Kosten Ihnen in Rechnung stellen
 
 Zahlungsdetails:
-Bank: Sparkasse Aschaffenburg
-IBAN: DE00 0000 0000 0000 0000 00
+${this._getBankDetails()}
 Verwendungszweck: ${rechnung.id}
 
 FreyAI Visions`,
@@ -168,7 +170,7 @@ FreyAI Visions`,
             'inkasso': `ÜBERGABE AN INKASSO
 
 Rechnung: ${rechnung.id}
-Kunde: ${rechnung.kunde.name}
+Kunde: ${rechnung.kunde?.name || 'Kunde'}
 Offener Betrag inkl. Mahngebühren: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id))}
 
 Status: Zur manuellen Prüfung vor Inkasso-Übergabe markiert.
@@ -252,6 +254,17 @@ Nächste Schritte:
             style: 'currency',
             currency: 'EUR'
         }).format(amount);
+    }
+
+    _getBankDetails() {
+        const settings = window.storeService?.state?.settings || {};
+        let admin; try { admin = JSON.parse(localStorage.getItem('admin_panel_data') || '{}'); } catch { admin = {}; }
+        const bank = admin.bank_name || settings.bank_name || '';
+        const iban = admin.iban || settings.iban || '';
+        const lines = [];
+        if (bank) {lines.push(`Bank: ${bank}`);}
+        if (iban) {lines.push(`IBAN: ${iban}`);}
+        return lines.length > 0 ? lines.join('\n') : 'Bankverbindung: siehe Rechnung';
     }
 
     formatDate(dateStr) {

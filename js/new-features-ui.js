@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
                     video.srcObject = stream;
-                } catch (err) {
+                } catch {
                     showNotification('Kamera nicht verfügbar', 'error');
                     panel.style.display = 'none';
                 }
@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (window.errorHandler?.showToast) {
             window.errorHandler.showToast(message, type);
         } else {
-            console.log(`[${type.toUpperCase()}] ${message}`);
+            console.warn(`[${type.toUpperCase()}] ${message}`);
         }
     }
 });

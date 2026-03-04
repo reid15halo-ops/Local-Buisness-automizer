@@ -12,8 +12,8 @@
 
 class EInvoiceService {
     constructor() {
-        this.settings = JSON.parse(localStorage.getItem('freyai_einvoice_settings') || '{}');
-        this.generatedInvoices = JSON.parse(localStorage.getItem('freyai_einvoice_generated') || '[]');
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_einvoice_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.generatedInvoices = JSON.parse(localStorage.getItem('freyai_einvoice_generated') || '[]'); } catch { this.generatedInvoices = []; }
 
         // Default business data
         if (!this.settings.businessData) {
@@ -50,7 +50,7 @@ class EInvoiceService {
 
     // Sync business data from admin panel settings and store settings
     syncFromSettings() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         const storeSettings = window.storeService?.state?.settings || {};
 
         const name = ap.company_name || storeSettings.companyName || storeSettings.firmenname || '';
@@ -1189,7 +1189,7 @@ ${positionen.map((pos, i) => {
         try {
             await navigator.clipboard.writeText(record.xml);
             return { success: true };
-        } catch (err) {
+        } catch {
             // Fallback for older browsers
             const textarea = document.createElement('textarea');
             textarea.value = record.xml;
@@ -1201,7 +1201,7 @@ ${positionen.map((pos, i) => {
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
                 return { success: true };
-            } catch (e) {
+            } catch {
                 document.body.removeChild(textarea);
                 return { success: false, error: 'Kopieren fehlgeschlagen' };
             }
@@ -1336,7 +1336,7 @@ ${positionen.map((pos, i) => {
         }
 
         // In production: Call Peppol access point API
-        console.log('Peppol submission for', record.invoiceId);
+        console.warn('Peppol submission for', record.invoiceId);
 
         record.status = 'submitted';
         record.submittedAt = new Date().toISOString();

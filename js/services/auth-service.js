@@ -1,6 +1,9 @@
 /* ============================================
    Auth Service - Supabase Authentication
    Login, Register, Password Reset, Session
+
+   Uses window.supabaseConfig.get() which delegates
+   to SupabaseClientService when available.
    ============================================ */
 
 class AuthService {
@@ -8,6 +11,7 @@ class AuthService {
         this.user = null;
         this.session = null;
         this.listeners = [];
+        this._authSubscription = null;
     }
 
     getClient() {
@@ -123,17 +127,22 @@ class AuthService {
         return this.user?.user_metadata?.plan || 'starter';
     }
 
-    // Subscribe to auth changes
+    // Subscribe to auth changes.
+    // Only creates one Supabase onAuthStateChange subscription (singleton).
     onAuthChange(callback) {
         this.listeners.push(callback);
 
-        const client = this.getClient();
-        if (client) {
-            client.auth.onAuthStateChange((event, session) => {
-                this.session = session;
-                this.user = session?.user || null;
-                this._notify();
-            });
+        // Only subscribe once to Supabase auth state changes
+        if (!this._authSubscription) {
+            const client = this.getClient();
+            if (client) {
+                const { data } = client.auth.onAuthStateChange((_event, session) => {
+                    this.session = session;
+                    this.user = session?.user || null;
+                    this._notify();
+                });
+                this._authSubscription = data?.subscription;
+            }
         }
 
         return () => {

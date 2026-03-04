@@ -461,7 +461,7 @@ class ActivityIndicatorService {
             actions.push({
                 icon: '🔴',
                 text: `Rechnung ${invoice.id} ist überfällig`,
-                detail: `${daysOverdue} Tag(e) überfällig • ${invoice.kunde.name}`,
+                detail: `${daysOverdue} Tag(e) überfällig • ${invoice.kunde?.name || 'Unbekannt'}`,
                 time: `Betrag: ${this.formatCurrency(invoice.brutto || 0)}`,
                 severity: 'danger',
                 view: 'rechnungen',
@@ -483,7 +483,7 @@ class ActivityIndicatorService {
                 icon: '🟠',
                 text: `${oldNewInquiries.length} Anfrage(n) warten auf Bearbeitung`,
                 detail: `Älteste seit ${this.getRelativeTime(oldNewInquiries[0].createdAt)}`,
-                time: oldNewInquiries.map(a => a.kunde.name).slice(0, 2).join(', ') + (oldNewInquiries.length > 2 ? '...' : ''),
+                time: oldNewInquiries.map(a => a.kunde?.name || 'Unbekannt').slice(0, 2).join(', ') + (oldNewInquiries.length > 2 ? '...' : ''),
                 severity: 'warning',
                 view: 'anfragen',
                 action: null
@@ -503,7 +503,7 @@ class ActivityIndicatorService {
             actions.push({
                 icon: '📥',
                 text: `${newInquiries.length} neue Anfrage(n)`,
-                detail: `Gerade eingegangen • ${newInquiries[0].kunde.name}`,
+                detail: `Gerade eingegangen • ${newInquiries[0].kunde?.name || 'Unbekannt'}`,
                 time: this.getRelativeTime(newInquiries[0].createdAt),
                 severity: 'info',
                 view: 'anfragen',
@@ -523,7 +523,7 @@ class ActivityIndicatorService {
             actions.push({
                 icon: '⏰',
                 text: `Auftrag ${nearDeadline[0].id} Deadline morgen`,
-                detail: `${nearDeadline[0].kunde.name}`,
+                detail: `${nearDeadline[0].kunde?.name || 'Unbekannt'}`,
                 time: `Termin: ${this.formatDate(nearDeadline[0].deadline)}`,
                 severity: 'warning',
                 view: 'auftraege',
@@ -615,9 +615,9 @@ class ActivityIndicatorService {
     /**
      * Execute action
      */
-    executeAction(action, state) {
+    executeAction(_action, _state) {
         // Reserved for future implementations
-        console.log('Action triggered:', action);
+        // Action triggered (reserved for future implementations)
     }
 
     /**

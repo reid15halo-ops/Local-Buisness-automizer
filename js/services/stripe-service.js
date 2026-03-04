@@ -156,7 +156,7 @@ class StripeService {
                 throw new Error(`Ungültige Redirect-URL: ${parsed.hostname} ist nicht erlaubt`);
             }
         } catch (e) {
-            if (e.message.includes('Ungültige')) throw e;
+            if (e.message.includes('Ungültige')) {throw e;}
             throw new Error('Ungültige URL für Stripe-Redirect');
         }
     }
@@ -328,7 +328,7 @@ class StripeService {
 
         try {
             // Try to query payment records (optional - depends on database setup)
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('stripe_payments')
                 .select('payment_status, created_at, amount')
                 .eq('invoice_id', invoiceId)

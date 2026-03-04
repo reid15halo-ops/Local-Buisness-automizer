@@ -314,9 +314,6 @@ class ExcelImportWizard {
     renderStep2() {
         this.mapping = this.analysisResult.suggestedMapping;
 
-        const template = window.excelRecognitionService.mappingTemplates[this.dataType];
-        const availableFields = [...template.required, ...template.optional];
-
         // Gespeicherte Templates abrufen
         const savedTemplates = window.excelRecognitionService.getAllTemplates(this.dataType);
 

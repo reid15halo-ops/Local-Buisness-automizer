@@ -5,10 +5,10 @@
 
 class WebhookService {
     constructor() {
-        this.webhooks = JSON.parse(localStorage.getItem('freyai_webhooks') || '[]');
-        this.webhookLog = JSON.parse(localStorage.getItem('freyai_webhook_log') || '[]');
-        this.apiKeys = JSON.parse(localStorage.getItem('freyai_api_keys') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_webhook_settings') || '{}');
+        try { this.webhooks = JSON.parse(localStorage.getItem('freyai_webhooks') || '[]'); } catch { this.webhooks = []; }
+        try { this.webhookLog = JSON.parse(localStorage.getItem('freyai_webhook_log') || '[]'); } catch { this.webhookLog = []; }
+        try { this.apiKeys = JSON.parse(localStorage.getItem('freyai_api_keys') || '[]'); } catch { this.apiKeys = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_webhook_settings') || '{}'); } catch { this.settings = {}; }
 
         // Event types that can trigger webhooks
         this.eventTypes = [
@@ -140,7 +140,7 @@ class WebhookService {
 
             try {
                 logEntry.responseBody = await response.text();
-            } catch (e) { }
+            } catch { /* ignore */ }
 
             // Update webhook stats
             if (response.ok) {

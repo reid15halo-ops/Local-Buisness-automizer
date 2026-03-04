@@ -21,13 +21,13 @@ class PushMessengerService {
      * @param {string} priority - 'critical' | 'high' | 'normal'
      * @returns {Promise<Object>} Results per channel
      */
-    async sendAlert(message, priority = 'critical') {
+    async sendAlert(message, _priority = 'critical') {
         const results = {};
 
         // Dedup: don't send the same message within 1 hour
         const msgHash = this._hashMessage(message);
         if (this._wasSentRecently(msgHash)) {
-            console.log('PushMessenger: Skipping duplicate message (sent within 1h)');
+            console.warn('PushMessenger: Skipping duplicate message (sent within 1h)');
             return { skipped: true };
         }
 
@@ -120,7 +120,7 @@ class PushMessengerService {
             }
 
             if (data?.success) {
-                console.log(`PushMessenger: ${channel} message sent via Edge Function`);
+                // Push message sent via Edge Function
                 return { success: true };
             } else {
                 console.error(`PushMessenger: ${channel} error:`, data?.error);
@@ -171,7 +171,7 @@ class PushMessengerService {
         });
         try {
             localStorage.setItem(this.SENT_LOG_KEY, JSON.stringify(this.sentLog));
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
     }
 
     /* ===== PERSISTENCE ===== */
@@ -180,7 +180,7 @@ class PushMessengerService {
         try {
             const stored = localStorage.getItem(this.STORAGE_KEY);
             if (stored) { return JSON.parse(stored); }
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
 
         return {
             telegram: {
@@ -202,7 +202,7 @@ class PushMessengerService {
         try {
             const stored = localStorage.getItem(this.SENT_LOG_KEY);
             if (stored) { return JSON.parse(stored); }
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
         return {};
     }
 }

@@ -228,23 +228,24 @@ class OnboardingTutorialService {
             }
         });
 
-        // Allow keyboard navigation
-        document.addEventListener('keydown', (e) => {
+        // Allow keyboard navigation (stored reference for cleanup in stop())
+        this.handleKeydown = (e) => {
             if (!this.isActive) {return;}
 
             if (e.key === 'ArrowRight' || e.key === ' ') {
                 e.preventDefault();
-                const nextBtn = this.tooltipElement.querySelector('#tutorial-next');
+                const nextBtn = this.tooltipElement?.querySelector('#tutorial-next');
                 if (nextBtn) {nextBtn.click();}
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
-                const prevBtn = this.tooltipElement.querySelector('#tutorial-prev');
+                const prevBtn = this.tooltipElement?.querySelector('#tutorial-prev');
                 if (prevBtn && this.currentStep > 0) {prevBtn.click();}
             } else if (e.key === 'Escape') {
                 e.preventDefault();
                 this.showSkipConfirm();
             }
-        });
+        };
+        document.addEventListener('keydown', this.handleKeydown);
     }
 
     /**

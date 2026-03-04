@@ -5,8 +5,8 @@
 
 class EmailService {
     constructor() {
-        this.emails = JSON.parse(localStorage.getItem('freyai_emails') || '[]');
-        this.emailConfig = JSON.parse(localStorage.getItem('freyai_email_config') || '{}');
+        try { this.emails = JSON.parse(localStorage.getItem('freyai_emails') || '[]'); } catch { this.emails = []; }
+        try { this.emailConfig = JSON.parse(localStorage.getItem('freyai_email_config') || '{}'); } catch { this.emailConfig = {}; }
         this.templates = this.loadDefaultTemplates();
 
         // Throttle: minimum 5 minutes between emails to the same address.
@@ -66,7 +66,7 @@ class EmailService {
         
         // In a real implementation, this would use a backend service
         // or WebSocket to an IMAP proxy (browser can't do IMAP directly)
-        console.log('Email fetch would use IMAP:', this.emailConfig.imapHost);
+        console.warn('Email fetch would use IMAP:', this.emailConfig.imapHost);
         return this.getDemoEmails();
     }
 
@@ -543,7 +543,7 @@ FreyAI Visions`
             // Record send time for throttle
             this._emailThrottle.set((to || '').toLowerCase().trim(), Date.now());
 
-            console.log('[EmailService] Email sent:', subject, '→', to);
+            console.warn('[EmailService] Email sent:', subject, '→', to);
             if (window.storeService) {
                 window.storeService.addActivity('📧', `E-Mail gesendet: ${subject} → ${to}`);
             }

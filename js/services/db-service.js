@@ -22,6 +22,15 @@ class DBService {
         this.db = null;
         this.userStores = new Set();
 
+        // Mapping: IndexedDB store name → Supabase table name
+        // IndexedDB uses English names, Supabase uses German names
+        this._supabaseTableMap = {
+            'customers': 'kunden',
+            'invoices': 'rechnungen',
+            'quotes': 'angebote',
+            'orders': 'auftraege',
+        };
+
         // Sync state
         this._syncInProgress = false;
         this._syncListeners = [];
@@ -49,7 +58,7 @@ class DBService {
                 const oldVersion = event.oldVersion;
                 const transaction = event.target.transaction;
 
-                console.log(`[DBService] DB upgrade: ${oldVersion} → ${this.version}`);
+                console.warn(`[DBService] DB upgrade: ${oldVersion} → ${this.version}`);
 
                 // Version 1 → 2: Create users, sync_queue, user_default_data
                 if (oldVersion < 2) {
@@ -123,7 +132,7 @@ class DBService {
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                console.log('[DBService] IndexedDB v3 initialized.');
+                // IndexedDB v3 initialized
                 resolve(this.db);
             };
 
@@ -143,12 +152,6 @@ class DBService {
     }
 
     _getCurrentUserId() {
-        // Try Supabase auth first
-        if (window.supabaseClient && window.supabaseClient.client) {
-            const session = window.supabaseClient.client.auth.getSession
-                ? null  // async — we use cached user instead
-                : null;
-        }
         // Try auth service
         if (window.authService && window.authService.getUser()) {
             return window.authService.getUser().id;
@@ -173,6 +176,15 @@ class DBService {
      * @param {string} mode - 'readonly' | 'readwrite'
      * @param {Function} operation - receives the IDBObjectStore, returns Promise
      */
+    /**
+     * Map an IndexedDB store name to the corresponding Supabase table name.
+     * @param {string} storeName - e.g. 'customers'
+     * @returns {string} e.g. 'kunden'
+     */
+    _supabaseTable(storeName) {
+        return this._supabaseTableMap[storeName] || storeName;
+    }
+
     async _idbOperation(storeName, mode, operation) {
         await this._ensureDB();
 
@@ -229,7 +241,7 @@ class DBService {
         if (!supabase) { return; }
 
         this._syncInProgress = true;
-        console.info('[DBService] Syncing offline queue to Supabase...');
+        console.warn('[DBService] Syncing offline queue to Supabase...');
 
         try {
             const pending = await this.getUnsyncedQueue();
@@ -245,16 +257,19 @@ class DBService {
                 try {
                     let error = null;
 
+                    // Map IndexedDB store name to Supabase table name
+                    const supaTable = this._supabaseTable(item.table);
+
                     if (item.action === 'insert' || item.action === 'upsert') {
-                        const result = await supabase.from(item.table).upsert(item.data);
+                        const result = await supabase.from(supaTable).upsert(item.data);
                         error = result.error;
                     } else if (item.action === 'update') {
-                        const result = await supabase.from(item.table)
+                        const result = await supabase.from(supaTable)
                             .update(item.data)
                             .eq('id', item.data.id);
                         error = result.error;
                     } else if (item.action === 'delete') {
-                        const result = await supabase.from(item.table)
+                        const result = await supabase.from(supaTable)
                             .delete()
                             .eq('id', item.data.id);
                         error = result.error;
@@ -275,8 +290,8 @@ class DBService {
                 }
             }
 
-            console.info(`[DBService] Sync complete: ${synced} synced, ${failed} failed.`);
-            this._syncListeners.forEach(cb => { try { cb({ synced, failed, total: pending.length }); } catch (e) {} });
+            console.warn(`[DBService] Sync complete: ${synced} synced, ${failed} failed.`);
+            this._syncListeners.forEach(cb => { try { cb({ synced, failed, total: pending.length }); } catch { /* ignore */ } });
 
         } finally {
             this._syncInProgress = false;
@@ -321,7 +336,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data, error } = await supabase
-                    .from('customers')
+                    .from('kunden')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -346,7 +361,7 @@ class DBService {
             // Further fallback: storeService
             return window.storeService?.state?.anfragen?.map(a => a.kunde).filter(Boolean) || [];
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, _reject) => {
             const tx = this.db.transaction(['customers'], 'readonly');
             const store = tx.objectStore('customers');
             const index = store.index('userId');
@@ -376,7 +391,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('customers')
+                    .from('kunden')
                     .upsert(customer)
                     .select()
                     .single();
@@ -409,7 +424,7 @@ class DBService {
         if (supabase) {
             try {
                 const { error } = await supabase
-                    .from('customers')
+                    .from('kunden')
                     .delete()
                     .eq('id', id);
 
@@ -441,7 +456,7 @@ class DBService {
         if (supabase) {
             try {
                 let query = supabase
-                    .from('invoices')
+                    .from('rechnungen')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -524,7 +539,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('invoices')
+                    .from('rechnungen')
                     .upsert(invoice)
                     .select()
                     .single();
@@ -576,7 +591,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('invoices')
+                    .from('rechnungen')
                     .update(updateData)
                     .eq('id', id)
                     .select()
@@ -633,7 +648,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data, error } = await supabase
-                    .from('quotes')
+                    .from('angebote')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -680,7 +695,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('quotes')
+                    .from('angebote')
                     .upsert(quote)
                     .select()
                     .single();
@@ -715,7 +730,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data, error } = await supabase
-                    .from('orders')
+                    .from('auftraege')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -761,7 +776,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('orders')
+                    .from('auftraege')
                     .upsert(order)
                     .select()
                     .single();
@@ -947,7 +962,7 @@ class DBService {
         }
 
         // Fallback: poll every 5 seconds
-        console.info('[DBService] Realtime not available, using polling for job updates.');
+        console.warn('[DBService] Realtime not available, using polling for job updates.');
         let active = true;
         let lastCheck = Date.now();
 
@@ -960,7 +975,7 @@ class DBService {
                     lastCheck = Date.now();
                     recent.forEach(job => callback(job));
                 }
-            } catch (e) {}
+            } catch { /* ignore */ }
             setTimeout(poll, 5000);
         };
 

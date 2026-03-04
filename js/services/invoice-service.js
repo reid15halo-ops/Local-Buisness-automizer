@@ -25,7 +25,7 @@ class InvoiceService {
         this.bookkeepingService = window.bookkeepingService;
 
         // Set current user for numbering service
-        if (this.storeService && this.storeService.getCurrentUserId) {
+        if (this.storeService && this.storeService.getCurrentUserId && this.numberingService) {
             const userId = this.storeService.getCurrentUserId();
             if (userId) {
                 this.numberingService.setUser(userId);
@@ -64,8 +64,9 @@ class InvoiceService {
 
             // 3. Calculate totals
             const netto = auftrag.netto + (auftrag.materialKosten || 0);
-            const mwst = netto * _getTaxRate();
-            const brutto = netto * (1 + _getTaxRate());
+            const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+            const mwst = netto * taxRate;
+            const brutto = netto * (1 + taxRate);
 
             // 4. Create invoice object
             const invoice = {
@@ -91,6 +92,9 @@ class InvoiceService {
             };
 
             // 5. Save to store
+            if (!this.storeService?.state?.rechnungen) {
+                throw new Error('Store service not initialized');
+            }
             this.storeService.state.rechnungen.push(invoice);
             this.storeService.save();
 

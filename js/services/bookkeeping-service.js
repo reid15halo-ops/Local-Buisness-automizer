@@ -13,7 +13,7 @@ class BookkeepingService {
             this.einstellungen = {
                 kleinunternehmer: false,          // § 19 UStG
                 umsatzsteuersatz: 19,              // Standard 19%
-                firmenName: JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').company_name || window.storeService?.state?.settings?.companyName || '',
+                firmenName: (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').company_name; } catch { return ''; } })() || window.storeService?.state?.settings?.companyName || '',
                 steuernummer: '',
                 ustIdNr: '',
                 finanzamt: '',
@@ -49,7 +49,7 @@ class BookkeepingService {
         const buchung = {
             typ: 'einnahme',
             kategorie: 'Umsatzerlöse',
-            beschreibung: `Rechnung ${rechnung.id} - ${rechnung.kunde.name}`,
+            beschreibung: `Rechnung ${rechnung.id} - ${rechnung.kunde?.name || 'Unbekannt'}`,
             rechnungId: rechnung.id,
             datum: rechnung.paidAt || rechnung.createdAt,
             brutto: rechnung.brutto,
@@ -87,7 +87,7 @@ class BookkeepingService {
         const buchung = {
             typ: 'ausgabe',
             kategorie: 'Materialaufwendungen',
-            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${rechnung.kunde.name}`,
+            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${rechnung.kunde?.name || 'Unbekannt'}`,
             rechnungId: rechnung.id,
             datum: rechnung.paidAt || rechnung.createdAt,
             brutto: materialKosten,
@@ -100,14 +100,17 @@ class BookkeepingService {
 
     // Ausgabe hinzufügen
     addAusgabe(daten) {
+        // Kleinunternehmer can not reclaim Vorsteuer (§19 UStG)
+        const rate = this.einstellungen.kleinunternehmer ? 0 : (this.einstellungen.umsatzsteuersatz || 19);
+        const divisor = 1 + rate / 100;
         const buchung = {
             typ: 'ausgabe',
             kategorie: daten.kategorie || 'Sonstige Ausgaben',
             beschreibung: daten.beschreibung,
             datum: daten.datum || new Date().toISOString(),
             brutto: daten.betrag,
-            netto: daten.betrag / 1.19,
-            vorsteuer: daten.betrag - (daten.betrag / 1.19),
+            netto: rate > 0 ? daten.betrag / divisor : daten.betrag,
+            vorsteuer: rate > 0 ? daten.betrag - (daten.betrag / divisor) : 0,
             belegnummer: daten.belegnummer || '',
             zahlungsart: daten.zahlungsart || 'Überweisung'
         };
@@ -230,6 +233,14 @@ class BookkeepingService {
     exportDATEV(jahr) {
         const buchungen = this.getBuchungenForJahr(jahr);
 
+        // DATEV header row (fiscal year, company info)
+        const fiscal = [
+            `"EXTF"`, `700`, `21`, `"Buchungsstapel"`, `7`,
+            `${jahr}0101`, `4`,
+            `"${(this.einstellungen.firmenName || '').replace(/"/g, '""')}"`,
+            `""`, `""`, `${jahr}0101`, `${jahr}1231`
+        ].join(';');
+
         // DATEV CSV Format (vereinfacht)
         const header = [
             'Umsatz', 'Soll/Haben', 'WKZ', 'Belegdatum', 'Belegfeld 1',
@@ -245,8 +256,8 @@ class BookkeepingService {
                 b.typ === 'einnahme' ? 'H' : 'S',               // Soll/Haben
                 'EUR',                                           // Währungskennzeichen
                 datevDatum,                                      // Belegdatum (DDMM)
-                b.belegnummer || b.id,                          // Belegfeld 1
-                b.beschreibung.substring(0, 60),                // Buchungstext (max 60)
+                (b.belegnummer || b.id).toString().replace(/;/g, ''),  // Belegfeld 1
+                (b.beschreibung || '').substring(0, 60).replace(/;/g, ''),  // Buchungstext (max 60)
                 b.typ === 'einnahme' ? '1200' : '1000',         // Gegenkonto (Bank/Kasse)
                 b.typ === 'einnahme' ? '8400' : '4400',         // Konto (Erlöse/Aufwand)
                 '',                                              // USt-ID
@@ -254,7 +265,7 @@ class BookkeepingService {
             ].join(';');
         });
 
-        return `${header}\n${rows.join('\n')}`;
+        return `${fiscal}\n${header}\n${rows.join('\n')}`;
     }
 
     // CSV Export (einfacheres Format)
@@ -333,7 +344,7 @@ class BookkeepingService {
 
                 // Parse betrag (handle German format)
                 let betrag = values[colIdx.betrag]?.replace(/"/g, '').replace(/\s/g, '');
-                betrag = parseFloat(betrag.replace('.', '').replace(',', '.'));
+                betrag = parseFloat(betrag.replace(/\./g, '').replace(',', '.'));
                 if (isNaN(betrag) || betrag === 0) {continue;}
 
                 // Determine typ from betrag sign or column
@@ -458,8 +469,7 @@ class BookkeepingService {
     }
 
     getProfitByAuftrag(auftragId) {
-        const buchungen = this.buchungen.filter(b => b.auftragId === auftragId ||
-                                                      (b.rechnungId && this.findRechnungByBuchung(b)));
+        const buchungen = this.buchungen.filter(b => b.auftragId === auftragId);
 
         const einnahmen = buchungen.filter(b => b.typ === 'einnahme');
         const ausgaben = buchungen.filter(b => b.typ === 'ausgabe');

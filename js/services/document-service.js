@@ -5,7 +5,7 @@
 
 class DocumentService {
     constructor() {
-        this.documents = JSON.parse(localStorage.getItem('freyai_documents') || '[]');
+        try { this.documents = JSON.parse(localStorage.getItem('freyai_documents') || '[]'); } catch { this.documents = []; }
         this.categories = ['rechnung', 'quittung', 'vertrag', 'angebot', 'lieferschein', 'sonstiges'];
         this.ocrLibLoaded = false;
     }
@@ -132,7 +132,7 @@ class DocumentService {
 
         try {
             const result = await Tesseract.recognize(imageBase64, lang, {
-                logger: m => console.log(m.status, Math.round(m.progress * 100) + '%')
+                logger: () => {}
             });
             return {
                 text: result.data.text,
@@ -145,7 +145,7 @@ class DocumentService {
         }
     }
 
-    ocrFallback(imageBase64) {
+    ocrFallback(_imageBase64) {
         // Fallback: Return placeholder text for demo
         return {
             text: '[OCR nicht verfügbar - Bitte Text manuell eingeben]',

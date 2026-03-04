@@ -10,16 +10,16 @@
     <link rel="stylesheet" href="css/fonts.css">
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #334155;
-            --accent: #6366f1;
-            --accent-hover: #818cf8;
-            --text: #e2e8f0;
-            --text-muted: #94a3b8;
+            --bg-dark: #0c1a1a;
+            --bg-card: #0f2327;
+            --bg-input: #122828;
+            --accent: #2dd4a8;
+            --accent-hover: #5eecc6;
+            --text: #e0eeee;
+            --text-muted: #8aacac;
             --success: #22c55e;
             --error: #ef4444;
-            --border: #475569;
+            --border: #1a3a3a;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -420,13 +420,18 @@
             // Show confirmation
             document.getElementById('confirm-code').textContent = booking.confirmationCode;
             const service = bs.getServiceType(selectedService);
+            function escHtml(s) {
+                const d = document.createElement('div');
+                d.textContent = s;
+                return d.innerHTML;
+            }
             document.getElementById('confirm-summary').innerHTML = `
-                <tr><td>Leistung</td><td>${service.name}</td></tr>
-                <tr><td>Datum</td><td>${new Date(selectedDate).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}</td></tr>
-                <tr><td>Uhrzeit</td><td>${selectedTime.start} - ${selectedTime.end} Uhr</td></tr>
-                <tr><td>Name</td><td>${name}</td></tr>
-                <tr><td>E-Mail</td><td>${email}</td></tr>
-                ${phone ? `<tr><td>Telefon</td><td>${phone}</td></tr>` : ''}
+                <tr><td>Leistung</td><td>${escHtml(service.name)}</td></tr>
+                <tr><td>Datum</td><td>${escHtml(new Date(selectedDate).toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }))}</td></tr>
+                <tr><td>Uhrzeit</td><td>${escHtml(selectedTime.start)} - ${escHtml(selectedTime.end)} Uhr</td></tr>
+                <tr><td>Name</td><td>${escHtml(name)}</td></tr>
+                <tr><td>E-Mail</td><td>${escHtml(email)}</td></tr>
+                ${phone ? `<tr><td>Telefon</td><td>${escHtml(phone)}</td></tr>` : ''}
             `;
 
             goToStep(4);

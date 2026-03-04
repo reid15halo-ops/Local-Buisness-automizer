@@ -184,7 +184,7 @@ class SetupWizardUI {
     /**
      * Render admin/technical settings step (not used in first-run, but available)
      */
-    renderAdminStep(step) {
+    renderAdminStep(_step) {
         return `
             <div class="wizard-step-admin">
                 <div class="wizard-admin-message">

@@ -173,7 +173,7 @@ class UserManagerService {
         // Create user data store
         await window.dbService.createUserStore(userId);
 
-        console.log(`User created: ${name} (${userId})`);
+        // User created
 
         // Return user without sensitive data
         return {
@@ -229,7 +229,7 @@ class UserManagerService {
         }));
 
         this._notify();
-        console.log(`User logged in: ${user.name}`);
+        // User logged in
 
         return this.currentUser;
     }
@@ -240,12 +240,11 @@ class UserManagerService {
     logout() {
         if (!this.currentUser) {return;}
 
-        const userName = this.currentUser.name;
         this.currentUser = null;
         sessionStorage.removeItem(this.SESSION_KEY);
 
         this._notify();
-        console.log(`User logged out: ${userName}`);
+        // User logged out
     }
 
     /**
@@ -285,7 +284,7 @@ class UserManagerService {
             this._notify();
         }
 
-        console.log(`User updated: ${user.name}`);
+        // User updated
     }
 
     /**
@@ -314,7 +313,7 @@ class UserManagerService {
 
         // Save
         await window.dbService.saveUser(user);
-        console.log(`PIN changed for user: ${user.name}`);
+        // PIN changed
     }
 
     /**
@@ -342,7 +341,7 @@ class UserManagerService {
 
         // Delete user and data
         await window.dbService.deleteUser(userId);
-        console.log(`User deleted: ${user.name}`);
+        // User deleted
     }
 
     /**
@@ -352,7 +351,7 @@ class UserManagerService {
     async createDefaultUserIfNeeded() {
         const users = await window.dbService.getAllUsers();
         if (users.length === 0) {
-            console.log('No users found, creating default user...');
+            console.warn('No users found, creating default user...');
             return await this.createUser('default', '0000', '🔧');
         }
         return null;

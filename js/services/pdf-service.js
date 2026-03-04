@@ -30,7 +30,7 @@ class PDFService {
     }
 
     async loadLogo() {
-        if (this.logoLoaded) return;
+        if (this.logoLoaded) {return;}
         // Try localStorage first (base64)
         const stored = localStorage.getItem('company_logo');
         if (stored) {
@@ -41,7 +41,7 @@ class PDFService {
         // Fetch from img/logo.png
         try {
             const resp = await fetch('img/logo.png');
-            if (!resp.ok) throw new Error('Logo not found');
+            if (!resp.ok) {throw new Error('Logo not found');}
             const blob = await resp.blob();
             this.logoBase64 = await new Promise((resolve) => {
                 const reader = new FileReader();
@@ -64,7 +64,7 @@ class PDFService {
 
     getSettings() {
         const store = window.storeService?.state?.settings || {};
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         // Also check individual localStorage keys (setup wizard stores them directly)
         const ls = (key) => localStorage.getItem(key) || '';
         return {
@@ -78,7 +78,9 @@ class PDFService {
             phone: ap.company_phone || store.phone || ls('company_phone') || '',
             email: ap.company_email || store.email || ls('company_email') || '',
             iban: ap.bank_iban || store.iban || ls('bank_iban') || '',
-            bank: ap.bank_name || store.bank || ls('bank_name') || ''
+            bank: ap.bank_name || store.bank || ls('bank_name') || '',
+            kleinunternehmer: ap.kleinunternehmer || store.kleinunternehmer || false,
+            taxRate: parseFloat(ap.tax_rate || store.taxRate || '19')
         };
     }
 
@@ -91,7 +93,14 @@ class PDFService {
         // Logo
         if (this.logoBase64) {
             try {
-                doc.addImage(this.logoBase64, 'PNG', m.left, m.top, logoSize, logoSize);
+                // Detect image format from data URI
+                let fmt = 'PNG';
+                if (this.logoBase64.startsWith('data:image/jpeg') || this.logoBase64.startsWith('data:image/jpg')) {
+                    fmt = 'JPEG';
+                } else if (this.logoBase64.startsWith('data:image/webp')) {
+                    fmt = 'WEBP';
+                }
+                doc.addImage(this.logoBase64, fmt, m.left, m.top, logoSize, logoSize);
                 textLeft = m.left + logoSize + 4;
             } catch (e) {
                 console.warn('Logo konnte nicht ins PDF eingefügt werden:', e.message);
@@ -275,6 +284,10 @@ class PDFService {
     // Rechnung (Invoice) PDF
     // ============================================
     async generateRechnung(rechnung) {
+        if (!rechnung?.kunde) {
+            console.error('Rechnung oder Kundendaten fehlen');
+            return false;
+        }
         await this.ensureLoaded();
         const doc = this.createDoc();
 
@@ -330,11 +343,17 @@ class PDFService {
         y = this.drawTable(doc, y, headers, rows, colWidths);
 
         // Totals
-        y = this.drawTotals(doc, y, [
+        const pdfSettings = this.getSettings();
+        const totalsRows = [
             { label: 'Nettobetrag:', value: this.fmtCurrency(rechnung.netto) },
-            { label: 'MwSt. 19%:', value: this.fmtCurrency(rechnung.mwst) },
-            { label: 'Gesamtbetrag:', value: this.fmtCurrency(rechnung.brutto), bold: true }
-        ]);
+        ];
+        if (pdfSettings.kleinunternehmer) {
+            totalsRows.push({ label: 'Gem. §19 UStG keine MwSt.', value: '—' });
+        } else {
+            totalsRows.push({ label: `MwSt. ${pdfSettings.taxRate}%:`, value: this.fmtCurrency(rechnung.mwst) });
+        }
+        totalsRows.push({ label: 'Gesamtbetrag:', value: this.fmtCurrency(rechnung.brutto), bold: true });
+        y = this.drawTotals(doc, y, totalsRows);
 
         // Material margin info (internal - only shown if stueckliste exists)
         if (rechnung.stueckliste?.length > 0) {
@@ -377,6 +396,10 @@ class PDFService {
     // Angebot (Quote) PDF
     // ============================================
     async generateAngebot(angebot) {
+        if (!angebot?.kunde) {
+            console.error('Angebot oder Kundendaten fehlen');
+            return false;
+        }
         await this.ensureLoaded();
         const doc = this.createDoc();
 
@@ -415,11 +438,17 @@ class PDFService {
         y = this.drawTable(doc, y, headers, rows, colWidths);
 
         // Totals
-        y = this.drawTotals(doc, y, [
+        const quoteSettings = this.getSettings();
+        const quoteTotals = [
             { label: 'Nettobetrag:', value: this.fmtCurrency(angebot.netto) },
-            { label: 'MwSt. 19%:', value: this.fmtCurrency(angebot.mwst) },
-            { label: 'Angebotssumme:', value: this.fmtCurrency(angebot.brutto), bold: true }
-        ]);
+        ];
+        if (quoteSettings.kleinunternehmer) {
+            quoteTotals.push({ label: 'Gem. §19 UStG keine MwSt.', value: '—' });
+        } else {
+            quoteTotals.push({ label: `MwSt. ${quoteSettings.taxRate}%:`, value: this.fmtCurrency(angebot.mwst) });
+        }
+        quoteTotals.push({ label: 'Angebotssumme:', value: this.fmtCurrency(angebot.brutto), bold: true });
+        y = this.drawTotals(doc, y, quoteTotals);
 
         // Closing
         y += 6;
@@ -442,6 +471,10 @@ class PDFService {
     // Mahnung (Dunning Letter) PDF
     // ============================================
     async generateMahnung(rechnung, mahnLevel, mahnGebuehr) {
+        if (!rechnung?.kunde) {
+            console.error('Rechnung oder Kundendaten fehlen');
+            return false;
+        }
         await this.ensureLoaded();
         const doc = this.createDoc();
         const level = mahnLevel || 1;

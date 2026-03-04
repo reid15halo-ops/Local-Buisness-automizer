@@ -6,9 +6,9 @@
 class PaymentService {
     constructor() {
         try {
-            this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]');
-            this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]');
-            this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}');
+            try { this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]'); } catch { this.payments = []; }
+            try { this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]'); } catch { this.paymentLinks = []; }
+            try { this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}'); } catch { this.settings = {}; }
 
             // Default settings
             if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
@@ -267,7 +267,7 @@ class PaymentService {
         try {
             if (!payment) {return;}
 
-            console.log(`💳 Zahlungsbestätigung: ${this.formatCurrency(payment.amount)} von ${payment.customerEmail}`);
+            console.warn(`Zahlungsbestätigung: ${this.formatCurrency(payment.amount)} von ${payment.customerEmail}`);
 
             if (window.communicationService) {
                 try {
@@ -307,7 +307,7 @@ class PaymentService {
             const link = this.paymentLinks?.find(l => l.referenceId === invoiceId && l.referenceType === 'rechnung');
             if (!link) {
                 // Link might not exist if created during Stripe checkout
-                console.log(`No payment link found for invoice ${invoiceId}, creating one`);
+                console.warn(`No payment link found for invoice ${invoiceId}, creating one`);
                 return { success: true, message: 'Payment processed by webhook' };
             }
 
@@ -342,7 +342,7 @@ class PaymentService {
      */
     async handleStripePaymentCancellation(invoiceId) {
         try {
-            console.log(`Payment cancelled for invoice ${invoiceId}`);
+            console.warn(`Payment cancelled for invoice ${invoiceId}`);
             // Just log - don't mark as failed since customer may retry
             return { success: true, message: 'Payment cancelled by user' };
         } catch (error) {
@@ -352,7 +352,7 @@ class PaymentService {
     }
 
     // Generate PayPal payment link
-    generatePayPalLink(amount, description, invoiceId) {
+    generatePayPalLink(amount, description, _invoiceId) {
         // PayPal.me link format
         const paypalUser = this.settings.paypalUser || 'freyai-service';
         return `https://paypal.me/${paypalUser}/${amount}EUR?memo=${encodeURIComponent(description)}`;

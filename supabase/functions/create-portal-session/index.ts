@@ -57,7 +57,7 @@ serve(async (req) => {
 
         const session = await stripe.billingPortal.sessions.create({
             customer: profile.stripe_customer_id,
-            return_url: returnUrl || 'https://localhost:3000',
+            return_url: returnUrl || Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de',
             locale: 'de',
         })
 

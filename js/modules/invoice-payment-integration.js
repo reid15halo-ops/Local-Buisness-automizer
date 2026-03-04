@@ -309,7 +309,7 @@ class InvoicePaymentIntegration {
                 console.error(`${title}: ${message}`);
                 (window.showToast || window.errorHandler?.handle)?.(message, type === 'error' ? 'error' : 'info');
             } else if (type !== 'loading') {
-                console.log(`${title}: ${message}`);
+                console.warn(`${title}: ${message}`);
             }
         }
     }
@@ -323,9 +323,6 @@ class InvoicePaymentIntegration {
         }
 
         const stats = window.paymentService.getStatistics();
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
         // Add invoice status breakdown
         let paidInvoices = 0;
         let pendingInvoices = 0;

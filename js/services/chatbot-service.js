@@ -5,9 +5,9 @@
 
 class ChatbotService {
     constructor() {
-        this.conversations = JSON.parse(localStorage.getItem('freyai_chatbot_conversations') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_chatbot_settings') || '{}');
-        this.messageQueue = JSON.parse(localStorage.getItem('freyai_chatbot_queue') || '[]');
+        try { this.conversations = JSON.parse(localStorage.getItem('freyai_chatbot_conversations') || '[]'); } catch { this.conversations = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_chatbot_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.messageQueue = JSON.parse(localStorage.getItem('freyai_chatbot_queue') || '[]'); } catch { this.messageQueue = []; }
         this.kb = this.initKnowledgeBase();
 
         // Default settings
@@ -186,7 +186,7 @@ class ChatbotService {
     }
 
     _loadCompanyInfo() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         const bd = window.eInvoiceService?.settings?.businessData || {};
         const name = ap.company_name || bd.name || 'FreyAI Visions';
         const street = ap.address_street || bd.street || '';
@@ -297,16 +297,11 @@ class ChatbotService {
     }
 
     // Expert response generator with comprehensive knowledge
-    getExpertResponse(message, history = [], customerData = {}) {
+    getExpertResponse(message, history = [], _customerData = {}) {
         const kb = this.kb;
         const lowerMsg = message.toLowerCase().trim();
         const lastBotMsg = history.filter(m => m.role === 'assistant').slice(-1)[0]?.content || '';
         const details = this.extractDetails(message);
-
-        let greeting = "";
-        if (customerData.name && !history.some(m => m.role === 'assistant')) {
-            greeting = `Hallo ${customerData.name}! 👋 `;
-        }
 
         // Context: User providing contact info
         if (lastBotMsg.includes('Ihren Namen') || lastBotMsg.includes('Kontaktdaten') || lastBotMsg.includes('Telefonnummer')) {

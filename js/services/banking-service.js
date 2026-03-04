@@ -55,7 +55,7 @@ class BankingService {
     }
 
     // Fetch transactions (demo mode)
-    async fetchTransactions(accountId, dateRange = {}) {
+    async fetchTransactions(accountId, _dateRange = {}) {
         const account = this.accounts.find(a => a.id === accountId);
         if (!account) {return { success: false, error: 'Account not found' };}
 

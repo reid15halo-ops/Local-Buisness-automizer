@@ -31,20 +31,11 @@
     #       converted to event delegation (tracked in GitHub issue)
     # TODO: Remove 'unsafe-eval' if present after verifying no eval() usage
     # Each source in script-src must be explicitly reviewed before production
-    Header set Content-Security-Policy "\
-        default-src 'self'; \
-        # TODO: nonces required before removing unsafe-inline from style-src
-        script-src 'self' https://cdn.sheetjs.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; \
-        style-src 'self' 'unsafe-inline'; \
-        font-src 'self'; \
-        img-src 'self' data: blob:; \
-        connect-src 'self' https://generativelanguage.googleapis.com https://*.supabase.co; \
-        worker-src 'self' blob:; \
-        frame-src 'none'; \
-        object-src 'none'; \
-        base-uri 'self'; \
-        form-action 'self'; \
-        upgrade-insecure-requests;"
+    # CSP on a single line to avoid Apache including comments in the header value
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.sheetjs.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://generativelanguage.googleapis.com https://*.supabase.co; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
+
+    # Strict-Transport-Security: Enforce HTTPS for all connections
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 
     # X-Frame-Options: Prevent clickjacking
     Header always set X-Frame-Options "DENY"
@@ -59,12 +50,7 @@
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
     # Permissions-Policy: Restrict browser features
-    Header always set Permissions-Policy "\
-        camera=(), \
-        microphone=(), \
-        geolocation=(), \
-        payment=(), \
-        usb=()"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
 </IfModule>
 
 # ============================================

@@ -143,7 +143,7 @@ class DashboardChartsService {
 
             // Conversion rate (except last stage)
             if (i < stages.length - 1) {
-                const conversionRate = stages[i + 1].count > 0 ? Math.round((stages[i + 1].count / stage.count) * 100) : 0;
+                const conversionRate = (stage.count > 0 && stages[i + 1].count > 0) ? Math.round((stages[i + 1].count / stage.count) * 100) : 0;
                 svg += `<text x="${width - padding.right - 10}" y="${yPos + stageHeight/2 + 5}" text-anchor="end" fill="${this.colors.slate}" font-size="11">${conversionRate}%</text>`;
             }
         });
@@ -352,7 +352,7 @@ class DashboardChartsService {
     /**
      * Update KPI Summary Cards with computed metrics
      */
-    updateSummaryCards(anfragen, angebote, auftraege, rechnungen, buchungen) {
+    updateSummaryCards(anfragen, angebote, auftraege, rechnungen, _buchungen) {
         // Total revenue this month
         const thisMonth = this._getCurrentMonth();
         const monthlyRevenue = this._getMonthlyRevenue(rechnungen, thisMonth);

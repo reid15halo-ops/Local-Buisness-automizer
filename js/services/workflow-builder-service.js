@@ -605,7 +605,7 @@ class WorkflowBuilderService {
             error: null
         };
 
-        console.log(`[WorkflowBuilder] Starte Workflow: "${workflow.name}" (${executionId})`);
+        console.warn(`[WorkflowBuilder] Starte Workflow: "${workflow.name}" (${executionId})`);
 
         try {
             // Find the trigger node
@@ -635,7 +635,7 @@ class WorkflowBuilderService {
             workflow.runCount = (workflow.runCount || 0) + 1;
             this.save();
 
-            console.log(`[WorkflowBuilder] Workflow abgeschlossen: "${workflow.name}" (${executionId})`);
+            // Workflow completed
 
         } catch (error) {
             execution.status = 'error';
@@ -774,7 +774,7 @@ class WorkflowBuilderService {
         this._saveStore();
 
         context.variables.angebot = angebot;
-        console.log('[WorkflowBuilder] Angebot erstellt:', angebot.id);
+        // Angebot created
         return { success: true, angebotId: angebot.id, angebot };
     }
 
@@ -804,7 +804,7 @@ class WorkflowBuilderService {
         this._saveStore();
 
         context.variables.auftrag = auftrag;
-        console.log('[WorkflowBuilder] Auftrag erstellt:', auftrag.id);
+        // Auftrag created
         return { success: true, auftragId: auftrag.id, auftrag };
     }
 
@@ -817,7 +817,8 @@ class WorkflowBuilderService {
 
         const positionen = auftrag.positionen || [];
         const netto = positionen.reduce((sum, p) => sum + ((p.menge || 1) * (p.preis || 0)), 0);
-        const mwst = netto * _getTaxRate();
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = netto * taxRate;
         const brutto = netto + mwst;
 
         const rechnung = {
@@ -842,7 +843,7 @@ class WorkflowBuilderService {
         this._saveStore();
 
         context.variables.rechnung = rechnung;
-        console.log('[WorkflowBuilder] Rechnung erstellt:', rechnung.id);
+        // Rechnung created
         return { success: true, rechnungId: rechnung.id, rechnung };
     }
 
@@ -851,7 +852,7 @@ class WorkflowBuilderService {
         const betreff = this._resolveTemplate(config.betreff || '', context);
         const nachricht = this._resolveTemplate(config.nachricht || '', context);
 
-        console.log(`[WorkflowBuilder] E-Mail senden an: ${empfaenger}, Betreff: ${betreff}`);
+        console.warn(`[WorkflowBuilder] E-Mail senden an: ${empfaenger}, Betreff: ${betreff}`);
 
         // Use email service if available
         if (window.emailService && typeof window.emailService.sendEmail === 'function') {
@@ -879,7 +880,7 @@ class WorkflowBuilderService {
         const stufe = config.stufe || 'erinnerung';
         const gebuehr = parseFloat(config.mahngebuehr) || 0;
 
-        console.log(`[WorkflowBuilder] Zahlungserinnerung (${stufe}) fuer Rechnung: ${rechnung.id}`);
+        console.warn(`[WorkflowBuilder] Zahlungserinnerung (${stufe}) fuer Rechnung: ${rechnung.id}`);
 
         // Use dunning service if available
         if (window.dunningService) {
@@ -921,7 +922,7 @@ class WorkflowBuilderService {
         item.updatedAt = new Date().toISOString();
         this._saveStore();
 
-        console.log(`[WorkflowBuilder] Status aktualisiert: ${entitaet} ${record.id}: ${alterStatus} -> ${neuerStatus}`);
+        // Status updated
         return { success: true, entitaet, recordId: record.id, alterStatus, neuerStatus };
     }
 
@@ -951,11 +952,11 @@ class WorkflowBuilderService {
         if (window.calendarService && typeof window.calendarService.addAppointment === 'function') {
             const result = window.calendarService.addAppointment(appointment);
             context.variables.termin = result;
-            console.log('[WorkflowBuilder] Termin angelegt:', result.id);
+            // Termin angelegt
             return { success: true, terminId: result.id };
         }
 
-        console.log('[WorkflowBuilder] Kalender-Service nicht verfuegbar, Termin simuliert');
+        console.warn('[WorkflowBuilder] Kalender-Service nicht verfuegbar, Termin simuliert');
         return { success: true, simulated: true, appointment };
     }
 
@@ -974,7 +975,7 @@ class WorkflowBuilderService {
                     }
                 }
             }
-            console.log(`[WorkflowBuilder] ${reservierungen.length} Materialien reserviert`);
+            // Materials reserved
             return { success: true, reservierungen };
         }
 
@@ -995,7 +996,7 @@ class WorkflowBuilderService {
         const nachricht = this._resolveTemplate(config.nachricht || 'Workflow-Benachrichtigung', context);
         const typ = config.typ || 'info';
 
-        console.log(`[WorkflowBuilder] Benachrichtigung (${typ}): ${nachricht}`);
+        console.warn(`[WorkflowBuilder] Benachrichtigung (${typ}): ${nachricht}`);
 
         if (window.notificationService) {
             try {
@@ -1017,7 +1018,7 @@ class WorkflowBuilderService {
         const prompt = this._resolveTemplate(config.prompt || '', context);
         const maxLaenge = parseInt(config.maxLaenge) || 500;
 
-        console.log(`[WorkflowBuilder] KI-Text generieren: "${prompt.substring(0, 80)}..."`);
+        console.warn(`[WorkflowBuilder] KI-Text generieren: "${prompt.substring(0, 80)}..."`);
 
         // Try LLM service
         if (window.llmService && typeof window.llmService.generate === 'function') {
@@ -1062,7 +1063,7 @@ class WorkflowBuilderService {
         // Cap at 30 seconds for demo purposes to avoid blocking
         const cappedMs = Math.min(ms, 30000);
 
-        console.log(`[WorkflowBuilder] Warte ${dauer} ${einheit} (${cappedMs}ms)`);
+        // Waiting
         await new Promise(resolve => setTimeout(resolve, cappedMs));
         return { success: true, waited: `${dauer} ${einheit}` };
     }
@@ -1113,7 +1114,7 @@ class WorkflowBuilderService {
         this.activeWorkflows.set(workflowId, true);
         this.save();
 
-        console.log(`[WorkflowBuilder] Workflow aktiviert: "${workflow.name}"`);
+        // Workflow activated
         return true;
     }
 
@@ -1132,7 +1133,7 @@ class WorkflowBuilderService {
         }
 
         this.save();
-        console.log(`[WorkflowBuilder] Workflow deaktiviert: "${workflow.name}"`);
+        // Workflow deactivated
         return true;
     }
 
@@ -1161,7 +1162,7 @@ class WorkflowBuilderService {
         });
 
         matchingWorkflows.forEach(wf => {
-            console.log(`[WorkflowBuilder] Event "${eventType}" loest Workflow aus: "${wf.name}"`);
+            console.warn(`[WorkflowBuilder] Event "${eventType}" loest Workflow aus: "${wf.name}"`);
             this.executeWorkflow(wf.id, eventData).catch(err => {
                 console.error(`[WorkflowBuilder] Fehler bei Workflow "${wf.name}":`, err);
             });
@@ -1296,7 +1297,7 @@ class WorkflowBuilderService {
             isActive: false
         });
 
-        console.log(`[WorkflowBuilder] Vorlage geladen: "${template.name}"`);
+        // Template loaded
         return workflow;
     }
 
@@ -1401,7 +1402,7 @@ class WorkflowBuilderService {
             if (historyData) {
                 this.executionHistory = JSON.parse(historyData);
             }
-        } catch (e) {
+        } catch {
             this.executionHistory = [];
         }
     }

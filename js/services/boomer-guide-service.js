@@ -257,7 +257,7 @@ class BoomerGuideService {
         }
     }
 
-    _scanNewInquiries(state, lastVisit) {
+    _scanNewInquiries(state, _lastVisit) {
         const newSinceVisit = (state.anfragen || []).filter(a => {
             if (a.status !== 'neu') { return false; }
             if (!a.createdAt) { return false; }

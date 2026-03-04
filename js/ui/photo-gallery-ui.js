@@ -48,7 +48,7 @@ class PhotoGalleryUI {
                     if (auftrag) {
                         jobTitle = auftrag.titel || auftrag.title || auftrag.beschreibung || 'Auftrag';
                     }
-                } catch (e) { /* ignore */ }
+                } catch { /* ignore */ }
                 window.photoService.createJobFolder(jobId, jobTitle);
             }
 
@@ -85,7 +85,7 @@ class PhotoGalleryUI {
                             Alle
                             <span class="photo-category-tab-count">${counts.total}</span>
                         </button>
-                        ${Object.entries(categories).map(([key, value]) => {
+                        ${Object.entries(categories).map(([_key, value]) => {
                             const count = counts.byCategory[value] || 0;
                             const label = san(labels[value] || value);
                             return `
@@ -127,7 +127,7 @@ class PhotoGalleryUI {
                             <div class="photo-upload-category-select">
                                 <label>Kategorie:</label>
                                 <select id="pg-upload-category">
-                                    ${Object.entries(categories).map(([key, value]) => {
+                                    ${Object.entries(categories).map(([_key, value]) => {
                                         const label = san(labels[value] || value);
                                         const selected = value === 'dokumentation' ? ' selected' : '';
                                         return `<option value="${san(value)}"${selected}>${label}</option>`;
@@ -171,7 +171,7 @@ class PhotoGalleryUI {
     //  Event Binding
     // ============================================
 
-    _bindEvents(container, jobId) {
+    _bindEvents(container, _jobId) {
         try {
             // Tab clicks
             const tabs = container.querySelectorAll('.photo-category-tab');
@@ -961,8 +961,8 @@ class PhotoGalleryUI {
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
 
-        } catch (error) {
-            console.log('Toast:', message);
+        } catch {
+            console.warn('Toast:', message);
         }
     }
 

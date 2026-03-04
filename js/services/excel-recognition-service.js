@@ -251,7 +251,7 @@ class ExcelRecognitionService {
     /**
      * Validiert einzelne Zeile
      */
-    validateRow(row, mapping, template, rowIndex) {
+    validateRow(row, mapping, template, _rowIndex) {
         const result = {
             isValid: true,
             data: { ...template.defaults },
@@ -639,7 +639,7 @@ class ExcelRecognitionService {
         return { action: 'imported', id: material?.id };
     }
 
-    importAnfrage(item, skipDuplicates, updateExisting) {
+    importAnfrage(item, _skipDuplicates, _updateExisting) {
         // Anfragen werden immer neu erstellt, da keine direkten Duplikate
         // Aber Kunde wird aus customerService geholt/erstellt
 
@@ -661,7 +661,7 @@ class ExcelRecognitionService {
         };
 
         // Speichere in localStorage (wie in demo-data-service.js)
-        const anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]');
+        let anfragen; try { anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]'); } catch { anfragen = []; }
         anfragen.push(anfrage);
         localStorage.setItem('anfragen', JSON.stringify(anfragen));
 
@@ -692,7 +692,7 @@ class ExcelRecognitionService {
             JSON.stringify(this.savedMappings)
         );
 
-        console.log(`Mapping-Template "${name}" für ${dataType} gespeichert`);
+        // Mapping template saved
     }
 
     loadSavedMappings() {
@@ -728,7 +728,7 @@ class ExcelRecognitionService {
                 JSON.stringify(this.savedMappings)
             );
 
-            console.log(`Template "${name}" gelöscht`);
+            // Template deleted
             return true;
         }
         return false;
@@ -813,7 +813,7 @@ class ExcelRecognitionService {
         const fileName = `${dataType}_import_vorlage.xlsx`;
         XLSX.writeFile(workbook, fileName);
 
-        console.log(`Template "${fileName}" heruntergeladen`);
+        // Template downloaded
     }
 
     /**
@@ -846,7 +846,7 @@ class ExcelRecognitionService {
         link.click();
         URL.revokeObjectURL(url);
 
-        console.log(`CSV-Template für ${dataType} heruntergeladen`);
+        // CSV template downloaded
     }
 }
 

@@ -5,8 +5,8 @@
 
 class PurchaseOrderService {
     constructor() {
-        this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]');
-        this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]');
+        try { this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]'); } catch { this.bestellungen = []; }
+        try { this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]'); } catch { this.lieferanten = []; }
         this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
     }
 
@@ -481,8 +481,8 @@ class PurchaseOrderService {
     }
 
     load() {
-        this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]');
-        this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]');
+        try { this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]'); } catch { this.bestellungen = []; }
+        try { this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]'); } catch { this.lieferanten = []; }
         this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
     }
 
@@ -502,13 +502,15 @@ class PurchaseOrderService {
      * @private
      */
     _calculatePOTotals(po) {
+        if (!po.positionen) {po.positionen = [];}
         const netto = po.positionen.reduce((sum, pos) =>
             sum + ((pos.menge || 0) * (pos.ekPreis || 0)), 0
         );
 
         po.netto = netto;
-        po.mwst = netto * _getTaxRate();
-        po.brutto = netto * (1 + _getTaxRate());
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        po.mwst = netto * taxRate;
+        po.brutto = netto * (1 + taxRate);
 
         // Update position totals
         po.positionen.forEach(pos => {

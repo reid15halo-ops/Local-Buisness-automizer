@@ -5,9 +5,9 @@
 
 class PrintDigitalService {
     constructor() {
-        this.printQueue = JSON.parse(localStorage.getItem('freyai_print_queue') || '[]');
-        this.faxInbox = JSON.parse(localStorage.getItem('freyai_fax_inbox') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_print_settings') || '{}');
+        try { this.printQueue = JSON.parse(localStorage.getItem('freyai_print_queue') || '[]'); } catch { this.printQueue = []; }
+        try { this.faxInbox = JSON.parse(localStorage.getItem('freyai_fax_inbox') || '[]'); } catch { this.faxInbox = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_print_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.preferDigital) {this.settings.preferDigital = true;}
@@ -76,7 +76,7 @@ class PrintDigitalService {
                 item.status = 'printed';
                 item.processedAt = new Date().toISOString();
                 this.save();
-                console.log(`🖨️ Gedruckt: ${item.documentTitle}`);
+                console.warn(`Gedruckt: ${item.documentTitle}`);
             }, 1000);
 
             return { success: true, method: 'print' };
@@ -107,7 +107,7 @@ class PrintDigitalService {
             });
         }
 
-        console.log(`📧 Digital gesendet: ${item.documentTitle} an ${item.recipient.email}`);
+        console.warn(`Digital gesendet: ${item.documentTitle} an ${item.recipient.email}`);
         return { success: true, method: 'email' };
     }
 
@@ -160,7 +160,7 @@ class PrintDigitalService {
                 status: 'sent'
             });
         }
-        console.log(`📠→📧 Fax weitergeleitet an ${this.settings.faxEmail}`);
+        console.warn(`Fax weitergeleitet an ${this.settings.faxEmail}`);
     }
 
     // Categorize fax content

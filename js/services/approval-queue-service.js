@@ -149,7 +149,7 @@ class ApprovalQueueService {
 
         // Fallback: localStorage (communicationService)
         try {
-            const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+            let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
             return comms.filter(c => c.status === 'draft' && c.aiGenerated);
         } catch (e) {
             console.error('[ApprovalQueueService] Error:', e);
@@ -487,7 +487,7 @@ class ApprovalQueueService {
         } else {
             // Update localStorage
             try {
-                const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
                 const idx = comms.findIndex(c => c.id === comm.id);
                 if (idx !== -1) {
                     comms[idx].status = 'sent';
@@ -558,7 +558,7 @@ class ApprovalQueueService {
                     .update({ status: 'rejected', rejected_at: new Date().toISOString() })
                     .eq('id', comm.id);
             } else {
-                const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
                 const idx = comms.findIndex(c => c.id === comm.id);
                 if (idx !== -1) {
                     comms[idx].status = 'rejected';
@@ -616,7 +616,6 @@ class ApprovalQueueService {
         // Also update mobile notification badge if available
         const notifBadge = document.getElementById('notification-badge');
         if (notifBadge && count > 0) {
-            const currentCount = parseInt(notifBadge.textContent || '0', 10);
             // Don't double-count, just show the approvals count separately
         }
     }
@@ -646,7 +645,7 @@ class ApprovalQueueService {
         } else if (window.UI && typeof window.UI.showToast === 'function') {
             window.UI.showToast(message, type);
         } else {
-            console.info(`[ApprovalQueue] ${type}: ${message}`);
+            console.warn(`[ApprovalQueue] ${type}: ${message}`);
         }
     }
 
@@ -668,7 +667,7 @@ class ApprovalQueueService {
 
     _notifyListeners() {
         this._listeners.forEach(cb => {
-            try { cb(this._queue); } catch (e) {}
+            try { cb(this._queue); } catch { /* ignore */ }
         });
     }
 
@@ -737,7 +736,7 @@ class ApprovalQueueService {
      */
     destroy() {
         if (this._realtimeUnsub) {
-            try { this._realtimeUnsub(); } catch (e) {}
+            try { this._realtimeUnsub(); } catch { /* ignore */ }
             this._realtimeUnsub = null;
         }
         this._listeners = [];

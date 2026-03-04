@@ -111,10 +111,11 @@ class SyncService {
             return { synced: 0, errors: 0 };
         }
 
-        console.log(`Processing ${queue.length} queued sync items...`);
+        console.warn(`Processing ${queue.length} queued sync items...`);
 
         let synced = 0;
         let errors = 0;
+        const failedItems = [];
 
         for (const item of queue) {
             try {
@@ -122,13 +123,19 @@ class SyncService {
                 synced++;
             } catch (err) {
                 errors++;
+                failedItems.push(item);
                 console.error(`Sync error for ${item.table}:`, err.message);
             }
         }
 
+        // Only keep failed items in queue (don't discard them)
         if (synced > 0) {
-            this._clearSyncQueue();
-            console.log(`Sync complete: ${synced} synced, ${errors} errors`);
+            if (failedItems.length > 0) {
+                localStorage.setItem('hwf_sync_queue_v2', JSON.stringify(failedItems));
+            } else {
+                this._clearSyncQueue();
+            }
+            console.warn(`Sync complete: ${synced} synced, ${errors} errors`);
         }
 
         return { synced, errors };
@@ -414,7 +421,7 @@ class SyncService {
 
             // Emit event if conflicts were detected
             if (conflictsDetected > 0) {
-                console.log(`SyncService: ${conflictsDetected} conflict(s) detected in ${table}`);
+                console.warn(`SyncService: ${conflictsDetected} conflict(s) detected in ${table}`);
                 try {
                     window.dispatchEvent(new CustomEvent('sync-conflict-detected', {
                         detail: { table, count: conflictsDetected }
@@ -473,12 +480,12 @@ class SyncService {
     // ---- Event Handlers ----
 
     async _onOnline() {
-        console.log('Back online - processing sync queue...');
+        console.warn('Back online - processing sync queue...');
         await this.processSyncQueue();
     }
 
     _onOffline() {
-        console.log('Offline - will sync when reconnected');
+        console.warn('Offline - will sync when reconnected');
     }
 }
 

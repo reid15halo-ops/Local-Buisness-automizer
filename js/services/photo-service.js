@@ -25,9 +25,9 @@ class PhotoService {
     };
 
     constructor() {
-        this.photos = JSON.parse(localStorage.getItem('freyai_photos') || '[]');
-        this.folders = JSON.parse(localStorage.getItem('freyai_photo_folders') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('freyai_photo_settings') || '{}');
+        try { this.photos = JSON.parse(localStorage.getItem('freyai_photos') || '[]'); } catch { this.photos = []; }
+        try { this.folders = JSON.parse(localStorage.getItem('freyai_photo_folders') || '{}'); } catch { this.folders = {}; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_photo_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.maxPhotoSize) { this.settings.maxPhotoSize = 1024 * 1024; } // 1MB
@@ -85,7 +85,7 @@ class PhotoService {
                     if (auftrag) {
                         jobTitle = auftrag.titel || auftrag.title || auftrag.beschreibung || 'Auftrag';
                     }
-                } catch (e) { /* ignore */ }
+                } catch { /* ignore */ }
 
                 this.createJobFolder(refId, jobTitle);
 
@@ -263,7 +263,7 @@ class PhotoService {
                     if (auftrag) {
                         jobTitle = auftrag.titel || auftrag.title || auftrag.beschreibung || 'Auftrag';
                     }
-                } catch (e) { /* ignore */ }
+                } catch { /* ignore */ }
                 this.createJobFolder(jobId, jobTitle);
             }
 
@@ -475,7 +475,7 @@ class PhotoService {
                 const settings = window.storeService?.state?.settings || window.storeService?.store?.settings || {};
                 companyName = san(settings.companyName || 'FreyAI Visions');
                 companyAddress = san(settings.address || '');
-            } catch (e) {
+            } catch {
                 companyName = 'FreyAI Visions';
             }
 
@@ -848,7 +848,7 @@ class PhotoService {
         try {
             let found = false;
             for (const folder of Object.values(this.folders)) {
-                for (const [cat, photos] of Object.entries(folder.categories)) {
+                for (const photos of Object.values(folder.categories)) {
                     const idx = photos.findIndex(p => p.id === photoId);
                     if (idx !== -1) {
                         photos.splice(idx, 1);

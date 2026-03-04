@@ -22,9 +22,13 @@ class ReorderEngineService {
     // ============================================
 
     loadSettings() {
-        const saved = localStorage.getItem('reorder_engine_settings');
-        if (saved) {
-            this.settings = { ...this.settings, ...JSON.parse(saved) };
+        try {
+            const saved = localStorage.getItem('reorder_engine_settings');
+            if (saved) {
+                this.settings = { ...this.settings, ...JSON.parse(saved) };
+            }
+        } catch {
+            console.warn('[ReorderEngine] Settings corrupted, using defaults');
         }
     }
 
@@ -71,7 +75,7 @@ class ReorderEngineService {
         this.settings.autoReorderEnabled = true;
         this.saveSettings();
 
-        console.log(`[ReorderEngine] Auto-reorder enabled. Check interval: ${this.settings.checkIntervalMinutes} minutes`);
+        console.warn(`[ReorderEngine] Auto-reorder enabled. Check interval: ${this.settings.checkIntervalMinutes} minutes`);
     }
 
     disable() {
@@ -83,7 +87,7 @@ class ReorderEngineService {
         this.settings.autoReorderEnabled = false;
         this.saveSettings();
 
-        console.log('[ReorderEngine] Auto-reorder disabled');
+        console.warn('[ReorderEngine] Auto-reorder disabled');
     }
 
     // ============================================
@@ -106,7 +110,7 @@ class ReorderEngineService {
         const lowStockItems = this._getLowStockItemsWithReorderPoint();
 
         if (lowStockItems.length === 0) {
-            console.log('[ReorderEngine] No items require reordering');
+            // No items require reordering
             return { created: 0, items: [], suppliers: [], timestamp: this.lastCheckTime };
         }
 
@@ -408,7 +412,7 @@ class ReorderEngineService {
      * @private
      */
     _logReorderActivity(auditEntry) {
-        const log = JSON.parse(localStorage.getItem('reorder_activity_log') || '[]');
+        let log; try { log = JSON.parse(localStorage.getItem('reorder_activity_log') || '[]'); } catch { log = []; }
         log.push(auditEntry);
 
         // Keep only last 1000 entries
@@ -424,7 +428,7 @@ class ReorderEngineService {
      * @private
      */
     _logPOCreated(po, materials) {
-        const log = JSON.parse(localStorage.getItem('reorder_po_log') || '[]');
+        let log; try { log = JSON.parse(localStorage.getItem('reorder_po_log') || '[]'); } catch { log = []; }
         log.push({
             timestamp: new Date().toISOString(),
             poId: po.id,
@@ -449,7 +453,7 @@ class ReorderEngineService {
      * @returns {Array} Activity log entries
      */
     getActivityLog(filters = {}) {
-        const log = JSON.parse(localStorage.getItem('reorder_activity_log') || '[]');
+        let log; try { log = JSON.parse(localStorage.getItem('reorder_activity_log') || '[]'); } catch { log = []; }
 
         return log.filter(entry => {
             if (filters.startDate && new Date(entry.timestamp) < new Date(filters.startDate)) {return false;}
@@ -463,7 +467,7 @@ class ReorderEngineService {
      * @returns {Array} PO creation log entries
      */
     getPOLog() {
-        return JSON.parse(localStorage.getItem('reorder_po_log') || '[]').reverse();
+        try { return JSON.parse(localStorage.getItem('reorder_po_log') || '[]').reverse(); } catch { return []; }
     }
 
     /**
@@ -493,7 +497,7 @@ class ReorderEngineService {
                     duration: 5000
                 });
             } else {
-                console.log('[ReorderEngine] Notification:', `${pos.length} POs created`);
+                console.warn('[ReorderEngine] Notification:', `${pos.length} POs created`);
             }
         } catch (error) {
             console.error('[ReorderEngine] Notification error:', error);

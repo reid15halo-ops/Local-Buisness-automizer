@@ -4,7 +4,7 @@
    ============================================ */
 (function() {
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, h } = window.AppUtils;
+const { store, saveStore, addActivity, formatDate, formatCurrency, getLeistungsartLabel, h } = window.AppUtils;
 
 // Module state
 let currentAuftragFilter = 'alle';
@@ -125,7 +125,7 @@ function executeStatusAutoAktion(auftrag, newStatus) {
     }
 }
 
-function trackStatusDauer(auftrag, oldStatus, newStatus) {
+function trackStatusDauer(auftrag, oldStatus, _newStatus) {
     if (!auftrag.statusZeiten) {auftrag.statusZeiten = {};}
     const now = Date.now();
     const lastChange = auftrag.letzterStatusWechsel || new Date(auftrag.createdAt).getTime();
@@ -211,14 +211,12 @@ function renderAuftragPipeline(auftraege, counts) {
     if (!container) {return;}
 
     const pipelineStatuses = ['geplant', 'material_bestellt', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme', 'abgeschlossen'];
-    const total = auftraege.filter(a => !['storniert'].includes(a.status)).length || 1;
 
     container.innerHTML = `
         <div class="pipeline-flow">
             ${pipelineStatuses.map((key, i) => {
                 const cfg = AUFTRAG_STATUS_CONFIG[key];
                 const count = counts[key] || 0;
-                const pct = Math.round((count / total) * 100);
                 const isActive = count > 0;
                 return `
                     <div class="pipeline-step ${isActive ? 'active' : ''}" style="--step-color:${cfg.color};">
@@ -264,7 +262,7 @@ function renderAuftraegeKanban(auftraege) {
         let filtered = auftraege.filter(a => a.status === status);
         if (searchQuery) {
             filtered = filtered.filter(a =>
-                a.kunde.name.toLowerCase().includes(searchQuery) ||
+                (a.kunde?.name || '').toLowerCase().includes(searchQuery) ||
                 a.id.toLowerCase().includes(searchQuery) ||
                 (a.leistungsart || '').toLowerCase().includes(searchQuery)
             );
@@ -303,7 +301,7 @@ function renderAuftragCard(a) {
     return `
         <div class="auftrag-card" onclick="openAuftragDetail('${h(a.id)}')">
             <div class="auftrag-card-header">
-                <span class="auftrag-card-title">${h(a.kunde.name)}</span>
+                <span class="auftrag-card-title">${h(a.kunde?.name || 'Unbekannter Kunde')}</span>
                 <span class="auftrag-card-id" title="Im Status seit ${dauerText}">${dauerText}</span>
             </div>
             <div class="auftrag-card-meta">
@@ -338,14 +336,14 @@ function renderAuftraegeList(auftraege) {
     const searchQuery = (document.getElementById('auftrag-search')?.value || '').toLowerCase();
     if (searchQuery) {
         filtered = filtered.filter(a =>
-            a.kunde.name.toLowerCase().includes(searchQuery) ||
+            (a.kunde?.name || '').toLowerCase().includes(searchQuery) ||
             a.id.toLowerCase().includes(searchQuery)
         );
     }
 
     if (filtered.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state">
                 <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
                 <h3 style="margin-bottom:8px;">Keine Aufträge</h3>
                 <p style="color:var(--text-secondary);margin-bottom:24px;">Aufträge entstehen aus angenommenen Angeboten.</p>
@@ -360,12 +358,10 @@ function renderAuftraegeList(auftraege) {
         const fortschritt = a.fortschritt || 0;
         const progressClass = fortschritt < 30 ? 'low' : fortschritt < 70 ? 'mid' : 'high';
         const statusLabel = AUFTRAG_STATUS_LABELS[a.status] || a.status;
-        const workers = (a.mitarbeiter || []).join(', ');
-
         return `
             <div class="item-card" onclick="openAuftragDetail('${h(a.id)}')" style="cursor:pointer;">
                 <div class="item-header">
-                    <h3 class="item-title">${h(a.kunde.name)}</h3>
+                    <h3 class="item-title">${h(a.kunde?.name || 'Unbekannter Kunde')}</h3>
                     <span class="item-id">${a.id}</span>
                 </div>
                 <div class="item-meta">

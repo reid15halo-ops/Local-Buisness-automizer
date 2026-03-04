@@ -127,7 +127,7 @@ class AutomationAPI {
                 return { success: false, error: 'TaskService nicht verfügbar' };
 
             case 'log':
-                console.log('[Workflow]', params.message);
+                console.warn('[Workflow]', params.message);
                 return { success: true, local: true };
 
             case 'wait':

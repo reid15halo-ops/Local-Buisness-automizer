@@ -477,7 +477,6 @@ class GanttTimelineUI {
         if (!start || !end) {return null;}
 
         const viewStart = new Date(this.viewStartDate);
-        const viewEnd = this.viewEndDate;
 
         // Calculate positions
         const barStartDay = this._daysBetween(viewStart, start);
@@ -673,7 +672,7 @@ class GanttTimelineUI {
         }
     }
 
-    _updateDragTooltip(auftrag, dx, mode, originalLeft, originalWidth) {
+    _updateDragTooltip(auftrag, dx, mode, _originalLeft, _originalWidth) {
         const dayShift = Math.round(dx / this.DAY_WIDTH);
         const origStart = this._parseDate(auftrag.startDatum);
         const origEnd = this._parseDate(auftrag.endDatum);
@@ -759,7 +758,7 @@ class GanttTimelineUI {
     // DROP ZONE (timeline accepts drops from unplanned)
     // ================================================================
 
-    _setupDropZone(gridBody, scheduled) {
+    _setupDropZone(gridBody, _scheduled) {
         gridBody.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';

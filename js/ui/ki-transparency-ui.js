@@ -11,7 +11,7 @@ class KITransparencyUI {
         this.activeWrappers = new Map(); // targetId -> wrapper state
         this.stylesInjected = false;
         this.injectStyles();
-        console.log('[KITransparencyUI] Initialisiert');
+        // KITransparencyUI initialized
     }
 
     // ============================================

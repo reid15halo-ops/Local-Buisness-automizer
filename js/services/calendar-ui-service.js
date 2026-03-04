@@ -989,7 +989,7 @@ class CalendarUIService {
 
         // Attach event listeners
         monthDiv.querySelectorAll('.calendar-day-cell').forEach(cell => {
-            cell.addEventListener('click', (e) => {
+            cell.addEventListener('click', (_e) => {
                 const dateStr = cell.dataset.date;
                 this.selectedDate = new Date(dateStr);
                 this.currentView = 'day';
@@ -1094,7 +1094,6 @@ class CalendarUIService {
         for (let hour = 8; hour <= 18; hour++) {
             weekDays.forEach(date => {
                 const dateStr = date.toISOString().split('T')[0];
-                const hourStr = `${String(hour).padStart(2, '0')}:00`;
 
                 const isNow = dateStr === today && new Date().getHours() === hour;
 
@@ -1155,7 +1154,6 @@ class CalendarUIService {
         if (dayIndex === -1) {return;}
 
         const topPercent = startMinuteFromHour * (100 / 1);
-        const heightPercent = durationHours * 100;
 
         const color = event.color || this.colors[event.type] || '#64748b';
         const blockHtml = `

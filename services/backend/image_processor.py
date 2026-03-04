@@ -26,6 +26,9 @@ import math
 import time
 from typing import Optional
 
+import ipaddress
+import socket
+
 import httpx
 import numpy as np
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
@@ -378,6 +381,32 @@ async def preprocess_image(file: UploadFile = File(...)) -> ImagePreprocessRespo
     ),
 )
 async def preprocess_image_url(payload: ImageUrlRequest) -> ImagePreprocessResponse:
+    # SSRF protection: validate URL scheme and resolve hostname to check for private IPs
+    from urllib.parse import urlparse
+
+    parsed = urlparse(payload.url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only http and https URLs are allowed",
+        )
+
+    try:
+        resolved_ips = socket.getaddrinfo(parsed.hostname, parsed.port or 443)
+    except socket.gaierror as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Could not resolve hostname: {parsed.hostname}",
+        ) from exc
+
+    for _family, _type, _proto, _canonname, sockaddr in resolved_ips:
+        ip = ipaddress.ip_address(sockaddr[0])
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="URLs pointing to private/internal networks are not allowed",
+            )
+
     try:
         async with httpx.AsyncClient(follow_redirects=True, timeout=payload.timeout_seconds) as client:
             response = await client.get(payload.url)

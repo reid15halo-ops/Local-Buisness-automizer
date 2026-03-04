@@ -218,7 +218,8 @@ run_restic_backup() {
   log_info "Running Restic backup to ${RESTIC_REPOSITORY}"
 
   # Configure SSH for Restic SFTP
-  export RESTIC_SFTP_COMMAND="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -l ${NAS_SSH_USER}"
+  # Pre-populate NAS host key in ~/.ssh/known_hosts before first run
+  export RESTIC_SFTP_COMMAND="ssh -o StrictHostKeyChecking=yes -o ConnectTimeout=30 -l ${NAS_SSH_USER}"
 
   restic backup \
     "${RESTIC_TAGS[@]}" \

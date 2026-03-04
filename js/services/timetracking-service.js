@@ -5,10 +5,10 @@
 
 class TimeTrackingService {
     constructor() {
-        this.entries = JSON.parse(localStorage.getItem('freyai_time_entries') || '[]');
-        this.employees = JSON.parse(localStorage.getItem('freyai_employees') || '[]');
-        this.activeTimers = JSON.parse(localStorage.getItem('freyai_active_timers') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('freyai_time_settings') || '{}');
+        try { this.entries = JSON.parse(localStorage.getItem('freyai_time_entries') || '[]'); } catch { this.entries = []; }
+        try { this.employees = JSON.parse(localStorage.getItem('freyai_employees') || '[]'); } catch { this.employees = []; }
+        try { this.activeTimers = JSON.parse(localStorage.getItem('freyai_active_timers') || '{}'); } catch { this.activeTimers = {}; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_time_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.dailyHours) {this.settings.dailyHours = 8;}
@@ -110,12 +110,47 @@ class TimeTrackingService {
         const started = new Date(timer.startedAt);
         const now = new Date();
         const elapsedMinutes = Math.floor((now - started) / 60000);
+        const isStale = elapsedMinutes > 24 * 60; // >24h without clock-out
 
         return {
             ...timer,
             elapsedMinutes,
-            elapsedFormatted: this.formatDuration(elapsedMinutes)
+            elapsedFormatted: this.formatDuration(elapsedMinutes),
+            isStale
         };
+    }
+
+    // Detect and resolve stale timers (>24h without clock-out)
+    getStaleTimers() {
+        const stale = [];
+        const now = new Date();
+        for (const [empId, timer] of Object.entries(this.activeTimers)) {
+            const started = new Date(timer.startedAt);
+            const elapsedMinutes = Math.floor((now - started) / 60000);
+            if (elapsedMinutes > 24 * 60) {
+                stale.push({ employeeId: empId, ...timer, elapsedMinutes });
+            }
+        }
+        return stale;
+    }
+
+    autoResolveStaleTimer(employeeId, endTime = '17:00') {
+        const timer = this.activeTimers[employeeId];
+        if (!timer) {return null;}
+
+        // Create entry with assumed end time on the original date
+        const entry = this.addEntry({
+            employeeId,
+            date: timer.date,
+            startTime: timer.startTime,
+            endTime: endTime,
+            projectId: timer.projectId,
+            description: '[Auto-geschlossen: Timer vergessen]'
+        });
+
+        delete this.activeTimers[employeeId];
+        this.saveTimers();
+        return entry;
     }
 
     // Query Entries
@@ -159,7 +194,11 @@ class TimeTrackingService {
         const [startH, startM] = startTime.split(':').map(Number);
         const [endH, endM] = endTime.split(':').map(Number);
         const startTotal = startH * 60 + startM;
-        const endTotal = endH * 60 + endM;
+        let endTotal = endH * 60 + endM;
+        // Handle overnight shifts (e.g. 22:00 → 06:00)
+        if (endTotal < startTotal) {
+            endTotal += 24 * 60;
+        }
         return Math.max(0, endTotal - startTotal - breakMinutes);
     }
 
@@ -251,7 +290,8 @@ class TimeTrackingService {
                 csv += `${row.date};${row.dayName};;;;;\n`;
             } else {
                 row.entries.forEach(e => {
-                    csv += `${row.date};${row.dayName};${e.startTime};${e.endTime};${e.breakMinutes};${e.durationHours};${e.description}\n`;
+                    const desc = (e.description || '').replace(/"/g, '""');
+                    csv += `${row.date};${row.dayName};${e.startTime};${e.endTime};${e.breakMinutes};${e.durationHours};"${desc}"\n`;
                 });
             }
         });

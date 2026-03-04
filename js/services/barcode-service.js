@@ -5,9 +5,9 @@
 
 class BarcodeService {
     constructor() {
-        this.scanHistory = JSON.parse(localStorage.getItem('freyai_scan_history') || '[]');
-        this.productDatabase = JSON.parse(localStorage.getItem('freyai_barcode_products') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('freyai_barcode_settings') || '{}');
+        try { this.scanHistory = JSON.parse(localStorage.getItem('freyai_scan_history') || '[]'); } catch { this.scanHistory = []; }
+        try { this.productDatabase = JSON.parse(localStorage.getItem('freyai_barcode_products') || '{}'); } catch { this.productDatabase = {}; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_barcode_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.soundEnabled) {this.settings.soundEnabled = true;}
@@ -37,7 +37,7 @@ class BarcodeService {
                             this.handleScan(barcode.rawValue, barcode.format, onScan);
                         }
                     } catch (e) {
-                        console.log('Scan error:', e);
+                        console.error('Scan error:', e);
                     }
 
                     if (videoElement.srcObject) {
@@ -182,7 +182,7 @@ class BarcodeService {
     }
 
     // Generate barcode for product
-    generateBarcode(productId, type = 'custom') {
+    generateBarcode(productId, _type = 'custom') {
         // Generate a custom barcode (FreyAI prefix + timestamp)
         const code = `FREY${Date.now().toString().slice(-10)}`;
         return code;
@@ -204,8 +204,8 @@ class BarcodeService {
 
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.1);
-        } catch (e) {
-            console.log('Audio not available');
+        } catch {
+            console.warn('Audio not available');
         }
     }
 

@@ -5,8 +5,8 @@
 
 class OcrScannerService {
     constructor() {
-        this.scannedDocuments = JSON.parse(localStorage.getItem('freyai_scanned_docs') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_ocr_settings') || '{}');
+        try { this.scannedDocuments = JSON.parse(localStorage.getItem('freyai_scanned_docs') || '[]'); } catch { this.scannedDocuments = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_ocr_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'deu';} // German
@@ -56,7 +56,7 @@ class OcrScannerService {
             // Use Tesseract.js for OCR (if available) or fallback to pattern matching
             if (window.Tesseract) {
                 const result = await Tesseract.recognize(imageData, this.settings.language, {
-                    logger: m => console.log(m)
+                    logger: () => {}
                 });
                 doc.text = result.data.text;
                 doc.confidence = result.data.confidence;

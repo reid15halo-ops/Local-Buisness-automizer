@@ -5,9 +5,9 @@
 
 class SecurityBackupService {
     constructor() {
-        this.backups = JSON.parse(localStorage.getItem('freyai_backup_log') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_security_settings') || '{}');
-        this.activityLog = JSON.parse(localStorage.getItem('freyai_activity_log') || '[]');
+        try { this.backups = JSON.parse(localStorage.getItem('freyai_backup_log') || '[]'); } catch { this.backups = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_security_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.activityLog = JSON.parse(localStorage.getItem('freyai_activity_log') || '[]'); } catch { this.activityLog = []; }
 
         // Default settings
         if (!this.settings.autoBackup) {this.settings.autoBackup = true;}
@@ -96,7 +96,7 @@ class SecurityBackupService {
                 success: true,
                 data: JSON.parse(decoder.decode(decrypted))
             };
-        } catch (error) {
+        } catch {
             return { success: false, error: 'Entschlüsselung fehlgeschlagen - falsches Passwort?' };
         }
     }
@@ -113,7 +113,7 @@ class SecurityBackupService {
         keys.forEach(key => {
             try {
                 data[key] = JSON.parse(localStorage.getItem(key));
-            } catch (e) {
+            } catch {
                 data[key] = localStorage.getItem(key);
             }
         });
@@ -292,7 +292,7 @@ class SecurityBackupService {
         };
 
         // Store in IndexedDB if available, otherwise localStorage
-        const existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]');
+        let existingAutoBackups; try { existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { existingAutoBackups = []; }
         existingAutoBackups.push(backup);
 
         // Keep last 3 auto-backups
@@ -301,12 +301,12 @@ class SecurityBackupService {
         }
 
         localStorage.setItem('freyai_auto_backups', JSON.stringify(existingAutoBackups));
-        console.log('Auto-backup created:', backup.id);
+        // Auto-backup created
     }
 
     // Get auto backups
     getAutoBackups() {
-        return JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]');
+        try { return JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { return []; }
     }
 
     // =====================================================
@@ -362,7 +362,7 @@ class SecurityBackupService {
                 if (sbRech) { customerData.invoices = [...customerData.invoices, ...sbRech]; }
                 const { data: sbComm } = await sb.from('communication_log').select('*').eq('kunde_id', customerId);
                 if (sbComm) { customerData.communications = [...customerData.communications, ...sbComm]; }
-            } catch (e) { /* Supabase not available, local data only */ }
+            } catch { /* Supabase not available, local data only */ }
         }
 
         return customerData;
@@ -383,7 +383,7 @@ class SecurityBackupService {
 
         // 1. Delete from localStorage
         keysToCheck.forEach(key => {
-            const data = JSON.parse(localStorage.getItem(key) || '[]');
+            let data; try { data = JSON.parse(localStorage.getItem(key) || '[]'); } catch { data = []; }
             if (Array.isArray(data)) {
                 const filtered = data.filter(item =>
                     item.id !== customerId &&
@@ -411,13 +411,13 @@ class SecurityBackupService {
                 try {
                     const { error } = await sb.from(table).delete().eq(field, customerId);
                     if (!error) { deletedCount++; }
-                } catch (e) { /* table may not exist or field mismatch - continue */ }
+                } catch { /* table may not exist or field mismatch - continue */ }
             }
         }
 
         // 3. Delete from IndexedDB via db-service
         if (window.dbService?.deleteCustomer) {
-            try { await window.dbService.deleteCustomer(customerId); } catch (e) { /* OK */ }
+            try { await window.dbService.deleteCustomer(customerId); } catch { /* OK */ }
         }
 
         this.logActivity('gdpr_delete', { customerId, deletedCount });

@@ -231,7 +231,7 @@ class AgentWorkflowService {
     startScheduler() {
         if (this.schedulerInterval) {return;}
         this.schedulerInterval = setInterval(() => this.runScheduledAgents(), 60000);
-        console.log('[AgentWorkflow] Scheduler gestartet');
+        // Scheduler started
     }
 
     /**
@@ -241,7 +241,7 @@ class AgentWorkflowService {
         if (this.schedulerInterval) {
             clearInterval(this.schedulerInterval);
             this.schedulerInterval = null;
-            console.log('[AgentWorkflow] Scheduler gestoppt');
+            // Scheduler stopped
         }
     }
 
@@ -383,7 +383,7 @@ class AgentWorkflowService {
         // AI-enhanced summary via Gemini
         try {
             briefingData.aiSummary = await this._generateAIBriefingSummary(briefingData);
-        } catch (e) {
+        } catch {
             briefingData.aiSummary = this._getFallbackBriefingSummary(briefingData);
         }
 
@@ -564,7 +564,7 @@ Antworte NUR mit dem Briefing-Text auf Deutsch.`;
             // Generate reminder text via AI
             try {
                 mahnung.mahntext = await this._generateDunningText(mahnung);
-            } catch (e) {
+            } catch {
                 mahnung.mahntext = this._getFallbackDunningText(mahnung);
             }
 
@@ -754,7 +754,7 @@ Antworte NUR mit dem Mahntext.`;
             // Generate follow-up text via AI
             try {
                 followup.nachfasstext = await this._generateFollowUpText(followup, anfrage);
-            } catch (e) {
+            } catch {
                 followup.nachfasstext = this._getFallbackFollowUpText(followup);
             }
 
@@ -876,7 +876,7 @@ Antworte NUR mit dem Nachfass-Text.`;
                 draft.positionen = aiResult.positionen || [];
                 draft.geschaetzterPreis = aiResult.geschaetzterPreis || null;
                 draft.angebotstext = aiResult.angebotstext || null;
-            } catch (e) {
+            } catch {
                 const fallback = this._getFallbackQuoteDraft(anfrage);
                 draft.positionen = fallback.positionen;
                 draft.geschaetzterPreis = fallback.geschaetzterPreis;
@@ -954,7 +954,8 @@ Antworte NUR mit dem JSON.`;
         // Estimate based on leistungsart
         const basePrice = this._estimateBasePrice(anfrage.leistungsart);
         const netto = basePrice;
-        const mwst = Math.round(netto * _getTaxRate() * 100) / 100;
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = Math.round(netto * taxRate * 100) / 100;
         const brutto = Math.round((netto + mwst) * 100) / 100;
 
         return {
@@ -1108,7 +1109,7 @@ Antworte NUR mit dem JSON.`;
         let aiVorschlaege = null;
         try {
             aiVorschlaege = await this._generateScheduleSuggestions(orderTimeline, issues);
-        } catch (e) {
+        } catch {
             aiVorschlaege = this._getFallbackScheduleSuggestions(issues);
         }
 
@@ -1434,7 +1435,7 @@ Antworte NUR mit dem JSON-Array.`;
     _getBusinessType() {
         let ap = {};
         try {
-            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
             if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
                 console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
                 ap = {};
@@ -1450,7 +1451,7 @@ Antworte NUR mit dem JSON-Array.`;
     _getCompanyName() {
         let ap = {};
         try {
-            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
             if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
                 console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
                 ap = {};

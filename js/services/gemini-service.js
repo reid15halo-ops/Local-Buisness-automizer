@@ -62,12 +62,9 @@ class GeminiService {
             // Get auth token from Supabase
             const { data: { session }, error } = await window.supabaseClient.auth.getSession();
             if (error || !session) {
-                console.warn('Supabase session not available, falling back to direct API (if key configured)');
-                if (!this.apiKey) {
-                    throw new Error('No authentication available and no API key configured');
-                }
-                // Fallback to direct
-                url = `${this.baseUrl}?key=${this.apiKey}`;
+                // Do not fall back to direct API key when proxy is configured —
+                // the key would be visible in browser dev tools / network logs.
+                throw new Error('Supabase session not available. Please log in to use AI features.');
             } else {
                 headers['Authorization'] = `Bearer ${session.access_token}`;
             }
@@ -106,7 +103,7 @@ class GeminiService {
 
 Erstelle einen professionellen, deutschsprachigen Angebots-Text basierend auf folgender Kundenanfrage:
 
-Kunde: ${anfrage.kunde.name}
+Kunde: ${anfrage.kunde?.name || 'Unbekannt'}
 Leistungsart: ${anfrage.leistungsart}
 Beschreibung: ${anfrage.beschreibung}
 ${anfrage.budget ? `Geschätztes Budget: ${anfrage.budget}€` : ''}
@@ -241,7 +238,7 @@ Antwort:`;
         const templates = {
             'metallbau': `Sehr geehrte Damen und Herren,
 
-vielen Dank für Ihre Anfrage bezüglich ${anfrage.beschreibung.substring(0, 50)}.
+vielen Dank für Ihre Anfrage bezüglich ${(anfrage.beschreibung || '').substring(0, 50)}.
 
 Gerne unterbreiten wir Ihnen folgendes Angebot für die gewünschten Arbeiten. Wir garantieren höchste Qualitätsstandards und fachgerechte Ausführung.
 
@@ -303,7 +300,7 @@ ${companyName}`
         let gesamtkosten = 0;
 
         positionen.forEach(pos => {
-            const beschreibung = pos.beschreibung.toLowerCase();
+            const beschreibung = (pos.beschreibung || '').toLowerCase();
 
             materialBestand.forEach(mat => {
                 const matBez = mat.bezeichnung.toLowerCase();
@@ -331,12 +328,12 @@ ${companyName}`
     }
 
     _getBusinessType() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
     }
 
     _getCompanyName() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 }

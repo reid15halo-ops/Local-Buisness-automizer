@@ -12,9 +12,9 @@ class WhatsAppService {
         this.SETTINGS_KEY = 'freyai_whatsapp_settings';
 
         this.config = this._loadConfig();
-        this.conversations = JSON.parse(localStorage.getItem(this.CONVERSATIONS_KEY) || '{}');
-        this.messageLog = JSON.parse(localStorage.getItem(this.MESSAGES_KEY) || '[]');
-        this.settings = JSON.parse(localStorage.getItem(this.SETTINGS_KEY) || '{}');
+        try { this.conversations = JSON.parse(localStorage.getItem(this.CONVERSATIONS_KEY) || '{}'); } catch { this.conversations = {}; }
+        try { this.messageLog = JSON.parse(localStorage.getItem(this.MESSAGES_KEY) || '[]'); } catch { this.messageLog = []; }
+        try { this.settings = JSON.parse(localStorage.getItem(this.SETTINGS_KEY) || '{}'); } catch { this.settings = {}; }
 
         // Rate limiting
         this._rateLimitQueue = [];
@@ -77,7 +77,7 @@ class WhatsAppService {
     // =====================================================
 
     _loadConfig() {
-        const stored = JSON.parse(localStorage.getItem('freyai_whatsapp_config') || 'null');
+        let stored; try { stored = JSON.parse(localStorage.getItem('freyai_whatsapp_config') || 'null'); } catch { stored = 'null'; }
         return stored || {
             apiUrl: 'https://graph.facebook.com/v18.0',
             accessToken: '',
@@ -1200,7 +1200,7 @@ class WhatsAppService {
      */
     _getBusinessName() {
         if (this.config.businessName) { return this.config.businessName; }
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 
@@ -1208,7 +1208,7 @@ class WhatsAppService {
      * Get business phone from admin settings
      */
     _getBusinessPhone() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return ap.company_phone || window.storeService?.state?.settings?.phone || '';
     }
 

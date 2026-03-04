@@ -26,11 +26,10 @@ echo "📦 Step 2: Creating production build..."
 rm -rf dist
 mkdir -p dist
 
-# Copy entire directories (more robust than individual files)
+# Copy frontend directories only (config/ and supabase/ contain sensitive
+# schema files, .env templates, and edge function source — never expose in dist)
 cp -r css dist/
 cp -r js dist/
-cp -r config dist/
-cp -r supabase dist/
 
 # Copy HTML files
 cp index.html dist/

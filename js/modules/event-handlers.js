@@ -10,6 +10,14 @@
     function initEventDelegation() {
         // Click delegation - main handler
         document.addEventListener('click', (e) => {
+            // Handle data-navigate buttons (view switching)
+            const navTarget = e.target.closest('[data-navigate]');
+            if (navTarget) {
+                const viewId = navTarget.dataset.navigate;
+                document.querySelector(`.nav-item[data-view="${viewId}"]`)?.click();
+                return;
+            }
+
             const target = e.target.closest('[data-action]');
             if (!target) {return;}
 

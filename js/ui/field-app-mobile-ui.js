@@ -1275,7 +1275,7 @@ class FieldAppMobileUI {
                         textarea.value += finalText;
                     }
                 }
-            } catch (error) {
+            } catch {
                 // Non-critical
             }
         });
@@ -1560,7 +1560,7 @@ class FieldAppMobileUI {
                         el.textContent = timer.elapsedFormatted;
                     });
                 }
-            } catch (error) {
+            } catch {
                 // Non-critical timer update
             }
         }, 1000);
@@ -1581,7 +1581,7 @@ class FieldAppMobileUI {
         if (this.signaturePad) {
             try {
                 this.signaturePad.destroy();
-            } catch (e) {
+            } catch {
                 // Already destroyed
             }
             this.signaturePad = null;
@@ -1592,7 +1592,7 @@ class FieldAppMobileUI {
         if (this.quickOverlay) {
             try {
                 this.quickOverlay.remove();
-            } catch (e) {
+            } catch {
                 // Already removed
             }
             this.quickOverlay = null;
@@ -1633,7 +1633,7 @@ class FieldAppMobileUI {
             const service = window.fieldAppService;
             const job = service?.getJobById(jobId);
             return job?.title || '';
-        } catch (e) {
+        } catch {
             return '';
         }
     }

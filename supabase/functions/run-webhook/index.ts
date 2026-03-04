@@ -95,13 +95,28 @@ serve(async (req) => {
             ...(customHeaders || {}),
         }
 
-        const webhookResponse = await fetch(url, {
-            method: method || 'POST',
-            headers: webhookHeaders,
-            body: ['GET', 'HEAD'].includes((method || 'POST').toUpperCase())
-                ? undefined
-                : JSON.stringify(data || {}),
-        })
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
+        let webhookResponse: Response
+        try {
+            webhookResponse = await fetch(url, {
+                method: method || 'POST',
+                headers: webhookHeaders,
+                body: ['GET', 'HEAD'].includes((method || 'POST').toUpperCase())
+                    ? undefined
+                    : JSON.stringify(data || {}),
+                signal: controller.signal,
+            })
+        } catch (fetchErr: unknown) {
+            clearTimeout(timeout)
+            const msg = fetchErr instanceof Error && fetchErr.name === 'AbortError' ? 'Webhook Timeout (10s)' : 'Webhook Verbindungsfehler'
+            return new Response(
+                JSON.stringify({ success: false, error: msg }),
+                { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        } finally {
+            clearTimeout(timeout)
+        }
 
         const responseText = await webhookResponse.text()
         let responseData: unknown

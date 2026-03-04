@@ -5,8 +5,8 @@
 
 class BookingService {
     constructor() {
-        this.bookings = JSON.parse(localStorage.getItem('freyai_bookings') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_booking_settings') || '{}');
+        try { this.bookings = JSON.parse(localStorage.getItem('freyai_bookings') || '[]'); } catch { this.bookings = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_booking_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.serviceTypes) {
@@ -65,7 +65,7 @@ class BookingService {
                 startTime: newBooking.startTime,
                 endTime: newBooking.endTime,
                 customerName: newBooking.customer.name,
-                type: 'besichtigung',
+                type: booking.serviceType || 'besichtigung',
                 status: 'geplant'
             });
         }
@@ -197,7 +197,7 @@ class BookingService {
 
     // Email Templates
     _companyInfo() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         const store = window.storeService?.state?.settings || {};
         return {
             name: ap.company_name || store.companyName || 'FreyAI Visions',

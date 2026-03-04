@@ -55,7 +55,7 @@ class StoreService {
             throw new Error('User ID is required');
         }
 
-        console.log(`Loading data for user: ${userId}`);
+        // Loading data for user
         this.currentUserId = userId;
 
         // 1. Try to get user-specific data from IndexedDB
@@ -65,7 +65,7 @@ class StoreService {
         if (!data) {
             const legacyData = await window.dbService.get(this.STORAGE_KEY);
             if (legacyData && userId === 'default') {
-                console.log('Migrating legacy data to user_default_data...');
+                console.warn('Migrating legacy data to user_default_data...');
                 data = legacyData;
                 await window.dbService.setUserData(userId, this.STORAGE_KEY, data);
             }
@@ -75,7 +75,7 @@ class StoreService {
         if (!data) {
             const legacyLocalStorage = localStorage.getItem(this.STORAGE_KEY);
             if (legacyLocalStorage && userId === 'default') {
-                console.log('Migrating data from localStorage to user-specific IndexedDB...');
+                console.warn('Migrating data from localStorage to user-specific IndexedDB...');
                 try {
                     data = JSON.parse(legacyLocalStorage);
                     await window.dbService.setUserData(userId, this.STORAGE_KEY, data);
@@ -99,7 +99,7 @@ class StoreService {
                     this.store.angebote.length === 0 &&
                     this.store.auftraege.length === 0) {
                     const synced = await this._syncFromSupabase();
-                    if (!synced) await this.resetToDemo();
+                    if (!synced) {await this.resetToDemo();}
                 }
             } catch (e) {
                 console.error('Failed to parse store data:', e);
@@ -108,7 +108,7 @@ class StoreService {
         } else {
             // No data saved yet -> Try Supabase first, then Demo
             const synced = await this._syncFromSupabase();
-            if (!synced) await this.resetToDemo();
+            if (!synced) {await this.resetToDemo();}
         }
 
         this.notify();
@@ -173,7 +173,7 @@ class StoreService {
         });
 
         await this.save();
-        console.log(`App reset to demo state for user: ${userId} (Reference preserved).`);
+        console.warn(`App reset to demo state for user: ${userId} (Reference preserved).`);
     }
 
     checkStorageUsage() {
@@ -223,7 +223,7 @@ class StoreService {
     addAnfrage(anfrage) {
         this.store.anfragen.push(anfrage);
         this.save();
-        this.addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
+        this.addActivity('📥', `Neue Anfrage von ${anfrage.kunde?.name || 'Unbekannt'}`);
     }
 
     /**
@@ -237,7 +237,7 @@ class StoreService {
         if (anfrage) {anfrage.status = 'angebot-erstellt';}
 
         this.save();
-        this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde.name} erstellt`);
+        this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} erstellt`);
     }
 
     /**
@@ -394,8 +394,8 @@ class StoreService {
                     stuecklisteEK: auftrag.stuecklisteEK || 0,
                     notizen: auftrag.notizen,
                     netto: netto,
-                    mwst: netto * _getTaxRate(),
-                    brutto: netto * (1 + _getTaxRate()),
+                    mwst: netto * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19),
+                    brutto: netto * (1 + ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19)),
                     status: 'offen',
                     datum: new Date().toISOString(),
                     faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
@@ -468,9 +468,9 @@ class StoreService {
      * @returns {boolean} true if data was loaded from Supabase
      */
     async _syncFromSupabase() {
-        if (!window.supabaseDB || !window.supabaseDB.isOnline()) return false;
+        if (!window.supabaseDB || !window.supabaseDB.isOnline()) {return false;}
         try {
-            console.log("[StoreService] Syncing from Supabase...");
+            console.warn("[StoreService] Syncing from Supabase...");
             const tables = ["anfragen", "angebote", "auftraege", "rechnungen"];
             let totalRecords = 0;
             for (const table of tables) {
@@ -486,10 +486,10 @@ class StoreService {
                     this.store.kunden = kunden;
                     totalRecords += kunden.length;
                 }
-            } catch(e) { /* kunden table may not exist */ }
+            } catch { /* kunden table may not exist */ }
 
             if (totalRecords > 0) {
-                console.log(`[StoreService] Loaded ${totalRecords} records from Supabase`);
+                console.warn(`[StoreService] Loaded ${totalRecords} records from Supabase`);
                 await this.save();
                 this.notify();
                 return true;

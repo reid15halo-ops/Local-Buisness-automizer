@@ -106,6 +106,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 # FastAPI application
 # ---------------------------------------------------------------------------
 
+_is_dev = os.getenv("ENV", "production").lower() == "development"
+
 app = FastAPI(
     title=APP_NAME,
     version=APP_VERSION,
@@ -113,9 +115,9 @@ app = FastAPI(
         "Zone 2 backend services: invoice math validation, PII sanitisation, "
         "and document image preprocessing for the FreyAI 95/5 automation pipeline."
     ),
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/docs" if _is_dev else None,
+    redoc_url="/redoc" if _is_dev else None,
+    openapi_url="/openapi.json" if _is_dev else None,
     lifespan=lifespan,
 )
 

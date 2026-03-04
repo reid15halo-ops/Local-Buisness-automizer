@@ -98,12 +98,6 @@ async function fetchWithErrorHandling(url, options = {}) {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            const errorData = {
-                status: response.status,
-                statusText: response.statusText,
-                url: url
-            };
-
             // Map HTTP status to error type
             let errorType = 'load';
             if (response.status === 404) {

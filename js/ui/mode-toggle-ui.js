@@ -20,7 +20,7 @@ class ModeToggleUI {
             this.onModeChanged(e.detail);
         });
 
-        console.log('[ModeToggleUI] Initialized');
+        // ModeToggleUI initialized
     }
 
     /**
@@ -30,7 +30,7 @@ class ModeToggleUI {
     init() {
         this.applyMode(this.userModeService.getCurrentMode());
         this.createModeToggle();
-        console.log('[ModeToggleUI] Init complete');
+        // ModeToggleUI init complete
     }
 
     /**
@@ -221,7 +221,7 @@ class ModeToggleUI {
         }
 
         this.toggleShown = true;
-        console.log('[ModeToggleUI] Mode toggle created');
+        // Mode toggle created
     }
 
     /**
@@ -243,7 +243,7 @@ class ModeToggleUI {
      * @private
      */
     onModeChanged(detail) {
-        console.log('[ModeToggleUI] Mode changed to:', detail.mode);
+        // Mode changed
 
         // Apply new visibility
         this.applyMode(detail.mode);
@@ -269,8 +269,8 @@ class ModeToggleUI {
      * @private
      */
     toggleMode() {
-        const newMode = this.userModeService.toggleMode();
-        console.log('[ModeToggleUI] Toggled to mode:', newMode);
+        this.userModeService.toggleMode();
+        // Mode toggled
     }
 
     /**

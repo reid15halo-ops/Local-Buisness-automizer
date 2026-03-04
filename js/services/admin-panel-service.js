@@ -200,7 +200,7 @@ class AdminPanelService {
         const devCreds = this._getCredentials(this.ROLES.DEVELOPER);
         if (devCreds && username === devCreds.username) {
             if (await this._verifyPassword(password, devCreds)) {
-                if (devCreds.legacyPassword) await this._migrateLegacyPassword(this.ROLES.DEVELOPER, password);
+                if (devCreds.legacyPassword) {await this._migrateLegacyPassword(this.ROLES.DEVELOPER, password);}
                 this.currentRole = this.ROLES.DEVELOPER;
                 this.sessionActive = true;
                 this._startSessionTimer();
@@ -212,7 +212,7 @@ class AdminPanelService {
         const adminCreds = this._getCredentials(this.ROLES.ADMIN);
         if (adminCreds && username === adminCreds.username) {
             if (await this._verifyPassword(password, adminCreds)) {
-                if (adminCreds.legacyPassword) await this._migrateLegacyPassword(this.ROLES.ADMIN, password);
+                if (adminCreds.legacyPassword) {await this._migrateLegacyPassword(this.ROLES.ADMIN, password);}
                 this.currentRole = this.ROLES.ADMIN;
                 this.sessionActive = true;
                 this._startSessionTimer();

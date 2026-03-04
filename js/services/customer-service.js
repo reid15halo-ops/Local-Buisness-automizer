@@ -4,8 +4,8 @@
 
 class CustomerService {
     constructor() {
-        this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]');
-        this.interactions = JSON.parse(localStorage.getItem('freyai_interactions') || '[]');
+        try { this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]'); } catch { this.customers = []; }
+        try { this.interactions = JSON.parse(localStorage.getItem('freyai_interactions') || '[]'); } catch { this.interactions = []; }
     }
 
     // Customer CRUD
@@ -89,7 +89,7 @@ class CustomerService {
             }
             // trashService already removed from this.customers and saved
             // Reload from localStorage to stay in sync
-            this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]');
+            try { this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]'); } catch { this.customers = []; }
             return;
         }
 

@@ -8,8 +8,8 @@ class VoiceCommandService {
         this.isListening = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        this.settings = JSON.parse(localStorage.getItem('freyai_voice_settings') || '{}');
-        this.commandHistory = JSON.parse(localStorage.getItem('freyai_voice_history') || '[]');
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_voice_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.commandHistory = JSON.parse(localStorage.getItem('freyai_voice_history') || '[]'); } catch { this.commandHistory = []; }
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'de-DE';}
@@ -202,7 +202,7 @@ class VoiceCommandService {
         try {
             this.recognition.start();
             this.isListening = true;
-            console.log('🎤 Spracherkennung aktiv');
+            // Voice recognition active
             return true;
         } catch (e) {
             console.error('Could not start recognition:', e);
@@ -220,7 +220,7 @@ class VoiceCommandService {
 
     // Process recognized speech
     processCommand(transcript) {
-        console.log('🗣️ Erkannt:', transcript);
+        // Speech recognized
 
         // Check for wake word if required
         if (this.settings.wakeWord && !transcript.startsWith(this.settings.wakeWord)) {

@@ -5,10 +5,10 @@
 
 class MaterialService {
     constructor() {
-        this.bestand = JSON.parse(localStorage.getItem('material_bestand') || '[]');
+        try { this.bestand = JSON.parse(localStorage.getItem('material_bestand') || '[]'); } catch { this.bestand = []; }
         this.stundensatz = window.companySettings?.getStundensatz?.() ?? parseFloat(localStorage.getItem('stundensatz') || '65');
-        this.reservierungen = JSON.parse(localStorage.getItem('material_reservations') || '[]');
-        this.lagerbewegungen = JSON.parse(localStorage.getItem('stock_movements') || '[]');
+        try { this.reservierungen = JSON.parse(localStorage.getItem('material_reservations') || '[]'); } catch { this.reservierungen = []; }
+        try { this.lagerbewegungen = JSON.parse(localStorage.getItem('stock_movements') || '[]'); } catch { this.lagerbewegungen = []; }
     }
 
     // ============================================
@@ -20,6 +20,9 @@ class MaterialService {
 
             reader.onload = async (e) => {
                 try {
+                    if (typeof XLSX === 'undefined') {
+                        throw new Error('XLSX-Bibliothek nicht geladen. Bitte Seite neu laden.');
+                    }
                     // Parse Excel using SheetJS (loaded via CDN)
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
@@ -196,15 +199,14 @@ class MaterialService {
             materialkosten: gesamtMaterial,
             arbeitskosten: gesamtArbeit,
             netto: gesamtMaterial + gesamtArbeit,
-            mwst: (gesamtMaterial + gesamtArbeit) * _getTaxRate(),
-            brutto: (gesamtMaterial + gesamtArbeit) * (1 + _getTaxRate())
+            mwst: (gesamtMaterial + gesamtArbeit) * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19),
+            brutto: (gesamtMaterial + gesamtArbeit) * (1 + ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19))
         };
     }
 
     // Smart suggestion: which materials might be needed for a job description
     suggestMaterials(beschreibung) {
         const keywords = beschreibung.toLowerCase().split(/\s+/);
-        const suggestions = [];
         const matchScores = new Map();
 
         this.bestand.forEach(material => {

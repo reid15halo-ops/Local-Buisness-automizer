@@ -4,7 +4,7 @@
    ============================================ */
 (function() {
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h, switchView } = window.AppUtils;
+const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h } = window.AppUtils;
 
 // Filter and search state
 let currentRechnungenFilter = 'alle';
@@ -244,7 +244,7 @@ function renderRechnungen() {
         return `
             <div class="item-card" onclick="showRechnung('${safeId}')" style="cursor:pointer; border-left: 4px solid ${borderColor};">
                 <div class="item-header">
-                    <h3 class="item-title" style="${textStyle}">${window.UI.sanitize(r.kunde.name)}</h3>
+                    <h3 class="item-title" style="${textStyle}">${window.UI.sanitize(r.kunde?.name || 'Unbekannt')}</h3>
                     <span class="item-id">${window.UI.sanitize(r.id)}</span>
                 </div>
                 ${rechnungTrailHTML}
@@ -425,7 +425,7 @@ function showRechnung(rechnungId) {
             ${modalTrailHTML}
 
             <div style="margin-bottom: 20px;">
-                <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde.name)}</span><br>
+                <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde?.name || 'Unbekannt')}</span><br>
                 <strong>Leistungsart:</strong> <span style="${textStyle}">${getLeistungsartLabel(rechnung.leistungsart)}</span><br>
                 <strong>Status:</strong> ${statusHTML}
             </div>
@@ -581,23 +581,33 @@ function initRechnungActions() {
                 break;
             case 'xrechnung':
                 if (window.eInvoiceService) {
+                    if (window.showToast) {showToast('XRechnung wird generiert…', 'info');}
                     const result = window.eInvoiceService.generateXRechnung(rechnung);
                     if (result.success) {
                         window.eInvoiceService.downloadXml(result.recordId);
                         if (window.showToast) {showToast('XRechnung XML generiert', 'success');}
+                    } else {
+                        if (window.showToast) {showToast('XRechnung Fehler', 'error');}
                     }
+                } else {
+                    if (window.showToast) {showToast('E-Rechnung Service nicht verfügbar', 'error');}
                 }
                 break;
             case 'zugferd':
                 if (window.eInvoiceService) {
+                    if (window.showToast) {showToast('ZUGFeRD wird generiert…', 'info');}
                     const result = await window.eInvoiceService.generateZugferd(rechnung);
                     if (result.success && result.pdfBytes) {
                         window.eInvoiceService.downloadZugferdPdf(result.recordId);
                         if (window.showToast) {showToast('ZUGFeRD PDF generiert', 'success');}
-                    } else {
+                    } else if (result.success) {
                         window.eInvoiceService.downloadXml(result.recordId);
                         if (window.showToast) {showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');}
+                    } else {
+                        if (window.showToast) {showToast('ZUGFeRD Fehler', 'error');}
                     }
+                } else {
+                    if (window.showToast) {showToast('E-Rechnung Service nicht verfügbar', 'error');}
                 }
                 break;
             case 'mark-paid':
@@ -654,24 +664,24 @@ window.RechnungenModule = {
 // PDF download for invoices
 async function downloadInvoicePDF(id) {
     const rechnung = store.rechnungen.find(r => r.id === id);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
     // Try pdfGenerationService first (pdfMake), then pdfService (jsPDF)
     if (window.pdfGenerationService) {
         try {
             await window.pdfGenerationService.downloadPDF(rechnung);
-            if (window.showToast) showToast('PDF heruntergeladen', 'success');
+            if (window.showToast) {showToast('PDF heruntergeladen', 'success');}
         } catch (err) {
-            if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+            if (window.showToast) {showToast('PDF-Fehler: ' + err.message, 'error');}
         }
     } else if (window.pdfService?.generateRechnung) {
         try {
             await window.pdfService.generateRechnung(rechnung);
-            if (window.showToast) showToast('PDF heruntergeladen', 'success');
+            if (window.showToast) {showToast('PDF heruntergeladen', 'success');}
         } catch (err) {
-            if (window.showToast) showToast('PDF-Fehler: ' + err.message, 'error');
+            if (window.showToast) {showToast('PDF-Fehler: ' + err.message, 'error');}
         }
     } else {
-        if (window.showToast) showToast('PDF-Service nicht verfügbar', 'error');
+        if (window.showToast) {showToast('PDF-Service nicht verfügbar', 'error');}
     }
 }
 

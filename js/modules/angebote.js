@@ -452,15 +452,20 @@ function createAngebotFromAnfrage(anfrageId) {
     store.currentAnfrageId = anfrageId;
 
     // Fill modal info
-    document.getElementById('angebot-anfrage-id').value = anfrageId;
-    document.getElementById('angebot-kunde-info').innerHTML = `
-        <strong>${window.UI.sanitize(anfrage.kunde.name)}</strong><br>
-        ${getLeistungsartLabel(anfrage.leistungsart)}<br>
-        <small>${window.UI.sanitize(anfrage.beschreibung.substring(0, 100))}...</small>
-    `;
+    const anfrageIdEl = document.getElementById('angebot-anfrage-id');
+    if (anfrageIdEl) {anfrageIdEl.value = anfrageId;}
+    const kundeInfoEl = document.getElementById('angebot-kunde-info');
+    if (kundeInfoEl) {
+        kundeInfoEl.innerHTML = `
+            <strong>${window.UI.sanitize(anfrage.kunde?.name || 'Unbekannt')}</strong><br>
+            ${getLeistungsartLabel(anfrage.leistungsart)}<br>
+            <small>${window.UI.sanitize((anfrage.beschreibung || '').substring(0, 100))}...</small>
+        `;
+    }
 
     // Clear positions
-    document.getElementById('positionen-list').innerHTML = '';
+    const posListEl = document.getElementById('positionen-list');
+    if (posListEl) {posListEl.innerHTML = '';}
     addPosition();
 
     // Clear text
@@ -525,7 +530,8 @@ function initAngebotForm() {
             return;
         }
 
-        const mwst = netto * _getTaxRate();
+        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const mwst = netto * taxRate;
         const brutto = netto + mwst;
 
         // Check if we are editing an existing Angebot
@@ -540,7 +546,7 @@ function initAngebotForm() {
                 existing.updatedAt = new Date().toISOString();
 
                 saveStore();
-                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde.name} aktualisiert`);
+                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde?.name || 'Kunde'} aktualisiert`);
                 showToast('Angebot erfolgreich aktualisiert', 'success');
             }
 
@@ -568,7 +574,7 @@ function initAngebotForm() {
             anfrage.status = 'angebot-erstellt';
 
             saveStore();
-            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
+            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde?.name || 'Kunde'} erstellt`);
             showToast('Angebot erfolgreich erstellt — vorläufige Version wird versendet…', 'success');
 
             // Auto-send preliminary quote in background (non-blocking)
@@ -601,7 +607,7 @@ function showPositionTemplatePicker(row) {
     let currentFiltered = [...POSITION_TEMPLATES];
 
     const getFiltered = (query) => {
-        if (!query || !query.trim()) return [...POSITION_TEMPLATES];
+        if (!query || !query.trim()) { return [...POSITION_TEMPLATES]; }
         const q = query.toLowerCase().trim();
         return POSITION_TEMPLATES.filter(t =>
             t.beschreibung.toLowerCase().includes(q) ||
@@ -682,20 +688,24 @@ function showPositionTemplatePicker(row) {
     const listEl   = overlay.querySelector('#tpl-list');
     const searchEl = overlay.querySelector('#tpl-search');
 
-    const bindClicks = () => {
-        listEl.querySelectorAll('.tpl-item').forEach(item => {
-            item.addEventListener('mouseover', () => { item.style.background = '#f5f3ff'; });
-            item.addEventListener('mouseout',  () => { item.style.background = ''; });
-            item.addEventListener('click', () => applyTemplate(currentFiltered[parseInt(item.dataset.idx, 10)]));
-        });
-    };
-    bindClicks();
+    // Use event delegation to avoid listener leaks on re-render
+    listEl.addEventListener('mouseover', (e) => {
+        const item = e.target.closest('.tpl-item');
+        if (item) { item.style.background = '#f5f3ff'; }
+    });
+    listEl.addEventListener('mouseout', (e) => {
+        const item = e.target.closest('.tpl-item');
+        if (item) { item.style.background = ''; }
+    });
+    listEl.addEventListener('click', (e) => {
+        const item = e.target.closest('.tpl-item');
+        if (item) { applyTemplate(currentFiltered[parseInt(item.dataset.idx, 10)]); }
+    });
     searchEl.focus();
 
     searchEl.addEventListener('input', () => {
         currentFiltered = getFiltered(searchEl.value);
         listEl.innerHTML = renderList(currentFiltered);
-        bindClicks();
     });
 
     const close = () => { overlay.remove(); document.body.style.overflow = ''; };
@@ -862,7 +872,8 @@ function updateAngebotSummary() {
         netto += menge * preis;
     });
 
-    const mwst = netto * _getTaxRate();
+    const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+    const mwst = netto * taxRate;
     const brutto = netto + mwst;
 
     document.getElementById('angebot-netto').textContent = formatCurrency(netto);
@@ -994,7 +1005,7 @@ function renderAngebote() {
 
     if (allAngebote.length === 0) {
         container.innerHTML = `
-            <div class="empty-state" class="empty-state">
+            <div class="empty-state">
                 <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote vorhanden</h3>
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">
@@ -1035,7 +1046,7 @@ function renderAngebote() {
         const filterLabel = currentAngeboteFilter !== 'alle' ? ` mit Status "${currentAngeboteFilter}"` : '';
         const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
         container.innerHTML = `
-            <div class="empty-state" class="empty-state empty-state-small">
+            <div class="empty-state empty-state-small">
                 <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote gefunden</h3>
                 <p style="color: var(--text-secondary);">
@@ -1103,12 +1114,12 @@ function renderAngebote() {
         return `
         <div class="item-card" onclick="showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${h(a.id)}</span>
             </div>
             ${angebotTrailHTML}
             <div class="item-meta">
-                <span>${a.positionen.length} Positionen</span>
+                <span>${(a.positionen || []).length} Positionen</span>
                 <span>${formatCurrency(a.brutto)}</span>
                 <span>${formatDate(a.createdAt)}</span>
                 ${(() => {
@@ -1152,7 +1163,7 @@ function editAngebot(id) {
     const kundeInfoEl = document.getElementById('angebot-kunde-info');
     if (kundeInfoEl && angebot.kunde) {
         kundeInfoEl.innerHTML = `
-            <strong>${window.UI.sanitize(angebot.kunde.name)}</strong><br>
+            <strong>${window.UI.sanitize(angebot.kunde?.name || 'Kunde')}</strong><br>
             ${getLeistungsartLabel(angebot.leistungsart)}<br>
             <small>Angebot ${window.UI.sanitize(angebot.id)} bearbeiten</small>
         `;
@@ -1212,7 +1223,7 @@ function deleteAngebot(id) {
         // trashService already removed from store and saved
         // Reload angebote from store to stay in sync
         showToast('Angebot gelöscht', 'info');
-        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
         renderAngebote();
         return;
     }
@@ -1221,22 +1232,22 @@ function deleteAngebot(id) {
     if (window.confirmDialogService) {
         window.confirmDialogService.confirmDelete(
             'Angebot',
-            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde.name)} (${formatCurrency(angebot.brutto)})`,
+            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde?.name || 'Kunde')} (${formatCurrency(angebot.brutto)})`,
             () => {
                 store.angebote = store.angebote.filter(a => a.id !== id);
                 saveStore();
                 showToast('Angebot gelöscht', 'info');
-                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
                 renderAngebote();
             }
         );
     } else {
         // Last resort: simple confirm
-        if (await window.confirmDialogService?.confirm(`Angebot ${angebot.id} wirklich löschen?`, {title: 'Löschen bestätigen', type: 'danger'}) ?? confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
+        if (confirm(`Angebot ${angebot.id} wirklich löschen?`)) {
             store.angebote = store.angebote.filter(a => a.id !== id);
             saveStore();
             showToast('Angebot gelöscht', 'info');
-            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
             renderAngebote();
         }
     }
@@ -1332,8 +1343,8 @@ function initAngeboteFilters() {
 // Preview & Freigabe (Draft Review Workflow)
 // ============================================
 
-// Inject CSS for entwurf status badge and preview modal
-(function injectEntwurfStyles() { return; /* styles moved to components.css */ } function _oldInjectEntwurfStyles() {
+// Inject CSS for entwurf status badge and preview modal — styles moved to components.css
+(function _oldInjectEntwurfStyles() {
     if (document.getElementById('entwurf-styles')) {return;}
     const style = document.createElement('style');
     style.id = 'entwurf-styles';
@@ -1663,7 +1674,7 @@ function freigebenAngebot(id) {
     // Close the preview modal
     closeAngebotPreview();
 
-    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde.name} freigegeben und gesendet`);
+    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} freigegeben und gesendet`);
     showToast('Angebot wurde freigegeben und ist jetzt offen.', 'success');
 
     // Re-render
@@ -1684,7 +1695,7 @@ function showAngebotDetail(angebotId) {
     const rechnung = store.rechnungen.find(r => r.angebotId === angebotId || (auftrag && r.auftragId === auftrag.id));
 
     // Customer enrichment
-    const customer = window.customerService?.getCustomerByEmail?.(angebot.kunde.email) || null;
+    const customer = angebot.kunde?.email ? (window.customerService?.getCustomerByEmail?.(angebot.kunde.email) || null) : null;
     const customerId = customer?.id || null;
 
     // Calendar & Communication
@@ -1968,7 +1979,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
                 if (tokenRecord?.token) {
                     portalUrl = `${location.origin}/customer-portal.html?token=${encodeURIComponent(tokenRecord.token)}`;
                 }
-            } catch (_) { /* portal not available */ }
+            } catch { /* portal not available */ }
         }
 
         // ── Build body fragment (positions + totals) ──────────────────────

@@ -251,9 +251,9 @@ class LazyLoader {
                 this.loaded.add(fullName);
                 this.loading.delete(fullName);
                 if (attempt > 0) {
-                    console.log(`✅ Lazy loaded after ${attempt} retry(s): ${serviceName}`);
+                    // Lazy loaded after retry
                 } else {
-                    console.log(`✅ Lazy loaded: ${serviceName}`);
+                    // Lazy loaded
                 }
                 resolve();
             };
@@ -343,7 +343,7 @@ class LazyLoader {
             return Promise.resolve();
         }
 
-        console.log(`📦 Loading service group: ${groupName}`);
+        // Loading service group
         await this.loadServices(services);
 
         // Also load corresponding UI scripts if any
@@ -364,7 +364,7 @@ class LazyLoader {
             return Promise.resolve();
         }
 
-        console.log(`🎯 Loading services for view: ${viewName}`);
+        // Loading services for view
         await Promise.allSettled(groups.map(group => this.loadGroup(group)));
     }
 
@@ -388,7 +388,7 @@ class LazyLoader {
      */
     registerCriticalServices(serviceNames) {
         serviceNames.forEach(name => this.loaded.add('js/services/' + name));
-        console.log(`✅ Registered ${serviceNames.length} critical services as pre-loaded`);
+        // Critical services registered as pre-loaded
     }
 
     /**

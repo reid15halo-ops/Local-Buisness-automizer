@@ -382,7 +382,7 @@ class SetupWizardService {
                 return false;
             }
 
-            console.log('[SetupWizard] Fragebogen-Import erkannt. Starte Import-Flow...');
+            console.warn('[SetupWizard] Fragebogen-Import erkannt. Starte Import-Flow...');
 
             // If the UI component is available, let it handle the preview dialog
             if (window.fragebogenImportUI) {
