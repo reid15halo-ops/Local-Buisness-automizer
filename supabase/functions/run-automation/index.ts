@@ -131,12 +131,21 @@ serve(async (req) => {
                 }
 
                 const method = (params.method || 'POST').toUpperCase()
-                const whRes = await fetch(params.url, {
-                    method,
-                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'HandwerkFlow-Automation/1.0' },
-                    body: ['GET', 'HEAD'].includes(method) ? undefined : JSON.stringify(params.data || {}),
-                })
-                result = { success: whRes.ok, data: { status: whRes.status } }
+                const controller = new AbortController()
+                const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
+                try {
+                    const whRes = await fetch(params.url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json', 'User-Agent': 'HandwerkFlow-Automation/1.0' },
+                        body: ['GET', 'HEAD'].includes(method) ? undefined : JSON.stringify(params.data || {}),
+                        signal: controller.signal,
+                    })
+                    result = { success: whRes.ok, data: { status: whRes.status } }
+                } catch (fetchErr: unknown) {
+                    result = { success: false, error: fetchErr instanceof Error && fetchErr.name === 'AbortError' ? 'Webhook Timeout (10s)' : 'Webhook Fehler' }
+                } finally {
+                    clearTimeout(timeout)
+                }
                 break
             }
 
