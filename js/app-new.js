@@ -83,6 +83,7 @@ function renderMaterial() {
             kategorien.map(k => `<option value="${h(k)}">${h(k)}</option>`).join('');
     }
 
+    if (!container) {return;}
     if (materials.length === 0) {
         container.innerHTML = `
             <div class="empty-state" style="padding: 60px 20px; text-align: center;">
@@ -173,6 +174,7 @@ function initMaterial() {
 
 function renderMaterialList(materials) {
     const container = document.getElementById('material-list');
+    if (!container) {return;}
     if (materials.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine Treffer</p>';
         return;
@@ -598,7 +600,7 @@ async function runDemoWorkflow() {
     if (!store.anfragen) { store.anfragen = []; }
     store.anfragen.push(demoAnfrage);
     saveStore();
-    addActivity('📥', `Demo-Anfrage von ${demoAnfrage.kunde.name}`);
+    addActivity('📥', `Demo-Anfrage von ${demoAnfrage.kunde?.name || 'Unbekannt'}`);
 
     await delay(500);
 

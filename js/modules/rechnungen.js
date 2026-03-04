@@ -244,7 +244,7 @@ function renderRechnungen() {
         return `
             <div class="item-card" onclick="showRechnung('${safeId}')" style="cursor:pointer; border-left: 4px solid ${borderColor};">
                 <div class="item-header">
-                    <h3 class="item-title" style="${textStyle}">${window.UI.sanitize(r.kunde.name)}</h3>
+                    <h3 class="item-title" style="${textStyle}">${window.UI.sanitize(r.kunde?.name || 'Unbekannt')}</h3>
                     <span class="item-id">${window.UI.sanitize(r.id)}</span>
                 </div>
                 ${rechnungTrailHTML}
@@ -425,7 +425,7 @@ function showRechnung(rechnungId) {
             ${modalTrailHTML}
 
             <div style="margin-bottom: 20px;">
-                <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde.name)}</span><br>
+                <strong>Kunde:</strong> <span style="${textStyle}">${window.UI.sanitize(rechnung.kunde?.name || 'Unbekannt')}</span><br>
                 <strong>Leistungsart:</strong> <span style="${textStyle}">${getLeistungsartLabel(rechnung.leistungsart)}</span><br>
                 <strong>Status:</strong> ${statusHTML}
             </div>

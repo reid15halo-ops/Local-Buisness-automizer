@@ -223,7 +223,7 @@ class StoreService {
     addAnfrage(anfrage) {
         this.store.anfragen.push(anfrage);
         this.save();
-        this.addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
+        this.addActivity('📥', `Neue Anfrage von ${anfrage.kunde?.name || 'Unbekannt'}`);
     }
 
     /**
@@ -237,7 +237,7 @@ class StoreService {
         if (anfrage) {anfrage.status = 'angebot-erstellt';}
 
         this.save();
-        this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde.name} erstellt`);
+        this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} erstellt`);
     }
 
     /**

@@ -103,7 +103,7 @@ class GeminiService {
 
 Erstelle einen professionellen, deutschsprachigen Angebots-Text basierend auf folgender Kundenanfrage:
 
-Kunde: ${anfrage.kunde.name}
+Kunde: ${anfrage.kunde?.name || 'Unbekannt'}
 Leistungsart: ${anfrage.leistungsart}
 Beschreibung: ${anfrage.beschreibung}
 ${anfrage.budget ? `Geschätztes Budget: ${anfrage.budget}€` : ''}

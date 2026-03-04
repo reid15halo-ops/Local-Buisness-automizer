@@ -77,7 +77,7 @@ function initAnfrageForm() {
         store.anfragen.push(anfrage);
         saveStore();
 
-        addActivity('📥', `Neue Anfrage von ${anfrage.kunde.name}`);
+        addActivity('📥', `Neue Anfrage von ${anfrage.kunde?.name || 'Unbekannt'}`);
 
         form.reset();
         closeModal('modal-anfrage');
@@ -110,12 +110,12 @@ function renderAnfragen() {
     container.innerHTML = anfragen.map(a => `
         <div class="item-card">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${a.id}</span>
             </div>
             <div class="item-meta">
-                <span>📧 ${window.UI.sanitize(a.kunde.email) || '-'}</span>
-                <span>📞 ${window.UI.sanitize(a.kunde.telefon) || '-'}</span>
+                <span>📧 ${window.UI.sanitize(a.kunde?.email || '') || '-'}</span>
+                <span>📞 ${window.UI.sanitize(a.kunde?.telefon || '') || '-'}</span>
                 <span>📅 ${formatDate(a.termin)}</span>
             </div>
             <p class="item-description">

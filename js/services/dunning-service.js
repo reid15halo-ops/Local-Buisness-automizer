@@ -97,7 +97,7 @@ class DunningService {
     // ============================================
     generateMahnText(rechnung, stufe) {
         const templates = {
-            'erinnerung': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'erinnerung': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 bei Durchsicht unserer Buchhaltung haben wir festgestellt, dass die unten genannte Rechnung noch nicht beglichen wurde.
 
@@ -112,7 +112,7 @@ Wir bitten um Überweisung innerhalb der nächsten 14 Tage.
 Mit freundlichen Grüßen
 FreyAI Visions`,
 
-            'mahnung1': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'mahnung1': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 leider konnten wir trotz unserer Zahlungserinnerung keinen Zahlungseingang verzeichnen.
 
@@ -127,7 +127,7 @@ Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von 14 Tagen zu begle
 Mit freundlichen Grüßen
 FreyAI Visions`,
 
-            'mahnung2': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'mahnung2': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 trotz wiederholter Aufforderung ist die nachstehende Forderung immer noch offen.
 
@@ -143,7 +143,7 @@ Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir u
 Mit freundlichen Grüßen
 FreyAI Visions`,
 
-            'mahnung3': `Sehr geehrte(r) ${rechnung.kunde.name},
+            'mahnung3': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
 
 LETZTE MAHNUNG VOR GERICHTLICHEM MAHNVERFAHREN
 
@@ -170,7 +170,7 @@ FreyAI Visions`,
             'inkasso': `ÜBERGABE AN INKASSO
 
 Rechnung: ${rechnung.id}
-Kunde: ${rechnung.kunde.name}
+Kunde: ${rechnung.kunde?.name || 'Kunde'}
 Offener Betrag inkl. Mahngebühren: ${this.formatCurrency(rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id))}
 
 Status: Zur manuellen Prüfung vor Inkasso-Übergabe markiert.

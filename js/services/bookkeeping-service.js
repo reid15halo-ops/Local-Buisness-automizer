@@ -49,7 +49,7 @@ class BookkeepingService {
         const buchung = {
             typ: 'einnahme',
             kategorie: 'Umsatzerlöse',
-            beschreibung: `Rechnung ${rechnung.id} - ${rechnung.kunde.name}`,
+            beschreibung: `Rechnung ${rechnung.id} - ${rechnung.kunde?.name || 'Unbekannt'}`,
             rechnungId: rechnung.id,
             datum: rechnung.paidAt || rechnung.createdAt,
             brutto: rechnung.brutto,
@@ -87,7 +87,7 @@ class BookkeepingService {
         const buchung = {
             typ: 'ausgabe',
             kategorie: 'Materialaufwendungen',
-            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${rechnung.kunde.name}`,
+            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${rechnung.kunde?.name || 'Unbekannt'}`,
             rechnungId: rechnung.id,
             datum: rechnung.paidAt || rechnung.createdAt,
             brutto: materialKosten,

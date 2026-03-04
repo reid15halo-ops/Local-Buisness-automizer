@@ -20,10 +20,10 @@ class SearchService {
             this.index.push({
                 type: 'anfrage',
                 id: item.id,
-                title: item.kunde.name,
+                title: item.kunde?.name || '',
                 subtitle: item.leistungsart,
                 description: item.beschreibung,
-                searchText: `${item.id} ${item.kunde.name} ${item.kunde.email} ${item.leistungsart} ${item.beschreibung}`.toLowerCase(),
+                searchText: `${item.id} ${item.kunde?.name || ''} ${item.kunde?.email || ''} ${item.leistungsart} ${item.beschreibung}`.toLowerCase(),
                 icon: '📋',
                 view: 'anfragen',
                 data: item
@@ -35,10 +35,10 @@ class SearchService {
             this.index.push({
                 type: 'angebot',
                 id: item.id,
-                title: item.kunde.name,
+                title: item.kunde?.name || '',
                 subtitle: `${item.positionen.length} Positionen`,
                 description: window.UI.formatCurrency(item.brutto),
-                searchText: `${item.id} ${item.kunde.name} ${item.leistungsart}`.toLowerCase(),
+                searchText: `${item.id} ${item.kunde?.name || ''} ${item.leistungsart}`.toLowerCase(),
                 icon: '📝',
                 view: 'angebote',
                 data: item
@@ -50,10 +50,10 @@ class SearchService {
             this.index.push({
                 type: 'auftrag',
                 id: item.id,
-                title: item.kunde.name,
+                title: item.kunde?.name || '',
                 subtitle: item.leistungsart,
                 description: window.UI.formatCurrency(item.angebotsWert),
-                searchText: `${item.id} ${item.kunde.name} ${item.leistungsart}`.toLowerCase(),
+                searchText: `${item.id} ${item.kunde?.name || ''} ${item.leistungsart}`.toLowerCase(),
                 icon: '⚙️',
                 view: 'auftraege',
                 data: item
@@ -65,10 +65,10 @@ class SearchService {
             this.index.push({
                 type: 'rechnung',
                 id: item.id,
-                title: item.kunde.name,
+                title: item.kunde?.name || '',
                 subtitle: `Status: ${item.status}`,
                 description: window.UI.formatCurrency(item.brutto),
-                searchText: `${item.id} ${item.kunde.name} ${item.status}`.toLowerCase(),
+                searchText: `${item.id} ${item.kunde?.name || ''} ${item.status}`.toLowerCase(),
                 icon: '💰',
                 view: 'rechnungen',
                 data: item

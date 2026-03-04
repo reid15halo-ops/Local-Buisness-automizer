@@ -454,9 +454,9 @@ function createAngebotFromAnfrage(anfrageId) {
     // Fill modal info
     document.getElementById('angebot-anfrage-id').value = anfrageId;
     document.getElementById('angebot-kunde-info').innerHTML = `
-        <strong>${window.UI.sanitize(anfrage.kunde.name)}</strong><br>
+        <strong>${window.UI.sanitize(anfrage.kunde?.name || 'Unbekannt')}</strong><br>
         ${getLeistungsartLabel(anfrage.leistungsart)}<br>
-        <small>${window.UI.sanitize(anfrage.beschreibung.substring(0, 100))}...</small>
+        <small>${window.UI.sanitize((anfrage.beschreibung || '').substring(0, 100))}...</small>
     `;
 
     // Clear positions
@@ -541,7 +541,7 @@ function initAngebotForm() {
                 existing.updatedAt = new Date().toISOString();
 
                 saveStore();
-                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde.name} aktualisiert`);
+                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde?.name || 'Kunde'} aktualisiert`);
                 showToast('Angebot erfolgreich aktualisiert', 'success');
             }
 
@@ -569,7 +569,7 @@ function initAngebotForm() {
             anfrage.status = 'angebot-erstellt';
 
             saveStore();
-            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde.name} erstellt`);
+            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde?.name || 'Kunde'} erstellt`);
             showToast('Angebot erfolgreich erstellt — vorläufige Version wird versendet…', 'success');
 
             // Auto-send preliminary quote in background (non-blocking)
@@ -1105,7 +1105,7 @@ function renderAngebote() {
         return `
         <div class="item-card" onclick="showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(a.kunde.name)}</h3>
+                <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${h(a.id)}</span>
             </div>
             ${angebotTrailHTML}
@@ -1154,7 +1154,7 @@ function editAngebot(id) {
     const kundeInfoEl = document.getElementById('angebot-kunde-info');
     if (kundeInfoEl && angebot.kunde) {
         kundeInfoEl.innerHTML = `
-            <strong>${window.UI.sanitize(angebot.kunde.name)}</strong><br>
+            <strong>${window.UI.sanitize(angebot.kunde?.name || 'Kunde')}</strong><br>
             ${getLeistungsartLabel(angebot.leistungsart)}<br>
             <small>Angebot ${window.UI.sanitize(angebot.id)} bearbeiten</small>
         `;
@@ -1214,7 +1214,7 @@ function deleteAngebot(id) {
         // trashService already removed from store and saved
         // Reload angebote from store to stay in sync
         showToast('Angebot gelöscht', 'info');
-        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
         renderAngebote();
         return;
     }
@@ -1223,12 +1223,12 @@ function deleteAngebot(id) {
     if (window.confirmDialogService) {
         window.confirmDialogService.confirmDelete(
             'Angebot',
-            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde.name)} (${formatCurrency(angebot.brutto)})`,
+            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde?.name || 'Kunde')} (${formatCurrency(angebot.brutto)})`,
             () => {
                 store.angebote = store.angebote.filter(a => a.id !== id);
                 saveStore();
                 showToast('Angebot gelöscht', 'info');
-                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
                 renderAngebote();
             }
         );
@@ -1238,7 +1238,7 @@ function deleteAngebot(id) {
             store.angebote = store.angebote.filter(a => a.id !== id);
             saveStore();
             showToast('Angebot gelöscht', 'info');
-            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde.name} gelöscht`);
+            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
             renderAngebote();
         }
     }
@@ -1665,7 +1665,7 @@ function freigebenAngebot(id) {
     // Close the preview modal
     closeAngebotPreview();
 
-    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde.name} freigegeben und gesendet`);
+    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} freigegeben und gesendet`);
     showToast('Angebot wurde freigegeben und ist jetzt offen.', 'success');
 
     // Re-render
@@ -1686,7 +1686,7 @@ function showAngebotDetail(angebotId) {
     const rechnung = store.rechnungen.find(r => r.angebotId === angebotId || (auftrag && r.auftragId === auftrag.id));
 
     // Customer enrichment
-    const customer = window.customerService?.getCustomerByEmail?.(angebot.kunde.email) || null;
+    const customer = angebot.kunde?.email ? (window.customerService?.getCustomerByEmail?.(angebot.kunde.email) || null) : null;
     const customerId = customer?.id || null;
 
     // Calendar & Communication
