@@ -91,7 +91,7 @@ serve(async (req) => {
         // Execute webhook
         const webhookHeaders: Record<string, string> = {
             'Content-Type': 'application/json',
-            'User-Agent': 'HandwerkFlow-Automation/1.0',
+            'User-Agent': 'FreyAI-Automation/1.0',
             ...(customHeaders || {}),
         }
 

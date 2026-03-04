@@ -242,35 +242,126 @@ function initSettings() {
         a.href = url;
         a.download = `freyai-backup-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
-        showToast('📥 Daten exportiert!', 'success');
+        showToast('Daten exportiert', 'success');
     });
+
+    // Import data
+    document.getElementById('btn-import-data')?.addEventListener('click', () => {
+        document.getElementById('import-data-file')?.click();
+    });
+    document.getElementById('import-data-file')?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) {return;}
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const data = JSON.parse(evt.target.result);
+                if (data.store) {
+                    Object.assign(store, data.store);
+                    saveStore();
+                }
+                if (data.materials && window.materialService) {
+                    data.materials.forEach(m => window.materialService.addMaterial(m));
+                }
+                showToast(`Import erfolgreich (${file.name})`, 'success');
+                location.reload();
+            } catch (err) {
+                showToast('Import fehlgeschlagen: ' + err.message, 'error');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    // Clear all data
+    document.getElementById('btn-clear-data')?.addEventListener('click', () => {
+        if (!confirm('Alle Daten unwiderruflich löschen? Dies kann nicht rückgängig gemacht werden!')) {return;}
+        if (!confirm('Letzte Warnung: Wirklich ALLE Daten löschen?')) {return;}
+        localStorage.clear();
+        sessionStorage.clear();
+        showToast('Alle Daten gelöscht', 'success');
+        setTimeout(() => location.reload(), 500);
+    });
+
+    // Save invoice template
+    document.getElementById('btn-save-template')?.addEventListener('click', () => {
+        const template = document.getElementById('invoice-template')?.value;
+        localStorage.setItem('invoice_template', template || 'standard-de');
+        showToast('Rechnungsvorlage gespeichert', 'success');
+    });
+
+    // Invoice numbering
+    const updateInvoicePreview = () => {
+        const prefix = document.getElementById('invoice-prefix')?.value || 'RE';
+        const format = document.getElementById('invoice-format')?.value || '{PREFIX}-{YEAR}-{NUMBER:4}';
+        const year = new Date().getFullYear();
+        const nextNum = parseInt(localStorage.getItem('invoice_next_number') || '1');
+        const preview = format
+            .replace('{PREFIX}', prefix)
+            .replace('{YEAR}', year)
+            .replace(/\{NUMBER:(\d+)\}/, (_, len) => String(nextNum).padStart(parseInt(len), '0'));
+        const el = document.getElementById('invoice-number-preview');
+        if (el) {el.textContent = preview;}
+    };
+    updateInvoicePreview();
+    document.getElementById('invoice-prefix')?.addEventListener('input', updateInvoicePreview);
+    document.getElementById('invoice-format')?.addEventListener('change', updateInvoicePreview);
+
+    document.getElementById('btn-save-invoice-numbering')?.addEventListener('click', () => {
+        localStorage.setItem('invoice_prefix', document.getElementById('invoice-prefix')?.value || 'RE');
+        localStorage.setItem('invoice_format', document.getElementById('invoice-format')?.value || '{PREFIX}-{YEAR}-{NUMBER:4}');
+        localStorage.setItem('invoice_yearly_reset', document.getElementById('invoice-yearly-reset')?.checked ? '1' : '0');
+        showToast('Rechnungsnummern gespeichert', 'success');
+    });
+
+    // Load saved template
+    const savedTemplate = localStorage.getItem('invoice_template');
+    if (savedTemplate) {
+        const templateSelect = document.getElementById('invoice-template');
+        if (templateSelect) {templateSelect.value = savedTemplate;}
+    }
+    const savedPrefix = localStorage.getItem('invoice_prefix');
+    if (savedPrefix) {
+        const prefixInput = document.getElementById('invoice-prefix');
+        if (prefixInput) {prefixInput.value = savedPrefix;}
+    }
 }
 
 // ============================================
 // Mahnwesen (Dunning)
 // ============================================
 function renderMahnwesen() {
-    const container = document.getElementById('mahnwesen-list');
+    const container = document.getElementById('dunning-list');
     if (!container) {return;}
     const rechnungen = store?.rechnungen?.filter(r => r.status === 'offen' || r.status === 'versendet') || [];
+    const mahnungen = store?.mahnungen || [];
+
+    // Update stat cards
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = val;} };
+    setEl('dunning-count', rechnungen.length);
+    setEl('dunning-total', formatCurrency(rechnungen.reduce((s, r) => s + (r.brutto || r.gesamtBrutto || 0), 0)));
+    setEl('dunning-inkasso', mahnungen.filter(m => m.stufe >= 3).length);
 
     if (rechnungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine offenen Rechnungen</p>';
         return;
     }
 
-    container.innerHTML = rechnungen.map(r => `
-        <div class="item-card">
+    container.innerHTML = rechnungen.map(r => {
+        const rMahnungen = mahnungen.filter(m => m.rechnungId === r.id);
+        const stufe = rMahnungen.length;
+        return `<div class="item-card" style="cursor:pointer" onclick="window.openMahnungModal?.('${h(r.id)}')">
             <div class="item-header">
-                <h3 class="item-title">${window.UI.sanitize(r.kunde?.name || 'Unbekannter Kunde')}</h3>
-                <span class="item-id">${r.id}</span>
+                <h3 class="item-title">${h(r.kunde?.name || r.kunde?.firma || 'Unbekannt')}</h3>
+                <span class="item-id">${h(r.id)}</span>
+                ${stufe > 0 ? `<span class="badge badge-warning">Stufe ${stufe}</span>` : ''}
             </div>
             <div class="item-meta">
-                <span>💰 ${formatCurrency(r.brutto)}</span>
-                <span>📅 ${formatDate(r.createdAt)}</span>
+                <span>${formatCurrency(r.brutto || r.gesamtBrutto || 0)}</span>
+                <span>${formatDate(r.createdAt || r.datum)}</span>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 function openMahnungModal(rechnungId) {
@@ -278,21 +369,44 @@ function openMahnungModal(rechnungId) {
     if (!rechnung) {return;}
 
     const modal = document.getElementById('modal-mahnung');
-    if (modal) {
-        modal.querySelector('[data-rechnung-id]').dataset.rechnungId = rechnungId;
-        openModal('modal-mahnung');
+    if (!modal) {return;}
+
+    const hiddenInput = modal.querySelector('[data-rechnung-id]');
+    if (hiddenInput) {hiddenInput.dataset.rechnungId = rechnungId;}
+
+    // Render preview
+    const kunde = store.kunden?.find(k => k.id === rechnung.kundeId) || {};
+    const preview = document.getElementById('mahnung-preview');
+    const existingMahnungen = (store.mahnungen || []).filter(m => m.rechnungId === rechnungId);
+    const stufe = existingMahnungen.length + 1;
+    const frist = stufe === 1 ? '14 Tagen' : stufe === 2 ? '7 Tagen' : '5 Tagen';
+
+    if (preview) {
+        preview.innerHTML = `
+            <div style="padding:16px;border:1px solid var(--border-color,#ddd);border-radius:8px;">
+                <h3>Mahnung Stufe ${stufe}</h3>
+                <p><strong>An:</strong> ${h(kunde.name || kunde.firma || 'Unbekannt')}</p>
+                <p><strong>Rechnung:</strong> ${h(rechnung.id)} vom ${formatDate(rechnung.datum)}</p>
+                <p><strong>Betrag:</strong> ${formatCurrency(rechnung.betrag || rechnung.gesamtBrutto || 0)}</p>
+                <p><strong>Frist:</strong> Zahlung innerhalb von ${frist}</p>
+                ${stufe >= 3 ? '<p style="color:var(--danger,#e53935);"><strong>Letzte Mahnung vor Inkasso</strong></p>' : ''}
+            </div>`;
     }
+
+    openModal('modal-mahnung');
 }
 
 function initMahnwesen() {
-    document.getElementById('btn-mahnung-create')?.addEventListener('click', () => {
+    // Send Mahnung button
+    document.getElementById('btn-send-mahnung')?.addEventListener('click', () => {
         const rechnungId = document.querySelector('[data-rechnung-id]')?.dataset?.rechnungId;
         if (!rechnungId) {return;}
 
+        const existingMahnungen = (store.mahnungen || []).filter(m => m.rechnungId === rechnungId);
         const mahnung = {
             id: generateId('MAH'),
             rechnungId,
-            stufe: 1,
+            stufe: existingMahnungen.length + 1,
             datum: new Date().toISOString(),
             status: 'versendet'
         };
@@ -301,9 +415,20 @@ function initMahnwesen() {
         store.mahnungen.push(mahnung);
         saveStore();
 
-        showToast('✅ Mahnung erstellt!', 'success');
+        showToast('Mahnung versendet', 'success');
         closeModal('modal-mahnung');
         renderMahnwesen();
+    });
+
+    // Print Mahnung button
+    document.getElementById('btn-print-mahnung')?.addEventListener('click', () => {
+        const preview = document.getElementById('mahnung-preview');
+        if (!preview) {return;}
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {showToast('Popup-Blocker aktiv – bitte Popups erlauben', 'warning'); return;}
+        printWindow.document.write(`<html><head><title>Mahnung</title><style>body{font-family:sans-serif;padding:40px;}</style></head><body>${preview.innerHTML}</body></html>`);
+        printWindow.document.close();
+        printWindow.print();
     });
 }
 
@@ -312,9 +437,24 @@ function initMahnwesen() {
 // ============================================
 function renderBuchhaltung() {
     const Jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value) || new Date().getFullYear();
-    const buchungen = window.bookkeepingService?.getBuchungenForJahr(Jahr) || [];
+    const bs = window.bookkeepingService;
+    const buchungen = bs?.getBuchungenForJahr(Jahr) || [];
     const container = document.getElementById('buchungen-list');
     if (!container) {return;}
+
+    // EÜR Summary Cards
+    if (bs?.berechneEUR) {
+        const eur = bs.berechneEUR(Jahr);
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = val;} };
+        setEl('eur-einnahmen', formatCurrency(eur.einnahmen.brutto));
+        setEl('eur-einnahmen-netto', formatCurrency(eur.einnahmen.netto));
+        setEl('eur-ust', formatCurrency(eur.einnahmen.ust));
+        setEl('eur-ausgaben', formatCurrency(eur.ausgabenGesamt?.brutto || 0));
+        setEl('eur-ausgaben-netto', formatCurrency(eur.ausgabenGesamt?.netto || 0));
+        setEl('eur-vst', formatCurrency(eur.ausgabenGesamt?.vorsteuer || 0));
+        setEl('eur-gewinn', formatCurrency(eur.gewinn || 0));
+        setEl('eur-zahllast', formatCurrency(eur.ustZahllast || 0));
+    }
 
     if (buchungen.length === 0) {
         container.innerHTML = '<p class="empty-state">Noch keine Buchungen. Rechnungen werden automatisch erfasst.</p>';
@@ -339,6 +479,102 @@ function renderBuchhaltung() {
 function initBuchhaltung() {
     document.getElementById('buchhaltung-jahr')?.addEventListener('change', () => {
         renderBuchhaltung();
+    });
+
+    // Open Ausgabe modal
+    document.getElementById('btn-add-ausgabe')?.addEventListener('click', () => {
+        const datumField = document.getElementById('ausgabe-datum');
+        if (datumField && !datumField.value) {datumField.value = new Date().toISOString().split('T')[0];}
+        openModal('modal-ausgabe');
+    });
+
+    // Submit Ausgabe form
+    document.getElementById('form-ausgabe')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const bs = window.bookkeepingService;
+        if (!bs) {showToast('Buchhaltung nicht verfügbar', 'warning'); return;}
+
+        bs.addAusgabe({
+            kategorie: document.getElementById('ausgabe-kategorie')?.value,
+            beschreibung: document.getElementById('ausgabe-beschreibung')?.value,
+            betrag: parseFloat(document.getElementById('ausgabe-betrag')?.value) || 0,
+            datum: document.getElementById('ausgabe-datum')?.value,
+            belegnummer: document.getElementById('ausgabe-beleg')?.value
+        });
+
+        showToast('Ausgabe gespeichert', 'success');
+        closeModal('modal-ausgabe');
+        e.target.reset();
+        renderBuchhaltung();
+    });
+
+    // CSV Export
+    document.getElementById('btn-export-csv')?.addEventListener('click', () => {
+        const bs = window.bookkeepingService;
+        if (!bs) {return;}
+        const jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value) || new Date().getFullYear();
+        const csv = bs.exportCSV(jahr);
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `buchungen-${jahr}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast('CSV exportiert', 'success');
+    });
+
+    // DATEV Export
+    document.getElementById('btn-export-datev')?.addEventListener('click', () => {
+        const bs = window.bookkeepingService;
+        if (!bs) {return;}
+        const jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value) || new Date().getFullYear();
+        const datev = bs.exportDATEV(jahr);
+        const blob = new Blob([datev], {type: 'text/csv;charset=utf-8;'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `DATEV-${jahr}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        showToast('DATEV exportiert', 'success');
+    });
+
+    // CSV Import
+    document.getElementById('buchung-csv-import')?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) {return;}
+        const bs = window.bookkeepingService;
+        if (!bs) {return;}
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const lines = evt.target.result.split('\n').filter(l => l.trim());
+            let imported = 0;
+            // Skip header row
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(';');
+                if (cols.length < 6) {continue;}
+                const typ = cols[1]?.trim().toLowerCase().includes('einnahme') ? 'einnahme' : 'ausgabe';
+                const brutto = parseFloat(cols[7]?.replace(',', '.')) || parseFloat(cols[5]?.replace(',', '.')) || 0;
+                if (brutto <= 0) {continue;}
+
+                bs.addBuchung({
+                    typ,
+                    kategorie: cols[2]?.trim() || 'Import',
+                    beschreibung: cols[3]?.replace(/"/g, '').trim() || 'CSV Import',
+                    belegnummer: cols[4]?.trim() || '',
+                    datum: new Date().toISOString(),
+                    brutto,
+                    netto: brutto / 1.19,
+                    ust: typ === 'einnahme' ? brutto - (brutto / 1.19) : 0,
+                    vorsteuer: typ === 'ausgabe' ? brutto - (brutto / 1.19) : 0
+                });
+                imported++;
+            }
+            showToast(`${imported} Buchungen importiert`, 'success');
+            renderBuchhaltung();
+        };
+        reader.readAsText(file);
+        e.target.value = '';
     });
 }
 
@@ -532,7 +768,7 @@ function generateSenderEmail() {
         slug = 'firma-' + crypto.randomUUID().substring(0, 8);
     }
 
-    const noReplyEmail = settings?.noreply_email ?? window.companySettings?.getNoReplyEmail?.() ?? 'noreply@handwerkflow.de';
+    const noReplyEmail = settings?.noreply_email ?? window.companySettings?.getNoReplyEmail?.() ?? 'noreply@freyaivisions.de';
     const baseEmail = localStorage.getItem('proton_base_email') || noReplyEmail;
     const [localPart, domain] = baseEmail.split('@');
     const senderEmail = `${localPart}+${slug}@${domain}`;
@@ -556,12 +792,21 @@ function initQuickActions() {
 
     document.getElementById('qa-demo-workflow')?.addEventListener('click', runDemoWorkflow);
 
+    document.getElementById('qa-all-invoices')?.addEventListener('click', () => {
+        if (window.navigationController) {window.navigationController.navigateTo('mahnwesen');}
+    });
+
+    document.getElementById('qa-datev-export')?.addEventListener('click', () => {
+        if (window.navigationController) {window.navigationController.navigateTo('buchhaltung');}
+        // Auto-trigger DATEV export after navigation
+        setTimeout(() => {document.getElementById('btn-export-datev')?.click();}, 300);
+    });
+
     document.querySelectorAll('.stat-card.clickable').forEach(card => {
         card.addEventListener('click', () => {
             const viewId = card.dataset.navigate;
-            if (viewId) {
-                switchView(viewId);
-                document.querySelector(`[data-view="${viewId}"]`)?.click();
+            if (viewId && window.navigationController) {
+                window.navigationController.navigateTo(viewId);
             }
         });
     });
@@ -681,21 +926,71 @@ async function runDemoWorkflow() {
 // Automation initialization (migrated from app.js)
 // ============================================
 function initAutomations() {
-    try {
-        // These functions may not exist if automation modules are not loaded
-        if (typeof initPaymentMatching === 'function') {initPaymentMatching();}
-        if (typeof initFollowUp === 'function') {initFollowUp();}
-        if (typeof initLowStockAlerts === 'function') {initLowStockAlerts();}
+    // Payment matching: match bank CSV against open invoices
+    document.getElementById('btn-match-payments')?.addEventListener('click', () => {
+        const offene = store?.rechnungen?.filter(r => r.status === 'offen') || [];
+        if (offene.length === 0) {showToast('Keine offenen Rechnungen zum Abgleich', 'info'); return;}
+        showToast(`${offene.length} offene Rechnungen bereit zum Abgleich. Bank-CSV importieren →`, 'info');
+    });
 
-        // Update badges on load
-        setTimeout(() => {
-            if (typeof updateFollowUpBadge === 'function') {updateFollowUpBadge();}
-            if (typeof updateLowStockBadge === 'function') {updateLowStockBadge();}
-            if (typeof updateEmailAutomationBadge === 'function') {updateEmailAutomationBadge();}
-        }, 500);
-    } catch (error) {
-        console.warn('initAutomations: Some automation modules not yet available:', error.message);
-    }
+    document.getElementById('bank-csv-import')?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) {return;}
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const lines = evt.target.result.split('\n').filter(l => l.trim());
+            let matched = 0;
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(';');
+                const betrag = parseFloat((cols[4] || cols[3] || '0').replace(',', '.'));
+                if (betrag <= 0) {continue;}
+                const match = store?.rechnungen?.find(r =>
+                    r.status === 'offen' && Math.abs((r.brutto || r.gesamtBrutto || 0) - betrag) < 0.02
+                );
+                if (match) {
+                    match.status = 'bezahlt';
+                    match.paid_at = new Date().toISOString();
+                    matched++;
+                }
+            }
+            saveStore();
+            showToast(`${matched} Zahlungen zugeordnet`, matched > 0 ? 'success' : 'info');
+            if (window.renderRechnungen) {window.renderRechnungen();}
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    // Follow-up check for quotes
+    document.getElementById('btn-check-followups')?.addEventListener('click', () => {
+        const now = new Date();
+        const angebote = store?.angebote?.filter(a => {
+            if (a.status !== 'versendet') {return false;}
+            const sent = new Date(a.versendetAm || a.createdAt);
+            return (now - sent) > 7 * 24 * 60 * 60 * 1000; // > 7 Tage
+        }) || [];
+        if (angebote.length === 0) {showToast('Keine Nachfass-Kandidaten', 'info'); return;}
+        showToast(`${angebote.length} Angebote ohne Rückmeldung seit >7 Tagen`, 'warning');
+    });
+
+    // Low stock suggestions
+    document.getElementById('btn-low-stock')?.addEventListener('click', () => {
+        const materials = window.materialService?.getAllMaterials() || [];
+        const low = materials.filter(m => m.bestand !== undefined && m.mindestbestand !== undefined && m.bestand <= m.mindestbestand);
+        if (low.length === 0) {showToast('Alle Bestände ausreichend', 'success'); return;}
+        showToast(`${low.length} Artikel unter Mindestbestand`, 'warning');
+        if (window.navigationController) {window.navigationController.navigateTo('bestellungen');}
+    });
+
+    // Update badges after short delay
+    setTimeout(() => {
+        const lowStockBadge = document.getElementById('lowstock-badge');
+        if (lowStockBadge) {
+            const materials = window.materialService?.getAllMaterials() || [];
+            const low = materials.filter(m => m.bestand !== undefined && m.mindestbestand !== undefined && m.bestand <= m.mindestbestand);
+            lowStockBadge.textContent = low.length > 0 ? low.length : '';
+        }
+    }, 500);
 }
 
 // ============================================
@@ -717,6 +1012,8 @@ window.renderAuftraege = window.AuftraegeModule?.renderAuftraege;
 window.renderRechnungen = window.RechnungenModule?.renderRechnungen;
 window.renderMahnwesen = renderMahnwesen;
 window.renderBuchhaltung = renderBuchhaltung;
+window.renderMaterial = renderMaterial;
+window.openMahnungModal = openMahnungModal;
 window.updateDashboard = window.DashboardModule?.updateDashboard;
 
 // ============================================

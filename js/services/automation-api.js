@@ -108,7 +108,7 @@ class AutomationAPI {
         switch (actionType) {
             case 'notification.show':
                 if (window.Notification && Notification.permission === 'granted') {
-                    new Notification('HandwerkFlow', { body: params.message || '' });
+                    new Notification('FreyAI Visions', { body: params.message || '' });
                 } else if (window.showToast) {
                     window.showToast(params.message || '', 'info');
                 }

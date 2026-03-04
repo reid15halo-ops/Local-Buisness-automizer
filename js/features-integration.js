@@ -197,12 +197,15 @@ function renderCustomers() {
     }
 
     const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
+    // Use Supabase portal if available, fall back to localStorage-based portal
+    const useSupabasePortal = !!window.portalService && window.supabaseConfig?.isConfigured?.();
+    const portalPage = useSupabasePortal ? 'portal.html' : 'customer-portal.html';
     const portalBase = window.location.origin
         + window.location.pathname.replace('index.html', '')
-        + 'customer-portal.html';
+        + portalPage;
 
     container.innerHTML = customers.map(c => {
-        // Check for an existing active portal token for this customer
+        // Check for an existing active portal token (localStorage fallback)
         const existingToken = window.customerPortalService?.tokens?.find(
             t => t.customerId === c.id && t.isActive
         );
@@ -251,24 +254,44 @@ function renderCustomers() {
         });
     });
 
+    // Bind customer card click to open detail modal
+    container.querySelectorAll('.customer-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Don't open detail if clicking on a button or link
+            if (e.target.closest('button, a, .customer-portal-actions')) return;
+            const id = card.dataset.id;
+            const nameEl = card.querySelector('.customer-name');
+            const name = nameEl ? nameEl.textContent.trim() : '';
+            if (window.openKundeDetail) window.openKundeDetail(id, name);
+        });
+        card.style.cursor = 'pointer';
+    });
+
+    // Helper: generate portal URL (Supabase or localStorage fallback)
+    async function _getPortalUrl(customerId) {
+        if (useSupabasePortal) {
+            const { url } = await window.portalService.generateToken(customerId);
+            return url;
+        }
+        // Fallback: localStorage-based portal
+        if (!window.customerPortalService) {throw new Error('Portal-Service nicht verfügbar');}
+        const existing = window.customerPortalService.tokens?.find(
+            t => t.customerId === customerId && t.isActive
+        );
+        const tokenRecord = existing
+            || window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
+        return `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
+    }
+
     // Bind portal open buttons
     container.querySelectorAll('.customer-portal-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const customerId = btn.dataset.customerId;
-            if (!window.customerPortalService) {
-                window.showToast?.('Kundenportal-Service nicht verfügbar', 'error');
-                return;
-            }
             try {
-                const existing = window.customerPortalService.tokens?.find(
-                    t => t.customerId === customerId && t.isActive
-                );
-                const tokenRecord = existing
-                    || window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
-                const url = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
+                const url = await _getPortalUrl(customerId);
                 window.open(url, '_blank');
             } catch (err) {
-                window.showToast?.('Portal-Link konnte nicht erstellt werden', 'error');
+                window.showToast?.('Portal-Link konnte nicht erstellt werden: ' + err.message, 'error');
                 console.error('[Kunden] Portal token error:', err);
             }
         });
@@ -276,19 +299,14 @@ function renderCustomers() {
 
     // Bind portal link copy buttons
     container.querySelectorAll('.customer-portal-copy-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const customerId = btn.dataset.customerId;
-            if (!window.customerPortalService) {
-                window.showToast?.('Kundenportal-Service nicht verfügbar', 'error');
-                return;
-            }
             try {
-                const existing = window.customerPortalService.tokens?.find(
-                    t => t.customerId === customerId && t.isActive
-                );
-                const tokenRecord = existing
-                    || window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
-                const url = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
+                if (useSupabasePortal) {
+                    await window.portalService.copyPortalLink(customerId);
+                    return;
+                }
+                const url = await _getPortalUrl(customerId);
                 navigator.clipboard.writeText(url)
                     .then(() => window.showToast?.('Portal-Link kopiert', 'success'))
                     .catch(() => window.showToast?.(`Link: ${url}`, 'info'));
@@ -400,7 +418,8 @@ function renderCalendar() {
                 <div class="calendar-events">
                     ${day.appointments.map(apt => {
                         const aptSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
-                        return `<div class="calendar-event" style="border-color: ${apt.color || '#2dd4a8'}">
+                        const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(apt.color) ? apt.color : '#6366f1';
+                        return `<div class="calendar-event" style="border-color: ${safeColor}">
                             <strong>${aptSan(apt.startTime)}</strong> ${aptSan(apt.title)}
                         </div>`;
                     }).join('')}
@@ -459,13 +478,28 @@ function renderTimeTracking() {
     const isActive = window.timeTrackingService.isClockActive();
     const timer = window.timeTrackingService.getActiveTimer();
     const today = new Date().toISOString().split('T')[0];
-    const entries = window.timeTrackingService.getEntriesForDay(today);
+
+    // Use filter date or today
+    const filterDate = document.getElementById('te-filter-date')?.value || today;
+    const entries = window.timeTrackingService.getEntriesForDay(filterDate);
 
     // Update clock display
     if (display) {
         display.className = 'time-clock-display' + (isActive ? ' active' : '');
-        display.querySelector('.clock-status').textContent = isActive ? 'Eingestempelt seit ' + timer.startTime : 'Nicht eingestempelt';
-        display.querySelector('.clock-timer').textContent = isActive ? timer.elapsedFormatted : '00:00';
+        const statusEl = document.getElementById('clock-status-text');
+        const timerEl = document.getElementById('clock-timer-display');
+        if (statusEl) { statusEl.textContent = isActive ? 'Eingestempelt seit ' + timer.startTime : 'Nicht eingestempelt'; }
+        if (timerEl) { timerEl.textContent = isActive ? timer.elapsedFormatted : '00:00'; }
+
+        // Show project info if clocked in with a project
+        const projInfo = document.getElementById('clock-project-info');
+        if (projInfo && isActive && timer.projectId) {
+            const auftrag = window.storeService?.state?.auftraege?.find(a => a.id === timer.projectId);
+            projInfo.textContent = auftrag ? `Auftrag: ${auftrag.leistungsart || auftrag.id}` : '';
+            projInfo.style.display = 'block';
+        } else if (projInfo) {
+            projInfo.style.display = 'none';
+        }
     }
 
     // Update toggle button
@@ -476,32 +510,82 @@ function renderTimeTracking() {
     }
 
     // Update stats
-    document.getElementById('time-today')?.textContent && (document.getElementById('time-today').textContent = window.timeTrackingService.formatDuration(window.timeTrackingService.getTotalHoursForDay(today) * 60).replace(':undefined', ''));
+    const todayHours = window.timeTrackingService.getTotalHoursForDay(today);
+    const todayEl = document.getElementById('time-today');
+    if (todayEl) { todayEl.textContent = todayHours.toFixed(1) + 'h'; }
 
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-    document.getElementById('time-week')?.textContent && (document.getElementById('time-week').textContent = window.timeTrackingService.getTotalHoursForWeek(weekStart.toISOString().split('T')[0]).toFixed(1) + 'h');
+    const weekHours = window.timeTrackingService.getTotalHoursForWeek(weekStart.toISOString().split('T')[0]);
+    const weekEl = document.getElementById('time-week');
+    if (weekEl) { weekEl.textContent = weekHours.toFixed(1) + 'h'; }
+
+    const now = new Date();
+    const monthEntries = window.timeTrackingService.getEntriesForMonth(now.getFullYear(), now.getMonth() + 1);
+    const monthMinutes = monthEntries.reduce((sum, e) => sum + (e.durationMinutes || 0), 0);
+    const monthEl = document.getElementById('time-month');
+    if (monthEl) { monthEl.textContent = (monthMinutes / 60).toFixed(1) + 'h'; }
+
+    // Set filter date default
+    const filterInput = document.getElementById('te-filter-date');
+    if (filterInput && !filterInput.value) { filterInput.value = today; }
+
+    // Populate Auftrags-Dropdown in form
+    _populateAuftragSelect();
 
     // Render entries
     if (entriesList) {
         if (entries.length === 0) {
-            entriesList.innerHTML = '<p class="empty-state">Keine Zeiteinträge für heute</p>';
+            entriesList.innerHTML = `<p class="empty-state">Keine Zeiteintr\u00e4ge f\u00fcr ${new Date(filterDate).toLocaleDateString('de-DE')}</p>`;
         } else {
-            const tSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
-            entriesList.innerHTML = entries.map(e => `
-                <div class="item-card">
+            const tSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => String(v));
+            const typeLabels = { arbeit: 'Arbeit', fahrt: 'Fahrt', pause: 'Pause' };
+            entriesList.innerHTML = entries.map(e => {
+                const auftrag = e.auftragId ? window.storeService?.state?.auftraege?.find(a => a.id === e.auftragId) : null;
+                const auftragLabel = auftrag ? `<span style="font-size:12px;color:var(--text-muted);"> | ${tSan(auftrag.leistungsart || auftrag.id)}</span>` : '';
+                return `
+                <div class="item-card" style="position:relative;">
                     <div class="item-header">
-                        <span class="item-title">${tSan(e.startTime)} - ${tSan(e.endTime)}</span>
-                        <span class="status-badge">${e.durationHours}h</span>
+                        <span class="item-title">${tSan(e.startTime)} - ${tSan(e.endTime)}${auftragLabel}</span>
+                        <span class="status-badge ${e.billable ? '' : 'status-badge--muted'}">${e.durationHours}h ${e.billable ? '' : '(n.a.)'}</span>
                     </div>
-                    <div class="item-description">${tSan(e.description || 'Keine Beschreibung')}</div>
-                </div>
-            `).join('');
+                    <div class="item-description">
+                        <span style="font-size:11px;padding:2px 6px;background:var(--bg);border-radius:4px;margin-right:6px;">${typeLabels[e.type] || 'Arbeit'}</span>
+                        ${tSan(e.description || 'Keine Beschreibung')}
+                    </div>
+                    <button class="btn btn-sm btn-danger time-entry-delete-btn" data-id="${tSan(e.id)}" style="position:absolute;top:8px;right:8px;padding:2px 8px;font-size:11px;" title="L\u00f6schen">&times;</button>
+                </div>`;
+            }).join('');
+
+            // Bind delete buttons
+            entriesList.querySelectorAll('.time-entry-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (confirm('Zeiteintrag l\u00f6schen?')) {
+                        window.timeTrackingService.deleteEntry(btn.dataset.id);
+                        renderTimeTracking();
+                        showToast('Eintrag gel\u00f6scht', 'success');
+                    }
+                });
+            });
         }
     }
 }
 
+function _populateAuftragSelect() {
+    const sel = document.getElementById('te-auftrag');
+    if (!sel) { return; }
+    const auftraege = window.storeService?.state?.auftraege || [];
+    const currentVal = sel.value;
+    const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => String(v));
+    sel.innerHTML = '<option value="">\u2014 Kein Auftrag \u2014</option>' +
+        auftraege.map(a => `<option value="${esc(a.id)}">${esc(a.leistungsart || a.id)} — ${esc(a.kunde?.name || '')}</option>`).join('');
+    if (currentVal) { sel.value = currentVal; }
+}
+
 function initTimeTracking() {
+    if (!window.timeTrackingService) { return; }
+
+    // Clock toggle
     document.getElementById('btn-clock-toggle')?.addEventListener('click', () => {
         const isActive = window.timeTrackingService.isClockActive();
         if (isActive) {
@@ -510,29 +594,210 @@ function initTimeTracking() {
             clearInterval(clockInterval);
             showToast('Ausgestempelt', 'success');
         } else {
-            window.timeTrackingService.clockIn();
-            // Start timer update
-            clockInterval = setInterval(() => {
-                const display = document.getElementById('time-clock-display');
-                const timer = window.timeTrackingService.getActiveTimer();
-                if (display && timer) {
-                    display.querySelector('.clock-timer').textContent = timer.elapsedFormatted;
+            // Ask for Auftrag assignment
+            const auftraege = window.storeService?.state?.auftraege || [];
+            let projectId = null;
+            if (auftraege.length > 0) {
+                const choices = auftraege.map((a, i) => `${i + 1}) ${a.leistungsart || a.id}`).join('\n');
+                const pick = prompt(`Auftrag zuordnen? (Nummer eingeben, leer = ohne)\n\n${choices}`);
+                if (pick && !isNaN(pick)) {
+                    const idx = parseInt(pick) - 1;
+                    if (auftraege[idx]) { projectId = auftraege[idx].id; }
                 }
-            }, 1000);
+            }
+            window.timeTrackingService.clockIn('default', projectId);
+            _startClockInterval();
             showToast('Eingestempelt', 'success');
         }
         renderTimeTracking();
     });
 
+    // Manual entry form toggle
+    document.getElementById('btn-add-time-entry')?.addEventListener('click', () => {
+        const form = document.getElementById('time-entry-form');
+        if (!form) { return; }
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        if (form.style.display === 'block') {
+            // Set defaults
+            document.getElementById('te-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('te-start').value = '08:00';
+            document.getElementById('te-end').value = '16:00';
+            document.getElementById('te-break').value = '30';
+            document.getElementById('te-description').value = '';
+            _populateAuftragSelect();
+        }
+    });
+
+    document.getElementById('btn-cancel-time-entry')?.addEventListener('click', () => {
+        document.getElementById('time-entry-form').style.display = 'none';
+    });
+
+    document.getElementById('btn-save-time-entry')?.addEventListener('click', () => {
+        const date = document.getElementById('te-date').value;
+        const startTime = document.getElementById('te-start').value;
+        const endTime = document.getElementById('te-end').value;
+        const breakMin = parseInt(document.getElementById('te-break').value) || 0;
+        const auftragId = document.getElementById('te-auftrag').value || null;
+        const description = document.getElementById('te-description').value;
+        const type = document.getElementById('te-type').value;
+        const billable = document.getElementById('te-billable').checked;
+
+        if (!date || !startTime || !endTime) {
+            showToast('Datum, Beginn und Ende sind Pflichtfelder', 'error');
+            return;
+        }
+        if (startTime >= endTime) {
+            showToast('Ende muss nach Beginn liegen', 'error');
+            return;
+        }
+
+        // Find customer from auftrag
+        let customerId = null;
+        if (auftragId) {
+            const auftrag = window.storeService?.state?.auftraege?.find(a => a.id === auftragId);
+            customerId = auftrag?.kunde?.id || null;
+        }
+
+        window.timeTrackingService.addEntry({
+            date, startTime, endTime, breakMinutes: breakMin,
+            auftragId, customerId, description, type, billable
+        });
+
+        document.getElementById('time-entry-form').style.display = 'none';
+        showToast('Zeiteintrag gespeichert', 'success');
+        renderTimeTracking();
+    });
+
+    // Date filter
+    document.getElementById('te-filter-date')?.addEventListener('change', () => {
+        renderTimeTracking();
+    });
+
     // Restore timer if active
-    if (window.timeTrackingService?.isClockActive()) {
-        clockInterval = setInterval(() => {
-            const display = document.getElementById('time-clock-display');
-            const timer = window.timeTrackingService.getActiveTimer();
-            if (display && timer) {
-                display.querySelector('.clock-timer').textContent = timer.elapsedFormatted;
-            }
-        }, 1000);
+    if (window.timeTrackingService.isClockActive()) {
+        _startClockInterval();
+    }
+}
+
+function _startClockInterval() {
+    clearInterval(clockInterval);
+    clockInterval = setInterval(() => {
+        const timerEl = document.getElementById('clock-timer-display');
+        const timer = window.timeTrackingService?.getActiveTimer();
+        if (timerEl && timer) {
+            timerEl.textContent = timer.elapsedFormatted;
+        }
+    }, 1000);
+}
+
+// ============================================
+// Notification Bell UI
+// ============================================
+function initNotificationBell() {
+    const bell = document.getElementById('notification-bell');
+    const panel = document.getElementById('notification-panel');
+    const closeBtn = document.getElementById('notification-close');
+    const clearBtn = document.getElementById('clear-notifications');
+    const markReadBtn = document.getElementById('mark-all-read');
+    const list = document.getElementById('notification-list');
+    const badge = document.getElementById('notification-badge');
+
+    if (!bell || !panel) { return; }
+
+    function updateBadge() {
+        const count = window.notificationService?.getUnreadCount?.() || 0;
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+
+    function renderNotificationList() {
+        if (!list || !window.notificationService) { return; }
+        const notifications = window.notificationService.getNotifications();
+        if (notifications.length === 0) {
+            list.innerHTML = '<p style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">Keine Benachrichtigungen</p>';
+            return;
+        }
+        const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => String(v));
+        list.innerHTML = notifications.map(n => {
+            const timeAgo = window.notificationService.getRelativeTime?.(n.timestamp) || '';
+            return `
+            <div class="notification-item ${n.read ? 'read' : 'unread'}" data-id="${esc(n.id)}" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;${n.read ? 'opacity:0.6;' : ''}">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-weight:${n.read ? '400' : '600'};font-size:13px;">${esc(n.icon || '')} ${esc(n.title)}</span>
+                    <span style="font-size:11px;color:var(--text-muted);">${esc(timeAgo)}</span>
+                </div>
+                ${n.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${esc(n.description)}</div>` : ''}
+            </div>`;
+        }).join('');
+
+        // Click to mark as read
+        list.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', () => {
+                window.notificationService.markAsRead(item.dataset.id);
+                renderNotificationList();
+                updateBadge();
+            });
+        });
+    }
+
+    // Toggle panel
+    bell.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = panel.style.display !== 'none';
+        panel.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) { renderNotificationList(); }
+    });
+
+    // Close panel
+    closeBtn?.addEventListener('click', () => { panel.style.display = 'none'; });
+
+    // Click outside to close
+    document.addEventListener('click', (e) => {
+        if (panel.style.display !== 'none' && !panel.contains(e.target) && e.target !== bell) {
+            panel.style.display = 'none';
+        }
+    });
+
+    // Mark all as read
+    markReadBtn?.addEventListener('click', () => {
+        window.notificationService?.markAllAsRead?.();
+        renderNotificationList();
+        updateBadge();
+        showToast('Alle als gelesen markiert', 'success');
+    });
+
+    // Clear all
+    clearBtn?.addEventListener('click', () => {
+        window.notificationService?.clearAll?.();
+        renderNotificationList();
+        updateBadge();
+        showToast('Benachrichtigungen gel\u00f6scht', 'success');
+    });
+
+    // Subscribe to changes
+    window.notificationService?.subscribe?.(() => {
+        updateBadge();
+        if (panel.style.display !== 'none') { renderNotificationList(); }
+    });
+
+    // Initial badge update
+    updateBadge();
+}
+
+// ============================================
+// Gantt / Werkstattplaner Full View
+// ============================================
+let ganttFullMounted = false;
+
+function renderGanttFullView() {
+    if (!window.ganttTimelineUI) { return; }
+    if (!ganttFullMounted) {
+        window.ganttTimelineUI.mount('gantt-fullview-mount');
+        ganttFullMounted = true;
+    } else {
+        window.ganttTimelineUI.render();
     }
 }
 
@@ -1040,41 +1305,67 @@ function initChatbot() {
 }
 
 // ============================================
-// Extended switchView
+// Email Automation View
 // ============================================
-const originalSwitchViewNew = typeof switchViewExtended !== 'undefined' ? switchViewExtended : (typeof switchView !== 'undefined' ? switchView : null);
+async function renderEmailAutomation() {
+    const svc = window.emailAutomationService;
+    if (!svc) {return;}
 
-function switchViewNew(viewId) {
-    // Call original if exists
-    if (originalSwitchViewNew) {
-        originalSwitchViewNew(viewId);
-    } else {
-        // Basic view switching
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(`view-${viewId}`)?.classList.add('active');
-        document.querySelector(`[data-view="${viewId}"]`)?.classList.add('active');
+    const stats = await svc.getStats();
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) {el.textContent = val;} };
+    setEl('stat-emails-received', stats.totalProcessed || 0);
+    setEl('stat-emails-processed', stats.successful || 0);
+    setEl('stat-quotes-created', stats.quotesCreated || 0);
+
+    if (stats.totalProcessed > 0 && stats.lastProcessed) {
+        const avgMs = stats.totalProcessed > 0 ? Math.round((Date.now() - new Date(stats.lastProcessed).getTime()) / stats.totalProcessed) : 0;
+        setEl('stat-avg-time', avgMs < 60000 ? `${Math.round(avgMs / 1000)}s` : `${Math.round(avgMs / 60000)}min`);
     }
 
-    // Render new views
-    switch (viewId) {
-        case 'emails': renderEmails(); break;
-        case 'aufgaben': renderTasks(); break;
-        case 'kunden': renderCustomers(); break;
-        case 'kalender': renderCalendar(); break;
-        case 'zeiterfassung': renderTimeTracking(); break;
-        case 'dokumente': renderDocuments(); break;
-        case 'berichte': initReports(); break;
-        case 'chatbot': renderChatbot(); break;
+    // Badge
+    const badge = document.getElementById('email-automation-badge');
+    if (badge) {badge.textContent = stats.pending > 0 ? stats.pending : '';}
+
+    // History list
+    const filter = document.getElementById('email-history-filter')?.value || '';
+    const history = await svc.getProcessedEmails(50);
+    const filtered = filter ? history.filter(e => e.status === filter) : history;
+    const container = document.getElementById('email-history-list');
+    if (!container) {return;}
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<p class="empty-state">Noch keine E-Mails automatisch verarbeitet.</p>';
+        return;
     }
+
+    const h = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const statusIcons = { success: '✅', failed: '❌', pending: '⏳', test: '🧪' };
+
+    container.innerHTML = filtered.map(e => `<div class="item-card" style="margin-bottom:8px;">
+        <div class="item-header">
+            <span>${statusIcons[e.status] || '📧'} <strong>${h(e.sender || e.from || 'Unbekannt')}</strong></span>
+            <small>${e.timestamp ? new Date(e.timestamp).toLocaleString('de-DE') : '-'}</small>
+        </div>
+        <div class="item-meta">
+            <span>${h(e.subject || 'Kein Betreff')}</span>
+            ${e.quote ? `<span>→ Angebot erstellt</span>` : ''}
+        </div>
+    </div>`).join('');
 }
 
-// Override switchView
-if (typeof switchViewExtended !== 'undefined') {
-    switchViewExtended = switchViewNew;
-} else if (typeof switchView !== 'undefined') {
-    switchView = switchViewNew;
-}
+// ============================================
+// Global exports for NavigationController
+// ============================================
+window.renderEmails = renderEmails;
+window.renderTasks = renderTasks;
+window.renderCustomers = renderCustomers;
+window.renderCalendar = renderCalendar;
+window.renderTimeTracking = renderTimeTracking;
+window.renderGanttFullView = renderGanttFullView;
+window.renderDocuments = renderDocuments;
+window.initReports = initReports;
+window.renderChatbot = renderChatbot;
+window.renderEmailAutomation = renderEmailAutomation;
 
 // ============================================
 // Aufträge View Toggle (Kanban / Liste / Zeitleiste)
@@ -1140,7 +1431,16 @@ function initNewFeatures() {
     initDocuments();
     initReports();
     initChatbot();
+    initNotificationBell();
     initAuftragViewToggle();
+
+    // Email Automation: refresh + filter
+    document.getElementById('btn-refresh-email-history')?.addEventListener('click', () => {
+        if (window.renderEmailAutomation) {window.renderEmailAutomation();}
+    });
+    document.getElementById('email-history-filter')?.addEventListener('change', () => {
+        if (window.renderEmailAutomation) {window.renderEmailAutomation();}
+    });
 
     console.log('✅ Neue Features initialisiert:', [
         'EmailService', 'TaskService', 'CustomerService', 'DocumentService',

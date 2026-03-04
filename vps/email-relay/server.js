@@ -1,4 +1,4 @@
-// HandwerkFlow Email Relay
+// FreyAI Visions Email Relay
 // Runs on VPS, connects to Proton Mail Bridge SMTP
 //
 // Setup:
@@ -49,7 +49,7 @@ const SMTP_PORT = parseInt(process.env.SMTP_PORT || '1025');
 const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
-const SENDER_NAME = process.env.SENDER_NAME || 'HandwerkFlow';
+const SENDER_NAME = process.env.SENDER_NAME || 'FreyAI Visions';
 const SENDER_EMAIL = process.env.SENDER_EMAIL || SMTP_USER;
 
 // --- SMTP Transporter ---
@@ -68,7 +68,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// --- Recipient Validator (TODO 4) ---
+// --- Recipient Validator ---
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_RECIPIENTS = 50;
 
@@ -81,7 +81,7 @@ function validateRecipients(recipients) {
   return { valid: true };
 }
 
-// --- Per-sender rate limiter for bulk endpoint (TODO 3) ---
+// --- Per-sender rate limiter for bulk endpoint ---
 const senderRateLimits = new Map();
 const BULK_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
 const BULK_RATE_LIMIT_MAX = 200; // max 200 emails per sender per 5 min window
@@ -143,7 +143,7 @@ app.post('/send-email', async (request, reply) => {
         return reply.code(400).send({ error: '"to" und "subject" sind erforderlich' });
     }
 
-    // Validate recipients (TODO 4)
+    // Validate recipients
     const toArray = Array.isArray(to) ? to : [to];
     const recipientCheck = validateRecipients(toArray);
     if (!recipientCheck.valid) {
@@ -211,7 +211,7 @@ app.post('/send-bulk', async (request, reply) => {
         return reply.code(400).send({ error: 'Maximal 50 E-Mails pro Batch' });
     }
 
-    // Per-sender rate limit (TODO 3)
+    // Per-sender rate limit
     const senderKey = request.body?.from || request.ip;
     if (!checkBulkRateLimit(senderKey)) {
         return reply.code(429).send({ error: 'Bulk rate limit exceeded. Try again later.' });
@@ -220,13 +220,15 @@ app.post('/send-bulk', async (request, reply) => {
     const results = [];
     for (const email of emails) {
         try {
+            const rawBody = email.body || '';
+            const bulkHtml = rawBody.includes('<')
+                ? sanitizeEmailHtml(rawBody)
+                : sanitizeEmailHtml(`<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;line-height:1.6;">${rawBody}</pre>`);
             const info = await transporter.sendMail({
                 from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
                 to: email.to,
                 subject: email.subject,
-                html: email.body?.includes('<')
-                    ? email.body
-                    : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;line-height:1.6;">${email.body}</pre>`,
+                html: bulkHtml,
             });
             results.push({ to: email.to, success: true, messageId: info.messageId });
         } catch (err) {

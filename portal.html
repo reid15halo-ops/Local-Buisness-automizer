@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kunden-Portal</title>
+    <link rel="stylesheet" href="css/fonts.css">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: #475569;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .portal-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            text-align: center;
+        }
+        .portal-header .firma-name { font-size: 22px; font-weight: 700; }
+        .portal-header .kunde-name { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .portal-logo { width: 48px; height: 48px; border-radius: 8px; margin-bottom: 8px; }
+
+        /* Container */
+        .portal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 16px;
+        }
+
+        /* Tabs */
+        .portal-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .portal-tab {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .portal-tab.active {
+            background: var(--accent);
+            color: #fff;
+        }
+        .portal-tab:hover:not(.active) { background: var(--bg-input); color: var(--text); }
+
+        /* Tab Content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards */
+        .portal-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--border);
+        }
+        .portal-card.status-offen { border-left-color: var(--warning); }
+        .portal-card.status-angenommen, .portal-card.status-bezahlt { border-left-color: var(--success); }
+        .portal-card.status-ueberfaellig { border-left-color: var(--error); }
+        .portal-card.status-abgelehnt, .portal-card.status-storniert { border-left-color: #6b7280; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .card-nummer { font-weight: 700; font-size: 16px; }
+        .card-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .card-status.offen { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .card-status.angenommen, .card-status.aktiv { background: rgba(34,197,94,0.15); color: var(--success); }
+        .card-status.bezahlt { background: rgba(34,197,94,0.15); color: var(--success); }
+        .card-status.ueberfaellig { background: rgba(239,68,68,0.15); color: var(--error); }
+        .card-status.abgelehnt, .card-status.storniert { background: rgba(107,114,128,0.15); color: #9ca3af; }
+        .card-status.abgeschlossen { background: rgba(99,102,241,0.15); color: var(--accent); }
+
+        .card-detail { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+        .card-amount { font-size: 20px; font-weight: 700; margin-top: 8px; }
+
+        /* Positionen */
+        .positionen-list { margin-top: 12px; }
+        .position-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .position-row:last-child { border-bottom: none; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { opacity: 0.9; }
+        .btn-outline {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        .btn-outline:hover { background: rgba(99,102,241,0.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-sm { padding: 6px 14px; font-size: 13px; }
+
+        /* Bank Info */
+        .bank-info {
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .bank-info div { margin-bottom: 4px; }
+        .bank-info .label { color: var(--text-muted); display: inline-block; min-width: 80px; }
+
+        /* Contact Form */
+        .contact-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+        .contact-section h3 { margin-bottom: 12px; font-size: 16px; }
+        textarea.portal-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+        textarea.portal-textarea:focus { outline: none; border-color: var(--accent); }
+
+        /* Loading & Error States */
+        .portal-loading, .portal-error {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .portal-loading .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid var(--bg-input);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .portal-error { color: var(--error); }
+        .portal-error h2 { margin-bottom: 8px; }
+
+        /* Toast */
+        .portal-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .portal-toast.show { transform: translateX(-50%) translateY(0); }
+        .portal-toast.error { background: var(--error); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 480px) {
+            .portal-container { padding: 12px; }
+            .portal-card { padding: 16px; }
+            .card-amount { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="portal-app">
+        <div class="portal-loading" id="portal-loading">
+            <div class="spinner"></div>
+            <p>Portal wird geladen...</p>
+        </div>
+    </div>
+
+    <div class="portal-toast" id="portal-toast"></div>
+
+    <script>
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) {
+            showError('Kein Zugangstoken angegeben. Bitte verwenden Sie den Link aus Ihrer E-Mail.');
+            return;
+        }
+
+        const SUPABASE_URL = 'https://incbhhaiiayohrjqevog.supabase.co';
+        const API_URL = `${SUPABASE_URL}/functions/v1/portal-api`;
+
+        let portalData = null;
+
+        // Load portal data
+        loadPortalData();
+
+        async function loadPortalData() {
+            try {
+                const resp = await fetch(`${API_URL}?token=${encodeURIComponent(token)}`);
+                const data = await resp.json();
+
+                if (!resp.ok) {
+                    showError(data.error || 'Fehler beim Laden des Portals');
+                    return;
+                }
+
+                portalData = data;
+                renderPortal(data);
+            } catch (err) {
+                showError('Verbindungsfehler. Bitte versuchen Sie es sp\u00e4ter erneut.');
+            }
+        }
+
+        function renderPortal(data) {
+            const app = document.getElementById('portal-app');
+            const firma = data.firma || {};
+            const kunde = data.kunde || {};
+
+            app.innerHTML = `
+                <div class="portal-header">
+                    ${firma.logo_url ? `<img class="portal-logo" src="${esc(firma.logo_url)}" alt="Logo">` : ''}
+                    <div class="firma-name">${esc(firma.name || 'Kunden-Portal')}</div>
+                    <div class="kunde-name">${kunde.name ? `Willkommen, ${esc(kunde.name)}` : ''}</div>
+                </div>
+
+                <div class="portal-container">
+                    <div class="portal-tabs">
+                        <button class="portal-tab active" data-tab="angebote">Angebote (${data.angebote.length})</button>
+                        <button class="portal-tab" data-tab="auftraege">Auftr\u00e4ge (${data.auftraege.length})</button>
+                        <button class="portal-tab" data-tab="rechnungen">Rechnungen (${data.rechnungen.length})</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-angebote">
+                        ${renderAngebote(data.angebote)}
+                    </div>
+                    <div class="tab-content" id="tab-auftraege">
+                        ${renderAuftraege(data.auftraege)}
+                    </div>
+                    <div class="tab-content" id="tab-rechnungen">
+                        ${renderRechnungen(data.rechnungen, firma)}
+                    </div>
+
+                    <div class="contact-section">
+                        <h3>Kontakt aufnehmen</h3>
+                        <textarea class="portal-textarea" id="contact-message" placeholder="Ihre Nachricht an ${esc(firma.name || 'uns')}..."></textarea>
+                        <button class="btn btn-primary" id="btn-send-message">Nachricht senden</button>
+                    </div>
+                </div>
+            `;
+
+            // Tab switching
+            app.querySelectorAll('.portal-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    app.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+                    app.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+                });
+            });
+
+            // Accept buttons
+            app.querySelectorAll('.btn-accept-angebot').forEach(btn => {
+                btn.addEventListener('click', () => acceptAngebot(btn.dataset.id, btn));
+            });
+
+            // Contact form
+            document.getElementById('btn-send-message').addEventListener('click', sendMessage);
+        }
+
+        function renderAngebote(angebote) {
+            if (angebote.length === 0) return '<div class="empty-state">Keine Angebote vorhanden</div>';
+            return angebote.map(a => {
+                const status = a.status || 'offen';
+                const canAccept = status === 'offen';
+                return `
+                    <div class="portal-card status-${status}">
+                        <div class="card-header">
+                            <span class="card-nummer">Angebot ${esc(a.nummer || '')}</span>
+                            <span class="card-status ${status}">${statusLabel(status)}</span>
+                        </div>
+                        <div class="card-detail"><span>Erstellt:</span> <span>${formatDate(a.erstellt_am)}</span></div>
+                        ${a.gueltig_bis ? `<div class="card-detail"><span>G\u00fcltig bis:</span> <span>${formatDate(a.gueltig_bis)}</span></div>` : ''}
+                        ${renderPositionen(a.positionen)}
+                        <div class="card-amount">${formatCurrency(a.brutto)}</div>
+                        ${canAccept ? `<button class="btn btn-success btn-accept-angebot" data-id="${a.id}" style="margin-top:12px;width:100%">Angebot annehmen</button>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAuftraege(auftraege) {
+            if (auftraege.length === 0) return '<div class="empty-state">Keine Auftr\u00e4ge vorhanden</div>';
+            return auftraege.map(a => {
+                const status = a.status || 'aktiv';
+                return `
+                    <div class="portal-card status-${status}">
+                        <div class="card-header">
+                            <span class="card-nummer">Auftrag ${esc(a.nummer || '')}</span>
+                            <span class="card-status ${status}">${statusLabel(status)}</span>
+                        </div>
+                        <div class="card-detail"><span>Erstellt:</span> <span>${formatDate(a.erstellt_am)}</span></div>
+                        ${a.beschreibung ? `<div style="margin-top:8px;font-size:13px;color:var(--text-muted)">${esc(a.beschreibung.substring(0, 200))}</div>` : ''}
+                        ${a.gesamtpreis ? `<div class="card-amount">${formatCurrency(a.gesamtpreis)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRechnungen(rechnungen, firma) {
+            if (rechnungen.length === 0) return '<div class="empty-state">Keine Rechnungen vorhanden</div>';
+            return rechnungen.map(r => {
+                let status = r.status || 'offen';
+                if (status === 'offen' && r.faelligkeitsdatum && new Date(r.faelligkeitsdatum) < new Date()) {
+                    status = 'ueberfaellig';
+                }
+                const showBank = status === 'offen' || status === 'ueberfaellig';
+                return `
+                    <div class="portal-card status-${status}">
+                        <div class="card-header">
+                            <span class="card-nummer">Rechnung ${esc(r.nummer || '')}</span>
+                            <span class="card-status ${status}">${statusLabel(status)}</span>
+                        </div>
+                        <div class="card-detail"><span>Erstellt:</span> <span>${formatDate(r.erstellt_am)}</span></div>
+                        <div class="card-detail"><span>F\u00e4llig:</span> <span>${formatDate(r.faelligkeitsdatum)}</span></div>
+                        ${renderPositionen(r.positionen)}
+                        <div class="card-amount">${formatCurrency(r.brutto)}</div>
+                        ${showBank && firma.iban ? `
+                            <div class="bank-info">
+                                <div><span class="label">Empf\u00e4nger:</span> ${esc(firma.inhaber || firma.name || '')}</div>
+                                <div><span class="label">IBAN:</span> ${esc(firma.iban)}</div>
+                                ${firma.bic ? `<div><span class="label">BIC:</span> ${esc(firma.bic)}</div>` : ''}
+                                ${firma.bank ? `<div><span class="label">Bank:</span> ${esc(firma.bank)}</div>` : ''}
+                                <div><span class="label">Verwendung:</span> ${esc(r.nummer || r.id)}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPositionen(positionen) {
+            if (!positionen || !Array.isArray(positionen) || positionen.length === 0) return '';
+            return `
+                <div class="positionen-list">
+                    ${positionen.map(p => `
+                        <div class="position-row">
+                            <span>${esc(p.beschreibung || p.bezeichnung || '')}</span>
+                            <span>${p.menge || 1} x ${formatCurrency(p.einzelpreis || p.preis || 0)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function acceptAngebot(id, btn) {
+            btn.disabled = true;
+            btn.textContent = 'Wird angenommen...';
+            try {
+                const resp = await fetch(`${API_URL}?token=${encodeURIComponent(token)}&action=accept_angebot&id=${id}`, { method: 'POST' });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    showToast(data.error || 'Fehler', true);
+                    btn.disabled = false;
+                    btn.textContent = 'Angebot annehmen';
+                    return;
+                }
+                showToast('Angebot erfolgreich angenommen!');
+                // Reload
+                setTimeout(() => loadPortalData(), 1000);
+            } catch (err) {
+                showToast('Verbindungsfehler', true);
+                btn.disabled = false;
+                btn.textContent = 'Angebot annehmen';
+            }
+        }
+
+        async function sendMessage() {
+            const textarea = document.getElementById('contact-message');
+            const message = textarea.value.trim();
+            if (!message) { showToast('Bitte geben Sie eine Nachricht ein', true); return; }
+
+            const btn = document.getElementById('btn-send-message');
+            btn.disabled = true;
+            btn.textContent = 'Wird gesendet...';
+
+            try {
+                const resp = await fetch(`${API_URL}?token=${encodeURIComponent(token)}&action=contact`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message }),
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    showToast(data.error || 'Fehler beim Senden', true);
+                } else {
+                    showToast('Nachricht wurde gesendet!');
+                    textarea.value = '';
+                }
+            } catch (err) {
+                showToast('Verbindungsfehler', true);
+            }
+            btn.disabled = false;
+            btn.textContent = 'Nachricht senden';
+        }
+
+        // Helpers
+        function showError(msg) {
+            document.getElementById('portal-app').innerHTML = `
+                <div class="portal-error">
+                    <h2>Zugang nicht m\u00f6glich</h2>
+                    <p>${esc(msg)}</p>
+                </div>
+            `;
+        }
+
+        function showToast(msg, isError) {
+            const t = document.getElementById('portal-toast');
+            t.textContent = msg;
+            t.className = 'portal-toast show' + (isError ? ' error' : '');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function esc(s) {
+            if (!s) return '';
+            const d = document.createElement('div');
+            d.textContent = String(s);
+            return d.innerHTML;
+        }
+
+        function formatDate(d) {
+            if (!d) return '-';
+            return new Date(d).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function formatCurrency(v) {
+            if (typeof v !== 'number') return '0 \u20ac';
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v);
+        }
+
+        function statusLabel(s) {
+            const labels = {
+                offen: 'Offen',
+                angenommen: 'Angenommen',
+                abgelehnt: 'Abgelehnt',
+                aktiv: 'Aktiv',
+                abgeschlossen: 'Abgeschlossen',
+                bezahlt: 'Bezahlt',
+                ueberfaellig: '\u00dcberf\u00e4llig',
+                storniert: 'Storniert',
+            };
+            return labels[s] || s;
+        }
+    })();
+    </script>
+</body>
+</html>

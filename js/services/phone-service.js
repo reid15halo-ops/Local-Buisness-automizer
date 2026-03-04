@@ -53,13 +53,17 @@ class PhoneService {
     }
 
     // Update call after completion
-    completeCall(callId, notes, duration = null) {
+    completeCall(callId, notes, duration = null, summaryData = null) {
         const call = this.getCall(callId);
         if (call) {
             call.status = 'completed';
             call.endedAt = new Date().toISOString();
             call.notes = notes;
             if (duration) {call.duration = duration;}
+            if (summaryData) {
+                call.summary = summaryData.summary || null;
+                call.keywords = summaryData.keywords || [];
+            }
             this.save();
 
             // Log to communication service if available
@@ -73,6 +77,19 @@ class PhoneService {
                     notes: call.notes,
                     outcome: 'connected'
                 });
+            }
+
+            // Save summary to Supabase if available
+            if (window.callSummaryService && (summaryData || notes)) {
+                window.callSummaryService.saveSummary({
+                    kundeId: call.customerId,
+                    kundeName: call.customerName,
+                    phone: call.phoneNumber,
+                    direction: call.direction,
+                    summary: summaryData?.summary || notes,
+                    keywords: summaryData?.keywords || [],
+                    duration: call.duration,
+                }).catch(err => console.error('[PhoneService] Summary-Speicherung fehlgeschlagen:', err));
             }
 
             return call;
@@ -104,6 +121,49 @@ class PhoneService {
 
     getCallsForCustomer(customerId) {
         return this.callHistory.filter(c => c.customerId === customerId);
+    }
+
+    async getCallsWithSummaries(customerId) {
+        const localCalls = this.getCallsForCustomer(customerId);
+        if (!window.callSummaryService) return localCalls;
+
+        try {
+            const summaries = await window.callSummaryService.getSummariesForCustomer(customerId);
+            // Merge: attach summary data to matching local calls, add remote-only entries
+            const merged = [...localCalls];
+            for (const s of summaries) {
+                const existing = merged.find(c =>
+                    c.phoneNumber === s.phone &&
+                    Math.abs(new Date(c.startedAt) - new Date(s.created_at)) < 300000
+                );
+                if (existing) {
+                    existing.summary = s.summary;
+                    existing.keywords = s.keywords;
+                    existing.transcript = s.transcript;
+                    existing.summaryId = s.id;
+                } else {
+                    merged.push({
+                        id: s.id,
+                        phoneNumber: s.phone,
+                        customerId: s.kunde_id,
+                        customerName: s.kunde_name,
+                        direction: s.direction,
+                        status: 'completed',
+                        startedAt: s.created_at,
+                        duration: s.duration,
+                        summary: s.summary,
+                        keywords: s.keywords,
+                        transcript: s.transcript,
+                        summaryId: s.id,
+                        source: 'supabase'
+                    });
+                }
+            }
+            return merged.sort((a, b) => new Date(b.startedAt || b.created_at) - new Date(a.startedAt || a.created_at));
+        } catch (err) {
+            console.error('[PhoneService] Summaries laden fehlgeschlagen:', err);
+            return localCalls;
+        }
     }
 
     getTodaysCalls() {

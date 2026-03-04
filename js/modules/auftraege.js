@@ -441,6 +441,14 @@ function initAuftragDetailHandlers() {
         if (content) {content.classList.add('active');}
     });
 
+    // Render Zeiterfassung when tab is activated
+    document.getElementById('auftrag-detail-tabs')?.addEventListener('click', (e) => {
+        const tab = e.target.closest('.auftrag-tab');
+        if (tab && tab.dataset.tab === 'zeiterfassung' && currentDetailAuftragId) {
+            renderAuftragZeit(currentDetailAuftragId);
+        }
+    });
+
     // Status action buttons (delegated)
     document.getElementById('ad-status-actions')?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-status]');
@@ -448,6 +456,147 @@ function initAuftragDetailHandlers() {
         changeAuftragStatus(currentDetailAuftragId, btn.dataset.status);
         openAuftragDetail(currentDetailAuftragId); // Refresh view
     });
+
+    // Zeiterfassung: Clock in/out
+    document.getElementById('ad-btn-zeit-start')?.addEventListener('click', () => {
+        const ts = window.timeTrackingService;
+        if (!ts || !currentDetailAuftragId) {return;}
+
+        if (ts.isClockActive('default')) {
+            ts.clockOut('default', `Auftrag ${currentDetailAuftragId}`);
+            if (window.showToast) {window.showToast('Ausgestempelt', 'success');}
+        } else {
+            ts.clockIn('default', currentDetailAuftragId);
+            // Tag active timer with auftragId
+            if (ts.activeTimers['default']) {
+                ts.activeTimers['default'].auftragId = currentDetailAuftragId;
+                ts.saveTimers();
+            }
+            if (window.showToast) {window.showToast('Eingestempelt', 'success');}
+        }
+        renderAuftragZeit(currentDetailAuftragId);
+    });
+
+    // Zeiterfassung: Manual entry toggle
+    document.getElementById('ad-btn-zeit-manuell')?.addEventListener('click', () => {
+        const container = document.getElementById('ad-zeit-entries');
+        if (!container || !currentDetailAuftragId) {return;}
+
+        // Toggle inline form
+        let form = container.querySelector('.ad-zeit-form');
+        if (form) { form.remove(); return; }
+
+        const today = new Date().toISOString().split('T')[0];
+        const formHtml = `<div class="ad-zeit-form" style="padding:12px;background:var(--bg-secondary,#f5f5f5);border-radius:8px;margin-bottom:12px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+                <input type="date" id="adz-date" value="${today}" class="form-input">
+                <input type="time" id="adz-start" value="08:00" class="form-input">
+                <input type="time" id="adz-end" value="16:00" class="form-input">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <select id="adz-type" class="form-input">
+                    <option value="arbeit">Arbeit</option>
+                    <option value="fahrt">Fahrt</option>
+                    <option value="pause">Pause</option>
+                </select>
+                <input type="text" id="adz-desc" placeholder="Beschreibung" class="form-input">
+            </div>
+            <button class="btn btn-success btn-small" id="adz-save">Speichern</button>
+            <button class="btn btn-secondary btn-small" id="adz-cancel">Abbrechen</button>
+        </div>`;
+        container.insertAdjacentHTML('afterbegin', formHtml);
+
+        container.querySelector('#adz-save')?.addEventListener('click', () => {
+            const ts = window.timeTrackingService;
+            if (!ts) {return;}
+            const date = container.querySelector('#adz-date')?.value;
+            const startTime = container.querySelector('#adz-start')?.value;
+            const endTime = container.querySelector('#adz-end')?.value;
+            const type = container.querySelector('#adz-type')?.value;
+            const desc = container.querySelector('#adz-desc')?.value;
+
+            if (!date || !startTime || !endTime) {
+                if (window.showToast) {window.showToast('Bitte alle Felder ausfüllen', 'warning');}
+                return;
+            }
+
+            ts.addEntry({
+                date, startTime, endTime, type,
+                description: desc || '',
+                auftragId: currentDetailAuftragId,
+                billable: type !== 'pause'
+            });
+            if (window.showToast) {window.showToast('Zeiteintrag gespeichert', 'success');}
+            renderAuftragZeit(currentDetailAuftragId);
+        });
+
+        container.querySelector('#adz-cancel')?.addEventListener('click', () => {
+            container.querySelector('.ad-zeit-form')?.remove();
+        });
+    });
+
+    // Zeiterfassung: Delete entry (delegated)
+    document.getElementById('ad-zeit-entries')?.addEventListener('click', (e) => {
+        const delBtn = e.target.closest('.zeit-delete-btn');
+        if (!delBtn) {return;}
+        const entryId = delBtn.dataset.id;
+        if (entryId && window.timeTrackingService) {
+            window.timeTrackingService.deleteEntry(entryId);
+            renderAuftragZeit(currentDetailAuftragId);
+        }
+    });
+}
+
+// Render Zeiterfassung entries for a specific Auftrag
+function renderAuftragZeit(auftragId) {
+    const ts = window.timeTrackingService;
+    const entriesEl = document.getElementById('ad-zeit-entries');
+    const totalEl = document.getElementById('ad-zeit-total');
+    const startBtn = document.getElementById('ad-btn-zeit-start');
+
+    if (!ts || !entriesEl) {return;}
+
+    const entries = ts.getEntriesForAuftrag(auftragId);
+    const totalMinutes = entries.reduce((sum, e) => sum + (e.durationMinutes || 0), 0);
+    const totalH = Math.floor(totalMinutes / 60);
+    const totalM = totalMinutes % 60;
+
+    // Update total
+    if (totalEl) {
+        totalEl.innerHTML = `<span>Gesamt</span><span>${totalH}:${String(totalM).padStart(2, '0')} h (${entries.length} Einträge)</span>`;
+    }
+
+    // Update clock button state
+    if (startBtn) {
+        const active = ts.isClockActive('default');
+        const timer = active ? ts.getActiveTimer('default') : null;
+        const isThisAuftrag = timer && (timer.projectId === auftragId || timer.auftragId === auftragId);
+        startBtn.textContent = isThisAuftrag ? `⏹ Ausstempeln (${timer.elapsedFormatted})` : '▶ Stempeln';
+        startBtn.className = isThisAuftrag ? 'btn btn-danger' : 'btn btn-success';
+    }
+
+    // Render entries
+    if (entries.length === 0) {
+        entriesEl.innerHTML = '<p class="empty-state empty-state-centered">Keine Zeiteinträge</p>';
+        return;
+    }
+
+    const typeLabels = { arbeit: 'Arbeit', fahrt: 'Fahrt', pause: 'Pause' };
+    const typeColors = { arbeit: '#4caf50', fahrt: '#2196f3', pause: '#ff9800' };
+
+    entriesEl.innerHTML = entries
+        .sort((a, b) => b.date.localeCompare(a.date) || b.startTime.localeCompare(a.startTime))
+        .map(e => `<div class="zeit-entry-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border-color,#eee);">
+            <div>
+                <strong>${h(e.date)}</strong> ${h(e.startTime)}–${h(e.endTime)}
+                <span style="background:${typeColors[e.type] || '#999'};color:#fff;padding:2px 6px;border-radius:4px;font-size:0.75em;margin-left:4px;">${h(typeLabels[e.type] || e.type)}</span>
+                ${e.description ? `<br><small style="color:var(--text-secondary,#666)">${h(e.description)}</small>` : ''}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span>${ts.formatDuration(e.durationMinutes || 0)} h</span>
+                <button class="zeit-delete-btn" data-id="${h(e.id)}" title="Löschen" style="background:none;border:none;cursor:pointer;color:var(--danger,#e53935);font-size:1.1em;">✕</button>
+            </div>
+        </div>`).join('');
 }
 
 // Open auftrag detail modal and populate it
@@ -504,6 +653,7 @@ window.AuftraegeModule = {
     renderAuftraege,
     changeAuftragStatus,
     openAuftragDetail,
+    renderAuftragZeit,
     initAuftragForm,
     initAuftragDetailHandlers,
     AUFTRAG_STATUS_CONFIG,

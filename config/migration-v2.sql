@@ -1,5 +1,5 @@
 -- ============================================
--- HandwerkFlow - Migration V2
+-- FreyAI Visions - Migration V2
 -- New tables for Rounds 4-6 features
 -- (Purchase Orders, Stock Movements, Material Reservations, Suppliers, Communication Log)
 -- ============================================

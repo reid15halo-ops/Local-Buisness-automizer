@@ -3,9 +3,10 @@
 // API keys are stored as Supabase secrets, NOT exposed to the client.
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
@@ -15,6 +16,20 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Authenticate user
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+    )
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Nicht authentifiziert' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const { channel, message, chatId, toNumber } = await req.json()
 
     if (!channel || !message) {

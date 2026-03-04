@@ -74,7 +74,7 @@ serve(async (req) => {
                     },
                     body: JSON.stringify({
                         to: Array.isArray(params.to) ? params.to.join(', ') : params.to,
-                        subject: params.subject || 'HandwerkFlow Benachrichtigung',
+                        subject: params.subject || 'FreyAI Visions Benachrichtigung',
                         body: params.body || '',
                     }),
                 })
@@ -133,7 +133,7 @@ serve(async (req) => {
                 const method = (params.method || 'POST').toUpperCase()
                 const whRes = await fetch(params.url, {
                     method,
-                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'HandwerkFlow-Automation/1.0' },
+                    headers: { 'Content-Type': 'application/json', 'User-Agent': 'FreyAI-Automation/1.0' },
                     body: ['GET', 'HEAD'].includes(method) ? undefined : JSON.stringify(params.data || {}),
                 })
                 result = { success: whRes.ok, data: { status: whRes.status } }
@@ -144,7 +144,7 @@ serve(async (req) => {
                 // Store notification in DB for the user
                 await supabase.from('notifications').insert({
                     user_id: user.id,
-                    title: params.title || 'HandwerkFlow',
+                    title: params.title || 'FreyAI Visions',
                     message: params.message || '',
                     type: params.type || 'info',
                     read: false,

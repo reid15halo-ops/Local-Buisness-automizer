@@ -5,8 +5,8 @@
 (function() {
 
 const { store, renderActivities } = (() => {
-    const store = window.storeService.state;
-    const { renderActivities } = window.ActivityModule;
+    const store = window.storeService?.state || {};
+    const { renderActivities } = window.ActivityModule || {};
     return { store, renderActivities };
 })();
 

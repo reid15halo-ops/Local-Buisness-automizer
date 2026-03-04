@@ -17,7 +17,7 @@ class ReportService {
 
     // Generate Sales Report
     generateSalesReport(startDate, endDate) {
-        const rechnungen = window.store?.rechnungen || [];
+        const rechnungen = window.storeService?.state?.rechnungen || [];
         const filtered = rechnungen.filter(r => {
             const date = r.datum?.split('T')[0] || r.datum;
             return date >= startDate && date <= endDate;
@@ -63,7 +63,7 @@ class ReportService {
     // Generate Customer Report
     generateCustomerReport(startDate, endDate) {
         const customers = window.customerService?.getAllCustomers() || [];
-        const rechnungen = window.store?.rechnungen || [];
+        const rechnungen = window.storeService?.state?.rechnungen || [];
 
         // Calculate revenue per customer
         const customerRevenue = {};

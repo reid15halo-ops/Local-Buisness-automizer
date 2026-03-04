@@ -317,7 +317,7 @@ async function loadPortal(token) {
         let data = null;
 
         if (supabaseUrl && supabaseAnon) {
-            const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
+            const res = await fetch(`${supabaseUrl}/functions/v1/portal-api`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'apikey': supabaseAnon },
                 body: JSON.stringify({ token })

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/admin-panel.css">
     <link rel="stylesheet" href="css/boomer-guide.css">
     <link rel="stylesheet" href="css/agent-workflows.css">
+    <link rel="stylesheet" href="css/support.css">
     <link rel="stylesheet" href="css/field-app.css">
     <link rel="stylesheet" href="css/support.css">
     <link rel="stylesheet" href="css/aufmass.css">
@@ -26,7 +27,8 @@
     <link rel="stylesheet" href="css/fonts.css">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2dd4a8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://freyaivisions.de; frame-src https://checkout.stripe.com; font-src 'self' data:; worker-src 'self' blob:;">
+    <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <!-- Apple Splash Screens -->
@@ -272,6 +274,10 @@
                     <span class="nav-icon">⏱️</span>
                     Zeiterfassung
                 </button>
+                <button class="nav-item" data-view="gantt" data-mode="pro">
+                    <span class="nav-icon">📊</span>
+                    Werkstattplaner
+                </button>
 
                 <!-- Email & Communication Section (Pro) -->
                 <div class="nav-divider" data-mode="pro"></div>
@@ -355,6 +361,14 @@
                 <button class="nav-item" data-view="backup" data-mode="pro">
                     <span class="nav-icon">🔒</span>
                     Daten verwalten
+                </button>
+
+                <!-- Support (Pro Mode) -->
+                <div class="nav-divider" data-mode="pro"></div>
+                <button class="nav-item" data-view="support" data-mode="pro">
+                    <span class="nav-icon">🎫</span>
+                    Support
+                    <span class="badge" id="support-badge"></span>
                 </button>
 
                 <!-- Admin Panel (Pro Mode) -->
@@ -908,6 +922,49 @@
                 </div>
             </section>
 
+            <!-- Support Dashboard View -->
+            <section class="view" id="view-support">
+                <header class="view-header">
+                    <h1>Support Dashboard</h1>
+                    <p class="subtitle">Tickets, Konversationen & Knowledge Base</p>
+                </header>
+                <div class="support-stats" id="support-stats"></div>
+                <div class="support-tabs">
+                    <button class="support-tab-btn active" data-tab="tickets">Tickets</button>
+                    <button class="support-tab-btn" data-tab="kb">Knowledge Base</button>
+                </div>
+                <div class="support-tab-panel active" id="support-panel-tickets">
+                    <div class="support-toolbar">
+                        <select id="support-filter-status">
+                            <option value="">Alle Status</option>
+                            <option value="offen">Offen</option>
+                            <option value="in_bearbeitung">In Bearbeitung</option>
+                            <option value="warte_auf_kunde">Warte auf Kunde</option>
+                            <option value="ai_beantwortet">KI beantwortet</option>
+                            <option value="geloest">Geloest</option>
+                            <option value="geschlossen">Geschlossen</option>
+                        </select>
+                        <select id="support-filter-priority">
+                            <option value="">Alle Prioritaeten</option>
+                            <option value="dringend">Dringend</option>
+                            <option value="hoch">Hoch</option>
+                            <option value="normal">Normal</option>
+                            <option value="niedrig">Niedrig</option>
+                        </select>
+                        <input type="text" id="support-filter-search" placeholder="Suche (Ticket#, Betreff, Email)...">
+                    </div>
+                    <div class="support-ticket-list" id="support-ticket-list"></div>
+                </div>
+                <div class="support-tab-panel" id="support-panel-kb">
+                    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+                        <button id="support-new-kb" style="padding:8px 16px;border-radius:6px;border:none;background:var(--primary,#6366f1);color:white;cursor:pointer">+ Neuer Artikel</button>
+                    </div>
+                    <div id="support-kb-form-area"></div>
+                    <div class="support-kb-list" id="support-kb-list"></div>
+                </div>
+                <div class="support-detail-overlay" id="support-detail-overlay"></div>
+            </section>
+
             <!-- Admin Panel View -->
             <section class="view" id="view-admin-panel">
                 <header class="view-header">
@@ -1019,7 +1076,7 @@
 
                         <div class="form-group">
                             <label for="email-inbound-address">Empfangs-Adresse</label>
-                            <input type="text" id="email-inbound-address" value="anfragen@handwerkflow.de" readonly>
+                            <input type="text" id="email-inbound-address" value="anfragen@freyaivisions.de" readonly>
                             <small>E-Mails an diese Adresse werden automatisch verarbeitet</small>
                         </div>
 
@@ -1742,6 +1799,7 @@ Mit freundlichen Grüßen
                             <p class="subtitle">Arbeitszeiten und Stunden</p>
                         </div>
                         <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-add-time-entry">+ Manueller Eintrag</button>
                             <button class="btn btn-success btn-large" id="btn-clock-toggle">
                                 ▶️ Stempeln
                             </button>
@@ -1749,18 +1807,85 @@ Mit freundlichen Grüßen
                     </div>
                 </header>
                 <div class="time-clock-display" id="time-clock-display">
-                    <div class="clock-status">Nicht eingestempelt</div>
-                    <div class="clock-timer">00:00:00</div>
+                    <div class="clock-status" id="clock-status-text">Nicht eingestempelt</div>
+                    <div class="clock-timer" id="clock-timer-display">00:00:00</div>
+                    <div id="clock-project-info" style="font-size:13px;color:var(--text-muted);margin-top:4px;display:none;"></div>
                 </div>
                 <div class="time-stats">
                     <div class="stat-mini"><span id="time-today">0:00</span><span>Heute</span></div>
                     <div class="stat-mini"><span id="time-week">0:00</span><span>Diese Woche</span></div>
                     <div class="stat-mini"><span id="time-month">0:00</span><span>Dieser Monat</span></div>
                 </div>
-                <h3 class="section-heading-spaced">Zeiteinträge</h3>
+
+                <!-- Manueller Eintrag Form (hidden by default) -->
+                <div id="time-entry-form" style="display:none;padding:16px;background:var(--bg-card);border-radius:12px;margin-bottom:16px;">
+                    <h3 style="margin-bottom:12px;">Zeiteintrag erfassen</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group">
+                            <label for="te-date">Datum</label>
+                            <input type="date" id="te-date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="te-type">Typ</label>
+                            <select id="te-type" class="form-control">
+                                <option value="arbeit">Arbeit</option>
+                                <option value="fahrt">Fahrt</option>
+                                <option value="pause">Pause</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="te-start">Beginn</label>
+                            <input type="time" id="te-start" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="te-end">Ende</label>
+                            <input type="time" id="te-end" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="te-break">Pause (Min.)</label>
+                            <input type="number" id="te-break" class="form-control" value="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="te-auftrag">Auftrag</label>
+                            <select id="te-auftrag" class="form-control">
+                                <option value="">— Kein Auftrag —</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:8px;">
+                        <label for="te-description">Beschreibung</label>
+                        <input type="text" id="te-description" class="form-control" placeholder="Was wurde gemacht?">
+                    </div>
+                    <div class="form-group" style="margin-top:4px;">
+                        <label><input type="checkbox" id="te-billable" checked> Abrechenbar</label>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:12px;">
+                        <button class="btn btn-primary" id="btn-save-time-entry">Speichern</button>
+                        <button class="btn btn-secondary" id="btn-cancel-time-entry">Abbrechen</button>
+                    </div>
+                </div>
+
+                <!-- Date filter -->
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <h3 class="section-heading-spaced" style="margin:0;">Zeiteinträge</h3>
+                    <input type="date" id="te-filter-date" class="form-control" style="width:auto;">
+                </div>
                 <div class="items-list" id="time-entries-list">
                     <p class="empty-state">Keine Zeiteinträge vorhanden</p>
                 </div>
+            </section>
+
+            <!-- Gantt / Werkstattplaner View -->
+            <section class="view" id="view-gantt">
+                <header class="view-header">
+                    <div class="view-header-row">
+                        <div>
+                            <h1>Werkstattplaner</h1>
+                            <p class="subtitle">Gantt-Timeline aller Aufträge</p>
+                        </div>
+                    </div>
+                </header>
+                <div id="gantt-fullview-mount" style="min-height:400px;"></div>
             </section>
 
             <!-- E-Mails View -->
@@ -2388,6 +2513,7 @@ Mit freundlichen Grüßen
                 <h2 id="modal-mahnung-title">Mahnung erstellen</h2>
                 <button class="modal-close" aria-label="Dialog schließen">&times;</button>
             </div>
+            <input type="hidden" id="mahnung-rechnung-id" data-rechnung-id="">
             <div class="mahnung-preview" id="mahnung-preview">
                 <!-- Dynamically generated -->
             </div>
@@ -3055,6 +3181,168 @@ Email: max.mustermann@example.com</textarea>
         </div>
     </div>
 
+    <!-- Modal: Kunden-Detail mit Anruf-Zusammenfassungen -->
+    <div class="modal" id="modal-kunde-detail" role="dialog" aria-labelledby="modal-kunde-detail-title" aria-modal="true">
+        <div class="modal-overlay"></div>
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="modal-kunde-detail-title">Kundendetails</h2>
+                <button class="modal-close" aria-label="Dialog schliessen">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Kunden-Info -->
+                <div id="kunde-detail-info" style="margin-bottom: 24px;"></div>
+
+                <!-- Tabs -->
+                <div class="kunde-detail-tabs" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                    <button class="btn btn-sm btn-secondary kunde-tab active" data-tab="anrufe" style="opacity: 1;">Anrufe</button>
+                    <button class="btn btn-sm btn-secondary kunde-tab" data-tab="historie" style="opacity: 0.6;">Historie</button>
+                </div>
+
+                <!-- Tab: Anrufe -->
+                <div id="kunde-tab-anrufe" class="kunde-tab-content">
+                    <div id="kunde-call-summaries" style="display: flex; flex-direction: column; gap: 12px;">
+                        <p class="empty-state" style="color: var(--text-muted);">Lade Anruf-Zusammenfassungen...</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Historie -->
+                <div id="kunde-tab-historie" class="kunde-tab-content" style="display: none;">
+                    <div id="kunde-call-history">
+                        <p class="empty-state" style="color: var(--text-muted);">Keine Anrufhistorie vorhanden</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">Schliessen</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Kunden-Detail Modal Logic
+    (function() {
+        const esc = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+
+        window.openKundeDetail = async function(customerId, customerName) {
+            const modal = document.getElementById('modal-kunde-detail');
+            if (!modal) return;
+
+            document.getElementById('modal-kunde-detail-title').textContent = customerName || 'Kundendetails';
+
+            // Kunden-Info rendern
+            const infoEl = document.getElementById('kunde-detail-info');
+            const customer = window.customerService?.getAllCustomers()?.find(c => c.id === customerId);
+            if (customer) {
+                infoEl.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-card); border-radius: 12px;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #818cf8); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; color: #fff;">${esc((customer.name || '?').charAt(0).toUpperCase())}</div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">${esc(customer.name)}</div>
+                            <div style="color: var(--text-muted); font-size: 13px;">${esc(customer.firma || '')} ${customer.telefon ? '| ' + esc(customer.telefon) : ''} ${customer.email ? '| ' + esc(customer.email) : ''}</div>
+                        </div>
+                    </div>`;
+            }
+
+            // Modal oeffnen
+            modal.classList.add('active');
+
+            // Tab-Handler
+            modal.querySelectorAll('.kunde-tab').forEach(tab => {
+                tab.onclick = () => {
+                    modal.querySelectorAll('.kunde-tab').forEach(t => { t.classList.remove('active'); t.style.opacity = '0.6'; });
+                    tab.classList.add('active');
+                    tab.style.opacity = '1';
+                    modal.querySelectorAll('.kunde-tab-content').forEach(c => c.style.display = 'none');
+                    document.getElementById('kunde-tab-' + tab.dataset.tab).style.display = 'block';
+                };
+            });
+
+            // Summaries laden
+            await loadCallSummaries(customerId);
+            loadCallHistory(customerId);
+        };
+
+        async function loadCallSummaries(customerId) {
+            const container = document.getElementById('kunde-call-summaries');
+            if (!window.callSummaryService) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Call-Summary-Service nicht verfuegbar</p>';
+                return;
+            }
+
+            try {
+                const summaries = await window.callSummaryService.getSummariesForCustomer(customerId);
+                if (!summaries || summaries.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted);">Keine Anruf-Zusammenfassungen vorhanden</p>';
+                    return;
+                }
+
+                container.innerHTML = summaries.map(s => {
+                    const date = new Date(s.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    const dirIcon = s.direction === 'inbound' ? '📥' : '📤';
+                    const keywords = (s.keywords || []);
+                    const durationStr = s.duration ? Math.floor(s.duration / 60) + ':' + String(s.duration % 60).padStart(2, '0') : '';
+
+                    return `
+                    <div style="background: var(--bg-card); border-radius: 12px; padding: 16px; border: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>${dirIcon}</span>
+                                <span style="font-weight: 600; font-size: 13px;">${esc(date)}</span>
+                                ${durationStr ? `<span style="color: var(--text-muted); font-size: 12px;">${esc(durationStr)} min</span>` : ''}
+                            </div>
+                            <button class="btn btn-sm" style="opacity: 0.5; font-size: 11px;" onclick="deleteCallSummary('${esc(s.id)}', '${esc(customerId)}')">Loeschen</button>
+                        </div>
+                        <p style="margin: 0 0 10px 0; font-size: 14px; line-height: 1.5;">${esc(s.summary || 'Keine Zusammenfassung')}</p>
+                        ${keywords.length > 0 ? `
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            ${keywords.map(k => `<span style="display: inline-block; background: rgba(99, 102, 241, 0.15); color: #818cf8; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 500;">${esc(k)}</span>`).join('')}
+                        </div>` : ''}
+                    </div>`;
+                }).join('');
+            } catch (err) {
+                console.error('[KundeDetail] Summaries laden fehlgeschlagen:', err);
+                container.innerHTML = '<p style="color: var(--text-muted);">Fehler beim Laden der Zusammenfassungen</p>';
+            }
+        }
+
+        function loadCallHistory(customerId) {
+            const container = document.getElementById('kunde-call-history');
+            if (!window.phoneService) return;
+
+            const calls = window.phoneService.getCallsForCustomer(customerId);
+            if (!calls || calls.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">Keine Anrufhistorie vorhanden</p>';
+                return;
+            }
+
+            container.innerHTML = calls.map(c => {
+                const date = new Date(c.startedAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const statusIcon = window.phoneService.getStatusIcon(c.status);
+                return `
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                    <div>
+                        <span>${statusIcon} ${esc(date)}</span>
+                        <span style="color: var(--text-muted); margin-left: 8px;">${esc(c.phoneNumber || '')}</span>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 13px;">${c.duration ? window.phoneService.formatDuration(c.duration) : '-'}</div>
+                </div>`;
+            }).join('');
+        }
+
+        window.deleteCallSummary = async function(id, customerId) {
+            if (!confirm('Zusammenfassung loeschen?')) return;
+            const ok = await window.callSummaryService?.deleteSummary(id);
+            if (ok) {
+                window.showToast?.('Zusammenfassung geloescht', 'success');
+                await loadCallSummaries(customerId);
+            } else {
+                window.showToast?.('Loeschen fehlgeschlagen', 'error');
+            }
+        };
+    })();
+    </script>
+
     <!-- =====================================
          Internationalization (i18n)
          ===================================== -->
@@ -3134,6 +3422,15 @@ Email: max.mustermann@example.com</textarea>
     <script defer src="js/services/data-export-service.js"></script>
     <script defer src="js/services/email-template-service.js"></script>
     <script defer src="js/services/pwa-install-service.js"></script>
+
+    <!-- Call Summary Service (Anruf-Zusammenfassungen) -->
+    <script src="js/services/call-summary-service.js"></script>
+
+    <!-- Portal Service (Supabase multi-tenant token management) -->
+    <script src="js/services/portal-service.js"></script>
+
+    <!-- Offline Sync Service (IndexedDB queue + cache) -->
+    <script src="js/services/offline-sync-service.js"></script>
 
     <!-- Calendar & Scheduling Services -->
     <script defer src="js/services/calendar-service.js"></script>

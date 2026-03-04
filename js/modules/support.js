@@ -31,7 +31,7 @@ async function fetchTickets() {
     let url = SB_URL + '/rest/v1/support_tickets?order=created_at.desc&limit=100&select=*';
     if (currentFilter.status) url += '&status=eq.' + currentFilter.status;
     if (currentFilter.priority) url += '&priority=eq.' + currentFilter.priority;
-    if (currentFilter.search) url += '&or=(ticket_number.ilike.*' + encodeURIComponent(currentFilter.search) + '*,subject.ilike.*' + encodeURIComponent(currentFilter.search) + '*,customer_email.ilike.*' + encodeURIComponent(currentFilter.search) + '*)';
+    if (currentFilter.search) url += '&or=(ticket_number.ilike.*' + currentFilter.search + '*,subject.ilike.*' + currentFilter.search + '*,customer_email.ilike.*' + currentFilter.search + '*)';
 
     try {
         const resp = await fetch(url, { headers: await getHeaders() });
@@ -323,7 +323,7 @@ function editKBArticle(id) {
             </label>
             <div class="form-actions">
                 <button id="kb-cancel-btn">Abbrechen</button>
-                <button class="btn-primary" id="kb-save-btn" style="background:var(--primary,#2dd4a8);color:white;border:none">Speichern</button>
+                <button class="btn-primary" id="kb-save-btn" style="background:var(--primary,#6366f1);color:white;border:none">Speichern</button>
             </div>
         </div>
     `;

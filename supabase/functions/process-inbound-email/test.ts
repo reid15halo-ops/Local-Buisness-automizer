@@ -33,7 +33,7 @@ Deno.test('Simple Metallbau Request', async () => {
             name: 'Max Mustermann',
             email: 'max.mustermann@example.com'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Anfrage Metalltor',
         text: `Hallo,
 
@@ -66,7 +66,7 @@ Deno.test('Hydraulik Service Request', async () => {
             name: 'Anna Schmidt',
             email: 'anna.schmidt@firma-xyz.de'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Dringend: Hydraulikschlauch defekt',
         text: `Guten Tag,
 
@@ -99,7 +99,7 @@ Deno.test('Unklare Anfrage (Fallback)', async () => {
             name: 'Peter',
             email: 'peter@example.com'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Hilfe',
         text: 'Können Sie mir helfen?'
     }
@@ -121,7 +121,7 @@ Deno.test('Detaillierte Schweißarbeiten Anfrage', async () => {
             name: 'Thomas Müller',
             email: 'mueller@stahlbau.de'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Angebot für Schweißarbeiten nach DIN EN 1090',
         text: `Sehr geehrte Damen und Herren,
 
@@ -161,7 +161,7 @@ Deno.test('Multi-Position Complex Request', async () => {
             name: 'Lisa Weber',
             email: 'weber@industriepark.de'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Mehrere Leistungen benötigt',
         text: `Hallo,
 
@@ -193,7 +193,7 @@ Deno.test('E-Mail mit Budget Range', async () => {
             name: 'Karl Fischer',
             email: 'fischer@example.com'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Carport aus Stahl',
         text: `Guten Tag,
 
@@ -230,7 +230,7 @@ Deno.test('Database Integration - Customer Creation', async () => {
                 name: 'Test User Integration',
                 email: 'integration.test@example.com'
             },
-            to: 'anfragen@handwerkflow.de',
+            to: 'anfragen@freyaivisions.de',
             subject: 'Integration Test',
             text: 'Ich benötige ein Angebot für Metallbau.'
         }
@@ -260,7 +260,7 @@ Deno.test('Performance - Sequential Requests', async () => {
                 name: `Test User ${i}`,
                 email: `test${i}@example.com`
             },
-            to: 'anfragen@handwerkflow.de',
+            to: 'anfragen@freyaivisions.de',
             subject: `Test ${i}`,
             text: 'Ich benötige ein Angebot.'
         }
@@ -284,7 +284,7 @@ Deno.test('Edge Case - Empty Email Body', async () => {
         from: {
             email: 'empty@example.com'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Leere Nachricht',
         text: ''
     }
@@ -306,7 +306,7 @@ Deno.test('Edge Case - Very Long Email', async () => {
             name: 'Long Text User',
             email: 'long@example.com'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Sehr detaillierte Anfrage',
         text: longText
     }
@@ -325,7 +325,7 @@ Deno.test('Edge Case - Special Characters', async () => {
             name: 'Müller & Söhne GmbH',
             email: 'mueller@beispiel.de'
         },
-        to: 'anfragen@handwerkflow.de',
+        to: 'anfragen@freyaivisions.de',
         subject: 'Anfrage für "Spezial-Tor" (äöüß)',
         text: `Wir benötigen:
         - Tor 2×3m

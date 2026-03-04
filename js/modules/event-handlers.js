@@ -239,6 +239,12 @@
                     window.testFullInvoice?.();
                     break;
 
+                case 'update-ai-model':
+                    if (window.llmService?.config) {
+                        window.llmService.config.ollamaModel = value;
+                    }
+                    break;
+
                 default:
                     console.warn(`Unknown action: ${action}`, params);
             }

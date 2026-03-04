@@ -3,6 +3,7 @@
 // Env vars needed: STRIPE_SECRET_KEY
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import Stripe from 'https://esm.sh/stripe@14.14.0?target=deno'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
@@ -21,11 +22,27 @@ serve(async (req) => {
     }
 
     try {
-        const { priceId, userId, email, successUrl, cancelUrl } = await req.json()
-
-        if (!priceId || !userId || !email) {
+        // Authenticate user
+        const supabase = createClient(
+            Deno.env.get('SUPABASE_URL')!,
+            Deno.env.get('SUPABASE_ANON_KEY')!,
+            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+        )
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
             return new Response(
-                JSON.stringify({ error: 'Missing required fields' }),
+                JSON.stringify({ error: 'Nicht authentifiziert' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const { priceId, successUrl, cancelUrl } = await req.json()
+        const userId = user.id
+        const email = user.email
+
+        if (!priceId) {
+            return new Response(
+                JSON.stringify({ error: 'priceId required' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }

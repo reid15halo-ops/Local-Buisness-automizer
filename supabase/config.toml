@@ -9,7 +9,7 @@
 [api]
 # Project name — used in local dev URLs
 # Local API: http://localhost:54321
-project_id = "freyai-visions"
+# project_id = "freyai-visions"
 
 [api.tls]
 enabled = false
@@ -82,7 +82,7 @@ enable_signup = true
 # Minimum password length
 minimum_password_length = 8
 # Session inactivity timeout (8 hours)
-max_session_length = "28800"
+# max_session_length = "28800"
 
 [auth.email]
 enable_signup = true
@@ -142,6 +142,13 @@ verify_jwt = false
 verify_jwt = true
 
 [functions.send-sms]
+verify_jwt = true
+
+[functions.portal-api]
+# Customer portal — token-based auth, no Supabase JWT
+verify_jwt = false
+
+[functions.send-notification]
 verify_jwt = true
 
 [functions.stripe-webhook]
