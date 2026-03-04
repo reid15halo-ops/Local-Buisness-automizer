@@ -661,7 +661,7 @@ class ExcelRecognitionService {
         };
 
         // Speichere in localStorage (wie in demo-data-service.js)
-        const anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]');
+        let anfragen; try { anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]'); } catch { anfragen = []; }
         anfragen.push(anfrage);
         localStorage.setItem('anfragen', JSON.stringify(anfragen));
 

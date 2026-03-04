@@ -119,7 +119,7 @@ class CompanySettingsService {
 
     _persistToLocalStorage(settings) {
         try {
-            const existing = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            let existing; try { existing = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { existing = {}; }
             localStorage.setItem('freyai_admin_settings', JSON.stringify({ ...existing, ...settings }));
             // Also keep flat keys used by legacy code
             if (settings.stundensatz)        {localStorage.setItem('stundensatz', String(settings.stundensatz));}

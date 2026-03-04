@@ -328,12 +328,12 @@ ${companyName}`
     }
 
     _getBusinessType() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
     }
 
     _getCompanyName() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 }

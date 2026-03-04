@@ -1435,7 +1435,7 @@ Antworte NUR mit dem JSON-Array.`;
     _getBusinessType() {
         let ap = {};
         try {
-            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
             if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
                 console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
                 ap = {};
@@ -1451,7 +1451,7 @@ Antworte NUR mit dem JSON-Array.`;
     _getCompanyName() {
         let ap = {};
         try {
-            ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
             if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
                 console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
                 ap = {};

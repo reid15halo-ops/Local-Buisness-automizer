@@ -5,8 +5,8 @@
 
 class ProfitabilityService {
     constructor() {
-        this.jobAnalytics = JSON.parse(localStorage.getItem('freyai_job_analytics') || '[]');
-        this.overheadSettings = JSON.parse(localStorage.getItem('freyai_overhead_settings') || '{}');
+        try { this.jobAnalytics = JSON.parse(localStorage.getItem('freyai_job_analytics') || '[]'); } catch { this.jobAnalytics = []; }
+        try { this.overheadSettings = JSON.parse(localStorage.getItem('freyai_overhead_settings') || '{}'); } catch { this.overheadSettings = {}; }
 
         // Default overhead settings
         if (!this.overheadSettings.hourlyOverhead) {this.overheadSettings.hourlyOverhead = 25;} // €/hour

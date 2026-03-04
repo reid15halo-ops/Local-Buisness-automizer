@@ -5,8 +5,8 @@
 
 class PhoneService {
     constructor() {
-        this.callHistory = JSON.parse(localStorage.getItem('freyai_phone_history') || '[]');
-        this.quickDials = JSON.parse(localStorage.getItem('freyai_quick_dials') || '[]');
+        try { this.callHistory = JSON.parse(localStorage.getItem('freyai_phone_history') || '[]'); } catch { this.callHistory = []; }
+        try { this.quickDials = JSON.parse(localStorage.getItem('freyai_quick_dials') || '[]'); } catch { this.quickDials = []; }
 
         // Add default quick dials if empty
         if (this.quickDials.length === 0) {

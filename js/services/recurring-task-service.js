@@ -5,9 +5,9 @@
 
 class RecurringTaskService {
     constructor() {
-        this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]');
-        this.generatedTasks = JSON.parse(localStorage.getItem('freyai_generated_tasks') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_recurring_settings') || '{}');
+        try { this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]'); } catch { this.recurringTasks = []; }
+        try { this.generatedTasks = JSON.parse(localStorage.getItem('freyai_generated_tasks') || '[]'); } catch { this.generatedTasks = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_recurring_settings') || '{}'); } catch { this.settings = {}; }
 
         // German holidays (static for now, could be dynamic)
         this.holidays = this.getGermanHolidays(new Date().getFullYear());

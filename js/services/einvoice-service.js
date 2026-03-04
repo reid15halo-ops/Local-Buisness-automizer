@@ -50,7 +50,7 @@ class EInvoiceService {
 
     // Sync business data from admin panel settings and store settings
     syncFromSettings() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         const storeSettings = window.storeService?.state?.settings || {};
 
         const name = ap.company_name || storeSettings.companyName || storeSettings.firmenname || '';

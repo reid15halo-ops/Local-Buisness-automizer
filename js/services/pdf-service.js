@@ -64,7 +64,7 @@ class PDFService {
 
     getSettings() {
         const store = window.storeService?.state?.settings || {};
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         // Also check individual localStorage keys (setup wizard stores them directly)
         const ls = (key) => localStorage.getItem(key) || '';
         return {

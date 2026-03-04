@@ -5,12 +5,12 @@
 
 class RouteService {
     constructor() {
-        this.routes = JSON.parse(localStorage.getItem('freyai_routes') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_route_settings') || '{}');
+        try { this.routes = JSON.parse(localStorage.getItem('freyai_routes') || '[]'); } catch { this.routes = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_route_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.startAddress) {
-            const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
             const storeAddr = window.storeService?.state?.settings?.address || '';
             this.settings.startAddress = ap.address_street ? `${ap.address_street}, ${ap.address_postal || ''} ${ap.address_city || ''}`.trim() : (storeAddr || '');
         }

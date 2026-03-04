@@ -4,8 +4,8 @@
 
 class CalendarService {
     constructor() {
-        this.appointments = JSON.parse(localStorage.getItem('freyai_appointments') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_calendar_settings') || '{}');
+        try { this.appointments = JSON.parse(localStorage.getItem('freyai_appointments') || '[]'); } catch { this.appointments = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_calendar_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default working hours
         if (!this.settings.workingHours) {

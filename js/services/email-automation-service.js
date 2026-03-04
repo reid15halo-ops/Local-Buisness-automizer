@@ -282,7 +282,7 @@ Mit freundlichen Grüßen
             return 'Überdachung / Carport';
         }
 
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return (ap.business_type || 'Handwerks') + '-Projekt';
     }
 

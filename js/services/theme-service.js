@@ -5,7 +5,7 @@
 
 class ThemeService {
     constructor() {
-        this.settings = JSON.parse(localStorage.getItem('freyai_theme_settings') || '{}');
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_theme_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.theme) {

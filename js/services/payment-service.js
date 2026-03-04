@@ -6,9 +6,9 @@
 class PaymentService {
     constructor() {
         try {
-            this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]');
-            this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]');
-            this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}');
+            try { this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]'); } catch { this.payments = []; }
+            try { this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]'); } catch { this.paymentLinks = []; }
+            try { this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}'); } catch { this.settings = {}; }
 
             // Default settings
             if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}

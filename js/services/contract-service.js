@@ -5,8 +5,8 @@
 
 class ContractService {
     constructor() {
-        this.contracts = JSON.parse(localStorage.getItem('freyai_contracts') || '[]');
-        this.invoiceHistory = JSON.parse(localStorage.getItem('freyai_contract_invoices') || '[]');
+        try { this.contracts = JSON.parse(localStorage.getItem('freyai_contracts') || '[]'); } catch { this.contracts = []; }
+        try { this.invoiceHistory = JSON.parse(localStorage.getItem('freyai_contract_invoices') || '[]'); } catch { this.invoiceHistory = []; }
 
         // Contract templates
         this.templates = [

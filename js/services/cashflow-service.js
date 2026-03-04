@@ -4,8 +4,8 @@
 
 class CashFlowService {
     constructor() {
-        this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}');
+        try { this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]'); } catch { this.forecasts = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.monthsToForecast) {this.settings.monthsToForecast = 6;}

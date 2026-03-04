@@ -438,7 +438,7 @@ class ConflictResolutionService {
             const storageKey = `hwf_${table}`;
             let items = [];
             try {
-                items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                try { items = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { items = []; }
             } catch {
                 items = [];
             }

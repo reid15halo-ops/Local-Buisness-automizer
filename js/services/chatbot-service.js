@@ -5,9 +5,9 @@
 
 class ChatbotService {
     constructor() {
-        this.conversations = JSON.parse(localStorage.getItem('freyai_chatbot_conversations') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_chatbot_settings') || '{}');
-        this.messageQueue = JSON.parse(localStorage.getItem('freyai_chatbot_queue') || '[]');
+        try { this.conversations = JSON.parse(localStorage.getItem('freyai_chatbot_conversations') || '[]'); } catch { this.conversations = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_chatbot_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.messageQueue = JSON.parse(localStorage.getItem('freyai_chatbot_queue') || '[]'); } catch { this.messageQueue = []; }
         this.kb = this.initKnowledgeBase();
 
         // Default settings
@@ -186,7 +186,7 @@ class ChatbotService {
     }
 
     _loadCompanyInfo() {
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         const bd = window.eInvoiceService?.settings?.businessData || {};
         const name = ap.company_name || bd.name || 'FreyAI Visions';
         const street = ap.address_street || bd.street || '';

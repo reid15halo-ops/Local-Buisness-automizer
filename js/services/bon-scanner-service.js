@@ -6,7 +6,7 @@
 
 class BonScannerService {
     constructor() {
-        this.wareneingaenge = JSON.parse(localStorage.getItem('freyai_wareneingaenge') || '[]');
+        try { this.wareneingaenge = JSON.parse(localStorage.getItem('freyai_wareneingaenge') || '[]'); } catch { this.wareneingaenge = []; }
 
         // Regex-Muster für bekannte Baumarkt-/Lieferanten-Bons
         this.supplierPatterns = {

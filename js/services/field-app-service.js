@@ -874,17 +874,17 @@ class FieldAppService {
 
     load() {
         try {
-            this.timeEntries = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'time_entries') || '[]');
-            this.materialLogs = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'material_logs') || '[]');
-            this.voiceNotes = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'voice_notes') || '[]');
-            this.signatures = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'signatures') || '[]');
-            this.gpsCheckins = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'gps_checkins') || '[]');
-            this.offlineQueue = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'offline_queue') || '[]');
+            try { this.timeEntries = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'time_entries') || '[]'); } catch { this.timeEntries = []; }
+            try { this.materialLogs = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'material_logs') || '[]'); } catch { this.materialLogs = []; }
+            try { this.voiceNotes = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'voice_notes') || '[]'); } catch { this.voiceNotes = []; }
+            try { this.signatures = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'signatures') || '[]'); } catch { this.signatures = []; }
+            try { this.gpsCheckins = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'gps_checkins') || '[]'); } catch { this.gpsCheckins = []; }
+            try { this.offlineQueue = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'offline_queue') || '[]'); } catch { this.offlineQueue = []; }
 
             this._loadPhotos();
 
             // Restore field mode state
-            this.isFieldMode = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'mode') || 'false');
+            try { this.isFieldMode = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'mode') || 'false'); } catch { this.isFieldMode = 'false'; }
         } catch (error) {
             console.error('Fehler beim Laden der Felddaten:', error);
         }
@@ -914,7 +914,7 @@ class FieldAppService {
 
     _loadPhotos() {
         try {
-            const photoMeta = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'photo_meta') || '[]');
+            let photoMeta; try { photoMeta = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'photo_meta') || '[]'); } catch { photoMeta = []; }
             this.photoCaptures = photoMeta.map(meta => {
                 const dataUrl = localStorage.getItem(this.STORAGE_PREFIX + 'photo_data_' + meta.id);
                 return { ...meta, dataUrl: dataUrl || '' };

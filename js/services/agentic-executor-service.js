@@ -1156,7 +1156,7 @@ class AgenticExecutorService {
 
             // Store in communications log
             try {
-                const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
                 comms.push({
                     id: emailId,
                     to: emailData.to,

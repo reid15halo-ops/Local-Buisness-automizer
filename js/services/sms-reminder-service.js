@@ -5,10 +5,10 @@
 
 class SmsReminderService {
     constructor() {
-        this.reminders = JSON.parse(localStorage.getItem('freyai_sms_reminders') || '[]');
-        this.sentMessages = JSON.parse(localStorage.getItem('freyai_sms_sent') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_sms_settings') || '{}');
-        this.noShowTracking = JSON.parse(localStorage.getItem('freyai_noshow_tracking') || '[]');
+        try { this.reminders = JSON.parse(localStorage.getItem('freyai_sms_reminders') || '[]'); } catch { this.reminders = []; }
+        try { this.sentMessages = JSON.parse(localStorage.getItem('freyai_sms_sent') || '[]'); } catch { this.sentMessages = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_sms_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.noShowTracking = JSON.parse(localStorage.getItem('freyai_noshow_tracking') || '[]'); } catch { this.noShowTracking = []; }
 
         // Throttle: minimum 5 minutes between any two SMS to the same number.
         // In-memory only — resets on page reload (intentional: prevents

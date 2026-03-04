@@ -5,8 +5,8 @@
 
 class DunningService {
     constructor() {
-        this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]');
-        this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]');
+        try { this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]'); } catch { this.mahnungen = []; }
+        try { this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]'); } catch { this.inkassoFaelle = []; }
 
         // Eskalationsstufen (Tage nach Rechnungsdatum)
         this.eskalationsStufen = [
@@ -258,7 +258,7 @@ Nächste Schritte:
 
     _getBankDetails() {
         const settings = window.storeService?.state?.settings || {};
-        const admin = JSON.parse(localStorage.getItem('admin_panel_data') || '{}');
+        let admin; try { admin = JSON.parse(localStorage.getItem('admin_panel_data') || '{}'); } catch { admin = {}; }
         const bank = admin.bank_name || settings.bank_name || '';
         const iban = admin.iban || settings.iban || '';
         const lines = [];

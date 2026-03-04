@@ -15,9 +15,9 @@ class CustomerPortalService {
         this.MESSAGES_KEY = 'freyai_portal_messages';
         this.SHARED_PHOTOS_KEY = 'freyai_portal_shared_photos';
 
-        this.tokens = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]');
-        this.portalMessages = JSON.parse(localStorage.getItem(this.MESSAGES_KEY) || '[]');
-        this.sharedPhotoIds = JSON.parse(localStorage.getItem(this.SHARED_PHOTOS_KEY) || '{}');
+        try { this.tokens = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]'); } catch { this.tokens = []; }
+        try { this.portalMessages = JSON.parse(localStorage.getItem(this.MESSAGES_KEY) || '[]'); } catch { this.portalMessages = []; }
+        try { this.sharedPhotoIds = JSON.parse(localStorage.getItem(this.SHARED_PHOTOS_KEY) || '{}'); } catch { this.sharedPhotoIds = {}; }
     }
 
     // ============================================
@@ -411,7 +411,7 @@ class CustomerPortalService {
      * @private
      */
     _getCompanyInfo() {
-        const adminSettings = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let adminSettings; try { adminSettings = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { adminSettings = {}; }
         const storeSettings = window.storeService?.state?.settings || {};
 
         return {

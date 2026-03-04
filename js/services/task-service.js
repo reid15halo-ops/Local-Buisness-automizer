@@ -4,8 +4,8 @@
 
 class TaskService {
     constructor() {
-        this.tasks = JSON.parse(localStorage.getItem('freyai_tasks') || '[]');
-        this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]');
+        try { this.tasks = JSON.parse(localStorage.getItem('freyai_tasks') || '[]'); } catch { this.tasks = []; }
+        try { this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]'); } catch { this.recurringTasks = []; }
         this.processRecurringTasks();
     }
 

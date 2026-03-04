@@ -5,8 +5,8 @@
 
 class DatevExportService {
     constructor() {
-        this.exports = JSON.parse(localStorage.getItem('freyai_datev_exports') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_datev_settings') || '{}');
+        try { this.exports = JSON.parse(localStorage.getItem('freyai_datev_exports') || '[]'); } catch { this.exports = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_datev_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default DATEV settings
         if (!this.settings.beraterNummer) {this.settings.beraterNummer = '12345';}

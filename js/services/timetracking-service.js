@@ -5,10 +5,10 @@
 
 class TimeTrackingService {
     constructor() {
-        this.entries = JSON.parse(localStorage.getItem('freyai_time_entries') || '[]');
-        this.employees = JSON.parse(localStorage.getItem('freyai_employees') || '[]');
-        this.activeTimers = JSON.parse(localStorage.getItem('freyai_active_timers') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('freyai_time_settings') || '{}');
+        try { this.entries = JSON.parse(localStorage.getItem('freyai_time_entries') || '[]'); } catch { this.entries = []; }
+        try { this.employees = JSON.parse(localStorage.getItem('freyai_employees') || '[]'); } catch { this.employees = []; }
+        try { this.activeTimers = JSON.parse(localStorage.getItem('freyai_active_timers') || '{}'); } catch { this.activeTimers = {}; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_time_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.dailyHours) {this.settings.dailyHours = 8;}

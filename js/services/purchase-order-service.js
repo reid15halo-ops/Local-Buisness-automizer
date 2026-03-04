@@ -5,8 +5,8 @@
 
 class PurchaseOrderService {
     constructor() {
-        this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]');
-        this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]');
+        try { this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]'); } catch { this.bestellungen = []; }
+        try { this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]'); } catch { this.lieferanten = []; }
         this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
     }
 
@@ -481,8 +481,8 @@ class PurchaseOrderService {
     }
 
     load() {
-        this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]');
-        this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]');
+        try { this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]'); } catch { this.bestellungen = []; }
+        try { this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]'); } catch { this.lieferanten = []; }
         this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
     }
 

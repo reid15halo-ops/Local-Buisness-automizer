@@ -5,8 +5,8 @@
 
 class ApprovalService {
     constructor() {
-        this.workflows = JSON.parse(localStorage.getItem('freyai_approval_workflows') || '[]');
-        this.requests = JSON.parse(localStorage.getItem('freyai_approval_requests') || '[]');
+        try { this.workflows = JSON.parse(localStorage.getItem('freyai_approval_workflows') || '[]'); } catch { this.workflows = []; }
+        try { this.requests = JSON.parse(localStorage.getItem('freyai_approval_requests') || '[]'); } catch { this.requests = []; }
         this.templates = this.initDefaultTemplates();
     }
 

@@ -149,7 +149,7 @@ class ApprovalQueueService {
 
         // Fallback: localStorage (communicationService)
         try {
-            const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+            let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
             return comms.filter(c => c.status === 'draft' && c.aiGenerated);
         } catch (e) {
             console.error('[ApprovalQueueService] Error:', e);
@@ -487,7 +487,7 @@ class ApprovalQueueService {
         } else {
             // Update localStorage
             try {
-                const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
                 const idx = comms.findIndex(c => c.id === comm.id);
                 if (idx !== -1) {
                     comms[idx].status = 'sent';
@@ -558,7 +558,7 @@ class ApprovalQueueService {
                     .update({ status: 'rejected', rejected_at: new Date().toISOString() })
                     .eq('id', comm.id);
             } else {
-                const comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]');
+                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
                 const idx = comms.findIndex(c => c.id === comm.id);
                 if (idx !== -1) {
                     comms[idx].status = 'rejected';

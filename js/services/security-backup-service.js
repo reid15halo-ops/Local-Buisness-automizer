@@ -5,9 +5,9 @@
 
 class SecurityBackupService {
     constructor() {
-        this.backups = JSON.parse(localStorage.getItem('freyai_backup_log') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('freyai_security_settings') || '{}');
-        this.activityLog = JSON.parse(localStorage.getItem('freyai_activity_log') || '[]');
+        try { this.backups = JSON.parse(localStorage.getItem('freyai_backup_log') || '[]'); } catch { this.backups = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_security_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.activityLog = JSON.parse(localStorage.getItem('freyai_activity_log') || '[]'); } catch { this.activityLog = []; }
 
         // Default settings
         if (!this.settings.autoBackup) {this.settings.autoBackup = true;}
@@ -292,7 +292,7 @@ class SecurityBackupService {
         };
 
         // Store in IndexedDB if available, otherwise localStorage
-        const existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]');
+        let existingAutoBackups; try { existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { existingAutoBackups = []; }
         existingAutoBackups.push(backup);
 
         // Keep last 3 auto-backups
@@ -306,7 +306,7 @@ class SecurityBackupService {
 
     // Get auto backups
     getAutoBackups() {
-        return JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]');
+        try { return JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { return []; }
     }
 
     // =====================================================
@@ -383,7 +383,7 @@ class SecurityBackupService {
 
         // 1. Delete from localStorage
         keysToCheck.forEach(key => {
-            const data = JSON.parse(localStorage.getItem(key) || '[]');
+            let data; try { data = JSON.parse(localStorage.getItem(key) || '[]'); } catch { data = []; }
             if (Array.isArray(data)) {
                 const filtered = data.filter(item =>
                     item.id !== customerId &&

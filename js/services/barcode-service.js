@@ -5,9 +5,9 @@
 
 class BarcodeService {
     constructor() {
-        this.scanHistory = JSON.parse(localStorage.getItem('freyai_scan_history') || '[]');
-        this.productDatabase = JSON.parse(localStorage.getItem('freyai_barcode_products') || '{}');
-        this.settings = JSON.parse(localStorage.getItem('freyai_barcode_settings') || '{}');
+        try { this.scanHistory = JSON.parse(localStorage.getItem('freyai_scan_history') || '[]'); } catch { this.scanHistory = []; }
+        try { this.productDatabase = JSON.parse(localStorage.getItem('freyai_barcode_products') || '{}'); } catch { this.productDatabase = {}; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_barcode_settings') || '{}'); } catch { this.settings = {}; }
 
         // Default settings
         if (!this.settings.soundEnabled) {this.settings.soundEnabled = true;}

@@ -190,7 +190,7 @@ class InvoiceTemplateService {
         }
 
         // Fallback: try admin panel settings
-        const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
         return {
             name: ap.company_name || 'FreyAI Visions',
             strasse: ap.address_street || '',
