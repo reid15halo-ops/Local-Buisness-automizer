@@ -65,7 +65,7 @@ class BookingService {
                 startTime: newBooking.startTime,
                 endTime: newBooking.endTime,
                 customerName: newBooking.customer.name,
-                type: 'besichtigung',
+                type: booking.serviceType || 'besichtigung',
                 status: 'geplant'
             });
         }

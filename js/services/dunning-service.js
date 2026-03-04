@@ -27,9 +27,12 @@ class DunningService {
             return { stufe: null, typ: 'bezahlt', message: 'Rechnung bezahlt' };
         }
 
-        const rechnungsDatum = new Date(rechnung.createdAt);
+        // Calculate days overdue from due date (created + zahlungsziel), not creation date
+        const rechnungsDatum = new Date(rechnung.createdAt || rechnung.created_at);
+        const zahlungsziel = rechnung.zahlungsziel_tage || rechnung.zahlungsziel || 14;
+        const faelligAm = new Date(rechnungsDatum.getTime() + zahlungsziel * 86400000);
         const heute = new Date();
-        const tageOffen = Math.floor((heute - rechnungsDatum) / (1000 * 60 * 60 * 24));
+        const tageOffen = Math.floor((heute - faelligAm) / (1000 * 60 * 60 * 24));
 
         // Finde aktuelle Eskalationsstufe
         let aktuelleStufe = this.eskalationsStufen[0];
@@ -159,8 +162,7 @@ Dies ist unsere letzte außergerichtliche Mahnung. Sollte der Betrag nicht inner
 3. Alle entstehenden Kosten Ihnen in Rechnung stellen
 
 Zahlungsdetails:
-Bank: Sparkasse Aschaffenburg
-IBAN: DE00 0000 0000 0000 0000 00
+${this._getBankDetails()}
 Verwendungszweck: ${rechnung.id}
 
 FreyAI Visions`,
@@ -252,6 +254,17 @@ Nächste Schritte:
             style: 'currency',
             currency: 'EUR'
         }).format(amount);
+    }
+
+    _getBankDetails() {
+        const settings = window.storeService?.state?.settings || {};
+        const admin = JSON.parse(localStorage.getItem('admin_panel_data') || '{}');
+        const bank = admin.bank_name || settings.bank_name || '';
+        const iban = admin.iban || settings.iban || '';
+        const lines = [];
+        if (bank) {lines.push(`Bank: ${bank}`);}
+        if (iban) {lines.push(`IBAN: ${iban}`);}
+        return lines.length > 0 ? lines.join('\n') : 'Bankverbindung: siehe Rechnung';
     }
 
     formatDate(dateStr) {

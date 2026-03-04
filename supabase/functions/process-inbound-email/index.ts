@@ -692,7 +692,7 @@ async function generateAngebotPDF(
     currentPage.drawText(formatCurrency(angebot.netto), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
     y -= 14
 
-    currentPage.drawText('MwSt. (19%):', { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
+    currentPage.drawText(`MwSt. (${Math.round(DEFAULT_TAX_RATE * 100)}%):`, { x: col.price, y, size: 10, font: fontRegular, color: darkBlue })
     currentPage.drawText(formatCurrency(angebot.mwst), { x: col.total, y, size: 10, font: fontRegular, color: darkBlue })
     y -= 6
 
@@ -796,7 +796,7 @@ async function sendAngebotEmail(
                             <span>${formatCurrency(summen.netto)}</span>
                         </div>
                         <div class="total-row">
-                            <span>MwSt. (19%):</span>
+                            <span>MwSt. (${Math.round(DEFAULT_TAX_RATE * 100)}%):</span>
                             <span>${formatCurrency(summen.mwst)}</span>
                         </div>
                         <div class="total-row final">
@@ -805,8 +805,8 @@ async function sendAngebotEmail(
                         </div>
                     </div>
 
-                    <p><strong>Gültigkeitsdauer:</strong> ${adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '30'} Tage ab Angebotsdatum</p>
-                    <p><strong>Zahlungsbedingungen:</strong> ${adminSettings?.payment_days ?? Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '14'} Tage netto nach Erhalt der Rechnung</p>
+                    <p><strong>Gültigkeitsdauer:</strong> ${Deno.env.get('DEFAULT_VALIDITY_DAYS') ?? '30'} Tage ab Angebotsdatum</p>
+                    <p><strong>Zahlungsbedingungen:</strong> ${Deno.env.get('DEFAULT_PAYMENT_DAYS') ?? '14'} Tage netto nach Erhalt der Rechnung</p>
 
                     ${pdfUrl && pdfUrl !== 'inline' ? `<p><a href="${escapeHtml(pdfUrl)}" style="display:inline-block;background:#2c3e50;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">📄 Angebot als PDF herunterladen</a></p>` : ''}
 

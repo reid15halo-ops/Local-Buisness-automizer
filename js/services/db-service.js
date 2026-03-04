@@ -22,6 +22,15 @@ class DBService {
         this.db = null;
         this.userStores = new Set();
 
+        // Mapping: IndexedDB store name → Supabase table name
+        // IndexedDB uses English names, Supabase uses German names
+        this._supabaseTableMap = {
+            'customers': 'kunden',
+            'invoices': 'rechnungen',
+            'quotes': 'angebote',
+            'orders': 'auftraege',
+        };
+
         // Sync state
         this._syncInProgress = false;
         this._syncListeners = [];
@@ -167,6 +176,15 @@ class DBService {
      * @param {string} mode - 'readonly' | 'readwrite'
      * @param {Function} operation - receives the IDBObjectStore, returns Promise
      */
+    /**
+     * Map an IndexedDB store name to the corresponding Supabase table name.
+     * @param {string} storeName - e.g. 'customers'
+     * @returns {string} e.g. 'kunden'
+     */
+    _supabaseTable(storeName) {
+        return this._supabaseTableMap[storeName] || storeName;
+    }
+
     async _idbOperation(storeName, mode, operation) {
         await this._ensureDB();
 
@@ -239,16 +257,19 @@ class DBService {
                 try {
                     let error = null;
 
+                    // Map IndexedDB store name to Supabase table name
+                    const supaTable = this._supabaseTable(item.table);
+
                     if (item.action === 'insert' || item.action === 'upsert') {
-                        const result = await supabase.from(item.table).upsert(item.data);
+                        const result = await supabase.from(supaTable).upsert(item.data);
                         error = result.error;
                     } else if (item.action === 'update') {
-                        const result = await supabase.from(item.table)
+                        const result = await supabase.from(supaTable)
                             .update(item.data)
                             .eq('id', item.data.id);
                         error = result.error;
                     } else if (item.action === 'delete') {
-                        const result = await supabase.from(item.table)
+                        const result = await supabase.from(supaTable)
                             .delete()
                             .eq('id', item.data.id);
                         error = result.error;
@@ -315,7 +336,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data, error } = await supabase
-                    .from('customers')
+                    .from('kunden')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -370,7 +391,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('customers')
+                    .from('kunden')
                     .upsert(customer)
                     .select()
                     .single();
@@ -403,7 +424,7 @@ class DBService {
         if (supabase) {
             try {
                 const { error } = await supabase
-                    .from('customers')
+                    .from('kunden')
                     .delete()
                     .eq('id', id);
 
@@ -435,7 +456,7 @@ class DBService {
         if (supabase) {
             try {
                 let query = supabase
-                    .from('invoices')
+                    .from('rechnungen')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -518,7 +539,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('invoices')
+                    .from('rechnungen')
                     .upsert(invoice)
                     .select()
                     .single();
@@ -570,7 +591,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('invoices')
+                    .from('rechnungen')
                     .update(updateData)
                     .eq('id', id)
                     .select()
@@ -627,7 +648,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data, error } = await supabase
-                    .from('quotes')
+                    .from('angebote')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -674,7 +695,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('quotes')
+                    .from('angebote')
                     .upsert(quote)
                     .select()
                     .single();
@@ -709,7 +730,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data, error } = await supabase
-                    .from('orders')
+                    .from('auftraege')
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
@@ -755,7 +776,7 @@ class DBService {
         if (supabase) {
             try {
                 const { data: saved, error } = await supabase
-                    .from('orders')
+                    .from('auftraege')
                     .upsert(order)
                     .select()
                     .single();

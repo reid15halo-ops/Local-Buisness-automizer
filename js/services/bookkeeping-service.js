@@ -333,7 +333,7 @@ class BookkeepingService {
 
                 // Parse betrag (handle German format)
                 let betrag = values[colIdx.betrag]?.replace(/"/g, '').replace(/\s/g, '');
-                betrag = parseFloat(betrag.replace('.', '').replace(',', '.'));
+                betrag = parseFloat(betrag.replace(/\./g, '').replace(',', '.'));
                 if (isNaN(betrag) || betrag === 0) {continue;}
 
                 // Determine typ from betrag sign or column

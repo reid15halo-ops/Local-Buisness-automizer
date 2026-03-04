@@ -9,7 +9,9 @@ class SupabaseDBService {
         this.tables = [
             'anfragen', 'angebote', 'auftraege', 'rechnungen',
             'kunden', 'materialien', 'buchungen', 'aufgaben',
-            'termine', 'zeiteintraege', 'dokumente', 'emails'
+            'termine', 'zeiteintraege', 'dokumente',
+            'purchase_orders', 'stock_movements', 'material_reservations',
+            'suppliers', 'communication_log'
         ];
     }
 
@@ -138,12 +140,14 @@ class SupabaseDBService {
         const queue = this._getSyncQueue();
         let synced = 0;
         let errors = 0;
+        const failedItems = [];
 
         for (const item of queue) {
             try {
+                let result;
                 switch (item.action) {
                     case 'create':
-                        await this.getClient()
+                        result = await this.getClient()
                             .from(item.table)
                             .upsert([{
                                 ...item.data,
@@ -151,27 +155,34 @@ class SupabaseDBService {
                             }]);
                         break;
                     case 'update':
-                        await this.getClient()
+                        result = await this.getClient()
                             .from(item.table)
                             .update(item.data)
                             .eq('id', item.data.id);
                         break;
                     case 'delete':
-                        await this.getClient()
+                        result = await this.getClient()
                             .from(item.table)
                             .delete()
                             .eq('id', item.data.id);
                         break;
                 }
+                if (result?.error) {throw result.error;}
                 synced++;
             } catch (err) {
                 errors++;
+                failedItems.push(item);
                 console.warn('Sync error:', err.message);
             }
         }
 
+        // Only keep failed items in the queue (don't discard them)
         if (synced > 0) {
-            this._clearSyncQueue();
+            if (failedItems.length > 0) {
+                localStorage.setItem('hwf_sync_queue', JSON.stringify(failedItems));
+            } else {
+                this._clearSyncQueue();
+            }
         }
 
         return { synced, errors };

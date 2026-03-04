@@ -158,7 +158,11 @@ class TimeTrackingService {
         const [startH, startM] = startTime.split(':').map(Number);
         const [endH, endM] = endTime.split(':').map(Number);
         const startTotal = startH * 60 + startM;
-        const endTotal = endH * 60 + endM;
+        let endTotal = endH * 60 + endM;
+        // Handle overnight shifts (e.g. 22:00 → 06:00)
+        if (endTotal < startTotal) {
+            endTotal += 24 * 60;
+        }
         return Math.max(0, endTotal - startTotal - breakMinutes);
     }
 

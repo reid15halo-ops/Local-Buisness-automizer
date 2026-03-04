@@ -23,10 +23,14 @@ class CalendarService {
 
     // Appointment CRUD
     addAppointment(apt) {
-        // Check for conflicts
+        // Check for conflicts and warn (but allow force-add)
         const conflicts = this.checkConflicts(apt.date, apt.startTime, apt.endTime, apt.id);
-        if (conflicts.length > 0) {
+        if (conflicts.length > 0 && !apt.forceAdd) {
             console.warn('Terminkonflikt:', conflicts);
+            // Dispatch event so UI can show a warning
+            document.dispatchEvent(new CustomEvent('calendar:conflict', {
+                detail: { appointment: apt, conflicts }
+            }));
         }
 
         const newApt = {
@@ -94,7 +98,7 @@ class CalendarService {
 
     getAppointmentsForMonth(year, month) {
         const monthStr = `${year}-${String(month).padStart(2, '0')}`;
-        return this.appointments.filter(a => a.date.startsWith(monthStr));
+        return this.appointments.filter(a => a.date.startsWith(monthStr) && a.status !== 'abgesagt');
     }
 
     getUpcomingAppointments(days = 7) {

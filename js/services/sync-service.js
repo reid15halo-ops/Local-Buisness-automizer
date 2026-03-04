@@ -115,6 +115,7 @@ class SyncService {
 
         let synced = 0;
         let errors = 0;
+        const failedItems = [];
 
         for (const item of queue) {
             try {
@@ -122,12 +123,18 @@ class SyncService {
                 synced++;
             } catch (err) {
                 errors++;
+                failedItems.push(item);
                 console.error(`Sync error for ${item.table}:`, err.message);
             }
         }
 
+        // Only keep failed items in queue (don't discard them)
         if (synced > 0) {
-            this._clearSyncQueue();
+            if (failedItems.length > 0) {
+                localStorage.setItem('hwf_sync_queue_v2', JSON.stringify(failedItems));
+            } else {
+                this._clearSyncQueue();
+            }
             console.warn(`Sync complete: ${synced} synced, ${errors} errors`);
         }
 

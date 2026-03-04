@@ -7,6 +7,7 @@ class InvoiceNumberingService {
     constructor() {
         this.dbService = window.dbService;
         this.currentUserId = null;
+        this._generationLock = null; // Prevents concurrent number generation
     }
 
     /**
@@ -24,6 +25,23 @@ class InvoiceNumberingService {
      * @returns {Promise<string>} Formatted invoice number
      */
     async generateNumber(userId = null, options = {}) {
+        // Serialize concurrent calls to prevent duplicate numbers (GoBD compliance)
+        while (this._generationLock) {
+            await this._generationLock;
+        }
+
+        let releaseLock;
+        this._generationLock = new Promise(resolve => { releaseLock = resolve; });
+
+        try {
+            return await this._generateNumberUnsafe(userId, options);
+        } finally {
+            this._generationLock = null;
+            releaseLock();
+        }
+    }
+
+    async _generateNumberUnsafe(userId, options) {
         userId = userId || this.currentUserId || 'default';
 
         const defaults = {

@@ -62,8 +62,15 @@ serve(async (req) => {
         const senderName = Deno.env.get('SENDER_NAME') || 'HandwerkFlow'
 
         for (const rechnung of (rechnungen || [])) {
+            // Calculate days overdue from due date (created_at + zahlungsziel_tage)
             const createdAt = new Date(rechnung.created_at)
-            const daysSince = Math.floor((now.getTime() - createdAt.getTime()) / 86400000)
+            const paymentDays = rechnung.zahlungsziel_tage || 14
+            const dueDate = new Date(createdAt.getTime() + paymentDays * 86400000)
+            const daysOverdue = Math.floor((now.getTime() - dueDate.getTime()) / 86400000)
+
+            // Not yet overdue — skip
+            if (daysOverdue < 0) continue
+
             const escalation = rechnung.mahnstufe || 0
 
             let shouldSend = false, level = 0, subject = '', body = ''
@@ -71,19 +78,19 @@ serve(async (req) => {
             const rid = rechnung.rechnung_id || rechnung.id
             const betrag = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(rechnung.brutto || 0)
 
-            if (daysSince >= 14 && escalation < 1) {
+            if (daysOverdue >= 0 && escalation < 1) {
                 shouldSend = true; level = 1
                 subject = `Zahlungserinnerung - Rechnung ${rid}`
                 body = `Sehr geehrte/r ${name},\n\nbei Durchsicht unserer Buchhaltung haben wir festgestellt, dass die Rechnung ${rid} über ${betrag} noch nicht beglichen wurde.\n\nWir bitten Sie, den offenen Betrag innerhalb der nächsten 7 Tage zu überweisen.\n\nMit freundlichen Grüßen\n${senderName}`
-            } else if (daysSince >= 28 && escalation < 2) {
+            } else if (daysOverdue >= 14 && escalation < 2) {
                 shouldSend = true; level = 2
                 subject = `1. Mahnung - Rechnung ${rid}`
                 body = `Sehr geehrte/r ${name},\n\ntrotz unserer Zahlungserinnerung konnten wir keinen Zahlungseingang für Rechnung ${rid} über ${betrag} feststellen.\n\nWir bitten Sie dringend, den Betrag innerhalb von 7 Tagen zu überweisen.\n\nMit freundlichen Grüßen\n${senderName}`
-            } else if (daysSince >= 42 && escalation < 3) {
+            } else if (daysOverdue >= 28 && escalation < 3) {
                 shouldSend = true; level = 3
                 subject = `2. Mahnung - Rechnung ${rid}`
                 body = `Sehr geehrte/r ${name},\n\nwir müssen Sie erneut an die offene Rechnung ${rid} erinnern.\n\nGesamtforderung: ${betrag}\n\nSollten wir innerhalb von 5 Werktagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, ein gerichtliches Mahnverfahren einzuleiten.\n\nMit freundlichen Grüßen\n${senderName}`
-            } else if (daysSince >= 56 && escalation < 4) {
+            } else if (daysOverdue >= 42 && escalation < 4) {
                 shouldSend = true; level = 4
                 subject = `Letzte Mahnung - Rechnung ${rid}`
                 body = `Sehr geehrte/r ${name},\n\ndies ist unsere letzte außergerichtliche Mahnung bezüglich Rechnung ${rid}.\n\nGesamtforderung: ${betrag}\n\nNach Ablauf von 3 Werktagen werden wir die Forderung an ein Inkassounternehmen übergeben.\n\nMit freundlichen Grüßen\n${senderName}`
@@ -92,6 +99,8 @@ serve(async (req) => {
             if (!shouldSend) continue
 
             const kundenEmail = rechnung.kunde_email || rechnung.kunde?.email
+            let emailSent = false
+
             if (kundenEmail && relayUrl && relaySecret) {
                 try {
                     const res = await fetch(`${relayUrl}/send-email`, {
@@ -105,6 +114,7 @@ serve(async (req) => {
 
                     if (res.ok) {
                         results.reminders_sent++
+                        emailSent = true
                     } else {
                         const err = await res.json()
                         results.errors.push(`${rid}: ${err.error || 'Fehler'}`)
@@ -112,21 +122,25 @@ serve(async (req) => {
                 } catch (e) {
                     results.errors.push(`${rid}: ${e.message}`)
                 }
+            } else if (!kundenEmail) {
+                results.errors.push(`${rid}: Keine Kunden-E-Mail vorhanden`)
             }
 
-            // Update escalation level
-            await supabase
-                .from('rechnungen')
-                .update({ mahnstufe: level, letzte_mahnung: now.toISOString() })
-                .eq('id', rechnung.id)
-                .catch(e => results.errors.push(`Update ${rid}: ${e.message}`))
+            // Only update escalation level if email was actually sent
+            if (emailSent) {
+                await supabase
+                    .from('rechnungen')
+                    .update({ mahnstufe: level, letzte_mahnung: now.toISOString() })
+                    .eq('id', rechnung.id)
+                    .catch(e => results.errors.push(`Update ${rid}: ${e.message}`))
+            }
 
-            // Log
+            // Log regardless
             await supabase.from('automation_log').insert({
                 user_id: rechnung.user_id,
                 action: 'overdue.reminder',
                 target: kundenEmail || name,
-                metadata: { rechnung_id: rid, level, days_overdue: daysSince },
+                metadata: { rechnung_id: rid, level, days_overdue: daysOverdue, email_sent: emailSent },
             }).catch(() => {})
         }
 

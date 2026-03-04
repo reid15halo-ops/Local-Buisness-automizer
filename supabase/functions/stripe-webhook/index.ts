@@ -43,7 +43,7 @@ serve(async (req) => {
             Deno.env.get('STRIPE_WEBHOOK_SECRET')!
         )
 
-        // Initialize Supabase client
+        // Initialize Supabase client with service_role for full access
         const supabase = createClient(
             Deno.env.get('SUPABASE_URL')!,
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -106,7 +106,7 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
             return
         }
 
-        // Record payment in database
+        // Record payment in stripe_payments audit table
         const { error: insertError } = await supabase.from('stripe_payments').insert({
             stripe_session_id: session.id,
             stripe_customer_id: session.customer,
@@ -117,33 +117,25 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
             payment_method: session.payment_method_types?.[0] || 'card',
             created_at: new Date().toISOString(),
             metadata: session.metadata
-        }).catch(err => console.error('Insert error:', err))
+        })
 
         if (insertError) {
             console.error('Error recording payment:', insertError)
         }
 
-        // Update invoice status (if using Supabase database)
-        // Note: This assumes you have an 'invoices' table with an 'id' and 'status' column
-        try {
-            const { error: updateError } = await supabase
-                .from('invoices')
-                .update({
-                    status: 'bezahlt',
-                    paid_at: new Date().toISOString(),
-                    stripe_payment_id: session.id,
-                    payment_method: session.payment_method_types?.[0] || 'card'
-                })
-                .eq('id', invoice_id)
+        // Update invoice status in rechnungen table
+        const { error: updateError } = await supabase
+            .from('rechnungen')
+            .update({
+                status: 'bezahlt',
+                paid_at: new Date().toISOString()
+            })
+            .eq('id', invoice_id)
 
-            if (updateError) {
-                // Table might not exist - this is optional
-                console.warn('Could not update invoice table:', updateError.message)
-            } else {
-                console.log(`Invoice ${invoice_id} marked as paid`)
-            }
-        } catch (err) {
-            console.warn('Invoice update failed (optional):', err)
+        if (updateError) {
+            console.warn('Could not update rechnungen:', updateError.message)
+        } else {
+            console.log(`Rechnung ${invoice_id} als bezahlt markiert`)
         }
 
         // Log the action
@@ -157,7 +149,7 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
             }
         }).catch(() => {})
 
-        console.log(`Payment completed for invoice ${invoice_id}: €${(session.amount_total / 100).toFixed(2)}`)
+        console.log(`Payment completed for Rechnung ${invoice_id}: €${(session.amount_total / 100).toFixed(2)}`)
     } catch (err) {
         console.error('Error handling checkout completion:', err)
     }
@@ -165,7 +157,6 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
 
 /**
  * Handle payment_intent.succeeded
- * Called when a PaymentIntent succeeds (may be redundant with checkout.session.completed)
  */
 async function handlePaymentIntentSucceeded(paymentIntent: any, supabase: any) {
     try {
@@ -174,9 +165,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: any, supabase: any) {
             return
         }
 
-        console.log(`PaymentIntent succeeded for invoice ${invoice_id}`)
+        console.log(`PaymentIntent succeeded for Rechnung ${invoice_id}`)
 
-        // Log the action
         await supabase.from('automation_log').insert({
             action: 'payment.intent_succeeded',
             target: invoice_id,
@@ -192,7 +182,6 @@ async function handlePaymentIntentSucceeded(paymentIntent: any, supabase: any) {
 
 /**
  * Handle payment_intent.payment_failed
- * Called when a payment attempt fails
  */
 async function handlePaymentIntentFailed(paymentIntent: any, supabase: any) {
     try {
@@ -201,7 +190,7 @@ async function handlePaymentIntentFailed(paymentIntent: any, supabase: any) {
             return
         }
 
-        console.log(`Payment failed for invoice ${invoice_id}: ${paymentIntent.last_payment_error?.message}`)
+        console.log(`Payment failed for Rechnung ${invoice_id}: ${paymentIntent.last_payment_error?.message}`)
 
         // Log the failed payment
         await supabase.from('automation_log').insert({
@@ -214,19 +203,17 @@ async function handlePaymentIntentFailed(paymentIntent: any, supabase: any) {
             }
         }).catch(() => {})
 
-        // Optionally: Mark invoice as payment_failed in database
-        try {
-            await supabase
-                .from('invoices')
-                .update({
-                    status: 'zahlungsfehlgeschlagen',
-                    payment_failure_reason: paymentIntent.last_payment_error?.message
-                })
-                .eq('id', invoice_id)
-                .catch(() => {})
-        } catch (err) {
-            console.warn('Could not update invoice with payment failure:', err)
-        }
+        // Record failed payment in stripe_payments
+        await supabase.from('stripe_payments').insert({
+            invoice_id: invoice_id,
+            amount: paymentIntent.amount,
+            currency: paymentIntent.currency,
+            payment_status: 'failed',
+            metadata: {
+                payment_intent_id: paymentIntent.id,
+                error: paymentIntent.last_payment_error?.message
+            }
+        }).catch(() => {})
     } catch (err) {
         console.error('Error handling payment intent failure:', err)
     }
@@ -234,7 +221,6 @@ async function handlePaymentIntentFailed(paymentIntent: any, supabase: any) {
 
 /**
  * Handle charge.refunded
- * Called when a charge is refunded
  */
 async function handleChargeRefunded(charge: any, supabase: any) {
     try {
@@ -243,7 +229,7 @@ async function handleChargeRefunded(charge: any, supabase: any) {
             return
         }
 
-        console.log(`Charge refunded for invoice ${invoice_id}: €${(charge.amount_refunded / 100).toFixed(2)}`)
+        console.log(`Charge refunded for Rechnung ${invoice_id}: €${(charge.amount_refunded / 100).toFixed(2)}`)
 
         // Log refund
         await supabase.from('automation_log').insert({
@@ -256,19 +242,24 @@ async function handleChargeRefunded(charge: any, supabase: any) {
             }
         }).catch(() => {})
 
-        // Update invoice status
-        try {
-            await supabase
-                .from('invoices')
-                .update({
-                    status: 'erstattet',
-                    refunded_at: new Date().toISOString()
-                })
-                .eq('id', invoice_id)
-                .catch(() => {})
-        } catch (err) {
-            console.warn('Could not update invoice with refund:', err)
-        }
+        // Update invoice status to refunded
+        await supabase
+            .from('rechnungen')
+            .update({ status: 'storniert' })
+            .eq('id', invoice_id)
+            .catch(() => {})
+
+        // Record refund in stripe_payments
+        await supabase.from('stripe_payments').insert({
+            invoice_id: invoice_id,
+            amount: charge.amount_refunded,
+            currency: charge.currency,
+            payment_status: 'refunded',
+            metadata: {
+                charge_id: charge.id,
+                reason: charge.refunds?.data?.[0]?.reason
+            }
+        }).catch(() => {})
     } catch (err) {
         console.error('Error handling refund:', err)
     }
