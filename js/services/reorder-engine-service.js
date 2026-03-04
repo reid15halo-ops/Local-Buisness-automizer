@@ -22,9 +22,13 @@ class ReorderEngineService {
     // ============================================
 
     loadSettings() {
-        const saved = localStorage.getItem('reorder_engine_settings');
-        if (saved) {
-            this.settings = { ...this.settings, ...JSON.parse(saved) };
+        try {
+            const saved = localStorage.getItem('reorder_engine_settings');
+            if (saved) {
+                this.settings = { ...this.settings, ...JSON.parse(saved) };
+            }
+        } catch {
+            console.warn('[ReorderEngine] Settings corrupted, using defaults');
         }
     }
 

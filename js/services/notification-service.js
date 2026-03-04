@@ -99,6 +99,15 @@ class NotificationService {
     addNotification(type, title, description = '', metadata = {}) {
         const notificationType = this.notificationTypes[type] || this.notificationTypes.system;
 
+        // Deduplicate: skip if same type+title exists within last 60 seconds
+        const dedupKey = `${type}:${title}`;
+        const recentDupe = this.notificationHistory.find(n => {
+            if (`${n.type}:${n.title}` !== dedupKey) {return false;}
+            const age = Date.now() - new Date(n.timestamp).getTime();
+            return age < 60000; // 60 seconds
+        });
+        if (recentDupe) {return recentDupe;}
+
         const notification = {
             id: this.generateId(),
             type,

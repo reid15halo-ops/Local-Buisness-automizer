@@ -12,8 +12,8 @@
 
 class EInvoiceService {
     constructor() {
-        this.settings = JSON.parse(localStorage.getItem('freyai_einvoice_settings') || '{}');
-        this.generatedInvoices = JSON.parse(localStorage.getItem('freyai_einvoice_generated') || '[]');
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_einvoice_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.generatedInvoices = JSON.parse(localStorage.getItem('freyai_einvoice_generated') || '[]'); } catch { this.generatedInvoices = []; }
 
         // Default business data
         if (!this.settings.businessData) {
