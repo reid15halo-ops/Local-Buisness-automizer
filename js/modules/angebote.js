@@ -688,20 +688,24 @@ function showPositionTemplatePicker(row) {
     const listEl   = overlay.querySelector('#tpl-list');
     const searchEl = overlay.querySelector('#tpl-search');
 
-    const bindClicks = () => {
-        listEl.querySelectorAll('.tpl-item').forEach(item => {
-            item.addEventListener('mouseover', () => { item.style.background = '#f5f3ff'; });
-            item.addEventListener('mouseout',  () => { item.style.background = ''; });
-            item.addEventListener('click', () => applyTemplate(currentFiltered[parseInt(item.dataset.idx, 10)]));
-        });
-    };
-    bindClicks();
+    // Use event delegation to avoid listener leaks on re-render
+    listEl.addEventListener('mouseover', (e) => {
+        const item = e.target.closest('.tpl-item');
+        if (item) { item.style.background = '#f5f3ff'; }
+    });
+    listEl.addEventListener('mouseout', (e) => {
+        const item = e.target.closest('.tpl-item');
+        if (item) { item.style.background = ''; }
+    });
+    listEl.addEventListener('click', (e) => {
+        const item = e.target.closest('.tpl-item');
+        if (item) { applyTemplate(currentFiltered[parseInt(item.dataset.idx, 10)]); }
+    });
     searchEl.focus();
 
     searchEl.addEventListener('input', () => {
         currentFiltered = getFiltered(searchEl.value);
         listEl.innerHTML = renderList(currentFiltered);
-        bindClicks();
     });
 
     const close = () => { overlay.remove(); document.body.style.overflow = ''; };
@@ -1042,7 +1046,7 @@ function renderAngebote() {
         const filterLabel = currentAngeboteFilter !== 'alle' ? ` mit Status "${currentAngeboteFilter}"` : '';
         const searchLabel = searchQuery ? ` passend zu "${window.UI.sanitize(searchQuery)}"` : '';
         container.innerHTML = `
-            <div class="empty-state" class="empty-state empty-state-small">
+            <div class="empty-state empty-state-small">
                 <div style="font-size: 36px; margin-bottom: 12px;">🔍</div>
                 <h3 style="margin-bottom: 8px;">Keine Angebote gefunden</h3>
                 <p style="color: var(--text-secondary);">

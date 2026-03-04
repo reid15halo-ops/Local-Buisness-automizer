@@ -40,6 +40,7 @@ async function fetchTickets() {
     } catch (e) {
         console.error('Support: Failed to fetch tickets', e);
         tickets = [];
+        if (window.showToast) {window.showToast('Tickets konnten nicht geladen werden', 'error');}
     }
 }
 
@@ -425,6 +426,9 @@ function bindListeners() {
 
 async function init() {
     bindListeners();
+
+    const listEl = document.getElementById('support-ticket-list');
+    if (listEl) {listEl.innerHTML = '<div class="support-empty">Lade Tickets…</div>';}
 
     await Promise.all([fetchTickets(), fetchKB()]);
     const stats = await fetchStats();

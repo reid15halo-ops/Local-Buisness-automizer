@@ -581,23 +581,33 @@ function initRechnungActions() {
                 break;
             case 'xrechnung':
                 if (window.eInvoiceService) {
+                    if (window.showToast) {showToast('XRechnung wird generiert…', 'info');}
                     const result = window.eInvoiceService.generateXRechnung(rechnung);
                     if (result.success) {
                         window.eInvoiceService.downloadXml(result.recordId);
                         if (window.showToast) {showToast('XRechnung XML generiert', 'success');}
+                    } else {
+                        if (window.showToast) {showToast('XRechnung Fehler', 'error');}
                     }
+                } else {
+                    if (window.showToast) {showToast('E-Rechnung Service nicht verfügbar', 'error');}
                 }
                 break;
             case 'zugferd':
                 if (window.eInvoiceService) {
+                    if (window.showToast) {showToast('ZUGFeRD wird generiert…', 'info');}
                     const result = await window.eInvoiceService.generateZugferd(rechnung);
                     if (result.success && result.pdfBytes) {
                         window.eInvoiceService.downloadZugferdPdf(result.recordId);
                         if (window.showToast) {showToast('ZUGFeRD PDF generiert', 'success');}
-                    } else {
+                    } else if (result.success) {
                         window.eInvoiceService.downloadXml(result.recordId);
                         if (window.showToast) {showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');}
+                    } else {
+                        if (window.showToast) {showToast('ZUGFeRD Fehler', 'error');}
                     }
+                } else {
+                    if (window.showToast) {showToast('E-Rechnung Service nicht verfügbar', 'error');}
                 }
                 break;
             case 'mark-paid':

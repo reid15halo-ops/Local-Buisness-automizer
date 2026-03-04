@@ -129,7 +129,7 @@
 
 <!-- Header (populated after auth) -->
 <header class="portal-header" id="portal-header" style="display:none;">
-    <img id="portal-logo" class="portal-logo" src="" alt="" style="display:none;">
+    <img id="portal-logo" class="portal-logo" src="" alt="Firmenlogo" style="display:none;">
     <span class="portal-company-name" id="portal-company-name"></span>
     <div class="portal-header-right">
         <span id="portal-customer-greeting"></span>
@@ -320,7 +320,8 @@ async function loadPortal(token) {
             const res = await fetch(`${supabaseUrl}/functions/v1/customer-portal`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'apikey': supabaseAnon },
-                body: JSON.stringify({ token })
+                body: JSON.stringify({ token }),
+                signal: AbortSignal.timeout(10000)
             });
             if (res.ok) {
                 data = await res.json();
