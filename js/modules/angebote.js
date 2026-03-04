@@ -1808,19 +1808,22 @@ function showAngebotDetail(angebotId) {
     }
 
     // Kundenportal — generate link for this Angebot if service available
-    const portalToken = window.customerPortalService?.generateAccessToken
-        ? (() => {
-            try {
-                const customerId = angebot.kunde?.id || angebot.kunde?.email || angebot.anfrageId;
-                const existing = window.customerPortalService.tokens?.find(
-                    t => t.customerId === customerId && t.isActive && t.scope === 'quote'
-                );
-                return existing || window.customerPortalService.generateAccessToken(customerId, 'quote', { expiresInDays: 30 });
-            } catch { return null; }
-        })()
-        : null;
-    const portalBase = window.location.origin + window.location.pathname.replace('index.html', '') + 'customer-portal.html';
-    const portalUrl  = portalToken ? `${portalBase}?token=${encodeURIComponent(portalToken.token)}&ref=${h(angebot.id)}` : null;
+    let portalUrl = null;
+    const _useSupabasePortal = !!window.portalService && window.supabaseConfig?.isConfigured?.();
+    if (_useSupabasePortal) {
+        // Supabase-based portal — URL will be set async via button click
+        portalUrl = '#portal-async';
+    } else if (window.customerPortalService?.generateAccessToken) {
+        try {
+            const customerId = angebot.kunde?.id || angebot.kunde?.email || angebot.anfrageId;
+            const existing = window.customerPortalService.tokens?.find(
+                t => t.customerId === customerId && t.isActive && t.scope === 'quote'
+            );
+            const tokenRecord = existing || window.customerPortalService.generateAccessToken(customerId, 'quote', { expiresInDays: 30 });
+            const portalBase = window.location.origin + window.location.pathname.replace('index.html', '') + 'customer-portal.html';
+            portalUrl = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}&ref=${h(angebot.id)}`;
+        } catch { /* portal not available */ }
+    }
 
     // Actions
     const actionsHtml = `
@@ -1829,11 +1832,23 @@ function showAngebotDetail(angebotId) {
             ${angebot.status === 'offen' ? `<button type="button" class="btn btn-success" onclick="acceptAngebot('${h(angebot.id)}'); closeModal('modal-angebot-detail');">Auftrag erteilen</button>` : ''}
             ${portalUrl ? `
             <button type="button" class="btn btn-secondary" title="Kundenportal öffnen"
-                onclick="window.open('${portalUrl}', '_blank')">
+                onclick="(async()=>{
+                    const cid='${h(angebot.kunde?.id || angebot.anfrageId || '')}';
+                    if(window.portalService&&window.supabaseConfig?.isConfigured?.()){
+                        try{const{url}=await window.portalService.generateToken(cid);window.open(url,'_blank');}
+                        catch(e){window.showToast?.('Portal-Fehler: '+e.message,'error');}
+                    }else if('${portalUrl}'!=='#portal-async'){window.open('${portalUrl}','_blank');}
+                })()">
                 🔗 Portal öffnen
             </button>
             <button type="button" class="btn btn-secondary" title="Direkt-Link kopieren"
-                onclick="navigator.clipboard.writeText('${portalUrl}').then(()=>window.showToast?.('Link kopiert', 'success'))">
+                onclick="(async()=>{
+                    const cid='${h(angebot.kunde?.id || angebot.anfrageId || '')}';
+                    if(window.portalService&&window.supabaseConfig?.isConfigured?.()){
+                        try{await window.portalService.copyPortalLink(cid);}
+                        catch(e){window.showToast?.('Fehler: '+e.message,'error');}
+                    }else{navigator.clipboard.writeText('${portalUrl}').then(()=>window.showToast?.('Link kopiert','success'));}
+                })()">
                 📋 Link kopieren
             </button>` : ''}
         </div>`;
@@ -1949,7 +1964,13 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
 
         // ── Portal CTA ────────────────────────────────────────────────────
         let portalUrl = null;
-        if (window.customerPortalService) {
+        const _spActive = !!window.portalService && window.supabaseConfig?.isConfigured?.();
+        if (_spActive) {
+            try {
+                const { url } = await window.portalService.generateToken(angebot.kunde?.id || angebot.kundeId || '');
+                portalUrl = url;
+            } catch (_) { /* portal not available */ }
+        } else if (window.customerPortalService) {
             try {
                 const tokenRecord = window.customerPortalService.generateAccessToken(
                     angebot.kunde?.id || angebot.kundeId || '',

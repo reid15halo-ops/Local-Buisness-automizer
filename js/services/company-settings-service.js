@@ -22,7 +22,7 @@ class CompanySettingsService {
             company_website: '',
             company_address: '',
             tax_id: '',
-            noreply_email: 'noreply@handwerkflow.de',
+            noreply_email: 'noreply@freyaivisions.de',
             stundensatz: 65.00,
             default_tax_rate: 0.19,
             payment_terms_days: 14,

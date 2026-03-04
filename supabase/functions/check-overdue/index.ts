@@ -59,7 +59,7 @@ serve(async (req) => {
 
         const relayUrl = Deno.env.get('EMAIL_RELAY_URL')
         const relaySecret = Deno.env.get('EMAIL_RELAY_SECRET')
-        const senderName = Deno.env.get('SENDER_NAME') || 'HandwerkFlow'
+        const senderName = Deno.env.get('SENDER_NAME') || 'FreyAI Visions'
 
         for (const rechnung of (rechnungen || [])) {
             // Calculate days overdue from due date (created_at + zahlungsziel_tage)

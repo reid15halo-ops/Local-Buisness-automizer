@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v20';
+const CACHE_NAME = 'freyai-visions-v21';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -46,7 +46,6 @@ const STATIC_ASSETS = [
     '/css/support.css',
 
     // --- Core JS ---
-    '',
     '/js/app-new.js',
     '/js/features-integration.js',
     '/js/new-features-ui.js',
@@ -163,6 +162,23 @@ const STATIC_ASSETS = [
     '/js/services/work-estimation-service.js',
     '/js/services/workflow-builder-service.js',
     '/js/services/workflow-service.js',
+    '/js/services/portal-service.js',
+    '/js/services/offline-sync-service.js',
+    '/js/services/agentic-executor-service.js',
+    '/js/services/approval-queue-service.js',
+    '/js/services/boomer-guide-service.js',
+    '/js/services/company-settings-service.js',
+    '/js/services/conflict-resolution-service.js',
+    '/js/services/customer-portal-service.js',
+    '/js/services/dashboard-widget-service.js',
+    '/js/services/document-template-service.js',
+    '/js/services/fragebogen-import-service.js',
+    '/js/services/job-queue-service.js',
+    '/js/services/realtime-service.js',
+    '/js/services/supabase-client.js',
+    '/js/services/team-management-service.js',
+    '/js/services/tenant-service.js',
+    '/js/services/whatsapp-service.js',
 
     // --- JS UI Components ---
     '/js/ui/admin-panel-ui.js',
@@ -183,6 +199,11 @@ const STATIC_ASSETS = [
     '/js/ui/ui-helpers.js',
     '/js/ui/work-estimation-ui.js',
     '/js/ui/workflow-builder-ui.js',
+    '/js/ui/conflict-resolution-ui.js',
+    '/js/ui/dashboard-widget-ui.js',
+    '/js/ui/field-app-mobile-ui.js',
+    '/js/ui/fragebogen-import-ui.js',
+    '/js/ui/photo-gallery-ui.js',
 
     // --- i18n (Internationalization) ---
     '/js/i18n/de.js',

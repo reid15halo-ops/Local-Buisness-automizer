@@ -58,3 +58,13 @@ venv/
 *.cert
 id_rsa
 id_ed25519
+
+# Migration scripts with hardcoded tokens
+config/run-migration.py
+config/run-migration-single.py
+
+# Email relay .env (contains SMTP credentials)
+vps/email-relay/.env
+
+# Supabase CLI binary
+supabase.exe

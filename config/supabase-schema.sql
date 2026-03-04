@@ -1,5 +1,5 @@
 -- ============================================
--- HandwerkFlow - Supabase Database Schema
+-- FreyAI Visions - Supabase Database Schema
 --
 -- Anleitung:
 -- 1. Supabase Dashboard öffnen
@@ -802,3 +802,38 @@ CREATE POLICY "Users read own stripe_payments" ON stripe_payments
 CREATE INDEX IF NOT EXISTS idx_stripe_payments_invoice ON stripe_payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_stripe_payments_session ON stripe_payments(stripe_session_id);
 CREATE INDEX IF NOT EXISTS idx_stripe_payments_status ON stripe_payments(payment_status);
+
+-- ============================================
+-- Call Summaries (Anruf-Zusammenfassungen)
+-- ============================================
+CREATE TABLE IF NOT EXISTS call_summaries (
+    id TEXT PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    kunde_id TEXT,
+    kunde_name TEXT,
+    phone TEXT,
+    direction TEXT DEFAULT 'outbound' CHECK (direction IN ('inbound', 'outbound')),
+    transcript TEXT,
+    summary TEXT,
+    keywords JSONB DEFAULT '[]',
+    duration INT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE call_summaries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own call_summaries" ON call_summaries
+    FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Service role can insert call_summaries" ON call_summaries
+    FOR INSERT WITH CHECK (
+        auth.uid() = user_id OR auth.role() = 'service_role'
+    );
+
+CREATE INDEX IF NOT EXISTS idx_call_summaries_user ON call_summaries(user_id);
+CREATE INDEX IF NOT EXISTS idx_call_summaries_kunde ON call_summaries(kunde_id);
+CREATE INDEX IF NOT EXISTS idx_call_summaries_created ON call_summaries(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_call_summaries_phone ON call_summaries(phone);
+
+-- Extend communication_log channel CHECK to include 'call'
+ALTER TABLE communication_log DROP CONSTRAINT IF EXISTS communication_log_channel_check;
+ALTER TABLE communication_log ADD CONSTRAINT communication_log_channel_check
+    CHECK (channel IN ('chat', 'sms', 'email', 'call'));

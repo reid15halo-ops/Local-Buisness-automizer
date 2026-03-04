@@ -1,7 +1,7 @@
 {
-  "name": "handwerkflow-email-relay",
+  "name": "freyavision-email-relay",
   "version": "1.0.0",
-  "description": "Email relay service for HandwerkFlow via Proton Mail Bridge SMTP",
+  "description": "Email relay service for FreyAI Visions via Proton Mail Bridge SMTP",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

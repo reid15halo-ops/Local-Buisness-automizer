@@ -26,6 +26,7 @@ class LazyLoader {
             crm: [
                 'customer-service',
                 'customer-portal-service',
+                'portal-service',
                 'lead-service',
                 'communication-service',
                 'unified-comm-service',
@@ -191,7 +192,7 @@ class LazyLoader {
             'mahnwesen': ['workflow', 'finance', 'automation'],
             'buchhaltung': ['workflow', 'finance', 'reports', 'automation'],
             'kunden': ['crm', 'calendar'],
-            'emails': ['crm', 'communication', 'automation'],
+            'emails': ['crm', 'automation'],
             'email-automation': ['crm', 'automation', 'ai'],
             'termine': ['calendar', 'automation', 'crm'],
             'kalender': ['calendar', 'automation'],

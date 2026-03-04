@@ -5,7 +5,7 @@
 
 function renderActivities() {
     const container = document.getElementById('activity-list');
-    if (!container) { return; }
+    if (!container) {return;}
     const activities = window.storeService?.state?.activities || [];
 
     if (activities.length === 0) {

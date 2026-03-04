@@ -21,8 +21,8 @@ const DEFAULT_TAX_RATE = parseFloat(Deno.env.get('DEFAULT_TAX_RATE') ?? '0.19')
 const DEFAULT_STUNDENSATZ = parseFloat(Deno.env.get('DEFAULT_STUNDENSATZ') ?? '65')
 
 // Sender addresses: configure per-deployment via env vars
-const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') ?? 'angebote@handwerkflow.de'
-const REPLY_TO_EMAIL = Deno.env.get('REPLY_TO_EMAIL') ?? 'info@handwerkflow.de'
+const SENDER_EMAIL = Deno.env.get('SENDER_EMAIL') ?? 'angebote@freyaivisions.de'
+const REPLY_TO_EMAIL = Deno.env.get('REPLY_TO_EMAIL') ?? 'info@freyaivisions.de'
 
 // Company phone shown in email footers (leave empty to omit)
 const COMPANY_PHONE = Deno.env.get('COMPANY_PHONE') ?? ''
@@ -753,7 +753,7 @@ async function sendAngebotEmail(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'angebote@handwerkflow.de')
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'angebote@freyaivisions.de')
 
     const htmlBody = `
         <!DOCTYPE html>
@@ -879,7 +879,7 @@ async function sendFollowUpQuestions(
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@freyaivisions.de')
 
     const questionsHTML = questions.map((q, i) =>
         `<li style="margin-bottom: 12px;"><strong>${i + 1}.</strong> ${escapeHtml(q)}</li>`
@@ -951,7 +951,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
     const resendKey = Deno.env.get('RESEND_API_KEY')
     if (!resendKey) throw new Error('RESEND_API_KEY not configured')
 
-    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@handwerkflow.de')
+    // SENDER_EMAIL is the top-level constant (env var SENDER_EMAIL or fallback 'info@freyaivisions.de')
 
     const htmlBody = `
         <!DOCTYPE html>
