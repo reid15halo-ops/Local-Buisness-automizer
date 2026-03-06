@@ -11,7 +11,10 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const VPS_STT_URL = Deno.env.get('VPS_STT_URL') || 'http://72.61.187.24:8900/api/voice/stt'
+const VPS_STT_URL = Deno.env.get('VPS_STT_URL')
+if (!VPS_STT_URL) {
+    console.warn('VPS_STT_URL not configured - call recording processing will fail')
+}
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || ''
 
 serve(async (req) => {
@@ -46,6 +49,13 @@ serve(async (req) => {
             return new Response(
                 JSON.stringify({ error: 'Audio-Datei erforderlich' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        if (!VPS_STT_URL) {
+            return new Response(
+                JSON.stringify({ error: 'STT-Service nicht konfiguriert' }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
 

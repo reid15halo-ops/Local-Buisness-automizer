@@ -354,9 +354,9 @@ class ApprovalService {
             escalated,
             total: this.requests.length,
             avgApprovalTimeHours: avgApprovalTime.toFixed(1),
-            approvalRate: this.requests.length > 0
+            approvalRate: (approved + rejected) > 0
                 ? ((approved / (approved + rejected)) * 100).toFixed(1)
-                : 0
+                : '0.0'
         };
     }
 

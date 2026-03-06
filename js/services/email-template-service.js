@@ -7,6 +7,27 @@
 class EmailTemplateService {
     constructor() {
         this.company = this.getCompanyInfo();
+        this.kleinunternehmer = this._isKleinunternehmer();
+    }
+
+    _escHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /**
+     * Check Kleinunternehmer status from company settings or localStorage
+     */
+    _isKleinunternehmer() {
+        if (window.companySettingsService?.isKleinunternehmer) {
+            return window.companySettingsService.isKleinunternehmer();
+        }
+        const stored = localStorage.getItem('kleinunternehmer');
+        if (stored !== null) return stored === 'true';
+        try {
+            const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            return ap.kleinunternehmer === true;
+        } catch { return false; }
     }
 
     /**
@@ -76,8 +97,8 @@ class EmailTemplateService {
                 <tr>
                     <td style="padding: 20px 40px; text-align: center;">
                         <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px; color: #2dd4a8;">⚙️</div>
-                        <h1 style="margin: 10px 0 5px 0; font-size: 24px; font-family: Arial, sans-serif; font-weight: bold;">${this.company.name}</h1>
-                        <p style="margin: 0; font-size: 12px; color: #cbd5e1;">${this.company.street} | ${this.company.postalCode} ${this.company.city}</p>
+                        <h1 style="margin: 10px 0 5px 0; font-size: 24px; font-family: Arial, sans-serif; font-weight: bold;">${this._escHtml(this.company.name)}</h1>
+                        <p style="margin: 0; font-size: 12px; color: #cbd5e1;">${this._escHtml(this.company.street)} | ${this._escHtml(this.company.postalCode)} ${this._escHtml(this.company.city)}</p>
                     </td>
                 </tr>
             </table>
@@ -96,22 +117,29 @@ class EmailTemplateService {
                             <tr>
                                 <td class="footer-col" style="width: 33%; padding-right: 20px;">
                                     <strong style="color: #f1f5f9;">Kontakt</strong><br>
-                                    Telefon: ${this.company.phone}<br>
-                                    Email: ${this.company.email}
+                                    Telefon: ${this._escHtml(this.company.phone)}<br>
+                                    Email: ${this._escHtml(this.company.email)}
                                 </td>
                                 <td class="footer-col" style="width: 33%; padding: 0 20px; border-left: 1px solid #475569; border-right: 1px solid #475569;">
                                     <strong style="color: #f1f5f9;">Bankverbindung</strong><br>
-                                    IBAN: ${this.company.iban}<br>
-                                    BIC: ${this.company.bic}
+                                    IBAN: ${this._escHtml(this.company.iban)}<br>
+                                    BIC: ${this._escHtml(this.company.bic)}
                                 </td>
                                 <td class="footer-col" style="width: 33%; padding-left: 20px;">
                                     <strong style="color: #f1f5f9;">Steuernummer</strong><br>
-                                    USt-IdNr: ${this.company.vatId}
+                                    ${this.kleinunternehmer ? `Steuernr.: ${this._escHtml(this.company.vatId)}` : `USt-IdNr: ${this._escHtml(this.company.vatId)}`}
+                                    ${this.kleinunternehmer ? '<br><span style="font-size:10px;">Kleinunternehmer gem. &sect;19 UStG</span>' : ''}
                                 </td>
                             </tr>
                         </table>
                         <p style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569; font-size: 10px; color: #64748b;">
-                            © ${new Date().getFullYear()} ${this.company.name}. Alle Rechte vorbehalten.
+                            &copy; ${new Date().getFullYear()} ${this._escHtml(this.company.name)}. Alle Rechte vorbehalten.<br>
+                            <a href="https://freyaivisions.de/impressum" style="color: #94a3b8; text-decoration: underline;">Impressum</a>
+                            &nbsp;|&nbsp;
+                            <a href="https://freyaivisions.de/datenschutz" style="color: #94a3b8; text-decoration: underline;">Datenschutz</a>
+                        </p>
+                        <p style="margin-top: 10px; font-size: 9px; color: #475569;">
+                            Sie erhalten diese E-Mail im Rahmen einer bestehenden Gesch&auml;ftsbeziehung. Falls Sie keine weiteren E-Mails erhalten m&ouml;chten, antworten Sie bitte mit dem Betreff &bdquo;Abmelden&ldquo;.
                         </p>
                     </td>
                 </tr>
@@ -138,7 +166,7 @@ class EmailTemplateService {
             return `
                 <tr style="border-bottom: 1px solid #e2e8f0;">
                     <td style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif;">${idx + 1}</td>
-                    <td style="padding: 12px 8px; font-family: Arial, sans-serif;">${pos.beschreibung || ''}</td>
+                    <td style="padding: 12px 8px; font-family: Arial, sans-serif;">${this._escHtml(pos.beschreibung)}</td>
                     <td style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif;">${(pos.menge || 0).toLocaleString('de-DE')}</td>
                     <td style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif;">€&nbsp;${(pos.einzelpreis || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif; font-weight: bold;">€&nbsp;${gesamtpreis.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -146,7 +174,8 @@ class EmailTemplateService {
             `;
         }).join('');
 
-        const mwstSatz = 19;
+        const isKlein = this._isKleinunternehmer();
+        const mwstSatz = isKlein ? 0 : 19;
         const mwst = netto * (mwstSatz / 100);
         const brutto = netto + mwst;
 
@@ -178,16 +207,16 @@ class EmailTemplateService {
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 30px;">
                                             <tr>
                                                 <td>
-                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Angebot Nr. ${angebot.id || angebot.nummer || ''}</h2>
+                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Angebot Nr. ${this._escHtml(angebot.id || angebot.nummer)}</h2>
                                                     <p style="margin: 5px 0; font-size: 13px; color: #64748b;">
                                                         Datum: ${this.formatDate(angebot.datum || new Date().toISOString())}
                                                     </p>
                                                 </td>
                                                 <td style="text-align: right;">
                                                     <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.6;">
-                                                        <strong>${comp.name}</strong><br>
-                                                        ${comp.street}<br>
-                                                        ${comp.postalCode} ${comp.city}
+                                                        <strong>${this._escHtml(comp.name)}</strong><br>
+                                                        ${this._escHtml(comp.street)}<br>
+                                                        ${this._escHtml(comp.postalCode)} ${this._escHtml(comp.city)}
                                                     </p>
                                                 </td>
                                             </tr>
@@ -196,15 +225,15 @@ class EmailTemplateService {
                                         <!-- Customer Address -->
                                         <div style="margin-bottom: 30px;">
                                             <p style="margin: 0 0 5px 0; font-size: 12px; color: #64748b;">Für:</p>
-                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${kunde.name || 'Sehr geehrte/r Kunde'}</p>
-                                            ${kunde.firma ? `<p style="margin: 5px 0; font-size: 13px;">${kunde.firma}</p>` : ''}
-                                            <p style="margin: 5px 0; font-size: 13px;">${kunde.strasse || ''}</p>
-                                            <p style="margin: 5px 0; font-size: 13px;">${kunde.plz || ''} ${kunde.ort || ''}</p>
+                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${this._escHtml(kunde.name) || 'Sehr geehrte/r Kunde'}</p>
+                                            ${kunde.firma ? `<p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.firma)}</p>` : ''}
+                                            <p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.strasse)}</p>
+                                            <p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.plz)} ${this._escHtml(kunde.ort)}</p>
                                         </div>
 
                                         <!-- Greeting -->
                                         <p style="margin: 30px 0 20px 0; font-size: 14px; line-height: 1.6;">
-                                            Sehr geehrte/r ${kunde.name ? kunde.name.split(' ')[0] : 'Kunde'},
+                                            Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'} ${this._escHtml(kunde.name) || 'Kunde'},
                                         </p>
 
                                         <!-- Body Text -->
@@ -230,18 +259,21 @@ class EmailTemplateService {
 
                                         <!-- Totals -->
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin: 30px 0; margin-left: auto; max-width: 300px;">
-                                            <tr>
-                                                <td style="padding: 10px 0; font-size: 13px; color: #475569;">Subtotal (netto):</td>
-                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">€&nbsp;${netto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            ${isKlein ? '' : `<tr>
+                                                <td style="padding: 10px 0; font-size: 13px; color: #475569;">Nettobetrag:</td>
+                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">&euro;&nbsp;${netto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             <tr>
                                                 <td style="padding: 10px 0; font-size: 13px; color: #475569;">MwSt (${mwstSatz}%):</td>
-                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">€&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                            </tr>
+                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">&euro;&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            </tr>`}
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
                                                 <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Gesamtbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">€&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
+                                            ${isKlein ? `<tr>
+                                                <td colspan="2" style="padding: 8px 0 0 0; font-size: 11px; color: #64748b;">Gem&auml;&szlig; &sect;19 UStG wird keine Umsatzsteuer berechnet.</td>
+                                            </tr>` : ''}
                                         </table>
 
                                         <!-- Validity Notice -->
@@ -258,7 +290,7 @@ class EmailTemplateService {
 
                                         <p style="margin: 20px 0 0 0; font-size: 14px;">
                                             Mit freundlichen Grüßen<br>
-                                            <strong>${comp.name}</strong>
+                                            <strong>${this._escHtml(comp.name)}</strong>
                                         </p>
                                     </td>
                                 </tr>
@@ -278,7 +310,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `Angebot Nr. ${angebot.id || angebot.nummer || ''} - ${comp.name}`,
+            subject: `Angebot Nr. ${angebot.id || angebot.nummer || ''} - ${this._escHtml(comp.name)}`,
             html: html
         };
     }
@@ -302,7 +334,7 @@ class EmailTemplateService {
             return `
                 <tr style="border-bottom: 1px solid #e2e8f0;">
                     <td style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif;">${idx + 1}</td>
-                    <td style="padding: 12px 8px; font-family: Arial, sans-serif;">${pos.beschreibung || ''}</td>
+                    <td style="padding: 12px 8px; font-family: Arial, sans-serif;">${this._escHtml(pos.beschreibung)}</td>
                     <td style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif;">${(pos.menge || 0).toLocaleString('de-DE')}</td>
                     <td style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif;">€&nbsp;${(pos.einzelpreis || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                     <td style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif; font-weight: bold;">€&nbsp;${gesamtpreis.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
@@ -310,7 +342,8 @@ class EmailTemplateService {
             `;
         }).join('');
 
-        const mwstSatz = 19;
+        const isKlein = this._isKleinunternehmer();
+        const mwstSatz = isKlein ? 0 : 19;
         const mwst = netto * (mwstSatz / 100);
         const brutto = netto + mwst;
 
@@ -348,16 +381,16 @@ class EmailTemplateService {
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 30px;">
                                             <tr>
                                                 <td>
-                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Rechnung Nr. ${rechnung.id || rechnung.nummer || ''}</h2>
+                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Rechnung Nr. ${this._escHtml(rechnung.id || rechnung.nummer)}</h2>
                                                     <p style="margin: 5px 0; font-size: 13px; color: #64748b;">
                                                         Rechnungsdatum: ${this.formatDate(rechnung.datum || new Date().toISOString())}
                                                     </p>
                                                 </td>
                                                 <td style="text-align: right;">
                                                     <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.6;">
-                                                        <strong>${comp.name}</strong><br>
-                                                        ${comp.street}<br>
-                                                        ${comp.postalCode} ${comp.city}
+                                                        <strong>${this._escHtml(comp.name)}</strong><br>
+                                                        ${this._escHtml(comp.street)}<br>
+                                                        ${this._escHtml(comp.postalCode)} ${this._escHtml(comp.city)}
                                                     </p>
                                                 </td>
                                             </tr>
@@ -366,15 +399,15 @@ class EmailTemplateService {
                                         <!-- Customer Address -->
                                         <div style="margin-bottom: 30px;">
                                             <p style="margin: 0 0 5px 0; font-size: 12px; color: #64748b;">Rechnungsempfänger:</p>
-                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${kunde.name || 'Sehr geehrte/r Kunde'}</p>
-                                            ${kunde.firma ? `<p style="margin: 5px 0; font-size: 13px;">${kunde.firma}</p>` : ''}
-                                            <p style="margin: 5px 0; font-size: 13px;">${kunde.strasse || ''}</p>
-                                            <p style="margin: 5px 0; font-size: 13px;">${kunde.plz || ''} ${kunde.ort || ''}</p>
+                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${this._escHtml(kunde.name) || 'Sehr geehrte/r Kunde'}</p>
+                                            ${kunde.firma ? `<p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.firma)}</p>` : ''}
+                                            <p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.strasse)}</p>
+                                            <p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.plz)} ${this._escHtml(kunde.ort)}</p>
                                         </div>
 
                                         <!-- Greeting -->
                                         <p style="margin: 30px 0 20px 0; font-size: 14px; line-height: 1.6;">
-                                            Sehr geehrte/r ${kunde.name ? kunde.name.split(' ')[0] : 'Kunde'},
+                                            Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'} ${this._escHtml(kunde.name) || 'Kunde'},
                                         </p>
 
                                         <!-- Body Text -->
@@ -400,18 +433,21 @@ class EmailTemplateService {
 
                                         <!-- Totals -->
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin: 30px 0; margin-left: auto; max-width: 300px;">
-                                            <tr>
-                                                <td style="padding: 10px 0; font-size: 13px; color: #475569;">Subtotal (netto):</td>
-                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">€&nbsp;${netto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            ${isKlein ? '' : `<tr>
+                                                <td style="padding: 10px 0; font-size: 13px; color: #475569;">Nettobetrag:</td>
+                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">&euro;&nbsp;${netto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             <tr>
                                                 <td style="padding: 10px 0; font-size: 13px; color: #475569;">MwSt (${mwstSatz}%):</td>
-                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">€&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                            </tr>
+                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">&euro;&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            </tr>`}
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
                                                 <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Rechnungsbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">€&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
+                                            ${isKlein ? `<tr>
+                                                <td colspan="2" style="padding: 8px 0 0 0; font-size: 11px; color: #64748b;">Gem&auml;&szlig; &sect;19 UStG wird keine Umsatzsteuer berechnet.</td>
+                                            </tr>` : ''}
                                         </table>
 
                                         <!-- Payment Terms -->
@@ -421,9 +457,11 @@ class EmailTemplateService {
                                                 Zahlbar bis: <strong>${this.formatDate(dueDate)}</strong>
                                             </p>
                                             <p style="margin: 5px 0; font-size: 13px; color: #92400e;">
-                                                IBAN: <strong>${comp.iban}</strong><br>
-                                                BIC: <strong>${comp.bic}</strong><br>
-                                                Bank: ${comp.bankName}
+                                                Empf&auml;nger: <strong>${this._escHtml(comp.name)}</strong><br>
+                                                IBAN: <strong>${this._escHtml(comp.iban)}</strong><br>
+                                                BIC: <strong>${this._escHtml(comp.bic)}</strong><br>
+                                                Bank: ${this._escHtml(comp.bankName)}<br>
+                                                Verwendungszweck: <strong>${this._escHtml(rechnung.id || rechnung.nummer)}</strong>
                                             </p>
                                         </div>
 
@@ -438,7 +476,7 @@ class EmailTemplateService {
                                         <!-- Close -->
                                         <p style="margin: 30px 0 0 0; font-size: 14px;">
                                             Mit freundlichen Grüßen<br>
-                                            <strong>${comp.name}</strong>
+                                            <strong>${this._escHtml(comp.name)}</strong>
                                         </p>
                                     </td>
                                 </tr>
@@ -458,7 +496,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${comp.name}`,
+            subject: `Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${this._escHtml(comp.name)}`,
             html: html
         };
     }
@@ -475,44 +513,59 @@ class EmailTemplateService {
         const kunde = mahnung.kunde || {};
         const originalRechnung = mahnung.originalRechnung || {};
 
+        // Mahngebuehren per level
+        const mahngebuehren = { 1: 5.00, 2: 10.00, 3: 15.00 };
+        const gebuehr = mahngebuehren[stufe] || 0;
+        const formatEur = (v) => (v || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
         // Determine tone and content based on level
         const levels = {
             1: {
-                title: 'Zahlungserinnerung',
-                greeting: 'Sehr geehrte/r',
-                tone: 'friendly',
-                body: `bei Durchsicht unserer Unterlagen ist uns aufgefallen, dass die Rechnung <strong>Nr. ${originalRechnung.nummer}</strong>
-                vom <strong>${this.formatDate(originalRechnung.datum)}</strong> in Höhe von <strong>€&nbsp;${(mahnung.betrag || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                noch nicht beglichen wurde.
+                title: '1. Mahnung',
+                greeting: `Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'}`,
+                tone: 'firm',
+                body: `trotz unserer Zahlungserinnerung konnten wir leider keinen Zahlungseingang f&uuml;r die Rechnung <strong>Nr. ${this._escHtml(originalRechnung.nummer)}</strong>
+                vom <strong>${this.formatDate(originalRechnung.datum)}</strong> verzeichnen.
                 <br><br>
-                Wir bitten Sie freundlich, den ausstehenden Betrag baldmöglichst zu überweisen.`,
+                Wir bitten Sie, den ausstehenden Betrag zzgl. Mahngeb&uuml;hr innerhalb von 14 Tagen zu begleichen.
+                <br><br>
+                <strong>Urspr&uuml;nglicher Betrag:</strong> &euro;&nbsp;${formatEur(mahnung.betrag - gebuehr)}<br>
+                <strong>Mahngeb&uuml;hr (1. Mahnung):</strong> &euro;&nbsp;${formatEur(gebuehr)}<br>
+                <strong>Gesamtbetrag:</strong> &euro;&nbsp;${formatEur(mahnung.betrag)}`,
                 backgroundColor: '#e0f2fe',
                 borderColor: '#0284c7',
                 textColor: '#0c4a6e'
             },
             2: {
-                title: 'Zweite Mahnung',
-                greeting: 'Sehr geehrte/r',
+                title: '2. Mahnung',
+                greeting: `Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'}`,
                 tone: 'firm',
-                body: `trotz unserer vorangegangenen Zahlungserinnerung ist die Rechnung <strong>Nr. ${originalRechnung.nummer}</strong>
-                vom <strong>${this.formatDate(originalRechnung.datum)}</strong> über <strong>€&nbsp;${(mahnung.betrag || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                bis heute nicht bezahlt worden.
+                body: `trotz wiederholter Aufforderung ist die Rechnung <strong>Nr. ${this._escHtml(originalRechnung.nummer)}</strong>
+                vom <strong>${this.formatDate(originalRechnung.datum)}</strong> bis heute nicht beglichen worden.
                 <br><br>
-                Wir erwarten die Zahlung des ausstehenden Betrages <strong>unverzüglich</strong>.`,
+                <strong>Urspr&uuml;nglicher Rechnungsbetrag:</strong> &euro;&nbsp;${formatEur(mahnung.betrag - gebuehr)}<br>
+                <strong>Mahngeb&uuml;hr (2. Mahnung):</strong> &euro;&nbsp;${formatEur(gebuehr)}<br>
+                <strong>Gesamtbetrag:</strong> &euro;&nbsp;${formatEur(mahnung.betrag)}
+                <br><br>
+                Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, weitere rechtliche Schritte einzuleiten.`,
                 backgroundColor: '#fef3c7',
                 borderColor: '#d97706',
                 textColor: '#92400e'
             },
             3: {
                 title: 'Letzte Mahnung vor Inkasso',
-                greeting: 'Sehr geehrte/r',
+                greeting: `Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'}`,
                 tone: 'final',
-                body: `die Rechnung <strong>Nr. ${originalRechnung.nummer}</strong> vom <strong>${this.formatDate(originalRechnung.datum)}</strong>
-                über <strong>€&nbsp;${(mahnung.betrag || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                body: `die Rechnung <strong>Nr. ${this._escHtml(originalRechnung.nummer)}</strong> vom <strong>${this.formatDate(originalRechnung.datum)}</strong>
                 ist trotz mehrfacher Aufforderung nicht beglichen.
                 <br><br>
-                <strong>Dies ist unsere letzte Zahlungserinnerung.</strong> Sollte die Zahlung nicht innerhalb von 5 Arbeitstagen erfolgen,
-                werden wir die Forderung zur Inkassostelle einreichen und etwaige Inkassokosten in Rechnung stellen.`,
+                <strong>Urspr&uuml;nglicher Rechnungsbetrag:</strong> &euro;&nbsp;${formatEur(mahnung.betrag - gebuehr)}<br>
+                <strong>Mahngeb&uuml;hr (3. Mahnung):</strong> &euro;&nbsp;${formatEur(gebuehr)}<br>
+                <strong>Gesamtforderung:</strong> &euro;&nbsp;${formatEur(mahnung.betrag)}
+                <br><br>
+                <strong>Dies ist unsere letzte au&szlig;ergerichtliche Mahnung.</strong> Sollte die Zahlung nicht innerhalb von 14 Tagen erfolgen,
+                werden wir die Forderung an ein Inkassounternehmen &uuml;bergeben und ein gerichtliches Mahnverfahren einleiten.
+                S&auml;mtliche dadurch entstehenden Kosten gehen zu Ihren Lasten.`,
                 backgroundColor: '#fee2e2',
                 borderColor: '#ef4444',
                 textColor: '#991b1b'
@@ -550,7 +603,7 @@ class EmailTemplateService {
 
                                         <!-- Customer Address -->
                                         <div style="margin-bottom: 30px;">
-                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${level.greeting} ${kunde.name || 'Kunde'},</p>
+                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${level.greeting} ${this._escHtml(kunde.name) || 'Kunde'},</p>
                                         </div>
 
                                         <!-- Body Text -->
@@ -564,7 +617,7 @@ class EmailTemplateService {
                                             <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
                                                 <tr>
                                                     <td style="font-size: 13px; color: ${level.textColor}; padding: 5px 0;">Rechnungsnummer:</td>
-                                                    <td style="font-size: 13px; color: ${level.textColor}; padding: 5px 15px; text-align: right; font-weight: bold;">${originalRechnung.nummer || ''}</td>
+                                                    <td style="font-size: 13px; color: ${level.textColor}; padding: 5px 15px; text-align: right; font-weight: bold;">${this._escHtml(originalRechnung.nummer) || ''}</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="font-size: 13px; color: ${level.textColor}; padding: 5px 0;">Rechnungsdatum:</td>
@@ -581,9 +634,11 @@ class EmailTemplateService {
                                         <div style="margin: 30px 0; padding: 15px; background-color: #f1f5f9; border-radius: 4px;">
                                             <p style="margin: 0 0 10px 0; font-size: 13px; color: #0c4a6e; font-weight: bold;">Zahlungsanweisung:</p>
                                             <p style="margin: 5px 0; font-size: 13px; color: #0c4a6e;">
-                                                IBAN: <strong>${comp.iban}</strong><br>
-                                                BIC: <strong>${comp.bic}</strong><br>
-                                                Bank: ${comp.bankName}
+                                                Empf&auml;nger: <strong>${this._escHtml(comp.name)}</strong><br>
+                                                IBAN: <strong>${this._escHtml(comp.iban)}</strong><br>
+                                                BIC: <strong>${this._escHtml(comp.bic)}</strong><br>
+                                                Bank: ${this._escHtml(comp.bankName)}<br>
+                                                Verwendungszweck: <strong>${this._escHtml(originalRechnung.nummer) || ''}</strong>
                                             </p>
                                         </div>
 
@@ -600,7 +655,7 @@ class EmailTemplateService {
                                         <!-- Close -->
                                         <p style="margin: 30px 0 0 0; font-size: 14px;">
                                             Mit freundlichen Grüßen<br>
-                                            <strong>${comp.name}</strong>
+                                            <strong>${this._escHtml(comp.name)}</strong>
                                         </p>
 
                                         <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;">
@@ -624,7 +679,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `${level.title}: Rechnung Nr. ${originalRechnung.nummer} - ${comp.name}`,
+            subject: `${level.title}: Rechnung Nr. ${this._escHtml(originalRechnung.nummer)} - ${this._escHtml(comp.name)}`,
             html: html
         };
     }
@@ -671,7 +726,7 @@ class EmailTemplateService {
 
                                         <!-- Greeting -->
                                         <p style="margin: 20px 0; font-size: 14px; line-height: 1.6;">
-                                            Sehr geehrte/r ${kunde.name ? kunde.name.split(' ')[0] : 'Kunde'},
+                                            Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'} ${this._escHtml(kunde.name) || 'Kunde'},
                                         </p>
 
                                         <!-- Confirmation -->
@@ -688,15 +743,15 @@ class EmailTemplateService {
                                                 </tr>
                                                 <tr>
                                                     <td style="padding: 10px 0; font-size: 13px; color: #0c4a6e;">🕐 Uhrzeit:</td>
-                                                    <td style="padding: 10px 15px; text-align: right; font-size: 13px; font-weight: bold; color: #0c4a6e;">${termin.uhrzeit || '09:00'} Uhr</td>
+                                                    <td style="padding: 10px 15px; text-align: right; font-size: 13px; font-weight: bold; color: #0c4a6e;">${this._escHtml(termin.uhrzeit || '09:00')} Uhr</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="padding: 10px 0; font-size: 13px; color: #0c4a6e;">📍 Ort:</td>
-                                                    <td style="padding: 10px 15px; text-align: right; font-size: 13px; font-weight: bold; color: #0c4a6e;">${termin.ort || 'Nach Vereinbarung'}</td>
+                                                    <td style="padding: 10px 15px; text-align: right; font-size: 13px; font-weight: bold; color: #0c4a6e;">${this._escHtml(termin.ort || 'Nach Vereinbarung')}</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="padding: 10px 0; font-size: 13px; color: #0c4a6e;">Ansprechpartner:</td>
-                                                    <td style="padding: 10px 15px; text-align: right; font-size: 13px; font-weight: bold; color: #0c4a6e;">${termin.mitarbeiter || comp.name}</td>
+                                                    <td style="padding: 10px 15px; text-align: right; font-size: 13px; font-weight: bold; color: #0c4a6e;">${this._escHtml(termin.mitarbeiter || comp.name)}</td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -706,7 +761,7 @@ class EmailTemplateService {
                                             <div style="margin: 20px 0; padding: 15px; background-color: #f1f5f9; border-radius: 4px;">
                                                 <p style="margin: 0 0 10px 0; font-size: 12px; color: #64748b; font-weight: bold;">Genaue Adresse:</p>
                                                 <p style="margin: 0; font-size: 13px; color: #0c4a6e; line-height: 1.6;">
-                                                    ${termin.adresse.replace(/\n/g, '<br>')}
+                                                    ${this._escHtml(termin.adresse).replace(/\n/g, '<br>')}
                                                 </p>
                                             </div>
                                         ` : ''}
@@ -725,7 +780,7 @@ class EmailTemplateService {
                                         <p style="margin: 30px 0 0 0; font-size: 14px;">
                                             Wir freuen uns auf Sie!<br><br>
                                             Mit freundlichen Grüßen<br>
-                                            <strong>${comp.name}</strong>
+                                            <strong>${this._escHtml(comp.name)}</strong>
                                         </p>
                                     </td>
                                 </tr>
@@ -749,6 +804,257 @@ class EmailTemplateService {
             html: html,
             icsContent: icsContent,
             icsFilename: `Termin_${this.formatDate(termin.datum).replace(/\./g, '-')}.ics`
+        };
+    }
+
+    /**
+     * Order Confirmation Email - Auftragsbestaetigung
+     * @param {Object} auftrag - Order object with positionen, kunde, nummer
+     * @param {Object} company - Optional company override
+     * @returns {Object} { subject, html }
+     */
+    getAuftragsbestaetigungEmail(auftrag, company = null) {
+        const comp = company || this.company;
+        const kunde = auftrag.kunde || {};
+        const positionen = auftrag.positionen || [];
+
+        let netto = 0;
+        const posTable = positionen.map((pos, idx) => {
+            const gesamtpreis = (pos.menge || 0) * (pos.einzelpreis || 0);
+            netto += gesamtpreis;
+            return `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif;">${idx + 1}</td>
+                    <td style="padding: 12px 8px; font-family: Arial, sans-serif;">${this._escHtml(pos.beschreibung)}</td>
+                    <td style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif;">${(pos.menge || 0).toLocaleString('de-DE')}</td>
+                    <td style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif;">&euro;&nbsp;${(pos.einzelpreis || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                    <td style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif; font-weight: bold;">&euro;&nbsp;${gesamtpreis.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                </tr>
+            `;
+        }).join('');
+
+        const isKlein = this._isKleinunternehmer();
+        const mwstSatz = isKlein ? 0 : 19;
+        const mwst = netto * (mwstSatz / 100);
+        const brutto = netto + mwst;
+
+        const html = `
+            <!DOCTYPE html>
+            <html lang="de">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Auftragsbest&auml;tigung</title>
+                ${this.getBaseCss()}
+            </head>
+            <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f8fafc;">
+                <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f8fafc;">
+                    <tr>
+                        <td style="padding: 20px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <tr><td>${this.getHeader()}</td></tr>
+                                <tr>
+                                    <td class="email-body" style="padding: 40px; color: #0f2327;">
+                                        <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 30px;">
+                                            <tr>
+                                                <td>
+                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Auftragsbest&auml;tigung Nr. ${auftrag.id || auftrag.nummer || ''}</h2>
+                                                    <p style="margin: 5px 0; font-size: 13px; color: #64748b;">
+                                                        Datum: ${this.formatDate(auftrag.datum || new Date().toISOString())}
+                                                    </p>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.6;">
+                                                        <strong>${this._escHtml(comp.name)}</strong><br>
+                                                        ${this._escHtml(comp.street)}<br>
+                                                        ${this._escHtml(comp.postalCode)} ${this._escHtml(comp.city)}
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <div style="margin-bottom: 30px;">
+                                            <p style="margin: 0 0 5px 0; font-size: 12px; color: #64748b;">Auftraggeber:</p>
+                                            <p style="margin: 0; font-size: 14px; font-weight: bold;">${this._escHtml(kunde.name) || 'Kunde'}</p>
+                                            ${kunde.firma ? `<p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.firma)}</p>` : ''}
+                                            <p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.strasse)}</p>
+                                            <p style="margin: 5px 0; font-size: 13px;">${this._escHtml(kunde.plz)} ${this._escHtml(kunde.ort)}</p>
+                                        </div>
+
+                                        <p style="margin: 30px 0 20px 0; font-size: 14px; line-height: 1.6;">
+                                            Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'} ${this._escHtml(kunde.name) || 'Kunde'},
+                                        </p>
+
+                                        <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+                                            vielen Dank f&uuml;r Ihren Auftrag! Hiermit best&auml;tigen wir die Annahme und die nachfolgend aufgef&uuml;hrten Leistungen.
+                                        </p>
+
+                                        <table role="presentation" cellpadding="0" cellspacing="0" class="positions-table" style="width: 100%; margin: 30px 0; border-collapse: collapse; border: 1px solid #e2e8f0;">
+                                            <thead>
+                                                <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                                                    <th style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;">Pos</th>
+                                                    <th style="padding: 12px 8px; font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;">Beschreibung</th>
+                                                    <th style="padding: 12px 8px; text-align: center; font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;">Menge</th>
+                                                    <th style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;">Einzelpreis</th>
+                                                    <th style="padding: 12px 8px; text-align: right; font-family: Arial, sans-serif; font-weight: bold; font-size: 12px;">Gesamtpreis</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${posTable}
+                                            </tbody>
+                                        </table>
+
+                                        <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin: 30px 0; margin-left: auto; max-width: 300px;">
+                                            ${isKlein ? '' : `<tr>
+                                                <td style="padding: 10px 0; font-size: 13px; color: #475569;">Nettobetrag:</td>
+                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">&euro;&nbsp;${netto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 10px 0; font-size: 13px; color: #475569;">MwSt (${mwstSatz}%):</td>
+                                                <td style="padding: 10px 15px; text-align: right; font-size: 13px; color: #475569;">&euro;&nbsp;${mwst.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            </tr>`}
+                                            <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
+                                                <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Gesamtbetrag:</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            </tr>
+                                            ${isKlein ? `<tr>
+                                                <td colspan="2" style="padding: 8px 0 0 0; font-size: 11px; color: #64748b;">Gem&auml;&szlig; &sect;19 UStG wird keine Umsatzsteuer berechnet.</td>
+                                            </tr>` : ''}
+                                        </table>
+
+                                        ${auftrag.liefertermin ? `
+                                        <div style="margin: 30px 0; padding: 15px; background-color: #f0f9ff; border-left: 4px solid #0284c7; border-radius: 4px;">
+                                            <p style="margin: 0; font-size: 13px; color: #0c4a6e;">
+                                                <strong>Voraussichtlicher Liefertermin:</strong> ${this.formatDate(auftrag.liefertermin)}
+                                            </p>
+                                        </div>
+                                        ` : ''}
+
+                                        <div style="margin: 20px 0; padding: 15px; background-color: #f0fdf4; border-radius: 4px;">
+                                            <p style="margin: 0 0 10px 0; font-size: 13px; color: #15803d; font-weight: bold;">N&auml;chste Schritte:</p>
+                                            <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #15803d;">
+                                                <li style="margin: 5px 0;">Wir beginnen mit der Bearbeitung Ihres Auftrags.</li>
+                                                <li style="margin: 5px 0;">Bei R&uuml;ckfragen melden wir uns umgehend bei Ihnen.</li>
+                                                <li style="margin: 5px 0;">Die Rechnung erhalten Sie nach Abschluss der Arbeiten.</li>
+                                            </ul>
+                                        </div>
+
+                                        <p style="margin: 30px 0 0 0; font-size: 14px;">
+                                            Vielen Dank f&uuml;r Ihr Vertrauen!<br><br>
+                                            Mit freundlichen Gr&uuml;&szlig;en<br>
+                                            <strong>${this._escHtml(comp.name)}</strong>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr><td>${this.getFooter()}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `;
+
+        return {
+            subject: `Auftragsbest\u00e4tigung Nr. ${auftrag.id || auftrag.nummer || ''} - ${this._escHtml(comp.name)}`,
+            html: html
+        };
+    }
+
+    /**
+     * Payment Reminder Email (pre-dunning) - Zahlungserinnerung
+     * Friendly tone, sent before formal Mahnung process
+     * @param {Object} rechnung - Invoice object
+     * @param {Object} company - Optional company override
+     * @returns {Object} { subject, html }
+     */
+    getZahlungserinnerungEmail(rechnung, company = null) {
+        const comp = company || this.company;
+        const kunde = rechnung.kunde || {};
+
+        const html = `
+            <!DOCTYPE html>
+            <html lang="de">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Zahlungserinnerung</title>
+                ${this.getBaseCss()}
+            </head>
+            <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f8fafc;">
+                <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f8fafc;">
+                    <tr>
+                        <td style="padding: 20px 0;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <tr><td>${this.getHeader()}</td></tr>
+                                <tr>
+                                    <td class="email-body" style="padding: 40px; color: #0f2327;">
+                                        <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c4a6e;">Freundliche Zahlungserinnerung</h2>
+
+                                        <p style="margin: 20px 0; font-size: 14px; line-height: 1.6;">
+                                            Sehr ${kunde.anrede === 'Frau' ? 'geehrte Frau' : 'geehrter Herr'} ${this._escHtml(kunde.name) || 'Kunde'},
+                                        </p>
+
+                                        <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+                                            bei Durchsicht unserer Buchhaltung ist uns aufgefallen, dass die folgende Rechnung noch offen ist.
+                                            Sicherlich handelt es sich um ein Versehen &ndash; wir m&ouml;chten Sie daher freundlich daran erinnern.
+                                        </p>
+
+                                        <div style="margin: 30px 0; padding: 15px; background-color: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 4px;">
+                                            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #0c4a6e; padding: 5px 0;">Rechnungsnummer:</td>
+                                                    <td style="font-size: 13px; color: #0c4a6e; padding: 5px 15px; text-align: right; font-weight: bold;">${this._escHtml(rechnung.id || rechnung.nummer)}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #0c4a6e; padding: 5px 0;">Rechnungsdatum:</td>
+                                                    <td style="font-size: 13px; color: #0c4a6e; padding: 5px 15px; text-align: right;">${this.formatDate(rechnung.datum || rechnung.createdAt)}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="font-size: 13px; color: #0c4a6e; padding: 5px 0;">Offener Betrag:</td>
+                                                    <td style="font-size: 14px; color: #0c4a6e; padding: 5px 15px; text-align: right; font-weight: bold;">&euro;&nbsp;${(rechnung.brutto || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div style="margin: 30px 0; padding: 15px; background-color: #f1f5f9; border-radius: 4px;">
+                                            <p style="margin: 0 0 10px 0; font-size: 13px; color: #0c4a6e; font-weight: bold;">Bankverbindung:</p>
+                                            <p style="margin: 5px 0; font-size: 13px; color: #0c4a6e;">
+                                                Empf&auml;nger: <strong>${this._escHtml(comp.name)}</strong><br>
+                                                IBAN: <strong>${this._escHtml(comp.iban)}</strong><br>
+                                                BIC: <strong>${this._escHtml(comp.bic)}</strong><br>
+                                                Bank: ${this._escHtml(comp.bankName)}<br>
+                                                Verwendungszweck: <strong>${this._escHtml(rechnung.id || rechnung.nummer)}</strong>
+                                            </p>
+                                        </div>
+
+                                        <p style="margin: 20px 0; font-size: 14px; line-height: 1.6; color: #475569;">
+                                            Wir bitten um &Uuml;berweisung innerhalb der n&auml;chsten 7 Tage. Sollte sich Ihre Zahlung
+                                            mit diesem Schreiben &uuml;berschnitten haben, betrachten Sie diese Erinnerung bitte als gegenstandslos.
+                                        </p>
+
+                                        <p style="margin: 30px 0 0 0; font-size: 14px;">
+                                            Mit freundlichen Gr&uuml;&szlig;en<br>
+                                            <strong>${this._escHtml(comp.name)}</strong>
+                                        </p>
+
+                                        <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;">
+                                            Bei Fragen erreichen Sie uns unter ${comp.phone} oder ${comp.email}
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr><td>${this.getFooter()}</td></tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `;
+
+        return {
+            subject: `Zahlungserinnerung: Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${this._escHtml(comp.name)}`,
+            html: html
         };
     }
 

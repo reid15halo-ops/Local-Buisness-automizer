@@ -26,7 +26,14 @@ class FragebogenImportUI {
         if (document.getElementById('fragebogen-import-btn')) {return;}
 
         const wrapper = document.createElement('div');
-        wrapper.className = 'fragebogen-overlay';
+        wrapper.className = 'fragebogen-import-wrapper';
+        wrapper.style.cssText = 'text-align:center; margin-top:16px;';
+        wrapper.innerHTML = `
+            <button type="button" id="fragebogen-import-btn" class="btn btn-secondary"
+                    style="font-size:13px; padding:8px 18px; border-radius:8px; cursor:pointer;">
+                Daten aus Aufnahmebogen importieren
+            </button>
+        `;
 
         wizardBody.appendChild(wrapper);
 

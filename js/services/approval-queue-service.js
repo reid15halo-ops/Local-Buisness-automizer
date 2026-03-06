@@ -15,6 +15,11 @@
    ============================================ */
 
 class ApprovalQueueService {
+    _escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     constructor() {
         /** @type {Object[]} In-memory approval queue */
         this._queue = [];
@@ -711,8 +716,8 @@ class ApprovalQueueService {
             <div class="approval-card-item" onclick="window.approvalQueueService._showCard('${item.id}')">
                 <div class="approval-card-icon">${typeIcon}</div>
                 <div class="approval-card-content">
-                    <div class="approval-card-title">${item.title}</div>
-                    <div class="approval-card-summary">${item.summary}</div>
+                    <div class="approval-card-title">${this._escapeHtml(item.title)}</div>
+                    <div class="approval-card-summary">${this._escapeHtml(item.summary)}</div>
                     <div class="approval-card-meta">
                         <span class="approval-type-badge approval-type-${item.type}">${typeLabel}</span>
                         <span class="approval-confidence">${trafficLight} ${confidence}% Konfidenz</span>

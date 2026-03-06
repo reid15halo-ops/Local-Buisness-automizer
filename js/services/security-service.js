@@ -352,7 +352,7 @@ class SecurityService {
         };
 
         // Log to console in development
-        if (process.env.NODE_ENV !== 'production') {
+        if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
             console.warn('[Security Event]', logEntry);
         }
 

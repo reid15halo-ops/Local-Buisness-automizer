@@ -117,8 +117,8 @@ services:
       EXECUTIONS_DATA_MAX_AGE: 336        # 14 days in hours
       EXECUTIONS_DATA_PRUNE_MAX_COUNT: 10000
       # Timezone
-      GENERIC_TIMEZONE: Europe/London
-      TZ: Europe/London
+      GENERIC_TIMEZONE: Europe/Berlin
+      TZ: Europe/Berlin
       # Prevent n8n from phoning home
       N8N_DIAGNOSTICS_ENABLED: "false"
       N8N_VERSION_NOTIFICATIONS_ENABLED: "false"

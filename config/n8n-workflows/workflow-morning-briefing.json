@@ -1,0 +1,425 @@
+{
+  "name": "Tagesbriefing (Morning Briefing)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        },
+        "timezone": "Europe/Berlin"
+      },
+      "id": "node-schedule-trigger",
+      "name": "Daily 07:00 Berlin",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Runs every day at 07:00 Europe/Berlin. CRON: 0 7 * * *"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "rechnungen",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "status=eq.offen"
+      },
+      "id": "node-get-overdue",
+      "name": "SELECT Offene Rechnungen",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 180],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "continueOnFail": true,
+      "notes": "Fetches all open invoices from rechnungen table. Columns: id, status, brutto, created_at, zahlungsziel_tage, kunde_name, mahnstufe."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "anfragen",
+        "returnAll": false,
+        "limit": 20,
+        "filterType": "string",
+        "filterString": "status=eq.neu"
+      },
+      "id": "node-get-anfragen",
+      "name": "SELECT Neue Anfragen",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 340],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "continueOnFail": true,
+      "notes": "Fetches new inquiries with status=neu. Columns: id, kunde_name, leistungsart, beschreibung, status, created_at."
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "auftraege",
+        "returnAll": false,
+        "limit": 50,
+        "filterType": "string",
+        "filterString": "status=in.(aktiv,in_bearbeitung,laufend)"
+      },
+      "id": "node-get-auftraege",
+      "name": "SELECT Aktive Auftraege",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 500],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "continueOnFail": true,
+      "notes": "Fetches active orders. Columns: id, status, kunde_name, leistungsart."
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "node-merge-data",
+      "name": "Merge All Data",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [700, 340]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gather data from all three queries\nconst rechnungen = $('SELECT Offene Rechnungen').all().map(i => i.json);\nconst anfragen = $('SELECT Neue Anfragen').all().map(i => i.json);\nconst auftraege = $('SELECT Aktive Auftraege').all().map(i => i.json);\n\nconst today = new Date();\nconst todayStr = today.toISOString().split('T')[0];\n\n// Calculate overdue invoices\nconst overdueInvoices = rechnungen.filter(r => {\n  if (r.created_at && r.zahlungsziel_tage) {\n    const created = new Date(r.created_at);\n    const due = new Date(created.getTime() + (r.zahlungsziel_tage || 14) * 86400000);\n    return due < today;\n  }\n  return false;\n});\n\nconst overdueTotal = overdueInvoices.reduce((sum, r) => sum + (parseFloat(r.brutto) || 0), 0);\nconst openTotal = rechnungen.reduce((sum, r) => sum + (parseFloat(r.brutto) || 0), 0);\n\n// Build summary object\nconst summary = {\n  date: todayStr,\n  overdue_count: overdueInvoices.length,\n  overdue_total: Math.round(overdueTotal * 100) / 100,\n  open_invoices_count: rechnungen.length,\n  open_invoices_total: Math.round(openTotal * 100) / 100,\n  new_inquiries_count: anfragen.length,\n  new_inquiries: anfragen.slice(0, 5).map(a => ({\n    kunde: a.kunde_name || 'Unbekannt',\n    leistung: a.leistungsart || a.beschreibung || ''\n  })),\n  active_orders_count: auftraege.length,\n  overdue_items: overdueInvoices.slice(0, 5).map(r => ({\n    id: r.id,\n    kunde: r.kunde_name || 'Unbekannt',\n    betrag: r.brutto,\n    mahnstufe: r.mahnstufe || 0\n  }))\n};\n\nreturn [{ json: summary }];"
+      },
+      "id": "node-build-summary",
+      "name": "Build Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 340],
+      "notes": "Aggregates data from all Supabase queries into a structured summary object for AI processing."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env['OLLAMA_BASE_URL'] || 'http://172.19.0.1:11434' }}/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $env['OLLAMA_MODEL'] || 'mistral-small', messages: [ { role: 'system', content: 'Du bist ein Business-Assistent fuer einen deutschen Handwerksbetrieb. Erstelle ein kurzes, professionelles Tagesbriefing auf Deutsch. Maximal 8 Saetze. Beginne mit einer Begruessung. Erwaehne die wichtigsten Kennzahlen und gib 1-2 Handlungsempfehlungen.' }, { role: 'user', content: 'Erstelle das Tagesbriefing fuer heute (' + $json.date + '):\\n\\nUeberfaellige Rechnungen: ' + $json.overdue_count + ' (Gesamt: ' + $json.overdue_total + ' EUR)\\nOffene Rechnungen: ' + $json.open_invoices_count + ' (Gesamt: ' + $json.open_invoices_total + ' EUR)\\nNeue Anfragen: ' + $json.new_inquiries_count + '\\nAktive Auftraege: ' + $json.active_orders_count + '\\n\\nDetails ueberfaellige Rechnungen: ' + JSON.stringify($json.overdue_items) + '\\nNeue Anfragen: ' + JSON.stringify($json.new_inquiries) } ], stream: false, options: { temperature: 0.4, num_predict: 1024 } }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "node-ollama-briefing",
+      "name": "Generate Briefing (Ollama/Mistral)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 340],
+      "continueOnFail": true,
+      "notes": "Generates natural language briefing via Ollama. Uses OLLAMA_BASE_URL and OLLAMA_MODEL env vars. Fallback: mistral-small on Docker bridge IP."
+    },
+    {
+      "parameters": {
+        "jsCode": "const summary = $('Build Summary').first().json;\nconst ollamaResponse = $input.first().json;\n\n// Extract AI text from Ollama response\nlet aiText = '';\ntry {\n  aiText = ollamaResponse.message ? ollamaResponse.message.content : '';\n} catch (e) {\n  aiText = '';\n}\n\n// Build fallback text if AI failed\nif (!aiText || aiText.length < 20) {\n  aiText = 'Guten Morgen! Hier ist Ihr Tagesbriefing fuer den ' + summary.date + '.\\n\\n';\n  aiText += 'Offene Rechnungen: ' + summary.open_invoices_count + ' (' + summary.open_invoices_total + ' EUR)\\n';\n  if (summary.overdue_count > 0) {\n    aiText += 'Davon ueberfaellig: ' + summary.overdue_count + ' (' + summary.overdue_total + ' EUR)\\n';\n  }\n  aiText += 'Neue Anfragen: ' + summary.new_inquiries_count + '\\n';\n  aiText += 'Aktive Auftraege: ' + summary.active_orders_count + '\\n';\n  if (summary.overdue_count > 0) {\n    aiText += '\\nEmpfehlung: Ueberfaellige Rechnungen zeitnah mahnen.';\n  }\n  if (summary.new_inquiries_count > 0) {\n    aiText += '\\nEmpfehlung: Neue Anfragen heute bearbeiten.';\n  }\n}\n\n// Build email HTML\nconst html = `<html>\n<head><style>\n  body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }\n  .header { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 24px 30px; }\n  .content { padding: 24px 30px; }\n  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 16px 0; }\n  .kpi { background: #f8f9fa; border-radius: 8px; padding: 12px; text-align: center; }\n  .kpi-value { font-size: 24px; font-weight: bold; color: #6366f1; }\n  .kpi-label { font-size: 12px; color: #666; }\n  .alert { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 16px; margin: 8px 0; border-radius: 4px; }\n  .briefing-text { background: #f0f4ff; padding: 16px; border-radius: 8px; margin: 16px 0; white-space: pre-line; }\n  .footer { background: #f5f5f5; padding: 16px 30px; text-align: center; font-size: 12px; color: #888; }\n</style></head>\n<body>\n  <div class=\"header\">\n    <h1>Tagesbriefing - ${summary.date}</h1>\n    <p>FreyAI Visions - Automatische Zusammenfassung</p>\n  </div>\n  <div class=\"content\">\n    <div class=\"kpi-grid\">\n      <div class=\"kpi\"><div class=\"kpi-value\">${summary.open_invoices_count}</div><div class=\"kpi-label\">Offene Rechnungen</div></div>\n      <div class=\"kpi\"><div class=\"kpi-value\" style=\"color: ${summary.overdue_count > 0 ? '#dc3545' : '#22c55e'}\">${summary.overdue_count}</div><div class=\"kpi-label\">Ueberfaellig</div></div>\n      <div class=\"kpi\"><div class=\"kpi-value\">${summary.new_inquiries_count}</div><div class=\"kpi-label\">Neue Anfragen</div></div>\n      <div class=\"kpi\"><div class=\"kpi-value\">${summary.active_orders_count}</div><div class=\"kpi-label\">Aktive Auftraege</div></div>\n      <div class=\"kpi\"><div class=\"kpi-value\">${summary.open_invoices_total.toFixed(0)} EUR</div><div class=\"kpi-label\">Offene Summe</div></div>\n      <div class=\"kpi\"><div class=\"kpi-value\" style=\"color: ${summary.overdue_total > 0 ? '#dc3545' : '#22c55e'}\">${summary.overdue_total.toFixed(0)} EUR</div><div class=\"kpi-label\">Ueberfaellig</div></div>\n    </div>\n    ${summary.overdue_count > 0 ? '<div class=\"alert\">Achtung: ' + summary.overdue_count + ' Rechnung(en) ueberfaellig (' + summary.overdue_total.toFixed(2) + ' EUR)</div>' : ''}\n    <div class=\"briefing-text\">${aiText.replace(/\\n/g, '<br>')}</div>\n  </div>\n  <div class=\"footer\">\n    <p>Automatisch generiert von FreyAI Visions | ${new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' })}</p>\n  </div>\n</body>\n</html>`;\n\nreturn [{ json: {\n  summary: summary,\n  ai_text: aiText,\n  email_html: html,\n  subject: 'Tagesbriefing ' + summary.date + ' - ' + summary.open_invoices_count + ' offene Rechnungen, ' + summary.new_inquiries_count + ' neue Anfragen'\n} }];"
+      },
+      "id": "node-format-output",
+      "name": "Format Briefing Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1420, 340],
+      "notes": "Formats the AI-generated briefing into email HTML and extracts subject line. Falls back to structured text if AI generation failed."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $env['SUPABASE_PROJECT_REF'] }}.supabase.co/functions/v1/send-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env['SUPABASE_SERVICE_ROLE_KEY'] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env['SUPABASE_ANON_KEY'] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $env['OWNER_EMAIL'] || 'kontakt@freyaivisions.de' }}\",\n  \"subject\": \"{{ $json.subject }}\",\n  \"body\": {{ JSON.stringify($json.email_html) }}\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-send-email",
+      "name": "Send Briefing Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1660, 240],
+      "continueOnFail": true,
+      "notes": "Sends briefing email via Supabase send-email edge function. Requires SUPABASE_PROJECT_REF, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY, OWNER_EMAIL env vars."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "telegram-configured",
+              "leftValue": "={{ $env['TELEGRAM_BOT_TOKEN'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-check-telegram",
+      "name": "Telegram konfiguriert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1660, 440],
+      "notes": "Only send Telegram message if TELEGRAM_BOT_TOKEN env var is set."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env['TELEGRAM_BOT_TOKEN'] }}/sendMessage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chat_id\": \"{{ $env['TELEGRAM_CTO_CHAT_ID'] }}\",\n  \"text\": \"<b>Tagesbriefing {{ $node['Format Briefing Output'].json.summary.date }}</b>\\n\\n<b>Offene Rechnungen:</b> {{ $node['Format Briefing Output'].json.summary.open_invoices_count }} ({{ $node['Format Briefing Output'].json.summary.open_invoices_total }} EUR)\\n<b>Ueberfaellig:</b> {{ $node['Format Briefing Output'].json.summary.overdue_count }} ({{ $node['Format Briefing Output'].json.summary.overdue_total }} EUR)\\n<b>Neue Anfragen:</b> {{ $node['Format Briefing Output'].json.summary.new_inquiries_count }}\\n<b>Aktive Auftraege:</b> {{ $node['Format Briefing Output'].json.summary.active_orders_count }}\\n\\n{{ $node['Format Briefing Output'].json.ai_text.substring(0, 500) }}\",\n  \"parse_mode\": \"HTML\",\n  \"disable_notification\": false\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-telegram-send",
+      "name": "Send Telegram Briefing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1900, 380],
+      "continueOnFail": true,
+      "notes": "Sends condensed briefing to Telegram. Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CTO_CHAT_ID env vars. Uses HTML parse_mode."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "action",
+              "fieldValue": "morning_briefing_sent"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "owner"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ date: $node['Format Briefing Output'].json.summary.date, overdue_count: $node['Format Briefing Output'].json.summary.overdue_count, overdue_total: $node['Format Briefing Output'].json.summary.overdue_total, new_inquiries: $node['Format Briefing Output'].json.summary.new_inquiries_count, active_orders: $node['Format Briefing Output'].json.summary.active_orders_count, open_invoices: $node['Format Briefing Output'].json.summary.open_invoices_count, open_total: $node['Format Briefing Output'].json.summary.open_invoices_total, channels: ['email', $env['TELEGRAM_BOT_TOKEN'] ? 'telegram' : null].filter(Boolean) }) }}"
+            }
+          ]
+        }
+      },
+      "id": "node-log-briefing",
+      "name": "INSERT automation_log (briefing)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1900, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Logs briefing generation to automation_log for audit trail."
+    }
+  ],
+  "connections": {
+    "Daily 07:00 Berlin": {
+      "main": [
+        [
+          {
+            "node": "SELECT Offene Rechnungen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SELECT Neue Anfragen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SELECT Aktive Auftraege",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SELECT Offene Rechnungen": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SELECT Neue Anfragen": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "SELECT Aktive Auftraege": {
+      "main": [
+        [
+          {
+            "node": "Merge All Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge All Data": {
+      "main": [
+        [
+          {
+            "node": "Build Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Summary": {
+      "main": [
+        [
+          {
+            "node": "Generate Briefing (Ollama/Mistral)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Briefing (Ollama/Mistral)": {
+      "main": [
+        [
+          {
+            "node": "Format Briefing Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Briefing Output": {
+      "main": [
+        [
+          {
+            "node": "Send Briefing Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram konfiguriert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Briefing Email": {
+      "main": [
+        [
+          {
+            "node": "INSERT automation_log (briefing)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram konfiguriert?": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Briefing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["briefing", "morning", "daily", "reporting"],
+  "triggerCount": 1,
+  "updatedAt": "2026-03-06T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Tagesbriefing (Morning Briefing)\n\n### Schedule\nEvery day at 07:00 Europe/Berlin\n\n### Flow\n1. Cron trigger at 07:00\n2. Parallel Supabase queries: rechnungen (offen), anfragen (neu), auftraege (aktiv)\n3. Code node aggregates data into summary\n4. Ollama/Mistral generates natural language briefing\n5. Code node formats email HTML with KPI grid\n6. Send email via Supabase send-email edge function\n7. Conditionally send Telegram summary if configured\n8. Log to automation_log\n\n### Setup Required\n1. **Credentials**: 'Supabase API' credential in n8n\n2. **Env Vars**:\n   - SUPABASE_PROJECT_REF, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_ANON_KEY\n   - OLLAMA_BASE_URL (default: http://172.19.0.1:11434)\n   - OLLAMA_MODEL (default: mistral-small)\n   - OWNER_EMAIL (default: kontakt@freyaivisions.de)\n   - TELEGRAM_BOT_TOKEN, TELEGRAM_CTO_CHAT_ID (optional)\n3. **Edge Functions**: 'send-email' deployed to Supabase\n4. **Ollama**: Accessible from n8n Docker network with mistral-small model pulled"
+}

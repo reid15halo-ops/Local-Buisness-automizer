@@ -158,18 +158,11 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
                     throw new Error('No Supabase session');
                 }
             } catch {
-                console.warn('Supabase session not available for Gemini proxy, falling back to direct API');
-                if (!this.config.apiKey) {
-                    throw new Error('No Gemini API key configured');
-                }
-                url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.config.apiKey}`;
+                throw new Error('API key exposure prevented — Supabase session required. Configure Supabase Edge Function proxy.');
             }
         } else if (this.config.apiKey) {
-            // Direct API call (local dev mode)
-            url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${this.config.apiKey}`;
-            if (!this.useGeminiProxy) {
-                console.warn('[LLM] Using direct Gemini API key - consider configuring Supabase for production');
-            }
+            // Direct API calls with key in URL are blocked — use Edge Function proxy
+            throw new Error('API key exposure prevented — direct Gemini API calls with key in URL are not allowed. Use Supabase Edge Function proxy.');
         } else {
             throw new Error('Gemini not configured: neither proxy nor API key available');
         }

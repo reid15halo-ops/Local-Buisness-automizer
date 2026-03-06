@@ -307,7 +307,7 @@ class WorkflowService {
     // Start the workflow engine (for scheduled workflows)
     startEngine() {
         // Check scheduled workflows every minute
-        setInterval(() => {
+        this.engineInterval = setInterval(() => {
             if (!this.isRunning) {return;}
             this.checkScheduledWorkflows();
         }, 60000);

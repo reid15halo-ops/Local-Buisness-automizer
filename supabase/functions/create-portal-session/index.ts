@@ -55,9 +55,28 @@ serve(async (req) => {
 
         const { returnUrl } = await req.json()
 
+        // Validate returnUrl to prevent open redirects
+        const allowedOrigins = [
+            'https://app.freyaivisions.de',
+            'https://freyaivisions.de',
+            Deno.env.get('ALLOWED_ORIGIN') || '',
+        ].filter(Boolean)
+
+        let safeReturnUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de'
+        if (returnUrl) {
+            try {
+                const parsed = new URL(returnUrl)
+                if (allowedOrigins.some(origin => parsed.origin === origin)) {
+                    safeReturnUrl = returnUrl
+                }
+            } catch {
+                // Invalid URL - use default
+            }
+        }
+
         const session = await stripe.billingPortal.sessions.create({
             customer: profile.stripe_customer_id,
-            return_url: returnUrl || Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de',
+            return_url: safeReturnUrl,
             locale: 'de',
         })
 

@@ -25,7 +25,7 @@ class SecurityBackupService {
     // =====================================================
 
     // Generate encryption key from password
-    async deriveKey(password) {
+    async deriveKey(password, salt) {
         const encoder = new TextEncoder();
         const keyMaterial = await crypto.subtle.importKey(
             'raw',
@@ -38,7 +38,7 @@ class SecurityBackupService {
         return await crypto.subtle.deriveKey(
             {
                 name: 'PBKDF2',
-                salt: crypto.getRandomValues(new Uint8Array(16)),
+                salt: salt,
                 iterations: 100000,
                 hash: 'SHA-256'
             },
@@ -52,7 +52,8 @@ class SecurityBackupService {
     // Encrypt data
     async encryptData(data, password) {
         try {
-            const key = await this.deriveKey(password);
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const key = await this.deriveKey(password, salt);
             const iv = crypto.getRandomValues(new Uint8Array(12));
             const encoder = new TextEncoder();
 
@@ -62,10 +63,11 @@ class SecurityBackupService {
                 encoder.encode(JSON.stringify(data))
             );
 
-            // Combine IV and encrypted data
-            const combined = new Uint8Array(iv.length + encrypted.byteLength);
-            combined.set(iv);
-            combined.set(new Uint8Array(encrypted), iv.length);
+            // Combine salt (16) + IV (12) + encrypted data
+            const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+            combined.set(salt);
+            combined.set(iv, salt.length);
+            combined.set(new Uint8Array(encrypted), salt.length + iv.length);
 
             return {
                 success: true,
@@ -79,11 +81,13 @@ class SecurityBackupService {
     // Decrypt data
     async decryptData(encryptedBase64, password) {
         try {
-            const key = await this.deriveKey(password);
             const combined = this.base64ToArrayBuffer(encryptedBase64);
 
-            const iv = combined.slice(0, 12);
-            const data = combined.slice(12);
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const data = combined.slice(28);
+
+            const key = await this.deriveKey(password, salt);
 
             const decrypted = await crypto.subtle.decrypt(
                 { name: 'AES-GCM', iv: iv },
@@ -211,9 +215,9 @@ class SecurityBackupService {
                 data = JSON.parse(backup.data);
             }
 
-            // Restore all data
+            // Restore all data (values were already JSON.parsed in getAllData, so re-stringify)
             for (const [key, value] of Object.entries(data)) {
-                localStorage.setItem(key, JSON.stringify(value));
+                localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
             }
 
             this.logActivity('backup_restored', { backupId: backup.id });
@@ -249,11 +253,19 @@ class SecurityBackupService {
     startAutoBackup() {
         if (!this.settings.autoBackup) {return;}
 
-        // Check backup status on load
-        setTimeout(() => this.checkAutoBackupNeeded(), 10000);
+        // Clear any existing interval to prevent leaks on re-init
+        this.stopAutoBackup();
 
-        // Check every hour
-        setInterval(() => this.checkAutoBackupNeeded(), 3600000);
+        // Check backup status on load
+        this._autoBackupTimeout = setTimeout(() => this.checkAutoBackupNeeded(), 10000);
+
+        // Check every hour (store handle for cleanup)
+        this._autoBackupInterval = setInterval(() => this.checkAutoBackupNeeded(), 3600000);
+    }
+
+    stopAutoBackup() {
+        if (this._autoBackupInterval) { clearInterval(this._autoBackupInterval); this._autoBackupInterval = null; }
+        if (this._autoBackupTimeout) { clearTimeout(this._autoBackupTimeout); this._autoBackupTimeout = null; }
     }
 
     checkAutoBackupNeeded() {
@@ -283,7 +295,6 @@ class SecurityBackupService {
     }
 
     async createAutoBackup() {
-        // Store backup in localStorage (compressed)
         const data = this.getAllData();
         const backup = {
             id: 'auto-' + Date.now(),
@@ -291,17 +302,24 @@ class SecurityBackupService {
             data: JSON.stringify(data)
         };
 
-        // Store in IndexedDB if available, otherwise localStorage
-        let existingAutoBackups; try { existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { existingAutoBackups = []; }
+        let existingAutoBackups;
+        try { existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { existingAutoBackups = []; }
         existingAutoBackups.push(backup);
 
-        // Keep last 3 auto-backups
-        while (existingAutoBackups.length > 3) {
+        // Keep only last auto-backup to prevent quota exhaustion
+        while (existingAutoBackups.length > 1) {
             existingAutoBackups.shift();
         }
 
-        localStorage.setItem('freyai_auto_backups', JSON.stringify(existingAutoBackups));
-        // Auto-backup created
+        try {
+            localStorage.setItem('freyai_auto_backups', JSON.stringify(existingAutoBackups));
+        } catch (e) {
+            console.warn('Auto-Backup fehlgeschlagen (Speicher voll):', e.message);
+            // Clear old backups and retry with just the current one
+            try {
+                localStorage.setItem('freyai_auto_backups', JSON.stringify([backup]));
+            } catch { /* quota completely exhausted */ }
+        }
     }
 
     // Get auto backups
@@ -484,7 +502,7 @@ class SecurityBackupService {
     // ACCESS CONTROL (Basic)
     // =====================================================
 
-    // PIN protection with SHA-256 + Salt
+    // PIN protection with PBKDF2 + Salt
     async setPinCode(pin) {
         const salt = this._generatePinSalt();
         const hash = await this._hashPin(pin, salt);
@@ -497,24 +515,34 @@ class SecurityBackupService {
     async verifyPin(pin) {
         if (!this.settings.pinHash) {return true;} // No PIN set
 
-        // Migrate legacy DJB2 hash (no salt) → SHA-256 + salt
+        // Migrate legacy DJB2 hash (no salt) → PBKDF2 + salt
         if (!this.settings.pinSalt) {
             const legacyHash = this._legacyHashPin(pin);
             if (legacyHash === this.settings.pinHash) {
-                await this.setPinCode(pin); // Re-hash with SHA-256
+                await this.setPinCode(pin); // Re-hash with PBKDF2
                 return true;
             }
             return false;
         }
 
         const hash = await this._hashPin(pin, this.settings.pinSalt);
-        return hash === this.settings.pinHash;
+        if (hash.length !== this.settings.pinHash.length) return false;
+        let result = 0;
+        for (let i = 0; i < hash.length; i++) {
+            result |= hash.charCodeAt(i) ^ this.settings.pinHash.charCodeAt(i);
+        }
+        return result === 0;
     }
 
     async _hashPin(pin, salt) {
         const encoder = new TextEncoder();
-        const data = encoder.encode(salt + pin);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw', encoder.encode(pin), 'PBKDF2', false, ['deriveBits']
+        );
+        const hashBuffer = await crypto.subtle.deriveBits(
+            { name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100000, hash: 'SHA-256' },
+            keyMaterial, 256
+        );
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }

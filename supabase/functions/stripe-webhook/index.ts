@@ -205,6 +205,7 @@ async function handlePaymentIntentFailed(paymentIntent: any, supabase: any) {
 
         // Record failed payment in stripe_payments
         await supabase.from('stripe_payments').insert({
+            stripe_session_id: paymentIntent.id,
             invoice_id: invoice_id,
             amount: paymentIntent.amount,
             currency: paymentIntent.currency,
@@ -251,6 +252,7 @@ async function handleChargeRefunded(charge: any, supabase: any) {
 
         // Record refund in stripe_payments
         await supabase.from('stripe_payments').insert({
+            stripe_session_id: charge.id,
             invoice_id: invoice_id,
             amount: charge.amount_refunded,
             currency: charge.currency,

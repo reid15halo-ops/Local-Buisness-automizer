@@ -479,13 +479,15 @@ function showRechnung(rechnungId) {
     if (xrBtn) {
         xrBtn.addEventListener('click', () => {
             if (!window.eInvoiceService) {
-                showToast('E-Rechnung Service nicht verfügbar', 'error');
+                showToast('E-Rechnung Service nicht verfuegbar', 'error');
                 return;
             }
             const result = window.eInvoiceService.generateXRechnung(rechnung);
             if (result.success) {
                 window.eInvoiceService.downloadXml(result.recordId);
                 showToast('XRechnung XML generiert', 'success');
+            } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
+                showToast('Validierungsfehler: ' + result.validation.errors.join(', '), 'error');
             } else {
                 showToast('XRechnung Fehler', 'error');
             }
@@ -497,7 +499,7 @@ function showRechnung(rechnungId) {
     if (zfBtn) {
         zfBtn.addEventListener('click', async () => {
             if (!window.eInvoiceService) {
-                showToast('E-Rechnung Service nicht verfügbar', 'error');
+                showToast('E-Rechnung Service nicht verfuegbar', 'error');
                 return;
             }
             showToast('ZUGFeRD wird generiert...', 'info');
@@ -507,7 +509,9 @@ function showRechnung(rechnungId) {
                 showToast('ZUGFeRD PDF generiert', 'success');
             } else if (result.success) {
                 window.eInvoiceService.downloadXml(result.recordId);
-                showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');
+                showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfuegbar)', 'warning');
+            } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
+                showToast('Validierungsfehler: ' + result.validation.errors.join(', '), 'error');
             } else {
                 showToast('ZUGFeRD Fehler', 'error');
             }
@@ -586,6 +590,8 @@ function initRechnungActions() {
                     if (result.success) {
                         window.eInvoiceService.downloadXml(result.recordId);
                         if (window.showToast) {showToast('XRechnung XML generiert', 'success');}
+                    } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
+                        if (window.showToast) {showToast('Validierungsfehler:\n' + result.validation.errors.join('\n'), 'error');}
                     } else {
                         if (window.showToast) {showToast('XRechnung Fehler', 'error');}
                     }
@@ -596,13 +602,15 @@ function initRechnungActions() {
             case 'zugferd':
                 if (window.eInvoiceService) {
                     if (window.showToast) {showToast('ZUGFeRD wird generiert…', 'info');}
-                    const result = await window.eInvoiceService.generateZugferd(rechnung);
-                    if (result.success && result.pdfBytes) {
-                        window.eInvoiceService.downloadZugferdPdf(result.recordId);
+                    const zfResult = await window.eInvoiceService.generateZugferd(rechnung);
+                    if (zfResult.success && zfResult.pdfBytes) {
+                        window.eInvoiceService.downloadZugferdPdf(zfResult.recordId);
                         if (window.showToast) {showToast('ZUGFeRD PDF generiert', 'success');}
-                    } else if (result.success) {
-                        window.eInvoiceService.downloadXml(result.recordId);
+                    } else if (zfResult.success) {
+                        window.eInvoiceService.downloadXml(zfResult.recordId);
                         if (window.showToast) {showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');}
+                    } else if (zfResult.validation && zfResult.validation.errors && zfResult.validation.errors.length > 0) {
+                        if (window.showToast) {showToast('Validierungsfehler:\n' + zfResult.validation.errors.join('\n'), 'error');}
                     } else {
                         if (window.showToast) {showToast('ZUGFeRD Fehler', 'error');}
                     }

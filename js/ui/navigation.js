@@ -198,6 +198,9 @@ class NavigationController {
             case 'zeiterfassung':
                 if (window.renderTimeTracking) { window.renderTimeTracking(); }
                 break;
+            case 'field-mode':
+                if (window.fieldModeUI) { window.fieldModeUI.render(); }
+                break;
             case 'gantt':
                 if (window.renderGanttFullView) { window.renderGanttFullView(); }
                 break;

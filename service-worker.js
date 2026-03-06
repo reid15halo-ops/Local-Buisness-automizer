@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v21';
+const CACHE_NAME = 'freyai-visions-v26';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -22,14 +22,21 @@ const STATIC_ASSETS = [
     '/index.html',
     '/auth.html',
     '/landing.html',
+    '/js/landing.js',
+    '/impressum.html',
+    '/datenschutz.html',
+    '/agb.html',
     '/offline.html',
     '/booking.html',
-    '',
-    
-    
+
+
+    // --- Config ---
+    '/config/app-config.js',
 
     // --- CSS files ---
     '/css/core.css',
+    '/css/landing.css',
+    '/css/legal.css',
     '/css/components.css',
     '/css/fonts.css',
     '/css/purchase-orders.css',
@@ -39,6 +46,8 @@ const STATIC_ASSETS = [
     '/css/boomer-guide.css',
     '/css/field-app.css',
     '/css/field-app-mobile.css',
+    '/css/field-mode.css',
+    '/css/responsive.css',
     '/css/aufmass.css',
     '/css/customer-portal.css',
     '/css/dashboard-widgets.css',
@@ -67,6 +76,7 @@ const STATIC_ASSETS = [
     '/js/modules/rechnungen.js',
     '/js/modules/wareneingang.js',
     '/js/modules/utils.js',
+    '/js/modules/support.js',
 
     // --- JS Services ---
     '/js/services/activity-indicator-service.js',
@@ -104,6 +114,7 @@ const STATIC_ASSETS = [
     '/js/services/email-template-service.js',
     '/js/services/error-display-service.js',
     '/js/services/field-app-service.js',
+    '/js/services/voice-input-service.js',
     '/js/services/form-validation-service.js',
     '/js/services/error-handler.js',
     '/js/services/error-handler-utils.js',
@@ -170,6 +181,9 @@ const STATIC_ASSETS = [
     '/js/services/company-settings-service.js',
     '/js/services/conflict-resolution-service.js',
     '/js/services/customer-portal-service.js',
+    '/js/services/gobd-compliance-service.js',
+    '/js/services/bautagebuch-service.js',
+    '/js/services/morning-briefing-service.js',
     '/js/services/dashboard-widget-service.js',
     '/js/services/document-template-service.js',
     '/js/services/fragebogen-import-service.js',
@@ -179,6 +193,8 @@ const STATIC_ASSETS = [
     '/js/services/team-management-service.js',
     '/js/services/tenant-service.js',
     '/js/services/whatsapp-service.js',
+    '/js/services/call-summary-service.js',
+    '/js/services/setup-validation-service.js',
 
     // --- JS UI Components ---
     '/js/ui/admin-panel-ui.js',
@@ -188,6 +204,7 @@ const STATIC_ASSETS = [
     '/js/ui/boomer-guide-ui.js',
     '/js/ui/excel-import-wizard.js',
     '/js/ui/field-app-ui.js',
+    '/js/ui/field-mode-ui.js',
     '/js/ui/gantt-timeline-ui.js',
     '/js/ui/keyboard-shortcuts.js',
     '/js/ui/ki-transparency-ui.js',
@@ -213,12 +230,17 @@ const STATIC_ASSETS = [
     // --- PWA Manifest & Icons ---
     '/manifest.json',
     '/icons/icon-192x192.png',
-    '/icons/icon-512x512.png'
+    '/icons/icon-512x512.png',
+    '/favicon.ico',
+    '/favicon-32x32.png',
+    '/apple-touch-icon.png'
 ];
 
 // External CDN resources to cache
 const CDN_ASSETS = [
-    'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js'
+    'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js',
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js'
 ];
 
 // Install event - cache static assets
@@ -231,7 +253,7 @@ self.addEventListener('install', (event) => {
                 console.log('[SW] Caching static assets');
                 // Cache static assets (some may fail, that's ok)
                 return Promise.allSettled(
-                    STATIC_ASSETS.map(url =>
+                    [...STATIC_ASSETS, ...CDN_ASSETS].map(url =>
                         cache.add(url).catch(err => console.log(`[SW] Failed to cache: ${url}`))
                     )
                 );
@@ -384,12 +406,18 @@ async function syncOfflineData() {
 
 async function syncInvoices() {
     console.log('[SW] Syncing invoices...');
-    // Sync invoices with cloud/DATEV
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+        client.postMessage({ type: 'SYNC_INVOICES', timestamp: new Date().toISOString() });
+    });
 }
 
 async function syncTimeEntries() {
     console.log('[SW] Syncing time entries...');
-    // Sync time tracking data
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+        client.postMessage({ type: 'SYNC_TIME_ENTRIES', timestamp: new Date().toISOString() });
+    });
 }
 
 // Push notifications

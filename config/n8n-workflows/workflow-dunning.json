@@ -453,17 +453,6 @@
         ]
       ]
     },
-    "Split In Batches": {
-      "main": [
-        [
-          {
-            "node": "Calculate Days Overdue",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Calculate Days Overdue": {
       "main": [
         [
@@ -557,6 +546,24 @@
         [
           {
             "node": "INSERT automation_log (dunning)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [
+          {
+            "node": "Calculate Days Overdue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Handler: Log to automation_log",
             "type": "main",
             "index": 0
           }

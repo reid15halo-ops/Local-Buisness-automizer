@@ -23,7 +23,12 @@ class DashboardWidgetService {
             { id: 'overdue-invoices', name: '\u00DCberf\u00E4llige Rechnungen', category: 'finance', size: 'medium', icon: '\u26A0\uFE0F' },
             { id: 'recent-anfragen', name: 'Neue Anfragen', category: 'sales', size: 'medium', icon: '\u{1F4E8}' },
             { id: 'material-alerts', name: 'Lager-Warnungen', category: 'inventory', size: 'small', icon: '\u{1F4E6}' },
-            { id: 'quick-chart', name: 'Umsatz-Chart', category: 'charts', size: 'large', icon: '\u{1F4CA}' }
+            { id: 'quick-chart', name: 'Umsatz-Chart', category: 'charts', size: 'large', icon: '\u{1F4CA}' },
+            { id: 'morning-briefing', name: 'Tagesbriefing', category: 'feed', size: 'large', icon: '\u2600\uFE0F' },
+            { id: 'team-status', name: 'Team-Status', category: 'schedule', size: 'medium', icon: '\u{1F465}' },
+            { id: 'conversion-rate', name: 'Conversion-Rate', category: 'sales', size: 'small', icon: '\u{1F4C9}' },
+            { id: 'cashflow-forecast', name: 'Cashflow-Prognose', category: 'finance', size: 'large', icon: '\u{1F52E}' },
+            { id: 'overdue-tasks', name: 'Offene Aufgaben', category: 'schedule', size: 'medium', icon: '\u2705' }
         ];
 
         // Default layout matching the current static dashboard
@@ -279,6 +284,16 @@ class DashboardWidgetService {
                     return this._getMaterialAlerts();
                 case 'quick-chart':
                     return this._getQuickChartData(state);
+                case 'morning-briefing':
+                    return this._getMorningBriefing(state);
+                case 'team-status':
+                    return this._getTeamStatus();
+                case 'conversion-rate':
+                    return this._getConversionRate(state);
+                case 'cashflow-forecast':
+                    return this._getCashflowForecast();
+                case 'overdue-tasks':
+                    return this._getOverdueTasks(state);
                 default:
                     return { error: true, message: 'Unbekannter Widget-Typ' };
             }
@@ -543,6 +558,126 @@ class DashboardWidgetService {
             title: 'Umsatz (letzte 6 Monate)',
             data: months,
             maxValue: Math.max(...months.map(m => m.value), 1000)
+        };
+    }
+
+    // --- New widget data providers ---
+
+    _getMorningBriefing(state) {
+        if (window.morningBriefingService) {
+            try {
+                const briefing = window.morningBriefingService.getCachedBriefing();
+                if (briefing) {
+                    return {
+                        type: 'briefing',
+                        greeting: briefing.greeting,
+                        summary: briefing.summary,
+                        alerts: briefing.alerts || [],
+                        recommendations: briefing.recommendations || [],
+                        generatedAt: briefing.generatedAt
+                    };
+                }
+            } catch { /* fall through */ }
+        }
+        // Fallback: basic summary
+        const rechnungen = state.rechnungen || [];
+        const anfragen = state.anfragen || [];
+        const openInvoices = rechnungen.filter(r => r.status === 'offen').length;
+        const newInquiries = anfragen.filter(a => a.status === 'neu').length;
+        return {
+            type: 'briefing',
+            greeting: 'Guten Morgen!',
+            summary: {
+                overdueInvoices: { count: rechnungen.filter(r => r.status !== 'bezahlt' && r.faelligkeitsdatum && new Date(r.faelligkeitsdatum) < new Date()).length },
+                newInquiries: { count: newInquiries },
+                openInvoices: { count: openInvoices }
+            },
+            alerts: [],
+            generatedAt: new Date().toISOString()
+        };
+    }
+
+    _getTeamStatus() {
+        if (!window.teamManagementService?.hasTeam()) {
+            return { type: 'list', items: [], emptyMessage: 'Kein Team eingerichtet.' };
+        }
+        try {
+            const schedule = window.teamManagementService.getTeamSchedule();
+            return {
+                type: 'list',
+                items: schedule.map(s => ({
+                    icon: s.roleIcon,
+                    title: s.memberName,
+                    subTitle: `${s.roleLabel} \u2022 ${s.isClockedIn ? 'Eingestempelt' : 'Nicht aktiv'}`,
+                    status: s.isClockedIn ? 'active' : 'inactive',
+                    hoursToday: Math.round(s.totalHoursToday * 10) / 10,
+                    activeJobs: s.activeJobs.length
+                })),
+                emptyMessage: 'Kein Team eingerichtet.'
+            };
+        } catch {
+            return { type: 'list', items: [], emptyMessage: 'Team-Daten nicht verf\u00FCgbar.' };
+        }
+    }
+
+    _getConversionRate(state) {
+        const anfragen = state.anfragen || [];
+        const angebote = state.angebote || [];
+        const auftraege = state.auftraege || [];
+        const totalAnfragen = anfragen.length || 1;
+        const totalAngebote = angebote.length;
+        const totalAuftraege = auftraege.length;
+        const anfrageToAngebot = Math.round((totalAngebote / totalAnfragen) * 100);
+        const angebotToAuftrag = totalAngebote ? Math.round((totalAuftraege / totalAngebote) * 100) : 0;
+        return {
+            type: 'kpi',
+            value: `${angebotToAuftrag}%`,
+            label: 'Angebot \u2192 Auftrag',
+            subValue: `Anfrage \u2192 Angebot: ${anfrageToAngebot}%`,
+            isFormattedValue: true
+        };
+    }
+
+    _getCashflowForecast() {
+        if (!window.cashFlowService) {
+            return { type: 'chart', title: 'Cashflow-Prognose', data: [], maxValue: 1000 };
+        }
+        try {
+            const forecasts = window.cashFlowService.generateForecast(6);
+            return {
+                type: 'chart',
+                title: 'Cashflow-Prognose (6 Monate)',
+                data: forecasts.map(f => ({
+                    label: f.month.split(' ')[0].substring(0, 3),
+                    value: f.projectedBalance,
+                    status: f.status
+                })),
+                maxValue: Math.max(...forecasts.map(f => Math.abs(f.projectedBalance)), 1000)
+            };
+        } catch {
+            return { type: 'chart', title: 'Cashflow-Prognose', data: [], maxValue: 1000 };
+        }
+    }
+
+    _getOverdueTasks(state) {
+        const aufgaben = state.aufgaben || state.tasks || [];
+        const overdue = aufgaben.filter(t => {
+            if (t.status === 'erledigt' || t.status === 'done') { return false; }
+            if (!t.dueDate && !t.faelligkeitsdatum) { return false; }
+            const due = new Date(t.dueDate || t.faelligkeitsdatum);
+            return !isNaN(due.getTime()) && due < new Date();
+        });
+        return {
+            type: 'list',
+            items: overdue.slice(0, 8).map(t => ({
+                icon: '\u2705',
+                title: t.title || t.titel || 'Aufgabe',
+                subTitle: t.priority || t.prioritaet || '',
+                time: t.dueDate || t.faelligkeitsdatum,
+                timeFormatted: `F\u00E4llig: ${this._formatDate(t.dueDate || t.faelligkeitsdatum)}`,
+                status: 'danger'
+            })),
+            emptyMessage: 'Keine \u00FCberf\u00E4lligen Aufgaben.'
         };
     }
 

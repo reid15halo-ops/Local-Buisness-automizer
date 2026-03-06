@@ -540,7 +540,7 @@ class WorkflowBuilderUI {
             g.innerHTML = `
                 <polygon points="${halfSize},0 ${size},${halfSize} ${halfSize},${size} 0,${halfSize}"
                     class="wfb-node-shape" fill="var(--bg-card)" stroke="${color}" stroke-width="${isSelected ? 2.5 : 1.5}"
-                    filter="url(#wfb-shadow)" ${isSelected ? 'filter="url(#wfb-glow)"' : ''}/>
+                    filter="url(#${isSelected ? 'wfb-glow' : 'wfb-shadow'})"/>
                 <svg x="${halfSize - 8}" y="${halfSize - 16}" width="16" height="16" viewBox="0 0 24 24" fill="${color}">
                     <path d="${icon}"/>
                 </svg>

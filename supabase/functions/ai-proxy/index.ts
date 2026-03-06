@@ -64,7 +64,7 @@ serve(async (req) => {
         if (!geminiApiKey) {
             console.error('GEMINI_API_KEY environment variable not configured')
             return new Response(
-                JSON.stringify({ error: 'Server configuration error: GEMINI_API_KEY not set' }),
+                JSON.stringify({ error: 'AI-Service vorübergehend nicht verfügbar' }),
                 { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }

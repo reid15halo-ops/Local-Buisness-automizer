@@ -64,16 +64,16 @@ class AdminPanelService {
         if (!adminCreds.username || adminCreds.username.trim().length < 3) {
             errors.push('Admin-Benutzername muss mindestens 3 Zeichen lang sein.');
         }
-        if (!adminCreds.password || adminCreds.password.trim().length < 6) {
-            errors.push('Admin-Passwort muss mindestens 6 Zeichen lang sein.');
+        if (!adminCreds.password || adminCreds.password.trim().length < 8) {
+            errors.push('Admin-Passwort muss mindestens 8 Zeichen lang sein.');
         }
 
         // Validate developer credentials
         if (!devCreds.username || devCreds.username.trim().length < 3) {
             errors.push('Developer-Benutzername muss mindestens 3 Zeichen lang sein.');
         }
-        if (!devCreds.password || devCreds.password.trim().length < 6) {
-            errors.push('Developer-Passwort muss mindestens 6 Zeichen lang sein.');
+        if (!devCreds.password || devCreds.password.trim().length < 8) {
+            errors.push('Developer-Passwort muss mindestens 8 Zeichen lang sein.');
         }
 
         // Check admin and developer usernames are different
@@ -110,13 +110,18 @@ class AdminPanelService {
     }
 
     // ============================================
-    // Password Hashing (SHA-256 + Salt)
+    // Password Hashing (PBKDF2 + Salt)
     // ============================================
 
     async _hashPassword(password, salt) {
         const encoder = new TextEncoder();
-        const data = encoder.encode(salt + password);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
+        );
+        const hashBuffer = await crypto.subtle.deriveBits(
+            { name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100000, hash: 'SHA-256' },
+            keyMaterial, 256
+        );
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
@@ -231,12 +236,21 @@ class AdminPanelService {
         return { success: false, role: null, error: 'Benutzername oder Passwort falsch.' };
     }
 
+    _constantTimeEqual(a, b) {
+        if (a.length !== b.length) return false;
+        let result = 0;
+        for (let i = 0; i < a.length; i++) {
+            result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+        }
+        return result === 0;
+    }
+
     async _verifyPassword(password, creds) {
         if (creds.legacyPassword) {
             return password === creds.legacyPassword;
         }
         const hash = await this._hashPassword(password, creds.salt);
-        return hash === creds.passwordHash;
+        return this._constantTimeEqual(hash, creds.passwordHash);
     }
 
     /**
@@ -441,13 +455,15 @@ class AdminPanelService {
             return { success: false, error: 'Benutzername muss mindestens 3 Zeichen lang sein.' };
         }
 
-        if (!newPassword || newPassword.trim().length < 6) {
-            return { success: false, error: 'Passwort muss mindestens 6 Zeichen lang sein.' };
+        if (!newPassword || newPassword.trim().length < 8) {
+            return { success: false, error: 'Passwort muss mindestens 8 Zeichen lang sein.' };
         }
 
         localStorage.setItem(`${this.STORAGE_PREFIX}${role}_username`, newUsername.trim());
-        const hash = await this._hashPassword(newPassword.trim());
+        const salt = this._generateSalt();
+        const hash = await this._hashPassword(newPassword.trim(), salt);
         localStorage.setItem(`${this.STORAGE_PREFIX}${role}_password_hash`, hash);
+        localStorage.setItem(`${this.STORAGE_PREFIX}${role}_password_salt`, salt);
         // Remove old plaintext key if exists
         localStorage.removeItem(`${this.STORAGE_PREFIX}${role}_password`);
 

@@ -29,8 +29,8 @@ async function getHeaders() {
 
 async function fetchTickets() {
     let url = SB_URL + '/rest/v1/support_tickets?order=created_at.desc&limit=100&select=*';
-    if (currentFilter.status) {url += '&status=eq.' + currentFilter.status;}
-    if (currentFilter.priority) {url += '&priority=eq.' + currentFilter.priority;}
+    if (currentFilter.status) {url += '&status=eq.' + encodeURIComponent(currentFilter.status);}
+    if (currentFilter.priority) {url += '&priority=eq.' + encodeURIComponent(currentFilter.priority);}
     if (currentFilter.search) {url += '&or=(ticket_number.ilike.*' + encodeURIComponent(currentFilter.search) + '*,subject.ilike.*' + encodeURIComponent(currentFilter.search) + '*,customer_email.ilike.*' + encodeURIComponent(currentFilter.search) + '*)';}
 
     try {
@@ -375,8 +375,9 @@ async function refresh() {
     renderStats(stats);
     renderTicketList();
     // Update nav badge
-    const badge = document.getElementById('support-badge');
-    if (badge) {badge.textContent = stats.open || '';}
+    document.querySelectorAll('#support-badge-pro, #support-badge-simple').forEach(badge => {
+        badge.textContent = stats.open || '';
+    });
 }
 
 let initialized = false;
@@ -436,8 +437,9 @@ async function init() {
     renderTicketList();
     renderKBList();
 
-    const badge = document.getElementById('support-badge');
-    if (badge) {badge.textContent = stats.open || '';}
+    document.querySelectorAll('#support-badge-pro, #support-badge-simple').forEach(badge => {
+        badge.textContent = stats.open || '';
+    });
 }
 
 // Expose globally

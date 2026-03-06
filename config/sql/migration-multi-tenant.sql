@@ -160,6 +160,30 @@ CREATE INDEX IF NOT EXISTS idx_notifications_tenant ON notifications(tenant_id);
 ALTER TABLE inbound_emails ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
 CREATE INDEX IF NOT EXISTS idx_inbound_emails_tenant ON inbound_emails(tenant_id);
 
+-- Call Summaries
+ALTER TABLE call_summaries ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
+CREATE INDEX IF NOT EXISTS idx_call_summaries_tenant ON call_summaries(tenant_id);
+
+-- Portal Tokens (supabase-schema.sql version)
+ALTER TABLE portal_tokens ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
+CREATE INDEX IF NOT EXISTS idx_portal_tokens_tenant ON portal_tokens(tenant_id);
+
+-- Portal Responses
+ALTER TABLE portal_responses ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
+CREATE INDEX IF NOT EXISTS idx_portal_responses_tenant ON portal_responses(tenant_id);
+
+-- Stripe Payments
+ALTER TABLE stripe_payments ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
+CREATE INDEX IF NOT EXISTS idx_stripe_payments_tenant ON stripe_payments(tenant_id);
+
+-- Email Routing
+ALTER TABLE email_routing ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
+CREATE INDEX IF NOT EXISTS idx_email_routing_tenant ON email_routing(tenant_id);
+
+-- Admin Settings
+ALTER TABLE admin_settings ADD COLUMN IF NOT EXISTS tenant_id UUID REFERENCES tenants(id);
+CREATE INDEX IF NOT EXISTS idx_admin_settings_tenant ON admin_settings(tenant_id);
+
 -- ============================================
 -- 5. Update RLS Policies (tenant-scoped)
 -- ============================================
@@ -176,7 +200,8 @@ BEGIN
         'kunden', 'anfragen', 'angebote', 'auftraege', 'rechnungen',
         'buchungen', 'materialien', 'aufgaben', 'termine', 'zeiteintraege',
         'dokumente', 'purchase_orders', 'stock_movements', 'material_reservations',
-        'suppliers', 'communication_log'
+        'suppliers', 'communication_log', 'call_summaries', 'email_routing',
+        'admin_settings'
     ]) LOOP
         -- Drop old policy
         EXECUTE format('DROP POLICY IF EXISTS "Users manage own %s" ON %I', tbl, tbl);
@@ -254,7 +279,8 @@ BEGIN
         'kunden', 'anfragen', 'angebote', 'auftraege', 'rechnungen',
         'buchungen', 'materialien', 'aufgaben', 'termine', 'zeiteintraege',
         'dokumente', 'purchase_orders', 'stock_movements', 'material_reservations',
-        'suppliers', 'communication_log', 'automation_log', 'notifications'
+        'suppliers', 'communication_log', 'automation_log', 'notifications',
+        'call_summaries', 'email_routing', 'admin_settings'
     ]) LOOP
         EXECUTE format('DROP TRIGGER IF EXISTS auto_tenant_%s ON %I', tbl, tbl);
         EXECUTE format(
@@ -308,7 +334,9 @@ BEGIN
         'kunden', 'anfragen', 'angebote', 'auftraege', 'rechnungen',
         'buchungen', 'materialien', 'aufgaben', 'termine', 'zeiteintraege',
         'dokumente', 'purchase_orders', 'stock_movements', 'material_reservations',
-        'suppliers', 'communication_log', 'automation_log', 'notifications', 'inbound_emails'
+        'suppliers', 'communication_log', 'automation_log', 'notifications', 'inbound_emails',
+        'call_summaries', 'portal_tokens', 'portal_responses', 'stripe_payments',
+        'email_routing', 'admin_settings'
     ]) LOOP
         EXECUTE format(
             'UPDATE %I SET tenant_id = ''a0000000-0000-0000-0000-000000000001'' WHERE tenant_id IS NULL',

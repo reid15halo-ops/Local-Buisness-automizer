@@ -6,6 +6,84 @@
 -- 2. SQL Editor > New Query
 -- 3. Dieses komplette Script einfügen & ausführen
 -- ============================================
+--
+-- =============================================
+-- DEPLOYMENT CHECKLIST
+-- =============================================
+--
+-- TABLES (all have RLS enabled):
+--   [x] waitlist             - RLS: anon INSERT, service_role SELECT
+--   [x] profiles             - RLS: own SELECT/UPDATE/INSERT
+--   [x] kunden               - RLS: own data (FOR ALL)
+--   [x] anfragen             - RLS: own data (FOR ALL)
+--   [x] angebote             - RLS: own data (FOR ALL)
+--   [x] auftraege            - RLS: own data (FOR ALL)
+--   [x] rechnungen           - RLS: own data (FOR ALL)
+--   [x] buchungen            - RLS: own data (FOR ALL)
+--   [x] materialien          - RLS: own data (FOR ALL)
+--   [x] aufgaben             - RLS: own data (FOR ALL)
+--   [x] termine              - RLS: own data (FOR ALL)
+--   [x] zeiteintraege        - RLS: own data (FOR ALL)
+--   [x] dokumente            - RLS: own data (FOR ALL)
+--   [x] automation_log       - RLS: own SELECT, service_role INSERT
+--   [x] notifications        - RLS: own data (FOR ALL), service_role INSERT
+--   [x] purchase_orders      - RLS: own data (FOR ALL)
+--   [x] stock_movements      - RLS: own data (FOR ALL)
+--   [x] material_reservations- RLS: own data (FOR ALL)
+--   [x] suppliers            - RLS: own data (FOR ALL)
+--   [x] communication_log    - RLS: own data (FOR ALL)
+--   [x] portal_tokens        - RLS: own data (FOR ALL)
+--   [x] portal_responses     - RLS: INSERT(FALSE), SELECT via token join
+--   [x] stripe_payments      - RLS: service_role ALL, user SELECT via rechnungen join
+--   [x] call_summaries       - RLS: own data (FOR ALL), service_role INSERT
+--   [x] inbound_emails       - RLS: service_role ALL
+--   [x] email_routing        - RLS: own data
+--   [x] admin_settings       - RLS: own data (FOR ALL)
+--   [x] gobd_audit_log       - RLS: own SELECT, service_role INSERT (append-only)
+--   [x] bautagebuch_entries  - RLS: own data (FOR ALL)
+--   [x] client_errors        - RLS: own INSERT, service_role SELECT
+--
+-- EDGE FUNCTIONS (14 total):
+--   ai-proxy                 - Env: GEMINI_API_KEY, ALLOWED_ORIGIN
+--   check-overdue            - Env: EMAIL_RELAY_URL, EMAIL_RELAY_SECRET, SENDER_NAME
+--   create-checkout          - Env: STRIPE_SECRET_KEY, ALLOWED_ORIGIN
+--   create-checkout-session  - Env: STRIPE_SECRET_KEY, ALLOWED_ORIGIN
+--   create-portal-session    - Env: STRIPE_SECRET_KEY, ALLOWED_ORIGIN
+--   portal-api               - Env: PORTAL_ALLOWED_ORIGIN (optional, defaults to *)
+--   process-call-recording   - Env: VPS_STT_URL, GEMINI_API_KEY, ALLOWED_ORIGIN
+--   process-inbound-email    - Env: RESEND_API_KEY, GEMINI_API_KEY, RESEND_WEBHOOK_SECRET,
+--                                   SENDER_EMAIL, REPLY_TO_EMAIL, COMPANY_PHONE,
+--                                   SENDER_NAME/COMPANY_NAME, DEFAULT_TAX_RATE,
+--                                   DEFAULT_STUNDENSATZ, DEFAULT_PAYMENT_DAYS
+--                              Deploy with: --no-verify-jwt
+--   run-automation           - Env: EMAIL_RELAY_URL, EMAIL_RELAY_SECRET,
+--                                   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
+--   run-webhook              - Env: ALLOWED_ORIGIN
+--   send-email               - Env: EMAIL_RELAY_URL, EMAIL_RELAY_SECRET, ALLOWED_ORIGIN
+--   send-notification        - Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+--                                   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
+--                                   TWILIO_WHATSAPP_FROM, TWILIO_WHATSAPP_TO, ALLOWED_ORIGIN
+--   send-sms                 - Env: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN,
+--                                   TWILIO_FROM_NUMBER, ALLOWED_ORIGIN
+--   stripe-webhook           - Env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ALLOWED_ORIGIN
+--                              Deploy with: --no-verify-jwt
+--
+-- REQUIRED SUPABASE SETTINGS:
+--   - Auth: Enable email/password sign-up
+--   - Auth: Set Site URL to https://app.freyaivisions.de
+--   - Auth: Add redirect URLs: https://app.freyaivisions.de/*, https://freyaivisions.de/*
+--   - Storage: Create bucket "angebote" (public read for PDF downloads)
+--   - Extensions: Enable uuid-ossp, pg_cron, pg_net (for scheduled jobs)
+--   - Edge Functions: Set all env vars listed above via Supabase Dashboard > Edge Functions > Secrets
+--
+-- MIGRATION ORDER:
+--   1. supabase-schema.sql (this file)
+--   2. migration-multi-tenant.sql
+--   3. migration-remaining.sql
+--   4. migration-portal-tokens.sql
+--   5. migration-stripe-payments.sql
+--   6. fix-portal-responses-rls.sql
+-- =============================================
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -437,6 +515,69 @@ ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS kunde_name TEXT;
 -- );
 
 -- ============================================
+-- Inbound Emails (Email-to-Quote Automation)
+-- ============================================
+CREATE TABLE IF NOT EXISTS inbound_emails (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    from_email TEXT NOT NULL,
+    from_name TEXT,
+    subject TEXT,
+    body TEXT,
+    html_body TEXT,
+    attachments JSONB,
+    received_at TIMESTAMPTZ DEFAULT NOW(),
+    processed BOOLEAN DEFAULT FALSE,
+    anfrage_id TEXT,
+    angebot_id TEXT,
+    error TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE inbound_emails ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service role manages inbound_emails" ON inbound_emails
+    FOR ALL USING (auth.role() = 'service_role');
+
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_processed ON inbound_emails(processed);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_received ON inbound_emails(received_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inbound_emails_from ON inbound_emails(from_email);
+
+-- ============================================
+-- Email Routing (maps email addresses to users)
+-- ============================================
+CREATE TABLE IF NOT EXISTS email_routing (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE email_routing ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own email_routing" ON email_routing
+    FOR ALL USING (auth.uid() = user_id);
+
+-- ============================================
+-- Admin Settings (per-user business config)
+-- ============================================
+CREATE TABLE IF NOT EXISTS admin_settings (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE UNIQUE,
+    stundensatz DECIMAL(8,2) DEFAULT 65.00,
+    payment_days INTEGER DEFAULT 14,
+    default_tax_rate DECIMAL(4,2) DEFAULT 19.00,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE admin_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own admin_settings" ON admin_settings
+    FOR ALL USING (auth.uid() = user_id);
+
+CREATE TRIGGER update_admin_settings_updated_at
+    BEFORE UPDATE ON admin_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
 -- V2 MIGRATION: New Tables (Rounds 4-6)
 -- ============================================
 
@@ -837,3 +978,85 @@ CREATE INDEX IF NOT EXISTS idx_call_summaries_phone ON call_summaries(phone);
 ALTER TABLE communication_log DROP CONSTRAINT IF EXISTS communication_log_channel_check;
 ALTER TABLE communication_log ADD CONSTRAINT communication_log_channel_check
     CHECK (channel IN ('chat', 'sms', 'email', 'call'));
+
+-- ============================================
+-- GoBD Audit Trail (Unveraenderbare Protokollierung)
+-- ============================================
+CREATE TABLE IF NOT EXISTS gobd_audit_log (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    action TEXT NOT NULL,
+    entity_type TEXT NOT NULL,
+    entity_id TEXT,
+    details JSONB DEFAULT '{}',
+    checksum TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE gobd_audit_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users read own gobd_audit_log" ON gobd_audit_log
+    FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Service role inserts gobd_audit_log" ON gobd_audit_log
+    FOR INSERT WITH CHECK (auth.uid() = user_id OR auth.role() = 'service_role');
+-- No UPDATE/DELETE policies: audit log is append-only (GoBD Unveraenderbarkeit)
+
+CREATE INDEX IF NOT EXISTS idx_gobd_audit_user ON gobd_audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_gobd_audit_entity ON gobd_audit_log(entity_type, entity_id);
+CREATE INDEX IF NOT EXISTS idx_gobd_audit_created ON gobd_audit_log(created_at DESC);
+
+-- ============================================
+-- Bautagebuch (Construction Diary - VOB/B)
+-- ============================================
+CREATE TABLE IF NOT EXISTS bautagebuch_entries (
+    id TEXT PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    datum DATE NOT NULL,
+    projekt_id TEXT,
+    projekt_name TEXT,
+    wetter JSONB DEFAULT '{}',
+    arbeitszeiten JSONB DEFAULT '[]',
+    personal JSONB DEFAULT '[]',
+    materialien JSONB DEFAULT '[]',
+    arbeiten_beschreibung TEXT,
+    besondere_vorkommnisse TEXT,
+    maengel TEXT,
+    fotos JSONB DEFAULT '[]',
+    unterschriften JSONB DEFAULT '[]',
+    status TEXT DEFAULT 'entwurf' CHECK (status IN ('entwurf', 'abgeschlossen', 'archiviert')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE bautagebuch_entries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users manage own bautagebuch" ON bautagebuch_entries
+    FOR ALL USING (auth.uid() = user_id);
+
+CREATE INDEX IF NOT EXISTS idx_bautagebuch_user ON bautagebuch_entries(user_id);
+CREATE INDEX IF NOT EXISTS idx_bautagebuch_datum ON bautagebuch_entries(datum DESC);
+CREATE INDEX IF NOT EXISTS idx_bautagebuch_projekt ON bautagebuch_entries(projekt_id);
+
+CREATE TRIGGER update_bautagebuch_updated_at
+    BEFORE UPDATE ON bautagebuch_entries
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================
+-- Client Error Monitoring
+-- ============================================
+CREATE TABLE IF NOT EXISTS client_errors (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    type TEXT NOT NULL,
+    message TEXT,
+    stack TEXT,
+    url TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE client_errors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users insert own errors" ON client_errors
+    FOR INSERT WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+CREATE POLICY "Service role reads errors" ON client_errors
+    FOR SELECT USING (auth.role() = 'service_role');
+
+CREATE INDEX IF NOT EXISTS idx_client_errors_created ON client_errors(created_at DESC);

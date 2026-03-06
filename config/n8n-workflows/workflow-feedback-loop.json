@@ -34,10 +34,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.19.0.1:11434/api/chat",
+        "url": "={{ $env['OLLAMA_BASE_URL'] || 'http://172.19.0.1:11434' }}/api/chat",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: \"mistral-small\", messages: [ { role: \"system\", content: $json.system_prompt }, { role: \"user\", content: $json.user_prompt } ], stream: false, options: { temperature: 0.3, num_predict: 4096 } }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: $env['OLLAMA_MODEL'] || 'mistral-small', messages: [ { role: \"system\", content: $json.system_prompt }, { role: \"user\", content: $json.user_prompt } ], stream: false, options: { temperature: 0.3, num_predict: 4096 } }) }}",
         "options": {
           "timeout": 300000,
           "response": {
@@ -72,10 +72,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.19.0.1:11434/api/chat",
+        "url": "={{ $env['OLLAMA_BASE_URL'] || 'http://172.19.0.1:11434' }}/api/chat",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: \"mistral:latest\", messages: [ { role: \"system\", content: $json.reviewer.includes(\"quality\") ? \"You are a strict quality reviewer. Evaluate the following output for accuracy, completeness, tone, and style. You MUST respond with ONLY a JSON object: {\\\"verdict\\\": \\\"APPROVE\\\" or \\\"REJECT\\\", \\\"score\\\": 1-10, \\\"feedback\\\": \\\"specific feedback\\\"}. Be critical. Only APPROVE if score >= 7. Do NOT include any text before or after the JSON.\" : \"You are a resolution reviewer. Check if the output fully addresses the original request. Verify completeness, no omissions, no hallucinations. You MUST respond with ONLY a JSON object: {\\\"verdict\\\": \\\"APPROVE\\\" or \\\"REJECT\\\", \\\"score\\\": 1-10, \\\"feedback\\\": \\\"specific feedback\\\"}. Be critical. Only APPROVE if score >= 7. Do NOT include any text before or after the JSON.\" }, { role: \"user\", content: \"Task type: \" + $json.task_type + \"\\nOriginal request: \" + $json.source_text.substring(0, 2000) + \"\\n\\nOutput to review:\\n\" + $json.execution_result.substring(0, 4000) } ], stream: false, options: { temperature: 0.1, num_predict: 1024 } }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: $env['OLLAMA_REVIEW_MODEL'] || 'mistral:latest', messages: [ { role: \"system\", content: $json.reviewer.includes(\"quality\") ? \"You are a strict quality reviewer. Evaluate the following output for accuracy, completeness, tone, and style. You MUST respond with ONLY a JSON object: {\\\"verdict\\\": \\\"APPROVE\\\" or \\\"REJECT\\\", \\\"score\\\": 1-10, \\\"feedback\\\": \\\"specific feedback\\\"}. Be critical. Only APPROVE if score >= 7. Do NOT include any text before or after the JSON.\" : \"You are a resolution reviewer. Check if the output fully addresses the original request. Verify completeness, no omissions, no hallucinations. You MUST respond with ONLY a JSON object: {\\\"verdict\\\": \\\"APPROVE\\\" or \\\"REJECT\\\", \\\"score\\\": 1-10, \\\"feedback\\\": \\\"specific feedback\\\"}. Be critical. Only APPROVE if score >= 7. Do NOT include any text before or after the JSON.\" }, { role: \"user\", content: \"Task type: \" + $json.task_type + \"\\nOriginal request: \" + $json.source_text.substring(0, 2000) + \"\\n\\nOutput to review:\\n\" + $json.execution_result.substring(0, 4000) } ], stream: false, options: { temperature: 0.1, num_predict: 1024 } }) }}",
         "options": {
           "timeout": 300000,
           "response": {
@@ -142,7 +142,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://172.19.0.1:5678/webhook/feedback-loop",
+        "url": "={{ $env['N8N_WEBHOOK_BASE_URL'] || 'http://172.19.0.1:5678' }}/webhook/feedback-loop",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ task_type: $json.task_type, source_text: $json.source_text, target_language: $json.target_language || \"\", custom_instructions: $json.custom_instructions || \"\", _round: $json.next_round, _max_rounds: $json.max_rounds || 10, _previous_result: $json.execution_result, _previous_feedback: $json.combined_feedback }) }}",
@@ -261,8 +261,10 @@
   },
   "settings": {
     "executionOrder": "v1",
+    "saveManualExecutions": true,
     "callerPolicy": "workflowsFromSameOwner",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "errorWorkflow": ""
   },
   "staticData": null,
   "tags": [
@@ -275,5 +277,12 @@
       "id": "feedback-loop-tag"
     }
   ],
-  "pinData": {}
+  "pinData": {},
+  "updatedAt": "2026-03-06T00:00:00.000Z",
+  "versionId": "2",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "notes": "## Morpheus Feedback Loop (4-Agent)\n\n### Fixes Applied (v2)\n- FIXED: Hardcoded Ollama URL 'http://172.19.0.1:11434' replaced with $env['OLLAMA_BASE_URL'] (default fallback preserved)\n- FIXED: Hardcoded n8n webhook URL 'http://172.19.0.1:5678' replaced with $env['N8N_WEBHOOK_BASE_URL']\n- FIXED: Hardcoded model names replaced with $env['OLLAMA_MODEL'] and $env['OLLAMA_REVIEW_MODEL']\n- ADDED: saveManualExecutions, errorWorkflow settings\n\n### Setup Required\n1. **Env Vars**: OLLAMA_BASE_URL, OLLAMA_MODEL (default: mistral-small), OLLAMA_REVIEW_MODEL (default: mistral:latest), N8N_WEBHOOK_BASE_URL\n2. **Ollama**: Models must be pulled (mistral-small, mistral:latest)\n\n### Flow\nWebhook -> Grounding (prompt construction) -> Execution (Ollama/Mistral) -> Prepare 4 Reviews -> Review (4x parallel Ollama) -> Finalizing (consensus check) -> Loop back or return final result"
 }

@@ -207,7 +207,10 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
   },
   "staticData": null,
   "tags": [
@@ -215,9 +218,17 @@
       "name": "FreyAI Visions",
       "createdAt": "2026-01-14T00:00:00.000Z",
       "updatedAt": "2026-01-14T00:00:00.000Z"
+    },
+    {
+      "name": "legacy",
+      "createdAt": "2026-03-06T00:00:00.000Z",
+      "updatedAt": "2026-03-06T00:00:00.000Z"
     }
   ],
   "meta": {
-    "instanceId": "FreyAI-Demo"
-  }
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "updatedAt": "2026-03-06T00:00:00.000Z",
+  "versionId": "2",
+  "notes": "## FreyAI Visions - Email Automatisierung (LEGACY)\n\n### Audit Notes (v2)\n- WARNING: This is a legacy workflow from the initial demo phase.\n- Contains hardcoded company address and placeholder IBAN in email templates.\n- Webhook nodes use typeVersion 1 (current is v2).\n- No error handlers on email send nodes.\n- No continueOnFail on any nodes.\n- No automation_log logging.\n- Consider migrating email sending to the communication workflow or Supabase edge functions.\n\n### Known Issues\n1. Hardcoded address: 'Handwerkerring 38a, 63776 Moembris-Rothengrund' in email templates\n2. Placeholder IBAN: 'DE00 0000 0000 0000 0000 00' must be replaced with actual IBAN\n3. fromEmail addresses (angebot@/rechnung@freyai-visions.de) use old domain\n4. SMTP credentials reference id '1' - must match n8n credential setup\n5. Google Sheets OAuth reference id '2' - must match n8n credential setup\n\n### Recommendation\nReplace this workflow with the updated communication and invoicing workflows. Keep only as reference."
 }

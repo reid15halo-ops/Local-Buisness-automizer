@@ -120,7 +120,8 @@ class LazyLoader {
                 'bookkeeping-service',
                 'work-estimation-service',
                 'material-service',
-                'reorder-engine-service'
+                'reorder-engine-service',
+                'morning-briefing-service'
             ],
 
             // Advanced Features - load on demand

@@ -42,7 +42,7 @@ cp manifest.json dist/
 cp service-worker.js dist/
 cp -r icons dist/
 cp .htaccess dist/
-cp netlify.toml dist/
+cp netlify.toml dist/ 2>/dev/null || true
 
 # Copy fonts directory if it exists
 if [ -d "fonts" ]; then
@@ -71,7 +71,7 @@ echo "   JS service files: $(find dist/js/services -name '*.js' 2>/dev/null | wc
 echo "   JS module files: $(find dist/js/modules -name '*.js' 2>/dev/null | wc -l)"
 echo "   JS UI files: $(find dist/js/ui -name '*.js' 2>/dev/null | wc -l)"
 echo "   JS i18n files: $(find dist/js/i18n -name '*.js' 2>/dev/null | wc -l)"
-echo "   Supabase functions: $(find dist/supabase/functions -type d -mindepth 1 2>/dev/null | wc -l)"
+echo "   Supabase functions: $(find dist/supabase/functions -type d -mindepth 1 2>/dev/null | wc -l || echo 0)"
 TOTAL_FILES=$(find dist -type f | wc -l)
 echo "   Total files in build: $TOTAL_FILES"
 

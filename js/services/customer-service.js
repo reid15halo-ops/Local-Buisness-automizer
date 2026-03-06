@@ -37,6 +37,9 @@ class CustomerService {
             erstelltAm: customer.erstelltAm || new Date().toISOString(),
             aktualisiertAm: new Date().toISOString(),
             letzterKontakt: customer.letzterKontakt || null,
+            kundentyp: customer.kundentyp || 'privat', // privat, geschaeftlich, behoerde
+            leitwegId: customer.leitwegId || '',
+            ustId: customer.ustId || '',
             zahlungsart: customer.zahlungsart || 'rechnung', // rechnung, bar, vorkasse
             zahlungsziel: customer.zahlungsziel || 14, // Tage
             rabatt: customer.rabatt || 0, // Prozent

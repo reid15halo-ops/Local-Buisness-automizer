@@ -131,7 +131,7 @@ class SyncService {
         // Only keep failed items in queue (don't discard them)
         if (synced > 0) {
             if (failedItems.length > 0) {
-                localStorage.setItem('hwf_sync_queue_v2', JSON.stringify(failedItems));
+                localStorage.setItem('hwf_sync_queue', JSON.stringify(failedItems));
             } else {
                 this._clearSyncQueue();
             }

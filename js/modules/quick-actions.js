@@ -145,7 +145,7 @@ function getTimeBasedGreeting(userName) {
         timeOfDay = 'Abend';
     }
 
-    return `Guten ${timeOfDay}, ${userName}!`;
+    return `Guten ${timeOfDay}, ${(window.h || window.esc || String)(userName)}!`;
 }
 
 function renderActivitiesList(activities) {

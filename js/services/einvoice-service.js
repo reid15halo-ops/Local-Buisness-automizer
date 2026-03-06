@@ -227,6 +227,17 @@ class EInvoiceService {
      * @returns {{ success: boolean, xml: string, recordId: string, validation: Object }}
      */
     generateXRechnung(invoice) {
+        // Pre-validate invoice data
+        const preValidation = this.validateInvoice(invoice);
+        if (!preValidation.valid) {
+            return {
+                success: false,
+                xml: null,
+                recordId: null,
+                validation: { valid: false, errors: preValidation.errors, warnings: [] }
+            };
+        }
+
         const xml = this.buildXRechnungXml(invoice);
         const validation = this.validateXRechnung(xml);
 
@@ -254,8 +265,20 @@ class EInvoiceService {
         };
     }
 
+    // Check if Kleinunternehmer mode is active
+    _isKleinunternehmer() {
+        if (typeof window._getTaxRate === 'function' && window._getTaxRate() === 0) {return true;}
+        try {
+            const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
+            if (ap.kleinunternehmer) {return true;}
+        } catch { /* ignore */ }
+        if (localStorage.getItem('kleinunternehmer') === 'true') {return true;}
+        return false;
+    }
+
     // Tax category mapping: S=Standard, AA=Reduced, E=Exempt (Kleinunternehmer par. 19)
     _getTaxCategory(satz) {
+        if (this._isKleinunternehmer()) {return 'E';}
         if (satz === 0) {return 'E';}
         if (satz === 7) {return 'AA';}
         return 'S';
@@ -263,9 +286,81 @@ class EInvoiceService {
 
     // Tax category scheme name
     _getTaxCategoryName(satz) {
+        if (this._isKleinunternehmer()) {return 'Not subject to VAT';}
         if (satz === 0) {return 'Not subject to VAT';}
         if (satz === 7) {return 'Reduced rate';}
         return 'Standard rate';
+    }
+
+    /**
+     * Validate an invoice object against EN 16931 mandatory fields BEFORE generating XML.
+     * @param {Object} invoice - The invoice data object
+     * @returns {{ valid: boolean, errors: string[] }}
+     */
+    validateInvoice(invoice) {
+        const errors = [];
+        const bd = this.settings.businessData;
+
+        // BT-1 Invoice number
+        if (!invoice.nummer && !invoice.id) {
+            errors.push('Rechnungsnummer fehlt');
+        }
+
+        // BT-2 Issue date
+        if (!invoice.datum) {
+            errors.push('Rechnungsdatum fehlt');
+        }
+
+        // BT-9 Due date
+        if (!invoice.faelligkeitsdatum) {
+            errors.push('Faelligkeitsdatum fehlt');
+        }
+
+        // BG-4 Seller name
+        if (!bd.name) {
+            errors.push('Verkaeufername (Firmenname) fehlt - bitte in Einstellungen hinterlegen');
+        }
+
+        // BG-4 Seller address
+        if (!bd.street && !bd.city && !bd.postalCode) {
+            errors.push('Verkaeuferadresse fehlt - bitte in Einstellungen hinterlegen');
+        }
+
+        // BG-4 Seller tax ID
+        if (!bd.vatId) {
+            errors.push('Steuernummer/USt-IdNr. fehlt - bitte in Einstellungen hinterlegen');
+        }
+
+        // BG-7 Buyer name
+        const kunde = invoice.kunde || {};
+        if (!kunde.name && !kunde.firma) {
+            errors.push('Kundenname fehlt');
+        }
+
+        // BG-25 At least one line item
+        const positionen = invoice.positionen || [];
+        if (positionen.length === 0) {
+            errors.push('Mindestens eine Rechnungsposition erforderlich');
+        }
+
+        // Validate each position has required fields
+        positionen.forEach((pos, i) => {
+            const name = pos.name || pos.beschreibung;
+            if (!name) {
+                errors.push(`Position ${i + 1}: Beschreibung fehlt`);
+            }
+            const preis = pos.einzelpreis ?? pos.preis;
+            if (preis === undefined || preis === null) {
+                errors.push(`Position ${i + 1}: Einzelpreis fehlt`);
+            }
+        });
+
+        // Amounts
+        if (invoice.netto === undefined || invoice.netto === null) {
+            errors.push('Nettobetrag fehlt');
+        }
+
+        return { valid: errors.length === 0, errors: errors };
     }
 
     // Escape XML special characters
@@ -337,14 +432,20 @@ class EInvoiceService {
             || this.getDefaultLeitwegId()
             || '';
 
+        // Kleinunternehmer: force all tax rates to 0
+        const isKU = this._isKleinunternehmer();
+
         // Calculate totals with per-position tax rates
-        const taxGroups = this._groupByTaxRate(positionen);
+        const taxGroups = isKU
+            ? [{ rate: 0, netto: 0, positionen: positionen }]
+            : this._groupByTaxRate(positionen);
         const nettoTotal = positionen.reduce((sum, p) => {
             const preis = p.einzelpreis ?? p.preis ?? 0;
             const menge = p.menge ?? 1;
             return sum + (menge * preis);
         }, 0);
-        const ustBetrag = taxGroups.reduce((sum, g) => sum + (g.netto * g.rate / 100), 0);
+        if (isKU) { taxGroups[0].netto = nettoTotal; }
+        const ustBetrag = isKU ? 0 : taxGroups.reduce((sum, g) => sum + (g.netto * g.rate / 100), 0);
         const bruttoTotal = nettoTotal + ustBetrag;
 
         const invoiceDate = this._normalizeDate(invoice.datum);
@@ -357,9 +458,16 @@ class EInvoiceService {
         const paymentTermsNote = invoice.zahlungsbedingungen
             || `Zahlbar innerhalb von ${paymentDays} Tagen ohne Abzug.`;
 
-        // Build note if present
-        const noteXml = invoice.notizen
-            ? `    <cbc:Note>${this._escXml(invoice.notizen)}</cbc:Note>\n`
+        // Build notes: Kleinunternehmer notice + custom notes
+        const notes = [];
+        if (isKU) {
+            notes.push('Kleinunternehmer gem. §19 UStG - keine Umsatzsteuer ausgewiesen.');
+        }
+        if (invoice.notizen) {
+            notes.push(invoice.notizen);
+        }
+        const noteXml = notes.length > 0
+            ? notes.map(n => `    <cbc:Note>${this._escXml(n)}</cbc:Note>\n`).join('')
             : '';
 
         return `<?xml version="1.0" encoding="UTF-8"?>
@@ -459,17 +567,24 @@ ${noteXml}    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
     <!-- Tax Total -->
     <cac:TaxTotal>
         <cbc:TaxAmount currencyID="EUR">${ustBetrag.toFixed(2)}</cbc:TaxAmount>
-${taxGroups.map(g => `        <cac:TaxSubtotal>
+${taxGroups.map(g => {
+    const taxCat = this._getTaxCategory(g.rate);
+    const taxAmt = isKU ? 0 : (g.netto * g.rate / 100);
+    const exemptionXml = (taxCat === 'E') ? `
+                <cbc:TaxExemptionReasonCode>vatex-eu-ae</cbc:TaxExemptionReasonCode>
+                <cbc:TaxExemptionReason>Kleinunternehmer gem. §19 UStG</cbc:TaxExemptionReason>` : '';
+    return `        <cac:TaxSubtotal>
             <cbc:TaxableAmount currencyID="EUR">${g.netto.toFixed(2)}</cbc:TaxableAmount>
-            <cbc:TaxAmount currencyID="EUR">${(g.netto * g.rate / 100).toFixed(2)}</cbc:TaxAmount>
+            <cbc:TaxAmount currencyID="EUR">${taxAmt.toFixed(2)}</cbc:TaxAmount>
             <cac:TaxCategory>
-                <cbc:ID>${this._getTaxCategory(g.rate)}</cbc:ID>
-                <cbc:Percent>${g.rate}</cbc:Percent>
+                <cbc:ID>${taxCat}</cbc:ID>
+                <cbc:Percent>${g.rate}</cbc:Percent>${exemptionXml}
                 <cac:TaxScheme>
                     <cbc:ID>VAT</cbc:ID>
                 </cac:TaxScheme>
             </cac:TaxCategory>
-        </cac:TaxSubtotal>`).join('\n')}
+        </cac:TaxSubtotal>`;
+}).join('\n')}
     </cac:TaxTotal>
 
     <!-- Legal Monetary Total -->
@@ -482,7 +597,7 @@ ${taxGroups.map(g => `        <cac:TaxSubtotal>
 
     <!-- Invoice Lines -->
 ${positionen.map((pos, i) => {
-    const rate = pos.mwstSatz ?? pos.ustSatz ?? 19;
+    const rate = isKU ? 0 : (pos.mwstSatz ?? pos.ustSatz ?? 19);
     const einzelpreis = pos.einzelpreis ?? pos.preis ?? 0;
     const menge = pos.menge ?? 1;
     const lineTotal = menge * einzelpreis;
@@ -537,6 +652,19 @@ ${positionen.map((pos, i) => {
      * @returns {Promise<{ success: boolean, xml: string, pdfBytes: Uint8Array|null, recordId: string, status: string, validation: Object }>}
      */
     async generateZugferd(invoice) {
+        // Pre-validate invoice data
+        const preValidation = this.validateInvoice(invoice);
+        if (!preValidation.valid) {
+            return {
+                success: false,
+                xml: null,
+                pdfBytes: null,
+                recordId: null,
+                status: 'validation_failed',
+                validation: { valid: false, errors: preValidation.errors, warnings: [] }
+            };
+        }
+
         const xml = this.buildZugferdXml(invoice);
         const validation = this.validateZugferd(xml);
 
@@ -600,7 +728,7 @@ ${positionen.map((pos, i) => {
             version: '2.2',
             profile: 'COMFORT',
             xml: xml,
-            pdfBytes: pdfBytes ? Array.from(pdfBytes) : null,
+            pdfBytes: pdfBytes || null, // kept in-memory, stripped before localStorage save
             createdAt: new Date().toISOString(),
             status: status,
             validation: validation
@@ -628,19 +756,23 @@ ${positionen.map((pos, i) => {
         const bd = this.settings.businessData;
         const kunde = invoice.kunde || {};
         const positionen = invoice.positionen || [];
+        const isKU = this._isKleinunternehmer();
 
         const leitwegId = invoice.leitwegId
             || this.getCustomerLeitwegId(kunde.id)
             || this.getDefaultLeitwegId()
             || '';
 
-        const taxGroups = this._groupByTaxRate(positionen);
+        const taxGroups = isKU
+            ? [{ rate: 0, netto: 0, positionen: positionen }]
+            : this._groupByTaxRate(positionen);
         const nettoTotal = positionen.reduce((sum, p) => {
             const preis = p.einzelpreis ?? p.preis ?? 0;
             const menge = p.menge ?? 1;
             return sum + (menge * preis);
         }, 0);
-        const ustBetrag = taxGroups.reduce((sum, g) => sum + (g.netto * g.rate / 100), 0);
+        if (isKU) { taxGroups[0].netto = nettoTotal; }
+        const ustBetrag = isKU ? 0 : taxGroups.reduce((sum, g) => sum + (g.netto * g.rate / 100), 0);
         const bruttoTotal = nettoTotal + ustBetrag;
 
         const invoiceDate = this._normalizeDate(invoice.datum);
@@ -674,7 +806,10 @@ ${positionen.map((pos, i) => {
         <ram:TypeCode>380</ram:TypeCode>
         <ram:IssueDateTime>
             <udt:DateTimeString format="102">${issueDateCII}</udt:DateTimeString>
-        </ram:IssueDateTime>${invoice.notizen ? `
+        </ram:IssueDateTime>${isKU ? `
+        <ram:IncludedNote>
+            <ram:Content>Kleinunternehmer gem. §19 UStG - keine Umsatzsteuer ausgewiesen.</ram:Content>
+        </ram:IncludedNote>` : ''}${invoice.notizen ? `
         <ram:IncludedNote>
             <ram:Content>${this._escXml(invoice.notizen)}</ram:Content>
         </ram:IncludedNote>` : ''}
@@ -743,13 +878,19 @@ ${positionen.map((pos, i) => {
                 </ram:PayeeSpecifiedCreditorFinancialInstitution>
             </ram:SpecifiedTradeSettlementPaymentMeans>
 
-${taxGroups.map(g => `            <ram:ApplicableTradeTax>
-                <ram:CalculatedAmount>${(g.netto * g.rate / 100).toFixed(2)}</ram:CalculatedAmount>
-                <ram:TypeCode>VAT</ram:TypeCode>
+${taxGroups.map(g => {
+    const taxCat = this._getTaxCategory(g.rate);
+    const taxAmt = isKU ? 0 : (g.netto * g.rate / 100);
+    const exemptXml = (taxCat === 'E') ? `
+                <ram:ExemptionReason>Kleinunternehmer gem. §19 UStG</ram:ExemptionReason>` : '';
+    return `            <ram:ApplicableTradeTax>
+                <ram:CalculatedAmount>${taxAmt.toFixed(2)}</ram:CalculatedAmount>
+                <ram:TypeCode>VAT</ram:TypeCode>${exemptXml}
                 <ram:BasisAmount>${g.netto.toFixed(2)}</ram:BasisAmount>
-                <ram:CategoryCode>${this._getTaxCategory(g.rate)}</ram:CategoryCode>
+                <ram:CategoryCode>${taxCat}</ram:CategoryCode>
                 <ram:RateApplicablePercent>${g.rate}</ram:RateApplicablePercent>
-            </ram:ApplicableTradeTax>`).join('\n')}
+            </ram:ApplicableTradeTax>`;
+}).join('\n')}
 
             <ram:SpecifiedTradePaymentTerms>
                 <ram:Description>${this._escXml(paymentTermsNote)}</ram:Description>
@@ -769,7 +910,7 @@ ${taxGroups.map(g => `            <ram:ApplicableTradeTax>
 
         <!-- Line Items -->
 ${positionen.map((pos, i) => {
-    const rate = pos.mwstSatz ?? pos.ustSatz ?? 19;
+    const rate = isKU ? 0 : (pos.mwstSatz ?? pos.ustSatz ?? 19);
     const einzelpreis = pos.einzelpreis ?? pos.preis ?? 0;
     const menge = pos.menge ?? 1;
     const lineTotal = menge * einzelpreis;
@@ -1302,9 +1443,12 @@ ${positionen.map((pos, i) => {
             return { success: false, error: 'Originalrechnung nicht gefunden' };
         }
 
+        // Work on a copy to avoid mutating store data
+        const invoiceCopy = JSON.parse(JSON.stringify(invoice));
+
         // Preserve Leitweg-ID
         if (oldRecord.leitwegId) {
-            invoice.leitwegId = oldRecord.leitwegId;
+            invoiceCopy.leitwegId = oldRecord.leitwegId;
         }
 
         // Delete old record
@@ -1312,10 +1456,10 @@ ${positionen.map((pos, i) => {
 
         // Generate new one
         if (oldRecord.format === 'ZUGFeRD') {
-            const result = await this.generateZugferd(invoice);
+            const result = await this.generateZugferd(invoiceCopy);
             return { success: true, newRecordId: result.recordId };
         } else {
-            const result = this.generateXRechnung(invoice);
+            const result = this.generateXRechnung(invoiceCopy);
             return { success: true, newRecordId: result.recordId };
         }
     }
@@ -1411,7 +1555,19 @@ ${positionen.map((pos, i) => {
     }
 
     _saveGenerated() {
-        localStorage.setItem('freyai_einvoice_generated', JSON.stringify(this.generatedInvoices));
+        try {
+            // Strip pdfBytes before saving to prevent localStorage quota exhaustion
+            const stripped = this.generatedInvoices.map(r => {
+                if (r.pdfBytes) {
+                    const { pdfBytes, ...rest } = r;
+                    return rest;
+                }
+                return r;
+            });
+            localStorage.setItem('freyai_einvoice_generated', JSON.stringify(stripped));
+        } catch (e) {
+            console.error('E-Invoice Speicherung fehlgeschlagen:', e.message);
+        }
     }
 
     // Legacy alias

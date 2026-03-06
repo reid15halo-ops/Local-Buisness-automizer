@@ -54,7 +54,7 @@ class ReorderEngineUI {
             const bestandContent = document.createElement('div');
             bestandContent.id = 'tab-bestand';
             bestandContent.className = 'tab-content active';
-            bestandContent.appendChild(materialList.cloneNode(true));
+            bestandContent.appendChild(materialList);
 
             const bewegungenContent = document.createElement('div');
             bewegungenContent.id = 'tab-lagerbewegungen';
@@ -174,13 +174,16 @@ class ReorderEngineUI {
     }
 
     attachEventListeners() {
-        // Tab switching
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tab-button')) {
-                const tabName = e.target.dataset.tab;
-                this.switchTab(tabName);
-            }
-        });
+        // Tab switching — scoped to material-tab-bar only
+        const tabBar = document.getElementById('material-tab-bar');
+        if (tabBar) {
+            tabBar.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tab-button')) {
+                    const tabName = e.target.dataset.tab;
+                    this.switchTab(tabName);
+                }
+            });
+        }
 
         // Stock movements
         document.getElementById('btn-export-movements')?.addEventListener('click', () => {
@@ -317,7 +320,7 @@ class ReorderEngineUI {
                         <span class="movement-type">${typeLabel}</span>
                     </div>
                     <div class="movement-body">
-                        <span class="material-name">${matName}</span>
+                        <span class="material-name">${window.esc(matName)}</span>
                         <span class="movement-qty ${m.quantity > 0 ? 'positive' : 'negative'}">
                             ${direction} ${Math.abs(m.quantity)}
                         </span>
@@ -326,7 +329,7 @@ class ReorderEngineUI {
                         <span class="stock-info">
                             ${m.previousStock} → ${m.newStock}
                         </span>
-                        <span class="reference">${m.auftragId || '—'}</span>
+                        <span class="reference">${window.esc(m.auftragId || '—')}</span>
                     </div>
                 </div>
             `;
@@ -394,13 +397,13 @@ class ReorderEngineUI {
 
             return `
                 <div class="reorder-supplier-group">
-                    <h4>${supplier}</h4>
+                    <h4>${window.esc(supplier)}</h4>
                     <div class="reorder-items">
                         ${items.map(s => `
                             <div class="reorder-item">
                                 <div class="item-info">
-                                    <span class="item-name">${s.material.bezeichnung}</span>
-                                    <span class="item-sku">${s.material.artikelnummer}</span>
+                                    <span class="item-name">${window.esc(s.material.bezeichnung)}</span>
+                                    <span class="item-sku">${window.esc(s.material.artikelnummer)}</span>
                                 </div>
                                 <div class="item-stock">
                                     <span class="available">${s.availableStock} verfügbar</span>

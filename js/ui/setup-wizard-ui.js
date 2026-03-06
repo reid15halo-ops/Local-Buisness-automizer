@@ -9,6 +9,7 @@ class SetupWizardUI {
         this.modal = null;
         this.service = window.setupWizard;
         this.logoPreview = null;
+        this._esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     }
 
     /**
@@ -119,6 +120,7 @@ class SetupWizardUI {
      * Render user-friendly onboarding step
      */
     renderUserOnboardingStep(step) {
+        const esc = this._esc;
         const fieldsHTML = step.fields.map(field => {
             const currentValue = localStorage.getItem(field.name) || '';
 
@@ -162,8 +164,8 @@ class SetupWizardUI {
                         type="${field.type}"
                         id="wizard-${field.name}"
                         name="${field.name}"
-                        placeholder="${field.placeholder}"
-                        value="${currentValue}"
+                        placeholder="${esc(field.placeholder)}"
+                        value="${esc(currentValue)}"
                         class="wizard-input-user ${field.required ? 'required' : ''}"
                         ${field.required ? 'required' : ''}
                     />
@@ -201,37 +203,38 @@ class SetupWizardUI {
      */
     renderCompleteStep(step) {
         const profile = this.service.getCompanyProfile();
+        const esc = this._esc;
 
         return `
             <div class="wizard-step-complete">
                 <div class="wizard-success-check">✓</div>
-                <h2>${step.title}</h2>
-                <p class="wizard-complete-description">${step.description}</p>
+                <h2>${esc(step.title)}</h2>
+                <p class="wizard-complete-description">${esc(step.description)}</p>
 
                 <div class="wizard-company-summary">
                     <div class="summary-item">
                         <span class="summary-label">Firma:</span>
-                        <span class="summary-value">${profile.company_name}</span>
+                        <span class="summary-value">${esc(profile.company_name)}</span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label">Ansprechpartner:</span>
-                        <span class="summary-value">${profile.owner_name}</span>
+                        <span class="summary-value">${esc(profile.owner_name)}</span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label">Adresse:</span>
                         <span class="summary-value">
-                            ${profile.address_street}<br>
-                            ${profile.address_postal} ${profile.address_city}
+                            ${esc(profile.address_street)}<br>
+                            ${esc(profile.address_postal)} ${esc(profile.address_city)}
                         </span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label">Steuernummer:</span>
-                        <span class="summary-value">${profile.tax_number}</span>
+                        <span class="summary-value">${esc(profile.tax_number)}</span>
                     </div>
                     ${profile.company_logo ? `
                         <div class="summary-item">
                             <span class="summary-label">Logo:</span>
-                            <img src="${profile.company_logo}" alt="Unternehmenslogo" class="summary-logo">
+                            <img src="${esc(profile.company_logo)}" alt="Unternehmenslogo" class="summary-logo">
                         </div>
                     ` : ''}
                 </div>
@@ -429,12 +432,13 @@ class SetupWizardUI {
      */
     showErrors(errors) {
         const errorsDiv = document.getElementById('wizard-errors');
+        const esc = this._esc;
         if (errorsDiv) {
             errorsDiv.className = 'wizard-errors-user';
             errorsDiv.innerHTML = errors.map(err => `
                 <div class="error-message">
                     <span class="error-icon">⚠️</span>
-                    <span>${err}</span>
+                    <span>${esc(err)}</span>
                 </div>
             `).join('');
             errorsDiv.style.display = 'block';

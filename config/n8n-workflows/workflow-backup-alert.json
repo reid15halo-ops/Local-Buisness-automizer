@@ -7,17 +7,17 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "*/5 * * * *"
+              "expression": "*/30 * * * *"
             }
           ]
         }
       },
       "id": "node-schedule-trigger",
-      "name": "Every 5 Minutes",
+      "name": "Every 30 Minutes",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [240, 300],
-      "notes": "Runs every 5 minutes. CRON: */5 * * * *. Monitors all Zone 3 (Raspberry Pi 4) services via Tailscale."
+      "notes": "Runs every 30 minutes. CRON: */30 * * * *. Monitors all Zone 3 (Raspberry Pi 4) services via Tailscale."
     },
     {
       "parameters": {
@@ -337,7 +337,7 @@
     }
   ],
   "connections": {
-    "Every 5 Minutes": {
+    "Every 30 Minutes": {
       "main": [
         [
           {
@@ -471,5 +471,5 @@
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Zone 3 Health Monitoring & Backup Alerts\n\n### Fixes Applied (v2)\n- Removed non-existent notifications columns: severity, details, alerted_at, alert_sent\n- notifications INSERT now uses only: type, title, message, read (actual schema columns)\n- Status details moved into message string (concatenated as readable text)\n- Replaced hardcoded 'http://backend:8001' with $env[\"BACKEND_URL\"] in health check and email fallback\n- Changed Telegram parse_mode from 'Markdown' to 'HTML' (more reliable; avoids MarkdownV2 escaping issues)\n- Updated Telegram message to use HTML bold tags instead of Markdown asterisks\n\n### Setup Required\n1. **Tailscale**: Ensure n8n Docker container can resolve 'uptime-kuma-pi4' via Tailscale MagicDNS.\n2. **Telegram**: Create bot via @BotFather, get TELEGRAM_BOT_TOKEN. Get chat ID via @userinfobot. Set TELEGRAM_CTO_CHAT_ID and TELEGRAM_BOT_TOKEN env vars.\n3. **Email**: Set ALERT_EMAIL_WEBHOOK_URL (or BACKEND_URL) and CTO_EMAIL env vars.\n4. **Supabase notifications table**: Has columns: id, user_id, title, message, type, read, created_at.\n\n### Services Monitored\n- Uptime Kuma on Raspberry Pi 4 (Zone 3) via Tailscale: http://uptime-kuma-pi4:3001\n- Backend Zone 2 Python API: BACKEND_URL/health\n- All monitors registered in Uptime Kuma status page 'main'\n\n### Alert Channels\n1. Telegram message to CTO chat (HTML format)\n2. Email via ALERT_EMAIL_WEBHOOK_URL or backend notification service\n3. Supabase notifications table log\n\n### Reduce Noise\n- Consider adding a cooldown check: only alert if service was healthy in last check\n- Use n8n static data or Supabase to track last alert time per service"
+  "notes": "## Zone 3 Health Monitoring & Backup Alerts\n\n### Fixes Applied (v2)\n- Removed non-existent notifications columns: severity, details, alerted_at, alert_sent\n- notifications INSERT now uses only: type, title, message, read (actual schema columns)\n- Status details moved into message string (concatenated as readable text)\n- Replaced hardcoded 'http://backend:8001' with $env[\"BACKEND_URL\"] in health check and email fallback\n- Changed Telegram parse_mode from 'Markdown' to 'HTML' (more reliable; avoids MarkdownV2 escaping issues)\n- Updated Telegram message to use HTML bold tags instead of Markdown asterisks\n\n### CRITICAL: Tailscale is DISABLED on VPS\nTailscale was deactivated on the VPS because it conflicts with UFW and blocks all TCP ports. The Uptime Kuma health check (http://uptime-kuma-pi4:3001) will FAIL until either:\n1. Tailscale is re-enabled with proper UFW coexistence, OR\n2. The Uptime Kuma URL is changed to a direct IP/hostname accessible from the n8n Docker network.\nThe workflow has continueOnFail=true so this does not break the entire monitoring chain.\n\n### Setup Required\n1. **Tailscale**: Ensure n8n Docker container can resolve 'uptime-kuma-pi4' via Tailscale MagicDNS (currently DISABLED).\n2. **Telegram**: Create bot via @BotFather, get TELEGRAM_BOT_TOKEN. Get chat ID via @userinfobot. Set TELEGRAM_CTO_CHAT_ID and TELEGRAM_BOT_TOKEN env vars.\n3. **Email**: Set ALERT_EMAIL_WEBHOOK_URL (or BACKEND_URL) and CTO_EMAIL env vars.\n4. **Supabase notifications table**: Has columns: id, user_id, title, message, type, read, created_at.\n\n### Services Monitored\n- Uptime Kuma on Raspberry Pi 4 (Zone 3) via Tailscale: http://uptime-kuma-pi4:3001 (CURRENTLY UNREACHABLE)\n- Backend Zone 2 Python API: BACKEND_URL/health\n- All monitors registered in Uptime Kuma status page 'main'\n\n### Alert Channels\n1. Telegram message to CTO chat (HTML format)\n2. Email via ALERT_EMAIL_WEBHOOK_URL or backend notification service\n3. Supabase notifications table log\n\n### Reduce Noise\n- Consider adding a cooldown check: only alert if service was healthy in last check\n- Use n8n static data or Supabase to track last alert time per service\n- Healthy status logs every 30 min - consider reducing frequency"
 }

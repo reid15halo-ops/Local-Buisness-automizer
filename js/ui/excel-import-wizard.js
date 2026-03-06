@@ -12,6 +12,7 @@ class ExcelImportWizard {
         this.mapping = null;
         this.validationResult = null;
         this.onComplete = null;
+        this._esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
     }
 
     // ============================================
@@ -314,6 +315,10 @@ class ExcelImportWizard {
     renderStep2() {
         this.mapping = this.analysisResult.suggestedMapping;
 
+        // Field template for this data type (required/optional fields)
+        const fieldTemplate = window.excelRecognitionService.mappingTemplates[this.dataType] || { required: [], optional: [] };
+        const allFields = [...fieldTemplate.required, ...fieldTemplate.optional];
+
         // Gespeicherte Templates abrufen
         const savedTemplates = window.excelRecognitionService.getAllTemplates(this.dataType);
 
@@ -328,7 +333,7 @@ class ExcelImportWizard {
                         <select id="template-select" class="template-select">
                             <option value="">-- Neue Zuordnung --</option>
                             ${savedTemplates.map(tpl => `
-                                <option value="${tpl.name}">${tpl.name} (${new Date(tpl.createdAt).toLocaleDateString()})</option>
+                                <option value="${this._esc(tpl.name)}">${this._esc(tpl.name)} (${new Date(tpl.createdAt).toLocaleDateString()})</option>
                             `).join('')}
                         </select>
                         <button class="btn btn-sm btn-secondary" id="btn-delete-template" disabled>🗑️</button>
@@ -374,18 +379,18 @@ class ExcelImportWizard {
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><strong>${sourceCol}</strong></td>
-                <td class="sample-data">${stats.samples.join(', ') || '-'}</td>
+                <td><strong>${this._esc(sourceCol)}</strong></td>
+                <td class="sample-data">${(stats.samples || []).map(s => this._esc(s)).join(', ') || '-'}</td>
                 <td>
-                    <select class="mapping-select" data-source="${sourceCol}">
+                    <select class="mapping-select" data-source="${this._esc(sourceCol)}">
                         <option value="">-- Nicht importieren --</option>
-                        ${template.required.map(field => `
+                        ${fieldTemplate.required.map(field => `
                             <option value="${field}" ${targetField === field ? 'selected' : ''}>
-                                ${field} ${template.required.includes(field) ? '*' : ''}
+                                ${field} *
                             </option>
                         `).join('')}
                         <optgroup label="Optional">
-                            ${template.optional.map(field => `
+                            ${fieldTemplate.optional.map(field => `
                                 <option value="${field}" ${targetField === field ? 'selected' : ''}>
                                     ${field}
                                 </option>
@@ -541,7 +546,7 @@ class ExcelImportWizard {
                         <div class="error-item">
                             <strong>Zeile ${item.row}:</strong>
                             <ul>
-                                ${item.errors.map(err => `<li>${err}</li>`).join('')}
+                                ${item.errors.map(err => `<li>${this._esc(err)}</li>`).join('')}
                             </ul>
                         </div>
                     `).join('')}
@@ -558,7 +563,7 @@ class ExcelImportWizard {
                         <div class="warning-item">
                             <strong>Zeile ${item.row}:</strong>
                             <ul>
-                                ${item.warnings.map(warn => `<li>${warn}</li>`).join('')}
+                                ${item.warnings.map(warn => `<li>${this._esc(warn)}</li>`).join('')}
                             </ul>
                         </div>
                     `).join('')}

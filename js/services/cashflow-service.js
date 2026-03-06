@@ -24,8 +24,8 @@ class CashFlowService {
         if (bookkeeping) {
             const year = today.getFullYear();
             const eur = bookkeeping.berechneEUR(year);
-            totalEinnahmen = eur.bruttoEinnahmen || 0;
-            totalAusgaben = eur.ausgaben?.reduce((sum, a) => sum + a.betrag, 0) || 0;
+            totalEinnahmen = eur.einnahmen?.brutto || 0;
+            totalAusgaben = eur.ausgabenGesamt?.brutto || 0;
         }
 
         // Get pending invoices
@@ -71,7 +71,7 @@ class CashFlowService {
             return isRecent && isType;
         });
 
-        const total = relevantBuchungen.reduce((sum, b) => sum + b.betrag, 0);
+        const total = relevantBuchungen.reduce((sum, b) => sum + (b.brutto || 0), 0);
         return total / 6;
     }
 

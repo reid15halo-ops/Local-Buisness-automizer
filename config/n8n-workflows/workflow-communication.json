@@ -558,6 +558,11 @@
             "node": "Draft General Reply",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
           }
         ]
       ]

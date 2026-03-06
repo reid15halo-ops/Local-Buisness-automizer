@@ -1,6 +1,21 @@
 /* ============================================
    SMS Reminder Service
    Automated appointment reminders via SMS
+
+   HINWEIS: SMS-Versand ist OPTIONAL und erfordert einen externen Anbieter.
+   Ohne konfigurierten Anbieter laeuft der Service im Demo-Modus
+   (Nachrichten werden nur in der Konsole geloggt, nicht versendet).
+
+   Unterstuetzte Anbieter (alle optional, kostenpflichtig):
+   - sipgate   (deutscher Anbieter, DSGVO-konform, ab 0,079 EUR/SMS)
+   - Twilio    (US-Anbieter, Pay-as-you-go)
+   - MessageBird (EU-Anbieter)
+
+   Die API-Keys werden NICHT im Client gespeichert, sondern in einer
+   Supabase Edge Function (send-sms) serverseitig verwaltet.
+
+   Konfiguration: SMS_PROVIDER in APP_CONFIG oder localStorage
+   Wert: 'sipgate' | 'twilio' | 'messagebird' | 'none' (Standard)
    ============================================ */
 
 class SmsReminderService {
@@ -443,7 +458,7 @@ class SmsReminderService {
     // Start periodic reminder check
     startReminderCheck() {
         // Check every minute
-        setInterval(() => {
+        this.reminderInterval = setInterval(() => {
             if (this.settings.enabled) {
                 this.checkDueReminders();
             }

@@ -24,13 +24,13 @@
 ├── *.html                      App pages (index, auth, landing, booking, etc.)
 ├── css/                        Stylesheets (core, components, fonts, feature-specific)
 ├── js/
-│   ├── services/               94 service modules
+│   ├── services/               112 service modules
 │   ├── modules/                14 feature/page modules
 │   ├── ui/                     18 UI component modules
 │   └── i18n/                   Translations (DE/EN, 402 keys)
 ├── fonts/, icons/, img/        Static assets
 ├── manifest.json               PWA manifest
-├── service-worker.js           Service Worker v8
+├── service-worker.js           Service Worker v21
 │
 ├── backend/                    FastAPI Python service (OCR, PII, guardrails)
 ├── supabase/
@@ -111,7 +111,7 @@ If ANY reviewer flags an issue -> back to Execution Agent. Loop until all 4 appr
 
 ## Coding Standards
 
-- TypeScript for frontend/Edge Functions
+- Vanilla JS (ES6+) for frontend, TypeScript for Edge Functions
 - Python for backend (FastAPI)
 - SQL migrations in supabase/migrations/
 - n8n workflows exported as JSON in config/n8n-workflows/

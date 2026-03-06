@@ -345,6 +345,7 @@ if ('serviceWorker' in navigator) {
 
 // Cache data whenever store updates (debounced)
 let _cacheDebounce = null;
+let _subscribeRetries = 0;
 function _subscribeToStore() {
     if (window.storeService) {
         window.storeService.subscribe(() => {
@@ -356,7 +357,7 @@ function _subscribeToStore() {
             }, 5000);
         });
     } else {
-        // Retry until storeService is available
+        if (_subscribeRetries++ > 20) { console.warn('storeService not available after 20 retries'); return; }
         setTimeout(_subscribeToStore, 500);
     }
 }

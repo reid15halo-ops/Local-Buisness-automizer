@@ -307,7 +307,15 @@ class RecurringTaskService {
         setTimeout(() => this.checkAndGenerateTasks(), 5000);
 
         // Then check every hour
-        setInterval(() => this.checkAndGenerateTasks(), 3600000);
+        this.schedulerInterval = setInterval(() => this.checkAndGenerateTasks(), 3600000);
+    }
+
+    // Stop the scheduler and cleanup
+    stop() {
+        if (this.schedulerInterval) {
+            clearInterval(this.schedulerInterval);
+            this.schedulerInterval = null;
+        }
     }
 
     // Manual trigger to generate next occurrence

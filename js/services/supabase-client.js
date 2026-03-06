@@ -77,9 +77,11 @@ class SupabaseClientService {
             // Start periodic connection checks (every 30s)
             this._startConnectionMonitor();
 
-            // Listen to browser online/offline events
-            window.addEventListener('online', () => this._onBrowserOnline());
-            window.addEventListener('offline', () => this._onBrowserOffline());
+            // Listen to browser online/offline events (named methods for cleanup)
+            this._boundOnline = () => this._onBrowserOnline();
+            this._boundOffline = () => this._onBrowserOffline();
+            window.addEventListener('online', this._boundOnline);
+            window.addEventListener('offline', this._boundOffline);
 
             // SupabaseClient initialized successfully
             return true;
@@ -295,6 +297,14 @@ class SupabaseClientService {
         if (this._connectionCheckInterval) {
             clearInterval(this._connectionCheckInterval);
         }
+        if (this._boundOnline) {
+            window.removeEventListener('online', this._boundOnline);
+        }
+        if (this._boundOffline) {
+            window.removeEventListener('offline', this._boundOffline);
+        }
+        this._boundOnline = null;
+        this._boundOffline = null;
         this._client = null;
         this._isConfigured = false;
         this._isConnected = false;

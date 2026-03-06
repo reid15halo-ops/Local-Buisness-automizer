@@ -4,6 +4,11 @@
    ============================================ */
 
 class ActivityIndicatorService {
+    _escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     constructor() {
         this.updateInterval = 30000; // Update every 30 seconds
         this.intervalId = null;
@@ -393,8 +398,8 @@ class ActivityIndicatorService {
                     <div class="priority-action-item ${action.severity}" data-action="${action.action}" data-view="${action.view}">
                         <div class="priority-action-icon">${action.icon}</div>
                         <div class="priority-action-content">
-                            <div class="priority-action-text">${action.text}</div>
-                            <div class="priority-action-detail">${action.detail}</div>
+                            <div class="priority-action-text">${this._escapeHtml(action.text)}</div>
+                            <div class="priority-action-detail">${this._escapeHtml(action.detail)}</div>
                             <div class="priority-action-time">${action.time}</div>
                         </div>
                     </div>

@@ -1,20 +1,19 @@
-// HandwerkFlow Email Relay
-// Runs on VPS, connects to Proton Mail Bridge SMTP
+// FreyAI Visions Email Relay
+// Runs on VPS, connects to local Postfix/Dovecot SMTP
 //
 // Setup:
-// 1. Install Proton Mail Bridge on VPS (headless):
-//    https://proton.me/mail/bridge#download
-//    protonmail-bridge --cli
+// 1. Configure Postfix on VPS (mail.freyaivisions.de)
+//    SMTP relay via localhost:587 with STARTTLS
 //
 // 2. Configure .env (see .env.example)
 // 3. npm install && npm start
 //
-// Proton Bridge SMTP defaults:
-//   Host: 127.0.0.1
-//   Port: 1025
-//   Security: STARTTLS
-//   Username: your proton email
-//   Password: bridge-generated password (NOT your Proton password)
+// Postfix/Dovecot SMTP (self-hosted):
+//   Host: 127.0.0.1 (or mail.freyaivisions.de)
+//   Port: 587 (STARTTLS) or 25 (localhost)
+//   Security: STARTTLS (remote) or none (localhost)
+//   Username: SMTP auth user (e.g., angebote@freyaivisions.de)
+//   Password: account password
 
 const Fastify = require('fastify');
 const nodemailer = require('nodemailer');
@@ -54,7 +53,7 @@ const SMTP_PORT = parseInt(process.env.SMTP_PORT || '1025');
 const SMTP_SECURE = process.env.SMTP_SECURE === 'true';
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
-const SENDER_NAME = process.env.SENDER_NAME || 'HandwerkFlow';
+const SENDER_NAME = process.env.SENDER_NAME || 'FreyAI Visions';
 const SENDER_EMAIL = process.env.SENDER_EMAIL || SMTP_USER;
 
 // --- SMTP Transporter ---
