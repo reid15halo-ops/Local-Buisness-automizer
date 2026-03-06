@@ -104,7 +104,7 @@
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 4.1 | **VPS Email-Relay deployen** | `vps/email-relay/server.js` auf Hetzner VPS, Resend-Key konfigurieren | KRITISCH |
+| 4.1 | **VPS Email-Relay deployen** | `infrastructure/vps/email-relay/server.js` auf Hetzner VPS, Resend-Key konfigurieren | KRITISCH |
 | 4.2 | **E-Mail-Versand testen** | Angebote per Mail, Rechnungen per Mail, Mahnungen per Mail | KRITISCH |
 | 4.3 | **E-Mail-Templates pruefen** | `email-template-service.js` — alle Templates rendern mit echten Daten | HOCH |
 | 4.4 | **SMS-Provider einrichten** | Twilio oder Sipgate konfigurieren, Terminerinnerung per SMS testen | MITTEL |
@@ -145,7 +145,7 @@
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 6.1 | **Hosting entscheiden** | Hostinger (deploy-hostinger/) vs. Hetzner VPS vs. Coolify | KRITISCH |
+| 6.1 | **Hosting entscheiden** | Hostinger (deploy/hostinger/) vs. Hetzner VPS vs. Coolify | KRITISCH |
 | 6.2 | **Domain konfigurieren** | freyaivisions.de — DNS, SSL-Zertifikat, HTTPS | KRITISCH |
 | 6.3 | **Build-Pipeline** | `deploy.sh` testen, dist-Ordner generieren, Service Worker Cache-Bust | HOCH |
 | 6.4 | **CSP-Headers setzen** | Content-Security-Policy fuer Prod-Domain, keine unsafe-inline noetig | HOCH |
@@ -265,7 +265,7 @@ Phase 3          Phase 4
 - Fixed: `customer-portal.html` edge function call had no timeout (added 10s AbortSignal.timeout)
 - Fixed: `customer-portal.html` logo `alt=""` empty (now "Firmenlogo")
 - Fixed: 143 `JSON.parse(localStorage.getItem(...))` calls across 59 service files without try-catch
-- Fixed: `deploy-hostinger/booking-service.js` same localStorage crash risk
+- Fixed: `deploy/hostinger/booking-service.js` same localStorage crash risk
 - Fixed: `profitability-service.js` division by zero when jobs.length is 0 (percentages + averages)
 - Fixed: `dashboard-charts-service.js` funnel conversion division by zero when stage.count is 0
 - Fixed: `bon-scanner-service.js` token matching division by zero

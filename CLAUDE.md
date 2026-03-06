@@ -1,84 +1,135 @@
-# FreyAI Visions — Project Rules
+# FreyAI Visions -- Project Rules
+
+## Product & Brand
+
+- **Product**: AI-powered business suite for German craftsmen (Handwerker, 5-10 employees)
+- **Brand**: "Industrial Luxury" (Rolex/Apple-Vibe). Dark mode, bold typography, minimalist industrial visuals
+- **USP**: Premium custom-fit digital backbone (Setup: 3.5k-7.5k EUR + Retainer: 300-500 EUR/month)
+- **Tone**: Direct, professional, visionary. Skip the fluff. Complete code blocks + concise explanations.
 
 ## Architecture
+
 - **95/5 Pattern**: 95% async (n8n workflows) / 5% sync (FastAPI backend)
+- **Frontend**: Vanilla JS (ES6+), HTML5, CSS3 -- offline-first PWA
 - **Database**: Supabase (PostgreSQL + Edge Functions + Realtime)
 - **VPS**: Hostinger KVM 4 (Ubuntu 24.04, Docker, 16 GB RAM)
 - **Local LLMs**: Ollama on VPS (Mistral Small, Qwen3.5:9b)
 - **Cloud LLMs**: Claude (Anthropic), Codex (OpenAI)
+- **AI**: Google Gemini 2.0 Flash via server-side proxy (95/5 human-in-the-loop)
 
-## Definition of Done (DoD) — Morpheus Feedback Loop
+## Directory Layout
 
-When implementing any feature or fixing any issue, follow this 4-agent workflow:
+```
+/
+├── *.html                      App pages (index, auth, landing, booking, etc.)
+├── css/                        Stylesheets (core, components, fonts, feature-specific)
+├── js/
+│   ├── services/               94 service modules
+│   ├── modules/                14 feature/page modules
+│   ├── ui/                     18 UI component modules
+│   └── i18n/                   Translations (DE/EN, 402 keys)
+├── fonts/, icons/, img/        Static assets
+├── manifest.json               PWA manifest
+├── service-worker.js           Service Worker v8
+│
+├── backend/                    FastAPI Python service (OCR, PII, guardrails)
+├── supabase/
+│   ├── functions/              13 Edge Functions (Deno/TypeScript)
+│   └── migrations/             SQL migrations
+│
+├── config/
+│   ├── app-config.js           App configuration
+│   ├── sql/                    Schema + migration SQL files
+│   └── n8n-workflows/          n8n workflow JSON exports
+│
+├── deploy/
+│   ├── hostinger/              Hostinger static site deploy package
+│   └── scripts/                Deploy & build scripts
+│
+├── infrastructure/
+│   ├── vps/                    VPS services (email-relay, postiz, scripts, skills)
+│   ├── hetzner/                Hetzner IaC configs
+│   ├── zone3/                  Zone3 rack scripts
+│   └── raspberry-pi/           Pi setup & auto-install
+│
+├── tools/                      PDF generator, batch scripts, sample data
+├── tests/                      JS unit tests (vitest)
+├── test-data/                  CSV test fixtures
+│
+├── docs/
+│   ├── architecture/           Phase reports, feature plans, audits
+│   ├── security/               Security reviews, CSP, VPS audit
+│   ├── business/               Pricing, beta questionnaire, marketing
+│   └── guides/                 Setup guides, UX patterns
+│
+├── .agent/                     Agent skill definitions
+├── .skills/                    Custom skills (boomer-ux, question)
+└── .github/workflows/          CI/CD (ci.yml, security.yml)
+```
 
-### Agent 1: Grounding Agent
-- Research the issue/task thoroughly before coding
-- Read relevant source files, documentation, and related issues
-- For code: understand the full context (imports, dependencies, tests)
-- For content: understand target language, style, audience
-- Output: structured context document for the Execution Agent
+## Key Services
 
-### Agent 2: Execution Agent
-- Model: **Mistral Small** (local via Ollama) for simple tasks, **Claude** for complex tasks
-- Implement the solution based on Grounding Agent context
-- Focus ONLY on implementation — no self-review
-- Output: code changes / content / translation
+| File | Purpose |
+|------|---------|
+| `js/services/auth-service.js` | Supabase Auth wrapper |
+| `js/services/security-service.js` | CSP, XSS, auth guards |
+| `js/services/sanitize-service.js` | Input sanitization |
+| `js/services/db-service.js` | IndexedDB + Supabase sync |
+| `js/services/approval-queue-service.js` | 95/5 human-in-the-loop queue |
+| `js/services/stripe-service.js` | Subscription billing |
+| `js/services/datev-export-service.js` | DATEV CSV/ZIP export |
+| `js/services/bookkeeping-service.js` | EUR bookkeeping |
 
-### Agent 3: Evaluation Agent (4 parallel reviewers)
-Spawn **at minimum 4 review agents** before accepting any change:
+## Database Tables (Supabase)
 
-#### Review 1 — Code Quality (Codex/GPT)
-- Is the code clean, correct, secure, performant?
-- Is it maintainable, testable, robust, documented?
-- Does it follow project conventions?
+`waitlist`, `profiles`, `kunden`, `anfragen`, `angebote`, `auftraege`, `rechnungen`, `positionen`, `materialien`, `lager`, `bestellungen`, `termine`, `zahlungen`, `mahnungen`, `dokumente`, `email_log`, `sms_log`
 
-#### Review 2 — Issue Resolution (Codex/GPT)
-- Does the new code solve the issue 100%?
-- Are all acceptance criteria met?
-- Are there edge cases not covered?
+Full schema: `config/sql/supabase-schema.sql`
 
-#### Review 3 — Code Quality (Claude)
-- Same checks as Review 1, different model perspective
-- Claude and Codex find different issues — use both
+## Design Tokens (css/core.css)
 
-#### Review 4 — Issue Resolution (Claude)
-- Same checks as Review 2, different model perspective
-- Verify from a different angle
+```css
+--accent: #6366f1;    /* Indigo -- primary brand */
+--bg-dark: #09090b;
+--bg-card: #18181b;
+--text: #fafafa;
+--success: #22c55e;
+--warning: #f59e0b;
+--radius: 16px;
+```
 
-**Rules:**
-- If ANY reviewer flags an issue → back to Execution Agent with feedback
-- Loop continues until ALL 4 reviewers approve
-- Linting, type-checking, and tests must pass regardless (non-negotiable)
-- Track the review round number (Morpheus example: 11 rounds needed)
+## Definition of Done (DoD) -- Morpheus Feedback Loop
 
-### Agent 4: Finalizing Agent
-- Only runs when all 4 reviewers approve
-- Git commit with descriptive message
-- Update relevant documentation
-- For n8n workflows: deploy to production
-- For content: write to database
+When implementing features, follow the 4-agent workflow:
 
-## Models Used (matching Morpheus setup)
+1. **Grounding Agent**: Research the issue/task thoroughly before coding
+2. **Execution Agent**: Implement solution (Mistral Small for simple, Claude for complex)
+3. **Evaluation Agent**: 4 parallel reviewers (2x Codex/GPT + 2x Claude) must all approve
+4. **Finalizing Agent**: Git commit, update docs, deploy
 
-| Role | Model | Where |
-|------|-------|-------|
-| Execution (simple) | Mistral Small 24B | Ollama on VPS (localhost:11434) |
-| Execution (complex) | Claude Opus 4.6 | Anthropic API |
-| Evaluation Review 1 | GPT-4o / Codex | OpenAI API |
-| Evaluation Review 2 | GPT-4o / Codex | OpenAI API |
-| Evaluation Review 3 | Claude Sonnet 4.6 | Anthropic API |
-| Evaluation Review 4 | Claude Sonnet 4.6 | Anthropic API |
-| Grounding (research) | Claude Opus 4.6 | Anthropic API |
+If ANY reviewer flags an issue -> back to Execution Agent. Loop until all 4 approve.
 
 ## Coding Standards
+
 - TypeScript for frontend/Edge Functions
 - Python for backend (FastAPI)
 - SQL migrations in supabase/migrations/
 - n8n workflows exported as JSON in config/n8n-workflows/
 - Always use RLS policies on new Supabase tables
+- Self-hosted fonts only (DSGVO compliance, no CDN)
 
 ## Git Workflow
+
 - Main branch: main
 - Feature branches: feature/<name>
 - Commit messages: conventional commits (feat:, fix:, chore:)
 - Never push directly to main without review loop completion
+
+## Environment Variables
+
+See `.env.example` for all required keys:
+- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- `GEMINI_API_KEY` (server-side only)
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- `RESEND_API_KEY`
+- `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`

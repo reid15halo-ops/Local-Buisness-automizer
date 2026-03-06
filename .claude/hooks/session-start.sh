@@ -14,9 +14,9 @@ npm install
 
 echo "[session-start] Installing Python backend dependencies..."
 if command -v pip3 &>/dev/null; then
-  pip3 install -r "$PROJECT_DIR/services/backend/requirements.txt" --quiet
+  pip3 install -r "$PROJECT_DIR/backend/requirements.txt" --quiet
 elif command -v pip &>/dev/null; then
-  pip install -r "$PROJECT_DIR/services/backend/requirements.txt" --quiet
+  pip install -r "$PROJECT_DIR/backend/requirements.txt" --quiet
 else
   echo "[session-start] WARNING: pip not found, skipping Python dependencies"
 fi

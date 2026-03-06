@@ -54,7 +54,7 @@ python3 -m http.server 8000  # Linux (then visit http://localhost:8000)
 
 **Raspberry Pi (Local network):**
 ```bash
-ssh pi@raspberrypi.local 'bash -s' < raspberry-pi-auto-install.sh
+ssh pi@raspberrypi.local 'bash -s' < infrastructure/raspberry-pi/raspberry-pi-auto-install.sh
 ```
 
 **XAMPP (Windows):**
@@ -67,35 +67,47 @@ ssh pi@raspberrypi.local 'bash -s' < raspberry-pi-auto-install.sh
 ```
 .
 ├── index.html              # Main app
-├── auth.html              # Authentication
-├── landing.html           # Landing page
-├── offline.html           # Offline fallback
-├── manifest.json          # PWA manifest
-├── service-worker.js      # Service worker (v5)
-├── deploy.sh              # Deployment script
-├── .htaccess              # Apache headers
-├── netlify.toml           # Netlify config
+├── auth.html               # Authentication
+├── landing.html            # Landing page
+├── offline.html            # Offline fallback
+├── manifest.json           # PWA manifest
+├── service-worker.js       # Service worker (v8)
 │
-├── css/                   # 5 CSS files
-│   ├── core.css
-│   ├── components.css
-│   ├── fonts.css
-│   ├── purchase-orders.css
-│   └── reorder-engine.css
-│
+├── css/                    # Stylesheets
 ├── js/
-│   ├── services/          # 94 service modules
-│   ├── modules/           # 14 feature modules
-│   ├── ui/                # 18 UI components
-│   └── i18n/              # Translations (DE/EN)
+│   ├── services/           # 94 service modules
+│   ├── modules/            # 14 feature modules
+│   ├── ui/                 # 18 UI components
+│   └── i18n/               # Translations (DE/EN)
 │
-├── config/                # Configuration files
-├── supabase/functions/    # Edge functions (13 endpoints)
-├── fonts/                 # Local font files (DSGVO)
-├── docs/                  # Development documentation
-└── dist/                  # Production build
+├── backend/                # FastAPI Python service
+├── supabase/               # Edge functions + migrations
+├── config/
+│   ├── app-config.js
+│   ├── sql/                # Schema & migration SQL
+│   └── n8n-workflows/      # n8n workflow exports
+│
+├── deploy/
+│   ├── hostinger/          # Hostinger deploy package
+│   └── scripts/            # Build & deploy scripts
+│
+├── infrastructure/
+│   ├── vps/                # VPS services & scripts
+│   ├── hetzner/            # Hetzner IaC
+│   ├── zone3/              # Zone3 rack configs
+│   └── raspberry-pi/       # Pi setup scripts
+│
+├── tools/                  # PDF generator & utilities
+├── tests/                  # Unit tests
+├── test-data/              # Test fixtures
+├── fonts/                  # Local font files (DSGVO)
+│
+└── docs/
+    ├── architecture/       # Phase reports, feature plans
+    ├── security/           # Security reviews & audits
+    ├── business/           # Pricing, marketing
+    └── guides/             # Setup & UX guides
 ```
-
 ## Development
 
 ### Tech Stack
@@ -117,7 +129,7 @@ npm run build   # Production build
 ### Build & Deploy
 ```bash
 # Create production package
-bash deploy.sh
+bash deploy/scripts/deploy.sh
 
 # Output: ./dist/ directory and freyai-production-*.zip
 ```
@@ -184,7 +196,7 @@ See `.env.example` for complete list.
 2. Access IndexedDB in console: `window.storeService.state`
 
 ### Raspberry Pi issues
-See `raspberry-pi-setup.md` in docs/
+See `infrastructure/raspberry-pi/raspberry-pi-setup.md`
 
 ## License
 

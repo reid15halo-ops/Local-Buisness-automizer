@@ -10,8 +10,8 @@
   "domains": [],
 
   "build_pack": "dockerfile",
-  "dockerfile_location": "services/backend/Dockerfile",
-  "build_context": "services/backend",
+  "dockerfile_location": "backend/Dockerfile",
+  "build_context": "backend",
   "dockerfile_target_build": "",
   "base_image": "",
 
@@ -170,7 +170,7 @@
     "is_http2_enabled": false,
     "is_log_drain_enabled": false,
     "watch_paths": [
-      "services/backend/**"
+      "backend/**"
     ]
   }
 }

@@ -207,7 +207,7 @@ CREATE POLICY "Edge functions can insert logs" ON automation_log
 
 #### M-2 — `rejectUnauthorized: false` disables TLS validation on SMTP
 
-**File:** `vps/email-relay/server.js:44-46`
+**File:** `infrastructure/vps/email-relay/server.js:44-46`
 
 ```javascript
 tls: {
@@ -310,7 +310,7 @@ return new Response(
 
 #### L-1 — Token comparison is not timing-safe
 
-**File:** `vps/email-relay/server.js:65`
+**File:** `infrastructure/vps/email-relay/server.js:65`
 
 ```javascript
 if (token !== API_SECRET) { ... }
@@ -383,7 +383,7 @@ The following are well-implemented and should be maintained:
 | **GDPR-compliant font delivery** | No Google Fonts CDN — fonts are self-hosted |
 | **No secrets in git** | `.gitignore` excludes `.env` and `.credentials`; only `.env.example` committed |
 | **PII sanitizer** | FastAPI `pii_sanitizer.py` provides GDPR-compliant redaction before AI processing |
-| **Non-root Docker user** | `services/backend/Dockerfile` runs as `appuser:1001` |
+| **Non-root Docker user** | `backend/Dockerfile` runs as `appuser:1001` |
 | **TLS 1.2/1.3 only** | `nginx.conf` explicitly disables TLS 1.0/1.1 |
 | **Blocked hidden files** | `location ~ /\.` returns 404 in nginx |
 | **Content-type validation** | FastAPI uses Pydantic models for all request bodies |

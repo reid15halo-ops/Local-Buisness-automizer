@@ -152,7 +152,7 @@ services:
   # ---------------------------------------------------------------------------
   backend:
     build:
-      context: ../../services/backend
+      context: ../../backend
       dockerfile: Dockerfile
     container_name: freyai-backend
     restart: unless-stopped

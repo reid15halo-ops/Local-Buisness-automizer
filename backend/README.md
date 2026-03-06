@@ -154,20 +154,20 @@ used as fallback.
 
 ```bash
 # Build
-docker build -t freyai-zone2-backend ./services/backend
+docker build -t freyai-zone2-backend ./backend
 
 # Run
 docker run -d \
   --name zone2-backend \
   -p 8001:8001 \
-  --env-file services/backend/.env \
+  --env-file backend/.env \
   freyai-zone2-backend
 ```
 
 ### Without Docker (development)
 
 ```bash
-cd services/backend
+cd backend
 
 # Create virtual environment
 python3.11 -m venv .venv
