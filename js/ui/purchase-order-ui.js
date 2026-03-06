@@ -10,6 +10,7 @@ class PurchaseOrderUI {
         this.init();
     }
 
+
     init() {
         this.setupEventListeners();
         this.renderPOList();
@@ -45,6 +46,12 @@ class PurchaseOrderUI {
             btn.addEventListener('click', () => this.closeModal('modal-po-detail'));
         });
 
+        // Delegated click handler for PO detail buttons
+        document.getElementById('po-list-container')?.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action="po-detail"]');
+            if (btn) this.openPODetail(btn.dataset.poId);
+        });
+
         // Lieferdatum default to 7 days from now
         const lieferdatumInput = document.getElementById('po-lieferdatum');
         if (lieferdatumInput) {
@@ -63,7 +70,7 @@ class PurchaseOrderUI {
         this.currentPositions = [];
 
         document.getElementById('modal-bestellung-title').textContent = 'Neue Bestellung';
-        document.getElementById('po-nummer').value = `PO-${window.purchaseOrderService.generatePONummer()}`;
+        document.getElementById('po-nummer').value = `PO-${window.purchaseOrderService.peekNextPONummer()}`;
         document.getElementById('po-lieferant-name').value = '';
         document.getElementById('po-lieferant-email').value = '';
         document.getElementById('po-lieferant-telefon').value = '';
@@ -124,11 +131,11 @@ class PurchaseOrderUI {
         container.innerHTML = this.currentPositions.map((pos, index) => `
             <div class="po-position-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap: 8px; margin-bottom: 8px; padding: 8px; background: var(--bg-secondary); border-radius: 4px; align-items: start;">
                 <div>
-                    <input type="text" placeholder="Bezeichnung" value="${pos.bezeichnung}"
+                    <input type="text" placeholder="Bezeichnung" value="${window.esc(pos.bezeichnung)}"
                         onchange="window.poUI.updatePosition(${index}, 'bezeichnung', this.value)" style="width: 100%;">
                 </div>
                 <div>
-                    <input type="text" placeholder="Art.Nr." value="${pos.artikelnummer}"
+                    <input type="text" placeholder="Art.Nr." value="${window.esc(pos.artikelnummer)}"
                         onchange="window.poUI.updatePosition(${index}, 'artikelnummer', this.value)" style="width: 100%;">
                 </div>
                 <div>
@@ -137,7 +144,7 @@ class PurchaseOrderUI {
                         style="width: 100%;" min="1">
                 </div>
                 <div>
-                    <input type="text" placeholder="Einheit" value="${pos.einheit}"
+                    <input type="text" placeholder="Einheit" value="${window.esc(pos.einheit)}"
                         onchange="window.poUI.updatePosition(${index}, 'einheit', this.value)"
                         style="width: 100%;">
                 </div>
@@ -169,7 +176,7 @@ class PurchaseOrderUI {
     // PO Operations
     // ============================================
 
-    savePO() {
+    async savePO() {
         const supplierName = document.getElementById('po-lieferant-name').value.trim();
         const positions = this.currentPositions.filter(p => p.bezeichnung.trim());
 
@@ -190,7 +197,7 @@ class PurchaseOrderUI {
             ansprechpartner: document.getElementById('po-lieferant-ansprechpartner').value
         };
 
-        const po = window.purchaseOrderService.createPO(supplier, positions, {
+        const po = await window.purchaseOrderService.createPO(supplier, positions, {
             lieferdatum_erwartet: document.getElementById('po-lieferdatum').value,
             notizen: document.getElementById('po-notizen').value
         });
@@ -204,12 +211,12 @@ class PurchaseOrderUI {
         }
     }
 
-    cancelPO() {
+    async cancelPO() {
         if (!this.currentPOId) {return;}
 
         if (!confirm('Möchten Sie diese Bestellung stornieren?')) {return;}
 
-        window.purchaseOrderService.cancelPO(this.currentPOId);
+        await window.purchaseOrderService.cancelPO(this.currentPOId);
         this.closeModal('modal-po-detail');
         this.renderPOList();
         this.updateStats();
@@ -219,7 +226,7 @@ class PurchaseOrderUI {
         }
     }
 
-    recordDelivery() {
+    async recordDelivery() {
         if (!this.currentPOId) {return;}
 
         const po = window.purchaseOrderService.getPO(this.currentPOId);
@@ -227,7 +234,7 @@ class PurchaseOrderUI {
 
         const items = [];
         po.positionen.forEach((pos, index) => {
-            const input = document.querySelector(`input[data-delivery-${index}]`);
+            const input = document.querySelector(`input[data-delivery-index="${index}"]`);
             if (input) {
                 const receivedQty = parseFloat(input.value) || 0;
                 if (receivedQty > 0) {
@@ -244,7 +251,7 @@ class PurchaseOrderUI {
             return;
         }
 
-        window.purchaseOrderService.recordDelivery(this.currentPOId, items);
+        await window.purchaseOrderService.recordDelivery(this.currentPOId, items);
 
         this.closeModal('modal-po-detail');
         this.renderPOList();
@@ -348,17 +355,17 @@ class PurchaseOrderUI {
 
         return `
             <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 12px; font-weight: 600;">${po.nummer}</td>
-                <td style="padding: 12px;">${window.UI?.sanitize?.(po.lieferant.name) || po.lieferant.name}</td>
+                <td style="padding: 12px; font-weight: 600;">${window.esc(po.nummer)}</td>
+                <td style="padding: 12px;">${window.esc(po.lieferant.name)}</td>
                 <td style="padding: 12px; text-align: center;">
-                    <span class="badge" class="badge-status-${po.status}">${statusLabel}</span>
+                    <span class="badge badge-status-${this._safeStatus(po.status)}">${statusLabel}</span>
                 </td>
                 <td style="padding: 12px; text-align: right;">${brutto}</td>
                 <td style="padding: 12px; text-align: center;">
                     ${po.lieferdatum_erwartet ? this.formatDate(po.lieferdatum_erwartet) : '-'}
                 </td>
                 <td style="padding: 12px; text-align: center;">
-                    <button class="btn btn-small btn-secondary" onclick="window.poUI.openPODetail('${po.id}')">
+                    <button class="btn btn-small btn-secondary" data-action="po-detail" data-po-id="${window.esc(po.id)}">
                         👁️ Details
                     </button>
                 </td>
@@ -374,7 +381,7 @@ class PurchaseOrderUI {
 
         // Header
         document.getElementById('po-detail-nummer').textContent = `Bestellung ${po.nummer}`;
-        document.getElementById('po-detail-status').innerHTML = `<span class="badge" class="badge-status-${po.status}">${this.getStatusLabel(po.status)}</span>`;
+        document.getElementById('po-detail-status').innerHTML = `<span class="badge badge-status-${this._safeStatus(po.status)}">${this.getStatusLabel(po.status)}</span>`;
         document.getElementById('po-detail-bestelldatum').textContent = this.formatDate(po.bestelldatum);
         document.getElementById('po-detail-lieferdatum-erwartet').textContent = this.formatDate(po.lieferdatum_erwartet);
 
@@ -387,10 +394,10 @@ class PurchaseOrderUI {
         // Positions
         const positionsHtml = po.positionen.map(pos => `
             <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 8px;">${pos.bezeichnung}</td>
-                <td style="padding: 8px; text-align: right;">${pos.menge} ${pos.einheit}</td>
+                <td style="padding: 8px;">${window.esc(pos.bezeichnung)}</td>
+                <td style="padding: 8px; text-align: right;">${pos.menge} ${window.esc(pos.einheit)}</td>
                 <td style="padding: 8px; text-align: right;">${(pos.ekPreis || 0).toFixed(2)} €</td>
-                <td style="padding: 8px; text-align: right;">${pos.gelieferteMenge || 0} ${pos.einheit}</td>
+                <td style="padding: 8px; text-align: right;">${pos.gelieferteMenge || 0} ${window.esc(pos.einheit)}</td>
                 <td style="padding: 8px; text-align: right;">${(pos.gesamtpreis || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
             </tr>
         `).join('');
@@ -429,14 +436,14 @@ class PurchaseOrderUI {
         form.innerHTML = po.positionen.map((pos, index) => `
             <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 12px; align-items: center;">
                 <div>
-                    <label style="font-size: 14px;">${pos.bezeichnung}</label>
+                    <label style="font-size: 14px;">${window.esc(pos.bezeichnung)}</label>
                     <span style="display: block; color: var(--text-muted); font-size: 12px;">
-                        Bestellt: ${pos.menge} ${pos.einheit}, Geliefert: ${pos.gelieferteMenge || 0} ${pos.einheit}
+                        Bestellt: ${pos.menge} ${window.esc(pos.einheit)}, Geliefert: ${pos.gelieferteMenge || 0} ${window.esc(pos.einheit)}
                     </span>
                 </div>
                 <div>
                     <label style="font-size: 12px; color: var(--text-muted);">Anzahl</label>
-                    <input type="number" data-delivery-${index} placeholder="0" step="1" min="0" style="width: 100%;">
+                    <input type="number" data-delivery-index="${index}" placeholder="0" step="1" min="0" style="width: 100%;">
                 </div>
             </div>
         `).join('');
@@ -490,7 +497,7 @@ class PurchaseOrderUI {
 
         const currentValue = select.value;
         select.innerHTML = '<option value="">Alle Lieferanten</option>' +
-            suppliers.map(s => `<option value="${(window.UI?.sanitize || String)(s.name)}">${(window.UI?.sanitize || String)(s.name)}</option>`).join('');
+            suppliers.map(s => `<option value="${window.esc(s.name)}">${window.esc(s.name)}</option>`).join('');
         select.value = currentValue;
     }
 
@@ -505,6 +512,12 @@ class PurchaseOrderUI {
         return colors[status] || '#6b7280';
     }
 
+    _validStatuses = ['entwurf', 'bestellt', 'teillieferung', 'geliefert', 'storniert'];
+
+    _safeStatus(status) {
+        return this._validStatuses.includes(status) ? status : 'entwurf';
+    }
+
     getStatusLabel(status) {
         const labels = {
             'entwurf': 'Entwurf',
@@ -513,7 +526,7 @@ class PurchaseOrderUI {
             'geliefert': 'Geliefert',
             'storniert': 'Storniert'
         };
-        return labels[status] || status;
+        return labels[status] || 'Unbekannt';
     }
 
     formatDate(dateStr) {

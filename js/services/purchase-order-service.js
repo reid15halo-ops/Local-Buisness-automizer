@@ -1,30 +1,164 @@
 /* ============================================
    Purchase Order (Bestellung) Service
    Supplier Management & PO Workflow
+   Supabase-first — no localStorage
    ============================================ */
 
 class PurchaseOrderService {
     constructor() {
-        try { this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]'); } catch { this.bestellungen = []; }
-        try { this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]'); } catch { this.lieferanten = []; }
-        this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
+        this.bestellungen = [];
+        this.lieferanten = [];
+        this.poCounter = 0;
+        this._ready = false;
+    }
+
+    async init() {
+        await this._loadFromSupabase();
+        try {
+            const { data } = await this._supabase()?.auth?.getUser() || {};
+            this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        } catch {
+            this._userId = '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        }
+        this._ready = true;
+    }
+
+    _supabase() {
+        return window.supabaseClient?.client;
+    }
+
+    _isOnline() {
+        return !!(this._supabase() && window.supabaseClient?.isConfigured());
+    }
+
+    // ============================================
+    // Supabase helpers
+    // ============================================
+
+    _toSupabaseRow(po) {
+        return {
+            id: po.id,
+            user_id: this._userId || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc',
+            tenant_id: 'a0000000-0000-0000-0000-000000000001',
+            nummer: po.nummer,
+            status: po.status,
+            lieferant_name: po.lieferant?.name || '',
+            lieferant_email: po.lieferant?.email || '',
+            lieferant_telefon: po.lieferant?.telefon || '',
+            lieferant_ansprechpartner: po.lieferant?.ansprechpartner || '',
+            positionen: po.positionen || [],
+            netto: po.netto || 0,
+            mwst: po.mwst || 0,
+            brutto: po.brutto || 0,
+            bestelldatum: po.bestelldatum || null,
+            lieferdatum_erwartet: po.lieferdatum_erwartet || null,
+            lieferdatum_tatsaechlich: po.lieferdatum_tatsaechlich || null,
+            auftrag_id: po.auftragId || null,
+            notizen: po.notizen || '',
+            eingangsrechnung_nr: po.eingangsrechnungNr || '',
+            confidence: po.confidence || null
+        };
+    }
+
+    _fromSupabaseRow(remote) {
+        return {
+            id: remote.id,
+            nummer: remote.nummer || remote.id,
+            status: remote.status || 'geliefert',
+            lieferant: {
+                name: remote.lieferant_name || '',
+                email: remote.lieferant_email || '',
+                telefon: remote.lieferant_telefon || '',
+                ansprechpartner: remote.lieferant_ansprechpartner || ''
+            },
+            positionen: remote.positionen || [],
+            netto: parseFloat(remote.netto) || 0,
+            mwst: parseFloat(remote.mwst) || 0,
+            brutto: parseFloat(remote.brutto) || 0,
+            bestelldatum: remote.bestelldatum || remote.created_at?.split('T')[0] || '',
+            lieferdatum_erwartet: remote.lieferdatum_erwartet || '',
+            lieferdatum_tatsaechlich: remote.lieferdatum_tatsaechlich || '',
+            auftragId: remote.auftrag_id || null,
+            notizen: remote.notizen || '',
+            eingangsrechnungNr: remote.eingangsrechnung_nr || '',
+            confidence: parseFloat(remote.confidence) || 0,
+            erstelltAm: remote.created_at || new Date().toISOString()
+        };
+    }
+
+    async _loadFromSupabase() {
+        if (!this._isOnline()) return;
+        try {
+            const { data, error } = await this._supabase()
+                .from('purchase_orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('[PO] Supabase load error:', error.message);
+                return;
+            }
+
+            this.bestellungen = (data || []).map(r => this._fromSupabaseRow(r));
+
+            // Extract unique suppliers
+            const supplierMap = new Map();
+            for (const po of this.bestellungen) {
+                if (po.lieferant?.name && !supplierMap.has(po.lieferant.name)) {
+                    supplierMap.set(po.lieferant.name, { ...po.lieferant });
+                }
+            }
+            this.lieferanten = Array.from(supplierMap.values());
+
+            // Derive counter from highest existing PO number
+            let maxNum = 0;
+            for (const po of this.bestellungen) {
+                const match = po.nummer?.match(/PO-\d{4}-(\d+)/);
+                if (match) maxNum = Math.max(maxNum, parseInt(match[1], 10));
+            }
+            this.poCounter = maxNum;
+
+            console.log(`[PO] Loaded ${this.bestellungen.length} POs from Supabase`);
+        } catch (err) {
+            console.error('[PO] Supabase load failed:', err.message);
+        }
+    }
+
+    async _upsertToSupabase(po) {
+        if (!this._isOnline()) return;
+        try {
+            const row = this._toSupabaseRow(po);
+            const { error } = await this._supabase()
+                .from('purchase_orders')
+                .upsert(row, { onConflict: 'id' });
+            if (error) console.error('[PO] Supabase upsert error:', error.message);
+        } catch (err) {
+            console.error('[PO] Supabase upsert failed:', err.message);
+        }
+    }
+
+    async _deleteFromSupabase(poId) {
+        if (!this._isOnline()) return;
+        try {
+            const { error } = await this._supabase()
+                .from('purchase_orders')
+                .delete()
+                .eq('id', poId);
+            if (error) console.error('[PO] Supabase delete error:', error.message);
+        } catch (err) {
+            console.error('[PO] Supabase delete failed:', err.message);
+        }
     }
 
     // ============================================
     // CRUD Operations
     // ============================================
 
-    /**
-     * Create a new Purchase Order
-     * @param {Object} lieferant - Supplier object
-     * @param {Array} positionen - [{materialId, bezeichnung, artikelnummer, menge, einheit, ekPreis}, ...]
-     * @param {Object} options - {notizen, auftragId, lieferdatum_erwartet}
-     * @returns {Object} Created PO
-     */
-    createPO(lieferant, positionen, options = {}) {
+    async createPO(lieferant, positionen, options = {}) {
+        const poNummer = this.generatePONummer();
         const po = {
-            id: `PO-${this.generatePONummer()}`,
-            nummer: `PO-${this.generatePONummer()}`,
+            id: `PO-${poNummer}`,
+            nummer: `PO-${poNummer}`,
             status: 'entwurf',
             lieferant: {
                 name: lieferant.name || '',
@@ -47,140 +181,87 @@ class PurchaseOrderService {
             brutto: 0,
             bestelldatum: new Date().toISOString().split('T')[0],
             lieferdatum_erwartet: options.lieferdatum_erwartet || this._addDays(new Date(), 7),
-            lieferdatum_tatsaechlich: null,
+            lieferdatum_tatsaechlich: options.lieferdatum_tatsaechlich || null,
             notizen: options.notizen || '',
             erstelltAm: new Date().toISOString(),
-            auftragId: options.auftragId || null
+            auftragId: options.auftragId || null,
+            eingangsrechnungNr: options.eingangsrechnungNr || null,
+            confidence: options.confidence || null
         };
 
-        // Calculate totals
         this._calculatePOTotals(po);
-
         this.bestellungen.push(po);
         this._ensureSupplierExists(lieferant);
-        this.save();
 
+        await this._upsertToSupabase(po);
         return po;
     }
 
-    /**
-     * Update an existing PO
-     * @param {string} poId - PO ID
-     * @param {Object} updates - Fields to update
-     * @returns {Object|null} Updated PO or null
-     */
-    updatePO(poId, updates) {
+    async updatePO(poId, updates) {
         const po = this.bestellungen.find(p => p.id === poId);
-        if (!po) {return null;}
+        if (!po) return null;
 
         Object.assign(po, updates);
         if (updates.positionen) {
             this._calculatePOTotals(po);
         }
 
-        this.save();
+        await this._upsertToSupabase(po);
         return po;
     }
 
-    /**
-     * Delete a draft PO
-     * @param {string} poId - PO ID
-     * @returns {boolean} Success
-     */
-    deletePO(poId) {
+    async deletePO(poId) {
         const index = this.bestellungen.findIndex(p => p.id === poId);
-        if (index === -1) {return false;}
+        if (index === -1) return false;
 
         const po = this.bestellungen[index];
-        // Only allow deletion of draft POs
         if (po.status !== 'entwurf') {
             console.warn('Cannot delete PO with status:', po.status);
             return false;
         }
 
         this.bestellungen.splice(index, 1);
-        this.save();
+        await this._deleteFromSupabase(poId);
         return true;
     }
 
-    /**
-     * Get PO by ID
-     * @param {string} poId - PO ID
-     * @returns {Object|null} PO or null
-     */
     getPO(poId) {
         return this.bestellungen.find(p => p.id === poId) || null;
     }
 
-    /**
-     * Get all POs
-     * @returns {Array} All POs sorted by date (newest first)
-     */
     getAllPOs() {
         return [...this.bestellungen].sort((a, b) =>
             new Date(b.erstelltAm) - new Date(a.erstelltAm)
         );
     }
 
-    /**
-     * Get POs by status
-     * @param {string} status - Status filter
-     * @returns {Array} Filtered POs
-     */
     getPOsByStatus(status) {
         return this.bestellungen.filter(p => p.status === status);
     }
 
-    /**
-     * Get POs by supplier
-     * @param {string} supplierName - Supplier name
-     * @returns {Array} Filtered POs
-     */
     getPOsByLieferant(supplierName) {
-        return this.bestellungen.filter(p => p.lieferant.name === supplierName);
+        return this.bestellungen.filter(p => p.lieferant?.name === supplierName);
     }
 
     // ============================================
     // Workflow
     // ============================================
 
-    /**
-     * Submit PO: entwurf → bestellt
-     * @param {string} poId - PO ID
-     * @returns {Object|null} Updated PO
-     */
-    submitPO(poId) {
+    async submitPO(poId) {
         const po = this.getPO(poId);
-        if (!po) {return null;}
-
-        if (po.status !== 'entwurf') {
-            console.warn('PO is not in draft status');
-            return null;
-        }
+        if (!po || po.status !== 'entwurf') return null;
 
         po.status = 'bestellt';
         po.bestelldatum = new Date().toISOString().split('T')[0];
-        this.save();
-
+        await this._upsertToSupabase(po);
         return po;
     }
 
-    /**
-     * Record incoming goods (Wareneingang)
-     * @param {string} poId - PO ID
-     * @param {Array} items - [{materialId, receivedQty}, ...]
-     * @returns {Object|null} Updated PO
-     */
-    recordDelivery(poId, items) {
+    async recordDelivery(poId, items) {
         const po = this.getPO(poId);
-        if (!po) {return null;}
+        if (!po) return null;
+        if (po.status === 'entwurf' || po.status === 'storniert') return null;
 
-        if (po.status === 'entwurf' || po.status === 'storniert') {
-            console.warn('Cannot record delivery for PO in status:', po.status);
-            return null;
-        }
-
-        // Update positions
         items.forEach(item => {
             const pos = po.positionen.find(p => p.materialId === item.materialId);
             if (pos) {
@@ -188,49 +269,31 @@ class PurchaseOrderService {
             }
         });
 
-        // Update material stock via materialService
         if (window.materialService) {
             items.forEach(item => {
                 window.materialService.updateStock(item.materialId, item.receivedQty);
             });
         }
 
-        // Determine new status
-        const allFullyDelivered = po.positionen.every(pos =>
-            pos.gelieferteMenge >= pos.menge
-        );
-
+        const allFullyDelivered = po.positionen.every(pos => pos.gelieferteMenge >= pos.menge);
         if (allFullyDelivered) {
             po.status = 'geliefert';
             po.lieferdatum_tatsaechlich = new Date().toISOString().split('T')[0];
-        } else {
-            const anyDelivered = po.positionen.some(pos => pos.gelieferteMenge > 0);
-            if (anyDelivered) {
-                po.status = 'teillieferung';
-            }
+        } else if (po.positionen.some(pos => pos.gelieferteMenge > 0)) {
+            po.status = 'teillieferung';
         }
 
-        this.save();
+        await this._upsertToSupabase(po);
         return po;
     }
 
-    /**
-     * Cancel a PO
-     * @param {string} poId - PO ID
-     * @returns {Object|null} Updated PO
-     */
-    cancelPO(poId) {
+    async cancelPO(poId) {
         const po = this.getPO(poId);
-        if (!po) {return null;}
-
-        if (po.status === 'geliefert' || po.status === 'storniert') {
-            console.warn('Cannot cancel PO in status:', po.status);
-            return null;
-        }
+        if (!po) return null;
+        if (po.status === 'geliefert' || po.status === 'storniert') return null;
 
         po.status = 'storniert';
-        this.save();
-
+        await this._upsertToSupabase(po);
         return po;
     }
 
@@ -238,133 +301,79 @@ class PurchaseOrderService {
     // Auto-generation
     // ============================================
 
-    /**
-     * Generate PO(s) from material shortages
-     * @param {Array} shortageItems - [{materialId, shortage, material}, ...]
-     * @returns {Array} Created POs
-     */
     generatePOFromShortage(shortageItems) {
-        if (!window.materialService) {
-            console.error('MaterialService not available');
-            return [];
-        }
+        if (!window.materialService) return [];
 
         const createdPOs = [];
-
-        // Group by supplier
         const bySupplier = {};
+
         shortageItems.forEach(item => {
             const material = window.materialService.getMaterial(item.materialId);
-            if (!material) {return;}
+            if (!material) return;
 
             const supplier = material.lieferant || 'Unknown';
-            if (!bySupplier[supplier]) {
-                bySupplier[supplier] = [];
-            }
+            if (!bySupplier[supplier]) bySupplier[supplier] = [];
 
-            // Order quantity = shortage + safety buffer
             const safetyBuffer = material.minBestand || 10;
-            const orderQty = item.shortage + safetyBuffer;
-
             bySupplier[supplier].push({
                 materialId: item.materialId,
                 bezeichnung: material.bezeichnung,
                 artikelnummer: material.artikelnummer,
-                menge: orderQty,
+                menge: item.shortage + safetyBuffer,
                 einheit: material.einheit,
                 ekPreis: material.preis
             });
         });
 
-        // Create one PO per supplier
         Object.entries(bySupplier).forEach(([supplierName, items]) => {
-            // Get or create supplier object
             let supplier = this.lieferanten.find(s => s.name === supplierName);
             if (!supplier) {
-                supplier = {
-                    name: supplierName,
-                    email: '',
-                    telefon: '',
-                    ansprechpartner: '',
-                    lieferzeit_tage: 5
-                };
+                supplier = { name: supplierName, email: '', telefon: '', ansprechpartner: '', lieferzeit_tage: 5 };
             }
-
-            const po = this.createPO(supplier, items, {
-                notizen: 'Auto-generated from shortage'
-            });
-
+            const po = this.createPO(supplier, items, { notizen: 'Auto-generated from shortage' });
             createdPOs.push(po);
         });
 
         return createdPOs;
     }
 
-    /**
-     * Generate POs for items with low stock
-     * @returns {Array} Created POs
-     */
     generatePOFromLowStock() {
-        if (!window.materialService) {
-            console.error('MaterialService not available');
-            return [];
-        }
-
+        if (!window.materialService) return [];
         const lowStockItems = window.materialService.getLowStockItems();
-        if (lowStockItems.length === 0) {return [];}
+        if (lowStockItems.length === 0) return [];
 
-        const shortageItems = lowStockItems.map(material => ({
+        return this.generatePOFromShortage(lowStockItems.map(material => ({
             materialId: material.id,
             shortage: Math.max(0, material.minBestand - material.bestand),
-            material: material
-        }));
-
-        return this.generatePOFromShortage(shortageItems);
+            material
+        })));
     }
 
     // ============================================
     // Reporting
     // ============================================
 
-    /**
-     * Get total value of open POs
-     * @returns {number} Total € of outstanding orders
-     */
     getOpenPOValue() {
         return this.bestellungen
             .filter(po => ['bestellt', 'teillieferung'].includes(po.status))
             .reduce((sum, po) => sum + po.brutto, 0);
     }
 
-    /**
-     * Get POs expected to arrive within X days
-     * @param {number} days - Number of days
-     * @returns {Array} Expected POs
-     */
     getExpectedDeliveries(days = 7) {
         const now = new Date();
-        const cutoff = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-
+        const cutoff = new Date(now.getTime() + days * 86400000);
         return this.bestellungen.filter(po => {
-            if (!['bestellt', 'teillieferung'].includes(po.status)) {return false;}
-
-            const expectedDate = new Date(po.lieferdatum_erwartet);
-            return expectedDate >= now && expectedDate <= cutoff;
+            if (!['bestellt', 'teillieferung'].includes(po.status)) return false;
+            const d = new Date(po.lieferdatum_erwartet);
+            return d >= now && d <= cutoff;
         });
     }
 
-    /**
-     * Get PO history within date range
-     * @param {Object} dateRange - {startDate, endDate} in YYYY-MM-DD format
-     * @returns {Array} Historical POs
-     */
     getPOHistory(dateRange = {}) {
         const { startDate, endDate } = dateRange;
-
         return this.bestellungen.filter(po => {
-            const poDate = po.bestelldatum;
-            if (startDate && poDate < startDate) {return false;}
-            if (endDate && poDate > endDate) {return false;}
+            if (startDate && po.bestelldatum < startDate) return false;
+            if (endDate && po.bestelldatum > endDate) return false;
             return ['geliefert', 'storniert'].includes(po.status);
         });
     }
@@ -373,14 +382,9 @@ class PurchaseOrderService {
     // Supplier Management
     // ============================================
 
-    /**
-     * Get or create supplier
-     * @param {Object} supplierData - Supplier object
-     * @returns {Object} Supplier
-     */
     addSupplier(supplierData) {
         const existing = this.lieferanten.find(s => s.name === supplierData.name);
-        if (existing) {return existing;}
+        if (existing) return existing;
 
         const supplier = {
             name: supplierData.name || '',
@@ -392,66 +396,32 @@ class PurchaseOrderService {
         };
 
         this.lieferanten.push(supplier);
-        this.save();
-
         return supplier;
     }
 
-    /**
-     * Get all suppliers
-     * @returns {Array} All suppliers
-     */
-    getAllSuppliers() {
-        return this.lieferanten;
-    }
+    getAllSuppliers() { return this.lieferanten; }
 
-    /**
-     * Get supplier by name
-     * @param {string} name - Supplier name
-     * @returns {Object|null} Supplier or null
-     */
     getSupplier(name) {
         return this.lieferanten.find(s => s.name === name) || null;
     }
 
-    /**
-     * Update supplier
-     * @param {string} name - Supplier name
-     * @param {Object} updates - Fields to update
-     * @returns {Object|null} Updated supplier
-     */
     updateSupplier(name, updates) {
         const supplier = this.getSupplier(name);
-        if (!supplier) {return null;}
-
+        if (!supplier) return null;
         Object.assign(supplier, updates);
-        this.save();
-
         return supplier;
     }
 
-    /**
-     * Delete supplier
-     * @param {string} name - Supplier name
-     * @returns {boolean} Success
-     */
     deleteSupplier(name) {
         const index = this.lieferanten.findIndex(s => s.name === name);
-        if (index === -1) {return false;}
+        if (index === -1) return false;
 
-        // Don't delete if there are active POs
         const activePOs = this.getPOsByLieferant(name).filter(po =>
             ['bestellt', 'teillieferung'].includes(po.status)
         );
-
-        if (activePOs.length > 0) {
-            console.warn('Cannot delete supplier with active purchase orders');
-            return false;
-        }
+        if (activePOs.length > 0) return false;
 
         this.lieferanten.splice(index, 1);
-        this.save();
-
         return true;
     }
 
@@ -459,190 +429,86 @@ class PurchaseOrderService {
     // Numbering
     // ============================================
 
-    /**
-     * Generate sequential PO number
-     * @returns {string} PO number like "2026-001"
-     */
     generatePONummer() {
         this.poCounter++;
         const year = new Date().getFullYear();
         const num = this.poCounter.toString().padStart(3, '0');
-        localStorage.setItem('po_counter', this.poCounter.toString());
+        return `${year}-${num}`;
+    }
+
+    peekNextPONummer() {
+        const year = new Date().getFullYear();
+        const num = (this.poCounter + 1).toString().padStart(3, '0');
         return `${year}-${num}`;
     }
 
     // ============================================
-    // Persistence
+    // Refresh from Supabase (called externally)
     // ============================================
 
-    save() {
-        localStorage.setItem('purchase_orders', JSON.stringify(this.bestellungen));
-        localStorage.setItem('suppliers', JSON.stringify(this.lieferanten));
-    }
-
-    load() {
-        try { this.bestellungen = JSON.parse(localStorage.getItem('purchase_orders') || '[]'); } catch { this.bestellungen = []; }
-        try { this.lieferanten = JSON.parse(localStorage.getItem('suppliers') || '[]'); } catch { this.lieferanten = []; }
-        this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
-    }
-
-    clear() {
-        this.bestellungen = [];
-        this.lieferanten = [];
-        this.poCounter = 0;
-        this.save();
+    async refresh() {
+        await this._loadFromSupabase();
+        if (window.poUI) {
+            window.poUI.renderPOList();
+            if (typeof window.poUI.updateStats === 'function') {
+                window.poUI.updateStats();
+            }
+        }
     }
 
     // ============================================
     // Private Helpers
     // ============================================
 
-    /**
-     * Calculate PO totals (netto, mwst, brutto)
-     * @private
-     */
     _calculatePOTotals(po) {
-        if (!po.positionen) {po.positionen = [];}
+        if (!po.positionen) po.positionen = [];
         const netto = po.positionen.reduce((sum, pos) =>
             sum + ((pos.menge || 0) * (pos.ekPreis || 0)), 0
         );
-
         po.netto = netto;
-        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
         po.mwst = netto * taxRate;
         po.brutto = netto * (1 + taxRate);
-
-        // Update position totals
         po.positionen.forEach(pos => {
             pos.gesamtpreis = (pos.menge || 0) * (pos.ekPreis || 0);
         });
     }
 
-    /**
-     * Ensure supplier exists in registry
-     * @private
-     */
     _ensureSupplierExists(supplier) {
-        const existing = this.lieferanten.find(s => s.name === supplier.name);
-        if (!existing) {
+        if (!this.lieferanten.find(s => s.name === supplier.name)) {
             this.addSupplier(supplier);
         }
     }
 
-    /**
-     * Add days to date
-     * @private
-     */
     _addDays(date, days) {
         const result = new Date(date);
         result.setDate(result.getDate() + days);
         return result.toISOString().split('T')[0];
     }
-
-    /**
-     * Load demo POs and suppliers
-     */
-    loadDemoData() {
-        // Demo suppliers
-        this.lieferanten = [
-            {
-                name: 'Stahl Schmidt GmbH',
-                email: 'bestellung@stahlschmidt.de',
-                telefon: '+49 6029 12345',
-                ansprechpartner: 'Herr Müller',
-                lieferzeit_tage: 5,
-                materialIds: ['MAT-DEMO-001', 'MAT-DEMO-002']
-            },
-            {
-                name: 'Rohrstahl GmbH',
-                email: 'order@rohrstahl.de',
-                telefon: '+49 6029 54321',
-                ansprechpartner: 'Frau Schmidt',
-                lieferzeit_tage: 7,
-                materialIds: ['MAT-DEMO-003', 'MAT-DEMO-004']
-            },
-            {
-                name: 'Blech Express',
-                email: 'info@blech-express.de',
-                telefon: '+49 6029 99999',
-                ansprechpartner: 'Herr Wagner',
-                lieferzeit_tage: 3,
-                materialIds: ['MAT-DEMO-005']
-            }
-        ];
-
-        // Demo POs
-        this.bestellungen = [
-            {
-                id: 'PO-2026-001',
-                nummer: 'PO-2026-001',
-                status: 'geliefert',
-                lieferant: {
-                    name: 'Stahl Schmidt GmbH',
-                    email: 'bestellung@stahlschmidt.de',
-                    telefon: '+49 6029 12345',
-                    ansprechpartner: 'Herr Müller'
-                },
-                positionen: [
-                    {
-                        materialId: 'MAT-DEMO-001',
-                        bezeichnung: 'IPE 100 Stahlträger',
-                        artikelnummer: 'ST-IPE-100',
-                        menge: 50,
-                        einheit: 'm',
-                        ekPreis: 12.50,
-                        gelieferteMenge: 50,
-                        gesamtpreis: 625.00
-                    }
-                ],
-                netto: 625.00,
-                mwst: 118.75,
-                brutto: 743.75,
-                bestelldatum: '2026-02-10',
-                lieferdatum_erwartet: '2026-02-17',
-                lieferdatum_tatsaechlich: '2026-02-16',
-                notizen: 'Demo-Bestellung',
-                erstelltAm: '2026-02-10T10:00:00Z',
-                auftragId: null
-            },
-            {
-                id: 'PO-2026-002',
-                nummer: 'PO-2026-002',
-                status: 'bestellt',
-                lieferant: {
-                    name: 'Rohrstahl GmbH',
-                    email: 'order@rohrstahl.de',
-                    telefon: '+49 6029 54321',
-                    ansprechpartner: 'Frau Schmidt'
-                },
-                positionen: [
-                    {
-                        materialId: 'MAT-DEMO-003',
-                        bezeichnung: 'Rechteckrohr 50x50x3',
-                        artikelnummer: 'RR-50x50',
-                        menge: 100,
-                        einheit: 'm',
-                        ekPreis: 8.50,
-                        gelieferteMenge: 0,
-                        gesamtpreis: 850.00
-                    }
-                ],
-                netto: 850.00,
-                mwst: 161.50,
-                brutto: 1011.50,
-                bestelldatum: '2026-02-15',
-                lieferdatum_erwartet: '2026-02-22',
-                lieferdatum_tatsaechlich: null,
-                notizen: 'Demo-Bestellung',
-                erstelltAm: '2026-02-15T14:30:00Z',
-                auftragId: null
-            }
-        ];
-
-        this.poCounter = 2;
-        this.save();
-    }
 }
 
 // Create global instance
 window.purchaseOrderService = new PurchaseOrderService();
+
+// Init from Supabase after page load
+window.addEventListener('DOMContentLoaded', () => {
+    const tryInit = () => {
+        if (window.supabaseClient?.isConfigured()) {
+            window.purchaseOrderService.init().then(() => {
+                if (window.poUI) {
+                    window.poUI.renderPOList();
+                    if (typeof window.poUI.updateStats === 'function') {
+                        window.poUI.updateStats();
+                    }
+                }
+                // Sync POs into Buchhaltung
+                if (window.bookkeepingService) {
+                    window.bookkeepingService.syncFromPurchaseOrders();
+                }
+            });
+        } else {
+            setTimeout(tryInit, 1000);
+        }
+    };
+    setTimeout(tryInit, 1000);
+});
