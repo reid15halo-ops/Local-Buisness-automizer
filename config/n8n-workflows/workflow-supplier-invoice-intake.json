@@ -1,0 +1,864 @@
+{
+  "updatedAt": "2026-03-06T19:31:29.998Z",
+  "createdAt": "2026-03-06T18:48:32.571Z",
+  "id": "100",
+  "name": "Eingangsrechnung Automatik (Supplier Invoice Intake)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "mailbox": "INBOX",
+        "postProcessAction": "move",
+        "targetMailbox": "Processed",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "id": "node-imap",
+      "name": "IMAP Rechnungen",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "credentials": {
+        "imap": {
+          "id": "YA7c6iPnGclK9NHN",
+          "name": "rechnungen@freyaivisions.de IMAP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "has-attachment",
+              "leftValue": "={{ $json.attachments?.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-has-attachment",
+      "name": "Hat Anhang?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "email_from",
+              "value": "={{ $json.from }}",
+              "type": "string"
+            },
+            {
+              "id": "a2",
+              "name": "email_subject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "email_text",
+              "value": "={{ $json.textPlain || $json.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "a4",
+              "name": "email_date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "a5",
+              "name": "attachment_base64",
+              "value": "={{ $json.attachments[0]?.content }}",
+              "type": "string"
+            },
+            {
+              "id": "a6",
+              "name": "attachment_mime",
+              "value": "={{ $json.attachments[0]?.contentType || 'application/pdf' }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "node-extract-attach",
+      "name": "Daten mit Anhang",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1",
+              "name": "email_from",
+              "value": "={{ $json.from }}",
+              "type": "string"
+            },
+            {
+              "id": "b2",
+              "name": "email_subject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "b3",
+              "name": "email_text",
+              "value": "={{ $json.textPlain || $json.text || $json.textHtml || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "b4",
+              "name": "email_date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "node-extract-text",
+      "name": "Daten ohne Anhang",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{GEMINI_API_KEY}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\"parts\": [\n    {\"inline_data\": {\"mime_type\": \"{{ $json.attachment_mime }}\", \"data\": \"{{ $json.attachment_base64 }}\"}},\n    {\"text\": \"Analysiere diese Eingangsrechnung und extrahiere ALLE Daten als JSON. Antworte NUR mit validem JSON.\\n\\nStruktur:\\n{\\n  \\\"lieferant_name\\\": \\\"Firmenname\\\",\\n  \\\"lieferant_adresse\\\": \\\"Strasse, PLZ Ort\\\",\\n  \\\"lieferant_email\\\": \\\"email@example.de\\\",\\n  \\\"lieferant_telefon\\\": \\\"Telefonnummer\\\",\\n  \\\"kunden_nr\\\": \\\"Kundennummer\\\",\\n  \\\"rechnungs_nr\\\": \\\"Rechnungsnummer\\\",\\n  \\\"rechnungs_datum\\\": \\\"YYYY-MM-DD\\\",\\n  \\\"positionen\\\": [{\\\"bezeichnung\\\": \\\"Beschreibung\\\", \\\"menge\\\": 1, \\\"einheit\\\": \\\"Stk.\\\", \\\"einzelpreis\\\": 0.00, \\\"gesamtpreis\\\": 0.00}],\\n  \\\"netto\\\": 0.00,\\n  \\\"mwst_satz\\\": 19,\\n  \\\"mwst_betrag\\\": 0.00,\\n  \\\"brutto\\\": 0.00,\\n  \\\"iban\\\": \\\"IBAN\\\",\\n  \\\"zahlungsziel_tage\\\": 14,\\n  \\\"zahlungsfrist\\\": \\\"YYYY-MM-DD\\\",\\n  \\\"confidence\\\": 0.95\\n}\\n\\nAlle Betraege als Zahlen. Datum als YYYY-MM-DD.\"}\n  ]}],\n  \"generationConfig\": {\"temperature\": 0.1, \"maxOutputTokens\": 2000, \"responseMimeType\": \"application/json\"}\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-gemini-ocr",
+      "name": "Gemini OCR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        200
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{GEMINI_API_KEY}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\"parts\": [{\"text\": {{ JSON.stringify(\"Analysiere diesen E-Mail-Text einer Eingangsrechnung und extrahiere alle Rechnungsdaten als JSON. Antworte NUR mit validem JSON.\\n\\nE-Mail von: \" + ($json.email_from || \"\") + \"\\nBetreff: \" + ($json.email_subject || \"\") + \"\\nText:\\n\" + ($json.email_text || \"\") + \"\\n\\nStruktur: { lieferant_name, lieferant_adresse, lieferant_email, lieferant_telefon, kunden_nr, rechnungs_nr, rechnungs_datum (YYYY-MM-DD), positionen: [{bezeichnung, menge, einheit, einzelpreis, gesamtpreis}], netto, mwst_satz, mwst_betrag, brutto, iban, zahlungsziel_tage, zahlungsfrist (YYYY-MM-DD), confidence (0-1) }\\n\\nAlle Betraege als Zahlen. Datum als YYYY-MM-DD.\") }}}]}],\n  \"generationConfig\": {\"temperature\": 0.1, \"maxOutputTokens\": 2000, \"responseMimeType\": \"application/json\"}\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-gemini-text",
+      "name": "Gemini Text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        920,
+        420
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfunction repairJSON(text) {\n  // Try parsing as-is first\n  try { return JSON.parse(text); } catch(e) {}\n\n  // Common fixes\n  let fixed = text;\n  // Fix missing closing braces in arrays: \"value\" ,\\n{ -> \"value\" },\\n{\n  fixed = fixed.replace(/(\\d+\\.?\\d*)\\s*\\n\\s*,\\s*\\n?\\s*\\{/g, '$1\\n    },\\n    {');\n  fixed = fixed.replace(/(\")\\s*\\n\\s*,\\s*\\n?\\s*\\{/g, '$1\\n    },\\n    {');\n  // Fix trailing commas before ] or }\n  fixed = fixed.replace(/,\\s*([\\]}])/g, '$1');\n\n  try { return JSON.parse(fixed); } catch(e) {}\n\n  // More aggressive: balance braces\n  let openBrace = 0, openBracket = 0;\n  for (const c of fixed) {\n    if (c === '{') openBrace++;\n    if (c === '}') openBrace--;\n    if (c === '[') openBracket++;\n    if (c === ']') openBracket--;\n  }\n  while (openBracket > 0) { fixed += ']'; openBracket--; }\n  while (openBrace > 0) { fixed += '}'; openBrace--; }\n\n  try { return JSON.parse(fixed); } catch(e2) {\n    throw new Error('JSON repair failed: ' + e2.message);\n  }\n}\n\nfor (const item of items) {\n  try {\n    let data;\n    const resp = item.json;\n    if (resp.candidates && resp.candidates[0]) {\n      const text = resp.candidates[0].content?.parts?.[0]?.text || '{}';\n      data = repairJSON(text);\n    } else if (resp.error) {\n      throw new Error(typeof resp.error === 'string' ? resp.error : resp.error.message || 'Gemini error');\n    } else {\n      data = resp;\n    }\n    const now = new Date().toISOString();\n    const poNr = 'PO-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);\n    const positionen = (data.positionen || []).map(p => ({\n      bezeichnung: p.bezeichnung || '', menge: parseFloat(p.menge) || 1,\n      einheit: p.einheit || 'Stk.', ekPreis: parseFloat(p.einzelpreis) || 0,\n      gelieferteMenge: parseFloat(p.menge) || 1, gesamtpreis: parseFloat(p.gesamtpreis) || 0\n    }));\n    const po = {\n      id: poNr, nummer: poNr, status: 'geliefert',\n      lieferant_name: data.lieferant_name || 'Unbekannt',\n      lieferant_email: data.lieferant_email || '',\n      lieferant_telefon: data.lieferant_telefon || '',\n      lieferant_ansprechpartner: data.ansprechpartner || '',\n      positionen, netto: parseFloat(data.netto) || 0,\n      mwst: parseFloat(data.mwst_betrag) || 0, brutto: parseFloat(data.brutto) || 0,\n      bestelldatum: data.rechnungs_datum || now.split('T')[0],\n      lieferdatum_erwartet: data.liefer_datum || data.rechnungs_datum || now.split('T')[0],\n      lieferdatum_tatsaechlich: data.liefer_datum || data.rechnungs_datum || now.split('T')[0],\n      notizen: ['Automatisch erfasst aus E-Mail.',\n        data.rechnungs_nr ? 'Eingangsrechnung: ' + data.rechnungs_nr : '',\n        data.zahlungsfrist ? 'Zahlungsfrist: ' + data.zahlungsfrist : '',\n        data.kunden_nr ? 'Kunden-Nr: ' + data.kunden_nr : '',\n        data.iban ? 'IBAN: ' + data.iban : ''\n      ].filter(Boolean).join('\\n'),\n      created_at: now, updated_at: now,\n      eingangsrechnung_nr: data.rechnungs_nr || '',\n      eingangsrechnung_datum: data.rechnungs_datum || '',\n      zahlungsfrist_datum: data.zahlungsfrist || '',\n      confidence: parseFloat(data.confidence) || 0.5\n    };\n    results.push({ json: { po, raw_data: data } });\n  } catch (err) {\n    results.push({ json: { error: err.message, raw: item.json } });\n  }\n}\nreturn results;"
+      },
+      "id": "node-build-po",
+      "name": "PO bauen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "no-error",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-check-error",
+      "name": "OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://incbhhaiiayohrjqevog.supabase.co/rest/v1/purchase_orders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "{{SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{SUPABASE_SERVICE_ROLE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ user_id: '{{FREYAI_USER_ID}}', tenant_id: '{{FREYAI_TENANT_ID}}', id: $json.po.id, nummer: $json.po.nummer, status: $json.po.status, lieferant_name: $json.po.lieferant_name, lieferant_email: $json.po.lieferant_email, lieferant_telefon: $json.po.lieferant_telefon || '', lieferant_ansprechpartner: $json.po.lieferant_ansprechpartner || '', positionen: $json.po.positionen, netto: $json.po.netto, mwst: $json.po.mwst, brutto: $json.po.brutto, bestelldatum: $json.po.bestelldatum, lieferdatum_erwartet: $json.po.lieferdatum_erwartet || '', lieferdatum_tatsaechlich: $json.po.lieferdatum_tatsaechlich || '', notizen: $json.po.notizen || '', eingangsrechnung_nr: $json.po.eingangsrechnung_nr || '', confidence: $json.po.confidence || 0 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-supabase",
+      "name": "Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1640,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "IMAP Rechnungen": {
+      "main": [
+        [
+          {
+            "node": "Hat Anhang?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hat Anhang?": {
+      "main": [
+        [
+          {
+            "node": "Daten mit Anhang",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Daten ohne Anhang",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daten mit Anhang": {
+      "main": [
+        [
+          {
+            "node": "Gemini OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daten ohne Anhang": {
+      "main": [
+        [
+          {
+            "node": "Gemini Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini OCR": {
+      "main": [
+        [
+          {
+            "node": "PO bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Text": {
+      "main": [
+        [
+          {
+            "node": "PO bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PO bauen": {
+      "main": [
+        [
+          {
+            "node": "OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OK?": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Alle 5 Minuten": {
+      "recurrenceRules": []
+    },
+    "node:IMAP Rechnungen": {
+      "lastMessageUid": 7
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": null,
+  "versionId": "10d0c79f-4425-4f41-8074-8abb8b835df5",
+  "activeVersionId": "10d0c79f-4425-4f41-8074-8abb8b835df5",
+  "versionCounter": 58,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-03-06T18:48:32.574Z",
+      "createdAt": "2026-03-06T18:48:32.574Z",
+      "role": "workflow:owner",
+      "workflowId": "100",
+      "projectId": "apvxGQpnC52PJfWy",
+      "project": {
+        "updatedAt": "2026-02-27T15:20:54.858Z",
+        "createdAt": "2026-02-27T15:20:54.858Z",
+        "id": "apvxGQpnC52PJfWy",
+        "name": "Unnamed Project",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ee098cfc-bd1b-4dad-98d3-7f93914ee812"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-03-06T19:31:30.000Z",
+    "createdAt": "2026-03-06T19:31:30.000Z",
+    "versionId": "10d0c79f-4425-4f41-8074-8abb8b835df5",
+    "workflowId": "100",
+    "nodes": [
+      {
+        "parameters": {
+          "mailbox": "INBOX",
+          "postProcessAction": "move",
+          "targetMailbox": "Processed",
+          "options": {
+            "allowUnauthorizedCerts": true
+          }
+        },
+        "id": "node-imap",
+        "name": "IMAP Rechnungen",
+        "type": "n8n-nodes-base.emailReadImap",
+        "typeVersion": 2,
+        "position": [
+          200,
+          300
+        ],
+        "credentials": {
+          "imap": {
+            "id": "YA7c6iPnGclK9NHN",
+            "name": "rechnungen@freyaivisions.de IMAP"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": false,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "id": "has-attachment",
+                "leftValue": "={{ $json.attachments?.length }}",
+                "rightValue": 0,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        },
+        "id": "node-has-attachment",
+        "name": "Hat Anhang?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          440,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "email_from",
+                "value": "={{ $json.from }}",
+                "type": "string"
+              },
+              {
+                "id": "a2",
+                "name": "email_subject",
+                "value": "={{ $json.subject }}",
+                "type": "string"
+              },
+              {
+                "id": "a3",
+                "name": "email_text",
+                "value": "={{ $json.textPlain || $json.text || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "a4",
+                "name": "email_date",
+                "value": "={{ $json.date }}",
+                "type": "string"
+              },
+              {
+                "id": "a5",
+                "name": "attachment_base64",
+                "value": "={{ $json.attachments[0]?.content }}",
+                "type": "string"
+              },
+              {
+                "id": "a6",
+                "name": "attachment_mime",
+                "value": "={{ $json.attachments[0]?.contentType || 'application/pdf' }}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "id": "node-extract-attach",
+        "name": "Daten mit Anhang",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          680,
+          200
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b1",
+                "name": "email_from",
+                "value": "={{ $json.from }}",
+                "type": "string"
+              },
+              {
+                "id": "b2",
+                "name": "email_subject",
+                "value": "={{ $json.subject }}",
+                "type": "string"
+              },
+              {
+                "id": "b3",
+                "name": "email_text",
+                "value": "={{ $json.textPlain || $json.text || $json.textHtml || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "b4",
+                "name": "email_date",
+                "value": "={{ $json.date }}",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "id": "node-extract-text",
+        "name": "Daten ohne Anhang",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          680,
+          420
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{GEMINI_API_KEY}}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"contents\": [{\"parts\": [\n    {\"inline_data\": {\"mime_type\": \"{{ $json.attachment_mime }}\", \"data\": \"{{ $json.attachment_base64 }}\"}},\n    {\"text\": \"Analysiere diese Eingangsrechnung und extrahiere ALLE Daten als JSON. Antworte NUR mit validem JSON.\\n\\nStruktur:\\n{\\n  \\\"lieferant_name\\\": \\\"Firmenname\\\",\\n  \\\"lieferant_adresse\\\": \\\"Strasse, PLZ Ort\\\",\\n  \\\"lieferant_email\\\": \\\"email@example.de\\\",\\n  \\\"lieferant_telefon\\\": \\\"Telefonnummer\\\",\\n  \\\"kunden_nr\\\": \\\"Kundennummer\\\",\\n  \\\"rechnungs_nr\\\": \\\"Rechnungsnummer\\\",\\n  \\\"rechnungs_datum\\\": \\\"YYYY-MM-DD\\\",\\n  \\\"positionen\\\": [{\\\"bezeichnung\\\": \\\"Beschreibung\\\", \\\"menge\\\": 1, \\\"einheit\\\": \\\"Stk.\\\", \\\"einzelpreis\\\": 0.00, \\\"gesamtpreis\\\": 0.00}],\\n  \\\"netto\\\": 0.00,\\n  \\\"mwst_satz\\\": 19,\\n  \\\"mwst_betrag\\\": 0.00,\\n  \\\"brutto\\\": 0.00,\\n  \\\"iban\\\": \\\"IBAN\\\",\\n  \\\"zahlungsziel_tage\\\": 14,\\n  \\\"zahlungsfrist\\\": \\\"YYYY-MM-DD\\\",\\n  \\\"confidence\\\": 0.95\\n}\\n\\nAlle Betraege als Zahlen. Datum als YYYY-MM-DD.\"}\n  ]}],\n  \"generationConfig\": {\"temperature\": 0.1, \"maxOutputTokens\": 2000, \"responseMimeType\": \"application/json\"}\n}",
+          "options": {
+            "timeout": 60000
+          }
+        },
+        "id": "node-gemini-ocr",
+        "name": "Gemini OCR",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          920,
+          200
+        ],
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{GEMINI_API_KEY}}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={\n  \"contents\": [{\"parts\": [{\"text\": {{ JSON.stringify(\"Analysiere diesen E-Mail-Text einer Eingangsrechnung und extrahiere alle Rechnungsdaten als JSON. Antworte NUR mit validem JSON.\\n\\nE-Mail von: \" + ($json.email_from || \"\") + \"\\nBetreff: \" + ($json.email_subject || \"\") + \"\\nText:\\n\" + ($json.email_text || \"\") + \"\\n\\nStruktur: { lieferant_name, lieferant_adresse, lieferant_email, lieferant_telefon, kunden_nr, rechnungs_nr, rechnungs_datum (YYYY-MM-DD), positionen: [{bezeichnung, menge, einheit, einzelpreis, gesamtpreis}], netto, mwst_satz, mwst_betrag, brutto, iban, zahlungsziel_tage, zahlungsfrist (YYYY-MM-DD), confidence (0-1) }\\n\\nAlle Betraege als Zahlen. Datum als YYYY-MM-DD.\") }}}]}],\n  \"generationConfig\": {\"temperature\": 0.1, \"maxOutputTokens\": 2000, \"responseMimeType\": \"application/json\"}\n}",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "id": "node-gemini-text",
+        "name": "Gemini Text",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          920,
+          420
+        ],
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst results = [];\n\nfunction repairJSON(text) {\n  // Try parsing as-is first\n  try { return JSON.parse(text); } catch(e) {}\n\n  // Common fixes\n  let fixed = text;\n  // Fix missing closing braces in arrays: \"value\" ,\\n{ -> \"value\" },\\n{\n  fixed = fixed.replace(/(\\d+\\.?\\d*)\\s*\\n\\s*,\\s*\\n?\\s*\\{/g, '$1\\n    },\\n    {');\n  fixed = fixed.replace(/(\")\\s*\\n\\s*,\\s*\\n?\\s*\\{/g, '$1\\n    },\\n    {');\n  // Fix trailing commas before ] or }\n  fixed = fixed.replace(/,\\s*([\\]}])/g, '$1');\n\n  try { return JSON.parse(fixed); } catch(e) {}\n\n  // More aggressive: balance braces\n  let openBrace = 0, openBracket = 0;\n  for (const c of fixed) {\n    if (c === '{') openBrace++;\n    if (c === '}') openBrace--;\n    if (c === '[') openBracket++;\n    if (c === ']') openBracket--;\n  }\n  while (openBracket > 0) { fixed += ']'; openBracket--; }\n  while (openBrace > 0) { fixed += '}'; openBrace--; }\n\n  try { return JSON.parse(fixed); } catch(e2) {\n    throw new Error('JSON repair failed: ' + e2.message);\n  }\n}\n\nfor (const item of items) {\n  try {\n    let data;\n    const resp = item.json;\n    if (resp.candidates && resp.candidates[0]) {\n      const text = resp.candidates[0].content?.parts?.[0]?.text || '{}';\n      data = repairJSON(text);\n    } else if (resp.error) {\n      throw new Error(typeof resp.error === 'string' ? resp.error : resp.error.message || 'Gemini error');\n    } else {\n      data = resp;\n    }\n    const now = new Date().toISOString();\n    const poNr = 'PO-' + new Date().getFullYear() + '-' + String(Date.now()).slice(-6);\n    const positionen = (data.positionen || []).map(p => ({\n      bezeichnung: p.bezeichnung || '', menge: parseFloat(p.menge) || 1,\n      einheit: p.einheit || 'Stk.', ekPreis: parseFloat(p.einzelpreis) || 0,\n      gelieferteMenge: parseFloat(p.menge) || 1, gesamtpreis: parseFloat(p.gesamtpreis) || 0\n    }));\n    const po = {\n      id: poNr, nummer: poNr, status: 'geliefert',\n      lieferant_name: data.lieferant_name || 'Unbekannt',\n      lieferant_email: data.lieferant_email || '',\n      lieferant_telefon: data.lieferant_telefon || '',\n      lieferant_ansprechpartner: data.ansprechpartner || '',\n      positionen, netto: parseFloat(data.netto) || 0,\n      mwst: parseFloat(data.mwst_betrag) || 0, brutto: parseFloat(data.brutto) || 0,\n      bestelldatum: data.rechnungs_datum || now.split('T')[0],\n      lieferdatum_erwartet: data.liefer_datum || data.rechnungs_datum || now.split('T')[0],\n      lieferdatum_tatsaechlich: data.liefer_datum || data.rechnungs_datum || now.split('T')[0],\n      notizen: ['Automatisch erfasst aus E-Mail.',\n        data.rechnungs_nr ? 'Eingangsrechnung: ' + data.rechnungs_nr : '',\n        data.zahlungsfrist ? 'Zahlungsfrist: ' + data.zahlungsfrist : '',\n        data.kunden_nr ? 'Kunden-Nr: ' + data.kunden_nr : '',\n        data.iban ? 'IBAN: ' + data.iban : ''\n      ].filter(Boolean).join('\\n'),\n      created_at: now, updated_at: now,\n      eingangsrechnung_nr: data.rechnungs_nr || '',\n      eingangsrechnung_datum: data.rechnungs_datum || '',\n      zahlungsfrist_datum: data.zahlungsfrist || '',\n      confidence: parseFloat(data.confidence) || 0.5\n    };\n    results.push({ json: { po, raw_data: data } });\n  } catch (err) {\n    results.push({ json: { error: err.message, raw: item.json } });\n  }\n}\nreturn results;"
+        },
+        "id": "node-build-po",
+        "name": "PO bauen",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1160,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "id": "no-error",
+                "leftValue": "={{ $json.error }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "empty"
+                }
+              }
+            ],
+            "combinator": "and"
+          }
+        },
+        "id": "node-check-error",
+        "name": "OK?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          1400,
+          300
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://incbhhaiiayohrjqevog.supabase.co/rest/v1/purchase_orders",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "apikey",
+                "value": "{{SUPABASE_SERVICE_ROLE_KEY}}"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{SUPABASE_SERVICE_ROLE_KEY}}"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Prefer",
+                "value": "return=representation"
+              }
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ user_id: '{{FREYAI_USER_ID}}', tenant_id: '{{FREYAI_TENANT_ID}}', id: $json.po.id, nummer: $json.po.nummer, status: $json.po.status, lieferant_name: $json.po.lieferant_name, lieferant_email: $json.po.lieferant_email, lieferant_telefon: $json.po.lieferant_telefon || '', lieferant_ansprechpartner: $json.po.lieferant_ansprechpartner || '', positionen: $json.po.positionen, netto: $json.po.netto, mwst: $json.po.mwst, brutto: $json.po.brutto, bestelldatum: $json.po.bestelldatum, lieferdatum_erwartet: $json.po.lieferdatum_erwartet || '', lieferdatum_tatsaechlich: $json.po.lieferdatum_tatsaechlich || '', notizen: $json.po.notizen || '', eingangsrechnung_nr: $json.po.eingangsrechnung_nr || '', confidence: $json.po.confidence || 0 }) }}",
+          "options": {
+            "timeout": 15000
+          }
+        },
+        "id": "node-supabase",
+        "name": "Supabase",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1640,
+          200
+        ]
+      }
+    ],
+    "connections": {
+      "IMAP Rechnungen": {
+        "main": [
+          [
+            {
+              "node": "Hat Anhang?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Hat Anhang?": {
+        "main": [
+          [
+            {
+              "node": "Daten mit Anhang",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Daten ohne Anhang",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Daten mit Anhang": {
+        "main": [
+          [
+            {
+              "node": "Gemini OCR",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Daten ohne Anhang": {
+        "main": [
+          [
+            {
+              "node": "Gemini Text",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini OCR": {
+        "main": [
+          [
+            {
+              "node": "PO bauen",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini Text": {
+        "main": [
+          [
+            {
+              "node": "PO bauen",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PO bauen": {
+        "main": [
+          [
+            {
+              "node": "OK?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OK?": {
+        "main": [
+          [
+            {
+              "node": "Supabase",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      }
+    },
+    "authors": "null null",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-03-06T19:31:30.060Z",
+        "id": 43,
+        "workflowId": "100",
+        "versionId": "10d0c79f-4425-4f41-8074-8abb8b835df5",
+        "event": "activated",
+        "userId": "ee098cfc-bd1b-4dad-98d3-7f93914ee812"
+      },
+      {
+        "createdAt": "2026-03-06T19:31:30.032Z",
+        "id": 42,
+        "workflowId": "100",
+        "versionId": "10d0c79f-4425-4f41-8074-8abb8b835df5",
+        "event": "deactivated",
+        "userId": "ee098cfc-bd1b-4dad-98d3-7f93914ee812"
+      }
+    ]
+  }
+}
