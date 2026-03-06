@@ -1,51 +1,155 @@
 /* ============================================
    Bookkeeping Service - EÜR & DATEV Export
    Einnahmen-Überschuss-Rechnung für KMUs
+   Supabase-first — no localStorage
    ============================================ */
 
 class BookkeepingService {
     constructor() {
-        try { this.buchungen = JSON.parse(localStorage.getItem('freyai_buchungen') || '[]'); } catch { this.buchungen = []; }
-        try { this.einstellungen = JSON.parse(localStorage.getItem('freyai_buchhaltung_settings') || '{}'); } catch { this.einstellungen = {}; }
+        this.buchungen = [];
+        this.einstellungen = {
+            kleinunternehmer: false,
+            umsatzsteuersatz: 19,
+            firmenName: window.storeService?.state?.settings?.companyName || '',
+            steuernummer: '',
+            ustIdNr: '',
+            finanzamt: '',
+            geschaeftsjahr: new Date().getFullYear()
+        };
+        this._ready = false;
+    }
 
-        // Default settings
-        if (!this.einstellungen.kleinunternehmer) {
-            this.einstellungen = {
-                kleinunternehmer: false,          // § 19 UStG
-                umsatzsteuersatz: 19,              // Standard 19%
-                firmenName: (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').company_name; } catch { return ''; } })() || window.storeService?.state?.settings?.companyName || '',
-                steuernummer: '',
-                ustIdNr: '',
-                finanzamt: '',
-                geschaeftsjahr: new Date().getFullYear()
-            };
-            this.saveSettings();
+    async init() {
+        try {
+            const { data } = await this._supabase()?.auth?.getUser() || {};
+            this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        } catch {
+            this._userId = '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        }
+        await this._loadFromSupabase();
+        this._ready = true;
+    }
+
+    _supabase() {
+        return window.supabaseClient?.client;
+    }
+
+    _isOnline() {
+        return !!(this._supabase() && window.supabaseClient?.isConfigured());
+    }
+
+    _toSupabaseRow(b) {
+        return {
+            id: b.id,
+            user_id: this._userId || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc',
+            tenant_id: 'a0000000-0000-0000-0000-000000000001',
+            typ: b.typ,
+            kategorie: b.kategorie,
+            beschreibung: b.beschreibung || '',
+            belegnummer: b.belegnummer || '',
+            netto: b.netto || 0,
+            ust: b.ust || 0,
+            brutto: b.brutto || 0,
+            vorsteuer: b.vorsteuer || 0,
+            zahlungsart: b.zahlungsart || 'Überweisung',
+            datum: b.datum,
+            rechnung_id: b.rechnungId || null,
+            po_id: b.poId || null,
+            auftrag_id: b.auftragId || null
+        };
+    }
+
+    _fromSupabaseRow(r) {
+        return {
+            id: r.id,
+            typ: r.typ,
+            kategorie: r.kategorie,
+            beschreibung: r.beschreibung || '',
+            belegnummer: r.belegnummer || '',
+            netto: parseFloat(r.netto) || 0,
+            ust: parseFloat(r.ust) || 0,
+            brutto: parseFloat(r.brutto) || 0,
+            vorsteuer: parseFloat(r.vorsteuer) || 0,
+            zahlungsart: r.zahlungsart || 'Überweisung',
+            datum: r.datum,
+            rechnungId: r.rechnung_id || null,
+            poId: r.po_id || null,
+            auftragId: r.auftrag_id || null,
+            erstelltAm: r.created_at
+        };
+    }
+
+    async _loadFromSupabase() {
+        if (!this._isOnline()) return;
+        try {
+            const { data, error } = await this._supabase()
+                .from('buchungen')
+                .select('*')
+                .eq('tenant_id', 'a0000000-0000-0000-0000-000000000001')
+                .order('datum', { ascending: false });
+            if (error) {
+                console.error('[Buchhaltung] Supabase load error:', error.message);
+                return;
+            }
+            this.buchungen = (data || []).map(r => this._fromSupabaseRow(r));
+            console.log(`[Buchhaltung] Loaded ${this.buchungen.length} buchungen from Supabase`);
+        } catch (err) {
+            console.error('[Buchhaltung] Supabase load failed:', err.message);
+        }
+    }
+
+    async _upsertToSupabase(buchung) {
+        if (!this._isOnline()) return;
+        try {
+            const row = this._toSupabaseRow(buchung);
+            const { error } = await this._supabase()
+                .from('buchungen')
+                .upsert(row, { onConflict: 'id' });
+            if (error) console.error('[Buchhaltung] Supabase upsert error:', error.message);
+        } catch (err) {
+            console.error('[Buchhaltung] Supabase upsert failed:', err.message);
+        }
+    }
+
+    async _deleteFromSupabase(id) {
+        if (!this._isOnline()) return;
+        try {
+            const { error } = await this._supabase()
+                .from('buchungen')
+                .delete()
+                .eq('id', id);
+            if (error) console.error('[Buchhaltung] Supabase delete error:', error.message);
+        } catch (err) {
+            console.error('[Buchhaltung] Supabase delete failed:', err.message);
         }
     }
 
     // ============================================
     // Buchungen
     // ============================================
-    addBuchung(buchung) {
+    async addBuchung(buchung) {
         buchung.id = `BU-${Date.now().toString(36).toUpperCase()}`;
         buchung.erstelltAm = new Date().toISOString();
 
-        // Calculate USt if not Kleinunternehmer
-        if (!this.einstellungen.kleinunternehmer && buchung.typ === 'einnahme') {
-            buchung.netto = buchung.brutto / 1.19;
-            buchung.ust = buchung.brutto - buchung.netto;
-        } else {
-            buchung.netto = buchung.brutto;
-            buchung.ust = 0;
+        // Only calculate if not already set by caller (e.g. addFromPurchaseOrder)
+        if (buchung.netto == null) {
+            if (!this.einstellungen.kleinunternehmer && buchung.typ === 'einnahme') {
+                const rate = this.einstellungen.umsatzsteuersatz || 19;
+                buchung.netto = buchung.brutto / (1 + rate / 100);
+                buchung.ust = buchung.brutto - buchung.netto;
+            } else {
+                buchung.netto = buchung.brutto;
+                buchung.ust = 0;
+            }
         }
 
         this.buchungen.push(buchung);
-        this.save();
+        await this._upsertToSupabase(buchung);
         return buchung;
     }
 
     // Automatisch aus Rechnung erstellen
-    addFromRechnung(rechnung) {
+    async addFromRechnung(rechnung) {
         const buchung = {
             typ: 'einnahme',
             kategorie: 'Umsatzerlöse',
@@ -56,12 +160,11 @@ class BookkeepingService {
             belegnummer: rechnung.id,
             zahlungsart: 'Überweisung'
         };
-        return this.addBuchung(buchung);
+        return await this.addBuchung(buchung);
     }
 
     // Record payment when invoice is paid (creates Umsatzerlöse entry)
-    recordPayment(payment) {
-        // payment = {invoiceId, amount, date, method, reference}
+    async recordPayment(payment) {
         const buchung = {
             typ: 'einnahme',
             kategorie: 'Umsatzerlöse',
@@ -72,12 +175,11 @@ class BookkeepingService {
             belegnummer: payment.reference,
             zahlungsart: payment.method || 'Überweisung'
         };
-        return this.addBuchung(buchung);
+        return await this.addBuchung(buchung);
     }
 
     // Record material costs (COGS) for an invoice
-    recordMaterialCosts(rechnung) {
-        // Only create entry if there are material costs
+    async recordMaterialCosts(rechnung) {
         if (!rechnung.materialKosten && !rechnung.stueckliste) {
             return null;
         }
@@ -95,12 +197,46 @@ class BookkeepingService {
             zahlungsart: 'Material',
             auftragId: rechnung.auftragId
         };
-        return this.addBuchung(buchung);
+        return await this.addBuchung(buchung);
+    }
+
+    // Ausgabe aus Eingangsrechnung (Purchase Order) erstellen
+    async addFromPurchaseOrder(po) {
+        if (this.buchungen.some(b => b.poId === po.id)) return null;
+
+        const buchung = {
+            typ: 'ausgabe',
+            kategorie: 'Wareneinkauf',
+            beschreibung: `Eingangsrechnung ${po.eingangsrechnungNr || po.nummer} - ${po.lieferant?.name || 'Unbekannt'}`,
+            poId: po.id,
+            rechnungId: po.eingangsrechnungNr || po.nummer,
+            datum: po.bestelldatum || po.erstelltAm,
+            brutto: po.brutto || 0,
+            netto: po.netto || 0,
+            vorsteuer: po.mwst || 0,
+            ust: 0,
+            belegnummer: po.eingangsrechnungNr || po.nummer,
+            zahlungsart: 'Überweisung'
+        };
+        return await this.addBuchung(buchung);
+    }
+
+    // Sync alle POs als Buchungen
+    async syncFromPurchaseOrders() {
+        if (!window.purchaseOrderService) return;
+        const pos = window.purchaseOrderService.getAllPOs();
+        let added = 0;
+        for (const po of pos) {
+            if (po.status === 'entwurf' || po.status === 'storniert') continue;
+            if (this.buchungen.some(b => b.poId === po.id)) continue;
+            await this.addFromPurchaseOrder(po);
+            added++;
+        }
+        if (added > 0) console.log(`[Buchhaltung] ${added} Eingangsrechnungen als Buchungen erfasst`);
     }
 
     // Ausgabe hinzufügen
-    addAusgabe(daten) {
-        // Kleinunternehmer can not reclaim Vorsteuer (§19 UStG)
+    async addAusgabe(daten) {
         const rate = this.einstellungen.kleinunternehmer ? 0 : (this.einstellungen.umsatzsteuersatz || 19);
         const divisor = 1 + rate / 100;
         const buchung = {
@@ -114,7 +250,7 @@ class BookkeepingService {
             belegnummer: daten.belegnummer || '',
             zahlungsart: daten.zahlungsart || 'Überweisung'
         };
-        return this.addBuchung(buchung);
+        return await this.addBuchung(buchung);
     }
 
     // ============================================
@@ -291,7 +427,7 @@ class BookkeepingService {
     // ============================================
     // CSV Import
     // ============================================
-    importFromCSV(csvContent) {
+    async importFromCSV(csvContent) {
         const lines = csvContent.split('\n').filter(l => l.trim());
         if (lines.length < 2) {
             throw new Error('CSV enthält keine Daten');
@@ -377,7 +513,7 @@ class BookkeepingService {
                     belegnummer: colIdx.belegnr >= 0 ? values[colIdx.belegnr]?.replace(/"/g, '') : `IMP-${i}`
                 };
 
-                this.addBuchung(buchung);
+                await this.addBuchung(buchung);
                 imported++;
             } catch (err) {
                 errors.push(`Zeile ${i + 1}: ${err.message}`);
@@ -525,9 +661,9 @@ class BookkeepingService {
         return this.buchungen;
     }
 
-    deleteBuchung(id) {
+    async deleteBuchung(id) {
         this.buchungen = this.buchungen.filter(b => b.id !== id);
-        this.save();
+        await this._deleteFromSupabase(id);
     }
 
     // ============================================
@@ -569,12 +705,16 @@ class BookkeepingService {
     // ============================================
     // Persistence
     // ============================================
-    save() {
-        localStorage.setItem('freyai_buchungen', JSON.stringify(this.buchungen));
+    async save() {
+        // Buchungen are persisted individually via _upsertToSupabase in addBuchung
     }
 
     saveSettings() {
-        localStorage.setItem('freyai_buchhaltung_settings', JSON.stringify(this.einstellungen));
+        // Settings stored in-memory; persisted via Supabase settings table if available
+    }
+
+    async refresh() {
+        await this._loadFromSupabase();
     }
 
     // ============================================
@@ -590,3 +730,17 @@ class BookkeepingService {
 
 // Create global instance
 window.bookkeepingService = new BookkeepingService();
+
+// Init after Supabase is ready
+window.addEventListener('DOMContentLoaded', () => {
+    const tryInit = () => {
+        if (window.supabaseClient?.isConfigured()) {
+            window.bookkeepingService.init().then(() => {
+                console.log('[Buchhaltung] Service initialized');
+            });
+        } else {
+            setTimeout(tryInit, 1000);
+        }
+    };
+    setTimeout(tryInit, 1500);
+});

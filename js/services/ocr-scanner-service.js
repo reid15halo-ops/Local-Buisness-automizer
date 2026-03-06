@@ -247,12 +247,12 @@ class OcrScannerService {
     }
 
     // Create document entry for bookkeeping from scan
-    createBookkeepingEntry(docId) {
+    async createBookkeepingEntry(docId) {
         const doc = this.getDocument(docId);
         if (!doc || !doc.extractedData) {return { success: false };}
 
         if (window.bookkeepingService) {
-            const entry = window.bookkeepingService.addBuchung({
+            const entry = await window.bookkeepingService.addBuchung({
                 typ: 'ausgabe',
                 betrag: doc.extractedData.totalAmount || 0,
                 kategorie: 'Wareneinkauf',
