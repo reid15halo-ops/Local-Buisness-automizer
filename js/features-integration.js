@@ -319,15 +319,123 @@ function renderCustomers() {
     });
 }
 
+function _openKundeForm(customer) {
+    const modal = document.getElementById('modal-kunde-form');
+    if (!modal) {return;}
+    const title = document.getElementById('modal-kunde-form-title');
+    const editIdField = document.getElementById('kf-edit-id');
+
+    // Reset form
+    document.getElementById('kunde-form')?.reset?.();
+
+    if (customer) {
+        // Edit mode
+        title.textContent = 'Kunde bearbeiten';
+        editIdField.value = customer.id;
+        document.getElementById('kf-name').value = customer.name || '';
+        document.getElementById('kf-firma').value = customer.firma || '';
+        document.getElementById('kf-email').value = customer.email || '';
+        document.getElementById('kf-telefon').value = customer.telefon || '';
+        document.getElementById('kf-strasse').value = customer.adresse?.strasse || '';
+        document.getElementById('kf-plz').value = customer.adresse?.plz || '';
+        document.getElementById('kf-ort').value = customer.adresse?.ort || '';
+        document.getElementById('kf-kundentyp').value = customer.kundentyp || 'privat';
+        document.getElementById('kf-leitwegId').value = customer.leitwegId || '';
+        document.getElementById('kf-ustId').value = customer.ustId || '';
+        document.getElementById('kf-notizen').value = customer.notizen || '';
+    } else {
+        title.textContent = 'Neuer Kunde';
+        editIdField.value = '';
+    }
+
+    // Toggle Leitweg-ID visibility based on kundentyp
+    const ktSelect = document.getElementById('kf-kundentyp');
+    const lwGroup = document.getElementById('kf-leitweg-group');
+    if (lwGroup) {
+        lwGroup.style.display = (ktSelect?.value === 'behoerde') ? 'block' : 'none';
+    }
+
+    modal.classList.add('active');
+}
+
+function _saveKundeForm() {
+    const nameVal = document.getElementById('kf-name')?.value?.trim();
+    if (!nameVal) {
+        showToast('Name ist ein Pflichtfeld', 'error');
+        return;
+    }
+
+    const editId = document.getElementById('kf-edit-id')?.value;
+    const data = {
+        name: nameVal,
+        firma: document.getElementById('kf-firma')?.value?.trim() || '',
+        email: document.getElementById('kf-email')?.value?.trim() || '',
+        telefon: document.getElementById('kf-telefon')?.value?.trim() || '',
+        adresse: {
+            strasse: document.getElementById('kf-strasse')?.value?.trim() || '',
+            plz: document.getElementById('kf-plz')?.value?.trim() || '',
+            ort: document.getElementById('kf-ort')?.value?.trim() || ''
+        },
+        kundentyp: document.getElementById('kf-kundentyp')?.value || 'privat',
+        leitwegId: document.getElementById('kf-leitwegId')?.value?.trim() || '',
+        ustId: document.getElementById('kf-ustId')?.value?.trim() || '',
+        notizen: document.getElementById('kf-notizen')?.value?.trim() || ''
+    };
+
+    // Validate Leitweg-ID if provided
+    if (data.leitwegId && window.eInvoiceService) {
+        const v = window.eInvoiceService.validateLeitwegId(data.leitwegId);
+        if (!v.valid) {
+            showToast('Leitweg-ID ungueltig: ' + v.error, 'error');
+            return;
+        }
+        // Also store in eInvoiceService mapping
+        if (editId) {
+            window.eInvoiceService.setCustomerLeitwegId(editId, data.leitwegId);
+        }
+    }
+
+    if (editId) {
+        window.customerService.updateCustomer(editId, data);
+        showToast('Kunde aktualisiert', 'success');
+    } else {
+        const newCustomer = window.customerService.addCustomer(data);
+        if (data.leitwegId && window.eInvoiceService) {
+            window.eInvoiceService.setCustomerLeitwegId(newCustomer.id, data.leitwegId);
+        }
+        showToast('Kunde erstellt', 'success');
+    }
+
+    // Close modal and re-render
+    const modal = document.getElementById('modal-kunde-form');
+    if (modal) {modal.classList.remove('active');}
+    renderCustomers();
+}
+
 function initCustomers() {
     document.getElementById('btn-neuer-kunde')?.addEventListener('click', () => {
-        const name = prompt('Kundenname:');
-        if (name) {
-            window.customerService.addCustomer({ name: name });
-            renderCustomers();
-            showToast('Kunde erstellt', 'success');
+        _openKundeForm(null);
+    });
+
+    // Save button in form modal
+    document.getElementById('btn-kunde-speichern')?.addEventListener('click', () => {
+        _saveKundeForm();
+    });
+
+    // Toggle Leitweg-ID field visibility when kundentyp changes
+    document.getElementById('kf-kundentyp')?.addEventListener('change', (e) => {
+        const lwGroup = document.getElementById('kf-leitweg-group');
+        if (lwGroup) {
+            lwGroup.style.display = (e.target.value === 'behoerde') ? 'block' : 'none';
         }
     });
+
+    // Close modal via overlay/close buttons
+    const formModal = document.getElementById('modal-kunde-form');
+    if (formModal) {
+        formModal.querySelector('.modal-overlay')?.addEventListener('click', () => formModal.classList.remove('active'));
+        formModal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', () => formModal.classList.remove('active')));
+    }
 
     document.getElementById('customer-search')?.addEventListener('input', (e) => {
         const query = e.target.value;
@@ -1241,6 +1349,7 @@ async function initAIModelSelector() {
     const select = document.getElementById('ai-model-select');
     if (!select) {return;}
 
+    if (!window.llmService) {return;}
     const models = await window.llmService.getAvailableModels();
     if (models.length > 0) {
         select.innerHTML = models.map(m => `<option value="${window.UI.sanitize(m.name)}" ${m.name === window.llmService.config.ollamaModel ? 'selected' : ''}>${window.UI.sanitize(m.name)}</option>`).join('');
@@ -1362,6 +1471,7 @@ async function renderEmailAutomation() {
 window.renderEmails = renderEmails;
 window.renderTasks = renderTasks;
 window.renderCustomers = renderCustomers;
+window._openKundeForm = _openKundeForm;
 window.renderCalendar = renderCalendar;
 window.renderTimeTracking = renderTimeTracking;
 window.renderGanttFullView = renderGanttFullView;

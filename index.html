@@ -17,14 +17,16 @@
     <link rel="stylesheet" href="css/agent-workflows.css">
     <link rel="stylesheet" href="css/support.css">
     <link rel="stylesheet" href="css/field-app.css">
-    <link rel="stylesheet" href="css/support.css">
     <link rel="stylesheet" href="css/aufmass.css">
     <link rel="stylesheet" href="css/customer-portal.css">
     <link rel="stylesheet" href="css/field-app-mobile.css">
+    <link rel="stylesheet" href="css/field-mode.css">
     <link rel="stylesheet" href="css/dashboard-widgets.css">
     <link rel="stylesheet" href="css/conflict-resolution.css">
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
+    <!-- Responsive overrides (must be last CSS file) -->
+    <link rel="stylesheet" href="css/responsive.css">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://freyaivisions.de; frame-src https://checkout.stripe.com; font-src 'self' data:; worker-src 'self' blob:;">
@@ -40,7 +42,7 @@
 
 <body>
     <!-- Supabase config must load BEFORE auth gate checks isConfigured() -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" integrity="sha384-MFRs3GOKG7baTTFnpuIH/OuWFhPB09hOFzj/S8byfOcSQiaXmD4bSMVE01zSrMSp" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js" integrity="sha384-vdScihEZCfbPnBQf+lc7LgXUdJVYyhC3yWHUW5C5P5GpHRqVnaM6HJELJxT6IqwM" crossorigin="anonymous"></script>
     <script>
     /* Global innerHTML XSS protection via DOMPurify */
     (function() {
@@ -277,6 +279,10 @@
                     <span class="nav-icon">⏱️</span>
                     Zeiterfassung
                 </button>
+                <button class="nav-item" data-view="field-mode" data-mode="simple">
+                    <span class="nav-icon">🏗️</span>
+                    Feld-Modus
+                </button>
                 <button class="nav-item" data-view="gantt" data-mode="pro">
                     <span class="nav-icon">📊</span>
                     Werkstattplaner
@@ -371,7 +377,7 @@
                 <button class="nav-item" data-view="support" data-mode="pro">
                     <span class="nav-icon">🎫</span>
                     Support
-                    <span class="badge" id="support-badge"></span>
+                    <span class="badge" id="support-badge-pro"></span>
                 </button>
 
                 <!-- Admin Panel (Pro Mode) -->
@@ -379,7 +385,7 @@
                 <button class="nav-item" data-view="support" data-mode="simple">
                     <span class="nav-icon">🎫</span>
                     Support
-                    <span class="badge" id="support-badge"></span>
+                    <span class="badge" id="support-badge-simple"></span>
                 </button>
                 <button class="nav-item" data-view="admin-panel" data-mode="pro">
                     <span class="nav-icon">🔐</span>
@@ -2295,6 +2301,13 @@ Mit freundlichen Grüßen
                 </div>
             </section>
 
+            <!-- Feld-Modus View (Mobile Craftsman) -->
+            <section class="view" id="view-field-mode">
+                <div id="field-mode-container">
+                    <!-- Rendered by field-mode-ui.js -->
+                </div>
+            </section>
+
             <!-- Backup View -->
             <section class="view" id="view-backup">
                 <header class="view-header">
@@ -3184,6 +3197,77 @@ Email: max.mustermann@example.com</textarea>
         </div>
     </div>
 
+    <!-- Modal: Neuer Kunde / Kunde bearbeiten -->
+    <div class="modal" id="modal-kunde-form" role="dialog" aria-labelledby="modal-kunde-form-title" aria-modal="true">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-kunde-form-title">Neuer Kunde</h2>
+                <button class="modal-close" aria-label="Dialog schliessen">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="kunde-form" autocomplete="off">
+                    <div class="form-group">
+                        <label for="kf-name">Name *</label>
+                        <input type="text" id="kf-name" class="form-control" required placeholder="Vor- und Nachname">
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-firma">Firma</label>
+                        <input type="text" id="kf-firma" class="form-control" placeholder="Firmenname (optional)">
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-email">E-Mail</label>
+                        <input type="email" id="kf-email" class="form-control" placeholder="kunde@beispiel.de">
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-telefon">Telefon</label>
+                        <input type="tel" id="kf-telefon" class="form-control" placeholder="+49 ...">
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-strasse">Strasse</label>
+                        <input type="text" id="kf-strasse" class="form-control" placeholder="Musterstr. 1">
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="kf-plz">PLZ</label>
+                            <input type="text" id="kf-plz" class="form-control" placeholder="12345">
+                        </div>
+                        <div class="form-group" style="flex: 2;">
+                            <label for="kf-ort">Ort</label>
+                            <input type="text" id="kf-ort" class="form-control" placeholder="Berlin">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-kundentyp">Kundentyp</label>
+                        <select id="kf-kundentyp" class="form-control">
+                            <option value="privat">Privat</option>
+                            <option value="geschaeftlich">Geschaeftlich</option>
+                            <option value="behoerde">Behoerde / Oeffentlich</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="kf-leitweg-group" style="display: none;">
+                        <label for="kf-leitwegId">Leitweg-ID (fuer B2G / XRechnung)</label>
+                        <input type="text" id="kf-leitwegId" class="form-control" placeholder="z.B. 991-12345-67">
+                        <small style="color: var(--text-muted);">Pflichtfeld fuer E-Rechnungen an oeffentliche Auftraggeber</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-ustId">USt-IdNr.</label>
+                        <input type="text" id="kf-ustId" class="form-control" placeholder="DE123456789">
+                    </div>
+                    <div class="form-group">
+                        <label for="kf-notizen">Notizen</label>
+                        <textarea id="kf-notizen" class="form-control" rows="3" placeholder="Interne Notizen..."></textarea>
+                    </div>
+                    <input type="hidden" id="kf-edit-id" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">Abbrechen</button>
+                <button class="btn btn-primary" id="btn-kunde-speichern">Speichern</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Kunden-Detail mit Anruf-Zusammenfassungen -->
     <div class="modal" id="modal-kunde-detail" role="dialog" aria-labelledby="modal-kunde-detail-title" aria-modal="true">
         <div class="modal-overlay"></div>
@@ -3237,14 +3321,25 @@ Email: max.mustermann@example.com</textarea>
             const infoEl = document.getElementById('kunde-detail-info');
             const customer = window.customerService?.getAllCustomers()?.find(c => c.id === customerId);
             if (customer) {
+                const ktLabels = { privat: 'Privat', geschaeftlich: 'Geschaeftlich', behoerde: 'Behoerde/Oeffentlich' };
+                const ktLabel = ktLabels[customer.kundentyp] || 'Privat';
+                const lwInfo = customer.leitwegId ? ` | Leitweg-ID: ${esc(customer.leitwegId)}` : '';
+                const ustInfo = customer.ustId ? ` | USt-ID: ${esc(customer.ustId)}` : '';
                 infoEl.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-card); border-radius: 12px;">
                         <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #818cf8); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; color: #fff;">${esc((customer.name || '?').charAt(0).toUpperCase())}</div>
-                        <div>
+                        <div style="flex: 1;">
                             <div style="font-weight: 600; font-size: 16px;">${esc(customer.name)}</div>
                             <div style="color: var(--text-muted); font-size: 13px;">${esc(customer.firma || '')} ${customer.telefon ? '| ' + esc(customer.telefon) : ''} ${customer.email ? '| ' + esc(customer.email) : ''}</div>
+                            <div style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">Typ: ${esc(ktLabel)}${lwInfo}${ustInfo}</div>
                         </div>
+                        <button class="btn btn-sm btn-secondary" id="btn-edit-kunde-detail" title="Kunde bearbeiten">Bearbeiten</button>
                     </div>`;
+                // Bind edit button
+                document.getElementById('btn-edit-kunde-detail')?.addEventListener('click', () => {
+                    modal.classList.remove('active');
+                    if (window._openKundeForm) window._openKundeForm(customer);
+                });
             }
 
             // Modal oeffnen
@@ -3427,13 +3522,13 @@ Email: max.mustermann@example.com</textarea>
     <script defer src="js/services/pwa-install-service.js"></script>
 
     <!-- Call Summary Service (Anruf-Zusammenfassungen) -->
-    <script src="js/services/call-summary-service.js"></script>
+    <script defer src="js/services/call-summary-service.js"></script>
 
     <!-- Portal Service (Supabase multi-tenant token management) -->
-    <script src="js/services/portal-service.js"></script>
+    <script defer src="js/services/portal-service.js"></script>
 
     <!-- Offline Sync Service (IndexedDB queue + cache) -->
-    <script src="js/services/offline-sync-service.js"></script>
+    <script defer src="js/services/offline-sync-service.js"></script>
 
     <!-- Calendar & Scheduling Services -->
     <script defer src="js/services/calendar-service.js"></script>
@@ -3453,6 +3548,17 @@ Email: max.mustermann@example.com</textarea>
     <script defer src="js/features-integration.js"></script>
     <script defer src="js/new-features-ui.js"></script>
     <script defer src="js/excel-import-integration.js"></script>
+
+    <!-- Voice Input Service (Spracheingabe - global) -->
+    <script defer src="js/services/voice-input-service.js"></script>
+
+    <!-- Field Mode In-Page UI (Feld-Modus Ansicht) -->
+    <script defer src="js/ui/field-mode-ui.js"></script>
+
+    <!-- Phase 6-14 Services: GoBD, Bautagebuch, Morning Briefing -->
+    <script defer src="js/services/gobd-compliance-service.js"></script>
+    <script defer src="js/services/bautagebuch-service.js"></script>
+    <script defer src="js/services/morning-briefing-service.js"></script>
 
     <!-- Agent Workflows, Field App, Aufmaß, Workflow Builder -->
     <!-- Lazy-loaded via lazy-loader.js when views are opened -->
