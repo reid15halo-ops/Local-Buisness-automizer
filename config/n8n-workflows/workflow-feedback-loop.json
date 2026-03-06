@@ -1,0 +1,279 @@
+{
+  "name": "Morpheus Feedback Loop (4-Agent)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "feedback-loop",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "7c18a74b-ce42-4776-801b-c4e9bf0d2d25",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "feedback-loop"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\nconst taskType = body.task_type || \"translation\";\nconst sourceText = body.source_text || \"\";\nconst targetLanguage = body.target_language || \"English\";\nconst customInstructions = body.custom_instructions || \"\";\nconst round = body._round || 1;\nconst maxRounds = body._max_rounds || 10;\nconst previousResult = body._previous_result || null;\nconst previousFeedback = body._previous_feedback || null;\n\n// Input validation\nif (!sourceText || sourceText.trim().length === 0) {\n  return [{ json: { error: \"source_text is required and cannot be empty\", status: \"validation_error\" } }];\n}\n\nlet systemPrompt = \"\";\nlet userPrompt = \"\";\n\nif (taskType === \"translation\") {\n  systemPrompt = \"You are a professional translator. Translate the given text into \" + targetLanguage + \". Preserve tone, meaning, and formatting. \" + customInstructions;\n  if (previousResult && previousFeedback) {\n    userPrompt = \"ROUND \" + round + \": Your previous translation was rejected.\\n\\nOriginal text:\\n\" + sourceText + \"\\n\\nYour previous attempt:\\n\" + previousResult + \"\\n\\nReviewer feedback:\\n\" + previousFeedback + \"\\n\\nPlease produce an improved translation addressing all feedback.\";\n  } else {\n    userPrompt = \"Translate the following text into \" + targetLanguage + \":\\n\\n\" + sourceText;\n  }\n} else if (taskType === \"code\") {\n  systemPrompt = \"You are an expert software engineer. Write clean, efficient, well-tested code. \" + customInstructions;\n  if (previousResult && previousFeedback) {\n    userPrompt = \"ROUND \" + round + \": Your previous code was rejected.\\n\\nOriginal request:\\n\" + sourceText + \"\\n\\nYour previous attempt:\\n\" + previousResult + \"\\n\\nReviewer feedback:\\n\" + previousFeedback + \"\\n\\nPlease produce improved code addressing all feedback.\";\n  } else {\n    userPrompt = sourceText;\n  }\n} else {\n  systemPrompt = \"You are a helpful AI assistant. \" + customInstructions;\n  if (previousResult && previousFeedback) {\n    userPrompt = \"ROUND \" + round + \": Your previous output was rejected.\\n\\nOriginal request:\\n\" + sourceText + \"\\n\\nYour previous attempt:\\n\" + previousResult + \"\\n\\nReviewer feedback:\\n\" + previousFeedback + \"\\n\\nPlease produce an improved response addressing all feedback.\";\n  } else {\n    userPrompt = sourceText;\n  }\n}\n\nreturn [{ json: {\n  task_type: taskType,\n  source_text: sourceText,\n  target_language: targetLanguage,\n  custom_instructions: customInstructions,\n  system_prompt: systemPrompt,\n  user_prompt: userPrompt,\n  round: round,\n  max_rounds: maxRounds\n} }];"
+      },
+      "id": "c6a20de6-cfe5-4e66-ae4f-30d64a921ab3",
+      "name": "Agent 1: Grounding",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"mistral-small\", messages: [ { role: \"system\", content: $json.system_prompt }, { role: \"user\", content: $json.user_prompt } ], stream: false, options: { temperature: 0.3, num_predict: 4096 } }) }}",
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "cbaa406d-21eb-4ce7-8525-b14efbb1ac10",
+      "name": "Agent 2: Execution (Mistral Small)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const grounding = $input.first().json;\nconst execution = $input.first().json;\n\n// Extract result from Ollama response â€” handle both success and error\nlet executionResult;\ntry {\n  const ollamaResponse = $(\"Agent 2: Execution (Mistral Small)\").first().json;\n  executionResult = ollamaResponse.message ? ollamaResponse.message.content : \"ERROR: No content in Ollama response\";\n} catch (e) {\n  executionResult = \"ERROR: Failed to get execution result: \" + e.message;\n}\n\n// Get grounding context\nconst ground = $(\"Agent 1: Grounding\").first().json;\n\nconst baseReview = {\n  task_type: ground.task_type,\n  source_text: ground.source_text,\n  target_language: ground.target_language,\n  custom_instructions: ground.custom_instructions,\n  execution_result: executionResult,\n  round: ground.round,\n  max_rounds: ground.max_rounds\n};\n\nreturn [\n  { json: { ...baseReview, reviewer: \"quality_qwen\", reviewer_index: 0 } },\n  { json: { ...baseReview, reviewer: \"resolution_qwen\", reviewer_index: 1 } },\n  { json: { ...baseReview, reviewer: \"quality_mistral\", reviewer_index: 2 } },\n  { json: { ...baseReview, reviewer: \"resolution_mistral\", reviewer_index: 3 } }\n];"
+      },
+      "id": "b9b36413-df19-44db-bf76-f2b9d96e3ea6",
+      "name": "Prepare 4 Reviews",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:11434/api/chat",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"mistral:latest\", messages: [ { role: \"system\", content: $json.reviewer.includes(\"quality\") ? \"You are a strict quality reviewer. Evaluate the following output for accuracy, completeness, tone, and style. You MUST respond with ONLY a JSON object: {\\\"verdict\\\": \\\"APPROVE\\\" or \\\"REJECT\\\", \\\"score\\\": 1-10, \\\"feedback\\\": \\\"specific feedback\\\"}. Be critical. Only APPROVE if score >= 7. Do NOT include any text before or after the JSON.\" : \"You are a resolution reviewer. Check if the output fully addresses the original request. Verify completeness, no omissions, no hallucinations. You MUST respond with ONLY a JSON object: {\\\"verdict\\\": \\\"APPROVE\\\" or \\\"REJECT\\\", \\\"score\\\": 1-10, \\\"feedback\\\": \\\"specific feedback\\\"}. Be critical. Only APPROVE if score >= 7. Do NOT include any text before or after the JSON.\" }, { role: \"user\", content: \"Task type: \" + $json.task_type + \"\\nOriginal request: \" + $json.source_text.substring(0, 2000) + \"\\n\\nOutput to review:\\n\" + $json.execution_result.substring(0, 4000) } ], stream: false, options: { temperature: 0.1, num_predict: 1024 } }) }}",
+        "options": {
+          "timeout": 300000,
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "da495f56-b6b9-4243-8969-d95510c86337",
+      "name": "Agent 3: Review (Parallel)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1180,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const reviews = $input.all();\nconst grounding = $(\"Prepare 4 Reviews\").first().json;\nconst reviewerNames = [\"Quality (Qwen)\", \"Resolution (Qwen)\", \"Quality (Mistral)\", \"Resolution (Mistral)\"];\n\nlet allApproved = true;\nlet feedbackList = [];\nlet parsedReviews = [];\n\nfor (let i = 0; i < reviews.length; i++) {\n  const raw = reviews[i].json.message ? reviews[i].json.message.content : \"{}\";\n  let parsed;\n  try {\n    // Non-greedy: find the LAST complete JSON object (most likely the structured review)\n    const jsonMatches = raw.match(/\\{[^{}]*(?:\\{[^{}]*\\}[^{}]*)*\\}/g);\n    const lastJson = jsonMatches ? jsonMatches[jsonMatches.length - 1] : raw;\n    parsed = JSON.parse(lastJson);\n  } catch (e) {\n    // If JSON parse fails, try to extract verdict from plain text\n    const hasApprove = raw.toUpperCase().includes(\"APPROVE\");\n    const scoreMatch = raw.match(/(\\d+)\\s*\\/\\s*10|score[:\\s]*(\\d+)/i);\n    const score = scoreMatch ? parseInt(scoreMatch[1] || scoreMatch[2]) : 0;\n    parsed = {\n      verdict: hasApprove && score >= 7 ? \"APPROVE\" : \"REJECT\",\n      score: score,\n      feedback: \"Auto-parsed from non-JSON response: \" + raw.substring(0, 300)\n    };\n  }\n\n  parsedReviews.push({\n    reviewer: reviewerNames[i] || \"Reviewer \" + i,\n    verdict: parsed.verdict || \"REJECT\",\n    score: parsed.score || 0,\n    feedback: parsed.feedback || \"No feedback\"\n  });\n\n  if ((parsed.verdict || \"\").toUpperCase() !== \"APPROVE\") {\n    allApproved = false;\n    feedbackList.push(\"[\" + reviewerNames[i] + \"] \" + (parsed.feedback || \"Rejected without feedback\"));\n  }\n}\n\nconst avgScore = parsedReviews.reduce(function(sum, r) { return sum + (r.score || 0); }, 0) / parsedReviews.length;\n\nif (allApproved || grounding.round >= grounding.max_rounds) {\n  return [{ json: {\n    status: allApproved ? \"approved\" : \"max_rounds_reached\",\n    final_result: grounding.execution_result,\n    rounds_taken: grounding.round,\n    average_score: Math.round(avgScore * 10) / 10,\n    reviews: parsedReviews,\n    task_type: grounding.task_type\n  } }];\n} else {\n  return [{ json: {\n    status: \"rejected\",\n    loop_back: true,\n    round: grounding.round,\n    next_round: grounding.round + 1,\n    execution_result: grounding.execution_result,\n    combined_feedback: feedbackList.join(\"\\n\\n\"),\n    reviews: parsedReviews,\n    average_score: Math.round(avgScore * 10) / 10,\n    task_type: grounding.task_type,\n    source_text: grounding.source_text,\n    target_language: grounding.target_language,\n    custom_instructions: grounding.custom_instructions,\n    max_rounds: grounding.max_rounds\n  } }];\n}"
+      },
+      "id": "f2824b96-4c29-4330-a84d-7c9760b1980e",
+      "name": "Agent 4: Finalizing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "loop-check",
+              "leftValue": "={{ $json.loop_back }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "154c2952-5f43-4f19-98d0-c45f4d94c969",
+      "name": "Need Another Round?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:5678/webhook/feedback-loop",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ task_type: $json.task_type, source_text: $json.source_text, target_language: $json.target_language || \"\", custom_instructions: $json.custom_instructions || \"\", _round: $json.next_round, _max_rounds: $json.max_rounds || 10, _previous_result: $json.execution_result, _previous_feedback: $json.combined_feedback }) }}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "06f04549-07b4-41fe-9a90-849ae394aa0a",
+      "name": "Loop Back to Start",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1900,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json;\nreturn [{ json: {\n  status: result.status,\n  result: result.final_result,\n  rounds: result.rounds_taken,\n  score: result.average_score,\n  reviews: result.reviews\n} }];"
+      },
+      "id": "d6de2631-3456-4847-82b7-61cecd825fd1",
+      "name": "Return Final Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1900,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Agent 1: Grounding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 1: Grounding": {
+      "main": [
+        [
+          {
+            "node": "Agent 2: Execution (Mistral Small)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 2: Execution (Mistral Small)": {
+      "main": [
+        [
+          {
+            "node": "Prepare 4 Reviews",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare 4 Reviews": {
+      "main": [
+        [
+          {
+            "node": "Agent 3: Review (Parallel)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 3: Review (Parallel)": {
+      "main": [
+        [
+          {
+            "node": "Agent 4: Finalizing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent 4: Finalizing": {
+      "main": [
+        [
+          {
+            "node": "Need Another Round?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Need Another Round?": {
+      "main": [
+        [
+          {
+            "node": "Loop Back to Start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Final Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "AI",
+      "id": "ai-tag"
+    },
+    {
+      "name": "Feedback Loop",
+      "id": "feedback-loop-tag"
+    }
+  ],
+  "pinData": {}
+}
