@@ -1,0 +1,487 @@
+/* ============================================
+   FreyAI Visions - Responsive Overrides
+
+   Consolidated mobile/tablet fixes for 375px target.
+   Loaded AFTER all other stylesheets.
+   Does NOT change brand colors, typography family, or dark theme.
+   ============================================ */
+
+/* ============================================
+   Global: Prevent horizontal overflow
+   ============================================ */
+
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+    height: auto;
+}
+
+pre,
+code {
+    max-width: 100%;
+    overflow-x: auto;
+    word-break: break-word;
+}
+
+/* Ensure all tables are scrollable by default */
+.table-wrapper,
+.po-detail-table-wrapper,
+.report-output {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   Mobile: max-width 768px
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* --- Sidebar overlay backdrop fix --- */
+    .sidebar.active + .main-content::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 90;
+    }
+
+    /* --- Mobile header: ensure fixed positioning --- */
+    .mobile-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 110;
+    }
+
+    /* --- Kanban board: 1 column on mobile --- */
+    .kanban-board {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .kanban-column {
+        min-height: auto;
+    }
+
+    /* --- Calendar: stack days vertically --- */
+    .calendar-week {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .calendar-day {
+        min-height: auto;
+        padding: 12px;
+    }
+
+    /* --- Stats rows: wrap on mobile --- */
+    .task-stats,
+    .customer-stats,
+    .email-stats,
+    .document-stats,
+    .time-stats,
+    .material-stats,
+    .customer-stats-inline {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .stat-mini {
+        min-width: 0;
+        flex: 1 1 calc(50% - 8px);
+        padding: 12px;
+    }
+
+    /* --- Report cards: grid for mobile --- */
+    .report-types {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .report-card {
+        min-width: 0;
+        padding: 16px 12px;
+    }
+
+    .report-icon {
+        font-size: 24px;
+    }
+
+    .report-name {
+        font-size: 12px;
+    }
+
+    .report-filters .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .report-summary {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    /* --- Rechnung preview: reduce padding on mobile --- */
+    .rechnung-preview {
+        padding: 16px;
+        margin: 8px;
+        font-size: 13px;
+    }
+
+    .rechnung-preview table {
+        /* Reset the card-based table layout for invoice tables */
+        font-size: 12px;
+    }
+
+    /* --- Angebot detail: mobile adjustments --- */
+    .angebot-summary {
+        align-items: stretch;
+    }
+
+    .angebot-summary .summary-row {
+        min-width: 0;
+        gap: 12px;
+    }
+
+    .angebot-bom-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .angebot-comm-item {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    /* --- Preset row: stack on mobile --- */
+    .preset-row {
+        flex-direction: column;
+    }
+
+    .preset-select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* --- Position actions: full-width buttons --- */
+    .position-actions {
+        flex-direction: column;
+    }
+
+    .position-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* --- Action row: wrap on mobile --- */
+    .action-row {
+        flex-wrap: wrap;
+    }
+
+    .action-row .btn {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    /* --- Header actions: stack on mobile --- */
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    /* --- Workflow stats grid: 2 columns --- */
+    .workflow-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card-mini {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .stat-icon-mini {
+        font-size: 22px;
+    }
+
+    .stat-value-mini {
+        font-size: 20px;
+    }
+
+    /* --- Datatype selection (Excel import): 1 column --- */
+    .datatype-selection {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .datatype-card {
+        padding: 20px 16px;
+    }
+
+    /* --- Wizard progress: compact for mobile --- */
+    .wizard-progress {
+        padding: 0 8px;
+        gap: 4px;
+    }
+
+    .wizard-step {
+        font-size: 11px;
+    }
+
+    /* --- Automation stats grid --- */
+    .automation-stats {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* --- Doc chain: scroll horizontally if needed --- */
+    .angebot-doc-chain {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        padding: 10px 12px;
+    }
+
+    /* --- Offline banner: smaller on mobile --- */
+    .offline-banner {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    /* --- Notification panel: full-width on mobile --- */
+    .notification-panel {
+        left: 8px;
+        right: 8px;
+        max-width: none;
+    }
+
+    /* --- Search input: full width --- */
+    .auftrag-search-input {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* --- Modal close button: larger touch target --- */
+    .modal-close {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    /* --- Filter tabs: scrollable, no wrap --- */
+    .filter-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .filter-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-tab,
+    .filter-tabs .btn,
+    .filter-tabs button {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* --- Tables inside modals: scrollable --- */
+    .modal-content table,
+    .modal-body table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* --- View header: stack elements --- */
+    .view-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+}
+
+/* ============================================
+   Small Mobile: max-width 480px
+   ============================================ */
+
+@media (max-width: 480px) {
+
+    /* --- Kanban task meta: stack --- */
+    .kanban-task-meta {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    /* --- Stats: single column --- */
+    .stat-mini {
+        flex: 1 1 100%;
+    }
+
+    .report-types {
+        grid-template-columns: 1fr;
+    }
+
+    .report-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* --- Rechnung preview: tighter --- */
+    .rechnung-preview {
+        padding: 12px;
+        margin: 4px;
+        font-size: 12px;
+    }
+
+    /* --- Calendar day: compact --- */
+    .calendar-day {
+        padding: 8px;
+    }
+
+    .calendar-day-name {
+        font-size: 12px;
+    }
+
+    /* --- Customer stats inline: stack --- */
+    .customer-stats-inline {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    /* --- Angebot BOM table: card layout --- */
+    .angebot-bom-table thead {
+        display: none;
+    }
+
+    .angebot-bom-table tbody tr {
+        display: block;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        padding: 10px;
+        background: var(--bg-dark);
+    }
+
+    .angebot-bom-table tbody td {
+        display: block;
+        text-align: left;
+        padding: 4px 0;
+        border: none;
+    }
+
+    .angebot-bom-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-muted);
+        display: inline-block;
+        width: 40%;
+    }
+
+    /* --- Doc chain: smaller items --- */
+    .doc-chain-item {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+
+    .doc-chain-arrow {
+        font-size: 12px;
+    }
+}
+
+/* ============================================
+   Tablet: 641px to 1024px
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+
+    /* --- Kanban board: 2 columns on tablet --- */
+    .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+
+    /* --- Calendar: 3-4 columns on tablet landscape --- */
+    .calendar-week {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+
+    .calendar-day {
+        min-height: 150px;
+        padding: 12px;
+    }
+
+    /* --- Report types: 3 across --- */
+    .report-types {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .report-card {
+        min-width: 0;
+    }
+}
+
+/* ============================================
+   Touch target safety net
+   Ensure interactive elements meet 44px minimum
+   ============================================ */
+
+@media (pointer: coarse) {
+    button,
+    [role="button"],
+    a.btn,
+    .nav-item,
+    .filter-tab,
+    .we-tab,
+    .kanban-task,
+    select,
+    .doc-chain-item,
+    .report-card,
+    .datatype-card {
+        min-height: 44px;
+    }
+
+    /* Checkboxes and radio buttons: larger hit area */
+    input[type="checkbox"],
+    input[type="radio"] {
+        min-width: 20px;
+        min-height: 20px;
+    }
+}
+
+/* ============================================
+   Safe area insets (notched devices)
+   ============================================ */
+
+@supports (padding: env(safe-area-inset-bottom)) {
+    @media (max-width: 768px) {
+        .main-content {
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+
+        .mobile-header {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .sidebar {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .modal-content {
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+    }
+}

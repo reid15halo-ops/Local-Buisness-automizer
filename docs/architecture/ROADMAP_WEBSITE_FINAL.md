@@ -1,199 +1,299 @@
-# ROADMAP: FreyAI Visions Website — Alles zum Laufen bringen
+# ROADMAP: FreyAI Visions — Komplette Produktstrategie
 
-> Erstellt: 2026-03-03 | Basierend auf vollstandiger Codebase-Analyse
-> Ziel: Die Internetseite so fertigstellen, dass wirklich ALLES funktioniert
-
----
-
-## Aktueller Stand (Ist-Zustand)
-
-### Was bereits existiert
-- **30 Views** im index.html (Dashboard, Anfragen, Angebote, Auftraege, Rechnungen, Material, Bestellungen, Kalender, etc.)
-- **94 Service-Module** in `js/services/`
-- **18 UI-Komponenten** in `js/ui/`
-- **938 Tests** — alle bestehen (24 Test-Dateien)
-- **Supabase-Backend** (Auth, DB, Edge Functions)
-- **FastAPI-Backend** (OCR, PII, GoBD)
-- **PWA** mit Service Worker, Offline-Modus
-- **i18n** (DE/EN, 402 Keys)
-- **Security**: DOMPurify, CSP, Sanitize-Service, Auth-Gate
-
-### Was NICHT funktioniert / unvollstaendig ist
-
-| Problem | Schwere | Bereich |
-|---------|---------|---------|
-| 51 ESLint-Errors (keine Warnings) | Hoch | Code-Qualitaet |
-| 322 ESLint-Warnings (unused vars, console.log) | Mittel | Code-Qualitaet |
-| Supabase nicht konfiguriert = App laeuft nur mit IndexedDB/Demo | Hoch | Backend |
-| E-Mail-Versand (Resend) nur mit VPS-Relay | Hoch | Kommunikation |
-| SMS (Twilio/Sipgate) nicht konfiguriert | Mittel | Kommunikation |
-| Stripe-Zahlung nicht live | Mittel | Billing |
-| OCR/Bon-Scanner benoetigt Backend-Service | Mittel | Features |
-| E-Rechnung (XRechnung/ZUGFeRD) Peppol-Submit = Placeholder | Mittel | Compliance |
-| WhatsApp-Integration = nur UI, kein echtes API | Mittel | Kommunikation |
-| Viele Services nutzen `localStorage` statt Supabase im Prod | Hoch | Datenpersistenz |
-| Landing Page verweist auf Waitlist ohne funktionierendes Backend | Mittel | Marketing |
-| Customer Portal (`customer-portal.html`) ungetestet | Mittel | Features |
-| Field App Mobile UI ungetestet mit echten Daten | Mittel | Features |
-| n8n-Workflows nur als JSON exportiert, nicht deployed | Mittel | Automation |
-| VPS-Scripts (HA Monitor, Voice Bridge, Content Pipeline) ungetestet | Niedrig | Infrastruktur |
+> Erstellt: 2026-03-03 | Erweitert: 2026-03-06 | Morpheus-Audit abgeschlossen
+> Status: Gewerbe angemeldet (01.03.2026), App in Production + Staging
 
 ---
 
-## ROADMAP: 6 Phasen
+## Aktueller Stand (06.03.2026)
+
+### Infrastruktur (LIVE)
+- **Production**: https://app.freyaivisions.de (Hetzner VPS)
+- **Staging**: https://staging.freyaivisions.de
+- **Domains**: freyaivisions.de + freyavision.de (Hostinger)
+- **Email**: 5 Accounts @freyaivisions.de (Dovecot/Postfix)
+- **Containers**: Paperless-ngx, Postiz, n8n, Temporal, Email-Relay, Voice-STT
+- **Supabase**: incbhhaiiayohrjqevog.supabase.co (Prod)
+- **Deploy**: `./deploy.sh staging|production|both`
+
+### Codebase
+- **112 Service-Module** in `js/services/`
+- **23 UI-Komponenten** in `js/ui/`
+- **15 Feature-Module** in `js/modules/`
+- **Service Worker v21** mit 112 gecachten Assets
+- **PWA** mit Offline-First, IndexedDB + Supabase Sync
+- **i18n** DE/EN (402 Keys)
+- **Morpheus Feedback Loop** als Standard-QA-Prozess
+
+### Morpheus-Audit Ergebnis (06.03.2026)
+- **Runde 1**: 42 Bugs gefunden (10 KRITISCH), alle gefixt
+- **Runde 2**: 3 Regressionen gefunden, Hotfix angewendet
+- **Endscore**: 7.6/10 (von 5.4/10)
+- **Security**: PBKDF2 Passwort-Hashing, XSS-Escaping komplett, CSP bereinigt
+- **Compliance**: Kleinunternehmerregelung, Leistungsdatum, Einheit in Rechnungen
 
 ---
 
-### PHASE 1: Code-Hygiene & Stabilitaet (Grundlage)
-**Dauer-Schaetzung: 1 Sprint**
-**Ziel: Saubere Codebasis ohne Errors**
+## ABGESCHLOSSENE PHASEN
+
+### Phase 1: Code-Hygiene & Stabilitaet -- ERLEDIGT
+- 0 ESLint Errors, 0 Warnings
+- DSGVO Compliance (lokale Fonts, kein Google Analytics)
+- Dead Code entfernt
+- Error-Boundaries integriert
+
+### Phase 2: Backend & Datenpersistenz -- ERLEDIGT (Code-Fixes)
+- Supabase-Client Singleton, Auth-Gate, Event-Listener-Leak gefixt
+- DB-Service deutsche Tabellennamen (kunden, rechnungen, etc.)
+- Sync-Queue Key-Mismatch behoben
+- setup-validation-service.js hinzugefuegt
+
+### Phase 3: Kern-Workflow -- ERLEDIGT (Code-Fixes)
+- Invoice-Numbering Race Condition (GoBD) gefixt
+- Dunning-Service Faelligkeitsdatum statt Erstelldatum
+- PDF-Generation: Dynamische MwSt, Kleinunternehmer, Logo-Format-Erkennung
+- Zeiterfassung: Nachtschicht, Stale-Timer-Erkennung
+- DATEV-Export: Fiscal Year Header
+- Bookkeeping: CSV-Import >= 1M, dynamische Steuerrate
+- Cashflow-Service: korrekte EUeR-Felder
+
+### Phase 4: Kommunikation & Integrationen -- ERLEDIGT (Code-Fixes)
+- `_getTaxRate()` Absicherung in 19 Dateien
+- Email-Template-Service: Optional Chaining, localStorage-Guard
+- Notification-Service: Deduplizierung (60s Fenster)
+- E-Rechnung: localStorage try-catch
+- n8n-Workflows: Error-Handler verbunden, Backup-Cron optimiert
+
+### Phase 5: UX & Robustheit -- ERLEDIGT (Code-Fixes)
+- 143 `JSON.parse(localStorage.getItem(...))` Calls abgesichert (59 Dateien)
+- XSS-Escaping in allen UI-Modulen (setup-wizard, excel-import, purchase-order, reorder-engine, etc.)
+- Division-by-Zero in profitability, dashboard-charts, bon-scanner, approval
+- showToast-Konsistenz (window.showToast statt this.showToast)
+
+### Morpheus Security-Hardening -- ERLEDIGT
+- PBKDF2 (100k Iterationen) statt SHA-256 fuer Admin + PIN Hashing
+- API-Key-Exposure in Gemini/LLM Service verhindert
+- Retry-Counter capped (max 20)
+- setInterval-Referenzen gespeichert (kein Leak)
+- VPS nginx CSP: Single Source of Truth (nur meta-Tag)
+
+---
+
+## OFFENE PHASEN
+
+---
+
+### PHASE 6: Deployment & Go-Live Finalisierung
+**Ziel: Production 100% betriebsbereit fuer erste Kunden**
+**Status: Teilweise erledigt (Hosting + Domain live)**
+
+| # | Aufgabe | Status | Prioritaet |
+|---|---------|--------|------------|
+| 6.1 | Domain + SSL + Hosting | ERLEDIGT | -- |
+| 6.2 | Staging-Umgebung | ERLEDIGT | -- |
+| 6.3 | Email-System (Dovecot/Postfix) | ERLEDIGT | -- |
+| 6.4 | Deploy-Script (staging/production/both) | ERLEDIGT | -- |
+| 6.5 | **Supabase Schema + RLS auf Prod deployen** | OFFEN | KRITISCH |
+| 6.6 | **Auth-Flow E2E testen** (Register → Login → Session) | OFFEN | KRITISCH |
+| 6.7 | **Edge Functions deployen** (13 Stueck) | OFFEN | HOCH |
+| 6.8 | **VPS Email-Relay mit Resend verbinden** | OFFEN | HOCH |
+| 6.9 | **n8n-Workflows importieren + Webhooks verbinden** | OFFEN | HOCH |
+| 6.10 | Monitoring: Error-Logging (client_errors Tabelle) | OFFEN | MITTEL |
+| 6.11 | Backup-Strategie: Supabase Auto-Backup + JSON-Export | OFFEN | MITTEL |
+| 6.12 | Landing Page: Waitlist → Supabase waitlist-Tabelle | OFFEN | MITTEL |
+| 6.13 | Performance: Lighthouse >= 90, Cache-Headers pruefen | OFFEN | MITTEL |
+
+**Abnahme**: Neuer User kann sich registrieren, Anfrage→Angebot→Rechnung durchlaufen, PDF generieren, per Mail versenden
+
+---
+
+### PHASE 7: Erster Kunde & Beta-Programm
+**Ziel: 3-5 Beta-Kunden onboarden, echtes Feedback sammeln**
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 1.1 | **ESLint Errors fixen (51)** | `no-undef`, `no-redeclare`, fehlende Imports — alle 51 Errors beheben | KRITISCH |
-| 1.2 | **ESLint Warnings aufraemen (322)** | Unused vars entfernen, `console.log` → `console.warn/error` oder entfernen | HOCH |
-| 1.3 | **Dead Code entfernen** | Unbenutzte Variablen/Funktionen aus UI-Modulen entfernen | MITTEL |
-| 1.4 | **Fehlende Error-Boundaries pruefen** | `error-boundary.js` in alle kritischen Pfade integrieren | MITTEL |
-| 1.5 | **Test-Coverage erhoehen** | Fehlende Tests fuer: `email-automation-service`, `workflow-builder-service`, `field-app-service` | MITTEL |
+| 7.1 | **Setup-Wizard E2E** | Firmenname, Steuernummer, Logo, Bankdaten → komplett durchlaufen | KRITISCH |
+| 7.2 | **Onboarding-Tutorial** | onboarding-tutorial-service.js fuer neue User testen | HOCH |
+| 7.3 | **Demo-Modus vs. Live-Modus** | Klarer Switch: Demo nur ohne Supabase, sonst echte Daten | HOCH |
+| 7.4 | **Beta-Fragebogen** | docs/business/BETA_FRAGEBOGEN_V1.md an erste Tester schicken | HOCH |
+| 7.5 | **Ticket-System** | support_tickets + ticket_messages (Supabase) bereits live | ERLEDIGT |
+| 7.6 | **Mobile Responsive** | Alle 30 Views auf 375px testen und fixen | HOCH |
+| 7.7 | **Light Mode Audit** | Alle Komponenten in Light Mode pruefen (Kontrast, Lesbarkeit) | MITTEL |
+| 7.8 | **Impressum + Datenschutz** | Rechtlich korrekte Seiten fuer freyaivisions.de | KRITISCH |
+| 7.9 | **AGB fuer SaaS** | Allgemeine Geschaeftsbedingungen fuer Kunden | HOCH |
+| 7.10 | **Preisliste finalisieren** | Setup 3.5-7.5k EUR + Retainer 300-500 EUR/Monat | MITTEL |
 
-**Abnahme-Kriterium:** `npm run lint` = 0 Errors, `npm test` = alle gruen
-
----
-
-### PHASE 2: Backend & Datenpersistenz (das Herz)
-**Dauer-Schaetzung: 2 Sprints**
-**Ziel: Echte Daten statt nur Demo/localStorage**
-
-| # | Aufgabe | Details | Prioritaet |
-|---|---------|---------|------------|
-| 2.1 | **Supabase-Projekt konfigurieren** | `.env` erstellen, Supabase-URL + Keys setzen, `supabase-config.js` verifizieren | KRITISCH |
-| 2.2 | **Datenbank-Schema deployen** | `config/supabase-schema.sql` + `migration-v2.sql` auf Supabase ausfuehren | KRITISCH |
-| 2.3 | **Row-Level Security (RLS) aktivieren** | Alle Tabellen: `kunden`, `anfragen`, `angebote`, `auftraege`, `rechnungen` etc. | KRITISCH |
-| 2.4 | **Auth-Flow End-to-End testen** | `auth.html` → Login → Redirect → `index.html` mit Session | KRITISCH |
-| 2.5 | **Sync-Service validieren** | IndexedDB ↔ Supabase Sync bei Online/Offline-Wechsel testen | HOCH |
-| 2.6 | **Edge Functions deployen** | Alle 13 Edge Functions: `ai-proxy`, `send-email`, `send-sms`, `stripe-webhook`, etc. | HOCH |
-| 2.7 | **Demo-Modus vs. Live-Modus** | Klarer Switch: Demo-Daten nur wenn kein Supabase konfiguriert; sonst echte Daten | HOCH |
-
-**Abnahme-Kriterium:** Neuer User kann sich registrieren, einloggen, Daten anlegen, abmelden, erneut einloggen → Daten sind da
+**Abnahme**: 3 Beta-Kunden nutzen die App aktiv, kein Datenverlust, positives Feedback
 
 ---
 
-### PHASE 3: Kern-Workflow End-to-End (das Geschaeft)
-**Dauer-Schaetzung: 2 Sprints**
-**Ziel: Der gesamte Handwerker-Workflow funktioniert lueckenlos**
+### PHASE 8: Kommunikations-Stack (Live)
+**Ziel: E-Mail, SMS und WhatsApp funktionieren produktiv**
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 3.1 | **Anfrage → Angebot → Auftrag → Rechnung** | Kompletter Durchlauf mit echten Daten testen, jeden Uebergang pruefen | KRITISCH |
-| 3.2 | **Rechnungsnummern-System** | `invoice-numbering-service.js` mit Supabase-Counter (keine Duplikate!) | KRITISCH |
-| 3.3 | **PDF-Generierung testen** | Angebote + Rechnungen als PDF — Layout, Firmendaten, Positionen, Summen pruefen | KRITISCH |
-| 3.4 | **Mahnwesen (Dunning) durchspielen** | Zahlungsfrist abgelaufen → Mahnung 1 → 2 → 3 mit korrekten Fristen | HOCH |
-| 3.5 | **Buchhaltung/EUER pruefen** | Einnahmen/Ausgaben korrekt verbucht, DATEV-Export generieren und validieren | HOCH |
-| 3.6 | **Material & Bestellwesen** | Lagerbestand → Reorder-Engine → Bestellung → Wareneingang → Bestandsupdate | HOCH |
-| 3.7 | **Kalender & Termine** | Termin erstellen → ICS-Export → Kundenbezug → Erinnerung | MITTEL |
-| 3.8 | **Aufmass-Tool** | Raummasse eingeben → Flaeche berechnen → In Angebot uebernehmen | MITTEL |
-| 3.9 | **Zeiterfassung** | Start/Stop Timer → Stunden pro Auftrag → In Rechnung uebernehmen | MITTEL |
+| 8.1 | **E-Mail-Versand produktiv** | Angebote, Rechnungen, Mahnungen per Mail | KRITISCH |
+| 8.2 | **E-Mail-Templates mit echten Daten** | email-template-service.js rendern + testen | HOCH |
+| 8.3 | **Inbound-Email Processing** | process-inbound-email Edge Function + Relay | HOCH |
+| 8.4 | **SMS-Terminerinnerungen** | Sipgate oder eigener Provider (KEIN Twilio-Abo) | MITTEL |
+| 8.5 | **WhatsApp Business API** | 360dialog oder offizielle Cloud API | MITTEL |
+| 8.6 | **Mahnwesen automatisiert** | Frist abgelaufen → Mahnung 1→2→3 per Mail | HOCH |
+| 8.7 | **Kundenportal-Benachrichtigungen** | Status-Updates per Mail an Kunden | MITTEL |
 
-**Abnahme-Kriterium:** Ein Testfall "Neuer Handwerker-Auftrag" komplett von Anfrage bis Zahlungseingang durchspielbar
+**Abnahme**: Handwerker verschickt Rechnung per Mail, Kunde empfaengt sie, Mahnung geht automatisch
 
 ---
 
-### PHASE 4: Kommunikation & Integrationen (die Verbindung)
-**Dauer-Schaetzung: 2 Sprints**
-**Ziel: E-Mail, SMS und externe Dienste funktionieren**
+### PHASE 9: KI-Features & Automation
+**Ziel: Gemini AI + n8n als produktive Werkzeuge**
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 4.1 | **VPS Email-Relay deployen** | `infrastructure/vps/email-relay/server.js` auf Hetzner VPS, Resend-Key konfigurieren | KRITISCH |
-| 4.2 | **E-Mail-Versand testen** | Angebote per Mail, Rechnungen per Mail, Mahnungen per Mail | KRITISCH |
-| 4.3 | **E-Mail-Templates pruefen** | `email-template-service.js` — alle Templates rendern mit echten Daten | HOCH |
-| 4.4 | **SMS-Provider einrichten** | Twilio oder Sipgate konfigurieren, Terminerinnerung per SMS testen | MITTEL |
-| 4.5 | **Gemini AI-Proxy konfigurieren** | Edge Function `ai-proxy` mit API-Key, Rate-Limiting pruefen | HOCH |
-| 4.6 | **AI-Assistent testen** | Chatbot, AI-Textvorschlaege, Approval-Queue (95/5 Modell) | HOCH |
-| 4.7 | **Stripe-Integration** | Checkout-Flow fuer Kundenportal-Zahlungen / Abonnements | MITTEL |
-| 4.8 | **n8n-Workflows deployen** | 6 Workflow-JSONs importieren, Webhooks verbinden | MITTEL |
-| 4.9 | **E-Rechnung (XRechnung)** | ZUGFeRD PDF-Generierung, Leitweg-ID Feld, EN 16931 Validierung | MITTEL |
+| 9.1 | **AI-Proxy Edge Function** | Gemini API-Key server-seitig, Rate-Limiting aktiv | HOCH |
+| 9.2 | **AI-Chatbot testen** | Fachberatung, Angebotsvorschlaege, Materialempfehlung | HOCH |
+| 9.3 | **Approval-Queue (95/5)** | AI macht 95% async, Mensch bestaetig 5% | HOCH |
+| 9.4 | **Morpheus Feedback Loop in n8n** | workflow-feedback-loop.json produktiv deployen | MITTEL |
+| 9.5 | **Morning Briefing Agent** | Taegliche Zusammenfassung: offene Auftraege, faellige Rechnungen, Termine | MITTEL |
+| 9.6 | **Predictive Dunning** | AI schaetzt Zahlungswahrscheinlichkeit, passt Mahnton an | NIEDRIG |
+| 9.7 | **Smart Scheduling** | AI schlaegt optimale Terminslots vor (Entfernung + Dauer) | NIEDRIG |
 
-**Abnahme-Kriterium:** Handwerker kann Rechnung per Mail verschicken, Kunde empfaengt sie, AI-Chatbot beantwortet Fragen
+**Abnahme**: AI-Chatbot beantwortet Kundenfragen korrekt, Approval-Queue funktioniert, Morning Briefing laeuft
 
 ---
 
-### PHASE 5: Frontend-Polish & UX (das Erlebnis)
-**Dauer-Schaetzung: 1-2 Sprints**
-**Ziel: Industrial Luxury Look & Feel, alles bedienbar**
+### PHASE 10: Compliance & Rechtssicherheit
+**Ziel: Alles rechtlich wasserdicht fuer deutsche Kunden**
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 5.1 | **Corporate Design Audit** | Alle Views gegen Design-Tokens (core.css) pruefen — Farben, Abstande, Typografie | HOCH |
-| 5.2 | **Mobile Responsive testen** | Jede der 30 Views auf Mobile (375px) testen und fixen | HOCH |
-| 5.3 | **Light Mode vollstaendig pruefen** | Alle Komponenten in Light Mode — keine unlesbaren Texte, fehlende Kontraste | HOCH |
-| 5.4 | **Accessibility (a11y)** | ARIA-Labels, Keyboard-Navigation, Focus-Management, Kontrast-Ratios | MITTEL |
-| 5.5 | **Loading States** | Spinner/Skeleton fuer alle async-Operationen (DB-Laden, PDF-Generierung) | MITTEL |
-| 5.6 | **Empty States** | Leere Listen: "Noch keine Anfragen" mit Handlungsaufforderung statt weisser Flaeche | MITTEL |
-| 5.7 | **Toast/Notification-Konsistenz** | Alle Aktionen geben Feedback (Erfolg/Fehler), einheitliches Design | MITTEL |
-| 5.8 | **Onboarding/Tutorial pruefen** | `onboarding-tutorial-service.js` — Durchlauf fuer neue User testen | MITTEL |
-| 5.9 | **Setup-Wizard** | Ersteinrichtung (Firmenname, Steuernummer, etc.) — Wizard muss komplett durchlaufen | HOCH |
-| 5.10 | **Boomer-Guide Modus** | Grosse Schrift, vereinfachte Navigation fuer aeltere Nutzer — testen | NIEDRIG |
+| 10.1 | **E-Rechnung (XRechnung/ZUGFeRD)** | ZUGFeRD PDF/A-3, XRechnung XML, EN 16931 Validierung | KRITISCH |
+| 10.2 | **GoBD-Konformitaet pruefen** | Unveraenderbarkeit, Nachvollziehbarkeit, Aufbewahrungsfrist | KRITISCH |
+| 10.3 | **DATEV-Export validieren** | Export an echtem Steuerberater testen | HOCH |
+| 10.4 | **Kleinunternehmerregelung** | §19 UStG komplett (Rechnungen, PDF, EUeR) | ERLEDIGT |
+| 10.5 | **Leistungsdatum auf Rechnungen** | §14 UStG Pflichtfeld | ERLEDIGT |
+| 10.6 | **DSGVO-Audit** | Datenschutzerklaerung, Loeschkonzept, Auskunftsrecht | HOCH |
+| 10.7 | **Aufbewahrungsfristen** | 10 Jahre Rechnungen, 6 Jahre Geschaeftsbriefe | MITTEL |
+| 10.8 | **Verfahrensdokumentation** | Fuer Finanzamt: wie werden Daten erfasst, gespeichert, gesichert | MITTEL |
 
-**Abnahme-Kriterium:** Lighthouse Score >= 90 (Performance + Accessibility), keine visuellen Bugs auf Desktop + Mobile
+**Abnahme**: Steuerberater bestaetigt DATEV-Import, E-Rechnung validiert gegen EN 16931, DSGVO-Checkliste komplett
 
 ---
 
-### PHASE 6: Deployment & Go-Live (die Auslieferung)
-**Dauer-Schaetzung: 1 Sprint**
-**Ziel: Produktiv auf einem Server erreichbar**
+### PHASE 11: Mobile Field App & UX
+**Ziel: Handwerker nutzt die App taeglich auf der Baustelle**
 
 | # | Aufgabe | Details | Prioritaet |
 |---|---------|---------|------------|
-| 6.1 | **Hosting entscheiden** | Hostinger (deploy/hostinger/) vs. Hetzner VPS vs. Coolify | KRITISCH |
-| 6.2 | **Domain konfigurieren** | freyaivisions.de — DNS, SSL-Zertifikat, HTTPS | KRITISCH |
-| 6.3 | **Build-Pipeline** | `deploy.sh` testen, dist-Ordner generieren, Service Worker Cache-Bust | HOCH |
-| 6.4 | **CSP-Headers setzen** | Content-Security-Policy fuer Prod-Domain, keine unsafe-inline noetig | HOCH |
-| 6.5 | **Monitoring einrichten** | Error-Logging (client_errors Tabelle), Uptime-Check | MITTEL |
-| 6.6 | **Backup-Strategie** | Supabase Auto-Backup + manueller JSON-Export Reminder | MITTEL |
-| 6.7 | **Landing Page finalisieren** | Waitlist-Formular → Supabase `waitlist`-Tabelle, Bestaetigungs-Mail | HOCH |
-| 6.8 | **Customer Portal publizieren** | `customer-portal.html` unter Sub-URL, Token-basierter Zugang | MITTEL |
-| 6.9 | **Performance-Optimierung** | Lazy Loading verifizieren, Asset-Kompression, Cache-Headers | MITTEL |
-| 6.10 | **Security-Abschluss-Audit** | Letzte Pruefung: kein API-Key im Frontend, kein XSS, DSGVO-konform | HOCH |
+| 11.1 | **Field Mode** | Vereinfachte mobile Ansicht: Timer, Material, Foto, Unterschrift | HOCH |
+| 11.2 | **Kamera-Integration** | Fotos pro Auftrag mit Auto-Tagging (Job-ID, Datum, GPS) | HOCH |
+| 11.3 | **Voice-to-Note** | Web Speech API fuer Notizen auf der Baustelle | MITTEL |
+| 11.4 | **Offline-Sync Konflikt-UI** | Diff-Ansicht bei Konflikten statt Last-Write-Wins | MITTEL |
+| 11.5 | **GPS Check-In** | Automatischer Baustellen-Check-In per Standort | NIEDRIG |
+| 11.6 | **Boomer-Guide Modus** | Grosse Schrift, vereinfachte Navigation | NIEDRIG |
+| 11.7 | **Dashboard-Widgets** | Drag-and-Drop, benutzerdefinierte KPIs | MITTEL |
+| 11.8 | **Accessibility (a11y)** | ARIA-Labels, Keyboard-Navigation, Kontrast-Ratios | MITTEL |
 
-**Abnahme-Kriterium:** Website ist unter Domain erreichbar, Login funktioniert, kompletter Workflow nutzbar
+**Abnahme**: Handwerker loggt Zeit, macht Foto, holt Unterschrift — alles auf dem Handy, auch offline
+
+---
+
+### PHASE 12: Wachstum & Skalierung
+**Ziel: Von Einzelunternehmer zu 5-10 Mitarbeiter**
+
+| # | Aufgabe | Details | Prioritaet |
+|---|---------|---------|------------|
+| 12.1 | **Multi-User / Rollen** | Meister (Admin), Geselle (Worker), Azubi, Subunternehmer | HOCH |
+| 12.2 | **Team-Zeiterfassung** | Stunden pro Mitarbeiter pro Auftrag | HOCH |
+| 12.3 | **Routenplanung** | Leaflet.js + OpenRouteService, Tagestouren optimieren | MITTEL |
+| 12.4 | **Subunternehmer-Portal** | Eingeschraenkte Ansicht fuer externe Mitarbeiter | MITTEL |
+| 12.5 | **Bautagebuch** | Tagesbericht: Wetter, Anwesende, Arbeit, Fotos, Unterschrift | MITTEL |
+| 12.6 | **Wartungs-Vertraege** | Wiederkehrende Rechnungen, Wartungsintervalle, QR-Codes | MITTEL |
+| 12.7 | **Azubi-Berichtsheft** | Auto-generiert aus Zeiterfassung, IHK/HWK Format | NIEDRIG |
+| 12.8 | **Branchen-Templates** | SHK, Elektro, Maler, Dachdecker — spezifische Kalkulationen | NIEDRIG |
+
+**Abnahme**: Team mit 3 Benutzern arbeitet gleichzeitig, Rollen greifen, Subunternehmer sieht nur seine Auftraege
+
+---
+
+### PHASE 13: Marketing & Kundengewinnung
+**Ziel: FreyAI Visions als Marke etablieren, erste zahlende Kunden**
+
+| # | Aufgabe | Details | Prioritaet |
+|---|---------|---------|------------|
+| 13.1 | **Landing Page finalisieren** | freyaivisions.de: USP, Features, Preise, CTA | HOCH |
+| 13.2 | **Google-Bewertungen automatisch** | Nach Auftragsabschluss: Review-Request per Mail/SMS | HOCH |
+| 13.3 | **Social Media (Postiz)** | AI-generierte Posts aus abgeschlossenen Projekten | MITTEL |
+| 13.4 | **Referral-Programm** | "Empfohlen von [Kunde]" Rabattcodes | MITTEL |
+| 13.5 | **SEO fuer Handwerker-Keywords** | "Handwerker Software", "Rechnungsprogramm Kleinunternehmer" | MITTEL |
+| 13.6 | **Bachgaubote Werbung** | Bereits geschaltet (06.03.2026) | ERLEDIGT |
+| 13.7 | **LinkedIn/XING Praesenz** | Fachbeitraege ueber Digitalisierung im Handwerk | NIEDRIG |
+| 13.8 | **Lokale Netzwerke** | Handwerkskammer, IHK Aschaffenburg, Gewerbeverein | NIEDRIG |
+
+**Abnahme**: 10 Leads ueber Landing Page, 3 zahlende Kunden, positive Google-Bewertungen
+
+---
+
+### PHASE 14: Plattform & Integrationen
+**Ziel: Oekosystem-Anbindung fuer Power-User**
+
+| # | Aufgabe | Details | Prioritaet |
+|---|---------|---------|------------|
+| 14.1 | **Zapier/Make Integration** | Triggers + Actions publizieren | MITTEL |
+| 14.2 | **ELSTER-Schnittstelle** | UStVA direkt ans Finanzamt (oder DATEV-Steuerberater-Workflow) | MITTEL |
+| 14.3 | **Lieferanten-APIs** | Grosshandel-Preise abfragen, automatische Bestellungen | NIEDRIG |
+| 14.4 | **Stripe Live-Modus** | Kundenzahlungen ueber Kundenportal | MITTEL |
+| 14.5 | **Visual Workflow Builder** | No-Code Automatisierungen im Browser | NIEDRIG |
+| 14.6 | **Webhook-API dokumentieren** | Oeffentliche API fuer Drittanbieter | NIEDRIG |
+| 14.7 | **Paperless-ngx Integration** | Dokumente direkt aus App in Paperless archivieren | MITTEL |
+
+**Abnahme**: Mindestens 2 externe Integrationen produktiv, API-Dokumentation veroeffentlicht
 
 ---
 
 ## Abhaengigkeits-Graph
 
 ```
-Phase 1 (Code-Hygiene)
-    │
-    ▼
-Phase 2 (Backend)
-    │
-    ├──────────────┐
-    ▼              ▼
-Phase 3          Phase 4
-(Workflow)       (Kommunikation)
-    │              │
-    └──────┬───────┘
-           ▼
-    Phase 5 (UX-Polish)
-           │
-           ▼
-    Phase 6 (Go-Live)
+Phase 6 (Go-Live Finalisierung)
+    |
+    v
+Phase 7 (Beta-Programm)
+    |
+    +------------------+------------------+
+    |                  |                  |
+    v                  v                  v
+Phase 8            Phase 9            Phase 10
+(Kommunikation)    (KI/Automation)    (Compliance)
+    |                  |                  |
+    +--------+---------+--------+---------+
+             |                  |
+             v                  v
+         Phase 11           Phase 12
+         (Mobile/UX)        (Skalierung)
+             |                  |
+             +--------+---------+
+                      |
+                      v
+               Phase 13 (Marketing)
+                      |
+                      v
+               Phase 14 (Plattform)
 ```
 
-**Phase 3 + 4 koennen parallel laufen**, da Workflow und Kommunikation unabhaengig sind.
+**Phase 8 + 9 + 10 koennen parallel laufen.**
+**Phase 11 + 12 koennen parallel laufen.**
 
 ---
 
-## Quick-Wins (sofort machbar, grosser Effekt)
+## Naechste Schritte (Sofort)
 
-| Quick-Win | Aufwand | Effekt |
-|-----------|---------|--------|
-| ESLint `--fix` fuer 50 auto-fixable Errors | 5 Min | Sofort sauberer Code |
-| Setup-Wizard End-to-End pruefen | 30 Min | Erster Eindruck bei neuen Usern |
-| Demo-Daten-Qualitaet pruefen | 30 Min | Bessere Demo fuer Investoren/Kunden |
-| Mobile Nav-Burger testen | 15 Min | Wichtigste UX-Verbesserung |
-| PDF-Rechnung manuell generieren | 15 Min | Kernfeature validieren |
+| # | Aufgabe | Aufwand | Effekt |
+|---|---------|---------|--------|
+| 1 | Supabase Schema + RLS deployen | 1h | Echte Datenpersistenz |
+| 2 | Auth-Flow E2E testen | 30min | Benutzer koennen sich registrieren |
+| 3 | Impressum + Datenschutz erstellen | 1h | Rechtliche Absicherung |
+| 4 | Setup-Wizard E2E testen | 30min | Erster Eindruck bei Beta-Kunden |
+| 5 | Edge Functions deployen | 2h | AI-Proxy, Email, SMS funktionieren |
+| 6 | Mobile Responsive Quick-Fix | 2h | Handwerker koennen mobil arbeiten |
 
 ---
 
@@ -201,84 +301,31 @@ Phase 3          Phase 4
 
 | Risiko | Wahrscheinlichkeit | Mitigation |
 |--------|-------------------|------------|
-| Supabase Free-Tier Limits | Mittel | Auf Pro upgraden (25$/Monat) vor Go-Live |
-| Resend Email-Limits | Niedrig | Eigenen SMTP einrichten als Fallback |
-| Gemini API-Kosten | Mittel | Rate-Limiting bereits implementiert, Budget-Alarm setzen |
-| Browser-Kompatibilitaet Safari | Mittel | Phase 5 Cross-Browser-Tests |
-| DSGVO-Abmahnung | Niedrig | Fonts bereits lokal, kein Google Analytics, Impressum ergaenzen |
-| IndexedDB voll (1GB Limit) | Niedrig | Cleanup-Routine + Cloud-Sync Push |
+| Supabase Free-Tier Limits | Mittel | Monitoring + rechtzeitig Pro-Upgrade |
+| Erste Kunden finden | Hoch | Bachgaubote Werbung (laeuft), lokales Netzwerk |
+| DSGVO-Abmahnung | Niedrig | Fonts lokal, kein Google Analytics, Impressum + DSE |
+| E-Rechnung Pflicht 2028 | Sicher | Phase 10 priorisieren |
+| Einzelkaempfer-Risiko | Mittel | Automatisierung maximieren, AI-Assistenten nutzen |
+| Browser-Kompatibilitaet | Niedrig | Chrome/Firefox/Edge 90+ getestet |
+| Konkurrenzdruck (Lexoffice etc.) | Mittel | USP: Custom-Fit, Branchen-spezifisch, AI-powered |
 
 ---
 
-## Abgeschlossene Arbeiten (Code-Fixes)
+## Metriken & Ziele
 
-### Phase 1: Code-Hygiene ✅
-- 0 ESLint errors, 0 warnings
-- DSGVO compliance, dead code removed
-
-### Phase 2: Backend Infrastructure ✅ (Code-Fixes)
-- Fixed: `supabase-config.js` loaded with `defer` (auth gate always showed offline)
-- Fixed: `supabase-client.js` never loaded in HTML
-- Fixed: Dual Supabase client instances (now delegates to singleton)
-- Fixed: `onAuthStateChange` listener leak
-- Fixed: `db-service.js` used English table names instead of German (kunden, rechnungen, etc.)
-- Fixed: `supabase-db-service.js` referenced non-existent `emails` table
-- Fixed: Sync queue cleared entirely even on partial failure (3 services)
-- Added: `stripe_payments` table in schema
-- Added: `setup-validation-service.js` for backend readiness checks
-
-### Phase 3: Kern-Workflow ✅ (Code-Fixes)
-- Fixed: `invoice-numbering-service.js` race condition (GoBD violation)
-- Fixed: `dunning-service.js` calculated overdue from creation date instead of due date
-- Fixed: `check-overdue` edge function same date calculation bug
-- Fixed: `stripe-webhook` used wrong table names, broken `.catch()` chains
-- Fixed: `process-inbound-email` adminSettings scope bug
-- Fixed: `timetracking-service.js` overnight shifts calculated as 0 hours
-- Fixed: `calendar-service.js` month view showed cancelled appointments
-- Fixed: `booking-service.js` always created 'besichtigung' type
-- Fixed: `bookkeeping-service.js` CSV import failed for amounts >= 1M
-- Fixed: `pdf-service.js` hardcoded 19% MwSt (now dynamic + Kleinunternehmer)
-- Fixed: PDF logo format detection (always assumed PNG, now detects JPEG/WEBP)
-- Fixed: PDF missing kunde guard on generateRechnung/Angebot/Mahnung
-- Fixed: Calendar UTC/local timezone shift in week view
-- Fixed: Timetracking stale timer detection (>24h without clock-out)
-- Fixed: DATEV export missing fiscal year header row
-- Fixed: Field app signature isEmpty() always returned true
-
-### Phase 4: Kommunikation & Integrationen ✅ (Code-Fixes)
-- Fixed: `_getTaxRate()` unguarded in 19 files (ReferenceError if company-settings not loaded)
-- Fixed: `create-checkout` and `create-portal-session` hardcoded `localhost:3000` fallback URLs
-- Fixed: `process-inbound-email` all hardcoded 'FreyAI Visions' replaced with COMPANY_NAME env var
-- Fixed: `process-inbound-email` hardcoded email replaced with COMPANY_INFO_EMAIL env var
-- Fixed: `run-automation` and `run-webhook` webhook calls had no timeout (added 10s AbortController)
-- Fixed: `email-template-service.js` missing optional chaining, localStorage corruption guard
-- Fixed: `einvoice-service.js` localStorage parse without try-catch
-- Fixed: `notification-service.js` missing deduplication (60s window)
-- Fixed: `reorder-engine-service.js` localStorage parse without try-catch
-- Fixed: `material-service.js` XLSX library existence check
-
-### Phase 5: UX & Robustheit ✅ (Code-Fixes)
-- Fixed: `support.js` ticket fetch has no loading indicator or error toast
-- Fixed: `rechnungen.js` XRechnung/ZUGFeRD delegated handler missing loading toast and error feedback
-- Fixed: `angebote.js` duplicate `class=""` attribute in empty state HTML
-- Fixed: `angebote.js` template picker event listeners leaked on every search (replaced with delegation)
-- Fixed: `customer-portal.html` edge function call had no timeout (added 10s AbortSignal.timeout)
-- Fixed: `customer-portal.html` logo `alt=""` empty (now "Firmenlogo")
-- Fixed: 143 `JSON.parse(localStorage.getItem(...))` calls across 59 service files without try-catch
-- Fixed: `deploy/hostinger/booking-service.js` same localStorage crash risk
-- Fixed: `profitability-service.js` division by zero when jobs.length is 0 (percentages + averages)
-- Fixed: `dashboard-charts-service.js` funnel conversion division by zero when stage.count is 0
-- Fixed: `bon-scanner-service.js` token matching division by zero
-- Fixed: `cashflow-service.js` unsafe Date parsing on null/invalid faelligkeitsdatum
-
-### Remaining (Manual/Deployment Tasks)
-- Phase 2: Supabase project setup, schema deployment, RLS activation, auth E2E testing
-- Phase 4: VPS email relay deployment, SMS provider setup, Stripe live mode, n8n workflows
-- Phase 5: Corporate design audit, mobile responsive testing, accessibility review
-- Phase 6: Hosting, domain, SSL, build pipeline, monitoring, landing page, security audit
+| Metrik | Aktuell | Ziel Q2/2026 | Ziel Q4/2026 |
+|--------|---------|--------------|--------------|
+| Beta-Kunden | 0 | 5 | 15 |
+| Zahlende Kunden | 0 | 2 | 8 |
+| MRR (Monthly Recurring Revenue) | 0 EUR | 600 EUR | 3.000 EUR |
+| Service-Module | 112 | 115 | 120 |
+| Morpheus-Score | 7.6/10 | 8.5/10 | 9.0/10 |
+| Lighthouse Score | ~90 | 95+ | 95+ |
+| Uptime | -- | 99.5% | 99.9% |
 
 ---
 
-*Letzte Aktualisierung: 2026-03-04*
-*Basierend auf: 938 Tests (alle gruen), 0 ESLint errors, 30 Views, 94 Services*
-*Code-Fixes: 20 Commits auf branch claude/setup-smart-home-scenes-Qkj8g*
+*Letzte Aktualisierung: 2026-03-06*
+*Basierend auf: 112 Services, 23 UI-Komponenten, 15 Feature-Module, SW v21*
+*Morpheus-Audit: Score 7.6/10, 42 Bugs gefixt, PBKDF2 + XSS + CSP gehaertet*
+*Gewerbe: FreyAI Visions, Nebenerwerb ab 01.03.2026, Gemeindekennzahl 09671122*

@@ -1,0 +1,25 @@
+/* ============================================
+   Legal Pages (Impressum, Datenschutz, AGB)
+   Shared styles - requires core.css
+   Scoped under .legal-main to avoid leaking
+   ============================================ */
+
+.legal-main {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 24px;
+    line-height: 1.7;
+}
+.legal-main h1 { font-size: 2rem; margin-bottom: 2rem; color: var(--accent-primary); }
+.legal-main h2 { font-size: 1.25rem; margin: 2rem 0 0.75rem; color: var(--text-primary); }
+.legal-main h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: var(--text-primary); }
+.legal-main p, .legal-main li { color: var(--text-muted); margin-bottom: 0.5rem; }
+.legal-main ul, .legal-main ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.legal-main a { color: var(--accent-primary); text-decoration: none; }
+.legal-main a:hover { text-decoration: underline; }
+.legal-main a:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.back-link { display: inline-block; margin-bottom: 2rem; font-size: 0.9rem; min-height: 44px; line-height: 44px; }
+.legal-nav { display: flex; gap: 1.5rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color); font-size: 0.9rem; }
+.legal-nav a { min-height: 44px; display: inline-flex; align-items: center; }
+.legal-stand { margin-top: 3rem; font-size: 0.85rem; color: var(--text-secondary); }
