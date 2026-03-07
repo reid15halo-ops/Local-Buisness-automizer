@@ -132,7 +132,7 @@ class SetupWizardUI {
                 return `
                     <div class="wizard-field-group">
                         <label for="wizard-${field.name}" class="wizard-field-label">
-                            ${field.label}
+                            ${this._esc(field.label)}
                         </label>
                         <div class="wizard-file-upload" id="wizard-logo-dropzone">
                             <input
@@ -162,7 +162,7 @@ class SetupWizardUI {
             return `
                 <div class="wizard-field-group">
                     <label for="wizard-${field.name}" class="wizard-field-label">
-                        ${field.label}
+                        ${this._esc(field.label)}
                     </label>
                     <input
                         type="${field.type}"
@@ -238,7 +238,7 @@ class SetupWizardUI {
             return `
                 <div class="wizard-integration-card ${statusClass}" data-integration-id="${esc(integration.id)}">
                     <div class="wizard-integration-header">
-                        <span class="wizard-integration-icon">${integration.icon}</span>
+                        <span class="wizard-integration-icon">${this._esc(integration.icon)}</span>
                         <div class="wizard-integration-info">
                             <strong class="wizard-integration-name">${esc(integration.name)}</strong>
                             <span class="wizard-integration-desc">${esc(integration.description)}</span>
@@ -300,7 +300,7 @@ class SetupWizardUI {
                     testBtn.disabled = true;
                     const result = await this.service.testIntegration(integration.id);
                     if (resultEl) {
-                        resultEl.textContent = this._esc(result.message);
+                        resultEl.textContent = result.message;
                         resultEl.className = 'wizard-integration-test-result ' + (result.success ? 'success' : 'error');
                     }
                     testBtn.disabled = false;
@@ -590,14 +590,14 @@ class SetupWizardUI {
      * Show single error (for logo upload, etc)
      */
     showError(message) {
-        alert(message);
+        if (window.showToast) window.showToast(message, 'error'); else console.error(message);
     }
 
     /**
      * Show warning
      */
     showWarning(message) {
-        alert(message);
+        if (window.showToast) window.showToast(message, 'warning'); else console.warn(message);
     }
 }
 

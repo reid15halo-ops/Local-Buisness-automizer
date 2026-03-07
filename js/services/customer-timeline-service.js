@@ -31,12 +31,13 @@ class CustomerTimelineService {
         const events = [];
 
         // Paralleles Laden aus allen Quellen (Rechnungen zuerst, da Mahnungen sie brauchen)
-        const [leads, angebote, auftraege, rechnungen] = await Promise.all([
+        const results = await Promise.allSettled([
             this._getLeads(kundeId, customer),
             this._getAngebote(kundeId),
             this._getAuftraege(kundeId),
             this._getRechnungen(kundeId)
         ]);
+        const [leads, angebote, auftraege, rechnungen] = results.map(r => r.status === 'fulfilled' ? r.value : []);
         // Mahnungen brauchen Rechnungs-IDs — Cache uebergeben um Doppel-Query zu vermeiden
         const mahnungen = await this._getMahnungen(kundeId, rechnungen);
 
@@ -161,10 +162,11 @@ class CustomerTimelineService {
         const db = this._getDB();
         if (db && db.isOnline()) {
             try {
+                const emailSafe = customer?.email?.match(/^[^,()]+@[^,()]+$/) ? customer.email : null;
                 const { data } = await db.getClient()
                     .from('leads')
                     .select('*')
-                    .or(`kunde_id.eq.${kundeId}${customer?.email ? ',email.ilike.' + customer.email : ''}`)
+                    .or(`kunde_id.eq.${kundeId}${emailSafe ? ',email.ilike.' + emailSafe : ''}`)
                     .order('created_at', { ascending: true });
                 if (data) {
                     const existingIds = new Set(leads.map(l => l.id));

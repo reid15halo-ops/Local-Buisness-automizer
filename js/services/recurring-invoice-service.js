@@ -12,6 +12,7 @@ class RecurringInvoiceService {
         this._userId = null;
         this._tenantId = 'a0000000-0000-0000-0000-000000000001';
         this._schedulerInterval = null;
+        window.addEventListener('beforeunload', () => this.stop());
     }
 
     // ── Initialisation (bookkeeping-service pattern) ────────────
@@ -85,7 +86,7 @@ class RecurringInvoiceService {
             bezeichnung:              r.bezeichnung || '',
             positionen:               positionen,
             netto_betrag:             parseFloat(r.netto_betrag) || 0,
-            steuersatz:               parseFloat(r.steuersatz) || 0.19,
+            steuersatz:               r.steuersatz != null ? parseFloat(r.steuersatz) : 0.19,
             intervall:                r.intervall || 'monatlich',
             benutzerdefinierte_monate: parseInt(r.benutzerdefinierte_monate) || 1,
             tag_im_monat:             parseInt(r.tag_im_monat) || 1,
@@ -305,7 +306,7 @@ class RecurringInvoiceService {
 
     async _generiereRechnung(tpl) {
         var storeService = window.storeService;
-        if (!storeService || !storeService.state || !storeService.state.rechnungen) {
+        if (!storeService || !storeService.store || !storeService.store.rechnungen) {
             console.warn('[RecurringInvoice] StoreService nicht verfuegbar');
             return null;
         }
@@ -357,7 +358,7 @@ class RecurringInvoiceService {
                 wiederkehrendeVorlageId: tpl.id
             };
 
-            storeService.state.rechnungen.push(rechnung);
+            storeService.store.rechnungen.push(rechnung);
             storeService.save();
             if (storeService.addActivity) {
                 storeService.addActivity('💰', 'Abo-Rechnung ' + nummer + ' erstellt (' + tpl.kunde_name + ')');

@@ -261,7 +261,7 @@ class DashboardWidgetService {
      * @param {string} widgetId - The widget type ID
      * @returns {Object|Promise<Object>} Widget data (varies by type; cashflow-forecast returns a Promise)
      */
-    getWidgetData(widgetId) {
+    async getWidgetData(widgetId) {
         try {
             const state = window.storeService?.state;
             if (!state) {

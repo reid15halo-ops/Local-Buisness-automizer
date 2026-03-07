@@ -29,7 +29,7 @@ function renderEmails() {
     const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     container.innerHTML = emails.map(email => `
         <div class="email-item ${email.read ? '' : 'unread'}" data-id="${sanitize(email.id)}">
-            <div class="email-category-icon">${window.emailService.getCategoryIcon(email.category)}</div>
+            <div class="email-category-icon">${sanitize(window.emailService.getCategoryIcon(email.category))}</div>
             <div class="email-content">
                 <div class="email-sender">${sanitize(email.fromName)}</div>
                 <div class="email-subject">${sanitize(email.subject)}</div>
@@ -40,8 +40,8 @@ function renderEmails() {
                 </div>
             </div>
             <div class="email-meta">
-                <div>${window.emailService.getRelativeTime(email.date)}</div>
-                <div class="status-badge">${window.emailService.getCategoryLabel(email.category)}</div>
+                <div>${sanitize(window.emailService.getRelativeTime(email.date))}</div>
+                <div class="status-badge">${sanitize(window.emailService.getCategoryLabel(email.category))}</div>
             </div>
         </div>
     `).join('');

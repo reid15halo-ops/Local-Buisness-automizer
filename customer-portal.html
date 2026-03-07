@@ -271,6 +271,15 @@ function getTokenFromUrl() {
     return null;
 }
 
+// Remove token from URL after reading to prevent leakage via referrer/history
+(function() {
+    const token = getTokenFromUrl();
+    if (token && window.history.replaceState) {
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+})();
+
 // Minimal HTML escaping
 function esc(str) {
     if (!str) { return ''; }
@@ -401,7 +410,7 @@ function renderQuotes(quotes) {
     const tbody = document.getElementById('quotes-tbody');
     tbody.innerHTML = quotes.map(q => {
         const statusLabel = { offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
-        const badge = `<span class="badge badge-${['offen','angenommen','abgelehnt','versendet','bezahlt','storniert'].includes(q.status) ? q.status : 'offen'}">${statusLabel[q.status] || q.status}</span>`;
+        const badge = `<span class="badge badge-${['offen','angenommen','abgelehnt','versendet','bezahlt','storniert'].includes(q.status) ? q.status : 'offen'}">${statusLabel[q.status] || esc(q.status)}</span>`;
         const actions = q.status === 'offen' ? `
             <button class="btn btn-sm btn-success" onclick="openApproveModal('${esc(q.id)}')">Annehmen</button>
             <button class="btn btn-sm btn-danger" onclick="openRejectModal('${esc(q.id)}')">Ablehnen</button>

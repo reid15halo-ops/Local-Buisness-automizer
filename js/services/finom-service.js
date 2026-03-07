@@ -152,6 +152,7 @@
             this.config = loadJson(KEYS.CONFIG, {});
             this.autoPayRules = loadJson(KEYS.AUTO_PAY_RULES, []);
             this.paymentLog = loadJson(KEYS.PAYMENT_LOG, []);
+            this.TENANT_ID = 'a0000000-0000-0000-0000-000000000001';
         }
 
         // ========================================
@@ -216,6 +217,7 @@
                     const { data: pos, error } = await supabase()
                         .from('purchase_orders')
                         .select('*')
+                        .eq('tenant_id', this.TENANT_ID)
                         .in('status', ['bestaetigt', 'geliefert', 'teilgeliefert', 'offen'])
                         .order('created_at', { ascending: false });
 
@@ -253,6 +255,7 @@
                     const { data: buchungen, error } = await supabase()
                         .from('buchungen')
                         .select('*')
+                        .eq('tenant_id', this.TENANT_ID)
                         .eq('typ', 'ausgabe')
                         .eq('bezahlt', false)
                         .order('datum', { ascending: false });

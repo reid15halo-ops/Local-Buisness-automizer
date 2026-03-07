@@ -160,8 +160,8 @@ class DashboardWidgetUI {
                      ${this.editMode ? 'draggable="true"' : ''}>
                 <div class="widget-header">
                     ${this.editMode ? '<span class="widget-drag-handle" title="Ziehen zum Verschieben">\u2261</span>' : ''}
-                    <span class="widget-header-icon">${widget.icon}</span>
-                    <span class="widget-header-title">${widget.name}</span>
+                    <span class="widget-header-icon">${this._escapeHtml(widget.icon)}</span>
+                    <span class="widget-header-title">${this._escapeHtml(widget.name)}</span>
                     ${this.editMode ? `<button class="widget-remove-btn" title="Widget entfernen" onclick="event.stopPropagation(); window.dashboardWidgetUI.handleRemoveWidget('${widget.id}')">\u00D7</button>` : ''}
                 </div>
                 <div class="widget-body" id="${placeholderId}">
@@ -205,8 +205,8 @@ class DashboardWidgetUI {
             html += `<span class="widget-drag-handle" title="Ziehen zum Verschieben">\u2261</span>`;
         }
 
-        html += `<span class="widget-header-icon">${widget.icon}</span>`;
-        html += `<span class="widget-header-title">${widget.name}</span>`;
+        html += `<span class="widget-header-icon">${this._escapeHtml(widget.icon)}</span>`;
+        html += `<span class="widget-header-title">${this._escapeHtml(widget.name)}</span>`;
 
         if (this.editMode) {
             html += `<button class="widget-remove-btn" title="Widget entfernen"
@@ -662,7 +662,7 @@ class DashboardWidgetUI {
         } else {
             categoryKeys.forEach(category => {
                 html += `<div class="widget-add-category">`;
-                html += `<h4 class="widget-add-category-title">${category}</h4>`;
+                html += `<h4 class="widget-add-category-title">${this._escapeHtml(category)}</h4>`;
                 html += `<div class="widget-add-items">`;
 
                 grouped[category].forEach(widget => {
@@ -670,8 +670,8 @@ class DashboardWidgetUI {
                         <button class="widget-add-item"
                             onclick="window.dashboardWidgetUI.handleAddWidget('${widget.id}')"
                             title="${widget.name} hinzuf\u00FCgen">
-                            <span class="widget-add-item-icon">${widget.icon}</span>
-                            <span class="widget-add-item-name">${widget.name}</span>
+                            <span class="widget-add-item-icon">${this._escapeHtml(widget.icon)}</span>
+                            <span class="widget-add-item-name">${this._escapeHtml(widget.name)}</span>
                             <span class="widget-add-item-size">${this._getSizeLabel(widget.size)}</span>
                         </button>
                     `;
@@ -693,6 +693,10 @@ class DashboardWidgetUI {
         dialogContainer.id = 'widget-add-dialog-container';
         dialogContainer.innerHTML = html;
         document.body.appendChild(dialogContainer);
+
+        // Escape key to close dialog
+        const escHandler = (e) => { if (e.key === 'Escape') { this._closeAddWidgetDialog(); document.removeEventListener('keydown', escHandler); } };
+        document.addEventListener('keydown', escHandler);
 
         // Trap focus for accessibility
         requestAnimationFrame(() => {

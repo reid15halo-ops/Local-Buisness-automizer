@@ -292,3 +292,19 @@
         min-width: 240px;
     }
 }
+
+/* ============================================
+   Dark mode
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    .kanban-board { background: var(--bg-primary, #1a1a2e); }
+    .kanban-column { background: var(--bg-secondary, #16213e); }
+    .kanban-card { background: var(--bg-card, #1a1a2e); border-color: var(--border-color, #2a2a4a); }
+    .kanban-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .kanban-column-header { border-color: var(--border-color, #2a2a4a); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .kanban-card, .kanban-column { transition: none !important; }
+}

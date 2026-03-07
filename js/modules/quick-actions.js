@@ -357,7 +357,7 @@
     }
 
     // -- Helpers --
-    const esc = (str) => (window.h || window.UI?.sanitize || String)(str);
+    const esc = (str) => (window.h || window.UI?.sanitize || ((s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')))(str);
     const fmtCurrency = (val) => (window.formatCurrency || window.AppUtils?.formatCurrency || ((v) => v.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })))(val);
     const fmtDate = (val) => (window.formatDate || window.AppUtils?.formatDate || ((v) => new Date(v).toLocaleDateString('de-DE')))(val);
     const relTime = (val) => (window.UI?.getRelativeTime || window.getRelativeTime || ((v) => v ? new Date(v).toLocaleString('de-DE') : '-'))(val);

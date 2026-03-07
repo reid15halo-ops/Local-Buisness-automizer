@@ -24,6 +24,8 @@ class CustomerPortalService {
     // ============================================
 
     async init() {
+        if (this._initialized) return;
+        this._initialized = true;
         try {
             const { data } = await this._supabase()?.auth?.getUser() || {};
             this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';

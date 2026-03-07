@@ -33,6 +33,8 @@ class DunningService {
     }
 
     async init() {
+        if (this._initialized) return;
+        this._initialized = true;
         try {
             const { data } = await this._supabase()?.auth?.getUser() || {};
             this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
@@ -298,9 +300,9 @@ leider konnten wir trotz unserer Zahlungserinnerung keinen Zahlungseingang verze
 
 Rechnungsnummer: ${rechnung.id}
 Ursprünglicher Betrag: ${this.formatCurrency(rechnung.brutto)}
-Mahngebühr (1. Mahnung): ${this.formatCurrency(5.00)}
+Mahngebühr (1. Mahnung): ${this.formatCurrency(stufe.gebuehr)}
 ────────────────────────────
-Gesamtbetrag: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + 5.00)}
+Gesamtbetrag: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + stufe.gebuehr)}
 
 Wir bitten Sie dringend, den ausstehenden Betrag innerhalb von 14 Tagen zu begleichen.
 
@@ -317,9 +319,9 @@ trotz wiederholter Aufforderung ist die nachstehende Forderung immer noch offen.
 Rechnungsnummer: ${rechnung.id}
 Ursprünglicher Betrag: ${this.formatCurrency(rechnung.brutto)}
 Bisherige Mahngebühren: ${this.formatCurrency(this.getGesamtMahngebuehren(rechnung.id))}
-Aktuelle Mahngebühr (2. Mahnung): ${this.formatCurrency(10.00)}
+Aktuelle Mahngebühr (2. Mahnung): ${this.formatCurrency(stufe.gebuehr)}
 ────────────────────────────
-Gesamtbetrag: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + 10.00)}
+Gesamtbetrag: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr)}
 
 Falls wir innerhalb von 14 Tagen keinen Zahlungseingang verzeichnen, sehen wir uns gezwungen, weitere rechtliche Schritte einzuleiten.
 
@@ -337,9 +339,9 @@ Die nachstehende Forderung ist trotz mehrfacher Aufforderung weiterhin unbeglich
 
 Rechnungsnummer: ${rechnung.id}
 Ursprünglicher Betrag: ${this.formatCurrency(rechnung.brutto)}
-Aufgelaufene Mahngebühren: ${this.formatCurrency(this.getGesamtMahngebuehren(rechnung.id) + 15.00)}
+Aufgelaufene Mahngebühren: ${this.formatCurrency(this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr)}
 ────────────────────────────
-Gesamtbetrag: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + 15.00)}
+Gesamtbetrag: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr)}
 
 Dies ist unsere letzte außergerichtliche Mahnung. Sollte der Betrag nicht innerhalb von 14 Tagen auf unserem Konto eingehen, werden wir:
 
@@ -526,7 +528,7 @@ Nächste Schritte:
             if (templateLevel >= 1 && templateLevel <= 3) {
                 const mahnungData = {
                     kunde: rechnung.kunde,
-                    betrag: rechnung.brutto + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr,
+                    betrag: parseFloat(rechnung.brutto || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr,
                     originalRechnung: {
                         nummer: rechnung.id || rechnung.nummer,
                         datum: rechnung.datum || rechnung.createdAt || rechnung.created_at
