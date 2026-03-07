@@ -52,17 +52,17 @@ class LazyLoader {
                 'stripe-service',
                 'datev-export-service',
                 'purchase-order-service',
-                'recurring-invoice-service'
+                'recurring-invoice-service',
+                'finom-service'
             ],
 
             // Automation & Workflows - load when automation features needed
             automation: [
-                'email-service',
                 'email-automation-service',
                 'webhook-service',
+                'webhook-event-service',
                 'automation-api',
                 'workflow-service',
-                'recurring-task-service',
                 'approval-service',
                 'task-service'
             ],
@@ -102,7 +102,6 @@ class LazyLoader {
             // Reports & Analytics - load when Berichte view opened
             reports: [
                 'report-service',
-                'cashflow-service',
                 'profitability-service'
             ],
 
@@ -133,21 +132,20 @@ class LazyLoader {
             advanced: [
                 'contract-service',
                 'recurring-invoice-service',
-                'dunning-service',
                 'warranty-service',
                 'sms-reminder-service',
                 'user-manager-service',
                 'route-service',
                 'trash-service',
                 'security-service',
-                'security-backup-service',
                 'pwa-install-service'
             ],
 
             // Reports & Charts - load when dashboards/charts needed
             charts: [
                 'dashboard-charts-service',
-                'data-export-service'
+                'data-export-service',
+                'dashboard-widget-service'
             ],
 
             // Agent Workflows & AI Automation (includes agentic executor for automation levels)
@@ -183,8 +181,8 @@ class LazyLoader {
             'workflow-builder': ['workflow-builder-ui'],
             // Photo gallery rendered inside job/document detail views
             'documents': ['photo-gallery-ui'],
-            // Dashboard widgets companion UI + service for the charts group
-            'charts': ['dashboard-widget-service', 'dashboard-widget-ui'],
+            // Dashboard widgets companion UI for the charts group
+            'charts': ['dashboard-widget-ui'],
             // Fragebogen import wizard button — injected when setup wizard is active
             'settings': ['fragebogen-import-ui']
         };

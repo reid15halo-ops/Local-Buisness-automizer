@@ -94,8 +94,13 @@ class StoreService {
             try {
                 // Clear current store
                 this._clearStore();
-                // Merge to ensure structure integrity
-                Object.assign(this.store, data);
+                // Merge only known keys to prevent unexpected properties
+                const STORE_KEYS = ['anfragen', 'angebote', 'auftraege', 'rechnungen', 'activities', 'settings', 'kunden', 'currentAnfrageId', 'currentAuftragId', 'currentRechnungId'];
+                const filtered = {};
+                for (const key of STORE_KEYS) {
+                    if (data[key] !== undefined) filtered[key] = data[key];
+                }
+                Object.assign(this.store, filtered);
                 this.checkStorageUsage();
             } catch (e) {
                 console.error('Failed to parse store data:', e);
@@ -443,6 +448,9 @@ class StoreService {
     // --- Helpers ---
 
     generateId(prefix) {
+        if (crypto?.randomUUID) {
+            return `${prefix}-${crypto.randomUUID()}`.toUpperCase();
+        }
         const timestamp = Date.now().toString(36);
         const random = Math.random().toString(36).substr(2, 5);
         return `${prefix}-${timestamp}-${random}`.toUpperCase();
@@ -450,6 +458,9 @@ class StoreService {
 
     subscribe(callback) {
         this.subscribers.push(callback);
+        return () => {
+            this.subscribers = this.subscribers.filter(s => s !== callback);
+        };
     }
 
     notifySubscribers() {

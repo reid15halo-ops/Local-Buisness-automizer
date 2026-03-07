@@ -117,6 +117,16 @@ const RATE_LIMIT_MAX_REQUESTS = 20; // max 20 emails per sender per minute
 
 function checkRateLimit(senderEmail: string): boolean {
   const now = Date.now();
+
+  // Evict stale entries when map grows too large
+  if (rateLimitMap.size > 1000) {
+    for (const [key, entry] of rateLimitMap) {
+      if (now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
+        rateLimitMap.delete(key);
+      }
+    }
+  }
+
   const entry = rateLimitMap.get(senderEmail);
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
     rateLimitMap.set(senderEmail, { count: 1, windowStart: now });
