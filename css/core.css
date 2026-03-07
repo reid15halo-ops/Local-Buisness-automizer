@@ -145,6 +145,21 @@ body {
     font-size: 24px;
 }
 
+.logo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.mobile-logo-img {
+    width: 28px;
+    height: 28px;
+    vertical-align: middle;
+    margin-right: 4px;
+    border-radius: 6px;
+}
+
 .logo span {
     font-size: 18px;
     font-weight: 600;

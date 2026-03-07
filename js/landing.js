@@ -26,7 +26,7 @@
         toggle.addEventListener('click', function() {
             var isOpen = navMenu.classList.toggle('open');
             toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            toggle.innerHTML = isOpen ? '&#10005;' : '&#9776;';
+            toggle.textContent = isOpen ? '\u2715' : '\u2630';
         });
     }
 
@@ -51,11 +51,13 @@
             document.querySelectorAll('.faq-item.open').forEach(function(openItem) {
                 openItem.classList.remove('open');
                 openItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+                openItem.querySelector('.faq-answer').setAttribute('aria-hidden', 'true');
             });
             // Toggle current
             if (!isOpen) {
                 item.classList.add('open');
                 this.setAttribute('aria-expanded', 'true');
+                item.querySelector('.faq-answer').setAttribute('aria-hidden', 'false');
             }
         });
     });
@@ -75,65 +77,6 @@
     } else {
         // Fallback: show everything
         reveals.forEach(function(el) { el.classList.add('visible'); });
-    }
-
-    // ---- Waitlist Form ----
-    var form = document.getElementById('waitlist-form');
-    var successMsg = document.getElementById('waitlist-success');
-
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var email = form.querySelector('input[name="email"]').value.trim();
-            if (!email) return;
-
-            // Try Supabase first
-            var SUPABASE_URL = 'https://incbhhaiiayohrjqevog.supabase.co';
-            var SUPABASE_ANON_KEY = null; // Set this if you have an anon key configured
-
-            if (SUPABASE_ANON_KEY) {
-                fetch(SUPABASE_URL + '/rest/v1/waitlist', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        source: 'landing',
-                        created_at: new Date().toISOString()
-                    })
-                }).then(function(res) {
-                    if (res.ok) {
-                        showSuccess();
-                    } else {
-                        saveLocal(email);
-                        showSuccess();
-                    }
-                }).catch(function() {
-                    saveLocal(email);
-                    showSuccess();
-                });
-            } else {
-                saveLocal(email);
-                showSuccess();
-            }
-        });
-    }
-
-    function saveLocal(email) {
-        try {
-            var list = JSON.parse(localStorage.getItem('freyai_waitlist') || '[]');
-            list.push({ email: email, date: new Date().toISOString() });
-            localStorage.setItem('freyai_waitlist', JSON.stringify(list));
-        } catch(e) { /* silent */ }
-    }
-
-    function showSuccess() {
-        form.style.display = 'none';
-        if (successMsg) successMsg.classList.add('visible');
     }
 
 })();
