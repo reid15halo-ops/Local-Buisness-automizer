@@ -59,7 +59,7 @@ class ErrorHandler {
     async _sendToSupabase(errorMessage, errorStack, metadata = {}) {
         try {
             // Skip in demo mode
-            if (window.demoGuard && window.demoGuard.isDemo()) return;
+            if (window.demoGuardService && window.demoGuardService.isDemo()) return;
 
             // Skip if rate limited
             if (this._isRateLimited()) return;

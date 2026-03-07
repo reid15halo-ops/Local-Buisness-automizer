@@ -77,7 +77,8 @@ class PDFService {
             vatId: ap.vat_id || store.vatId || '',
             phone: ap.company_phone || store.phone || ls('company_phone') || '',
             email: ap.company_email || store.email || ls('company_email') || '',
-            iban: ap.bank_iban || store.iban || ls('bank_iban') || '',
+            iban: ap.bank_iban || store.iban || ls('bank_iban') || ls('iban') || '',
+            bic: ap.bank_bic || store.bic || ls('bank_bic') || ls('bic') || '',
             bank: ap.bank_name || store.bank || ls('bank_name') || '',
             kleinunternehmer: ap.kleinunternehmer || store.kleinunternehmer || false,
             taxRate: parseFloat(ap.tax_rate || store.taxRate || '19')
@@ -264,7 +265,7 @@ class PDFService {
                 this.pageWidth / 2, 284, { align: 'center' }
             );
             doc.text(
-                `${s.bank} · IBAN: ${s.iban} · Seite ${i}/${pageCount}`,
+                `${s.bank} · IBAN: ${s.iban}${s.bic ? ' · BIC: ' + s.bic : ''} · Seite ${i}/${pageCount}`,
                 this.pageWidth / 2, 288, { align: 'center' }
             );
             doc.setTextColor(0);

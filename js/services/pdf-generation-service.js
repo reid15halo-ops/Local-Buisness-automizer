@@ -369,34 +369,44 @@ class PDFGenerationService {
      * Build totals section
      */
     buildTotals(summe, _layout) {
+        const totalsStack = [
+            {
+                columns: [
+                    { width: '*', text: 'Netto:', alignment: 'right' },
+                    { width: 80, text: summe.netto, alignment: 'right' }
+                ]
+            }
+        ];
+
+        if (summe.kleinunternehmer) {
+            // Kleinunternehmer: no MwSt, show notice
+            totalsStack.push({
+                text: 'Gem. §19 UStG wird keine Umsatzsteuer berechnet.',
+                fontSize: 8, color: '#666', alignment: 'right',
+                margin: [0, 5, 0, 0]
+            });
+        } else {
+            totalsStack.push({
+                columns: [
+                    { width: '*', text: `MwSt. (${summe.mwstSatz}):`, alignment: 'right' },
+                    { width: 80, text: summe.mwst, alignment: 'right' }
+                ],
+                margin: [0, 5, 0, 0]
+            });
+        }
+
+        totalsStack.push({
+            columns: [
+                { width: '*', text: 'Brutto:', alignment: 'right', bold: true, fontSize: 12 },
+                { width: 80, text: summe.brutto, alignment: 'right', bold: true, fontSize: 12 }
+            ],
+            margin: [0, 10, 0, 0]
+        });
+
         return {
             columns: [
                 { width: '*', text: '' },
-                {
-                    width: 200,
-                    stack: [
-                        {
-                            columns: [
-                                { width: '*', text: 'Netto:', alignment: 'right' },
-                                { width: 80, text: summe.netto, alignment: 'right' }
-                            ]
-                        },
-                        {
-                            columns: [
-                                { width: '*', text: `MwSt. (${summe.mwstSatz}):`, alignment: 'right' },
-                                { width: 80, text: summe.mwst, alignment: 'right' }
-                            ],
-                            margin: [0, 5, 0, 0]
-                        },
-                        {
-                            columns: [
-                                { width: '*', text: 'Brutto:', alignment: 'right', bold: true, fontSize: 12 },
-                                { width: 80, text: summe.brutto, alignment: 'right', bold: true, fontSize: 12 }
-                            ],
-                            margin: [0, 10, 0, 0]
-                        }
-                    ]
-                }
+                { width: 200, stack: totalsStack }
             ]
         };
     }

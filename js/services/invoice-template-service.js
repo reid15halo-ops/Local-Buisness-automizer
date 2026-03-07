@@ -153,7 +153,8 @@ class InvoiceTemplateService {
                 netto: this.formatCurrency(data.netto || 0),
                 mwst: this.formatCurrency(data.mwst || 0),
                 brutto: this.formatCurrency(data.brutto || 0),
-                mwstSatz: '19%'
+                mwstSatz: data.mwstSatz || '19%',
+                kleinunternehmer: data.kleinunternehmer || localStorage.getItem('kleinunternehmer') === 'true'
             }
         };
 

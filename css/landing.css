@@ -817,6 +817,23 @@
     margin: 0 auto;
 }
 
+.pricing-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+}
+
+.pricing-badge-banner {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 8px 28px;
+    background: linear-gradient(135deg, var(--accent-primary), #1ab38a);
+    color: #0c1a1a;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+}
+
 .pricing-card {
     padding: 40px 32px;
     background: var(--bg-card);
@@ -1123,6 +1140,8 @@
 
     .hero-visual { flex: none; }
 
+    .pricing-grid--4 { grid-template-columns: repeat(2, 1fr); }
+
     .hero-portrait-frame {
         width: 240px;
         height: 300px;
@@ -1193,7 +1212,8 @@
 
     .features-grid { grid-template-columns: 1fr; }
 
-    .pricing-grid {
+    .pricing-grid,
+    .pricing-grid--4 {
         grid-template-columns: 1fr;
         max-width: 420px;
     }
