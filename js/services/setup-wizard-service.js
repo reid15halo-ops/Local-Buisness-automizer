@@ -59,6 +59,40 @@ class SetupWizardService {
                         required: true
                     },
                     {
+                        name: 'phone',
+                        label: 'Telefon',
+                        placeholder: '+49 123 4567890',
+                        type: 'tel',
+                        required: false
+                    },
+                    {
+                        name: 'email',
+                        label: 'E-Mail *',
+                        placeholder: 'info@meine-firma.de',
+                        type: 'email',
+                        required: true
+                    },
+                    {
+                        name: 'iban',
+                        label: 'IBAN',
+                        placeholder: 'DE89 3704 0044 0532 0130 00',
+                        type: 'text',
+                        required: false
+                    },
+                    {
+                        name: 'bic',
+                        label: 'BIC / Bank',
+                        placeholder: 'COBADEFFXXX / Commerzbank',
+                        type: 'text',
+                        required: false
+                    },
+                    {
+                        name: 'kleinunternehmer',
+                        label: 'Kleinunternehmer nach §19 UStG',
+                        type: 'checkbox',
+                        required: false
+                    },
+                    {
                         name: 'business_type',
                         label: 'Betriebsart (für KI-Texte)',
                         placeholder: 'z.B. Metallbaubetrieb, Elektrobetrieb, Malerbetrieb',
@@ -146,7 +180,8 @@ class SetupWizardService {
             'address_street',
             'address_postal',
             'address_city',
-            'tax_number'
+            'tax_number',
+            'email'
         ];
 
         return requiredFields.every(field => {
@@ -165,7 +200,8 @@ class SetupWizardService {
             { key: 'address_street', name: 'Straße', required: true },
             { key: 'address_postal', name: 'Postleitzahl', required: true },
             { key: 'address_city', name: 'Stadt', required: true },
-            { key: 'tax_number', name: 'Steuernummer', required: true }
+            { key: 'tax_number', name: 'Steuernummer', required: true },
+            { key: 'email', name: 'E-Mail', required: true }
         ];
 
         return requiredFields.filter(({ key }) => {
@@ -185,6 +221,11 @@ class SetupWizardService {
             address_postal: localStorage.getItem('address_postal') || '',
             address_city: localStorage.getItem('address_city') || '',
             tax_number: localStorage.getItem('tax_number') || '',
+            phone: localStorage.getItem('phone') || '',
+            email: localStorage.getItem('email') || '',
+            iban: localStorage.getItem('iban') || '',
+            bic: localStorage.getItem('bic') || '',
+            kleinunternehmer: localStorage.getItem('kleinunternehmer') === 'true',
             company_logo: localStorage.getItem('company_logo') || null
         };
     }
@@ -246,6 +287,11 @@ class SetupWizardService {
 
             if (!value || value.trim() === '') {
                 errors.push(`${field.label.replace(' *', '')} ist erforderlich`);
+            } else if (field.type === 'email' && value) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value.trim())) {
+                    errors.push('Bitte geben Sie eine gueltige E-Mail-Adresse ein');
+                }
             }
         }
 
@@ -262,8 +308,10 @@ class SetupWizardService {
         if (fieldName === 'company_logo') {
             // Logo is stored as base64 by the UI
             localStorage.setItem(fieldName, value);
+        } else if (fieldName === 'kleinunternehmer') {
+            localStorage.setItem(fieldName, value === true || value === 'true' ? 'true' : 'false');
         } else {
-            localStorage.setItem(fieldName, value.trim());
+            localStorage.setItem(fieldName, (value ?? '').toString().trim());
         }
     }
 
@@ -310,21 +358,41 @@ class SetupWizardService {
     }
 
     /**
+     * Hash a PIN using SHA-256 (async)
+     */
+    async _hashPin(pin) {
+        const encoded = new TextEncoder().encode(pin);
+        const hash = await crypto.subtle.digest('SHA-256', encoded);
+        return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    /**
      * Verify admin PIN
      * Returns false if no PIN is set (forces setup via Admin Panel)
      */
-    verifyAdminPin(pin) {
-        const storedPin = localStorage.getItem('admin_pin');
-        if (!storedPin) {return false;}
-        return pin === storedPin;
+    async verifyAdminPin(pin) {
+        const storedHash = localStorage.getItem('admin_pin_hash');
+        // Migration: if old plaintext pin exists, hash it
+        const oldPin = localStorage.getItem('admin_pin');
+        if (!storedHash && oldPin) {
+            const hash = await this._hashPin(oldPin);
+            localStorage.setItem('admin_pin_hash', hash);
+            localStorage.removeItem('admin_pin');
+            return pin === oldPin;
+        }
+        if (!storedHash) return false;
+        const inputHash = await this._hashPin(pin);
+        return inputHash === storedHash;
     }
 
     /**
      * Set new admin PIN
      */
-    setAdminPin(newPin) {
+    async setAdminPin(newPin) {
         if (newPin && newPin.trim().length >= 4) {
-            localStorage.setItem('admin_pin', newPin.trim());
+            const hash = await this._hashPin(newPin.trim());
+            localStorage.setItem('admin_pin_hash', hash);
+            localStorage.removeItem('admin_pin'); // Remove plaintext if exists
             return true;
         }
         return false;
@@ -341,6 +409,11 @@ class SetupWizardService {
             'address_postal',
             'address_city',
             'tax_number',
+            'phone',
+            'email',
+            'iban',
+            'bic',
+            'kleinunternehmer',
             'company_logo'
         ];
 
@@ -495,6 +568,10 @@ class SetupWizardService {
                 plz:           'address_postal',
                 ort:           'address_city',
                 steuernummer:  'tax_number',
+                telefon:       'phone',
+                email:         'email',
+                iban:          'iban',
+                bic:           'bic',
                 gewerk:        'business_type'
             };
 

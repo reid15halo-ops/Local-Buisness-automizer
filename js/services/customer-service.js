@@ -6,6 +6,164 @@ class CustomerService {
     constructor() {
         try { this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]'); } catch { this.customers = []; }
         try { this.interactions = JSON.parse(localStorage.getItem('freyai_interactions') || '[]'); } catch { this.interactions = []; }
+        this._supabaseLoaded = false;
+        this._loading = false;
+        // Load from Supabase on init (non-blocking)
+        this._loadFromSupabase();
+    }
+
+    // ---- Supabase Bridge ----
+
+    /**
+     * Convert local customer object → Supabase kunden row.
+     * Maps rich fields to the flat kunden schema; extra fields go into notizen JSON block.
+     */
+    _toRow(c) {
+        // Separate extra fields that don't have dedicated columns
+        const extra = {};
+        if (c.firma) extra.firma = c.firma;
+        if (c.mobil) extra.mobil = c.mobil;
+        if (c.tags && c.tags.length) extra.tags = c.tags;
+        if (c.quelle) extra.quelle = c.quelle;
+        if (c.kundentyp) extra.kundentyp = c.kundentyp;
+        if (c.leitwegId) extra.leitwegId = c.leitwegId;
+        if (c.ustId) extra.ustId = c.ustId;
+        if (c.zahlungsart) extra.zahlungsart = c.zahlungsart;
+        if (c.zahlungsziel != null) extra.zahlungsziel = c.zahlungsziel;
+        if (c.rabatt) extra.rabatt = c.rabatt;
+        if (c.umsatzGesamt) extra.umsatzGesamt = c.umsatzGesamt;
+        if (c.anzahlAuftraege) extra.anzahlAuftraege = c.anzahlAuftraege;
+        if (c.letzterKontakt) extra.letzterKontakt = c.letzterKontakt;
+        if (c.customFields && Object.keys(c.customFields).length) extra.customFields = c.customFields;
+
+        // Build notizen: preserve human-readable text, append JSON metadata
+        const humanNotizen = c.notizen || '';
+        const notizenWithMeta = humanNotizen + (Object.keys(extra).length ? '\n<!--META:' + JSON.stringify(extra) + '-->' : '');
+
+        return {
+            id: c.id,
+            name: c.name,
+            email: c.email || null,
+            telefon: c.telefon || null,
+            adresse: c.adresse?.strasse || '',
+            stadt: c.adresse?.ort || '',
+            plz: c.adresse?.plz || '',
+            notizen: notizenWithMeta || null,
+            kategorie: c.kundentyp || 'kunde',
+            status: c.status || 'aktiv',
+            created_at: c.erstelltAm || new Date().toISOString(),
+            updated_at: c.aktualisiertAm || new Date().toISOString()
+        };
+    }
+
+    /**
+     * Convert Supabase kunden row → local customer object.
+     * Extracts extra fields from the notizen JSON metadata block.
+     */
+    _fromRow(r) {
+        // Extract metadata from notizen
+        let humanNotizen = r.notizen || '';
+        let extra = {};
+        const metaMatch = humanNotizen.match(/\n?<!--META:(.*?)-->/s);
+        if (metaMatch) {
+            try { extra = JSON.parse(metaMatch[1]); } catch { /* ignore */ }
+            humanNotizen = humanNotizen.replace(/\n?<!--META:.*?-->/s, '');
+        }
+
+        return {
+            id: r.id,
+            name: r.name || '',
+            firma: extra.firma || '',
+            email: r.email || '',
+            telefon: r.telefon || '',
+            mobil: extra.mobil || '',
+            adresse: {
+                strasse: r.adresse || '',
+                plz: r.plz || '',
+                ort: r.stadt || ''
+            },
+            notizen: humanNotizen,
+            tags: extra.tags || [],
+            quelle: extra.quelle || 'manual',
+            status: r.status || 'aktiv',
+            umsatzGesamt: extra.umsatzGesamt || 0,
+            anzahlAuftraege: extra.anzahlAuftraege || 0,
+            erstelltAm: r.created_at || new Date().toISOString(),
+            aktualisiertAm: r.updated_at || new Date().toISOString(),
+            letzterKontakt: extra.letzterKontakt || null,
+            kundentyp: extra.kundentyp || r.kategorie || 'privat',
+            leitwegId: extra.leitwegId || '',
+            ustId: extra.ustId || '',
+            zahlungsart: extra.zahlungsart || 'rechnung',
+            zahlungsziel: extra.zahlungsziel ?? 14,
+            rabatt: extra.rabatt || 0,
+            customFields: extra.customFields || {}
+        };
+    }
+
+    /**
+     * Load customers from Supabase (via dbService), merge with localStorage cache.
+     * Supabase data wins on conflict (by id). Non-blocking on construction.
+     */
+    async _loadFromSupabase() {
+        if (this._loading) return;
+        this._loading = true;
+        try {
+            if (!window.dbService) return;
+            const rows = await window.dbService.getCustomers();
+            if (!rows || rows.length === 0) return;
+
+            const supabaseCustomers = rows.map(r => this._fromRow(r));
+
+            // Snapshot current local IDs to detect CRUD ops that happened during fetch
+            const currentLocalIds = new Set(this.customers.map(c => c.id));
+            const supabaseIds = new Set(supabaseCustomers.map(c => c.id));
+
+            // Keep local-only entries (not in Supabase)
+            const localOnly = this.customers.filter(c => !supabaseIds.has(c.id));
+
+            // Keep customers added locally during the async fetch (not in original snapshot)
+            // These are new CRUD operations that shouldn't be overwritten
+            this.customers = [...supabaseCustomers, ...localOnly];
+            this.save(); // Update localStorage cache
+            this._supabaseLoaded = true;
+
+            // Sync local-only entries up to Supabase
+            for (const c of localOnly) {
+                this._syncToSupabase(c);
+            }
+
+            console.log(`[CustomerService] Loaded ${supabaseCustomers.length} from Supabase, ${localOnly.length} local-only`);
+        } catch (err) {
+            console.warn('[CustomerService] Supabase load failed, using localStorage:', err.message);
+        } finally {
+            this._loading = false;
+        }
+    }
+
+    /**
+     * Fire-and-forget sync of a single customer to Supabase.
+     */
+    async _syncToSupabase(customer) {
+        try {
+            if (!window.dbService) return;
+            const row = this._toRow(customer);
+            await window.dbService.saveCustomer(row);
+        } catch (err) {
+            console.warn('[CustomerService] Supabase sync failed for', customer.id, err.message);
+        }
+    }
+
+    /**
+     * Fire-and-forget delete from Supabase.
+     */
+    async _deleteFromSupabase(id) {
+        try {
+            if (!window.dbService) return;
+            await window.dbService.deleteCustomer(id);
+        } catch (err) {
+            console.warn('[CustomerService] Supabase delete failed for', id, err.message);
+        }
     }
 
     // Customer CRUD
@@ -41,13 +199,14 @@ class CustomerService {
             leitwegId: customer.leitwegId || '',
             ustId: customer.ustId || '',
             zahlungsart: customer.zahlungsart || 'rechnung', // rechnung, bar, vorkasse
-            zahlungsziel: customer.zahlungsziel || 14, // Tage
+            zahlungsziel: customer.zahlungsziel ?? 14, // Tage
             rabatt: customer.rabatt || 0, // Prozent
             customFields: customer.customFields || {}
         };
 
         this.customers.push(newCustomer);
         this.save();
+        this._syncToSupabase(newCustomer);
         return newCustomer;
     }
 
@@ -63,6 +222,7 @@ class CustomerService {
                 this.customers[index].adresse = { ...this.customers[index].adresse, ...updates.adresse };
             }
             this.save();
+            this._syncToSupabase(this.customers[index]);
             return this.customers[index];
         }
         return null;
@@ -93,12 +253,14 @@ class CustomerService {
             // trashService already removed from this.customers and saved
             // Reload from localStorage to stay in sync
             try { this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]'); } catch { this.customers = []; }
+            this._deleteFromSupabase(id);
             return;
         }
 
         // Fallback: hard delete (only if trashService not loaded)
         this.customers = this.customers.filter(c => c.id !== id);
         this.save();
+        this._deleteFromSupabase(id);
     }
 
     getCustomer(id) {

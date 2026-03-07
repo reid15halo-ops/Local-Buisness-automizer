@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v27';
+const CACHE_NAME = 'freyai-visions-v29';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -29,6 +29,7 @@ const STATIC_ASSETS = [
     '/agb.html',
     '/offline.html',
     '/booking.html',
+    '/fragebogen-beta-v1.html',
 
     // --- Config ---
     '/config/app-config.js',
@@ -114,7 +115,8 @@ const STATIC_ASSETS = [
 const CDN_ASSETS = [
     'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js'
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js',
+    'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'
 ];
 
 // Install event - cache static assets

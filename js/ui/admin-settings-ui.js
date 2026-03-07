@@ -85,11 +85,11 @@ class AdminSettingsUI {
     /**
      * Verify PIN and show settings
      */
-    verifyPin(pinInput, modal) {
+    async verifyPin(pinInput, modal) {
         const pin = pinInput.value;
         const errorDiv = document.getElementById('pin-error');
 
-        if (!this.service.verifyAdminPin(pin)) {
+        if (!await this.service.verifyAdminPin(pin)) {
             errorDiv.textContent = 'Falsches Passwort. Bitte versuchen Sie es erneut.';
             errorDiv.style.display = 'block';
             pinInput.value = '';
@@ -282,7 +282,7 @@ class AdminSettingsUI {
     /**
      * Save admin settings
      */
-    saveSettings(modal) {
+    async saveSettings(modal) {
         const errorsDiv = document.getElementById('admin-errors');
         errorsDiv.innerHTML = '';
         errorsDiv.style.display = 'none';
@@ -308,7 +308,7 @@ class AdminSettingsUI {
             }
 
             if (newPin) {
-                if (!this.service.setAdminPin(newPin)) {
+                if (!await this.service.setAdminPin(newPin)) {
                     throw new Error('Passwort konnte nicht gespeichert werden.');
                 }
             }

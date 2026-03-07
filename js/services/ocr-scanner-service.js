@@ -7,10 +7,164 @@ class OcrScannerService {
     constructor() {
         try { this.scannedDocuments = JSON.parse(localStorage.getItem('freyai_scanned_docs') || '[]'); } catch { this.scannedDocuments = []; }
         try { this.settings = JSON.parse(localStorage.getItem('freyai_ocr_settings') || '{}'); } catch { this.settings = {}; }
+        try { this._offlineQueue = JSON.parse(localStorage.getItem('freyai_scanned_docs_offline_queue') || '[]'); } catch { this._offlineQueue = []; }
+
+        this._tenantId = 'a0000000-0000-0000-0000-000000000001';
+        this._supabaseLoaded = false;
+        this._syncing = false;
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'deu';} // German
         if (!this.settings.autoProcess) {this.settings.autoProcess = true;}
+
+        // Load from Supabase on startup (async, non-blocking)
+        this._initFromSupabase();
+    }
+
+    // --- Supabase helpers ---
+
+    _supabase() {
+        return window.supabaseClient?.client;
+    }
+
+    _isSupabaseReady() {
+        return !!(this._supabase() && window.supabaseClient?.isConfigured());
+    }
+
+    async _initFromSupabase() {
+        if (!this._isSupabaseReady()) return;
+        try {
+            const { data, error } = await this._supabase()
+                .from('scanned_documents')
+                .select('*')
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: false });
+
+            if (!error && data) {
+                // Merge Supabase data into local cache (Supabase is source of truth)
+                const remoteIds = new Set(data.map(d => d.id));
+                // Keep local-only docs that haven't been synced yet
+                const localOnly = this.scannedDocuments.filter(d => !remoteIds.has(d.id));
+                this.scannedDocuments = [
+                    ...data.map(d => ({
+                        id: d.id,
+                        filename: d.file_name || '',
+                        imageData: d.image_data || null,
+                        text: d.raw_text || '',
+                        extractedData: d.extracted_data || {},
+                        category: d.scan_type || 'uncategorized',
+                        createdAt: d.created_at,
+                        updatedAt: d.updated_at,
+                        processed: true,
+                        _synced: true
+                    })),
+                    ...localOnly
+                ];
+                this._saveLocal();
+                this._supabaseLoaded = true;
+
+                // Process offline queue
+                this._syncOfflineQueue();
+            }
+        } catch (err) {
+            console.warn('[OcrScanner] Supabase load failed, using localStorage:', err);
+        }
+    }
+
+    async _saveToSupabase(doc) {
+        if (!this._isSupabaseReady()) {
+            this._queueOffline({ action: 'upsert', doc });
+            return;
+        }
+        try {
+            const row = {
+                id: doc.id,
+                tenant_id: this._tenantId,
+                user_id: null,
+                scan_type: doc.category || 'uncategorized',
+                extracted_data: doc.extractedData || {},
+                raw_text: doc.text || '',
+                image_data: null, // Don't store base64 images by default (too large)
+                file_name: doc.filename || '',
+                created_at: doc.createdAt,
+                updated_at: doc.updatedAt || doc.createdAt
+            };
+            const { error } = await this._supabase()
+                .from('scanned_documents')
+                .upsert(row, { onConflict: 'id' });
+
+            if (error) {
+                console.warn('[OcrScanner] Supabase save error:', error);
+                this._queueOffline({ action: 'upsert', doc });
+            } else {
+                doc._synced = true;
+            }
+        } catch (err) {
+            console.warn('[OcrScanner] Supabase save failed:', err);
+            this._queueOffline({ action: 'upsert', doc });
+        }
+    }
+
+    async _deleteFromSupabase(id) {
+        if (!this._isSupabaseReady()) {
+            this._queueOffline({ action: 'delete', id });
+            return;
+        }
+        try {
+            const { error } = await this._supabase()
+                .from('scanned_documents')
+                .delete()
+                .eq('id', id)
+                .eq('tenant_id', this._tenantId);
+            if (error) {
+                console.warn('[OcrScanner] Supabase delete error:', error);
+            }
+        } catch (err) {
+            console.warn('[OcrScanner] Supabase delete failed:', err);
+        }
+    }
+
+    _queueOffline(entry) {
+        // Don't queue during offline sync (prevents infinite loop)
+        if (this._syncing) return;
+        const MAX_RETRIES = 5;
+        const retries = (entry.retries || 0);
+        if (retries >= MAX_RETRIES) {
+            console.warn('[OcrScanner] Dropping offline entry after max retries:', entry.action, entry.doc?.id || entry.id);
+            return;
+        }
+        this._offlineQueue.push({ ...entry, retries: retries, timestamp: Date.now() });
+        localStorage.setItem('freyai_scanned_docs_offline_queue', JSON.stringify(this._offlineQueue));
+    }
+
+    async _syncOfflineQueue() {
+        if (!this._isSupabaseReady() || this._offlineQueue.length === 0 || this._syncing) return;
+
+        this._syncing = true;
+        const queue = [...this._offlineQueue];
+        this._offlineQueue = [];
+        localStorage.setItem('freyai_scanned_docs_offline_queue', JSON.stringify(this._offlineQueue));
+
+        const failed = [];
+        for (const entry of queue) {
+            try {
+                if (entry.action === 'upsert' && entry.doc) {
+                    await this._saveToSupabase(entry.doc);
+                } else if (entry.action === 'delete' && entry.id) {
+                    await this._deleteFromSupabase(entry.id);
+                }
+            } catch (err) {
+                console.warn('[OcrScanner] Offline sync entry failed:', err);
+                failed.push({ ...entry, retries: (entry.retries || 0) + 1 });
+            }
+        }
+
+        this._syncing = false;
+
+        // Re-queue failed items (with incremented retry count)
+        for (const entry of failed) {
+            this._queueOffline(entry);
+        }
     }
 
     // Scan document from file input
@@ -42,14 +196,15 @@ class OcrScannerService {
     // Process image and extract text
     async processImage(imageData, filename) {
         const doc = {
-            id: 'scan-' + Date.now(),
+            id: crypto.randomUUID ? crypto.randomUUID() : 'scan-' + Date.now(),
             filename: filename,
             imageData: imageData,
             text: '',
             extractedData: {},
             category: 'uncategorized',
             createdAt: new Date().toISOString(),
-            processed: false
+            processed: false,
+            _synced: false
         };
 
         try {
@@ -239,10 +394,20 @@ class OcrScannerService {
         return { success: false, error: 'Dokument nicht gefunden' };
     }
 
+    // Update document (async version for callers that want Supabase sync confirmation)
+    async updateDocumentAsync(id, updates) {
+        const result = this.updateDocument(id, updates);
+        if (result.success) {
+            await this._saveToSupabase(result.document);
+        }
+        return result;
+    }
+
     // Delete document
     deleteDocument(id) {
         this.scannedDocuments = this.scannedDocuments.filter(d => d.id !== id);
         this.save();
+        this._deleteFromSupabase(id);
         return { success: true };
     }
 
@@ -289,9 +454,27 @@ class OcrScannerService {
         localStorage.setItem('freyai_ocr_settings', JSON.stringify(this.settings));
     }
 
-    // Persistence
+    // Persistence — localStorage (cache) + Supabase (source of truth)
     save() {
-        localStorage.setItem('freyai_scanned_docs', JSON.stringify(this.scannedDocuments));
+        this._saveLocal();
+        // Persist unsynced docs to Supabase
+        const unsynced = this.scannedDocuments.filter(d => !d._synced);
+        for (const doc of unsynced) {
+            this._saveToSupabase(doc);
+        }
+    }
+
+    _saveLocal() {
+        // Strip imageData before saving to localStorage to reduce storage size
+        const stripped = this.scannedDocuments.map(d => {
+            const copy = { ...d };
+            // Keep imageData in memory but don't bloat localStorage
+            if (copy.imageData && copy.imageData.length > 100000) {
+                copy.imageData = null;
+            }
+            return copy;
+        });
+        localStorage.setItem('freyai_scanned_docs', JSON.stringify(stripped));
     }
 }
 
