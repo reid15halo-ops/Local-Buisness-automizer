@@ -44,18 +44,10 @@ CREATE INDEX IF NOT EXISTS idx_rit_naechste_faelligkeit
 -- RLS
 ALTER TABLE recurring_invoice_templates ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own tenant templates"
-    ON recurring_invoice_templates FOR SELECT
-    USING (tenant_id = 'a0000000-0000-0000-0000-000000000001'::uuid);
+CREATE POLICY "Service role manages recurring_invoice_templates"
+    ON recurring_invoice_templates FOR ALL
+    USING (auth.role() = 'service_role');
 
-CREATE POLICY "Users can insert own templates"
-    ON recurring_invoice_templates FOR INSERT
-    WITH CHECK (tenant_id = 'a0000000-0000-0000-0000-000000000001'::uuid);
-
-CREATE POLICY "Users can update own templates"
-    ON recurring_invoice_templates FOR UPDATE
-    USING (tenant_id = 'a0000000-0000-0000-0000-000000000001'::uuid);
-
-CREATE POLICY "Users can delete own templates"
-    ON recurring_invoice_templates FOR DELETE
-    USING (tenant_id = 'a0000000-0000-0000-0000-000000000001'::uuid);
+CREATE POLICY "Users manage own tenant recurring_invoice_templates"
+    ON recurring_invoice_templates FOR ALL
+    USING (tenant_id = get_my_tenant_id());

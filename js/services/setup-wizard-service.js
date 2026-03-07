@@ -226,6 +226,7 @@ class SetupWizardService {
             iban: localStorage.getItem('iban') || '',
             bic: localStorage.getItem('bic') || '',
             kleinunternehmer: localStorage.getItem('kleinunternehmer') === 'true',
+            business_type: localStorage.getItem('business_type') || '',
             company_logo: localStorage.getItem('company_logo') || null
         };
     }

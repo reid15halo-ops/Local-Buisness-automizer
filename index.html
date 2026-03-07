@@ -34,7 +34,7 @@
     <link rel="stylesheet" href="css/responsive.css">
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.sheetjs.com https://analytics.freyaivisions.de; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://freyaivisions.de https://analytics.freyaivisions.de; frame-src https://checkout.stripe.com; font-src 'self' data:; worker-src 'self' blob:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.sheetjs.com https://analytics.freyaivisions.de; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://freyaivisions.de https://analytics.freyaivisions.de https://cdn.jsdelivr.net; frame-src https://checkout.stripe.com; font-src 'self' data:; worker-src 'self' blob:;">
     <meta name="theme-color" content="#6366f1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,6 +43,8 @@
     <meta name="apple-mobile-web-app-title" content="FreyAI Visions">
     <!-- SheetJS for Excel import (SRI verified 2026-02-21) -->
     <script defer src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js" integrity="sha384-QCIdq2UMVEoSRhR3ZWZwdz2/pivLowr+eokFMdYyukq7qI26VYRxFa4Nl6FKetmL" crossorigin="anonymous"></script>
+    <!-- Tesseract.js for OCR document scanning (SRI verified 2026-03-07) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" integrity="sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F" crossorigin="anonymous"></script>
     <script defer src="https://analytics.freyaivisions.de/script.js" data-website-id="e06559c8-43af-47b9-90e2-6eba2ae83cab"></script>
 </head>
 
@@ -369,7 +371,7 @@
                     Workflows
                     <span class="badge badge-new" id="workflows-badge">NEU</span>
                 </button>
-                <button class="nav-item" data-view="scanner" data-mode="pro">
+                <button class="nav-item" data-view="scanner" data-mode="simple">
                     <span class="nav-icon">📷</span>
                     Scanner
                 </button>

@@ -197,6 +197,17 @@
             .dash-action-btn:active {
                 transform: translateY(0);
             }
+            .dash-action-btn--primary {
+                background: rgba(45, 212, 168, 0.10);
+                border-color: var(--accent-primary);
+                grid-column: 1 / -1;
+                justify-content: center;
+                font-size: 1.1rem;
+                padding: 22px 16px;
+            }
+            .dash-action-btn--primary:hover {
+                background: rgba(45, 212, 168, 0.18);
+            }
             .dash-action-icon {
                 font-size: 1.5rem;
                 flex-shrink: 0;
@@ -357,7 +368,7 @@
     }
 
     // -- Helpers --
-    const esc = (str) => (window.h || window.UI?.sanitize || ((s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')))(str);
+    const esc = (str) => (window.h || window.UI?.sanitize || ((s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')))(str);
     const fmtCurrency = (val) => (window.formatCurrency || window.AppUtils?.formatCurrency || ((v) => v.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })))(val);
     const fmtDate = (val) => (window.formatDate || window.AppUtils?.formatDate || ((v) => new Date(v).toLocaleDateString('de-DE')))(val);
     const relTime = (val) => (window.UI?.getRelativeTime || window.getRelativeTime || ((v) => v ? new Date(v).toLocaleString('de-DE') : '-'))(val);
@@ -633,6 +644,10 @@
                 <div>
                     <h2 class="dash-section-title">Schnellaktionen</h2>
                     <div class="dash-actions-grid">
+                        <button class="dash-action-btn dash-action-btn--primary" data-action="rechnung-scannen" title="Rechnung mit Kamera oder Datei scannen">
+                            <span class="dash-action-icon">\ud83d\udcf7</span>
+                            <span>Rechnung scannen</span>
+                        </button>
                         <button class="dash-action-btn" data-action="neue-anfrage" title="Neue Anfrage erfassen">
                             <span class="dash-action-icon">\ud83d\udcdd</span>
                             <span>Neue Anfrage</span>
@@ -656,6 +671,10 @@
                         <button class="dash-action-btn" data-action="ausgabe-erfassen" title="Ausgabe in der Buchhaltung erfassen">
                             <span class="dash-action-icon">\ud83d\udcc9</span>
                             <span>Ausgabe erfassen</span>
+                        </button>
+                        <button class="dash-action-btn" data-action="kunde-anschreiben" title="E-Mail an einen Kunden senden">
+                            <span class="dash-action-icon">\u2709\ufe0f</span>
+                            <span>Kunde anschreiben</span>
                         </button>
                     </div>
                 </div>
@@ -751,6 +770,9 @@
             btn.addEventListener('click', () => {
                 const action = btn.getAttribute('data-action');
                 switch (action) {
+                    case 'rechnung-scannen':
+                        navigateTo('scanner');
+                        break;
                     case 'neue-anfrage':
                         navigateTo('anfragen');
                         clickBtn('btn-neue-anfrage', 250);
@@ -773,8 +795,171 @@
                     case 'ausgabe-erfassen':
                         navigateTo('buchhaltung');
                         break;
+                    case 'kunde-anschreiben':
+                        openEmailComposeModal();
+                        break;
                 }
             });
+        });
+    }
+
+    // -- "Kunde anschreiben" compose modal --
+    function openEmailComposeModal() {
+        // Remove any existing modal
+        const existing = document.getElementById('dash-email-modal');
+        if (existing) existing.remove();
+
+        const customers = (window.customerService?.getAllCustomers?.() || [])
+            .filter(c => c.email);
+
+        // Email templates from emailService
+        const templates = window.emailService?.templates || {};
+        const templateKeys = Object.keys(templates);
+
+        // Build customer <option> list
+        let customerOpts = '<option value="">-- Kunde w\u00e4hlen --</option>';
+        customers.forEach(c => {
+            customerOpts += `<option value="${esc(c.email)}" data-name="${esc(c.name)}">${esc(c.name)} (${esc(c.email)})</option>`;
+        });
+
+        // Build template <option> list
+        let templateOpts = '<option value="">-- Kein Template --</option>';
+        templateKeys.forEach(key => {
+            const t = templates[key];
+            templateOpts += `<option value="${esc(key)}">${esc(t.name)}</option>`;
+        });
+
+        const overlay = document.createElement('div');
+        overlay.id = 'dash-email-modal';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:16px;';
+
+        overlay.innerHTML = `
+            <div style="background:var(--bg-card,#1a2332);border:1px solid var(--border-color,#2a3a4a);border-radius:12px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:24px;position:relative;color:var(--text-primary,#e2e8f0);">
+                <button id="dash-email-close" style="position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text-secondary,#94a3b8);font-size:1.5rem;cursor:pointer;line-height:1;" title="Schlie\u00dfen">&times;</button>
+                <h2 style="margin:0 0 18px;font-size:1.2rem;font-weight:700;">Kunde anschreiben</h2>
+
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary,#94a3b8);margin-bottom:4px;">Empf\u00e4nger</label>
+                <select id="dash-email-to" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:var(--bg-input,#0f1923);color:var(--text-primary,#e2e8f0);font-size:0.95rem;margin-bottom:12px;">
+                    ${customerOpts}
+                </select>
+
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary,#94a3b8);margin-bottom:4px;">Oder E-Mail-Adresse eingeben</label>
+                <input id="dash-email-to-manual" type="email" placeholder="max@beispiel.de" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:var(--bg-input,#0f1923);color:var(--text-primary,#e2e8f0);font-size:0.95rem;margin-bottom:12px;box-sizing:border-box;">
+
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary,#94a3b8);margin-bottom:4px;">Vorlage (optional)</label>
+                <select id="dash-email-template" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:var(--bg-input,#0f1923);color:var(--text-primary,#e2e8f0);font-size:0.95rem;margin-bottom:12px;">
+                    ${templateOpts}
+                </select>
+
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary,#94a3b8);margin-bottom:4px;">Betreff</label>
+                <input id="dash-email-subject" type="text" placeholder="Betreff eingeben" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:var(--bg-input,#0f1923);color:var(--text-primary,#e2e8f0);font-size:0.95rem;margin-bottom:12px;box-sizing:border-box;">
+
+                <label style="display:block;font-size:0.85rem;color:var(--text-secondary,#94a3b8);margin-bottom:4px;">Nachricht</label>
+                <textarea id="dash-email-body" rows="6" placeholder="Ihre Nachricht..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:var(--bg-input,#0f1923);color:var(--text-primary,#e2e8f0);font-size:0.95rem;margin-bottom:16px;resize:vertical;font-family:inherit;box-sizing:border-box;"></textarea>
+
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button id="dash-email-cancel" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:transparent;color:var(--text-secondary,#94a3b8);cursor:pointer;font-size:0.95rem;">Abbrechen</button>
+                    <button id="dash-email-send" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent-primary,#2dd4a8);color:#0f1923;font-weight:700;cursor:pointer;font-size:0.95rem;">Senden</button>
+                </div>
+                <div id="dash-email-status" style="margin-top:10px;font-size:0.88rem;text-align:center;min-height:1.2em;"></div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // --- Event wiring ---
+        const closeModal = () => overlay.remove();
+        document.getElementById('dash-email-close').addEventListener('click', closeModal);
+        document.getElementById('dash-email-cancel').addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+        // Template selection fills subject + body
+        document.getElementById('dash-email-template').addEventListener('change', function () {
+            const key = this.value;
+            if (!key || !templates[key]) return;
+            const t = templates[key];
+            // Get selected customer name for placeholder replacement
+            const toSelect = document.getElementById('dash-email-to');
+            const selOption = toSelect.selectedOptions[0];
+            const kundeName = selOption?.dataset?.name || '';
+            const filled = window.emailService?.fillTemplate?.(key, { kundeName }) || { subject: t.subject, body: t.body };
+            document.getElementById('dash-email-subject').value = filled.subject;
+            document.getElementById('dash-email-body').value = filled.body;
+        });
+
+        // Send button
+        document.getElementById('dash-email-send').addEventListener('click', async function () {
+            const statusEl = document.getElementById('dash-email-status');
+            const toSelect = document.getElementById('dash-email-to').value;
+            const toManual = document.getElementById('dash-email-to-manual').value.trim();
+            const to = toManual || toSelect;
+            const subject = document.getElementById('dash-email-subject').value.trim();
+            const bodyText = document.getElementById('dash-email-body').value.trim();
+
+            if (!to) {
+                statusEl.textContent = 'Bitte einen Empf\u00e4nger w\u00e4hlen oder eingeben.';
+                statusEl.style.color = '#f87171';
+                return;
+            }
+            if (!subject) {
+                statusEl.textContent = 'Bitte einen Betreff eingeben.';
+                statusEl.style.color = '#f87171';
+                return;
+            }
+            if (!bodyText) {
+                statusEl.textContent = 'Bitte eine Nachricht eingeben.';
+                statusEl.style.color = '#f87171';
+                return;
+            }
+
+            // Basic email validation
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) {
+                statusEl.textContent = 'Ung\u00fcltige E-Mail-Adresse.';
+                statusEl.style.color = '#f87171';
+                return;
+            }
+
+            // Check if relay is configured
+            const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL;
+            if (!relayUrl) {
+                // Fallback: open mailto link (works on mobile)
+                const mailtoUrl = 'mailto:' + encodeURIComponent(to)
+                    + '?subject=' + encodeURIComponent(subject)
+                    + '&body=' + encodeURIComponent(bodyText);
+                window.open(mailtoUrl, '_blank');
+                statusEl.textContent = 'E-Mail-Programm ge\u00f6ffnet.';
+                statusEl.style.color = '#34d399';
+                setTimeout(closeModal, 1500);
+                return;
+            }
+
+            // Send via email relay
+            this.disabled = true;
+            this.textContent = 'Sende...';
+            statusEl.textContent = '';
+
+            // Convert plain text to simple HTML (escape for XSS safety)
+            const safeBody = esc(bodyText).replace(/\n/g, '<br>');
+            const htmlBody = '<div style="font-family:Arial,sans-serif;font-size:14px;color:#333;">' + safeBody + '</div>';
+
+            try {
+                const result = await window.emailService.sendEmail(to, subject, htmlBody);
+                if (result.success) {
+                    statusEl.textContent = 'E-Mail gesendet!';
+                    statusEl.style.color = '#34d399';
+                    setTimeout(closeModal, 1500);
+                } else {
+                    statusEl.textContent = result.error || 'Fehler beim Senden.';
+                    statusEl.style.color = '#f87171';
+                    this.disabled = false;
+                    this.textContent = 'Senden';
+                }
+            } catch (err) {
+                statusEl.textContent = 'Netzwerkfehler: ' + (err.message || 'Unbekannt');
+                statusEl.style.color = '#f87171';
+                this.disabled = false;
+                this.textContent = 'Senden';
+            }
         });
     }
 

@@ -196,7 +196,7 @@ class OcrScannerService {
     // Process image and extract text
     async processImage(imageData, filename) {
         const doc = {
-            id: crypto.randomUUID ? crypto.randomUUID() : 'scan-' + Date.now(),
+            id: crypto.randomUUID ? crypto.randomUUID() : ('00000000-0000-4000-8000-' + Date.now().toString(16).padStart(12, '0')),
             filename: filename,
             imageData: imageData,
             text: '',
