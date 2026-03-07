@@ -266,8 +266,8 @@ class PurchaseOrderUI {
     // Auto-generation
     // ============================================
 
-    autoGeneratePOsFromLowStock() {
-        const pos = window.purchaseOrderService.generatePOFromLowStock();
+    async autoGeneratePOsFromLowStock() {
+        const pos = await window.purchaseOrderService.generatePOFromLowStock();
 
         if (pos.length === 0) {
             alert('Keine Materialien unter Mindestbestand');

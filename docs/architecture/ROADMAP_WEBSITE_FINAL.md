@@ -79,6 +79,40 @@
 
 ---
 
+## NEUE PHASE: OpenClaw Automation (07.03.2026) -- ERLEDIGT
+
+### Alle 12 Features implementiert und auf VPS deployed:
+
+| # | Feature | Script | Cron | Status |
+|---|---------|--------|------|--------|
+| 1 | Telegram Command Center | telegram_bot.py | Daemon | LIVE |
+| 2 | n8n Webhook Bridge | webhook-event-service.js + n8n Workflow | Event-basiert | LIVE |
+| 3 | Cron Health Monitor | cron_health.py | */15 Min | LIVE |
+| 4 | Backup Rotation | backup_rotation.py | Taeglich 04:00 | LIVE |
+| 5 | Bookkeeping Sync | bookkeeping_sync.py | */30 Min | LIVE |
+| 6 | KI Cashflow-Prognose | cashflow_forecast.py | Woechentlich Mo 09:00 | LIVE |
+| 7 | Email KI-Autoresponder | email_autoresponder.py | */15 Min | LIVE |
+| 8 | Invoice Notification | invoice_notification.py | PAUSIERT (Verifizierung) | PAUSIERT |
+| 9 | Lead Responder (erweitert) | lead_responder.py | */15 Min | LIVE |
+| 10 | Voice-to-Action Bridge | voice_bridge.py | Via Telegram Bot | LIVE |
+| 11 | Paperless Invoice Bridge | paperless_invoice_bridge.py | */15 Min | LIVE |
+| 12 | Cashflow Dashboard Widget | index.html + CSS | Frontend | LIVE |
+
+### Telegram Bot Commands (LIVE):
+/status, /errors, /backup, /smoke, /help, /logs, /disk, /services,
+/tickets, /ticket, /rechnungen, /umsatz, /pos, /deploy, /health, /stats, /crons
++ Voice Messages mit Gemini Intent Recognition
+
+### Infrastruktur-Verbesserungen:
+- Supabase-first Migration: Bookkeeping + PO Services
+- n8n Workflow 100: Upsert (merge-duplicates) statt Insert
+- Ticket-System: Spam-Filter, Dedup (subject+sender), message_id Index
+- Inbox Sync: resolution=ignore-duplicates
+- SSL Check: Certbot Timeout (120s)
+- Unique Index auf inbound_emails.message_id
+
+---
+
 ## OFFENE PHASEN
 
 ---

@@ -301,5 +301,192 @@ class VoiceInputService {
     }
 }
 
-// Singleton on window
+/* ============================================
+   Voice-to-Action: Sendet transkribierten Text
+   an den VPS Intent-Handler (voice_bridge.py)
+   und fuehrt Business-Aktionen aus.
+   ============================================ */
+
+class VoiceActionService {
+    constructor() {
+        // VPS Voice Bridge Endpunkt (via nginx proxy oder direkt)
+        this._intentUrl = window.VOICE_BRIDGE_URL || 'https://app.freyaivisions.de/api/voice-bridge/intent';
+        this._available = null; // null = unbekannt, true/false nach Health-Check
+        this._onActionCallback = null;
+        this._onErrorCallback = null;
+    }
+
+    /**
+     * Prueft ob der VPS Intent-Handler erreichbar ist.
+     * @returns {Promise<boolean>}
+     */
+    async checkAvailability() {
+        try {
+            const healthUrl = this._intentUrl.replace('/intent', '/health');
+            const resp = await fetch(healthUrl, { method: 'GET', signal: AbortSignal.timeout(3000) });
+            this._available = resp.ok;
+        } catch {
+            this._available = false;
+        }
+        return this._available;
+    }
+
+    /**
+     * Sendet Text an den Intent-Handler und fuehrt die erkannte Aktion aus.
+     * @param {string} text - Transkribierter Sprachbefehl
+     * @returns {Promise<{intent, params, success, response, confidence}>}
+     */
+    async processText(text) {
+        if (!text || !text.trim()) {
+            return { intent: 'unknown', success: false, response: 'Kein Text erkannt.' };
+        }
+
+        try {
+            const resp = await fetch(this._intentUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text.trim() }),
+                signal: AbortSignal.timeout(15000),
+            });
+
+            if (!resp.ok) {
+                throw new Error('Server-Fehler: ' + resp.status);
+            }
+
+            const result = await resp.json();
+
+            if (this._onActionCallback) {
+                this._onActionCallback(result);
+            }
+
+            window.dispatchEvent(new CustomEvent('voiceAction:result', { detail: result }));
+
+            return result;
+        } catch (err) {
+            const errResult = { intent: 'unknown', success: false, response: 'Verbindungsfehler: ' + err.message };
+            if (this._onErrorCallback) { this._onErrorCallback(err); }
+            window.dispatchEvent(new CustomEvent('voiceAction:error', { detail: { error: err.message } }));
+            return errResult;
+        }
+    }
+
+    /**
+     * Kombinierter Aufruf: Web Speech API transkribiert, dann Intent-Handler.
+     * Stoppt die Aufnahme und verarbeitet den erkannten Text.
+     * @returns {Promise<object>} - Intent-Ergebnis
+     */
+    async stopAndProcess() {
+        const voiceSvc = window.voiceInputService;
+        if (!voiceSvc) {
+            return { intent: 'unknown', success: false, response: 'voiceInputService nicht verfuegbar.' };
+        }
+
+        const text = voiceSvc.stop();
+        if (!text) {
+            return { intent: 'unknown', success: false, response: 'Kein gesprochener Text erkannt.' };
+        }
+
+        return this.processText(text);
+    }
+
+    /**
+     * Erstellt einen kombinierten Sprach-Aktions-Button.
+     * Druecken = Aufnahme starten, loslassen = Aufnahme stoppen + Aktion ausfuehren.
+     * @param {HTMLElement} container - Container fuer den Button
+     * @param {object} opts - { onResult, onError, buttonClass }
+     * @returns {HTMLElement} - Der Button
+     */
+    createActionButton(container, opts = {}) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = opts.buttonClass || 'voice-action-btn';
+        btn.setAttribute('aria-label', 'Sprachbefehl');
+        btn.setAttribute('title', 'Sprachbefehl sprechen');
+        btn.innerHTML = `
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span class="voice-action-label">Sprachbefehl</span>`;
+
+        const statusEl = document.createElement('div');
+        statusEl.className = 'voice-action-status';
+        statusEl.style.cssText = 'margin-top:8px;font-size:13px;color:#666;min-height:20px;';
+
+        let recording = false;
+
+        const setStatus = (msg, color = '#666') => {
+            statusEl.textContent = msg;
+            statusEl.style.color = color;
+        };
+
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const voiceSvc = window.voiceInputService;
+
+            if (recording) {
+                // Aufnahme stoppen und verarbeiten
+                recording = false;
+                btn.classList.remove('voice-action-btn--recording');
+                btn.setAttribute('title', 'Sprachbefehl sprechen');
+                setStatus('Verarbeite...', '#2196f3');
+
+                const result = await this.stopAndProcess();
+
+                if (result.intent === 'unknown') {
+                    setStatus(result.response, '#f44336');
+                } else if (result.success) {
+                    setStatus(result.response, '#4caf50');
+                    if (opts.onResult) { opts.onResult(result); }
+                    window.dispatchEvent(new CustomEvent('voiceAction:success', { detail: result }));
+                } else {
+                    setStatus('Fehler: ' + result.response, '#ff9800');
+                    if (opts.onError) { opts.onError(result); }
+                }
+            } else {
+                // Aufnahme starten
+                if (!voiceSvc || !voiceSvc.isSupported) {
+                    setStatus('Mikrofon nicht unterstuetzt', '#f44336');
+                    return;
+                }
+                recording = true;
+                btn.classList.add('voice-action-btn--recording');
+                btn.setAttribute('title', 'Aufnahme stoppen');
+                setStatus('Hoere zu...', '#e91e63');
+
+                voiceSvc.start({ continuous: false, append: false });
+            }
+        });
+
+        if (container) {
+            container.appendChild(btn);
+            container.appendChild(statusEl);
+        }
+
+        return { button: btn, status: statusEl };
+    }
+
+    /**
+     * Callback registrieren fuer erfolgreiche Aktionen.
+     * @param {Function} callback - fn(result)
+     */
+    onAction(callback) {
+        this._onActionCallback = callback;
+        return this;
+    }
+
+    /**
+     * Callback fuer Fehler.
+     * @param {Function} callback - fn(error)
+     */
+    onError(callback) {
+        this._onErrorCallback = callback;
+        return this;
+    }
+}
+
+// Singletons
 window.voiceInputService = new VoiceInputService();
+window.voiceActionService = new VoiceActionService();

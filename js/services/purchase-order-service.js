@@ -194,6 +194,10 @@ class PurchaseOrderService {
         this._ensureSupplierExists(lieferant);
 
         await this._upsertToSupabase(po);
+
+        // n8n Webhook Event
+        window.webhookEventService?.poCreated?.(po);
+
         return po;
     }
 
@@ -284,6 +288,12 @@ class PurchaseOrderService {
         }
 
         await this._upsertToSupabase(po);
+
+        // n8n Webhook Event bei vollständiger Lieferung
+        if (po.status === 'geliefert') {
+            window.webhookEventService?.poDelivered?.(po);
+        }
+
         return po;
     }
 
@@ -301,7 +311,7 @@ class PurchaseOrderService {
     // Auto-generation
     // ============================================
 
-    generatePOFromShortage(shortageItems) {
+    async generatePOFromShortage(shortageItems) {
         if (!window.materialService) return [];
 
         const createdPOs = [];
@@ -325,24 +335,24 @@ class PurchaseOrderService {
             });
         });
 
-        Object.entries(bySupplier).forEach(([supplierName, items]) => {
+        for (const [supplierName, items] of Object.entries(bySupplier)) {
             let supplier = this.lieferanten.find(s => s.name === supplierName);
             if (!supplier) {
                 supplier = { name: supplierName, email: '', telefon: '', ansprechpartner: '', lieferzeit_tage: 5 };
             }
-            const po = this.createPO(supplier, items, { notizen: 'Auto-generated from shortage' });
+            const po = await this.createPO(supplier, items, { notizen: 'Auto-generated from shortage' });
             createdPOs.push(po);
-        });
+        }
 
         return createdPOs;
     }
 
-    generatePOFromLowStock() {
+    async generatePOFromLowStock() {
         if (!window.materialService) return [];
         const lowStockItems = window.materialService.getLowStockItems();
         if (lowStockItems.length === 0) return [];
 
-        return this.generatePOFromShortage(lowStockItems.map(material => ({
+        return await this.generatePOFromShortage(lowStockItems.map(material => ({
             materialId: material.id,
             shortage: Math.max(0, material.minBestand - material.bestand),
             material

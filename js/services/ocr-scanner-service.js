@@ -254,11 +254,11 @@ class OcrScannerService {
         if (window.bookkeepingService) {
             const entry = await window.bookkeepingService.addBuchung({
                 typ: 'ausgabe',
-                betrag: doc.extractedData.totalAmount || 0,
+                brutto: doc.extractedData.totalAmount || 0,
                 kategorie: 'Wareneinkauf',
                 beschreibung: `${doc.extractedData.companyName || 'Gescannter Beleg'} - ${doc.extractedData.documentNumber || doc.filename}`,
                 datum: doc.extractedData.primaryDate || new Date().toISOString().split('T')[0],
-                belegNummer: doc.extractedData.documentNumber,
+                belegnummer: doc.extractedData.documentNumber,
                 anhang: doc.id
             });
             return { success: true, entry };

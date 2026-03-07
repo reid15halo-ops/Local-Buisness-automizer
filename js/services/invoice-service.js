@@ -101,6 +101,9 @@ class InvoiceService {
             // 6. Activity log
             this.storeService.addActivity('💰', `Rechnung ${invoiceNumber} erstellt`);
 
+            // 6b. n8n Webhook Event
+            window.webhookEventService?.invoiceCreated?.(invoice);
+
             // 7. Optional: Generate PDF
             if (opts.generatePDF || opts.openPDF || opts.downloadPDF) {
                 try {
@@ -169,6 +172,9 @@ class InvoiceService {
 
         this.storeService.save();
         this.storeService.addActivity('✅', `Rechnung ${invoice.nummer} als bezahlt markiert`);
+
+        // n8n Webhook Event
+        window.webhookEventService?.invoicePaid?.(invoice);
 
         // Integrate with bookkeeping if available
         if (this.bookkeepingService) {
