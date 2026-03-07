@@ -1814,15 +1814,8 @@ function showAngebotDetail(angebotId) {
         // Supabase-based portal — URL will be set async via button click
         portalUrl = '#portal-async';
     } else if (window.customerPortalService?.generateAccessToken) {
-        try {
-            const customerId = angebot.kunde?.id || angebot.kunde?.email || angebot.anfrageId;
-            const existing = window.customerPortalService.tokens?.find(
-                t => t.customerId === customerId && t.isActive && t.scope === 'quote'
-            );
-            const tokenRecord = existing || window.customerPortalService.generateAccessToken(customerId, 'quote', { expiresInDays: 30 });
-            const portalBase = window.location.origin + window.location.pathname.replace('index.html', '') + 'customer-portal.html';
-            portalUrl = `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}&ref=${h(angebot.id)}`;
-        } catch { /* portal not available */ }
+        // Token will be generated async via button click — set placeholder
+        portalUrl = '#portal-async-local';
     }
 
     // Actions
@@ -1837,7 +1830,10 @@ function showAngebotDetail(angebotId) {
                     if(window.portalService&&window.supabaseConfig?.isConfigured?.()){
                         try{const{url}=await window.portalService.generateToken(cid);window.open(url,'_blank');}
                         catch(e){window.showToast?.('Portal-Fehler: '+e.message,'error');}
-                    }else if('${portalUrl}'!=='#portal-async'){window.open('${portalUrl}','_blank');}
+                    }else if(window.customerPortalService){
+                        try{const link=await window.customerPortalService.generatePortalLink(cid,'quote');window.open(link.url,'_blank');}
+                        catch(e){window.showToast?.('Portal-Fehler: '+e.message,'error');}
+                    }
                 })()">
                 🔗 Portal öffnen
             </button>
@@ -1847,7 +1843,10 @@ function showAngebotDetail(angebotId) {
                     if(window.portalService&&window.supabaseConfig?.isConfigured?.()){
                         try{await window.portalService.copyPortalLink(cid);}
                         catch(e){window.showToast?.('Fehler: '+e.message,'error');}
-                    }else{navigator.clipboard.writeText('${portalUrl}').then(()=>window.showToast?.('Link kopiert','success'));}
+                    }else if(window.customerPortalService){
+                        try{const link=await window.customerPortalService.generatePortalLink(cid,'quote');await navigator.clipboard.writeText(link.url);window.showToast?.('Link kopiert','success');}
+                        catch(e){window.showToast?.('Fehler: '+e.message,'error');}
+                    }
                 })()">
                 📋 Link kopieren
             </button>` : ''}
@@ -1972,7 +1971,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
             } catch (_) { /* portal not available */ }
         } else if (window.customerPortalService) {
             try {
-                const tokenRecord = window.customerPortalService.generateAccessToken(
+                const tokenRecord = await window.customerPortalService.generateAccessToken(
                     angebot.kunde?.id || angebot.kundeId || '',
                     'quote'
                 );

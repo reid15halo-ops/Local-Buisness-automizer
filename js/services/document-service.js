@@ -308,6 +308,147 @@ class DocumentService {
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
 
+    // ============================================
+    // Paperless-ngx Integration
+    // ============================================
+
+    get paperlessUrl() {
+        return (window.APP_CONFIG?.PAPERLESS_URL || '').replace(/\/+$/, '');
+    }
+
+    get paperlessHeaders() {
+        const token = window.APP_CONFIG?.PAPERLESS_TOKEN || '';
+        return {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+    }
+
+    // Map Paperless document_type names to app categories
+    paperlessTypeToCategory(typeName) {
+        if (!typeName) return 'sonstiges';
+        const name = typeName.toLowerCase();
+        const map = {
+            'rechnung': 'rechnung', 'invoice': 'rechnung',
+            'quittung': 'quittung', 'receipt': 'quittung', 'kassenbon': 'quittung',
+            'vertrag': 'vertrag', 'contract': 'vertrag',
+            'angebot': 'angebot', 'offer': 'angebot', 'quote': 'angebot',
+            'lieferschein': 'lieferschein', 'delivery note': 'lieferschein'
+        };
+        for (const [key, cat] of Object.entries(map)) {
+            if (name.includes(key)) return cat;
+        }
+        return 'sonstiges';
+    }
+
+    async paperlessFetch(endpoint, params = {}) {
+        const url = new URL(`${this.paperlessUrl}/api/${endpoint}`);
+        Object.entries(params).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+        });
+        const res = await fetch(url.toString(), { headers: this.paperlessHeaders });
+        if (!res.ok) throw new Error(`Paperless API Fehler: ${res.status} ${res.statusText}`);
+        return res.json();
+    }
+
+    // List documents with optional pagination
+    async paperlessListDocuments(page = 1, pageSize = 25) {
+        return this.paperlessFetch('documents/', { page, page_size: pageSize });
+    }
+
+    // Search documents by query string (uses Paperless full-text search)
+    async paperlessSearchDocuments(query, page = 1, pageSize = 25) {
+        return this.paperlessFetch('documents/', { query, page, page_size: pageSize });
+    }
+
+    // Filter documents by tag ID(s)
+    async paperlessFilterByTag(tagId, page = 1) {
+        return this.paperlessFetch('documents/', {
+            tags__id__in: Array.isArray(tagId) ? tagId.join(',') : tagId,
+            page
+        });
+    }
+
+    // Filter documents by document type ID
+    async paperlessFilterByType(typeId, page = 1) {
+        return this.paperlessFetch('documents/', { document_type__id: typeId, page });
+    }
+
+    // Get a single document's metadata
+    async paperlessGetDocument(id) {
+        return this.paperlessFetch(`documents/${id}/`);
+    }
+
+    // Fetch thumbnail as blob URL (avoids token in URL)
+    async paperlessThumbnailUrl(id) {
+        try {
+            const res = await fetch(`${this.paperlessUrl}/api/documents/${id}/thumb/`, { headers: this.paperlessHeaders });
+            if (!res.ok) return '';
+            const blob = await res.blob();
+            return URL.createObjectURL(blob);
+        } catch { return ''; }
+    }
+
+    // Fetch download as blob URL (avoids token in URL)
+    async paperlessDownloadUrl(id) {
+        try {
+            const res = await fetch(`${this.paperlessUrl}/api/documents/${id}/download/`, { headers: this.paperlessHeaders });
+            if (!res.ok) return '';
+            const blob = await res.blob();
+            return URL.createObjectURL(blob);
+        } catch { return ''; }
+    }
+
+    // Link to view document in Paperless web UI
+    paperlessWebUrl(id) {
+        return `${this.paperlessUrl}/documents/${id}/details`;
+    }
+
+    // Fetch available tags
+    async paperlessGetTags() {
+        return this.paperlessFetch('tags/');
+    }
+
+    // Fetch available document types
+    async paperlessGetDocumentTypes() {
+        return this.paperlessFetch('document_types/');
+    }
+
+    // Fetch correspondents
+    async paperlessGetCorrespondents() {
+        return this.paperlessFetch('correspondents/');
+    }
+
+    // Import a Paperless document into the local app documents list
+    async paperlessImportDocument(paperlessId) {
+        const doc = await this.paperlessGetDocument(paperlessId);
+
+        // Resolve document type name for category mapping
+        let typeName = null;
+        if (doc.document_type) {
+            try {
+                const typeObj = await this.paperlessFetch(`document_types/${doc.document_type}/`);
+                typeName = typeObj.name;
+            } catch { /* ignore */ }
+        }
+
+        return this.addDocument({
+            name: doc.title || `Paperless-${paperlessId}`,
+            category: this.paperlessTypeToCategory(typeName),
+            tags: (doc.tags || []).map(String),
+            ocrText: doc.content || '',
+            fileType: 'pdf',
+            fileSize: 0,
+            extractedData: {
+                datum: doc.created ? doc.created.split('T')[0] : null,
+                firma: doc.correspondent_name || null,
+                paperlessId: paperlessId
+            },
+            source: 'paperless'
+        });
+    }
+
     // Persistence
     save() { localStorage.setItem('freyai_documents', JSON.stringify(this.documents)); }
 }

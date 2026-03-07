@@ -277,6 +277,16 @@ class CalendarService {
         return this.settings.workingHours;
     }
 
+    // ── Cal.com Sync ───────────────────────────────────────────────
+    // Convenience wrapper: triggers Cal.com sync via bookingService.
+    async syncCalcom() {
+        if (window.bookingService && typeof window.bookingService.syncCalcomToCalendar === 'function') {
+            return await window.bookingService.syncCalcomToCalendar();
+        }
+        console.warn('[CalendarService] bookingService nicht verfügbar für Cal.com-Sync.');
+        return 0;
+    }
+
     // Persistence
     save() { localStorage.setItem('freyai_appointments', JSON.stringify(this.appointments)); }
     saveSettings() { localStorage.setItem('freyai_calendar_settings', JSON.stringify(this.settings)); }

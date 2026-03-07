@@ -31,6 +31,8 @@ class TimeTrackingService {
             description: entry.description || '',
             type: entry.type || 'arbeit', // arbeit, fahrt, pause
             billable: entry.billable !== false,
+            billed: entry.billed || false,
+            invoiceId: entry.invoiceId || null,
             createdAt: new Date().toISOString()
         };
 
@@ -341,6 +343,251 @@ class TimeTrackingService {
                 arbeit: entries.filter(e => e.type === 'arbeit').reduce((sum, e) => sum + e.durationHours, 0),
                 fahrt: entries.filter(e => e.type === 'fahrt').reduce((sum, e) => sum + e.durationHours, 0)
             }
+        };
+    }
+
+    // ============================================
+    // Zeiterfassung → Rechnung Bridge
+    // Abrechnung erfasster Stunden als Rechnung
+    // ============================================
+
+    /**
+     * Alle nicht-abgerechneten Zeiteintraege fuer einen Kunden
+     * @param {string} customerId - Kunden-ID
+     * @returns {Array} Nicht-abgerechnete, abrechenbare Eintraege
+     */
+    getUnbilledEntries(customerId) {
+        return this.entries.filter(e =>
+            e.customerId === customerId &&
+            e.billable &&
+            !e.billed
+        ).sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    /**
+     * Erstellt eine Rechnung aus Zeiteintraegen
+     * @param {Array} entryIds - IDs der abzurechnenden Eintraege
+     * @param {string} customerId - Kunden-ID
+     * @param {number} stundensatz - Stundensatz in EUR
+     * @param {Object} options - Optionen (groupBy: 'entry'|'project'|'day', paymentTermDays, etc.)
+     * @returns {Promise<Object>} Erstellte Rechnung
+     */
+    async generateInvoiceFromEntries(entryIds, customerId, stundensatz, options = {}) {
+        const opts = {
+            groupBy: 'entry', // 'entry' = pro Zeiteintrag, 'project' = pro Projekt, 'day' = pro Tag
+            paymentTermDays: 14,
+            generatePDF: false,
+            openPDF: false,
+            downloadPDF: false,
+            ...options
+        };
+
+        // Eintraege laden und validieren
+        const entries = entryIds.map(id => this.getEntry(id)).filter(Boolean);
+        if (entries.length === 0) {
+            throw new Error('Keine gueltigen Zeiteintraege gefunden');
+        }
+
+        // Pruefen ob alle Eintraege zum Kunden gehoeren
+        const invalidEntries = entries.filter(e => e.customerId !== customerId);
+        if (invalidEntries.length > 0) {
+            throw new Error(`${invalidEntries.length} Eintrag/Eintraege gehoeren nicht zum angegebenen Kunden`);
+        }
+
+        // Pruefen ob bereits abgerechnete Eintraege dabei sind
+        const alreadyBilled = entries.filter(e => e.billed);
+        if (alreadyBilled.length > 0) {
+            throw new Error(`${alreadyBilled.length} Eintrag/Eintraege sind bereits abgerechnet`);
+        }
+
+        // Positionen erstellen je nach Gruppierung
+        let positionen = [];
+
+        if (opts.groupBy === 'project') {
+            // Zusammenfassung pro Projekt
+            const byProject = {};
+            entries.forEach(e => {
+                const key = e.projectId || e.auftragId || 'Allgemein';
+                if (!byProject[key]) {
+                    byProject[key] = { projektId: key, stunden: 0, eintraege: [], beschreibungen: [] };
+                }
+                byProject[key].stunden += e.durationHours;
+                byProject[key].eintraege.push(e.id);
+                if (e.description) { byProject[key].beschreibungen.push(e.description); }
+            });
+
+            positionen = Object.values(byProject).map(p => ({
+                beschreibung: `Projekt ${p.projektId}: ${p.beschreibungen.join(', ') || 'Diverse Leistungen'}`,
+                menge: Math.round(p.stunden * 100) / 100,
+                einheit: 'Stunden',
+                einzelpreis: stundensatz,
+                gesamt: Math.round(p.stunden * stundensatz * 100) / 100,
+                entryIds: p.eintraege
+            }));
+
+        } else if (opts.groupBy === 'day') {
+            // Zusammenfassung pro Tag
+            const byDay = {};
+            entries.forEach(e => {
+                if (!byDay[e.date]) {
+                    byDay[e.date] = { datum: e.date, stunden: 0, eintraege: [], beschreibungen: [] };
+                }
+                byDay[e.date].stunden += e.durationHours;
+                byDay[e.date].eintraege.push(e.id);
+                if (e.description) { byDay[e.date].beschreibungen.push(e.description); }
+            });
+
+            positionen = Object.keys(byDay).sort().map(date => {
+                const d = byDay[date];
+                const datumFormatiert = new Date(date).toLocaleDateString('de-DE');
+                return {
+                    beschreibung: `${datumFormatiert}: ${d.beschreibungen.join(', ') || 'Diverse Leistungen'}`,
+                    menge: Math.round(d.stunden * 100) / 100,
+                    einheit: 'Stunden',
+                    einzelpreis: stundensatz,
+                    gesamt: Math.round(d.stunden * stundensatz * 100) / 100,
+                    entryIds: d.eintraege
+                };
+            });
+
+        } else {
+            // Default: Pro Zeiteintrag eine Position
+            positionen = entries.map(e => {
+                const datumFormatiert = new Date(e.date).toLocaleDateString('de-DE');
+                return {
+                    beschreibung: `${datumFormatiert} – ${e.description || 'IT-Beratung'} (${e.startTime}–${e.endTime})`,
+                    menge: e.durationHours,
+                    einheit: 'Stunden',
+                    einzelpreis: stundensatz,
+                    gesamt: Math.round(e.durationHours * stundensatz * 100) / 100,
+                    entryIds: [e.id]
+                };
+            });
+        }
+
+        // Gesamtstunden und Gesamtbetrag berechnen
+        const gesamtStunden = Math.round(entries.reduce((sum, e) => sum + e.durationHours, 0) * 100) / 100;
+        const gesamtNetto = Math.round(gesamtStunden * stundensatz * 100) / 100;
+
+        // Kunden-Objekt ermitteln (aus storeService wenn verfuegbar)
+        let kunde = { id: customerId };
+        if (window.storeService?.state?.kunden) {
+            const kundeData = window.storeService.state.kunden.find(k => k.id === customerId);
+            if (kundeData) { kunde = kundeData; }
+        }
+
+        // Auftrag-Objekt fuer invoiceService zusammenbauen
+        const auftrag = {
+            id: 'ZE-' + Date.now(),
+            kunde: kunde,
+            leistungsart: 'IT-Beratung / Zeiterfassung',
+            positionen: positionen,
+            arbeitszeit: gesamtStunden,
+            materialKosten: 0,
+            netto: gesamtNetto,
+            notizen: `Abrechnung aus Zeiterfassung: ${entries.length} Eintraege, ${this.formatHours(gesamtStunden)}, Stundensatz: ${stundensatz.toFixed(2).replace('.', ',')} EUR`,
+            // Referenz auf Zeiteintraege
+            timeEntryIds: entryIds
+        };
+
+        // Rechnung ueber invoiceService erstellen
+        const invoiceService = window.invoiceService;
+        if (!invoiceService) {
+            throw new Error('invoiceService nicht verfuegbar');
+        }
+
+        const invoice = await invoiceService.createInvoice(auftrag, {
+            paymentTermDays: opts.paymentTermDays,
+            generatePDF: opts.generatePDF,
+            openPDF: opts.openPDF,
+            downloadPDF: opts.downloadPDF
+        });
+
+        // Zeiteintraege als abgerechnet markieren
+        this.markEntriesAsBilled(entryIds, invoice.id);
+
+        return {
+            invoice: invoice,
+            summary: {
+                eintraegeCount: entries.length,
+                gesamtStunden: gesamtStunden,
+                stundensatz: stundensatz,
+                gesamtNetto: gesamtNetto,
+                gruppierung: opts.groupBy,
+                positionenCount: positionen.length
+            }
+        };
+    }
+
+    /**
+     * Markiert Zeiteintraege als abgerechnet
+     * @param {Array} entryIds - IDs der Eintraege
+     * @param {string} invoiceId - Rechnungs-ID
+     */
+    markEntriesAsBilled(entryIds, invoiceId) {
+        let updated = 0;
+        entryIds.forEach(id => {
+            const entry = this.getEntry(id);
+            if (entry) {
+                entry.billed = true;
+                entry.invoiceId = invoiceId;
+                entry.billedAt = new Date().toISOString();
+                updated++;
+            }
+        });
+        this.save();
+
+        // Supabase-Update wenn verfuegbar
+        if (window.dbService?.updateTimeEntries) {
+            try {
+                window.dbService.updateTimeEntries(entryIds, {
+                    billed: true,
+                    invoice_id: invoiceId,
+                    billed_at: new Date().toISOString()
+                });
+            } catch (err) {
+                console.warn('Supabase-Update fuer abgerechnete Eintraege fehlgeschlagen:', err);
+            }
+        }
+
+        return updated;
+    }
+
+    /**
+     * Abrechnungszusammenfassung fuer einen Kunden
+     * @param {string} customerId - Kunden-ID
+     * @returns {Object} Zusammenfassung: offene Stunden, Betrag, letzte Abrechnung
+     */
+    getBillingSummary(customerId) {
+        const alleEintraege = this.entries.filter(e => e.customerId === customerId && e.billable);
+        const unbilledEntries = alleEintraege.filter(e => !e.billed);
+        const billedEntries = alleEintraege.filter(e => e.billed);
+
+        // Offene (nicht abgerechnete) Stunden
+        const offeneStunden = Math.round(unbilledEntries.reduce((sum, e) => sum + e.durationHours, 0) * 100) / 100;
+
+        // Bereits abgerechnete Stunden
+        const abgerechneteStunden = Math.round(billedEntries.reduce((sum, e) => sum + e.durationHours, 0) * 100) / 100;
+
+        // Letzte Abrechnung ermitteln
+        const letzteAbrechnung = billedEntries
+            .filter(e => e.billedAt)
+            .sort((a, b) => b.billedAt.localeCompare(a.billedAt))[0];
+
+        // Verwendete Rechnungs-IDs
+        const rechnungsIds = [...new Set(billedEntries.map(e => e.invoiceId).filter(Boolean))];
+
+        return {
+            customerId: customerId,
+            offeneEintraege: unbilledEntries.length,
+            offeneStunden: offeneStunden,
+            abgerechneteEintraege: billedEntries.length,
+            abgerechneteStunden: abgerechneteStunden,
+            gesamtStunden: Math.round((offeneStunden + abgerechneteStunden) * 100) / 100,
+            letzteAbrechnung: letzteAbrechnung ? letzteAbrechnung.billedAt : null,
+            letzteRechnungId: letzteAbrechnung ? letzteAbrechnung.invoiceId : null,
+            rechnungsIds: rechnungsIds,
+            anzahlRechnungen: rechnungsIds.length
         };
     }
 

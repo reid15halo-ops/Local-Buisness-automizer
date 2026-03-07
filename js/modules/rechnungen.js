@@ -241,6 +241,21 @@ function renderRechnungen() {
                 </button>`
             : '';
 
+        // Mahnung button for overdue invoices
+        let mahnungBtn = '';
+        if (effectiveStatus === 'ueberfaellig' && window.dunningService) {
+            const empfohleneStufe = window.dunningService.getEmpfohleneStufe(r);
+            const letzteMahnung = window.dunningService.getLetzteMahnung(r.id);
+            if (empfohleneStufe) {
+                mahnungBtn = `<button class="btn btn-small" style="background:#dc2626;color:#fff;border:none;" onclick="event.stopPropagation(); window.sendMahnungClick('${safeId}')" title="${window.UI.sanitize(empfohleneStufe.name)} senden">
+                    📧 ${window.UI.sanitize(empfohleneStufe.name)}
+                </button>`;
+            }
+            if (letzteMahnung) {
+                mahnungBtn += `<span class="btn-small" style="font-size:11px;color:var(--text-secondary);padding:4px 8px;">Letzte: ${formatDate(letzteMahnung.gesendetAm || letzteMahnung.erstelltAm)}</span>`;
+            }
+        }
+
         return `
             <div class="item-card" onclick="showRechnung('${safeId}')" style="cursor:pointer; border-left: 4px solid ${borderColor};">
                 <div class="item-header">
@@ -266,9 +281,10 @@ function renderRechnungen() {
                     <button class="btn btn-secondary btn-small" data-action="zugferd" data-id="${safeId}" onclick="event.stopPropagation();" title="ZUGFeRD PDF exportieren">
                         📎 ZUGFeRD
                     </button>
+                    ${mahnungBtn}
                     ${cancelBtn}
                     ${correctBtn}
-                    ${r.kunde?.id ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); copyPortalLinkForKunde('${r.kunde.id}')" title="Portal-Link kopieren">
+                    ${r.kunde?.id ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); copyPortalLinkForKunde('${h(r.kunde.id)}')" title="Portal-Link kopieren">
                         Portal-Link
                     </button>` : ''}
                 </div>
@@ -415,6 +431,54 @@ function showRechnung(rechnungId) {
         ? `<button class="btn btn-secondary" id="btn-korrektur-rechnung">📝 Korrektur</button>`
         : '';
 
+    // Mahnung section for overdue invoices
+    let mahnungSection = '';
+    if (effectiveStatus === 'ueberfaellig' && window.dunningService) {
+        const dunning = window.dunningService;
+        const empfohleneStufe = dunning.getEmpfohleneStufe(rechnung);
+        const letzteMahnung = dunning.getLetzteMahnung(rechnung.id);
+        const mahnHistorie = dunning.getMahnungenForRechnung(rechnung.id);
+        const rechnungStatus = dunning.checkRechnungStatus(rechnung);
+
+        let mahnBtn = '';
+        if (empfohleneStufe) {
+            const hasEmail = !!rechnung.kunde?.email;
+            const disabledAttr = hasEmail ? '' : 'disabled title="Keine E-Mail-Adresse hinterlegt"';
+            mahnBtn = `<button class="btn" id="btn-send-mahnung" style="background:#dc2626;color:#fff;border:none;" ${disabledAttr}>
+                📧 ${window.UI.sanitize(empfohleneStufe.name)} senden${empfohleneStufe.gebuehr > 0 ? ' (+' + formatCurrency(empfohleneStufe.gebuehr) + ')' : ''}
+            </button>`;
+            if (!hasEmail) {
+                mahnBtn += `<span style="color:#ef4444;font-size:12px;">Keine E-Mail beim Kunden hinterlegt</span>`;
+            }
+        } else {
+            mahnBtn = `<span style="color:var(--text-secondary);font-size:13px;">Alle Mahnstufen bereits gesendet</span>`;
+        }
+
+        let historieHTML = '';
+        if (mahnHistorie.length > 0) {
+            historieHTML = `<div style="margin-top:8px;font-size:13px;">
+                <strong>Mahnhistorie:</strong>
+                <ul style="margin:4px 0 0 16px;padding:0;list-style:disc;">
+                    ${mahnHistorie.map(m => `<li>${window.UI.sanitize(m.stufenName || m.stufe)} — ${formatDate(m.gesendetAm || m.erstelltAm)}${m.empfaenger ? ' an ' + window.UI.sanitize(m.empfaenger) : ''}</li>`).join('')}
+                </ul>
+            </div>`;
+        }
+
+        mahnungSection = `
+            <div style="margin-bottom:20px;padding:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <strong style="color:#dc2626;">Mahnwesen</strong>
+                    <span style="font-size:12px;color:var(--text-secondary);">${rechnungStatus.tageOffen || 0} Tage überfällig</span>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    ${mahnBtn}
+                </div>
+                ${letzteMahnung ? `<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);">Letzte Mahnung: ${window.UI.sanitize(letzteMahnung.stufenName || letzteMahnung.stufe)} am ${formatDate(letzteMahnung.gesendetAm || letzteMahnung.erstelltAm)}</div>` : ''}
+                ${historieHTML}
+            </div>
+        `;
+    }
+
     modal.querySelector('.modal-content').innerHTML = `
         <div style="padding: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -429,6 +493,8 @@ function showRechnung(rechnungId) {
                 <strong>Leistungsart:</strong> <span style="${textStyle}">${getLeistungsartLabel(rechnung.leistungsart)}</span><br>
                 <strong>Status:</strong> ${statusHTML}
             </div>
+
+            ${mahnungSection}
 
             <div style="margin-bottom: 20px; padding: 12px; background: var(--bg-secondary); border-radius: 8px; ${textStyle}">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -515,6 +581,14 @@ function showRechnung(rechnungId) {
             } else {
                 showToast('ZUGFeRD Fehler', 'error');
             }
+        });
+    }
+
+    // Send Mahnung from modal
+    const mahnungBtnEl = modal.querySelector('#btn-send-mahnung');
+    if (mahnungBtnEl && !mahnungBtnEl.disabled) {
+        mahnungBtnEl.addEventListener('click', () => {
+            _confirmAndSendMahnung(rechnung);
         });
     }
 
@@ -659,15 +733,62 @@ function initRechnungenFilters() {
     }
 }
 
-// Export rechnungen functions
-window.RechnungenModule = {
-    renderRechnungen,
-    showRechnung,
-    initRechnungActions,
-    initRechnungenFilters,
-    cancelRechnung,
-    duplicateRechnung
-};
+// ============================================
+// Mahnung senden (1-Click mit Bestätigung)
+// ============================================
+function _confirmAndSendMahnung(rechnung) {
+    if (!window.dunningService) {
+        showToast('Mahnwesen-Service nicht verfügbar', 'error');
+        return;
+    }
+    const stufe = window.dunningService.getEmpfohleneStufe(rechnung);
+    if (!stufe) {
+        showToast('Keine passende Mahnstufe verfügbar', 'warning');
+        return;
+    }
+
+    const kundeName = window.UI.sanitize(rechnung.kunde?.name || 'Unbekannt');
+    const kundeEmail = window.UI.sanitize(rechnung.kunde?.email || '');
+    const gebuehrText = stufe.gebuehr > 0 ? ` (zzgl. ${formatCurrency(stufe.gebuehr)} Mahngebühr)` : '';
+
+    const doSend = async () => {
+        const btn = document.getElementById('btn-send-mahnung');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Wird gesendet...';
+        }
+        const result = await window.dunningService.sendMahnung(rechnung, stufe);
+        if (result) {
+            // Refresh modal to show updated state
+            showRechnung(rechnung.id);
+            renderRechnungen();
+        } else if (btn) {
+            btn.disabled = false;
+            btn.textContent = `📧 ${stufe.name} senden`;
+        }
+    };
+
+    if (window.confirmDialogService?.showConfirmDialog) {
+        window.confirmDialogService.showConfirmDialog({
+            title: `${stufe.name} senden?`,
+            message: `${stufe.name}${gebuehrText} an ${kundeName} (${kundeEmail}) senden?`,
+            confirmText: 'Ja, senden',
+            destructive: false,
+            onConfirm: doSend
+        });
+    } else if (confirm(`${stufe.name}${gebuehrText} an ${rechnung.kunde?.name || 'Kunde'} (${rechnung.kunde?.email || ''}) senden?`)) {
+        doSend();
+    }
+}
+
+/**
+ * Global click handler for Mahnung button on cards
+ */
+function sendMahnungClick(rechnungId) {
+    const rechnung = store.rechnungen.find(r => r.id === rechnungId);
+    if (!rechnung) return;
+    _confirmAndSendMahnung(rechnung);
+}
 
 // PDF download for invoices
 async function downloadInvoicePDF(id) {
@@ -693,6 +814,366 @@ async function downloadInvoicePDF(id) {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  Abo-Rechnungen Tab (Recurring Invoice Templates)
+// ═══════════════════════════════════════════════════════════════
+
+var _mainTabsInit = false;
+var _aboActionsInit = false;
+
+function initMainTabs() {
+    var tabContainer = document.getElementById('rechnungen-main-tabs');
+    if (!tabContainer || _mainTabsInit) return;
+    _mainTabsInit = true;
+
+    tabContainer.querySelectorAll('.filter-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var tabId = btn.dataset.maintab;
+            tabContainer.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            var rechnungenTab = document.getElementById('rechnungen-tab');
+            var aboTab = document.getElementById('abo-rechnungen-tab');
+            if (rechnungenTab) rechnungenTab.style.display = (tabId === 'rechnungen-tab') ? '' : 'none';
+            if (aboTab) aboTab.style.display = (tabId === 'abo-rechnungen-tab') ? '' : 'none';
+            if (tabId === 'abo-rechnungen-tab') {
+                renderAboRechnungen();
+            }
+        });
+    });
+
+    var btnNeuesAbo = document.getElementById('btn-neues-abo');
+    if (btnNeuesAbo) {
+        btnNeuesAbo.addEventListener('click', function() {
+            openAboFormular();
+        });
+    }
+}
+
+function renderAboRechnungen() {
+    var svc = window.recurringInvoiceService;
+    if (!svc) return;
+
+    var statsBar = document.getElementById('abo-stats-bar');
+    if (statsBar) {
+        var stats = svc.getStatistiken();
+        statsBar.innerHTML =
+            '<span style="padding:4px 12px; background:var(--bg-secondary); border-radius:6px; font-size:13px;">' +
+                'Aktiv: <strong>' + stats.aktiv + '</strong>' +
+            '</span>' +
+            '<span style="padding:4px 12px; background:var(--bg-secondary); border-radius:6px; font-size:13px;">' +
+                'MRR: <strong>' + formatCurrency(stats.mrr) + '</strong>' +
+            '</span>' +
+            '<span style="padding:4px 12px; background:var(--bg-secondary); border-radius:6px; font-size:13px;">' +
+                'ARR: <strong>' + formatCurrency(stats.arr) + '</strong>' +
+            '</span>';
+    }
+
+    var container = document.getElementById('abo-rechnungen-list');
+    if (!container) return;
+
+    var templates = svc.getTemplates();
+
+    if (templates.length === 0) {
+        container.innerHTML =
+            '<div class="empty-state" style="padding:60px 20px; text-align:center;">' +
+                '<div style="font-size:48px; margin-bottom:16px;">🔄</div>' +
+                '<h3 style="margin-bottom:8px;">Keine Abo-Rechnungen</h3>' +
+                '<p style="color:var(--text-secondary); margin-bottom:24px;">' +
+                    'Erstelle eine wiederkehrende Rechnungsvorlage fuer Retainer-Kunden.' +
+                '</p>' +
+                '<button class="btn btn-primary" onclick="window._openAboFormular && window._openAboFormular()">+ Neues Abo erstellen</button>' +
+            '</div>';
+        return;
+    }
+
+    container.innerHTML = templates.map(function(t) {
+        var statusColors = { aktiv: '#22c55e', pausiert: '#f59e0b', beendet: '#9ca3af' };
+        var borderColor = statusColors[t.status] || '#f59e0b';
+        var statusLabel = svc.getStatusName(t.status);
+        var intervallLabel = svc.getIntervallName(t.intervall);
+        var brutto = t.netto_betrag * (1 + t.steuersatz);
+        var safeId = h(t.id);
+        var safeName = h(t.kunde_name || 'Unbekannt');
+        var safeBez = h(t.bezeichnung || '-');
+
+        var pauseBtn = '';
+        if (t.status === 'aktiv') {
+            pauseBtn = '<button class="btn btn-secondary btn-small" data-abo-action="pause" data-abo-id="' + safeId + '">⏸ Pausieren</button>';
+        } else if (t.status === 'pausiert') {
+            pauseBtn = '<button class="btn btn-primary btn-small" data-abo-action="activate" data-abo-id="' + safeId + '">▶ Fortsetzen</button>';
+        }
+
+        var generateBtn = '';
+        if (t.status !== 'beendet') {
+            generateBtn = '<button class="btn btn-secondary btn-small" data-abo-action="generate" data-abo-id="' + safeId + '">⚡ Jetzt generieren</button>';
+        }
+
+        var deleteBtn = '<button class="btn btn-danger btn-small" data-abo-action="delete" data-abo-id="' + safeId + '">🗑 Loeschen</button>';
+
+        return '<div class="item-card" style="border-left: 4px solid ' + borderColor + ';">' +
+            '<div class="item-header">' +
+                '<h3 class="item-title">' + safeName + '</h3>' +
+                '<span class="item-id">' + safeBez + '</span>' +
+            '</div>' +
+            '<div class="item-meta">' +
+                '<span>● ' + statusLabel + '</span>' +
+                '<span>💰 ' + formatCurrency(brutto) + ' (brutto)</span>' +
+                '<span>🔄 ' + intervallLabel + '</span>' +
+                (t.naechste_faelligkeit ? '<span>📅 Naechste: ' + formatDate(t.naechste_faelligkeit) + '</span>' : '') +
+                '<span>📊 ' + t.anzahl_erstellt + ' erstellt</span>' +
+            '</div>' +
+            (t.notizen ? '<p class="item-description">' + h(t.notizen) + '</p>' : '') +
+            '<div class="item-actions">' +
+                pauseBtn + generateBtn + deleteBtn +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function initAboActions() {
+    var container = document.getElementById('abo-rechnungen-list');
+    if (!container || _aboActionsInit) return;
+    _aboActionsInit = true;
+
+    container.addEventListener('click', async function(e) {
+        var btn = e.target.closest('[data-abo-action]');
+        if (!btn) return;
+
+        var action = btn.dataset.aboAction;
+        var id = btn.dataset.aboId;
+        var svc = window.recurringInvoiceService;
+        if (!svc) return;
+
+        switch (action) {
+            case 'pause':
+                await svc.pauseTemplate(id);
+                showToast('Abo pausiert', 'info');
+                renderAboRechnungen();
+                break;
+            case 'activate':
+                await svc.activateTemplate(id);
+                showToast('Abo fortgesetzt', 'success');
+                renderAboRechnungen();
+                break;
+            case 'generate':
+                var rechnung = await svc.generateNow(id);
+                if (rechnung) {
+                    showToast('Rechnung ' + rechnung.nummer + ' erstellt', 'success');
+                    renderAboRechnungen();
+                    renderRechnungen();
+                } else {
+                    showToast('Fehler bei Rechnungserstellung', 'error');
+                }
+                break;
+            case 'delete':
+                if (window.confirmDialogService && window.confirmDialogService.showConfirmDialog) {
+                    window.confirmDialogService.showConfirmDialog({
+                        title: 'Abo loeschen?',
+                        message: 'Dieses Abo-Template wirklich loeschen? Bereits erstellte Rechnungen bleiben erhalten.',
+                        confirmText: 'Ja, loeschen',
+                        destructive: true,
+                        onConfirm: async function() {
+                            await svc.deleteTemplate(id);
+                            showToast('Abo geloescht', 'info');
+                            renderAboRechnungen();
+                        }
+                    });
+                } else if (confirm('Dieses Abo-Template wirklich loeschen?')) {
+                    await svc.deleteTemplate(id);
+                    showToast('Abo geloescht', 'info');
+                    renderAboRechnungen();
+                }
+                break;
+        }
+    });
+}
+
+function openAboFormular(existing) {
+    var modal = document.getElementById('modal-neues-abo');
+    if (!modal) return;
+
+    var isEdit = !!existing;
+    var title = isEdit ? 'Abo bearbeiten' : 'Neues Abo erstellen';
+
+    var kunden = (store && store.kunden) ? store.kunden : [];
+    var kundenOptions = '<option value="">-- Kunde waehlen --</option>';
+    kunden.forEach(function(k) {
+        var sel = (existing && existing.kunde_id === k.id) ? ' selected' : '';
+        kundenOptions += '<option value="' + h(k.id) + '"' + sel + '>' + h(k.name || k.firma || k.id) + '</option>';
+    });
+
+    modal.querySelector('.modal-content').innerHTML =
+        '<div style="padding:24px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">' +
+                '<h2>' + title + '</h2>' +
+                '<button class="modal-close" onclick="window.AppUtils.closeModal(\'modal-neues-abo\')">×</button>' +
+            '</div>' +
+            '<form id="form-neues-abo">' +
+                '<div style="margin-bottom:12px;">' +
+                    '<label style="display:block; font-weight:600; margin-bottom:4px;">Kunde</label>' +
+                    '<select id="abo-kunde" class="form-input" style="width:100%;">' + kundenOptions + '</select>' +
+                '</div>' +
+                '<div style="margin-bottom:12px;">' +
+                    '<label style="display:block; font-weight:600; margin-bottom:4px;">Kunde (Freitext, falls nicht in Liste)</label>' +
+                    '<input type="text" id="abo-kunde-name" class="form-input" style="width:100%;" placeholder="Kundenname" value="' + h((existing && existing.kunde_name) || '') + '">' +
+                '</div>' +
+                '<div style="margin-bottom:12px;">' +
+                    '<label style="display:block; font-weight:600; margin-bottom:4px;">Bezeichnung</label>' +
+                    '<input type="text" id="abo-bezeichnung" class="form-input" style="width:100%;" placeholder="z.B. IT-Retainer Monatspauschale" value="' + h((existing && existing.bezeichnung) || '') + '" required>' +
+                '</div>' +
+                '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">' +
+                    '<div>' +
+                        '<label style="display:block; font-weight:600; margin-bottom:4px;">Netto-Betrag (EUR)</label>' +
+                        '<input type="number" id="abo-netto" class="form-input" style="width:100%;" step="0.01" min="0" value="' + ((existing && existing.netto_betrag) || '') + '" required>' +
+                    '</div>' +
+                    '<div>' +
+                        '<label style="display:block; font-weight:600; margin-bottom:4px;">Steuersatz</label>' +
+                        '<select id="abo-steuersatz" class="form-input" style="width:100%;">' +
+                            '<option value="0.19"' + ((existing && existing.steuersatz === 0.19) || !existing ? ' selected' : '') + '>19% MwSt</option>' +
+                            '<option value="0.07"' + (existing && existing.steuersatz === 0.07 ? ' selected' : '') + '>7% MwSt</option>' +
+                            '<option value="0"' + (existing && existing.steuersatz === 0 ? ' selected' : '') + '>0% (Kleinunternehmer)</option>' +
+                        '</select>' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">' +
+                    '<div>' +
+                        '<label style="display:block; font-weight:600; margin-bottom:4px;">Intervall</label>' +
+                        '<select id="abo-intervall" class="form-input" style="width:100%;">' +
+                            '<option value="monatlich"' + (existing && existing.intervall === 'monatlich' ? ' selected' : (!existing ? ' selected' : '')) + '>Monatlich</option>' +
+                            '<option value="quartalsweise"' + (existing && existing.intervall === 'quartalsweise' ? ' selected' : '') + '>Quartalsweise</option>' +
+                            '<option value="jaehrlich"' + (existing && existing.intervall === 'jaehrlich' ? ' selected' : '') + '>Jaehrlich</option>' +
+                        '</select>' +
+                    '</div>' +
+                    '<div>' +
+                        '<label style="display:block; font-weight:600; margin-bottom:4px;">Tag im Monat</label>' +
+                        '<input type="number" id="abo-tag" class="form-input" style="width:100%;" min="1" max="28" value="' + ((existing && existing.tag_im_monat) || 1) + '">' +
+                    '</div>' +
+                '</div>' +
+                '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">' +
+                    '<div>' +
+                        '<label style="display:block; font-weight:600; margin-bottom:4px;">Startdatum</label>' +
+                        '<input type="date" id="abo-start" class="form-input" style="width:100%;" value="' + ((existing && existing.start_datum) || new Date().toISOString().split('T')[0]) + '">' +
+                    '</div>' +
+                    '<div>' +
+                        '<label style="display:block; font-weight:600; margin-bottom:4px;">Enddatum (optional)</label>' +
+                        '<input type="date" id="abo-end" class="form-input" style="width:100%;" value="' + ((existing && existing.end_datum) || '') + '">' +
+                    '</div>' +
+                '</div>' +
+                '<div style="margin-bottom:12px;">' +
+                    '<label style="display:block; font-weight:600; margin-bottom:4px;">Zahlungsziel (Tage)</label>' +
+                    '<input type="number" id="abo-zahlungsziel" class="form-input" style="width:100%;" min="0" value="' + ((existing && existing.zahlungsziel_tage) || 14) + '">' +
+                '</div>' +
+                '<div style="margin-bottom:16px;">' +
+                    '<label style="display:block; font-weight:600; margin-bottom:4px;">Notizen</label>' +
+                    '<textarea id="abo-notizen" class="form-input" style="width:100%; min-height:60px;">' + h((existing && existing.notizen) || '') + '</textarea>' +
+                '</div>' +
+                '<div style="display:flex; gap:8px; justify-content:flex-end;">' +
+                    '<button type="button" class="btn btn-secondary" onclick="window.AppUtils.closeModal(\'modal-neues-abo\')">Abbrechen</button>' +
+                    '<button type="submit" class="btn btn-primary">' + (isEdit ? 'Speichern' : 'Abo erstellen') + '</button>' +
+                '</div>' +
+            '</form>' +
+        '</div>';
+
+    var kundeSelect = document.getElementById('abo-kunde');
+    var kundeNameInput = document.getElementById('abo-kunde-name');
+    if (kundeSelect) {
+        kundeSelect.addEventListener('change', function() {
+            var selected = kunden.find(function(k) { return k.id === kundeSelect.value; });
+            if (selected && kundeNameInput) {
+                kundeNameInput.value = selected.name || selected.firma || '';
+            }
+        });
+    }
+
+    var form = document.getElementById('form-neues-abo');
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            var data = {
+                kunde_id: document.getElementById('abo-kunde').value || null,
+                kunde_name: document.getElementById('abo-kunde-name').value.trim(),
+                bezeichnung: document.getElementById('abo-bezeichnung').value.trim(),
+                netto_betrag: parseFloat(document.getElementById('abo-netto').value) || 0,
+                steuersatz: parseFloat(document.getElementById('abo-steuersatz').value),
+                intervall: document.getElementById('abo-intervall').value,
+                tag_im_monat: parseInt(document.getElementById('abo-tag').value) || 1,
+                start_datum: document.getElementById('abo-start').value || new Date().toISOString().split('T')[0],
+                end_datum: document.getElementById('abo-end').value || null,
+                zahlungsziel_tage: parseInt(document.getElementById('abo-zahlungsziel').value) || 14,
+                notizen: document.getElementById('abo-notizen').value.trim()
+            };
+
+            if (!data.bezeichnung) {
+                showToast('Bitte Bezeichnung eingeben', 'error');
+                return;
+            }
+            if (!data.netto_betrag || data.netto_betrag <= 0) {
+                showToast('Bitte gueltigen Betrag eingeben', 'error');
+                return;
+            }
+
+            if (!data.kunde_name && data.kunde_id) {
+                var k = kunden.find(function(k) { return k.id === data.kunde_id; });
+                if (k) data.kunde_name = k.name || k.firma || '';
+            }
+
+            var svc = window.recurringInvoiceService;
+            if (!svc) {
+                showToast('Service nicht verfuegbar', 'error');
+                return;
+            }
+
+            var result;
+            if (isEdit && existing) {
+                result = await svc.updateTemplate(existing.id, data);
+            } else {
+                result = await svc.createTemplate(data);
+            }
+
+            if (result.success) {
+                closeModal('modal-neues-abo');
+                showToast(isEdit ? 'Abo aktualisiert' : 'Abo erstellt', 'success');
+                renderAboRechnungen();
+            } else {
+                showToast('Fehler: ' + (result.error || 'Unbekannt'), 'error');
+            }
+        });
+    }
+
+    openModal('modal-neues-abo');
+}
+
+window._openAboFormular = openAboFormular;
+
+function initAboRechnungenUI() {
+    initMainTabs();
+    initAboActions();
+}
+
+document.addEventListener('viewchange', function(e) {
+    if (e.detail && e.detail.view === 'rechnungen') {
+        initAboRechnungenUI();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    initAboRechnungenUI();
+});
+
+// Export rechnungen functions (extended)
+window.RechnungenModule = {
+    renderRechnungen: renderRechnungen,
+    showRechnung: showRechnung,
+    initRechnungActions: initRechnungActions,
+    initRechnungenFilters: initRechnungenFilters,
+    cancelRechnung: cancelRechnung,
+    duplicateRechnung: duplicateRechnung,
+    sendMahnungClick: sendMahnungClick,
+    renderAboRechnungen: renderAboRechnungen,
+    openAboFormular: openAboFormular
+};
+
 // Make globally available
 window.renderRechnungen = renderRechnungen;
 window.showRechnung = showRechnung;
@@ -700,5 +1181,8 @@ window.initRechnungenFilters = initRechnungenFilters;
 window.cancelRechnung = cancelRechnung;
 window.duplicateRechnung = duplicateRechnung;
 window.downloadInvoicePDF = downloadInvoicePDF;
+window.sendMahnungClick = sendMahnungClick;
+window.renderAboRechnungen = renderAboRechnungen;
+window.openAboFormular = openAboFormular;
 
 })();

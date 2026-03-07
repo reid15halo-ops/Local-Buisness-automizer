@@ -63,6 +63,9 @@ id_ed25519
 config/run-migration.py
 config/run-migration-single.py
 
+# Production token defaults (contains real API keys — never commit)
+config/init-tokens.js
+
 # Email relay .env (contains SMTP credentials)
 vps/email-relay/.env
 

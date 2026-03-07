@@ -359,7 +359,72 @@ Phase 8            Phase 9            Phase 10
 
 ---
 
-*Letzte Aktualisierung: 2026-03-06*
-*Basierend auf: 112 Services, 23 UI-Komponenten, 15 Feature-Module, SW v21*
-*Morpheus-Audit: Score 7.6/10, 42 Bugs gefixt, PBKDF2 + XSS + CSP gehaertet*
+## Morpheus Review 07.03.2026 — Ergebnisse
+
+### VPS Scripts Review (10 Scripts)
+| Script | Vor Fix | Nach Fix |
+|---|---|---|
+| telegram_bot.py | 5/10 | 7/10 |
+| cron_health.py | 8/10 | 8/10 |
+| backup_rotation.py | 8/10 | 8/10 |
+| bookkeeping_sync.py | 5/10 | 8/10 |
+| cashflow_forecast.py | 5/10 | 8/10 |
+| email_autoresponder.py | 8/10 | 8/10 |
+| invoice_notification.py | 5/10 | 7/10 |
+| voice_bridge.py | 6/10 | 8/10 |
+| paperless_invoice_bridge.py | 7/10 | 8/10 |
+| lead_responder.py | 7/10 | 7/10 |
+| **Gesamt** | **6.4/10** | **7.7/10** |
+
+### App JS Review (6 Dateien)
+| Datei | Score |
+|---|---|
+| webhook-event-service.js | 8/10 |
+| invoice-service.js | 7/10 |
+| purchase-order-service.js | 8/10 (nach Fix) |
+| bookkeeping-service.js | 7/10 |
+| voice-input-service.js | 8/10 |
+| ocr-scanner-service.js | 7/10 (nach Fix) |
+
+### Fixes angewendet:
+- 5x hardcoded Secrets externalisiert (Gemini Key, Supabase Key, Token, Paperless Token)
+- shell=True entfernt (telegram_bot.py)
+- async/await Bugs in PO-Service gefixt
+- OCR betrag/brutto + belegnummer Field Mismatch gefixt
+- lead_responder: responded-on-failure Bug gefixt
+- cashflow_forecast: Exception Handler hinzugefuegt
+
+---
+
+## Feature-Brainstorming Runde 2 (07.03.2026) — Priorisierte Naechste Schritte
+
+### Sofort (Impact 5/5, Aufwand 1-2/5)
+1. Impressum/Datenschutz-Generator aus Firmendaten
+2. Angebots-PDF mit digitalem Annahme-Link
+3. Zahlungserinnerung per Mail (1-Click aus Rechnungsansicht)
+4. Dashboard KPI-Alerts (ueberfaellige Rechnungen, Cashflow-Warnung)
+5. Schnell-Erfassung (Rechnung in 30 Sekunden)
+6. Kundenstatus-Timeline (Anfrage → Bezahlt)
+
+### Naechste Woche (Impact 4-5/5, Aufwand 3/5)
+1. Wiederkehrende Rechnungen (Retainer/Abo-Verwaltung)
+2. Kundenportal Self-Service (Angebote annehmen, Rechnungen sehen)
+3. Projekt-Profitabilitaet Live-Tracker
+4. Dokumenten-Vorlagen-System
+5. E-Rechnung Validierung (ZUGFeRD/XRechnung)
+6. Integrierter Kalender mit Auftragsverknuepfung
+7. Belegerfassung per Kamera (Bon-to-Buchung)
+
+### Grossprojekte (Impact 4-5/5, Aufwand 4-5/5)
+1. Multi-Tenant mit Rollen
+2. Vollstaendige Offline-First Sync Engine
+3. ELSTER/DATEV Integration
+4. Visual Workflow Builder
+
+---
+
+*Letzte Aktualisierung: 2026-03-07*
+*Basierend auf: 113 Services, 24 UI-Komponenten, 15 Feature-Module*
+*Morpheus-Audit VPS: 7.7/10 | App: 7.5/10 | 8 kritische Fixes angewendet*
+*OpenClaw Phase: 12 Features deployed, 26 Cron Jobs aktiv*
 *Gewerbe: FreyAI Visions, Nebenerwerb ab 01.03.2026, Gemeindekennzahl 09671122*

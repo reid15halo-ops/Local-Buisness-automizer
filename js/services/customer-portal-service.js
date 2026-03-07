@@ -7,17 +7,157 @@
    - Customer messaging
    - Photo sharing controls
    - Portal link generation & email dispatch
+   Supabase-first — no localStorage
    ============================================ */
 
 class CustomerPortalService {
     constructor() {
-        this.STORAGE_KEY = 'freyai_portal_tokens';
-        this.MESSAGES_KEY = 'freyai_portal_messages';
-        this.SHARED_PHOTOS_KEY = 'freyai_portal_shared_photos';
+        this.tokens = [];
+        this.portalMessages = [];
+        this.sharedPhotos = {};
+        this._ready = false;
+        this._tenantId = 'a0000000-0000-0000-0000-000000000001';
+    }
 
-        try { this.tokens = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]'); } catch { this.tokens = []; }
-        try { this.portalMessages = JSON.parse(localStorage.getItem(this.MESSAGES_KEY) || '[]'); } catch { this.portalMessages = []; }
-        try { this.sharedPhotoIds = JSON.parse(localStorage.getItem(this.SHARED_PHOTOS_KEY) || '{}'); } catch { this.sharedPhotoIds = {}; }
+    // ============================================
+    // Init & Supabase helpers
+    // ============================================
+
+    async init() {
+        try {
+            const { data } = await this._supabase()?.auth?.getUser() || {};
+            this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        } catch {
+            this._userId = '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        }
+        await this._loadAllFromSupabase();
+        this._ready = true;
+    }
+
+    _supabase() {
+        return window.supabaseClient?.client;
+    }
+
+    _isOnline() {
+        return !!(this._supabase() && window.supabaseClient?.isConfigured());
+    }
+
+    async _loadAllFromSupabase() {
+        if (!this._isOnline()) return;
+        try {
+            await Promise.all([
+                this._loadTokens(),
+                this._loadMessages(),
+                this._loadSharedPhotos()
+            ]);
+        } catch (err) {
+            console.warn('CustomerPortalService: Supabase load error', err);
+        }
+    }
+
+    async _loadTokens() {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_tokens')
+                .select('*')
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            this.tokens = (data || []).map(r => this._tokenFromRow(r));
+        } catch (err) {
+            console.warn('CustomerPortalService: tokens load error', err);
+            this.tokens = [];
+        }
+    }
+
+    async _loadMessages() {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_messages')
+                .select('*')
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: true });
+            if (error) throw error;
+            this.portalMessages = (data || []).map(r => this._messageFromRow(r));
+        } catch (err) {
+            console.warn('CustomerPortalService: messages load error', err);
+            this.portalMessages = [];
+        }
+    }
+
+    async _loadSharedPhotos() {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_shared_photos')
+                .select('*')
+                .eq('tenant_id', this._tenantId);
+            if (error) throw error;
+            this.sharedPhotos = {};
+            (data || []).forEach(r => {
+                this.sharedPhotos[r.customer_id] = {
+                    id: r.id,
+                    photoIds: r.photo_ids || [],
+                    sharedAt: r.shared_at
+                };
+            });
+        } catch (err) {
+            console.warn('CustomerPortalService: shared photos load error', err);
+            this.sharedPhotos = {};
+        }
+    }
+
+    // ============================================
+    // Row conversion helpers
+    // ============================================
+
+    _tokenToRow(t) {
+        return {
+            id: t.id || undefined,
+            customer_id: t.customerId,
+            token: t.token,
+            scope: t.scope,
+            expires_at: t.expiresAt,
+            active: t.isActive,
+            tenant_id: this._tenantId
+        };
+    }
+
+    _tokenFromRow(r) {
+        return {
+            id: r.id,
+            token: r.token,
+            customerId: r.customer_id,
+            scope: r.scope,
+            createdAt: r.created_at,
+            expiresAt: r.expires_at,
+            isActive: r.active
+        };
+    }
+
+    _messageToRow(m) {
+        return {
+            id: m.id || undefined,
+            customer_id: m.customerId,
+            token_id: m.tokenId || null,
+            sender: m.direction === 'inbound' ? 'customer' : 'business',
+            text: m.content,
+            read: !!m.readAt,
+            tenant_id: this._tenantId
+        };
+    }
+
+    _messageFromRow(r) {
+        return {
+            id: r.id,
+            customerId: r.customer_id,
+            tokenId: r.token_id,
+            customerName: '',
+            direction: r.sender === 'customer' ? 'inbound' : 'outbound',
+            content: r.text,
+            createdAt: r.created_at,
+            readAt: r.read ? r.created_at : null,
+            via: r.sender === 'customer' ? 'portal' : 'admin'
+        };
     }
 
     // ============================================
@@ -29,9 +169,9 @@ class CustomerPortalService {
      * @param {string} customerId - Customer ID
      * @param {string} scope - Access scope: 'full', 'quote', or 'invoice'
      * @param {Object} options - Optional settings (expiresInDays)
-     * @returns {Object} Token record
+     * @returns {Promise<Object>} Token record
      */
-    generateAccessToken(customerId, scope = 'full', options = {}) {
+    async generateAccessToken(customerId, scope = 'full', options = {}) {
         try {
             if (!customerId) {
                 throw new Error('Customer ID ist erforderlich');
@@ -39,7 +179,7 @@ class CustomerPortalService {
 
             const validScopes = ['full', 'quote', 'invoice'];
             if (!validScopes.includes(scope)) {
-                throw new Error(`Ungültiger Scope: ${scope}. Erlaubt: ${validScopes.join(', ')}`);
+                throw new Error(`Ungueltiger Scope: ${scope}. Erlaubt: ${validScopes.join(', ')}`);
             }
 
             const expiresInDays = options.expiresInDays || 30;
@@ -48,23 +188,28 @@ class CustomerPortalService {
 
             const token = 'cp-' + this._generateRandomString(32);
 
-            const tokenRecord = {
+            const row = {
+                customer_id: customerId,
                 token,
-                customerId,
                 scope,
-                createdAt: now.toISOString(),
-                expiresAt: expiresAt.toISOString(),
-                isActive: true,
-                lastAccessedAt: null,
-                accessCount: 0
+                expires_at: expiresAt.toISOString(),
+                active: true,
+                tenant_id: this._tenantId
             };
 
-            this.tokens.push(tokenRecord);
-            this._saveTokens();
+            const { data, error } = await this._supabase()
+                .from('portal_tokens')
+                .insert(row)
+                .select()
+                .single();
 
-            // Activity log
+            if (error) throw error;
+
+            const tokenRecord = this._tokenFromRow(data);
+            this.tokens.push(tokenRecord);
+
             if (window.storeService) {
-                window.storeService.addActivity('🔗', `Portal-Zugang erstellt (${scope}) für Kunde`);
+                window.storeService.addActivity('portal', `Portal-Zugang erstellt (${scope}) fuer Kunde`);
             }
 
             return tokenRecord;
@@ -77,26 +222,32 @@ class CustomerPortalService {
     /**
      * Revoke an existing access token.
      * @param {string} token - The token string to revoke
-     * @returns {boolean} Success
+     * @returns {Promise<boolean>} Success
      */
-    revokeToken(token) {
+    async revokeToken(token) {
         try {
             const record = this.tokens.find(t => t.token === token);
             if (!record) {
                 return false;
             }
 
+            const { error } = await this._supabase()
+                .from('portal_tokens')
+                .update({ active: false })
+                .eq('id', record.id)
+                .eq('tenant_id', this._tenantId);
+
+            if (error) throw error;
+
             record.isActive = false;
-            record.revokedAt = new Date().toISOString();
-            this._saveTokens();
 
             if (window.storeService) {
-                window.storeService.addActivity('🚫', 'Portal-Zugang widerrufen');
+                window.storeService.addActivity('portal', 'Portal-Zugang widerrufen');
             }
 
             return true;
         } catch (error) {
-            console.error('Token revocation error:', error);
+            console.warn('Token revocation error:', error);
             return false;
         }
     }
@@ -104,42 +255,44 @@ class CustomerPortalService {
     /**
      * Validate a token and return access details.
      * @param {string} token - The token string to validate
-     * @returns {Object} { valid, customer, scope, error }
+     * @returns {Promise<Object>} { valid, customer, scope, error }
      */
-    validateToken(token) {
+    async validateToken(token) {
         try {
             if (!token || typeof token !== 'string') {
                 return { valid: false, error: 'Kein Token angegeben' };
             }
 
-            const record = this.tokens.find(t => t.token === token);
-            if (!record) {
-                return { valid: false, error: 'Ungültiger Zugangslink' };
+            // Always fetch fresh from Supabase for validation
+            const { data: row, error } = await this._supabase()
+                .from('portal_tokens')
+                .select('*')
+                .eq('token', token)
+                .eq('tenant_id', this._tenantId)
+                .single();
+
+            if (error || !row) {
+                return { valid: false, error: 'Ungueltiger Zugangslink' };
             }
 
-            if (!record.isActive) {
+            if (!row.active) {
                 return { valid: false, error: 'Dieser Zugang wurde deaktiviert' };
             }
 
             const now = new Date();
-            if (new Date(record.expiresAt) < now) {
+            if (new Date(row.expires_at) < now) {
                 return { valid: false, error: 'Dieser Zugangslink ist abgelaufen' };
             }
 
             // Look up customer
             let customer = null;
             if (window.customerService) {
-                customer = window.customerService.getCustomer(record.customerId);
+                customer = window.customerService.getCustomer(row.customer_id);
             }
 
             if (!customer) {
                 return { valid: false, error: 'Kundendaten nicht gefunden' };
             }
-
-            // Update access tracking
-            record.lastAccessedAt = now.toISOString();
-            record.accessCount = (record.accessCount || 0) + 1;
-            this._saveTokens();
 
             return {
                 valid: true,
@@ -148,12 +301,13 @@ class CustomerPortalService {
                     name: customer.name,
                     firma: customer.firma || ''
                 },
-                scope: record.scope,
-                customerId: record.customerId,
-                expiresAt: record.expiresAt
+                scope: row.scope,
+                customerId: row.customer_id,
+                expiresAt: row.expires_at,
+                tokenId: row.id
             };
         } catch (error) {
-            console.error('Token validation error:', error);
+            console.warn('Token validation error:', error);
             return { valid: false, error: 'Technischer Fehler bei der Validierung' };
         }
     }
@@ -161,24 +315,44 @@ class CustomerPortalService {
     /**
      * Get all active tokens for a customer.
      * @param {string} customerId - Customer ID
-     * @returns {Array} Active token records
+     * @returns {Promise<Array>} Active token records
      */
-    getActiveTokens(customerId) {
-        const now = new Date();
-        return this.tokens.filter(t =>
-            t.customerId === customerId &&
-            t.isActive &&
-            new Date(t.expiresAt) > now
-        );
+    async getActiveTokens(customerId) {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_tokens')
+                .select('*')
+                .eq('customer_id', customerId)
+                .eq('active', true)
+                .eq('tenant_id', this._tenantId)
+                .gt('expires_at', new Date().toISOString());
+            if (error) throw error;
+            return (data || []).map(r => this._tokenFromRow(r));
+        } catch (err) {
+            console.warn('getActiveTokens error:', err);
+            return [];
+        }
     }
 
     /**
      * Get all tokens for a customer (including expired/revoked).
      * @param {string} customerId - Customer ID
-     * @returns {Array} All token records
+     * @returns {Promise<Array>} All token records
      */
-    getAllTokens(customerId) {
-        return this.tokens.filter(t => t.customerId === customerId);
+    async getAllTokens(customerId) {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_tokens')
+                .select('*')
+                .eq('customer_id', customerId)
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            return (data || []).map(r => this._tokenFromRow(r));
+        } catch (err) {
+            console.warn('getAllTokens error:', err);
+            return [];
+        }
     }
 
     // ============================================
@@ -189,11 +363,11 @@ class CustomerPortalService {
      * Get all portal data filtered by token scope.
      * This is the main method called by the portal page.
      * @param {string} token - Access token
-     * @returns {Object|null} Filtered portal data
+     * @returns {Promise<Object|null>} Filtered portal data
      */
-    getPortalData(token) {
+    async getPortalData(token) {
         try {
-            const validation = this.validateToken(token);
+            const validation = await this.validateToken(token);
             if (!validation.valid) {
                 return null;
             }
@@ -282,14 +456,14 @@ class CustomerPortalService {
                 data.workflowStage = this._determineWorkflowStage(customerName, customerId, store);
             }
 
-            // Get messages
+            // Get messages & shared photos in parallel
             if (scope === 'full') {
-                data.messages = this.getMessages(token);
-            }
-
-            // Get shared photos
-            if (scope === 'full') {
-                data.photos = this.getSharedPhotos(token);
+                const [messages, photos] = await Promise.all([
+                    this.getMessages(token),
+                    this.getSharedPhotos(token)
+                ]);
+                data.messages = messages;
+                data.photos = photos;
             }
 
             // Build document list
@@ -297,7 +471,7 @@ class CustomerPortalService {
 
             return data;
         } catch (error) {
-            console.error('Portal data retrieval error:', error);
+            console.warn('Portal data retrieval error:', error);
             return null;
         }
     }
@@ -332,7 +506,6 @@ class CustomerPortalService {
             stages.anfrage = 'completed';
             stages.angebot = 'completed';
 
-            // If any angebot is still open, mark as active
             if (angebote.some(a => a.status === 'offen' || !a.status)) {
                 stages.angebot = 'active';
             }
@@ -411,15 +584,14 @@ class CustomerPortalService {
      * @private
      */
     _getCompanyInfo() {
-        let adminSettings; try { adminSettings = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { adminSettings = {}; }
         const storeSettings = window.storeService?.state?.settings || {};
 
         return {
-            name: adminSettings.company_name || storeSettings.companyName || 'Unser Unternehmen',
-            phone: adminSettings.company_phone || storeSettings.phone || '',
-            email: adminSettings.company_email || storeSettings.email || '',
-            address: adminSettings.company_address || storeSettings.address || '',
-            logo: adminSettings.company_logo || null
+            name: storeSettings.companyName || 'Unser Unternehmen',
+            phone: storeSettings.phone || '',
+            email: storeSettings.email || '',
+            address: storeSettings.address || '',
+            logo: storeSettings.companyLogo || null
         };
     }
 
@@ -432,11 +604,11 @@ class CustomerPortalService {
      * @param {string} token - Access token
      * @param {string} quoteId - Angebot ID
      * @param {string} customerMessage - Optional message from customer
-     * @returns {Object} { success, message }
+     * @returns {Promise<Object>} { success, message }
      */
-    approveQuote(token, quoteId, customerMessage = '') {
+    async approveQuote(token, quoteId, customerMessage = '') {
         try {
-            const validation = this.validateToken(token);
+            const validation = await this.validateToken(token);
             if (!validation.valid) {
                 return { success: false, message: validation.error };
             }
@@ -447,10 +619,10 @@ class CustomerPortalService {
 
             const store = window.storeService?.state;
             if (!store) {
-                return { success: false, message: 'Systemfehler: Store nicht verfügbar' };
+                return { success: false, message: 'Systemfehler: Store nicht verfuegbar' };
             }
 
-            const angebot = store.angebote.find(a => a.id === quoteId);
+            const angebot = (store.angebote || []).find(a => a.id === quoteId);
             if (!angebot) {
                 return { success: false, message: 'Angebot nicht gefunden' };
             }
@@ -477,12 +649,12 @@ class CustomerPortalService {
 
             // Log message if provided
             if (customerMessage) {
-                this.sendCustomerMessage(token, `Angebot ${quoteId} angenommen: ${customerMessage}`);
+                await this.sendCustomerMessage(token, `Angebot ${quoteId} angenommen: ${customerMessage}`);
             }
 
             // Activity log
             window.storeService.addActivity(
-                '✅',
+                'check',
                 `Angebot ${quoteId} vom Kunden ${validation.customer.name} online angenommen`
             );
 
@@ -491,7 +663,7 @@ class CustomerPortalService {
                 window.notificationService.sendNotification(
                     'Angebot angenommen!',
                     {
-                        body: `${validation.customer.name} hat Angebot ${quoteId} über das Kundenportal angenommen.`,
+                        body: `${validation.customer.name} hat Angebot ${quoteId} ueber das Kundenportal angenommen.`,
                         tag: `quote-approved-${quoteId}`
                     }
                 );
@@ -499,7 +671,7 @@ class CustomerPortalService {
 
             return { success: true, message: 'Angebot erfolgreich angenommen. Vielen Dank!' };
         } catch (error) {
-            console.error('Quote approval error:', error);
+            console.warn('Quote approval error:', error);
             return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
         }
     }
@@ -509,11 +681,11 @@ class CustomerPortalService {
      * @param {string} token - Access token
      * @param {string} quoteId - Angebot ID
      * @param {string} reason - Optional reason from customer
-     * @returns {Object} { success, message }
+     * @returns {Promise<Object>} { success, message }
      */
-    rejectQuote(token, quoteId, reason = '') {
+    async rejectQuote(token, quoteId, reason = '') {
         try {
-            const validation = this.validateToken(token);
+            const validation = await this.validateToken(token);
             if (!validation.valid) {
                 return { success: false, message: validation.error };
             }
@@ -524,7 +696,7 @@ class CustomerPortalService {
 
             const store = window.storeService?.state;
             if (!store) {
-                return { success: false, message: 'Systemfehler: Store nicht verfügbar' };
+                return { success: false, message: 'Systemfehler: Store nicht verfuegbar' };
             }
 
             const angebot = store.angebote?.find(a => a.id === quoteId);
@@ -548,17 +720,17 @@ class CustomerPortalService {
             window.storeService.save();
 
             if (reason) {
-                this.sendCustomerMessage(token, `Angebot ${quoteId} abgelehnt: ${reason}`);
+                await this.sendCustomerMessage(token, `Angebot ${quoteId} abgelehnt: ${reason}`);
             }
 
             window.storeService.addActivity(
-                '❌',
-                `Angebot ${quoteId} vom Kunden ${validation.customer.name} über das Portal abgelehnt`
+                'cancel',
+                `Angebot ${quoteId} vom Kunden ${validation.customer.name} ueber das Portal abgelehnt`
             );
 
             return { success: true, message: 'Angebot wurde abgelehnt. Wir melden uns bei Ihnen.' };
         } catch (error) {
-            console.error('Quote rejection error:', error);
+            console.warn('Quote rejection error:', error);
             return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
         }
     }
@@ -568,17 +740,17 @@ class CustomerPortalService {
      * @param {string} token - Access token
      * @param {string} quoteId - Angebot ID
      * @param {string} changeRequest - Customer's change request
-     * @returns {Object} { success, message }
+     * @returns {Promise<Object>} { success, message }
      */
-    requestQuoteChanges(token, quoteId, changeRequest) {
+    async requestQuoteChanges(token, quoteId, changeRequest) {
         try {
-            const validation = this.validateToken(token);
+            const validation = await this.validateToken(token);
             if (!validation.valid) {
                 return { success: false, message: validation.error };
             }
 
             if (!changeRequest || !changeRequest.trim()) {
-                return { success: false, message: 'Bitte beschreiben Sie die gewünschten Änderungen' };
+                return { success: false, message: 'Bitte beschreiben Sie die gewuenschten Aenderungen' };
             }
 
             const store = window.storeService?.state;
@@ -586,7 +758,7 @@ class CustomerPortalService {
                 return { success: false, message: 'Systemfehler' };
             }
 
-            const angebot = store.angebote.find(a => a.id === quoteId);
+            const angebot = (store.angebote || []).find(a => a.id === quoteId);
             if (!angebot) {
                 return { success: false, message: 'Angebot nicht gefunden' };
             }
@@ -609,30 +781,30 @@ class CustomerPortalService {
             window.storeService.save();
 
             // Log as portal message
-            this.sendCustomerMessage(
+            await this.sendCustomerMessage(
                 token,
-                `Änderungswunsch zu Angebot ${quoteId}: ${changeRequest.trim()}`
+                `Aenderungswunsch zu Angebot ${quoteId}: ${changeRequest.trim()}`
             );
 
             // Activity + notification
             window.storeService.addActivity(
-                '📝',
-                `Änderungswunsch von ${validation.customer.name} zu Angebot ${quoteId}`
+                'edit',
+                `Aenderungswunsch von ${validation.customer.name} zu Angebot ${quoteId}`
             );
 
             if (window.notificationService) {
                 window.notificationService.sendNotification(
-                    'Änderungswunsch eingegangen',
+                    'Aenderungswunsch eingegangen',
                     {
-                        body: `${validation.customer.name} wünscht Änderungen an Angebot ${quoteId}.`,
+                        body: `${validation.customer.name} wuenscht Aenderungen an Angebot ${quoteId}.`,
                         tag: `quote-change-${quoteId}`
                     }
                 );
             }
 
-            return { success: true, message: 'Ihre Änderungswünsche wurden übermittelt. Wir melden uns bei Ihnen.' };
+            return { success: true, message: 'Ihre Aenderungswuensche wurden uebermittelt. Wir melden uns bei Ihnen.' };
         } catch (error) {
-            console.error('Quote change request error:', error);
+            console.warn('Quote change request error:', error);
             return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
         }
     }
@@ -645,11 +817,11 @@ class CustomerPortalService {
      * Send a message from the customer to the business.
      * @param {string} token - Access token
      * @param {string} message - Message text
-     * @returns {Object} { success, message, messageId }
+     * @returns {Promise<Object>} { success, message, messageId }
      */
-    sendCustomerMessage(token, message) {
+    async sendCustomerMessage(token, message) {
         try {
-            const validation = this.validateToken(token);
+            const validation = await this.validateToken(token);
             if (!validation.valid) {
                 return { success: false, message: validation.error };
             }
@@ -658,19 +830,26 @@ class CustomerPortalService {
                 return { success: false, message: 'Bitte geben Sie eine Nachricht ein' };
             }
 
-            const entry = {
-                id: 'pm-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
-                customerId: validation.customerId,
-                customerName: validation.customer.name,
-                direction: 'inbound',
-                content: message.trim(),
-                createdAt: new Date().toISOString(),
-                readAt: null,
-                via: 'portal'
+            const row = {
+                customer_id: validation.customerId,
+                token_id: validation.tokenId || null,
+                sender: 'customer',
+                text: message.trim(),
+                read: false,
+                tenant_id: this._tenantId
             };
 
+            const { data, error } = await this._supabase()
+                .from('portal_messages')
+                .insert(row)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const entry = this._messageFromRow(data);
+            entry.customerName = validation.customer.name;
             this.portalMessages.push(entry);
-            this._saveMessages();
 
             // Also log in communication service if available
             if (window.communicationService) {
@@ -699,7 +878,7 @@ class CustomerPortalService {
 
             return { success: true, message: 'Nachricht gesendet', messageId: entry.id };
         } catch (error) {
-            console.error('Customer message error:', error);
+            console.warn('Customer message error:', error);
             return { success: false, message: 'Nachricht konnte nicht gesendet werden' };
         }
     }
@@ -708,20 +887,28 @@ class CustomerPortalService {
      * Send a message from the business to the customer (admin-side).
      * @param {string} customerId - Customer ID
      * @param {string} message - Message text
-     * @returns {Object} { success, messageId }
+     * @returns {Promise<Object>} { success, messageId }
      */
-    sendBusinessMessage(customerId, message) {
+    async sendBusinessMessage(customerId, message) {
         try {
-            const entry = {
-                id: 'pm-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
-                customerId,
-                customerName: '',
-                direction: 'outbound',
-                content: message.trim(),
-                createdAt: new Date().toISOString(),
-                readAt: null,
-                via: 'admin'
+            const row = {
+                customer_id: customerId,
+                token_id: null,
+                sender: 'business',
+                text: message.trim(),
+                read: false,
+                tenant_id: this._tenantId
             };
+
+            const { data, error } = await this._supabase()
+                .from('portal_messages')
+                .insert(row)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const entry = this._messageFromRow(data);
 
             // Get customer name
             if (window.customerService) {
@@ -732,11 +919,10 @@ class CustomerPortalService {
             }
 
             this.portalMessages.push(entry);
-            this._saveMessages();
 
             return { success: true, messageId: entry.id };
         } catch (error) {
-            console.error('Business message error:', error);
+            console.warn('Business message error:', error);
             return { success: false, message: 'Fehler beim Senden' };
         }
     }
@@ -744,20 +930,31 @@ class CustomerPortalService {
     /**
      * Get message history for a token (filtered by customer).
      * @param {string} token - Access token
-     * @returns {Array} Messages sorted by date
+     * @returns {Promise<Array>} Messages sorted by date
      */
-    getMessages(token) {
+    async getMessages(token) {
         try {
-            const record = this.tokens.find(t => t.token === token);
-            if (!record) {
-                return [];
-            }
+            // Find token record to get customer_id
+            const { data: tokenRow, error: tErr } = await this._supabase()
+                .from('portal_tokens')
+                .select('customer_id')
+                .eq('token', token)
+                .eq('tenant_id', this._tenantId)
+                .single();
 
-            return this.portalMessages
-                .filter(m => m.customerId === record.customerId)
-                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            if (tErr || !tokenRow) return [];
+
+            const { data, error } = await this._supabase()
+                .from('portal_messages')
+                .select('*')
+                .eq('customer_id', tokenRow.customer_id)
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return (data || []).map(r => this._messageFromRow(r));
         } catch (error) {
-            console.error('Get messages error:', error);
+            console.warn('Get messages error:', error);
             return [];
         }
     }
@@ -765,31 +962,69 @@ class CustomerPortalService {
     /**
      * Get message history by customer ID (admin-side).
      * @param {string} customerId - Customer ID
-     * @returns {Array} Messages sorted by date
+     * @returns {Promise<Array>} Messages sorted by date
      */
-    getMessagesByCustomer(customerId) {
-        return this.portalMessages
-            .filter(m => m.customerId === customerId)
-            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    async getMessagesByCustomer(customerId) {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_messages')
+                .select('*')
+                .eq('customer_id', customerId)
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return (data || []).map(r => this._messageFromRow(r));
+        } catch (err) {
+            console.warn('getMessagesByCustomer error:', err);
+            return [];
+        }
     }
 
     /**
      * Get unread portal messages.
-     * @returns {Array} Unread inbound messages
+     * @returns {Promise<Array>} Unread inbound messages
      */
-    getUnreadMessages() {
-        return this.portalMessages.filter(m => m.direction === 'inbound' && !m.readAt);
+    async getUnreadMessages() {
+        try {
+            const { data, error } = await this._supabase()
+                .from('portal_messages')
+                .select('*')
+                .eq('sender', 'customer')
+                .eq('read', false)
+                .eq('tenant_id', this._tenantId)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return (data || []).map(r => this._messageFromRow(r));
+        } catch (err) {
+            console.warn('getUnreadMessages error:', err);
+            return [];
+        }
     }
 
     /**
      * Mark a message as read.
      * @param {string} messageId - Message ID
+     * @returns {Promise<void>}
      */
-    markMessageRead(messageId) {
-        const msg = this.portalMessages.find(m => m.id === messageId);
-        if (msg) {
-            msg.readAt = new Date().toISOString();
-            this._saveMessages();
+    async markMessageRead(messageId) {
+        try {
+            const { error } = await this._supabase()
+                .from('portal_messages')
+                .update({ read: true })
+                .eq('id', messageId)
+                .eq('tenant_id', this._tenantId);
+
+            if (error) throw error;
+
+            // Update local cache
+            const msg = this.portalMessages.find(m => m.id === messageId);
+            if (msg) {
+                msg.readAt = new Date().toISOString();
+            }
+        } catch (err) {
+            console.warn('markMessageRead error:', err);
         }
     }
 
@@ -805,7 +1040,7 @@ class CustomerPortalService {
      */
     async getPaymentLink(token, invoiceId) {
         try {
-            const validation = this.validateToken(token);
+            const validation = await this.validateToken(token);
             if (!validation.valid) {
                 return { success: false, error: validation.error };
             }
@@ -857,10 +1092,10 @@ class CustomerPortalService {
 
             return {
                 success: false,
-                error: 'Online-Zahlung ist derzeit nicht verfügbar. Bitte überweisen Sie den Betrag.'
+                error: 'Online-Zahlung ist derzeit nicht verfuegbar. Bitte ueberweisen Sie den Betrag.'
             };
         } catch (error) {
-            console.error('Payment link error:', error);
+            console.warn('Payment link error:', error);
             return { success: false, error: 'Zahlungslink konnte nicht erstellt werden' };
         }
     }
@@ -874,35 +1109,66 @@ class CustomerPortalService {
      * @param {string} customerId - Customer ID
      * @param {string} jobId - Auftrag/Reference ID
      * @param {Array} photoIds - Array of photo IDs to share
-     * @returns {Object} { success, sharedCount }
+     * @returns {Promise<Object>} { success, sharedCount }
      */
-    sharePhotosWithCustomer(customerId, jobId, photoIds) {
+    async sharePhotosWithCustomer(customerId, jobId, photoIds) {
         try {
             if (!customerId || !photoIds || !Array.isArray(photoIds)) {
-                return { success: false, message: 'Ungültige Parameter' };
+                return { success: false, message: 'Ungueltige Parameter' };
             }
 
-            const key = `${customerId}_${jobId || 'general'}`;
-            if (!this.sharedPhotoIds[key]) {
-                this.sharedPhotoIds[key] = [];
+            // Check if a record already exists for this customer
+            const { data: existing, error: selErr } = await this._supabase()
+                .from('portal_shared_photos')
+                .select('*')
+                .eq('customer_id', customerId)
+                .eq('tenant_id', this._tenantId)
+                .single();
+
+            if (selErr && selErr.code !== 'PGRST116') throw selErr; // PGRST116 = no rows
+
+            let allPhotoIds;
+            if (existing) {
+                // Merge: add new IDs without duplicates
+                const currentIds = existing.photo_ids || [];
+                const mergedSet = new Set([...currentIds, ...photoIds]);
+                allPhotoIds = [...mergedSet];
+
+                const { error } = await this._supabase()
+                    .from('portal_shared_photos')
+                    .update({ photo_ids: allPhotoIds, shared_at: new Date().toISOString() })
+                    .eq('id', existing.id)
+                    .eq('tenant_id', this._tenantId);
+
+                if (error) throw error;
+            } else {
+                allPhotoIds = [...new Set(photoIds)];
+
+                const { error } = await this._supabase()
+                    .from('portal_shared_photos')
+                    .insert({
+                        customer_id: customerId,
+                        photo_ids: allPhotoIds,
+                        shared_at: new Date().toISOString(),
+                        tenant_id: this._tenantId
+                    });
+
+                if (error) throw error;
             }
 
-            // Add new photo IDs (avoid duplicates)
-            photoIds.forEach(pid => {
-                if (!this.sharedPhotoIds[key].includes(pid)) {
-                    this.sharedPhotoIds[key].push(pid);
-                }
-            });
-
-            this._saveSharedPhotos();
+            // Update local cache
+            this.sharedPhotos[customerId] = {
+                photoIds: allPhotoIds,
+                sharedAt: new Date().toISOString()
+            };
 
             if (window.storeService) {
-                window.storeService.addActivity('📸', `${photoIds.length} Fotos mit Kunden geteilt`);
+                window.storeService.addActivity('photo', `${photoIds.length} Fotos mit Kunden geteilt`);
             }
 
-            return { success: true, sharedCount: this.sharedPhotoIds[key].length };
+            return { success: true, sharedCount: allPhotoIds.length };
         } catch (error) {
-            console.error('Photo sharing error:', error);
+            console.warn('Photo sharing error:', error);
             return { success: false, message: 'Fehler beim Teilen der Fotos' };
         }
     }
@@ -912,37 +1178,67 @@ class CustomerPortalService {
      * @param {string} customerId - Customer ID
      * @param {string} jobId - Job reference ID
      * @param {string} photoId - Photo ID to unshare
+     * @returns {Promise<void>}
      */
-    unsharePhoto(customerId, jobId, photoId) {
-        const key = `${customerId}_${jobId || 'general'}`;
-        if (this.sharedPhotoIds[key]) {
-            this.sharedPhotoIds[key] = this.sharedPhotoIds[key].filter(id => id !== photoId);
-            this._saveSharedPhotos();
+    async unsharePhoto(customerId, jobId, photoId) {
+        try {
+            const { data: existing, error: selErr } = await this._supabase()
+                .from('portal_shared_photos')
+                .select('*')
+                .eq('customer_id', customerId)
+                .eq('tenant_id', this._tenantId)
+                .single();
+
+            if (selErr || !existing) return;
+
+            const updatedIds = (existing.photo_ids || []).filter(id => id !== photoId);
+
+            const { error } = await this._supabase()
+                .from('portal_shared_photos')
+                .update({ photo_ids: updatedIds })
+                .eq('id', existing.id)
+                .eq('tenant_id', this._tenantId);
+
+            if (error) throw error;
+
+            // Update local cache
+            if (this.sharedPhotos[customerId]) {
+                this.sharedPhotos[customerId].photoIds = updatedIds;
+            }
+        } catch (err) {
+            console.warn('unsharePhoto error:', err);
         }
     }
 
     /**
      * Get shared photos for a portal token.
      * @param {string} token - Access token
-     * @returns {Array} Shared photo objects
+     * @returns {Promise<Array>} Shared photo objects
      */
-    getSharedPhotos(token) {
+    async getSharedPhotos(token) {
         try {
-            const record = this.tokens.find(t => t.token === token);
-            if (!record) {
-                return [];
-            }
+            const { data: tokenRow, error: tErr } = await this._supabase()
+                .from('portal_tokens')
+                .select('customer_id')
+                .eq('token', token)
+                .eq('tenant_id', this._tenantId)
+                .single();
 
-            const customerId = record.customerId;
+            if (tErr || !tokenRow) return [];
+
+            const customerId = tokenRow.customer_id;
+
+            const { data: photoRow, error: pErr } = await this._supabase()
+                .from('portal_shared_photos')
+                .select('*')
+                .eq('customer_id', customerId)
+                .eq('tenant_id', this._tenantId)
+                .single();
+
+            if (pErr || !photoRow) return [];
+
+            const sharedIds = new Set(photoRow.photo_ids || []);
             const photos = [];
-
-            // Collect all shared photo IDs for this customer
-            const sharedIds = new Set();
-            Object.keys(this.sharedPhotoIds).forEach(key => {
-                if (key.startsWith(customerId + '_')) {
-                    this.sharedPhotoIds[key].forEach(pid => sharedIds.add(pid));
-                }
-            });
 
             // Get photo objects from photo service
             if (window.photoService && sharedIds.size > 0) {
@@ -963,7 +1259,7 @@ class CustomerPortalService {
 
             return photos.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         } catch (error) {
-            console.error('Get shared photos error:', error);
+            console.warn('Get shared photos error:', error);
             return [];
         }
     }
@@ -976,11 +1272,11 @@ class CustomerPortalService {
      * Generate a full portal URL with token.
      * @param {string} customerId - Customer ID
      * @param {string} scope - Access scope
-     * @returns {Object} { token, url }
+     * @returns {Promise<Object>} { token, url }
      */
-    generatePortalLink(customerId, scope = 'full') {
+    async generatePortalLink(customerId, scope = 'full') {
         try {
-            const tokenRecord = this.generateAccessToken(customerId, scope);
+            const tokenRecord = await this.generateAccessToken(customerId, scope);
             const baseUrl = window.location.origin;
             const url = `${baseUrl}/customer-portal.html?token=${tokenRecord.token}`;
 
@@ -1008,7 +1304,7 @@ class CustomerPortalService {
                 return { success: false, message: 'Keine E-Mail-Adresse angegeben' };
             }
 
-            const link = this.generatePortalLink(customerId, scope);
+            const link = await this.generatePortalLink(customerId, scope);
             const companyInfo = this._getCompanyInfo();
 
             // Get customer name
@@ -1021,23 +1317,23 @@ class CustomerPortalService {
             }
 
             const scopeLabels = {
-                full: 'Ihr persönliches Kundenportal',
+                full: 'Ihr persoenliches Kundenportal',
                 quote: 'Angebotsfreigabe',
-                invoice: 'Rechnungsübersicht und Zahlung'
+                invoice: 'Rechnungsuebersicht und Zahlung'
             };
 
             const subject = `${companyInfo.name} - ${scopeLabels[scope] || 'Kundenportal'}`;
             const body = [
                 `Sehr geehrte/r ${customerName},`,
                 '',
-                `über den folgenden Link erreichen Sie ${scopeLabels[scope] || 'Ihr Kundenportal'}:`,
+                `ueber den folgenden Link erreichen Sie ${scopeLabels[scope] || 'Ihr Kundenportal'}:`,
                 '',
                 link.url,
                 '',
-                'Dieser Link ist 30 Tage gültig und nur für Sie bestimmt.',
+                'Dieser Link ist 30 Tage gueltig und nur fuer Sie bestimmt.',
                 'Bitte geben Sie ihn nicht an Dritte weiter.',
                 '',
-                `Mit freundlichen Grüßen`,
+                `Mit freundlichen Gruessen`,
                 companyInfo.name,
                 companyInfo.phone ? `Tel: ${companyInfo.phone}` : '',
                 companyInfo.email ? `E-Mail: ${companyInfo.email}` : ''
@@ -1064,12 +1360,12 @@ class CustomerPortalService {
 
             // Activity log
             if (window.storeService) {
-                window.storeService.addActivity('📧', `Portal-Link an ${customerName} gesendet`);
+                window.storeService.addActivity('email', `Portal-Link an ${customerName} gesendet`);
             }
 
             return { success: true, message: 'Portal-Link wurde per E-Mail gesendet', link };
         } catch (error) {
-            console.error('Send portal link error:', error);
+            console.warn('Send portal link error:', error);
             return { success: false, message: 'Fehler beim Senden des Portal-Links' };
         }
     }
@@ -1080,19 +1376,33 @@ class CustomerPortalService {
 
     /**
      * Remove expired tokens from storage.
-     * @returns {number} Number of removed tokens
+     * @returns {Promise<number>} Number of removed tokens
      */
-    cleanupExpiredTokens() {
-        const now = new Date();
-        const before = this.tokens.length;
-        this.tokens = this.tokens.filter(t =>
-            t.isActive && new Date(t.expiresAt) > now
-        );
-        const removed = before - this.tokens.length;
-        if (removed > 0) {
-            this._saveTokens();
+    async cleanupExpiredTokens() {
+        try {
+            const now = new Date().toISOString();
+
+            const { data, error } = await this._supabase()
+                .from('portal_tokens')
+                .delete()
+                .eq('tenant_id', this._tenantId)
+                .or(`active.eq.false,expires_at.lt.${now}`)
+                .select();
+
+            if (error) throw error;
+
+            const removed = (data || []).length;
+
+            // Refresh local cache
+            if (removed > 0) {
+                await this._loadTokens();
+            }
+
+            return removed;
+        } catch (err) {
+            console.warn('cleanupExpiredTokens error:', err);
+            return 0;
         }
-        return removed;
     }
 
     // ============================================
@@ -1144,19 +1454,14 @@ class CustomerPortalService {
             year: 'numeric'
         });
     }
-
-    // Persistence
-    _saveTokens() {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.tokens));
-    }
-
-    _saveMessages() {
-        localStorage.setItem(this.MESSAGES_KEY, JSON.stringify(this.portalMessages));
-    }
-
-    _saveSharedPhotos() {
-        localStorage.setItem(this.SHARED_PHOTOS_KEY, JSON.stringify(this.sharedPhotoIds));
-    }
 }
 
+// Instantiate and auto-init when Supabase is ready
 window.customerPortalService = new CustomerPortalService();
+if (window.supabaseClient?.isConfigured()) {
+    window.customerPortalService.init().catch(e => console.warn('CustomerPortalService init error:', e));
+} else {
+    window.addEventListener('supabase-ready', () => {
+        window.customerPortalService.init().catch(e => console.warn('CustomerPortalService init error:', e));
+    }, { once: true });
+}

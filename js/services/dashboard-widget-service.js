@@ -28,7 +28,11 @@ class DashboardWidgetService {
             { id: 'team-status', name: 'Team-Status', category: 'schedule', size: 'medium', icon: '\u{1F465}' },
             { id: 'conversion-rate', name: 'Conversion-Rate', category: 'sales', size: 'small', icon: '\u{1F4C9}' },
             { id: 'cashflow-forecast', name: 'Cashflow-Prognose', category: 'finance', size: 'large', icon: '\u{1F52E}' },
-            { id: 'overdue-tasks', name: 'Offene Aufgaben', category: 'schedule', size: 'medium', icon: '\u2705' }
+            { id: 'overdue-tasks', name: 'Offene Aufgaben', category: 'schedule', size: 'medium', icon: '\u2705' },
+            { id: 'social-media', name: 'Social Media', category: 'social', size: 'medium', icon: '\u{1F4F1}' },
+            { id: 'euer-live', name: 'E\u00DCR Live', category: 'finance', size: 'large', icon: '\u00A7' },
+            { id: 'paperless-recent', name: 'Letzte Dokumente', category: 'dokumente', size: 'medium', icon: '\u{1F4C4}' },
+            { id: 'calcom-next', name: 'N\u00E4chste Termine', category: 'termine', size: 'small', icon: '\u{1F4C5}' }
         ];
 
         // Default layout matching the current static dashboard
@@ -37,7 +41,9 @@ class DashboardWidgetService {
             { widgetId: 'kpi-angebote', order: 1 },
             { widgetId: 'kpi-auftraege', order: 2 },
             { widgetId: 'kpi-rechnungen', order: 3 },
-            { widgetId: 'activity-feed', order: 4 }
+            { widgetId: 'activity-feed', order: 4 },
+            { widgetId: 'paperless-recent', order: 5 },
+            { widgetId: 'calcom-next', order: 6 }
         ];
 
         this.layout = this._loadLayout();
@@ -231,7 +237,10 @@ class DashboardWidgetService {
             finance: 'Finanzen',
             sales: 'Vertrieb',
             inventory: 'Lagerverwaltung',
-            charts: 'Diagramme'
+            charts: 'Diagramme',
+            social: 'Social Media',
+            dokumente: 'Dokumente',
+            termine: 'Termine'
         };
 
         available.forEach(widget => {
@@ -295,6 +304,14 @@ class DashboardWidgetService {
                     return this._getCashflowForecast();
                 case 'overdue-tasks':
                     return this._getOverdueTasks(state);
+                case 'social-media':
+                    return this._getSocialMediaPosts();
+                case 'euer-live':
+                    return this._getEuerLive(state);
+                case 'paperless-recent':
+                    return this._getPaperlessRecent();
+                case 'calcom-next':
+                    return this._getCalcomNext();
                 default:
                     return { error: true, message: 'Unbekannter Widget-Typ' };
             }
@@ -690,6 +707,253 @@ class DashboardWidgetService {
             })),
             emptyMessage: 'Keine \u00FCberf\u00E4lligen Aufgaben.'
         };
+    }
+
+    // --- Social Media (Postiz) data provider ---
+
+    async _getSocialMediaPosts() {
+        const cfg = window.APP_CONFIG || {};
+        const baseUrl = cfg.POSTIZ_URL || 'https://social.freyaivisions.de';
+        const apiKey = cfg.POSTIZ_API_KEY || '';
+
+        if (!apiKey) {
+            return { type: 'list', items: [], emptyMessage: 'Postiz API-Key nicht konfiguriert.' };
+        }
+
+        try {
+            const resp = await fetch(`${baseUrl}/api/posts`, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!resp.ok) {
+                console.warn('DashboardWidgetService: Postiz API Fehler:', resp.status);
+                return { type: 'list', items: [], emptyMessage: 'Postiz nicht erreichbar.' };
+            }
+
+            const posts = await resp.json();
+            const now = new Date();
+
+            // Filter scheduled (future) posts, sort ascending by date
+            const scheduled = (Array.isArray(posts) ? posts : [])
+                .filter(p => {
+                    const pubDate = new Date(p.publishDate || p.scheduledAt || p.createdAt);
+                    return pubDate > now || (p.state || p.status) === 'SCHEDULED';
+                })
+                .sort((a, b) => new Date(a.publishDate || a.scheduledAt || a.createdAt) - new Date(b.publishDate || b.scheduledAt || b.createdAt))
+                .slice(0, 5);
+
+            return {
+                type: 'list',
+                items: scheduled.map(p => {
+                    const pubDate = p.publishDate || p.scheduledAt || p.createdAt;
+                    const content = p.content || p.text || p.description || '';
+                    const preview = content.length > 60 ? content.substring(0, 57) + '...' : content;
+                    return {
+                        icon: '\u{1F4F1}',
+                        title: preview || 'Geplanter Beitrag',
+                        subTitle: (p.integration?.name || p.platform || ''),
+                        time: pubDate,
+                        timeFormatted: this._formatDate(pubDate) + ' ' + this._formatTime(pubDate)
+                    };
+                }),
+                emptyMessage: 'Keine geplanten Beitr\u00E4ge.',
+                externalLink: baseUrl,
+                externalLinkLabel: 'Postiz \u00F6ffnen'
+            };
+        } catch (err) {
+            console.error('DashboardWidgetService: Postiz-Fehler:', err);
+            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Social-Media-Daten.' };
+        }
+    }
+
+    // --- E\u00DCR Live data provider ---
+
+    _getEuerLive(state) {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
+        const quarterLabels = ['Q1', 'Q2', 'Q3', 'Q4'];
+
+        // --- Buchungen aus bookkeepingService ---
+        let einnahmenYTD = 0;
+        let ausgabenYTD = 0;
+        let einnahmenQuartal = 0;
+        let ausgabenQuartal = 0;
+        let kleinunternehmer = true;
+        let eurData = null;
+
+        if (window.bookkeepingService && window.bookkeepingService._ready) {
+            const bs = window.bookkeepingService;
+            kleinunternehmer = bs.einstellungen?.kleinunternehmer !== false;
+
+            // E\u00DCR-Berechnung fuer das aktuelle Jahr
+            eurData = bs.berechneEUR(currentYear);
+            einnahmenYTD = eurData.einnahmen.brutto;
+            ausgabenYTD = eurData.ausgabenGesamt.brutto;
+
+            // Quartals-Buchungen
+            const quartalsBuchungen = bs.buchungen.filter(b => {
+                const d = new Date(b.datum);
+                return d.getFullYear() === currentYear &&
+                       Math.floor(d.getMonth() / 3) + 1 === currentQuarter;
+            });
+            einnahmenQuartal = quartalsBuchungen
+                .filter(b => b.typ === 'einnahme')
+                .reduce((sum, b) => sum + (b.brutto || 0), 0);
+            ausgabenQuartal = quartalsBuchungen
+                .filter(b => b.typ === 'ausgabe')
+                .reduce((sum, b) => sum + (b.brutto || 0), 0);
+        } else {
+            // Fallback: aus State (Rechnungen) berechnen
+            const rechnungen = state.rechnungen || [];
+            einnahmenYTD = rechnungen
+                .filter(r => r.status === 'bezahlt' && r.paidAt)
+                .filter(r => new Date(r.paidAt).getFullYear() === currentYear)
+                .reduce((sum, r) => sum + (r.brutto || 0), 0);
+        }
+
+        const gewinn = einnahmenYTD - ausgabenYTD;
+
+        // --- Steuer-Ruecklage ---
+        // ESt ~25% vom Gewinn (wenn positiv)
+        let steuerRuecklage = 0;
+        if (gewinn > 0) {
+            // ESt-Anteil (~25%)
+            steuerRuecklage = gewinn * 0.25;
+            // USt-Zahllast (nur wenn kein Kleinunternehmer)
+            if (!kleinunternehmer && eurData) {
+                steuerRuecklage += Math.max(0, eurData.ustZahllast || 0);
+            }
+        }
+
+        // --- Offene Forderungen (unbezahlte ausgehende Rechnungen) ---
+        const rechnungen = state.rechnungen || [];
+        const offeneForderungen = rechnungen
+            .filter(r => r.status === 'offen')
+            .reduce((sum, r) => sum + (r.brutto || 0), 0);
+
+        // --- Offene Verbindlichkeiten (unbezahlte Eingangsrechnungen / POs) ---
+        let offeneVerbindlichkeiten = 0;
+        if (window.purchaseOrderService) {
+            try {
+                const pos = window.purchaseOrderService.getAllPOs();
+                offeneVerbindlichkeiten = pos
+                    .filter(po => ['bestellt', 'teillieferung', 'geliefert'].includes(po.status))
+                    .reduce((sum, po) => sum + (po.brutto || 0), 0);
+            } catch { /* ignore */ }
+        }
+
+        return {
+            type: 'euer-live',
+            jahr: currentYear,
+            einnahmenYTD,
+            ausgabenYTD,
+            gewinn,
+            quartal: {
+                label: quarterLabels[currentQuarter - 1],
+                einnahmen: einnahmenQuartal,
+                ausgaben: ausgabenQuartal
+            },
+            steuerRuecklage,
+            kleinunternehmer,
+            offeneForderungen,
+            offeneVerbindlichkeiten
+        };
+    }
+
+    // --- Paperless-ngx data provider ---
+
+    async _getPaperlessRecent() {
+        if (!window.documentService || typeof window.documentService.paperlessListDocuments !== 'function') {
+            return { type: 'list', items: [], emptyMessage: 'Paperless-Service nicht verf\u00FCgbar.' };
+        }
+
+        try {
+            const docs = await window.documentService.paperlessListDocuments({ page_size: 5, ordering: '-created' });
+            const results = Array.isArray(docs) ? docs : (docs?.results || []);
+            const paperlessUrl = localStorage.getItem('freyai_paperless_url') || '';
+
+            return {
+                type: 'list',
+                items: results.slice(0, 5).map(doc => {
+                    const typeIcon = doc.document_type ? '\u{1F4C1}' : '\u{1F4C4}';
+                    const created = doc.created || doc.added || '';
+                    return {
+                        icon: typeIcon,
+                        title: doc.title || 'Unbenanntes Dokument',
+                        subTitle: doc.correspondent_name || doc.correspondent || '',
+                        time: created,
+                        timeFormatted: created ? this._formatDate(created) : '',
+                        externalLink: paperlessUrl ? `${paperlessUrl}/documents/${doc.id}/details` : null
+                    };
+                }),
+                emptyMessage: 'Keine Dokumente in Paperless.',
+                externalLink: paperlessUrl || null,
+                externalLinkLabel: 'Paperless \u00F6ffnen'
+            };
+        } catch (err) {
+            console.error('DashboardWidgetService: Paperless-Fehler:', err);
+            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Dokumente.' };
+        }
+    }
+
+    // --- Cal.com data provider ---
+
+    async _getCalcomNext() {
+        if (!window.bookingService || typeof window.bookingService.fetchCalcomBookings !== 'function') {
+            return { type: 'list', items: [], emptyMessage: 'Buchungsservice nicht verf\u00FCgbar.' };
+        }
+
+        try {
+            const bookings = await window.bookingService.fetchCalcomBookings();
+            const now = new Date();
+
+            // Filter future bookings, sort ascending
+            const upcoming = (Array.isArray(bookings) ? bookings : [])
+                .filter(b => {
+                    const start = new Date(b.startTime || b.start || b.date);
+                    return !isNaN(start.getTime()) && start >= now;
+                })
+                .sort((a, b) => new Date(a.startTime || a.start || a.date) - new Date(b.startTime || b.start || b.date))
+                .slice(0, 3);
+
+            return {
+                type: 'list',
+                items: upcoming.map(b => {
+                    const startDate = b.startTime || b.start || b.date || '';
+                    const customerName = b.attendees?.[0]?.name || b.attendeeName || b.name || 'Unbekannt';
+                    const eventType = b.eventType?.title || b.title || b.type || '';
+                    return {
+                        icon: '\u{1F4C5}',
+                        title: customerName,
+                        subTitle: eventType,
+                        time: startDate,
+                        timeFormatted: startDate ? (this._formatDate(startDate) + ' ' + this._formatTime(startDate)) : ''
+                    };
+                }),
+                emptyMessage: 'Keine anstehenden Buchungen.'
+            };
+        } catch (err) {
+            console.error('DashboardWidgetService: Cal.com-Fehler:', err);
+            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Termine.' };
+        }
+    }
+
+    /**
+     * Format time portion of an ISO date string.
+     * @param {string} dateStr
+     * @returns {string} e.g. "14:30"
+     * @private
+     */
+    _formatTime(dateStr) {
+        try {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) { return ''; }
+            return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+        } catch { return ''; }
     }
 
     // ============================================

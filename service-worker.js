@@ -144,6 +144,7 @@ const STATIC_ASSETS = [
     '/js/services/push-messenger-service.js',
     '/js/services/pwa-install-service.js',
     '/js/services/qrcode-service.js',
+    '/js/services/recurring-invoice-service.js',
     '/js/services/recurring-task-service.js',
     '/js/services/reorder-engine-service.js',
     '/js/services/report-service.js',

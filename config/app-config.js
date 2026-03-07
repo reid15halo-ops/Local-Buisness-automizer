@@ -35,6 +35,25 @@
         SIPGATE_TOKEN:      ls('freyai_sipgate_token',       ''),
         MESSAGEBIRD_KEY:    ls('freyai_messagebird_key',    ''),
 
+        // ── Paperless-ngx DMS ─────────────────────────────────────────────
+        PAPERLESS_URL:   ls('freyai_paperless_url',   'https://docs.freyaivisions.de'),
+        PAPERLESS_TOKEN: ls('freyai_paperless_token', ''),
+
+        // ── Cal.com Integration ──────────────────────────────────────────
+        // API key generated in Cal.com Settings > Developer > API Keys.
+        // Set via Setup Wizard or localStorage key 'freyai_calcom_api_key'.
+        CALCOM_URL:     ls('freyai_calcom_url',     'https://buchung.freyaivisions.de'),
+        CALCOM_API_KEY: ls('freyai_calcom_api_key',  ''),
+
+        // ── Postiz Social Media ──────────────────────────────────────────
+        POSTIZ_URL:     ls('freyai_postiz_url',     'https://social.freyaivisions.de'),
+        POSTIZ_API_KEY: ls('freyai_postiz_api_key', ''),
+
+        // ── WhatsApp (Evolution API) ──────────────────────────────────────
+        WHATSAPP_API_URL:      ls('freyai_whatsapp_api_url',      'https://wa.freyaivisions.de'),
+        WHATSAPP_API_KEY:      ls('freyai_whatsapp_api_key',      ''),
+        WHATSAPP_INSTANCE:     ls('freyai_whatsapp_instance',     'freyai-whatsapp'),
+
         // ── Environment ────────────────────────────────────────────────────
         APP_ENV: ls('freyai_app_env', 'production'),
         STAGING: ls('freyai_staging', 'false') === 'true',

@@ -5,8 +5,10 @@
 
 class DunningService {
     constructor() {
-        try { this.mahnungen = JSON.parse(localStorage.getItem('freyai_mahnungen') || '[]'); } catch { this.mahnungen = []; }
-        try { this.inkassoFaelle = JSON.parse(localStorage.getItem('freyai_inkasso') || '[]'); } catch { this.inkassoFaelle = []; }
+        this.mahnungen = [];
+        this.inkassoFaelle = [];
+        this._ready = false;
+        this._tenantId = 'a0000000-0000-0000-0000-000000000001';
 
         // Eskalationsstufen (Tage nach Faelligkeitsdatum)
         this.eskalationsStufen = [
@@ -17,6 +19,85 @@ class DunningService {
             { tag: 42, typ: 'mahnung3', name: '3. Mahnung (letzte Warnung)', gebuehr: 15.00 },
             { tag: 56, typ: 'inkasso', name: 'Inkasso-Übergabe', gebuehr: 0 }
         ];
+    }
+
+    // ============================================
+    // Supabase helpers
+    // ============================================
+    _supabase() {
+        return window.supabaseClient?.client;
+    }
+
+    _isOnline() {
+        return !!(this._supabase() && window.supabaseClient?.isConfigured());
+    }
+
+    async init() {
+        try {
+            const { data } = await this._supabase()?.auth?.getUser() || {};
+            this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        } catch {
+            this._userId = '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+        }
+        await this._loadMahnungenFromSupabase();
+        this._ready = true;
+        console.log(`[Dunning] Initialisiert – ${this.mahnungen.length} Mahnungen geladen`);
+    }
+
+    async _loadMahnungenFromSupabase() {
+        if (!this._isOnline()) return;
+        try {
+            const { data, error } = await this._supabase()
+                .from('mahnungen')
+                .select('*')
+                .eq('tenant_id', this._tenantId)
+                .order('gesendet_am', { ascending: false });
+            if (error) {
+                console.error('[Dunning] Supabase load error:', error.message);
+                return;
+            }
+            this.mahnungen = (data || []).map(r => this._fromSupabaseRow(r));
+        } catch (err) {
+            console.error('[Dunning] Supabase load failed:', err.message);
+        }
+    }
+
+    _toSupabaseRow(m) {
+        return {
+            id: m.id,
+            user_id: this._userId || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc',
+            tenant_id: this._tenantId,
+            rechnung_id: m.rechnungId,
+            rechnung_nr: m.rechnungNr || m.rechnungId,
+            kunde_name: m.kunde?.name || m.kundeName || '',
+            empfaenger: m.empfaenger || '',
+            stufe: m.stufe,
+            stufen_name: m.stufenName || '',
+            original_betrag: m.originalBetrag || 0,
+            mahngebuehr: m.mahngebuehr || 0,
+            gesamt_betrag: m.gesamtBetrag || 0,
+            gesendet_am: m.gesendetAm || new Date().toISOString(),
+            status: m.status || 'gesendet'
+        };
+    }
+
+    _fromSupabaseRow(r) {
+        return {
+            id: r.id,
+            rechnungId: r.rechnung_id,
+            rechnungNr: r.rechnung_nr || r.rechnung_id,
+            kundeName: r.kunde_name || '',
+            kunde: { name: r.kunde_name || '' },
+            empfaenger: r.empfaenger || '',
+            stufe: r.stufe,
+            stufenName: r.stufen_name || '',
+            originalBetrag: parseFloat(r.original_betrag) || 0,
+            mahngebuehr: parseFloat(r.mahngebuehr) || 0,
+            gesamtBetrag: parseFloat(r.gesamt_betrag) || 0,
+            gesendetAm: r.gesendet_am,
+            erstelltAm: r.created_at || r.gesendet_am,
+            status: r.status || 'gesendet'
+        };
     }
 
     // ============================================
@@ -69,25 +150,112 @@ class DunningService {
     }
 
     // ============================================
-    // Mahnung erstellen
+    // Mahnung erstellen (Supabase-first)
     // ============================================
-    erstelleMahnung(rechnung, stufe) {
+    async erstelleMahnung(rechnung, stufe) {
         const mahnung = {
             id: `MAH-${Date.now().toString(36).toUpperCase()}`,
             rechnungId: rechnung.id,
+            rechnungNr: rechnung.id,
             kunde: rechnung.kunde,
+            kundeName: rechnung.kunde?.name || '',
+            empfaenger: rechnung.kunde?.email || '',
             originalBetrag: rechnung.brutto,
             mahngebuehr: stufe.gebuehr,
             gesamtBetrag: (parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr,
             stufe: stufe.typ,
             stufenName: stufe.name,
-            erstelltAm: new Date().toISOString(),
-            status: 'erstellt'
+            gesendetAm: new Date().toISOString(),
+            status: 'gesendet'
         };
 
         this.mahnungen.push(mahnung);
-        this.save();
+        await this._saveMahnungToSupabase(mahnung);
         return mahnung;
+    }
+
+    // ============================================
+    // Mahnung per Email senden (1-Click)
+    // ============================================
+    async sendMahnung(rechnung, stufe) {
+        if (!rechnung || !stufe) {
+            window.showToast?.('Ungültige Rechnungs- oder Stufendaten', 'error');
+            return null;
+        }
+
+        const kundeEmail = rechnung.kunde?.email;
+        if (!kundeEmail) {
+            window.showToast?.('Keine E-Mail-Adresse beim Kunden hinterlegt', 'error');
+            return null;
+        }
+
+        // Bereits fuer diese Stufe gesendet?
+        if (this.hasMahnungForStufe(rechnung.id, stufe.typ)) {
+            window.showToast?.(`${stufe.name} wurde bereits gesendet`, 'warning');
+            return null;
+        }
+
+        try {
+            // Email-Inhalt generieren
+            const emailData = this.generateMahnungHtmlEmail(rechnung, stufe);
+            const gesamtBetrag = (parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr;
+
+            // Via n8n Webhook senden
+            const webhookUrl = '/n8n-webhook/freyai-events';
+            const payload = {
+                event: 'dunning.send',
+                data: {
+                    to: kundeEmail,
+                    subject: emailData.subject,
+                    body: emailData.html,
+                    rechnungNr: rechnung.id,
+                    stufe: stufe.typ,
+                    stufenName: stufe.name,
+                    betrag: gesamtBetrag,
+                    kundeName: rechnung.kunde?.name || '',
+                    mahngebuehr: stufe.gebuehr
+                }
+            };
+
+            const response = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Webhook Fehler: ${response.status} ${response.statusText}`);
+            }
+
+            // In Supabase speichern
+            const mahnung = await this.erstelleMahnung(rechnung, stufe);
+
+            window.showToast?.(`${stufe.name} an ${window.h ? window.h(kundeEmail) : kundeEmail} gesendet`, 'success');
+            return mahnung;
+
+        } catch (err) {
+            console.error('[Dunning] sendMahnung Fehler:', err);
+            window.showToast?.('Mahnung konnte nicht gesendet werden: ' + err.message, 'error');
+            return null;
+        }
+    }
+
+    // ============================================
+    // Supabase persistence
+    // ============================================
+    async _saveMahnungToSupabase(mahnung) {
+        if (!this._isOnline()) return;
+        try {
+            const row = this._toSupabaseRow(mahnung);
+            const { error } = await this._supabase()
+                .from('mahnungen')
+                .upsert(row, { onConflict: 'id' });
+            if (error) {
+                console.error('[Dunning] Supabase save error:', error.message);
+            }
+        } catch (err) {
+            console.error('[Dunning] Supabase save failed:', err.message);
+        }
     }
 
     getGesamtMahngebuehren(rechnungId) {
@@ -254,22 +422,57 @@ Nächste Schritte:
     }
 
     // ============================================
-    // Persistence
+    // Persistence (Supabase-first)
     // ============================================
-    save() {
-        try {
-            localStorage.setItem('freyai_mahnungen', JSON.stringify(this.mahnungen));
-        } catch (e) {
-            console.error('Mahnungen Speicherung fehlgeschlagen:', e.message);
-        }
+    async save() {
+        // Noop — individual saves via _saveMahnungToSupabase
     }
 
     saveInkasso() {
+        // Inkasso bleibt vorerst lokal (seltener Anwendungsfall)
         try {
             localStorage.setItem('freyai_inkasso', JSON.stringify(this.inkassoFaelle));
         } catch (e) {
             console.error('Inkasso Speicherung fehlgeschlagen:', e.message);
         }
+    }
+
+    /**
+     * Get the last Mahnung sent for a specific Rechnung
+     */
+    getLetzteMahnung(rechnungId) {
+        const mahnungen = this.getMahnungenForRechnung(rechnungId);
+        if (mahnungen.length === 0) return null;
+        return mahnungen.sort((a, b) => new Date(b.gesendetAm || b.erstelltAm) - new Date(a.gesendetAm || a.erstelltAm))[0];
+    }
+
+    /**
+     * Get the recommended next dunning level for a Rechnung
+     */
+    getEmpfohleneStufe(rechnung) {
+        const status = this.checkRechnungStatus(rechnung);
+        if (!status.stufe || status.stufe.typ === 'rechnung' || status.stufe.typ === 'bezahlt') {
+            return null;
+        }
+
+        // Find the highest stufe already sent
+        const sentStufen = this.getMahnungenForRechnung(rechnung.id).map(m => m.stufe);
+        const stufeIndex = this.eskalationsStufen.findIndex(s => s.typ === status.stufe.typ);
+
+        // Walk from current status stufe backwards to find unsent level
+        for (let i = stufeIndex; i >= 1; i--) {
+            const s = this.eskalationsStufen[i];
+            if (s.typ !== 'inkasso' && !sentStufen.includes(s.typ)) {
+                return s;
+            }
+        }
+
+        // If current stufe already sent, offer next
+        if (status.naechsteStufe && status.naechsteStufe.typ !== 'inkasso' && !sentStufen.includes(status.naechsteStufe.typ)) {
+            return status.naechsteStufe;
+        }
+
+        return status.stufe.typ !== 'inkasso' && !sentStufen.includes(status.stufe.typ) ? status.stufe : null;
     }
 
     // ============================================
@@ -351,5 +554,13 @@ Nächste Schritte:
     }
 }
 
-// Create global instance
+// Create global instance and initialize from Supabase
 window.dunningService = new DunningService();
+// Async init — loads mahnungen from Supabase when client is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => window.dunningService.init().catch(e => console.warn('[Dunning] init:', e.message)), 500);
+    });
+} else {
+    setTimeout(() => window.dunningService.init().catch(e => console.warn('[Dunning] init:', e.message)), 500);
+}

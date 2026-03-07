@@ -1,0 +1,162 @@
+/* ============================================================
+   Sidebar Groups - Collapsible Navigation
+   FreyAI Visions App
+   ============================================================ */
+
+/* --- Group Container --- */
+.nav-group-container {
+    margin-bottom: 4px;
+}
+
+/* --- Group Header (clickable) --- */
+.nav-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    width: 100%;
+    transition: background var(--transition-fast), color var(--transition-fast);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.nav-group-header:hover {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+/* Left side of header: label + badge */
+.nav-group-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --- Chevron Indicator --- */
+.nav-group-chevron {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.nav-group-chevron svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* --- Group Items Container --- */
+.nav-group-items {
+    overflow: hidden;
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+    padding-left: 8px;
+}
+
+/* --- Collapsed State --- */
+.nav-group-container.nav-group-collapsed .nav-group-items {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.nav-group-container.nav-group-collapsed .nav-group-chevron {
+    transform: rotate(-90deg);
+}
+
+/* --- Nav Items within Groups --- */
+.nav-group-items .nav-item {
+    padding: 8px 12px 8px 20px;
+    font-size: 13.5px;
+}
+
+.nav-group-items .nav-item.active {
+    border-left: 3px solid var(--accent-primary);
+    padding-left: 17px;
+}
+
+/* --- Group Divider --- */
+.nav-group-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 8px 16px;
+    opacity: 0.5;
+}
+
+/* --- Badge Count --- */
+.nav-group-badge-count {
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--accent-primary);
+    color: var(--bg-dark);
+    border-radius: 10px;
+    padding: 1px 6px;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.4;
+    display: none;
+}
+
+.nav-group-badge-count.visible {
+    display: inline-block;
+}
+
+/* --- Scrollbar Styling for Nav Menu --- */
+.nav-menu {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.nav-menu::-webkit-scrollbar {
+    width: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+.nav-menu::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* --- Mobile Responsive --- */
+@media (max-width: 768px) {
+    .nav-group-header {
+        padding: 6px 12px;
+    }
+
+    .nav-group-items .nav-item {
+        padding: 8px 12px 8px 16px;
+    }
+
+    .nav-group-items .nav-item.active {
+        padding-left: 13px;
+    }
+
+    .nav-group-divider {
+        margin: 6px 12px;
+    }
+}

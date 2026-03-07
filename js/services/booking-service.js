@@ -305,6 +305,119 @@ ${ci.name}`
         this.saveSettings();
     }
 
+    // ── Cal.com Integration ─────────────────────────────────────────
+    // Fetches bookings from self-hosted Cal.com instance.
+    // Requires CALCOM_API_KEY to be set in app-config / localStorage.
+    // Cal.com v1 API: GET /api/v1/bookings?apiKey=...
+
+    async fetchCalcomBookings() {
+        const cfg = window.APP_CONFIG || {};
+        const baseUrl = (cfg.CALCOM_URL || 'https://buchung.freyaivisions.de').replace(/\/+$/, '');
+        const apiKey = cfg.CALCOM_API_KEY || '';
+
+        if (!apiKey) {
+            console.warn('[BookingService] Cal.com API-Key nicht konfiguriert – Sync übersprungen.');
+            return [];
+        }
+
+        try {
+            const res = await fetch(`${baseUrl}/api/v1/bookings`, {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            if (!res.ok) throw new Error(`Cal.com API ${res.status}: ${res.statusText}`);
+            const data = await res.json();
+            const bookings = data.bookings || data || [];
+            return bookings.map(b => this._mapCalcomBooking(b));
+        } catch (err) {
+            console.error('[BookingService] Cal.com Fetch fehlgeschlagen:', err);
+            return [];
+        }
+    }
+
+    // Maps a Cal.com booking object to the app's internal booking format.
+    _mapCalcomBooking(cb) {
+        const start = new Date(cb.startTime);
+        const end = new Date(cb.endTime);
+        const pad = n => String(n).padStart(2, '0');
+        const dateStr = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+        const startTimeStr = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
+        const endTimeStr = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
+        const attendee = (cb.attendees && cb.attendees[0]) || {};
+
+        return {
+            id: 'calcom-' + cb.id,
+            serviceType: cb.eventType?.slug || cb.eventType?.title || 'calcom',
+            date: dateStr,
+            startTime: startTimeStr,
+            endTime: endTimeStr,
+            customer: {
+                name: attendee.name || cb.title || '',
+                email: attendee.email || '',
+                telefon: attendee.phone || '',
+                firma: ''
+            },
+            notes: cb.description || '',
+            status: this._mapCalcomStatus(cb.status),
+            confirmationCode: '',
+            createdAt: cb.createdAt || new Date().toISOString(),
+            source: 'calcom',
+            calcomId: cb.id,
+            calcomUid: cb.uid || ''
+        };
+    }
+
+    _mapCalcomStatus(status) {
+        const map = {
+            'ACCEPTED': 'confirmed',
+            'PENDING': 'pending',
+            'CANCELLED': 'cancelled',
+            'REJECTED': 'cancelled'
+        };
+        return map[status] || 'pending';
+    }
+
+    // Syncs Cal.com bookings into calendar view.
+    // Call this on app init or when calendar is opened.
+    async syncCalcomToCalendar() {
+        const calcomBookings = await this.fetchCalcomBookings();
+        if (!calcomBookings.length) return 0;
+
+        let added = 0;
+        for (const booking of calcomBookings) {
+            // Skip cancelled
+            if (booking.status === 'cancelled') continue;
+
+            // Only add if not already in calendar (by calcom id)
+            if (window.calendarService) {
+                const existing = window.calendarService.getAppointment(booking.id);
+                if (!existing) {
+                    window.calendarService.addAppointment({
+                        id: booking.id,
+                        title: `Cal.com: ${booking.customer.name || booking.serviceType}`,
+                        description: booking.notes,
+                        date: booking.date,
+                        startTime: booking.startTime,
+                        endTime: booking.endTime,
+                        customerName: booking.customer.name,
+                        type: 'termin',
+                        status: booking.status === 'confirmed' ? 'bestaetigt' : 'geplant',
+                        color: '#8b5cf6', // Purple to distinguish Cal.com bookings
+                        forceAdd: true
+                    });
+                    added++;
+                }
+            }
+        }
+
+        if (added > 0) {
+            console.log(`[BookingService] ${added} Cal.com-Buchungen synchronisiert.`);
+            document.dispatchEvent(new CustomEvent('calcom:synced', { detail: { count: added } }));
+        }
+
+        return added;
+    }
+
     // Persistence
     save() { localStorage.setItem('freyai_bookings', JSON.stringify(this.bookings)); }
     saveSettings() { localStorage.setItem('freyai_booking_settings', JSON.stringify(this.settings)); }

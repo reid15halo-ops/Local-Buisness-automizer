@@ -1,0 +1,725 @@
+/* ============================================
+   Dashboard New - FreyAI Visions
+   ============================================ */
+
+@keyframes dashFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================
+   Container
+   ============================================ */
+
+.dash-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 48px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* ============================================
+   Greeting
+   ============================================ */
+
+.dash-greeting {
+    margin-bottom: 28px;
+    animation: dashFadeIn 0.3s ease both;
+}
+
+.dash-greeting-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+    line-height: 1.3;
+}
+
+.dash-greeting-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ============================================
+   Alert Banner
+   ============================================ */
+
+.dash-alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: var(--border-radius);
+    background: var(--bg-card);
+    border-left: 4px solid var(--accent-primary);
+    margin-bottom: 20px;
+    animation: dashFadeIn 0.3s ease both;
+    animation-delay: 0.05s;
+}
+
+.dash-alert-banner-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.dash-alert-banner-text {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.dash-alert-banner-dismiss {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--border-radius-sm);
+    transition: color var(--transition-fast), background var(--transition-fast);
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dash-alert-banner-dismiss:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.dash-alert-banner.dash-alert-danger {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.dash-alert-banner.dash-alert-danger .dash-alert-banner-icon {
+    color: #ef4444;
+}
+
+.dash-alert-banner.dash-alert-warning {
+    border-left-color: #f97316;
+    background: rgba(249, 115, 22, 0.08);
+}
+
+.dash-alert-banner.dash-alert-warning .dash-alert-banner-icon {
+    color: #f97316;
+}
+
+.dash-alert-banner.dash-alert-info {
+    border-left-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.08);
+}
+
+.dash-alert-banner.dash-alert-info .dash-alert-banner-icon {
+    color: #3b82f6;
+}
+
+/* ============================================
+   KPI Grid
+   ============================================ */
+
+.dash-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.dash-kpi-card {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    border-left: 4px solid var(--accent-primary);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition);
+    overflow: hidden;
+    animation: dashFadeIn 0.3s ease both;
+}
+
+.dash-kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.dash-kpi-card:nth-child(2) { animation-delay: 0.10s; }
+.dash-kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.dash-kpi-card:nth-child(4) { animation-delay: 0.20s; }
+
+.dash-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.dash-kpi-icon {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 48px;
+    opacity: 0.15;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+}
+
+.dash-kpi-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    line-height: 1.1;
+    margin-bottom: 6px;
+}
+
+.dash-kpi-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.dash-kpi-anfragen {
+    border-left-color: #3b82f6;
+}
+
+.dash-kpi-anfragen .dash-kpi-value {
+    color: #3b82f6;
+}
+
+.dash-kpi-anfragen .dash-kpi-icon {
+    color: #3b82f6;
+}
+
+.dash-kpi-angebote {
+    border-left-color: #a78bfa;
+}
+
+.dash-kpi-angebote .dash-kpi-value {
+    color: #a78bfa;
+}
+
+.dash-kpi-angebote .dash-kpi-icon {
+    color: #a78bfa;
+}
+
+.dash-kpi-auftraege {
+    border-left-color: #22d3ee;
+}
+
+.dash-kpi-auftraege .dash-kpi-value {
+    color: #22d3ee;
+}
+
+.dash-kpi-auftraege .dash-kpi-icon {
+    color: #22d3ee;
+}
+
+.dash-kpi-rechnungen {
+    border-left-color: #fbbf24;
+}
+
+.dash-kpi-rechnungen .dash-kpi-value {
+    color: #fbbf24;
+}
+
+.dash-kpi-rechnungen .dash-kpi-icon {
+    color: #fbbf24;
+}
+
+/* ============================================
+   Finance Row
+   ============================================ */
+
+.dash-finance-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.dash-finance-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    animation: dashFadeIn 0.3s ease both;
+    animation-delay: 0.25s;
+}
+
+.dash-finance-card:nth-child(2) { animation-delay: 0.30s; }
+.dash-finance-card:nth-child(3) { animation-delay: 0.35s; }
+
+.dash-finance-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.dash-finance-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.dash-finance-value.dash-finance-positive {
+    color: var(--accent-success);
+}
+
+.dash-finance-value.dash-finance-negative {
+    color: #ef4444;
+}
+
+.dash-finance-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ============================================
+   Actions Grid
+   ============================================ */
+
+.dash-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.dash-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 80px;
+    padding: 16px 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    text-decoration: none;
+    color: inherit;
+    box-shadow: var(--shadow-sm);
+    animation: dashFadeIn 0.3s ease both;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dash-action-btn:nth-child(1) { animation-delay: 0.10s; }
+.dash-action-btn:nth-child(2) { animation-delay: 0.15s; }
+.dash-action-btn:nth-child(3) { animation-delay: 0.20s; }
+.dash-action-btn:nth-child(4) { animation-delay: 0.25s; }
+.dash-action-btn:nth-child(5) { animation-delay: 0.30s; }
+.dash-action-btn:nth-child(6) { animation-delay: 0.35s; }
+
+.dash-action-btn:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-hover);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.dash-action-btn:active {
+    transform: scale(0.98);
+    box-shadow: var(--shadow-sm);
+}
+
+.dash-action-icon {
+    font-size: 32px;
+    line-height: 1;
+    color: var(--accent-primary);
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dash-action-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* ============================================
+   Section (Generic)
+   ============================================ */
+
+.dash-section {
+    margin-bottom: 24px;
+    animation: dashFadeIn 0.3s ease both;
+    animation-delay: 0.15s;
+}
+
+.dash-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent-primary);
+    line-height: 1.4;
+}
+
+/* ============================================
+   Agenda
+   ============================================ */
+
+.dash-agenda {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.dash-agenda-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background var(--transition-fast);
+}
+
+.dash-agenda-item:last-child {
+    border-bottom: none;
+}
+
+.dash-agenda-item:hover {
+    background: var(--bg-hover);
+}
+
+.dash-agenda-time {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+    color: var(--text-muted);
+    min-width: 60px;
+    flex-shrink: 0;
+}
+
+.dash-agenda-event {
+    font-size: 15px;
+    color: var(--text-primary);
+    flex: 1;
+    line-height: 1.4;
+}
+
+.dash-agenda-badge {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(45, 212, 168, 0.15);
+    color: var(--accent-primary);
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.dash-agenda-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+    text-align: center;
+    gap: 8px;
+}
+
+.dash-agenda-empty-icon {
+    font-size: 40px;
+    opacity: 0.4;
+    line-height: 1;
+}
+
+.dash-agenda-empty-text {
+    font-size: 15px;
+}
+
+/* ============================================
+   Pipeline
+   ============================================ */
+
+.dash-pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 20px;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dash-pipeline-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--border-radius-sm);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.dash-pipeline-step:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent-primary);
+}
+
+.dash-pipeline-step-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.dash-pipeline-step-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.dash-pipeline-step-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--bg-dark);
+    background: var(--accent-primary);
+    border-radius: 20px;
+    padding: 2px 8px;
+    min-width: 22px;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.dash-pipeline-step.dash-pipeline-anfragen .dash-pipeline-step-count {
+    background: #3b82f6;
+}
+
+.dash-pipeline-step.dash-pipeline-angebote .dash-pipeline-step-count {
+    background: #a78bfa;
+}
+
+.dash-pipeline-step.dash-pipeline-auftraege .dash-pipeline-step-count {
+    background: #22d3ee;
+    color: #0c1a1a;
+}
+
+.dash-pipeline-step.dash-pipeline-rechnungen .dash-pipeline-step-count {
+    background: #fbbf24;
+    color: #0c1a1a;
+}
+
+.dash-pipeline-step.dash-pipeline-abgeschlossen .dash-pipeline-step-count {
+    background: var(--accent-success);
+}
+
+.dash-pipeline-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    color: var(--text-muted);
+    font-size: 18px;
+    flex-shrink: 0;
+    opacity: 0.5;
+}
+
+.dash-pipeline-arrow::after {
+    content: '\2192';
+}
+
+/* ============================================
+   Activities
+   ============================================ */
+
+.dash-activities {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.dash-activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background var(--transition-fast);
+}
+
+.dash-activity-item:last-child {
+    border-bottom: none;
+}
+
+.dash-activity-item:nth-child(even) {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.dash-activity-item:hover {
+    background: var(--bg-hover);
+}
+
+.dash-activity-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 28px;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--bg-input);
+}
+
+.dash-activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dash-activity-text {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.dash-activity-text strong {
+    font-weight: 600;
+}
+
+.dash-activity-time {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* ============================================
+   Responsive - Tablet (768px - 1023px)
+   ============================================ */
+
+@media (max-width: 1023px) {
+    .dash-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-kpi-card:nth-child(3) { animation-delay: 0.20s; }
+    .dash-kpi-card:nth-child(4) { animation-delay: 0.25s; }
+
+    .dash-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-pipeline {
+        gap: 0;
+    }
+}
+
+/* ============================================
+   Responsive - Mobile (<768px)
+   ============================================ */
+
+@media (max-width: 767px) {
+    .dash-container {
+        padding: 16px 14px 36px;
+    }
+
+    .dash-greeting-text {
+        font-size: 24px;
+    }
+
+    .dash-greeting-sub {
+        font-size: 14px;
+    }
+
+    .dash-kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .dash-kpi-card {
+        padding: 16px;
+    }
+
+    .dash-kpi-value {
+        font-size: 30px;
+    }
+
+    .dash-kpi-icon {
+        font-size: 40px;
+    }
+
+    .dash-finance-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .dash-finance-card {
+        padding: 16px;
+    }
+
+    .dash-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .dash-action-btn {
+        min-height: 70px;
+        padding: 14px 10px;
+    }
+
+    .dash-action-icon {
+        font-size: 28px;
+    }
+
+    .dash-action-label {
+        font-size: 13px;
+    }
+
+    .dash-section-title {
+        font-size: 16px;
+    }
+
+    .dash-pipeline {
+        padding: 14px;
+    }
+
+    .dash-pipeline-step {
+        padding: 8px 12px;
+    }
+
+    .dash-pipeline-step-label {
+        font-size: 12px;
+    }
+
+    .dash-agenda-item {
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    .dash-activity-item {
+        padding: 12px 14px;
+    }
+
+    .dash-alert-banner {
+        padding: 12px 14px;
+    }
+}

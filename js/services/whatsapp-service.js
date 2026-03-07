@@ -77,11 +77,11 @@ class WhatsAppService {
     // =====================================================
 
     _loadConfig() {
-        let stored; try { stored = JSON.parse(localStorage.getItem('freyai_whatsapp_config') || 'null'); } catch { stored = 'null'; }
+        let stored; try { stored = JSON.parse(localStorage.getItem('freyai_whatsapp_config') || 'null'); } catch { stored = null; }
         return stored || {
-            apiUrl: 'https://graph.facebook.com/v18.0',
-            accessToken: '',
-            phoneNumberId: '',
+            apiUrl: window.APP_CONFIG?.WHATSAPP_API_URL || 'https://wa.freyaivisions.de',
+            apiKey: window.APP_CONFIG?.WHATSAPP_API_KEY || '',
+            instanceName: window.APP_CONFIG?.WHATSAPP_INSTANCE || 'freyai-whatsapp',
             webhookVerifyToken: '',
             businessName: '',
             isConfigured: false
@@ -97,11 +97,11 @@ class WhatsAppService {
             this.config = {
                 ...this.config,
                 apiUrl: newConfig.apiUrl || this.config.apiUrl,
-                accessToken: newConfig.accessToken || '',
-                phoneNumberId: newConfig.phoneNumberId || '',
+                apiKey: newConfig.apiKey || this.config.apiKey || '',
+                instanceName: newConfig.instanceName || this.config.instanceName || '',
                 webhookVerifyToken: newConfig.webhookVerifyToken || '',
                 businessName: newConfig.businessName || '',
-                isConfigured: !!(newConfig.accessToken && newConfig.phoneNumberId)
+                isConfigured: !!(newConfig.apiKey && newConfig.instanceName) || !!(this.config.apiKey && this.config.instanceName)
             };
             this._saveConfig();
             return { success: true };
@@ -116,7 +116,7 @@ class WhatsAppService {
      * @returns {boolean}
      */
     isConfigured() {
-        return this.config.isConfigured && !!this.config.accessToken && !!this.config.phoneNumberId;
+        return this.config.isConfigured && !!this.config.apiKey && !!this.config.instanceName;
     }
 
     /**
@@ -124,15 +124,15 @@ class WhatsAppService {
      * @returns {Object} { success, message, data }
      */
     async testConnection() {
-        if (!this.config.accessToken || !this.config.phoneNumberId) {
+        if (!this.config.apiKey || !this.config.instanceName) {
             return {
                 success: false,
-                message: 'API-Zugangsdaten fehlen. Bitte konfigurieren Sie zuerst Access Token und Phone Number ID.'
+                message: 'API-Zugangsdaten fehlen. Bitte konfigurieren Sie zuerst API Key und Instance Name.'
             };
         }
 
         try {
-            const url = `${this.config.apiUrl}/${this.config.phoneNumberId}`;
+            const url = `${this.config.apiUrl}/instance/connectionState/${this.config.instanceName}`;
             const response = await this._apiRequest(url, 'GET');
 
             if (response.ok) {
@@ -186,23 +186,17 @@ class WhatsAppService {
                 return this._fallbackSend(formattedPhone, message, customerId);
             }
 
-            const url = `${this.config.apiUrl}/${this.config.phoneNumberId}/messages`;
+            const url = `${this.config.apiUrl}/message/sendText/${this.config.instanceName}`;
             const body = {
-                messaging_product: 'whatsapp',
-                recipient_type: 'individual',
-                to: formattedPhone,
-                type: 'text',
-                text: {
-                    preview_url: true,
-                    body: message
-                }
+                number: formattedPhone,
+                text: message
             };
 
             const response = await this._apiRequest(url, 'POST', body);
             const data = await response.json();
 
-            if (response.ok && data.messages && data.messages.length > 0) {
-                const messageId = data.messages[0].id;
+            if (response.ok && data.key && data.key.id) {
+                const messageId = data.key.id;
 
                 // Log message
                 this._logMessage({
@@ -268,38 +262,29 @@ class WhatsAppService {
                 return { success: false, error: 'Vorlage nicht gefunden und API nicht konfiguriert' };
             }
 
-            const url = `${this.config.apiUrl}/${this.config.phoneNumberId}/messages`;
-            const components = [];
-
-            if (parameters.length > 0) {
-                components.push({
-                    type: 'body',
-                    parameters: parameters.map(p => ({
-                        type: 'text',
-                        text: String(p)
-                    }))
+            const url = `${this.config.apiUrl}/message/sendText/${this.config.instanceName}`;
+            // Evolution API does not have native template support,
+            // so we render the template locally and send as plain text.
+            const localTemplate = this.TEMPLATES[templateName];
+            let renderedText = `[Vorlage: ${templateName}]`;
+            if (localTemplate) {
+                const vars = {};
+                localTemplate.variables.forEach((v, i) => {
+                    vars[v] = parameters[i] || '';
                 });
+                renderedText = this.renderTemplate(templateName, vars);
             }
 
             const body = {
-                messaging_product: 'whatsapp',
-                recipient_type: 'individual',
-                to: formattedPhone,
-                type: 'template',
-                template: {
-                    name: templateName,
-                    language: {
-                        code: languageCode
-                    },
-                    components: components
-                }
+                number: formattedPhone,
+                text: renderedText
             };
 
             const response = await this._apiRequest(url, 'POST', body);
             const data = await response.json();
 
-            if (response.ok && data.messages && data.messages.length > 0) {
-                const messageId = data.messages[0].id;
+            if (response.ok && data.key && data.key.id) {
+                const messageId = data.key.id;
 
                 this._logMessage({
                     id: messageId,
@@ -353,24 +338,20 @@ class WhatsAppService {
                 return this._fallbackSend(formattedPhone, `[Dokument: ${filename || documentUrl}] ${caption}`, customerId);
             }
 
-            const url = `${this.config.apiUrl}/${this.config.phoneNumberId}/messages`;
+            const url = `${this.config.apiUrl}/message/sendMedia/${this.config.instanceName}`;
             const body = {
-                messaging_product: 'whatsapp',
-                recipient_type: 'individual',
-                to: formattedPhone,
-                type: 'document',
-                document: {
-                    link: documentUrl,
-                    caption: caption,
-                    filename: filename || 'Dokument.pdf'
-                }
+                number: formattedPhone,
+                mediatype: 'document',
+                media: documentUrl,
+                caption: caption,
+                fileName: filename || 'Dokument.pdf'
             };
 
             const response = await this._apiRequest(url, 'POST', body);
             const data = await response.json();
 
-            if (response.ok && data.messages && data.messages.length > 0) {
-                const messageId = data.messages[0].id;
+            if (response.ok && data.key && data.key.id) {
+                const messageId = data.key.id;
 
                 this._logMessage({
                     id: messageId,
@@ -423,23 +404,19 @@ class WhatsAppService {
                 return this._fallbackSend(formattedPhone, `[Bild] ${caption}`, customerId);
             }
 
-            const url = `${this.config.apiUrl}/${this.config.phoneNumberId}/messages`;
+            const url = `${this.config.apiUrl}/message/sendMedia/${this.config.instanceName}`;
             const body = {
-                messaging_product: 'whatsapp',
-                recipient_type: 'individual',
-                to: formattedPhone,
-                type: 'image',
-                image: {
-                    link: imageUrl,
-                    caption: caption
-                }
+                number: formattedPhone,
+                mediatype: 'image',
+                media: imageUrl,
+                caption: caption
             };
 
             const response = await this._apiRequest(url, 'POST', body);
             const data = await response.json();
 
-            if (response.ok && data.messages && data.messages.length > 0) {
-                const messageId = data.messages[0].id;
+            if (response.ok && data.key && data.key.id) {
+                const messageId = data.key.id;
 
                 this._logMessage({
                     id: messageId,
@@ -530,110 +507,115 @@ class WhatsAppService {
     // =====================================================
 
     /**
-     * Process an incoming webhook payload from WhatsApp Cloud API
-     * @param {Object} webhookPayload - The raw webhook JSON
+     * Process an incoming webhook payload from Evolution API
+     * @param {Object} webhookPayload - The raw webhook JSON from Evolution API
      * @returns {Object} { processed, messages }
      */
     processIncomingMessage(webhookPayload) {
         try {
             const processedMessages = [];
 
-            if (!webhookPayload || !webhookPayload.entry) {
+            if (!webhookPayload) {
                 return { processed: false, messages: [] };
             }
 
-            for (const entry of webhookPayload.entry) {
-                if (!entry.changes) { continue; }
+            // Evolution API webhook: { event: 'messages.upsert', data: { key, message, pushName, ... } }
+            if (!webhookPayload.data || webhookPayload.event !== 'messages.upsert') {
+                return { processed: false, messages: [] };
+            }
 
-                for (const change of entry.changes) {
-                    if (change.field !== 'messages') { continue; }
+            const d = webhookPayload.data;
+            // Skip outgoing messages
+            if (d.key?.fromMe) {
+                return { processed: true, messages: [] };
+            }
 
-                    const value = change.value;
-                    if (!value || !value.messages) { continue; }
+            const evoMessages = [d]; // Evolution sends one message per webhook
 
-                    // Get contact info
-                    const contacts = value.contacts || [];
+            for (const evoMsg of evoMessages) {
+                const senderPhone = evoMsg.key?.remoteJid?.replace('@s.whatsapp.net', '') || '';
+                const senderName = evoMsg.pushName || senderPhone;
+                const m = evoMsg.message || {};
 
-                    for (const msg of value.messages) {
-                        const contactInfo = contacts.find(c => c.wa_id === msg.from) || {};
-                        const senderName = contactInfo.profile?.name || msg.from;
-                        const senderPhone = msg.from;
+                // Map Evolution message to internal format
+                const msg = {
+                    id: evoMsg.key?.id || '',
+                    from: senderPhone,
+                    type: m.conversation || m.extendedTextMessage ? 'text' : (m.imageMessage ? 'image' : (m.documentMessage ? 'document' : (m.audioMessage ? 'audio' : (m.videoMessage ? 'video' : 'text')))),
+                    text: { body: m.conversation || m.extendedTextMessage?.text || '' },
+                    image: m.imageMessage ? { caption: m.imageMessage.caption || '[Bild]' } : undefined,
+                    document: m.documentMessage ? { caption: m.documentMessage.caption || '', filename: m.documentMessage.fileName || '[Dokument]' } : undefined,
+                    audio: m.audioMessage ? {} : undefined,
+                    video: m.videoMessage ? { caption: m.videoMessage.caption || '[Video]' } : undefined,
+                    timestamp: evoMsg.messageTimestamp || ''
+                };
 
-                        let content = '';
-                        let msgType = 'text';
+                let content = '';
+                let msgType = 'text';
 
-                        switch (msg.type) {
-                            case 'text':
-                                content = msg.text?.body || '';
-                                msgType = 'text';
-                                break;
-                            case 'image':
-                                content = msg.image?.caption || '[Bild]';
-                                msgType = 'image';
-                                break;
-                            case 'document':
-                                content = msg.document?.caption || msg.document?.filename || '[Dokument]';
-                                msgType = 'document';
-                                break;
-                            case 'audio':
-                                content = '[Sprachnachricht]';
-                                msgType = 'audio';
-                                break;
-                            case 'video':
-                                content = msg.video?.caption || '[Video]';
-                                msgType = 'video';
-                                break;
-                            case 'location':
-                                content = `[Standort: ${msg.location?.latitude}, ${msg.location?.longitude}]`;
-                                msgType = 'location';
-                                break;
-                            default:
-                                content = `[${msg.type}]`;
-                                msgType = msg.type;
-                        }
-
-                        const incomingMsg = {
-                            id: msg.id,
-                            phoneNumber: senderPhone,
-                            senderName: senderName,
-                            direction: 'inbound',
-                            type: msgType,
-                            content: content,
-                            status: 'received',
-                            whatsappTimestamp: msg.timestamp,
-                            timestamp: new Date().toISOString(),
-                            customerId: this._matchCustomerByPhone(senderPhone),
-                            rawPayload: msg
-                        };
-
-                        // Store in message log
-                        this._logMessage(incomingMsg);
-
-                        // Update conversation
-                        this._updateConversation(senderPhone, {
-                            lastMessage: content,
-                            lastMessageTime: incomingMsg.timestamp,
-                            direction: 'inbound',
-                            senderName: senderName,
-                            unread: true
-                        }, incomingMsg.customerId);
-
-                        // Log to communication service
-                        this._logToCommunicationService('inbound', senderPhone, content, incomingMsg.customerId, senderName);
-
-                        // Trigger notification
-                        this._triggerNotification(senderName, content);
-
-                        processedMessages.push(incomingMsg);
-                    }
-
-                    // Handle status updates (sent, delivered, read)
-                    if (value.statuses) {
-                        for (const status of value.statuses) {
-                            this._updateMessageStatus(status.id, status.status, status.timestamp);
-                        }
-                    }
+                switch (msg.type) {
+                    case 'text':
+                        content = msg.text?.body || '';
+                        msgType = 'text';
+                        break;
+                    case 'image':
+                        content = msg.image?.caption || '[Bild]';
+                        msgType = 'image';
+                        break;
+                    case 'document':
+                        content = msg.document?.caption || msg.document?.filename || '[Dokument]';
+                        msgType = 'document';
+                        break;
+                    case 'audio':
+                        content = '[Sprachnachricht]';
+                        msgType = 'audio';
+                        break;
+                    case 'video':
+                        content = msg.video?.caption || '[Video]';
+                        msgType = 'video';
+                        break;
+                    case 'location':
+                        content = `[Standort: ${msg.location?.latitude}, ${msg.location?.longitude}]`;
+                        msgType = 'location';
+                        break;
+                    default:
+                        content = `[${msg.type}]`;
+                        msgType = msg.type;
                 }
+
+                const incomingMsg = {
+                    id: msg.id,
+                    phoneNumber: senderPhone,
+                    senderName: senderName,
+                    direction: 'inbound',
+                    type: msgType,
+                    content: content,
+                    status: 'received',
+                    whatsappTimestamp: msg.timestamp,
+                    timestamp: new Date().toISOString(),
+                    customerId: this._matchCustomerByPhone(senderPhone),
+                    rawPayload: msg
+                };
+
+                // Store in message log
+                this._logMessage(incomingMsg);
+
+                // Update conversation
+                this._updateConversation(senderPhone, {
+                    lastMessage: content,
+                    lastMessageTime: incomingMsg.timestamp,
+                    direction: 'inbound',
+                    senderName: senderName,
+                    unread: true
+                }, incomingMsg.customerId);
+
+                // Log to communication service
+                this._logToCommunicationService('inbound', senderPhone, content, incomingMsg.customerId, senderName);
+
+                // Trigger notification
+                this._triggerNotification(senderName, content);
+
+                processedMessages.push(incomingMsg);
             }
 
             return { processed: true, messages: processedMessages };
@@ -967,7 +949,7 @@ class WhatsAppService {
         const options = {
             method: method,
             headers: {
-                'Authorization': `Bearer ${this.config.accessToken}`,
+                'apikey': this.config.apiKey,
                 'Content-Type': 'application/json'
             }
         };
@@ -1043,11 +1025,9 @@ class WhatsAppService {
     async _sendReadReceipt(messageId) {
         if (!this.isConfigured() || !messageId) { return; }
 
-        const url = `${this.config.apiUrl}/${this.config.phoneNumberId}/messages`;
+        const url = `${this.config.apiUrl}/chat/markMessageAsRead/${this.config.instanceName}`;
         const body = {
-            messaging_product: 'whatsapp',
-            status: 'read',
-            message_id: messageId
+            id: messageId
         };
 
         try {

@@ -75,9 +75,60 @@ class SetupWizardService {
                 ]
             },
             {
+                id: 'integrations',
+                type: 'user',
+                title: 'Integrationen einrichten',
+                description: 'Verbinden Sie optionale Dienste. Sie können diesen Schritt auch überspringen und später konfigurieren.',
+                required: false,
+                fields: [],
+                integrations: [
+                    {
+                        id: 'paperless',
+                        name: 'Paperless-ngx',
+                        icon: '\u{1F4C4}',
+                        description: 'Dokumentenmanagement',
+                        fields: [
+                            { name: 'freyai_paperless_url', label: 'Paperless URL', placeholder: 'https://docs.example.de', type: 'url' },
+                            { name: 'freyai_paperless_token', label: 'API Token', placeholder: 'Token ...', type: 'password' }
+                        ]
+                    },
+                    {
+                        id: 'calcom',
+                        name: 'Cal.com',
+                        icon: '\u{1F4C5}',
+                        description: 'Terminbuchung',
+                        fields: [
+                            { name: 'freyai_calcom_url', label: 'Cal.com URL', placeholder: 'https://cal.example.de', type: 'url' },
+                            { name: 'freyai_calcom_api_key', label: 'API Key', placeholder: 'cal_live_...', type: 'password' }
+                        ]
+                    },
+                    {
+                        id: 'postiz',
+                        name: 'Postiz',
+                        icon: '\u{1F4F1}',
+                        description: 'Social-Media-Planung',
+                        fields: [
+                            { name: 'freyai_postiz_url', label: 'Postiz URL', placeholder: 'https://social.example.de', type: 'url' },
+                            { name: 'freyai_postiz_api_key', label: 'API Key', placeholder: 'API Key ...', type: 'password' }
+                        ]
+                    },
+                    {
+                        id: 'whatsapp',
+                        name: 'WhatsApp',
+                        icon: '\u{1F4AC}',
+                        description: 'WhatsApp Business (Evolution API)',
+                        fields: [
+                            { name: 'freyai_whatsapp_api_url', label: 'API URL', placeholder: 'https://api.example.de', type: 'url' },
+                            { name: 'freyai_whatsapp_api_key', label: 'API Key', placeholder: 'API Key ...', type: 'password' },
+                            { name: 'freyai_whatsapp_instance', label: 'Instanzname', placeholder: 'meine-instanz', type: 'text' }
+                        ]
+                    }
+                ]
+            },
+            {
                 id: 'complete',
                 type: 'user',
-                title: 'Fertig! ✓',
+                title: 'Fertig! \u2713',
                 description: 'Ihre Firmendaten wurden gespeichert. Sie können jetzt direkt mit FreyAI Visions arbeiten.',
                 required: false,
                 fields: []
@@ -293,8 +344,114 @@ class SetupWizardService {
             'company_logo'
         ];
 
+        // Also clear integration fields
+        const intStep = this.getIntegrationsStep();
+        if (intStep && intStep.integrations) {
+            intStep.integrations.forEach(integration => {
+                integration.fields.forEach(f => userFields.push(f.name));
+            });
+        }
+
         userFields.forEach(field => localStorage.removeItem(field));
         this.currentStep = 0;
+    }
+
+    /**
+     * Get the integrations step definition
+     */
+    getIntegrationsStep() {
+        return this.steps.find(s => s.id === 'integrations');
+    }
+
+    /**
+     * Check if an integration is configured (all fields have values)
+     */
+    isIntegrationConfigured(integrationId) {
+        const step = this.getIntegrationsStep();
+        if (!step) { return false; }
+        const integration = step.integrations.find(i => i.id === integrationId);
+        if (!integration) { return false; }
+        return integration.fields.every(f => {
+            const val = localStorage.getItem(f.name);
+            return val && val.trim() !== '';
+        });
+    }
+
+    /**
+     * Save an integration field value
+     */
+    saveIntegrationField(fieldName, value) {
+        localStorage.setItem(fieldName, (value || '').trim());
+    }
+
+    /**
+     * Test an integration connection
+     * @returns {Promise<{success: boolean, message: string}>}
+     */
+    async testIntegration(integrationId) {
+        const step = this.getIntegrationsStep();
+        if (!step) { return { success: false, message: 'Integrationsschritt nicht gefunden.' }; }
+        const integration = step.integrations.find(i => i.id === integrationId);
+        if (!integration) { return { success: false, message: 'Integration nicht gefunden.' }; }
+
+        // Check that required fields are filled
+        const hasAllFields = integration.fields.every(f => {
+            const val = localStorage.getItem(f.name);
+            return val && val.trim() !== '';
+        });
+        if (!hasAllFields) {
+            return { success: false, message: 'Bitte alle Felder ausfüllen.' };
+        }
+
+        try {
+            switch (integrationId) {
+                case 'paperless': {
+                    const url = localStorage.getItem('freyai_paperless_url');
+                    const token = localStorage.getItem('freyai_paperless_token');
+                    const resp = await fetch(`${url}/api/documents/?page_size=1`, {
+                        headers: { 'Authorization': `Token ${token}` }
+                    });
+                    return resp.ok
+                        ? { success: true, message: 'Paperless-ngx verbunden.' }
+                        : { success: false, message: `Fehler: HTTP ${resp.status}` };
+                }
+                case 'calcom': {
+                    const url = localStorage.getItem('freyai_calcom_url');
+                    const key = localStorage.getItem('freyai_calcom_api_key');
+                    const resp = await fetch(`${url}/api/v1/me`, {
+                        headers: { 'Authorization': `Bearer ${key}` }
+                    });
+                    return resp.ok
+                        ? { success: true, message: 'Cal.com verbunden.' }
+                        : { success: false, message: `Fehler: HTTP ${resp.status}` };
+                }
+                case 'postiz': {
+                    const url = localStorage.getItem('freyai_postiz_url');
+                    const key = localStorage.getItem('freyai_postiz_api_key');
+                    const resp = await fetch(`${url}/api/posts?limit=1`, {
+                        headers: { 'Authorization': `Bearer ${key}`, 'Accept': 'application/json' }
+                    });
+                    return resp.ok
+                        ? { success: true, message: 'Postiz verbunden.' }
+                        : { success: false, message: `Fehler: HTTP ${resp.status}` };
+                }
+                case 'whatsapp': {
+                    const url = localStorage.getItem('freyai_whatsapp_api_url');
+                    const key = localStorage.getItem('freyai_whatsapp_api_key');
+                    const instance = localStorage.getItem('freyai_whatsapp_instance');
+                    const resp = await fetch(`${url}/instance/connectionState/${instance}`, {
+                        headers: { 'apikey': key }
+                    });
+                    return resp.ok
+                        ? { success: true, message: 'WhatsApp verbunden.' }
+                        : { success: false, message: `Fehler: HTTP ${resp.status}` };
+                }
+                default:
+                    return { success: false, message: 'Unbekannte Integration.' };
+            }
+        } catch (err) {
+            return { success: false, message: `Verbindungsfehler: ${err.message}` };
+        }
     }
 
     /**

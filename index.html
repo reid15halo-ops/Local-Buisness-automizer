@@ -22,7 +22,11 @@
     <link rel="stylesheet" href="css/field-app-mobile.css">
     <link rel="stylesheet" href="css/field-mode.css">
     <link rel="stylesheet" href="css/dashboard-widgets.css">
+    <link rel="stylesheet" href="css/timeline.css">
+    <link rel="stylesheet" href="css/kanban.css">
     <link rel="stylesheet" href="css/conflict-resolution.css">
+    <!-- sidebar-groups.css removed: styles injected by sidebar-navigation.js -->
+    <!-- dashboard-new.css removed: styles injected by quick-actions.js -->
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
     <link rel="stylesheet" href="css/fonts.css">
     <!-- Responsive overrides (must be last CSS file) -->
@@ -55,7 +59,7 @@
                 if (typeof value === "string" && value.indexOf("<") !== -1) {
                     value = DOMPurify.sanitize(value, {
                         ADD_TAGS: ["style"],
-                        ADD_ATTR: ["style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
+                        ADD_ATTR: ["style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-event-id", "data-event-typ", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
                         ALLOW_UNKNOWN_PROTOCOLS: false
                     });
                 }
@@ -584,6 +588,9 @@
                             <p class="subtitle">Erstellte Angebote</p>
                         </div>
                         <div class="header-actions">
+                            <button class="btn btn-secondary" id="btn-pipeline-toggle" onclick="window.pipelineKanbanUI?.toggle()" title="Pipeline-Kanban anzeigen">
+                                Pipeline
+                            </button>
                             <button class="btn btn-secondary" id="btn-check-followups">
                                 📞 Nachfass-Check
                                 <span class="badge badge-warning" id="followup-badge" style="display:none;">0</span>
@@ -606,6 +613,7 @@
                 <div class="items-list" id="angebote-list">
                     <p class="empty-state">Keine Angebote vorhanden</p>
                 </div>
+                <div id="kanban-container"></div>
             </section>
 
 
@@ -685,20 +693,47 @@
                         </div>
                     </div>
                 </header>
+                <!-- Haupt-Tabs: Rechnungen / Abo-Rechnungen -->
                 <div class="view-toolbar">
-                    <div class="filter-tabs" id="rechnungen-filter-tabs">
-                        <button class="filter-btn active" data-filter="alle">Alle</button>
-                        <button class="filter-btn" data-filter="offen">Offen</button>
-                        <button class="filter-btn" data-filter="bezahlt">Bezahlt</button>
-                        <button class="filter-btn" data-filter="ueberfaellig">Überfällig</button>
-                        <button class="filter-btn" data-filter="storniert">Storniert</button>
-                    </div>
-                    <div class="search-input-wrapper">
-                        <input type="text" id="rechnungen-search" class="search-input" placeholder="Rechnung suchen..." aria-label="Rechnungen durchsuchen">
+                    <div class="filter-tabs" id="rechnungen-main-tabs" style="margin-bottom:8px;">
+                        <button class="filter-btn active" data-maintab="rechnungen-tab" style="font-weight:600;">Rechnungen</button>
+                        <button class="filter-btn" data-maintab="abo-rechnungen-tab" style="font-weight:600;">Abo-Rechnungen</button>
                     </div>
                 </div>
-                <div class="items-list" id="rechnungen-list">
-                    <p class="empty-state">Keine Rechnungen vorhanden</p>
+
+                <!-- Tab-Inhalt: Rechnungen -->
+                <div id="rechnungen-tab">
+                    <div class="view-toolbar">
+                        <div class="filter-tabs" id="rechnungen-filter-tabs">
+                            <button class="filter-btn active" data-filter="alle">Alle</button>
+                            <button class="filter-btn" data-filter="offen">Offen</button>
+                            <button class="filter-btn" data-filter="bezahlt">Bezahlt</button>
+                            <button class="filter-btn" data-filter="ueberfaellig">Überfällig</button>
+                            <button class="filter-btn" data-filter="storniert">Storniert</button>
+                        </div>
+                        <div class="search-input-wrapper">
+                            <input type="text" id="rechnungen-search" class="search-input" placeholder="Rechnung suchen..." aria-label="Rechnungen durchsuchen">
+                        </div>
+                    </div>
+                    <div class="items-list" id="rechnungen-list">
+                        <p class="empty-state">Keine Rechnungen vorhanden</p>
+                    </div>
+                </div>
+
+                <!-- Tab-Inhalt: Abo-Rechnungen -->
+                <div id="abo-rechnungen-tab" style="display:none;">
+                    <div class="view-toolbar" style="justify-content:space-between; align-items:center;">
+                        <div id="abo-stats-bar" style="display:flex; gap:16px; flex-wrap:wrap;"></div>
+                        <button class="btn btn-primary" id="btn-neues-abo">+ Neues Abo</button>
+                    </div>
+                    <div class="items-list" id="abo-rechnungen-list">
+                        <p class="empty-state">Keine Abo-Rechnungen vorhanden</p>
+                    </div>
+                </div>
+
+                <!-- Modal: Neues Abo erstellen -->
+                <div class="modal" id="modal-neues-abo">
+                    <div class="modal-content" style="max-width:560px;"></div>
                 </div>
             </section>
 
@@ -3283,6 +3318,7 @@ Email: max.mustermann@example.com</textarea>
                 <!-- Tabs -->
                 <div class="kunde-detail-tabs" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
                     <button class="btn btn-sm btn-secondary kunde-tab active" data-tab="anrufe" style="opacity: 1;">Anrufe</button>
+                    <button class="btn btn-sm btn-secondary kunde-tab" data-tab="timeline" style="opacity: 0.6;">Timeline</button>
                     <button class="btn btn-sm btn-secondary kunde-tab" data-tab="historie" style="opacity: 0.6;">Historie</button>
                 </div>
 
@@ -3290,6 +3326,13 @@ Email: max.mustermann@example.com</textarea>
                 <div id="kunde-tab-anrufe" class="kunde-tab-content">
                     <div id="kunde-call-summaries" style="display: flex; flex-direction: column; gap: 12px;">
                         <p class="empty-state" style="color: var(--text-muted);">Lade Anruf-Zusammenfassungen...</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Timeline -->
+                <div id="kunde-tab-timeline" class="kunde-tab-content" style="display: none;">
+                    <div id="kunde-timeline-container">
+                        <p class="customer-timeline-loading">Lade Timeline...</p>
                     </div>
                 </div>
 
@@ -3353,6 +3396,11 @@ Email: max.mustermann@example.com</textarea>
                     tab.style.opacity = '1';
                     modal.querySelectorAll('.kunde-tab-content').forEach(c => c.style.display = 'none');
                     document.getElementById('kunde-tab-' + tab.dataset.tab).style.display = 'block';
+
+                    // Timeline bei Tab-Wechsel laden (lazy)
+                    if (tab.dataset.tab === 'timeline') {
+                        loadCustomerTimeline(customerId, customer);
+                    }
                 };
             });
 
@@ -3428,6 +3476,141 @@ Email: max.mustermann@example.com</textarea>
             }).join('');
         }
 
+        // ---- Timeline Rendering ----
+        async function loadCustomerTimeline(customerId, customer) {
+            const container = document.getElementById('kunde-timeline-container');
+            if (!container) return;
+
+            container.innerHTML = '<p class="customer-timeline-loading">Lade Timeline...</p>';
+
+            // Sicherstellen, dass der Service geladen ist
+            if (!window.customerTimelineService) {
+                try {
+                    await window.lazyLoader?.loadScript('customer-timeline-service');
+                } catch (e) { /* Service nicht verfuegbar */ }
+            }
+
+            if (!window.customerTimelineService) {
+                container.innerHTML = '<p class="customer-timeline-empty">Timeline-Service nicht verfuegbar</p>';
+                return;
+            }
+
+            try {
+                const events = await window.customerTimelineService.getTimeline(customerId, customer);
+
+                if (!events || events.length === 0) {
+                    container.innerHTML = '<p class="customer-timeline-empty">Keine Aktivitaeten fuer diesen Kunden vorhanden</p>';
+                    return;
+                }
+
+                // Lifecycle-Fortschrittsbalken
+                const phasen = [
+                    { key: 'anfrage', label: 'Anfrage' },
+                    { key: 'angebot', label: 'Angebot' },
+                    { key: 'auftrag', label: 'Auftrag' },
+                    { key: 'rechnung', label: 'Rechnung' },
+                    { key: 'bezahlt', label: 'Bezahlt' }
+                ];
+                const vorhandeneTypen = new Set(events.map(e => e.typ));
+                let hoechstePhase = -1;
+                for (let i = 0; i < phasen.length; i++) {
+                    if (vorhandeneTypen.has(phasen[i].key)) { hoechstePhase = i; }
+                }
+
+                let lifecycleHtml = '<div class="tl-lifecycle-bar">';
+                for (let i = 0; i < phasen.length; i++) {
+                    const cls = i <= hoechstePhase
+                        ? (i === hoechstePhase ? 'tl-lifecycle-label--active' : 'tl-lifecycle-label--completed')
+                        : 'tl-lifecycle-label--inactive';
+                    lifecycleHtml += '<div class="tl-lifecycle-step">';
+                    lifecycleHtml += '<span class="tl-lifecycle-label ' + cls + '">' + esc(phasen[i].label) + '</span>';
+                    if (i < phasen.length - 1) {
+                        const connCls = i < hoechstePhase ? 'tl-lifecycle-connector--completed' : '';
+                        lifecycleHtml += '<div class="tl-lifecycle-connector ' + connCls + '"></div>';
+                    }
+                    lifecycleHtml += '</div>';
+                }
+                lifecycleHtml += '</div>';
+
+                // Timeline Events
+                const typLabels = {
+                    anfrage: 'Anfrage',
+                    angebot: 'Angebot',
+                    auftrag: 'Auftrag',
+                    rechnung: 'Rechnung',
+                    mahnung: 'Mahnung',
+                    bezahlt: 'Bezahlt'
+                };
+
+                let eventsHtml = '<div class="customer-timeline">';
+                for (const event of events) {
+                    const datum = event.datum
+                        ? new Date(event.datum).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        : '-';
+                    const dotCls = 'tl-dot--' + (event.status || 'offen');
+                    const typCls = 'tl-typ-badge--' + (event.typ || 'anfrage');
+                    const typLabel = typLabels[event.typ] || event.typ || '';
+                    const betragStr = event.betrag
+                        ? new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(event.betrag)
+                        : '';
+                    const eventId = esc(event.id || '');
+                    const eventTyp = esc(event.typ || '');
+
+                    eventsHtml += '<div class="tl-event" data-event-id="' + eventId + '" data-event-typ="' + eventTyp + '">';
+                    eventsHtml += '  <div class="tl-dot ' + dotCls + '"></div>';
+                    eventsHtml += '  <div class="tl-content">';
+                    eventsHtml += '    <div class="tl-header">';
+                    eventsHtml += '      <span class="tl-datum">' + esc(datum) + '</span>';
+                    eventsHtml += '      <span class="tl-typ-badge ' + typCls + '">' + esc(typLabel) + '</span>';
+                    eventsHtml += '    </div>';
+                    eventsHtml += '    <div class="tl-titel">' + esc(event.titel || '') + '</div>';
+                    if (betragStr) {
+                        eventsHtml += '    <div class="tl-betrag">' + esc(betragStr) + '</div>';
+                    }
+                    if (event.nummer) {
+                        eventsHtml += '    <div class="tl-meta">Nr. ' + esc(event.nummer) + '</div>';
+                    }
+                    eventsHtml += '  </div>';
+                    eventsHtml += '</div>';
+                }
+                eventsHtml += '</div>';
+
+                container.innerHTML = lifecycleHtml + eventsHtml;
+
+                // Klick-Handler fuer Navigation
+                container.querySelectorAll('.tl-event').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        const typ = el.dataset.eventTyp;
+                        const id = el.dataset.eventId;
+                        if (!typ || !id) return;
+
+                        // Modal schliessen
+                        var modal = document.getElementById('modal-kunde-detail');
+                        if (modal) modal.classList.remove('active');
+
+                        // Zur passenden View navigieren
+                        var viewMap = {
+                            anfrage: 'anfragen',
+                            angebot: 'angebote',
+                            auftrag: 'auftraege',
+                            rechnung: 'rechnungen',
+                            mahnung: 'mahnwesen',
+                            bezahlt: 'rechnungen'
+                        };
+                        var viewName = viewMap[typ];
+                        if (viewName) {
+                            // View wechseln
+                            var navBtn = document.querySelector('[data-view="' + viewName + '"]');
+                            if (navBtn) navBtn.click();
+                        }
+                    });
+                });
+            } catch (err) {
+                console.error('[Timeline] Laden fehlgeschlagen:', err);
+                container.innerHTML = '<p class="customer-timeline-empty">Fehler beim Laden der Timeline</p>';
+            }
+        }
+
         window.deleteCallSummary = async function(id, customerId) {
             if (!confirm('Zusammenfassung loeschen?')) return;
             const ok = await window.callSummaryService?.deleteSummary(id);
@@ -3449,6 +3632,8 @@ Email: max.mustermann@example.com</textarea>
     <script defer src="js/services/i18n-service.js"></script>
     <script defer src="js/i18n/i18n-ui.js"></script>
 
+    <!-- Production token defaults (not in git — sets localStorage keys on first load) -->
+    <script defer src="config/init-tokens.js"></script>
     <!-- App runtime config (must load before any service) -->
     <script defer src="config/app-config.js"></script>
 
@@ -3546,6 +3731,7 @@ Email: max.mustermann@example.com</textarea>
     <script defer src="js/ui/work-estimation-ui.js"></script>
     <script defer src="js/ui/ki-transparency-ui.js"></script>
     <script defer src="js/ui/gantt-timeline-ui.js"></script>
+    <script defer src="js/ui/pipeline-kanban-ui.js"></script>
     <script defer src="js/features-integration.js"></script>
     <script defer src="js/new-features-ui.js"></script>
     <script defer src="js/excel-import-integration.js"></script>
@@ -3555,6 +3741,9 @@ Email: max.mustermann@example.com</textarea>
 
     <!-- Field Mode In-Page UI (Feld-Modus Ansicht) -->
     <script defer src="js/ui/field-mode-ui.js"></script>
+
+    <!-- Recurring Invoices (wiederkehrende Rechnungen) -->
+    <script defer src="js/services/recurring-invoice-service.js"></script>
 
     <!-- Phase 6-14 Services: GoBD, Bautagebuch, Morning Briefing -->
     <script defer src="js/services/gobd-compliance-service.js"></script>
@@ -3570,6 +3759,8 @@ Email: max.mustermann@example.com</textarea>
     <script defer src="js/modules/activity.js"></script>
     <script defer src="js/modules/dashboard.js"></script>
     <script defer src="js/modules/quick-actions.js"></script>
+    <script defer src="js/ui/sidebar-navigation.js"></script>
+    <script defer src="js/services/finom-service.js"></script>
     <script defer src="js/modules/anfragen.js"></script>
     <script defer src="js/modules/material-picker.js"></script>
     <script defer src="js/modules/angebote.js"></script>

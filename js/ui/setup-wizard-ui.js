@@ -9,7 +9,7 @@ class SetupWizardUI {
         this.modal = null;
         this.service = window.setupWizard;
         this.logoPreview = null;
-        this._esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+        this._esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
     /**
@@ -99,6 +99,8 @@ class SetupWizardUI {
 
         if (step.id === 'complete') {
             nextBtn.textContent = 'Los geht\'s!';
+        } else if (step.id === 'integrations') {
+            nextBtn.textContent = 'Weiter';
         } else {
             nextBtn.textContent = 'Weiter';
         }
@@ -106,6 +108,8 @@ class SetupWizardUI {
         // Render step content
         if (step.id === 'complete') {
             body.innerHTML = this.renderCompleteStep(step);
+        } else if (step.id === 'integrations') {
+            body.innerHTML = this.renderIntegrationsStep(step);
         } else if (step.type === 'user') {
             body.innerHTML = this.renderUserOnboardingStep(step);
         } else {
@@ -199,6 +203,129 @@ class SetupWizardUI {
     }
 
     /**
+     * Render integrations configuration step
+     */
+    renderIntegrationsStep(step) {
+        const esc = this._esc;
+        const integrations = step.integrations || [];
+
+        const cardsHTML = integrations.map(integration => {
+            const configured = this.service.isIntegrationConfigured(integration.id);
+            const statusClass = configured ? 'integration-configured' : 'integration-not-configured';
+            const statusText = configured ? 'Konfiguriert' : 'Nicht konfiguriert';
+            const statusIcon = configured ? '\u2705' : '\u26AA';
+
+            const fieldsHTML = integration.fields.map(field => {
+                const currentValue = localStorage.getItem(field.name) || '';
+                return `
+                    <div class="wizard-field-group wizard-integration-field">
+                        <label for="wizard-int-${esc(field.name)}" class="wizard-field-label">
+                            ${esc(field.label)}
+                        </label>
+                        <input
+                            type="${field.type === 'password' ? 'password' : field.type}"
+                            id="wizard-int-${esc(field.name)}"
+                            name="${esc(field.name)}"
+                            placeholder="${esc(field.placeholder)}"
+                            value="${esc(currentValue)}"
+                            class="wizard-input-user"
+                            data-integration="${esc(integration.id)}"
+                        />
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="wizard-integration-card ${statusClass}" data-integration-id="${esc(integration.id)}">
+                    <div class="wizard-integration-header">
+                        <span class="wizard-integration-icon">${integration.icon}</span>
+                        <div class="wizard-integration-info">
+                            <strong class="wizard-integration-name">${esc(integration.name)}</strong>
+                            <span class="wizard-integration-desc">${esc(integration.description)}</span>
+                        </div>
+                        <span class="wizard-integration-status">${statusIcon} ${statusText}</span>
+                    </div>
+                    <div class="wizard-integration-fields">
+                        ${fieldsHTML}
+                    </div>
+                    <div class="wizard-integration-actions">
+                        <button type="button" class="btn-secondary btn-sm wizard-integration-test" data-integration="${esc(integration.id)}">
+                            Testen
+                        </button>
+                        <span class="wizard-integration-test-result" id="int-test-${esc(integration.id)}"></span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="wizard-step-user wizard-step-integrations">
+                <p class="wizard-integrations-hint">Alle Integrationen sind optional. Sie k\u00F6nnen diesen Schritt \u00FCberspringen.</p>
+                <div class="wizard-integrations-grid">
+                    ${cardsHTML}
+                </div>
+                <div class="wizard-errors" id="wizard-errors" style="display: none;"></div>
+            </div>
+        `;
+    }
+
+    /**
+     * Attach event listeners for the integrations step
+     */
+    attachIntegrationEventListeners(step) {
+        const integrations = step.integrations || [];
+
+        integrations.forEach(integration => {
+            // Save field values on input
+            integration.fields.forEach(field => {
+                const input = document.getElementById(`wizard-int-${field.name}`);
+                if (input) {
+                    input.addEventListener('input', (e) => {
+                        this.service.saveIntegrationField(field.name, e.target.value);
+                        // Update status display
+                        this._updateIntegrationStatus(integration.id);
+                    });
+                }
+            });
+
+            // Test button
+            const testBtn = document.querySelector(`.wizard-integration-test[data-integration="${integration.id}"]`);
+            if (testBtn) {
+                testBtn.addEventListener('click', async () => {
+                    const resultEl = document.getElementById(`int-test-${integration.id}`);
+                    if (resultEl) {
+                        resultEl.textContent = 'Teste...';
+                        resultEl.className = 'wizard-integration-test-result testing';
+                    }
+                    testBtn.disabled = true;
+                    const result = await this.service.testIntegration(integration.id);
+                    if (resultEl) {
+                        resultEl.textContent = this._esc(result.message);
+                        resultEl.className = 'wizard-integration-test-result ' + (result.success ? 'success' : 'error');
+                    }
+                    testBtn.disabled = false;
+                    this._updateIntegrationStatus(integration.id);
+                });
+            }
+        });
+    }
+
+    /**
+     * Update the status indicator of an integration card
+     */
+    _updateIntegrationStatus(integrationId) {
+        const card = document.querySelector(`.wizard-integration-card[data-integration-id="${integrationId}"]`);
+        if (!card) { return; }
+        const configured = this.service.isIntegrationConfigured(integrationId);
+        const statusEl = card.querySelector('.wizard-integration-status');
+        if (statusEl) {
+            statusEl.textContent = configured ? '\u2705 Konfiguriert' : '\u26AA Nicht konfiguriert';
+        }
+        card.classList.toggle('integration-configured', configured);
+        card.classList.toggle('integration-not-configured', !configured);
+    }
+
+    /**
      * Render completion step
      */
     renderCompleteStep(step) {
@@ -270,6 +397,11 @@ class SetupWizardUI {
      * Attach step-specific event listeners
      */
     attachStepEventListeners(step) {
+        // Handle integrations step separately
+        if (step.id === 'integrations') {
+            this.attachIntegrationEventListeners(step);
+            return;
+        }
         if (step.type !== 'user') {return;}
 
         // Save text field values on input
@@ -397,6 +529,13 @@ class SetupWizardUI {
             if (window.app && window.app.init) {
                 window.app.init();
             }
+            return;
+        }
+
+        // Integrations step is fully optional — skip validation
+        if (step.id === 'integrations') {
+            this.service.nextStep();
+            this.updateStepContent();
             return;
         }
 

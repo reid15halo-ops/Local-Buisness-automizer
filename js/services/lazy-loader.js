@@ -28,6 +28,7 @@ class LazyLoader {
                 'customer-portal-service',
                 'portal-service',
                 'lead-service',
+                'customer-timeline-service',
                 'communication-service',
                 'unified-comm-service',
                 'communication-hub-controller',
@@ -50,7 +51,8 @@ class LazyLoader {
                 'banking-service',
                 'stripe-service',
                 'datev-export-service',
-                'purchase-order-service'
+                'purchase-order-service',
+                'recurring-invoice-service'
             ],
 
             // Automation & Workflows - load when automation features needed
@@ -123,12 +125,14 @@ class LazyLoader {
                 'material-service',
                 'reorder-engine-service',
                 'morning-briefing-service',
-                'cashflow-forecast-service'
+                'cashflow-forecast-service',
+                'kpi-alert-service'
             ],
 
             // Advanced Features - load on demand
             advanced: [
                 'contract-service',
+                'recurring-invoice-service',
                 'dunning-service',
                 'warranty-service',
                 'sms-reminder-service',
@@ -179,15 +183,15 @@ class LazyLoader {
             'workflow-builder': ['workflow-builder-ui'],
             // Photo gallery rendered inside job/document detail views
             'documents': ['photo-gallery-ui'],
-            // Dashboard widgets companion UI for the charts group
-            'charts': ['dashboard-widget-ui'],
+            // Dashboard widgets companion UI + service for the charts group
+            'charts': ['dashboard-widget-service', 'dashboard-widget-ui'],
             // Fragebogen import wizard button — injected when setup wizard is active
             'settings': ['fragebogen-import-ui']
         };
 
         // View to service group mapping
         this.viewToGroups = {
-            'dashboard': ['workflow', 'crm', 'ai'],
+            'dashboard': ['workflow', 'crm', 'ai', 'charts'],
             'anfragen': ['workflow', 'crm', 'automation'],
             'angebote': ['workflow', 'crm', 'ai'],
             'auftraege': ['workflow', 'crm', 'automation', 'ai'],

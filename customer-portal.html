@@ -328,9 +328,9 @@ async function loadPortal(token) {
             }
         }
 
-        // Fallback: read from localStorage (same-origin, offline/local mode)
+        // Fallback: read from Supabase via customerPortalService (same-origin mode)
         if (!data) {
-            data = getPortalDataLocal(token);
+            data = await getPortalDataLocal(token);
         }
 
         if (!data || !data.customer) {
@@ -348,37 +348,15 @@ async function loadPortal(token) {
     }
 }
 
-// Local fallback (offline / same-origin mode) — reads from customerPortalService if available
-function getPortalDataLocal(token) {
-    // The main app stores portal data via customerPortalService which writes to localStorage.
-    // We can call it directly if this page is served from the same origin.
+// Local fallback (same-origin mode) — reads from customerPortalService (Supabase-backed)
+async function getPortalDataLocal(token) {
     if (window.customerPortalService) {
-        return window.customerPortalService.getPortalData(token);
+        return await window.customerPortalService.getPortalData(token);
     }
-    // Try reading raw token store
-    try {
-        const tokens = JSON.parse(localStorage.getItem('freyai_portal_tokens') || '[]');
-        const record = tokens.find(t => t.token === token && t.isActive);
-        if (!record) { return null; }
-        if (new Date(record.expiresAt) < new Date()) { return null; }
-        return {
-            customer: { id: record.customerId, name: 'Kunde' },
-            scope: record.scope,
-            companyInfo: getCompanyInfoLocal(),
-            quotes: [],
-            invoices: [],
-            messages: [],
-            photos: []
-        };
-    } catch { return null; }
+    return null;
 }
 
-function getCompanyInfoLocal() {
-    try {
-        const s = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
-        return { name: s.company_name || 'Unternehmen', email: s.company_email || '', phone: s.company_phone || '', logo: s.company_logo || null };
-    } catch { return { name: 'Unternehmen' }; }
-}
+// getCompanyInfoLocal removed — company info now comes from Supabase via customerPortalService
 
 // ============================================
 // Rendering

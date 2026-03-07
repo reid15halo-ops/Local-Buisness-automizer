@@ -207,8 +207,8 @@ function renderCustomers() {
         + portalPage;
 
     container.innerHTML = customers.map(c => {
-        // Check for an existing active portal token (localStorage fallback)
-        const existingToken = window.customerPortalService?.tokens?.find(
+        // Check for an existing active portal token (Supabase cache)
+        const existingToken = (window.customerPortalService?.tokens || []).find(
             t => t.customerId === c.id && t.isActive
         );
         const portalActive = !!existingToken;
@@ -275,13 +275,13 @@ function renderCustomers() {
             const { url } = await window.portalService.generateToken(customerId);
             return url;
         }
-        // Fallback: localStorage-based portal
+        // Fallback: Supabase-based customerPortalService
         if (!window.customerPortalService) {throw new Error('Portal-Service nicht verfügbar');}
-        const existing = window.customerPortalService.tokens?.find(
+        const existing = (window.customerPortalService.tokens || []).find(
             t => t.customerId === customerId && t.isActive
         );
         const tokenRecord = existing
-            || window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
+            || await window.customerPortalService.generateAccessToken(customerId, 'full', { expiresInDays: 30 });
         return `${portalBase}?token=${encodeURIComponent(tokenRecord.token)}`;
     }
 

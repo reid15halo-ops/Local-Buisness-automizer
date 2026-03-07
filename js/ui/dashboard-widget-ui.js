@@ -45,6 +45,12 @@ class DashboardWidgetUI {
         // Toolbar
         html += this._renderToolbar();
 
+        // KPI Alerts (oben, vor den Widgets)
+        html += '<div class="kpi-alerts-container" id="kpi-alerts-container"></div>';
+
+        // Alerts async laden und einfuegen
+        this._loadKpiAlerts();
+
         // Widget grid
         html += '<div class="widget-grid' + (this.editMode ? ' widget-edit-mode' : '') + '" id="widget-grid">';
 
@@ -142,7 +148,7 @@ class DashboardWidgetUI {
         const service = window.dashboardWidgetService;
         const dataOrPromise = service.getWidgetData(widget.id);
         const sizeClass = `widget-card-${widget.size || 'small'}`;
-        const asyncWidgets = ['cashflow-forecast'];
+        const asyncWidgets = ['cashflow-forecast', 'social-media'];
 
         // Async Widget: Placeholder rendern, dann nachladen
         if (asyncWidgets.includes(widget.id) && dataOrPromise && typeof dataOrPromise.then === 'function') {
@@ -170,7 +176,7 @@ class DashboardWidgetUI {
                 const el = document.getElementById(placeholderId);
                 if (!el) return;
                 if (data && data.error) {
-                    el.innerHTML = `<div class="widget-error">${data.message}</div>`;
+                    el.innerHTML = `<div class="widget-error">${this._escapeHtml(data.message)}</div>`;
                 } else {
                     el.innerHTML = this._renderWidgetContent(widget, data);
                 }
@@ -215,7 +221,7 @@ class DashboardWidgetUI {
         html += '<div class="widget-body">';
 
         if (data && data.error) {
-            html += `<div class="widget-error">${data.message}</div>`;
+            html += `<div class="widget-error">${this._escapeHtml(data.message)}</div>`;
         } else {
             html += this._renderWidgetContent(widget, data);
         }
@@ -254,6 +260,8 @@ class DashboardWidgetUI {
                 return this._renderChartContent(data);
             case 'cashflow-ai':
                 return this._renderCashflowAiContent(data);
+            case 'euer-live':
+                return this._renderEuerLiveContent(data);
             default:
                 return '<div class="widget-no-data">Keine Daten</div>';
         }
@@ -329,10 +337,95 @@ class DashboardWidgetUI {
         // Analyse (gekuerzt)
         if (data.analyse) {
             const kurzAnalyse = data.analyse.length > 160 ? data.analyse.substring(0, 157) + '...' : data.analyse;
-            html += `<div style="font-size:0.72rem;color:var(--text-secondary,#6b7280);border-top:1px solid var(--border-color,#e5e7eb);padding-top:0.5rem;line-height:1.5">${kurzAnalyse}</div>`;
+            html += `<div style="font-size:0.72rem;color:var(--text-secondary,#6b7280);border-top:1px solid var(--border-color,#e5e7eb);padding-top:0.5rem;line-height:1.5">${this._escapeHtml(kurzAnalyse)}</div>`;
         }
 
         html += `</div>`;
+        return html;
+    }
+
+    /**
+     * Render E\u00DCR Live widget content (finance overview grid).
+     * @param {Object} data
+     * @returns {string} HTML
+     * @private
+     */
+    _renderEuerLiveContent(data) {
+        const fmt = (v) => {
+            if (typeof v !== 'number' || isNaN(v)) return '0,00 \u20AC';
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v);
+        };
+
+        const gewinnColor = data.gewinn >= 0 ? '#22c55e' : '#ef4444';
+        const gewinnLabel = data.gewinn >= 0 ? 'Gewinn' : 'Verlust';
+
+        let html = `<div class="euer-live-widget" style="padding:0.25rem 0">`;
+
+        // --- Hauptzeile: Gewinn/Verlust ---
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border-color,#e5e7eb)">
+            <div>
+                <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">${this._escapeHtml(gewinnLabel)} ${this._escapeHtml(String(data.jahr))}</div>
+                <div style="font-size:1.5rem;font-weight:700;color:${gewinnColor}">${this._escapeHtml(fmt(data.gewinn))}</div>
+            </div>
+            <div style="text-align:right">
+                <span style="background:${gewinnColor}20;color:${gewinnColor};border:1px solid ${gewinnColor}40;padding:2px 8px;border-radius:4px;font-size:0.7rem;font-weight:600">${this._escapeHtml(gewinnLabel)}</span>
+            </div>
+        </div>`;
+
+        // --- Grid: Einnahmen / Ausgaben YTD ---
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem">`;
+
+        html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;border:1px solid var(--border-color,#e5e7eb)">
+            <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:2px">Einnahmen YTD</div>
+            <div style="font-size:1rem;font-weight:600;color:#22c55e">${this._escapeHtml(fmt(data.einnahmenYTD))}</div>
+        </div>`;
+
+        html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;border:1px solid var(--border-color,#e5e7eb)">
+            <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:2px">Ausgaben YTD</div>
+            <div style="font-size:1rem;font-weight:600;color:#ef4444">${this._escapeHtml(fmt(data.ausgabenYTD))}</div>
+        </div>`;
+
+        html += `</div>`;
+
+        // --- Aktuelles Quartal ---
+        html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;margin-bottom:0.75rem;border:1px solid var(--border-color,#e5e7eb)">
+            <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px">Aktuelles Quartal (${this._escapeHtml(data.quartal.label)})</div>
+            <div style="display:flex;justify-content:space-between">
+                <span style="font-size:0.85rem;color:#22c55e;font-weight:600">+ ${this._escapeHtml(fmt(data.quartal.einnahmen))}</span>
+                <span style="font-size:0.85rem;color:#ef4444;font-weight:600">- ${this._escapeHtml(fmt(data.quartal.ausgaben))}</span>
+            </div>
+        </div>`;
+
+        // --- Untere Dreier-Grid: Steuer / Forderungen / Verbindlichkeiten ---
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem">`;
+
+        // Steuer-Ruecklage
+        const steuerColor = data.steuerRuecklage > 0 ? '#eab308' : 'var(--text-muted)';
+        html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;text-align:center;border:1px solid var(--border-color,#e5e7eb)">
+            <div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:2px">Steuer-R\u00FCcklage</div>
+            <div style="font-size:0.8rem;font-weight:600;color:${steuerColor}">${this._escapeHtml(fmt(data.steuerRuecklage))}</div>
+            <div style="font-size:0.55rem;color:var(--text-muted)">${data.kleinunternehmer ? 'ESt (~25%)' : 'ESt+USt'}</div>
+        </div>`;
+
+        // Offene Forderungen
+        const fordColor = data.offeneForderungen > 0 ? '#22c55e' : 'var(--text-muted)';
+        html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;text-align:center;border:1px solid var(--border-color,#e5e7eb)">
+            <div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:2px">Forderungen</div>
+            <div style="font-size:0.8rem;font-weight:600;color:${fordColor}">${this._escapeHtml(fmt(data.offeneForderungen))}</div>
+            <div style="font-size:0.55rem;color:var(--text-muted)">offen</div>
+        </div>`;
+
+        // Offene Verbindlichkeiten
+        const verbColor = data.offeneVerbindlichkeiten > 0 ? '#ef4444' : 'var(--text-muted)';
+        html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;text-align:center;border:1px solid var(--border-color,#e5e7eb)">
+            <div style="font-size:0.6rem;color:var(--text-muted);margin-bottom:2px">Verbindlichk.</div>
+            <div style="font-size:0.8rem;font-weight:600;color:${verbColor}">${this._escapeHtml(fmt(data.offeneVerbindlichkeiten))}</div>
+            <div style="font-size:0.55rem;color:var(--text-muted)">offen</div>
+        </div>`;
+
+        html += `</div>`; // close grid
+
+        html += `</div>`; // close .euer-live-widget
         return html;
     }
 
@@ -346,14 +439,14 @@ class DashboardWidgetUI {
         const valueClass = data.status === 'negative' ? 'widget-kpi-value negative' : 'widget-kpi-value';
 
         let html = `<div class="widget-kpi">`;
-        html += `<span class="${valueClass}">${data.isFormattedValue ? data.value : data.value}</span>`;
+        html += `<span class="${valueClass}">${this._escapeHtml(String(data.value ?? ''))}</span>`;
 
         if (data.subValue) {
-            html += `<span class="widget-kpi-sub">${data.subValue}</span>`;
+            html += `<span class="widget-kpi-sub">${this._escapeHtml(String(data.subValue))}</span>`;
         }
 
         if (data.label) {
-            html += `<span class="widget-kpi-label">${data.label}</span>`;
+            html += `<span class="widget-kpi-label">${this._escapeHtml(String(data.label))}</span>`;
         }
 
         if (data.trend) {
@@ -400,7 +493,7 @@ class DashboardWidgetUI {
                 html += `<span class="widget-list-subtitle">${this._escapeHtml(item.subTitle)}</span>`;
             }
             if (item.timeFormatted) {
-                html += `<span class="widget-list-time">${item.timeFormatted}</span>`;
+                html += `<span class="widget-list-time">${this._escapeHtml(item.timeFormatted)}</span>`;
             }
             html += '</div>'; // close .widget-list-content
             html += '</div>'; // close .widget-list-item
@@ -408,6 +501,16 @@ class DashboardWidgetUI {
 
         html += '</div>'; // close .widget-list
         html += summaryHtml;
+
+        // External link (e.g. Postiz) — only allow http/https
+        if (data.externalLink && /^https?:\/\//.test(data.externalLink)) {
+            html += `<div class="widget-list-footer" style="text-align:right;padding-top:0.5rem">
+                <a href="${this._escapeHtml(data.externalLink)}" target="_blank" rel="noopener noreferrer"
+                   style="font-size:0.8rem;color:var(--accent-primary);text-decoration:none">
+                    ${this._escapeHtml(data.externalLinkLabel || 'Öffnen')} \u2192
+                </a>
+            </div>`;
+        }
 
         return html;
     }
@@ -713,6 +816,90 @@ class DashboardWidgetUI {
     }
 
     // ============================================
+    // KPI Alerts
+    // ============================================
+
+    /**
+     * Lade KPI-Alerts asynchron und rendere sie in den Container.
+     * @private
+     */
+    async _loadKpiAlerts() {
+        const container = document.getElementById('kpi-alerts-container');
+        if (!container) return;
+
+        const service = window.kpiAlertService;
+        if (!service) {
+            container.innerHTML = '';
+            return;
+        }
+
+        try {
+            const alerts = await service.getAlerts();
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = this._renderKpiAlerts(alerts);
+        } catch (err) {
+            console.warn('DashboardWidgetUI: KPI-Alerts Fehler:', err);
+            container.innerHTML = '';
+        }
+    }
+
+    /**
+     * Rendere die Alert-Boxen als HTML.
+     * @param {Array} alerts
+     * @returns {string} HTML
+     * @private
+     */
+    _renderKpiAlerts(alerts) {
+        if (!alerts || alerts.length === 0) return '';
+
+        let html = '<div class="kpi-alerts">';
+
+        alerts.forEach(alert => {
+            const typeClass = `kpi-alert-${alert.type || 'info'}`;
+            const iconMap = {
+                danger: '\u26A0',
+                warning: '\u26A0',
+                info: '\u2139'
+            };
+            const icon = iconMap[alert.type] || '\u2139';
+            const escapedMessage = this._escapeHtml(alert.message);
+            const action = alert.action || '';
+
+            html += `<button class="kpi-alert ${typeClass}"
+                        onclick="window.dashboardWidgetUI._handleAlertClick('${this._escapeAttr(action)}')"
+                        title="Klicken um Details anzuzeigen">
+                        <span class="kpi-alert-icon">${icon}</span>
+                        <span class="kpi-alert-message">${escapedMessage}</span>
+                        <span class="kpi-alert-arrow">\u2192</span>
+                     </button>`;
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    /**
+     * Klick-Handler fuer KPI-Alert: Navigiert zum relevanten Tab.
+     * @param {string} viewName
+     * @private
+     */
+    _handleAlertClick(viewName) {
+        if (!viewName) return;
+        try {
+            if (window.navigationController && typeof window.navigationController.navigateTo === 'function') {
+                window.navigationController.navigateTo(viewName);
+            } else {
+                this._navigateTo(viewName);
+            }
+        } catch (err) {
+            console.warn('DashboardWidgetUI: Alert-Navigation fehlgeschlagen:', err);
+        }
+    }
+
+    // ============================================
     // Helpers
     // ============================================
 
@@ -763,6 +950,20 @@ class DashboardWidgetUI {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    }
+
+    /**
+     * Escape a string for safe use inside HTML attribute single-quotes.
+     * Covers &, <, >, ", and ' (which _escapeHtml does NOT cover).
+     * @param {string} str
+     * @returns {string}
+     * @private
+     */
+    _escapeAttr(str) {
+        if (!str) { return ''; }
+        return String(str).replace(/[&<>"']/g, c => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
     }
 
     /**
