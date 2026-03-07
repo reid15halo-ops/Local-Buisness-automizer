@@ -9,7 +9,7 @@
     <meta name="description" content="Kundenportal – Angebote einsehen, freigeben und Rechnungen bezahlen">
     <!-- Security headers (enforced additionally via netlify.toml / .htaccess) -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co; img-src 'self' data: https:; font-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://analytics.freyaivisions.de; connect-src 'self' https://*.supabase.co https://analytics.freyaivisions.de; img-src 'self' data: https:; font-src 'self';">
     <title>Kundenportal</title>
     <style>
         :root {
@@ -125,6 +125,7 @@
             .portal-table th, .portal-table td { padding: 10px 12px; }
         }
     </style>
+    <script defer src="https://analytics.freyaivisions.de/script.js" data-website-id="e06559c8-43af-47b9-90e2-6eba2ae83cab"></script>
 </head>
 <body>
 

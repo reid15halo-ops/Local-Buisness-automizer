@@ -32,12 +32,13 @@
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/core.css">
     <link rel="stylesheet" href="css/landing.css">
+    <script defer src="https://analytics.freyaivisions.de/script.js" data-website-id="e06559c8-43af-47b9-90e2-6eba2ae83cab"></script>
 </head>
 <body class="landing-page">
 
     <!-- ====== Navigation ====== -->
     <nav class="nav" role="navigation" aria-label="Hauptnavigation">
-        <a href="#" class="nav-brand" aria-label="FreyAI Visions Startseite">FreyAI Visions</a>
+        <a href="#hero" class="nav-brand" aria-label="FreyAI Visions Startseite">FreyAI Visions</a>
         <button class="mobile-toggle" aria-label="Navigation &ouml;ffnen" aria-expanded="false" aria-controls="nav-menu">
             &#9776;
         </button>
@@ -52,42 +53,51 @@
 
     <!-- ====== Hero ====== -->
     <section class="hero" id="hero">
-        <div class="hero-badge" aria-label="Status">
-            <span class="dot" aria-hidden="true"></span>
-            Pilotprojekt: 800 &euro; &ndash; nur 3 Pl&auml;tze
+        <div class="hero-bg" aria-hidden="true">
+            <img src="img/hero-logo.png" alt="" class="hero-logo-bg" width="512" height="512">
+            <div class="hero-particles"></div>
+            <div class="hero-glow"></div>
         </div>
-        <h1>
-            Ihr Betrieb im Raum Aschaffenburg.<br>
-            <span class="gradient">Komplett digital.</span>
-        </h1>
-        <p>
-            Von der Kundenanfrage bis zur Rechnung &ndash; ich baue Ihnen ein System,
-            das Ihren Verwaltungsaufwand deutlich reduziert. Pers&ouml;nlich eingerichtet, direkt vor Ort.
-        </p>
-        <div class="hero-actions">
-            <a href="https://buchung.freyaivisions.de/jonas" class="btn btn-primary btn-large" target="_blank" rel="noopener">
-                Erstgespr&auml;ch buchen &ndash; kostenlos
-            </a>
-            <a href="#features" class="btn btn-outline btn-large">
-                Mehr erfahren
-            </a>
-        </div>
-        <div class="hero-stats" aria-label="Kernvorteile">
-            <div class="hero-stat">
-                <div class="number">1&ndash;8h</div>
-                <div class="label">Pro Woche sparen</div>
+        <div class="hero-content">
+            <div class="hero-badge" aria-label="Status">
+                <span class="dot" aria-hidden="true"></span>
+                Pilotprojekt: 800 &euro; &ndash; nur 3 Pl&auml;tze
             </div>
-            <div class="hero-stat">
-                <div class="number">ab 1.200&euro;</div>
-                <div class="label">Einmalig, kein Abo</div>
+            <p class="hero-label">Funktionale AI Tools und Automatisierungen</p>
+            <h1>
+                Prozesse automatisieren.<br>
+                <span class="gradient">Intelligent.</span>
+            </h1>
+            <p class="hero-subtitle">
+                Gelernter Steinmetz, jetzt KI-Ingenieur &mdash; ich kenne den Handwerker-Alltag
+                aus eigener Erfahrung. Individuelle Automatisierung f&uuml;r Handwerk und Mittelstand &mdash;
+                DSGVO-konform, effizient, bezahlbar.
+            </p>
+            <div class="hero-actions">
+                <a href="https://buchung.freyaivisions.de/jonas" class="btn btn-primary btn-large" target="_blank" rel="noopener">
+                    Kontakt aufnehmen
+                </a>
+                <a href="#features" class="btn btn-outline btn-large">
+                    Mehr erfahren
+                </a>
             </div>
-            <div class="hero-stat">
-                <div class="number">Vor Ort</div>
-                <div class="label">Pers&ouml;nlich eingerichtet</div>
-            </div>
-            <div class="hero-stat">
-                <div class="number">DSGVO</div>
-                <div class="label">EU-Server</div>
+            <div class="hero-stats" aria-label="Kernvorteile">
+                <div class="hero-stat">
+                    <div class="number">1&ndash;8h</div>
+                    <div class="label">Pro Woche sparen</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="number">ab 1.200&euro;</div>
+                    <div class="label">Einmalig, kein Abo</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="number">Vor Ort</div>
+                    <div class="label">Pers&ouml;nlich eingerichtet</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="number">DSGVO</div>
+                    <div class="label">EU-Server</div>
+                </div>
             </div>
         </div>
     </section>
@@ -159,18 +169,18 @@
                 </div>
             </div>
 
-            <div class="section-header" style="margin-top: 3rem;">
+            <div class="section-header mt-3">
                 <span class="section-label">Vorher / Nachher</span>
                 <h2 class="section-title">Ihr Feierabend mit FreyAI</h2>
             </div>
-            <div class="steps-grid reveal">
+            <div class="steps-grid steps-grid--two reveal">
                 <div class="step-card">
-                    <div class="step-number" style="background: #dc2626;">&#10007;</div>
+                    <div class="step-number bg-danger">&#10007;</div>
                     <h3>Ohne FreyAI</h3>
                     <p>17 Uhr, Feierabend. Aber erst noch: 3 Angebote tippen, Rechnungen suchen, Kunden zur&uuml;ckrufen. Um 20 Uhr endlich fertig.</p>
                 </div>
                 <div class="step-card">
-                    <div class="step-number" style="background: #0d9488;">&#10003;</div>
+                    <div class="step-number bg-teal">&#10003;</div>
                     <h3>Mit FreyAI</h3>
                     <p>17 Uhr, kurz aufs Handy: Angebote sind vorbereitet, Rechnungen automatisch erfasst, Kunden haben schon Antwort bekommen. Um 17:15 wirklich Feierabend.</p>
                 </div>
@@ -265,8 +275,8 @@
         </div>
     </section>
 
-    <div class="section" style="padding: 2rem 0;">
-        <div class="section-inner" style="text-align: center;">
+    <div class="section between-cta">
+        <div class="section-inner between-cta-inner">
             <a href="https://buchung.freyaivisions.de/jonas" class="btn btn-primary btn-large" target="_blank" rel="noopener">
                 Klingt gut? Jetzt Erstgespr&auml;ch buchen
             </a>
@@ -324,8 +334,8 @@
             </div>
             <div class="pricing-grid reveal">
                 <!-- Pilotprojekt -->
-                <div class="pricing-card" style="border: 2px solid #d4a843;">
-                    <div class="pricing-name" style="color: #d4a843;">Pilotprojekt</div>
+                <div class="pricing-card border-gold">
+                    <div class="pricing-name text-gold">Pilotprojekt</div>
                     <div class="pricing-desc">
                         Testen Sie das Starter-Paket zum Sonderpreis. Nur 3 Pl&auml;tze f&uuml;r Betriebe aus der Region.
                     </div>
@@ -363,7 +373,7 @@
                         <li><span class="check" aria-hidden="true">&#10003;</span> Mobiler Zugang (PWA)</li>
                         <li><span class="check" aria-hidden="true">&#10003;</span> Email-Support</li>
                         <li><span class="check" aria-hidden="true">&#10003;</span> Pers&ouml;nliche Einrichtung &amp; Schulung</li>
-                        <li style="opacity: 0.7; font-style: italic;"><span class="check" aria-hidden="true" style="visibility:hidden;">&#10003;</span> Sp&auml;ter auf Business upgraden? Kein Problem.</li>
+                        <li class="upgrade-hint"><span class="check" aria-hidden="true">&#10003;</span> Sp&auml;ter auf Business upgraden? Kein Problem.</li>
                     </ul>
                     <a href="https://buchung.freyaivisions.de/jonas" class="btn btn-outline pricing-cta" target="_blank" rel="noopener">Erstgespr&auml;ch buchen</a>
                 </div>
@@ -418,41 +428,6 @@
         </div>
     </section>
 
-    <!-- ====== Warum lokal? ====== -->
-    <section class="section" id="referenzen" aria-labelledby="referenzen-title">
-        <div class="section-inner">
-            <div class="section-header">
-                <span class="section-label">Vor Ort</span>
-                <h2 class="section-title" id="referenzen-title">Pers&ouml;nlich. Lokal. Greifbar.</h2>
-                <p class="section-subtitle">
-                    Kein anonymes Call-Center. Ich komme zu Ihnen in die Werkstatt.
-                </p>
-            </div>
-            <div class="solution-grid reveal">
-                <div class="solution-card">
-                    <span class="icon" aria-hidden="true">&#128205;</span>
-                    <h3>Aus Gro&szlig;ostheim</h3>
-                    <p>Ich bin Jonas Glawion und arbeite direkt hier in der Region Aschaffenburg. Pers&ouml;nlicher Kontakt, kurze Wege.</p>
-                </div>
-                <div class="solution-card">
-                    <span class="icon" aria-hidden="true">&#128170;</span>
-                    <h3>Massgeschneidert</h3>
-                    <p>Keine Software von der Stange. Ich analysiere Ihre Abl&auml;ufe vor Ort und baue genau das, was Sie brauchen.</p>
-                </div>
-                <div class="solution-card">
-                    <span class="icon" aria-hidden="true">&#128274;</span>
-                    <h3>Ihre Daten, Ihr System</h3>
-                    <p>DSGVO-konform auf EU-Servern. Alle Daten geh&ouml;ren Ihnen. Jederzeit Export m&ouml;glich.</p>
-                </div>
-                <div class="solution-card">
-                    <span class="icon" aria-hidden="true">&#127919;</span>
-                    <h3>Pilotprojekt: 800 &euro;</h3>
-                    <p>Testen Sie das Starter-Paket zum Sonderpreis. Nur 3 Pl&auml;tze f&uuml;r Betriebe aus der Region.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- ====== FAQ ====== -->
     <section class="section" id="faq" aria-labelledby="faq-title">
         <div class="section-inner">
@@ -466,7 +441,7 @@
                         <span>Brauche ich technische Vorkenntnisse?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             Nein, absolut nicht. Das System ist so einfach wie WhatsApp bedienbar.
                             Ich schule Sie und Ihr Team pers&ouml;nlich ein und bin bei Fragen immer erreichbar.
@@ -478,7 +453,7 @@
                         <span>Wie lange dauert die Einrichtung?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             In der Regel 2&ndash;4 Wochen. In der ersten Woche analysiere ich Ihre Abl&auml;ufe,
                             in Woche 2&ndash;3 richte ich alles ein und in Woche 4 schule ich Ihr Team.
@@ -490,7 +465,7 @@
                         <span>Wo werden meine Daten gespeichert?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             Ihre Daten werden ausschlie&szlig;lich in EU-Rechenzentren gespeichert und sind DSGVO-konform gesichert. Sie behalten jederzeit die volle Kontrolle &uuml;ber Ihre Daten und k&ouml;nnen alles exportieren.
                         </p>
@@ -501,7 +476,7 @@
                         <span>Was passiert, wenn ich k&uuml;ndigen will?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             Die monatliche Betreuung ist jederzeit zum Monatsende k&uuml;ndbar.
                             Ihre Daten geh&ouml;ren Ihnen &ndash; ich exportiere alles sauber f&uuml;r Sie.
@@ -513,7 +488,7 @@
                         <span>F&uuml;r welche Gewerke ist das System geeignet?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             Das System ist ideal f&uuml;r Handwerksbetriebe ab 1 Mitarbeiter &mdash; vom Einzelunternehmer bis zum Betrieb mit 30+ Leuten. Ob Metallbau, SHK, Elektro, Schreinerei oder Malerbetrieb &mdash; ich passe es genau auf Ihre Branche an.
                         </p>
@@ -524,7 +499,7 @@
                         <span>Was bedeutet &bdquo;KI-gest&uuml;tzt&ldquo;?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             K&uuml;nstliche Intelligenz hilft Ihnen z.B. beim Formulieren von Angeboten,
                             beim Erkennen von Mustern in Kundenanfragen und beim automatischen Nachfassen.
@@ -537,7 +512,7 @@
                         <span>Ist die Erstberatung wirklich kostenlos?</span>
                         <span class="toggle" aria-hidden="true">+</span>
                     </button>
-                    <div class="faq-answer" role="region">
+                    <div class="faq-answer" aria-hidden="true">
                         <p>
                             Ja, zu 100%. Ich schaue mir gemeinsam mit Ihnen Ihren Betrieb an und zeige Ihnen,
                             wo Digitalisierung am meisten bringt. Ohne Verpflichtungen.
@@ -565,11 +540,11 @@
                         Oder per E-Mail anfragen
                     </a>
                 </div>
-                <p style="margin-top: 1rem; opacity: 0.6; font-size: 0.85rem;">
+                <p class="cta-hint">
                     Verf&uuml;gbar: Mo&ndash;Fr 16&ndash;20 Uhr, Sa 10&ndash;16 Uhr
                 </p>
-                <p style="margin-top: 0.5rem; opacity: 0.5; font-size: 0.8rem;">
-                    Mit der Buchung stimmen Sie der Verarbeitung Ihrer Daten gem. unserer <a href="/datenschutz.html" style="color: inherit; text-decoration: underline;">Datenschutzerkl&auml;rung</a> zu.
+                <p class="cta-legal">
+                    Mit der Buchung stimmen Sie der Verarbeitung Ihrer Daten gem. unserer <a href="/datenschutz.html">Datenschutzerkl&auml;rung</a> zu.
                 </p>
             </div>
         </div>
@@ -587,14 +562,56 @@
             <div class="footer-contact">
                 FreyAI Visions &ndash; Jonas Glawion<br>
                 Grabenstra&szlig;e 135, 63762 Gro&szlig;ostheim<br>
-                <a href="tel:+491794228285" style="color: inherit; text-decoration: none;">+49 179 4228285</a> &middot;
-                <a href="mailto:kontakt@freyaivisions.de" style="color: inherit; text-decoration: none;">kontakt@freyaivisions.de</a>
+                <a href="tel:+491794228285">+49 179 4228285</a> &middot;
+                <a href="mailto:kontakt@freyaivisions.de">kontakt@freyaivisions.de</a>
             </div>
             <div class="footer-copy">
                 &copy; 2026 FreyAI Visions. Alle Rechte vorbehalten.
             </div>
         </div>
     </footer>
+
+    <!-- ====== Structured Data (SEO) ====== -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "FreyAI Visions",
+        "description": "KI-Digitalisierung f\u00fcr Handwerksbetriebe im Raum Aschaffenburg",
+        "url": "https://freyaivisions.de",
+        "telephone": "+491794228285",
+        "email": "kontakt@freyaivisions.de",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Grabenstra\u00dfe 135",
+            "addressLocality": "Gro\u00dfostheim",
+            "postalCode": "63762",
+            "addressCountry": "DE"
+        },
+        "areaServed": {
+            "@type": "GeoCircle",
+            "geoMidpoint": { "@type": "GeoCoordinates", "latitude": 49.922, "longitude": 9.073 },
+            "geoRadius": "30000"
+        },
+        "founder": { "@type": "Person", "name": "Jonas Glawion" },
+        "priceRange": "$$"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            { "@type": "Question", "name": "Brauche ich technische Vorkenntnisse?", "acceptedAnswer": { "@type": "Answer", "text": "Nein, absolut nicht. Das System ist so einfach wie WhatsApp bedienbar. Ich schule Sie und Ihr Team pers\u00f6nlich ein und bin bei Fragen immer erreichbar." }},
+            { "@type": "Question", "name": "Wie lange dauert die Einrichtung?", "acceptedAnswer": { "@type": "Answer", "text": "In der Regel 2\u20134 Wochen. In der ersten Woche analysiere ich Ihre Abl\u00e4ufe, in Woche 2\u20133 richte ich alles ein und in Woche 4 schule ich Ihr Team." }},
+            { "@type": "Question", "name": "Wo werden meine Daten gespeichert?", "acceptedAnswer": { "@type": "Answer", "text": "Ihre Daten werden ausschlie\u00dflich in EU-Rechenzentren gespeichert und sind DSGVO-konform gesichert. Sie behalten jederzeit die volle Kontrolle \u00fcber Ihre Daten und k\u00f6nnen alles exportieren." }},
+            { "@type": "Question", "name": "Was passiert, wenn ich k\u00fcndigen will?", "acceptedAnswer": { "@type": "Answer", "text": "Die monatliche Betreuung ist jederzeit zum Monatsende k\u00fcndbar. Ihre Daten geh\u00f6ren Ihnen \u2013 ich exportiere alles sauber f\u00fcr Sie." }},
+            { "@type": "Question", "name": "F\u00fcr welche Gewerke ist das System geeignet?", "acceptedAnswer": { "@type": "Answer", "text": "Das System ist ideal f\u00fcr Handwerksbetriebe ab 1 Mitarbeiter \u2014 vom Einzelunternehmer bis zum Betrieb mit 30+ Leuten. Ob Metallbau, SHK, Elektro, Schreinerei oder Malerbetrieb \u2014 ich passe es genau auf Ihre Branche an." }},
+            { "@type": "Question", "name": "Was bedeutet KI-gest\u00fctzt?", "acceptedAnswer": { "@type": "Answer", "text": "K\u00fcnstliche Intelligenz hilft Ihnen z.B. beim Formulieren von Angeboten, beim Erkennen von Mustern in Kundenanfragen und beim automatischen Nachfassen. Sie behalten immer die volle Kontrolle." }},
+            { "@type": "Question", "name": "Ist die Erstberatung wirklich kostenlos?", "acceptedAnswer": { "@type": "Answer", "text": "Ja, zu 100%. Ich schaue mir gemeinsam mit Ihnen Ihren Betrieb an und zeige Ihnen, wo Digitalisierung am meisten bringt. Ohne Verpflichtungen." }}
+        ]
+    }
+    </script>
 
     <!-- ====== JavaScript (external, CSP-compliant) ====== -->
     <script defer src="js/landing.js"></script>
