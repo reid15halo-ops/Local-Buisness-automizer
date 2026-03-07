@@ -94,6 +94,7 @@ const STATIC_ASSETS = [
     '/js/services/calendar-service.js',
     '/js/services/calendar-ui-service.js',
     '/js/services/cashflow-service.js',
+    '/js/services/cashflow-forecast-service.js',
     '/js/services/chatbot-service.js',
     '/js/services/communication-hub-controller.js',
     '/js/services/communication-service.js',

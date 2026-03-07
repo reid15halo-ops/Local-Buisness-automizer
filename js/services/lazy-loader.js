@@ -45,6 +45,7 @@ class LazyLoader {
                 'payment-service',
                 'bookkeeping-service',
                 'cashflow-service',
+                'cashflow-forecast-service',
                 'profitability-service',
                 'banking-service',
                 'stripe-service',
@@ -121,7 +122,8 @@ class LazyLoader {
                 'work-estimation-service',
                 'material-service',
                 'reorder-engine-service',
-                'morning-briefing-service'
+                'morning-briefing-service',
+                'cashflow-forecast-service'
             ],
 
             // Advanced Features - load on demand

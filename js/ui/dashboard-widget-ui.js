@@ -140,10 +140,54 @@ class DashboardWidgetUI {
      */
     renderWidget(widget, index) {
         const service = window.dashboardWidgetService;
-        const data = service.getWidgetData(widget.id);
+        const dataOrPromise = service.getWidgetData(widget.id);
         const sizeClass = `widget-card-${widget.size || 'small'}`;
+        const asyncWidgets = ['cashflow-forecast'];
 
-        let html = `<div class="widget-card ${sizeClass}"
+        // Async Widget: Placeholder rendern, dann nachladen
+        if (asyncWidgets.includes(widget.id) && dataOrPromise && typeof dataOrPromise.then === 'function') {
+            const placeholderId = `widget-async-${widget.id}-${index}`;
+            // Sofort Placeholder-HTML zurueckgeben
+            const placeholderHtml = `<div class="widget-card ${sizeClass}"
+                     data-widget-id="${widget.id}"
+                     data-widget-index="${index}"
+                     ${this.editMode ? 'draggable="true"' : ''}>
+                <div class="widget-header">
+                    ${this.editMode ? '<span class="widget-drag-handle" title="Ziehen zum Verschieben">\u2261</span>' : ''}
+                    <span class="widget-header-icon">${widget.icon}</span>
+                    <span class="widget-header-title">${widget.name}</span>
+                    ${this.editMode ? `<button class="widget-remove-btn" title="Widget entfernen" onclick="event.stopPropagation(); window.dashboardWidgetUI.handleRemoveWidget('${widget.id}')">\u00D7</button>` : ''}
+                </div>
+                <div class="widget-body" id="${placeholderId}">
+                    <div class="widget-loading" style="display:flex;align-items:center;justify-content:center;padding:1.5rem;color:var(--text-muted);font-size:0.85rem">
+                        Lade KI-Prognose...
+                    </div>
+                </div>
+            </div>`;
+
+            // Daten nachladen und DOM aktualisieren
+            dataOrPromise.then((data) => {
+                const el = document.getElementById(placeholderId);
+                if (!el) return;
+                if (data && data.error) {
+                    el.innerHTML = `<div class="widget-error">${data.message}</div>`;
+                } else {
+                    el.innerHTML = this._renderWidgetContent(widget, data);
+                }
+            }).catch((err) => {
+                const el = document.getElementById(placeholderId);
+                if (el) el.innerHTML = '<div class="widget-error">Fehler beim Laden der Prognose.</div>';
+                console.error('DashboardWidgetUI: Async Widget Fehler:', err);
+            });
+
+            return placeholderHtml;
+        }
+
+        // Synchrones Widget (Standard-Pfad)
+        const data = dataOrPromise;
+        const sizeClass2 = sizeClass; // alias fuer Klarheit
+
+        let html = `<div class="widget-card ${sizeClass2}"
                          data-widget-id="${widget.id}"
                          data-widget-index="${index}"
                          ${this.editMode ? 'draggable="true"' : ''}>`;
@@ -170,7 +214,7 @@ class DashboardWidgetUI {
         // Body
         html += '<div class="widget-body">';
 
-        if (data.error) {
+        if (data && data.error) {
             html += `<div class="widget-error">${data.message}</div>`;
         } else {
             html += this._renderWidgetContent(widget, data);
@@ -179,7 +223,7 @@ class DashboardWidgetUI {
         html += '</div>'; // close .widget-body
 
         // Optional navigation link
-        if (!this.editMode && data.navigateTo) {
+        if (!this.editMode && data && data.navigateTo) {
             html += `<div class="widget-footer">
                         <button class="widget-details-link"
                             onclick="window.dashboardWidgetUI._navigateTo('${data.navigateTo}')">
@@ -208,9 +252,88 @@ class DashboardWidgetUI {
                 return this._renderListContent(data);
             case 'chart':
                 return this._renderChartContent(data);
+            case 'cashflow-ai':
+                return this._renderCashflowAiContent(data);
             default:
                 return '<div class="widget-no-data">Keine Daten</div>';
         }
+    }
+
+    /**
+     * Render KI-Cashflow-Prognose Widget (30/60/90 Tage Ampel-Ansicht).
+     * @param {Object} data
+     * @returns {string} HTML
+     * @private
+     */
+    _renderCashflowAiContent(data) {
+        if (!data.hasData) {
+            return `<div class="cashflow-ai-empty">
+                <div class="cashflow-ai-empty-icon">KI</div>
+                <p>${data.message || 'Keine Prognose verfuegbar.'}</p>
+            </div>`;
+        }
+
+        const fmt = (v) => {
+            if (v === null || v === undefined) return '—';
+            const abs = Math.abs(v);
+            const f = abs.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return v < 0 ? `-${f} EUR` : `+${f} EUR`;
+        };
+
+        const ampelColors = { gruen: '#22c55e', gelb: '#eab308', rot: '#ef4444' };
+        const ampelLabels = { gruen: 'Gut', gelb: 'Achtung', rot: 'Kritisch' };
+
+        const badge = (ampel) => {
+            const color = ampelColors[ampel] || '#eab308';
+            const label = ampelLabels[ampel] || ampel;
+            return `<span class="cashflow-badge" style="background:${color}20;color:${color};border:1px solid ${color}40;padding:1px 6px;border-radius:4px;font-size:0.7rem;font-weight:600">${label}</span>`;
+        };
+
+        const currentColor = ampelColors[data.ampel?.current] || '#eab308';
+        const ageHint = data.ageTage > 7
+            ? `<span style="color:#ef4444;font-size:0.7rem">${data.ageTage} Tage alt</span>`
+            : `<span style="color:var(--text-muted);font-size:0.7rem">${new Date(data.forecastDate).toLocaleDateString('de-DE')}</span>`;
+
+        let html = `<div class="cashflow-ai-widget" style="padding:0.5rem 0">`;
+
+        // Aktueller Stand
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+            <div>
+                <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em">Aktueller Stand</div>
+                <div style="font-size:1.4rem;font-weight:700;color:${currentColor}">${fmt(data.currentBalance)}</div>
+            </div>
+            <div style="text-align:right">${badge(data.ampel?.current)}${ageHint ? '<br>' + ageHint : ''}</div>
+        </div>`;
+
+        // 30/60/90 Tage Grid
+        html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-bottom:0.75rem">`;
+        for (const [label, value, ampelKey] of [
+            ['30 Tage', data.forecast30d, data.ampel?.d30],
+            ['60 Tage', data.forecast60d, data.ampel?.d60],
+            ['90 Tage', data.forecast90d, data.ampel?.d90],
+        ]) {
+            const color = ampelColors[ampelKey] || '#eab308';
+            html += `<div style="background:var(--bg-secondary,#f9fafb);border-radius:6px;padding:0.5rem;text-align:center;border:1px solid var(--border-color,#e5e7eb)">
+                <div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:2px">${label}</div>
+                <div style="font-size:0.85rem;font-weight:600;color:${color}">${fmt(value)}</div>
+            </div>`;
+        }
+        html += `</div>`;
+
+        // Offene Posten
+        html += `<div style="display:flex;gap:1rem;font-size:0.72rem;color:var(--text-muted);margin-bottom:0.5rem">
+            <span>Forderungen: <strong style="color:#22c55e">${fmt(data.offeneForderungen)}</strong></span>
+            <span>Verbindlichk.: <strong style="color:#ef4444">${fmt(data.offeneVerbindlichkeiten)}</strong></span>
+        </div>`;
+
+        // Analyse (gekuerzt)
+        if (data.analyse) {
+            const kurzAnalyse = data.analyse.length > 160 ? data.analyse.substring(0, 157) + '...' : data.analyse;
+            html += `<div style="font-size:0.72rem;color:var(--text-secondary,#6b7280);border-top:1px solid var(--border-color,#e5e7eb);padding-top:0.5rem;line-height:1.5">${kurzAnalyse}</div>`;
+        }
+
+        html += `</div>`;
+        return html;
     }
 
     /**

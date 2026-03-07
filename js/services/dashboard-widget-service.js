@@ -250,7 +250,7 @@ class DashboardWidgetService {
     /**
      * Computes and returns live data for a given widget.
      * @param {string} widgetId - The widget type ID
-     * @returns {Object} Widget data (varies by type)
+     * @returns {Object|Promise<Object>} Widget data (varies by type; cashflow-forecast returns a Promise)
      */
     getWidgetData(widgetId) {
         try {
@@ -291,6 +291,7 @@ class DashboardWidgetService {
                 case 'conversion-rate':
                     return this._getConversionRate(state);
                 case 'cashflow-forecast':
+                    // Async: gibt Promise zurueck — Aufrufer muss await/then verwenden
                     return this._getCashflowForecast();
                 case 'overdue-tasks':
                     return this._getOverdueTasks(state);
@@ -638,9 +639,19 @@ class DashboardWidgetService {
         };
     }
 
-    _getCashflowForecast() {
+    async _getCashflowForecast() {
+        // KI-Prognose aus Supabase via cashflow-forecast-service
+        if (window.cashflowForecastService) {
+            try {
+                const data = await window.cashflowForecastService.getWidgetData();
+                return data;
+            } catch (err) {
+                console.error('DashboardWidgetService: CashflowForecast-Fehler:', err);
+            }
+        }
+        // Fallback auf lokalen cashFlowService (alte Logik)
         if (!window.cashFlowService) {
-            return { type: 'chart', title: 'Cashflow-Prognose', data: [], maxValue: 1000 };
+            return { type: 'cashflow-ai', hasData: false, message: 'cashflow-forecast-service nicht geladen.' };
         }
         try {
             const forecasts = window.cashFlowService.generateForecast(6);
@@ -655,7 +666,7 @@ class DashboardWidgetService {
                 maxValue: Math.max(...forecasts.map(f => Math.abs(f.projectedBalance)), 1000)
             };
         } catch {
-            return { type: 'chart', title: 'Cashflow-Prognose', data: [], maxValue: 1000 };
+            return { type: 'cashflow-ai', hasData: false, message: 'Keine Prognose verfuegbar.' };
         }
     }
 
