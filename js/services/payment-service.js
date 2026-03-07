@@ -227,7 +227,7 @@ class PaymentService {
                             if (link.type === 'deposit') {
                                 invoice.anzahlung = link.amount;
                                 invoice.anzahlungDatum = link.paidAt;
-                                invoice.restbetrag = (invoice.betrag || 0) - link.amount;
+                                invoice.restbetrag = (invoice.brutto || invoice.betrag || 0) - link.amount;
                             } else {
                                 invoice.status = 'bezahlt';
                                 invoice.bezahltAm = link.paidAt;

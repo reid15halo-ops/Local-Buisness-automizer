@@ -169,6 +169,10 @@ class OcrScannerService {
 
     // Scan document from file input
     async scanFromFile(file) {
+        if (file.size > 10 * 1024 * 1024) {
+            window.showToast?.('Datei zu groß (max. 10 MB)', 'error');
+            return null;
+        }
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = async (e) => {

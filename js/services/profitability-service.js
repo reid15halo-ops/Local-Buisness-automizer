@@ -113,7 +113,7 @@ class ProfitabilityService {
             customerId: invoice.kunde?.id,
             customerName: invoice.kunde?.name || invoice.kunde?.firma,
             description: invoice.beschreibung || invoice.subject,
-            invoicedAmount: invoice.betrag,
+            invoicedAmount: (invoice.brutto || invoice.betrag || 0),
             estimatedHours: estimatedHours,
             actualHours: actualHours,
             laborRate: laborRate,

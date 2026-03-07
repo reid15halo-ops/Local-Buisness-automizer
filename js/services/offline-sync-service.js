@@ -187,7 +187,7 @@ class OfflineSyncService {
 
         try {
             await this.init();
-            const supabase = window.supabaseClient || (typeof initSupabase === 'function' ? initSupabase() : null);
+            const supabase = window.supabaseClient?.client || window.supabase;
             if (!supabase) {
                 this._syncInProgress = false;
                 return;

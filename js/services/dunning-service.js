@@ -164,7 +164,7 @@ class DunningService {
             empfaenger: rechnung.kunde?.email || '',
             originalBetrag: rechnung.brutto,
             mahngebuehr: stufe.gebuehr,
-            gesamtBetrag: (parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr,
+            gesamtBetrag: Math.round(((parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id) + stufe.gebuehr) * 100) / 100,
             stufe: stufe.typ,
             stufenName: stufe.name,
             gesendetAm: new Date().toISOString(),
@@ -379,7 +379,7 @@ Nächste Schritte:
         const overdueItems = [];
 
         rechnungen.forEach(rechnung => {
-            if (rechnung.status !== 'bezahlt') {
+            if (rechnung.status !== 'bezahlt' && rechnung.status !== 'storniert') {
                 const status = this.checkRechnungStatus(rechnung);
                 if (status.stufe && status.stufe.typ !== 'rechnung') {
                     overdueItems.push({

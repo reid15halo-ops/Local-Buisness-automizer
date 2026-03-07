@@ -1983,13 +1983,14 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
 
         // ── Build body fragment (positions + totals) ──────────────────────
         const eur = n => Number(n || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+        const escH = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         const posRows = (angebot.positionen || []).map((p, idx) =>
             `<tr style="background:${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
                <td style="padding:10px 8px;color:#9ca3af;font-size:12px;vertical-align:top;border-bottom:1px solid #e5e7eb;">${idx + 1}</td>
                <td style="padding:10px 8px;vertical-align:top;border-bottom:1px solid #e5e7eb;">
-                 <strong style="font-size:13px;color:#1f2937;">${p.beschreibung}</strong>
-                 ${p.details ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.6;">${p.details}</div>` : ''}
-                 ${p.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:5px;font-weight:600;">&#128100; Ausführung: ${p.verantwortlich}</div>` : ''}
+                 <strong style="font-size:13px;color:#1f2937;">${escH(p.beschreibung)}</strong>
+                 ${p.details ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.6;">${escH(p.details)}</div>` : ''}
+                 ${p.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:5px;font-weight:600;">&#128100; Ausführung: ${escH(p.verantwortlich)}</div>` : ''}
                </td>
                <td style="padding:10px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${p.menge} ${p.einheit}</td>
                <td style="padding:10px 8px;text-align:right;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${eur(p.preis)}</td>

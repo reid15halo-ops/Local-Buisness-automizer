@@ -6,7 +6,7 @@ class TaskService {
     constructor() {
         try { this.tasks = JSON.parse(localStorage.getItem('freyai_tasks') || '[]'); } catch { this.tasks = []; }
         try { this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]'); } catch { this.recurringTasks = []; }
-        this.processRecurringTasks();
+        // NOTE: processRecurringTasks() removed here — recurring-task-service.js is the single owner
     }
 
     // Task CRUD
@@ -130,25 +130,8 @@ class TaskService {
         return recurring;
     }
 
-    processRecurringTasks() {
-        const today = new Date().toISOString().split('T')[0];
-        this.recurringTasks.forEach(rec => {
-            if (!rec.active || rec.lastGenerated === today) {return;}
-            if (this.shouldGenerateToday(rec)) {
-                this.addTask({ title: rec.title, description: rec.description, priority: rec.priority, dueDate: today, source: 'recurring', sourceId: rec.id });
-                rec.lastGenerated = today;
-            }
-        });
-        this.saveRecurring();
-    }
-
-    shouldGenerateToday(rec) {
-        const dayOfWeek = new Date().getDay();
-        if (rec.frequency === 'daily') {return true;}
-        if (rec.frequency === 'weekly') {return rec.weekdays.includes(dayOfWeek);}
-        if (rec.frequency === 'monthly') {return new Date().getDate() === rec.monthDay;}
-        return false;
-    }
+    // processRecurringTasks() and shouldGenerateToday() removed —
+    // recurring-task-service.js is the single owner of recurring task processing
 
     // Generate from Email
     generateTasksFromEmail(email, emailService) {

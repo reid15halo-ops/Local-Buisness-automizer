@@ -86,7 +86,7 @@ class DatevExportService {
     // Convert booking to DATEV record format
     convertToDatevRecord(buchung, recordNumber) {
         const isEinnahme = buchung.typ === 'einnahme';
-        const betrag = Math.round(buchung.betrag * 100); // Cents
+        const betrag = Math.round((buchung.brutto || buchung.betrag || 0) * 100); // Cents
 
         // Map category to DATEV Sachkonto (SKR03)
         const sachkonto = this.getSachkonto(buchung.kategorie, buchung.typ);
@@ -241,7 +241,7 @@ class DatevExportService {
 
         buchungen.forEach(b => {
             const kategorie = b.kategorie || 'Sonstige';
-            const betrag = b.betrag || 0;
+            const betrag = (b.brutto || b.betrag || 0);
 
             if (b.typ === 'einnahme') {
                 report.einnahmen.total += betrag;

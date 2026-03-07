@@ -68,12 +68,9 @@ class GeminiService {
             } else {
                 headers['Authorization'] = `Bearer ${session.access_token}`;
             }
-        } else if (this.apiKey) {
-            // Direct API call (local dev mode)
-            url = `${this.baseUrl}?key=${this.apiKey}`;
-            if (!this.proxyUrl) {
-                console.warn('[Gemini] Using direct API key - consider configuring Supabase for production');
-            }
+        } else if (this.apiKey && !this.proxyUrl) {
+            console.warn('Direct Gemini API calls disabled for security. Use proxy.');
+            throw new Error('Direct API key usage disabled');
         } else {
             throw new Error('Gemini not configured: neither proxy nor API key available');
         }
@@ -103,10 +100,10 @@ class GeminiService {
 
 Erstelle einen professionellen, deutschsprachigen Angebots-Text basierend auf folgender Kundenanfrage:
 
-Kunde: ${anfrage.kunde?.name || 'Unbekannt'}
-Leistungsart: ${anfrage.leistungsart}
-Beschreibung: ${anfrage.beschreibung}
-${anfrage.budget ? `Geschätztes Budget: ${anfrage.budget}€` : ''}
+Kunde: ${this._sanitizeForPrompt(anfrage.kunde?.name || 'Unbekannt')}
+Leistungsart: ${this._sanitizeForPrompt(anfrage.leistungsart)}
+Beschreibung: ${this._sanitizeForPrompt(anfrage.beschreibung)}
+${anfrage.budget ? `Geschätztes Budget: ${this._sanitizeForPrompt(anfrage.budget)}€` : ''}
 ${anfrage.termin ? `Gewünschter Termin: ${anfrage.termin}` : ''}
 
 Der Text soll:
@@ -157,10 +154,10 @@ Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
         const prompt = `Du bist ein Kalkulations-Experte für einen ${this._getBusinessType()}.
 
 Hier ist der Materialbestand mit Preisen:
-${materialList}
+${this._sanitizeForPrompt(materialList)}
 
 Der Kunde benötigt folgende Leistungen:
-${positionenText}
+${this._sanitizeForPrompt(positionenText)}
 
 Welche Materialien werden wahrscheinlich benötigt und in welcher Menge?
 Antworte im JSON-Format:
@@ -217,7 +214,7 @@ Nenne bei Bedarf Richtpreise, aber weise darauf hin, dass ein genaues Angebot er
 Bisheriger Verlauf:
 ${context}
 
-Kunde: "${message}"
+Kunde: "${this._sanitizeForPrompt(message)}"
 Antwort:`;
 
         try {
@@ -325,6 +322,11 @@ ${companyName}`
             geschaetzte_materialkosten: gesamtkosten,
             empfohlene_arbeitsstunden: positionen.length * 2
         };
+    }
+
+    _sanitizeForPrompt(str) {
+        if (!str) return '';
+        return String(str).replace(/[<>{}]/g, '').substring(0, 2000);
     }
 
     _getBusinessType() {

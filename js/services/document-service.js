@@ -65,6 +65,11 @@ class DocumentService {
             input.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        window.showToast?.('Datei zu groß (max. 10 MB)', 'error');
+                        resolve(null);
+                        return;
+                    }
                     const base64 = await this.fileToBase64(file);
                     resolve({ content: base64, fileType: file.type, fileName: file.name, fileSize: file.size });
                 } else {
@@ -84,6 +89,11 @@ class DocumentService {
             input.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        window.showToast?.('Datei zu groß (max. 10 MB)', 'error');
+                        resolve(null);
+                        return;
+                    }
                     const base64 = await this.fileToBase64(file);
                     resolve({ content: base64, fileType: file.type, fileName: file.name, fileSize: file.size });
                 } else {

@@ -312,8 +312,8 @@ class RecurringInvoiceService {
         }
 
         try {
-            var mwst = tpl.netto_betrag * tpl.steuersatz;
-            var brutto = tpl.netto_betrag + mwst;
+            var mwst = Math.round(tpl.netto_betrag * tpl.steuersatz * 100) / 100;
+            var brutto = Math.round((tpl.netto_betrag + mwst) * 100) / 100;
             var heute = new Date().toISOString().split('T')[0];
             var faellig = this._addTage(heute, tpl.zahlungsziel_tage);
 

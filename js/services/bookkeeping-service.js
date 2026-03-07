@@ -135,8 +135,8 @@ class BookkeepingService {
         if (buchung.netto == null) {
             if (!this.einstellungen.kleinunternehmer && buchung.typ === 'einnahme') {
                 const rate = this.einstellungen.umsatzsteuersatz || 19;
-                buchung.netto = buchung.brutto / (1 + rate / 100);
-                buchung.ust = buchung.brutto - buchung.netto;
+                buchung.netto = Math.round(buchung.brutto / (1 + rate / 100) * 100) / 100;
+                buchung.ust = Math.round((buchung.brutto - buchung.netto) * 100) / 100;
             } else {
                 buchung.netto = buchung.brutto;
                 buchung.ust = 0;
@@ -245,8 +245,8 @@ class BookkeepingService {
             beschreibung: daten.beschreibung,
             datum: daten.datum || new Date().toISOString(),
             brutto: daten.betrag,
-            netto: rate > 0 ? daten.betrag / divisor : daten.betrag,
-            vorsteuer: rate > 0 ? daten.betrag - (daten.betrag / divisor) : 0,
+            netto: rate > 0 ? Math.round(daten.betrag / divisor * 100) / 100 : daten.betrag,
+            vorsteuer: rate > 0 ? Math.round((daten.betrag - (daten.betrag / divisor)) * 100) / 100 : 0,
             belegnummer: daten.belegnummer || '',
             zahlungsart: daten.zahlungsart || 'Überweisung'
         };

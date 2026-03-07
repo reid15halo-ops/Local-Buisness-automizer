@@ -13,6 +13,8 @@ class InvoiceService {
         this.bookkeepingService = null;
     }
 
+    _round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+
     /**
      * Initialize service dependencies
      */
@@ -63,10 +65,11 @@ class InvoiceService {
             const dueDate = this.addDays(new Date(), opts.paymentTermDays).toISOString();
 
             // 3. Calculate totals
-            const netto = auftrag.netto + (auftrag.materialKosten || 0);
-            const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
-            const mwst = netto * taxRate;
-            const brutto = netto * (1 + taxRate);
+            const isKleinunternehmer = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').kleinunternehmer;
+            const taxRate = isKleinunternehmer ? 0 : (typeof window._getTaxRate === 'function' ? window._getTaxRate() : 0.19);
+            const netto = this._round2(auftrag.netto + (auftrag.materialKosten || 0));
+            const mwst = this._round2(netto * taxRate);
+            const brutto = this._round2(netto + mwst);
 
             // 4. Create invoice object
             const invoice = {

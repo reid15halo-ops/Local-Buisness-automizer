@@ -308,6 +308,11 @@ class DataExportService {
 
         value = String(value).trim();
 
+        // Formula injection protection
+        if (/^[=+\-@\t\r]/.test(value)) {
+            value = "'" + value;
+        }
+
         // If contains delimiter, quotes, or newlines, wrap in quotes and escape quotes
         if (value.includes(this.delimiter) || value.includes('"') || value.includes('\n')) {
             return `"${value.replace(/"/g, '""')}"`;

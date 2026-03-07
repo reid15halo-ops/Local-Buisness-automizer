@@ -231,20 +231,27 @@ class ReportService {
     exportToCSV(report) {
         let csv = '';
 
+        const csvSafe = (v) => {
+            let s = String(v ?? '');
+            if (/^[=+\-@\t\r]/.test(s)) { s = "'" + s; }
+            if (s.includes(';') || s.includes('"') || s.includes('\n')) { s = '"' + s.replace(/"/g, '""') + '"'; }
+            return s;
+        };
+
         if (report.type === 'sales') {
             csv = 'Rechnungs-Nr;Datum;Kunde;Netto;Brutto;Status\n';
             report.details.forEach(r => {
-                csv += `${r.id};${r.datum};${r.kunde?.name || ''};${r.netto};${r.brutto};${r.status}\n`;
+                csv += `${csvSafe(r.id)};${csvSafe(r.datum)};${csvSafe(r.kunde?.name || '')};${csvSafe(r.netto)};${csvSafe(r.brutto)};${csvSafe(r.status)}\n`;
             });
         } else if (report.type === 'time') {
             csv = 'Datum;Start;Ende;Dauer (Std);Beschreibung;Auftrag\n';
             report.details.forEach(e => {
-                csv += `${e.date};${e.startTime};${e.endTime};${e.durationHours};${e.description};${e.auftragId || ''}\n`;
+                csv += `${csvSafe(e.date)};${csvSafe(e.startTime)};${csvSafe(e.endTime)};${csvSafe(e.durationHours)};${csvSafe(e.description)};${csvSafe(e.auftragId || '')}\n`;
             });
         } else if (report.type === 'tasks') {
             csv = 'Titel;Status;Priorität;Fällig;Erstellt\n';
             report.details.forEach(t => {
-                csv += `${t.title};${t.status};${t.priority};${t.dueDate || ''};${t.createdAt}\n`;
+                csv += `${csvSafe(t.title)};${csvSafe(t.status)};${csvSafe(t.priority)};${csvSafe(t.dueDate || '')};${csvSafe(t.createdAt)}\n`;
             });
         }
 
@@ -253,10 +260,12 @@ class ReportService {
 
     // Export to PDF (returns HTML for printing)
     exportToPrintableHTML(report) {
+        const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
         let html = `
         <html>
         <head>
-            <title>${report.title}</title>
+            <title>${esc(report.title)}</title>
             <style>
                 body { font-family: Arial, sans-serif; padding: 20px; }
                 h1 { color: #1a1a2e; }
@@ -268,14 +277,14 @@ class ReportService {
             </style>
         </head>
         <body>
-            <h1>${report.title}</h1>
-            <p>Zeitraum: ${report.period?.start || report.year} - ${report.period?.end || ''}</p>
-            <p>Erstellt: ${new Date(report.generatedAt).toLocaleString('de-DE')}</p>
-            
+            <h1>${esc(report.title)}</h1>
+            <p>Zeitraum: ${esc(report.period?.start || report.year)} - ${esc(report.period?.end || '')}</p>
+            <p>Erstellt: ${esc(new Date(report.generatedAt).toLocaleString('de-DE'))}</p>
+
             <div class="summary">
                 <h3>Zusammenfassung</h3>
                 ${Object.entries(report.summary).map(([key, value]) =>
-            `<div class="summary-item"><strong>${key}:</strong> ${typeof value === 'number' ? value.toLocaleString('de-DE') : value}</div>`
+            `<div class="summary-item"><strong>${esc(key)}:</strong> ${typeof value === 'number' ? esc(value.toLocaleString('de-DE')) : esc(value)}</div>`
         ).join('')}
             </div>
         </body>

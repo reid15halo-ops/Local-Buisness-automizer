@@ -267,7 +267,7 @@ class StripeService {
             }
 
             // Calculate amount in cents (EUR)
-            const amount = Math.round((invoice.betrag || invoice.amount || 0) * 100);
+            const amount = Math.round((invoice.brutto || invoice.betrag || invoice.amount || 0) * 100);
             if (amount < 50) {
                 throw new Error('Invoice amount must be at least €0.50');
             }

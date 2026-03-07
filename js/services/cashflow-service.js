@@ -29,10 +29,10 @@ class CashFlowService {
         }
 
         // Get pending invoices
-        const rechnungen = store?.rechnungen || [];
+        const rechnungen = window.storeService?.store?.rechnungen || [];
         const pendingAmount = rechnungen
             .filter(r => r.status === 'offen' || r.status === 'versendet')
-            .reduce((sum, r) => sum + (r.betrag || 0), 0);
+            .reduce((sum, r) => sum + (r.brutto || r.betrag || 0), 0);
 
         // Get overdue invoices
         const overdueAmount = rechnungen
@@ -43,7 +43,7 @@ class CashFlowService {
                 }
                 return false;
             })
-            .reduce((sum, r) => sum + (r.betrag || 0), 0);
+            .reduce((sum, r) => sum + (r.brutto || r.betrag || 0), 0);
 
         return {
             date: today.toISOString(),

@@ -248,7 +248,7 @@ class StoreService {
      * @param {string} angebotId - The ID of the offer to accept
      * @returns {Object|null} The created order object or null if failed
      */
-    acceptAngebot(angebotId) {
+    async acceptAngebot(angebotId) {
         const angebot = this.store.angebote.find(a => a.id === angebotId);
         if (!angebot) {return null;}
 
@@ -275,13 +275,13 @@ class StoreService {
         };
 
         this.store.auftraege.push(auftrag);
-        this.save();
+        await this.save();
         this.addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
 
         return auftrag;
     }
 
-    updateAuftrag(auftragId, updates) {
+    async updateAuftrag(auftragId, updates) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) {return null;}
 
@@ -297,11 +297,11 @@ class StoreService {
             });
         }
 
-        this.save();
+        await this.save();
         return auftrag;
     }
 
-    addAuftragComment(auftragId, text, autor) {
+    async addAuftragComment(auftragId, text, autor) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) {return null;}
 
@@ -317,11 +317,11 @@ class StoreService {
         if (!auftrag.historie) {auftrag.historie = [];}
         auftrag.historie.push({ aktion: 'kommentar', datum: kommentar.datum, details: text.substring(0, 50) });
 
-        this.save();
+        await this.save();
         return kommentar;
     }
 
-    updateAuftragCheckliste(auftragId, checkliste) {
+    async updateAuftragCheckliste(auftragId, checkliste) {
         const auftrag = this.store.auftraege.find(a => a.id === auftragId);
         if (!auftrag) {return null;}
 
@@ -331,7 +331,7 @@ class StoreService {
             auftrag.fortschritt = Math.round((checkliste.filter(c => c.erledigt).length / checkliste.length) * 100);
         }
 
-        this.save();
+        await this.save();
         return auftrag;
     }
 

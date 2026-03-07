@@ -502,6 +502,8 @@ window.purchaseOrderService = new PurchaseOrderService();
 
 // Init from Supabase after page load
 window.addEventListener('DOMContentLoaded', () => {
+    let _initAttempts = 0;
+    const MAX_INIT_ATTEMPTS = 20;
     const tryInit = () => {
         if (window.supabaseClient?.isConfigured()) {
             window.purchaseOrderService.init().then(() => {
@@ -516,8 +518,10 @@ window.addEventListener('DOMContentLoaded', () => {
                     window.bookkeepingService.syncFromPurchaseOrders();
                 }
             });
-        } else {
+        } else if (++_initAttempts < MAX_INIT_ATTEMPTS) {
             setTimeout(tryInit, 1000);
+        } else {
+            console.warn('[PO] Supabase not configured after', MAX_INIT_ATTEMPTS, 'attempts, giving up');
         }
     };
     setTimeout(tryInit, 1000);

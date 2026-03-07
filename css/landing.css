@@ -24,8 +24,16 @@
 .mt-3 { margin-top: 3rem; }
 .upgrade-hint { opacity: 0.7; font-style: italic; }
 .upgrade-hint .check { visibility: hidden; }
-.bg-danger { background: var(--accent-danger, #dc2626); border-color: var(--accent-danger, #dc2626); }
-.bg-teal { background: var(--accent-primary); border-color: var(--accent-primary); }
+.step-number.bg-danger {
+    background: var(--accent-danger, #dc2626);
+    border-color: var(--accent-danger, #dc2626);
+    color: #fff;
+}
+.step-number.bg-teal {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: #0c1a1a;
+}
 .border-gold { border: 2px solid var(--gold); }
 .text-gold { color: var(--gold); }
 

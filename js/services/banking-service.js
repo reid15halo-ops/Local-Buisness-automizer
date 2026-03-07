@@ -239,7 +239,7 @@ class BankingService {
 
     // Auto-match incoming payments to open invoices
     autoMatchInvoices() {
-        const rechnungen = store?.rechnungen || [];
+        const rechnungen = window.storeService?.store?.rechnungen || [];
         const openInvoices = rechnungen.filter(r => r.status === 'offen' || r.status === 'versendet');
 
         const unmatchedCredits = this.transactions.filter(t =>
@@ -258,8 +258,8 @@ class BankingService {
                 // Check if purpose contains invoice number
                 if (purposeLower.includes(invoiceRef)) {
                     // Check amount match (with 1% tolerance for fees)
-                    const amountDiff = Math.abs(tx.amount - invoice.betrag);
-                    const tolerance = invoice.betrag * 0.01;
+                    const amountDiff = Math.abs(tx.amount - (invoice.brutto || invoice.betrag || 0));
+                    const tolerance = (invoice.brutto || invoice.betrag || 0) * 0.01;
 
                     if (amountDiff <= tolerance) {
                         this.matchPaymentToInvoice(tx.id, invoice.id);
@@ -269,7 +269,7 @@ class BankingService {
                 }
 
                 // Fallback: Match by exact amount and customer name
-                if (Math.abs(tx.amount - invoice.betrag) < 0.01) {
+                if (Math.abs(tx.amount - (invoice.brutto || invoice.betrag || 0)) < 0.01) {
                     const customerName = (invoice.kunde?.name || invoice.kunde?.firma || '').toLowerCase();
                     if (customerName && tx.name.toLowerCase().includes(customerName.split(' ')[0])) {
                         this.matchPaymentToInvoice(tx.id, invoice.id);
@@ -300,8 +300,8 @@ class BankingService {
         });
 
         // Update invoice status
-        if (typeof store !== 'undefined' && store.rechnungen) {
-            const invoice = store.rechnungen.find(r => r.id === invoiceId || r.nummer === invoiceId);
+        if (window.storeService?.store?.rechnungen) {
+            const invoice = window.storeService.store.rechnungen.find(r => r.id === invoiceId || r.nummer === invoiceId);
             if (invoice) {
                 invoice.status = 'bezahlt';
                 invoice.bezahltAm = new Date().toISOString();

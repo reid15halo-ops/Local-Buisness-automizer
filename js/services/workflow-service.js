@@ -312,6 +312,9 @@ class WorkflowService {
             this.checkScheduledWorkflows();
         }, 60000);
 
+        // Clean up interval on page unload
+        window.addEventListener('beforeunload', () => clearInterval(this.engineInterval));
+
         // Initial check
         setTimeout(() => this.checkScheduledWorkflows(), 5000);
     }
@@ -325,20 +328,30 @@ class WorkflowService {
 
         this.workflows.filter(w => w.active).forEach(workflow => {
             const trigger = workflow.trigger;
+            let shouldFire = false;
 
             if (trigger.type === 'schedule.daily' && trigger.params.time === currentTime) {
-                this.executeWorkflow(workflow.id, { scheduled: true });
+                shouldFire = true;
             }
 
             if (trigger.type === 'schedule.weekly' &&
                 trigger.params.day === currentDay &&
                 trigger.params.time === currentTime) {
-                this.executeWorkflow(workflow.id, { scheduled: true });
+                shouldFire = true;
             }
 
             if (trigger.type === 'schedule.monthly' &&
                 trigger.params.dayOfMonth === currentDayOfMonth &&
                 trigger.params.time === currentTime) {
+                shouldFire = true;
+            }
+
+            if (shouldFire) {
+                const firedKey = `${workflow.id}-${currentTime}`;
+                if (this._firedThisMinute?.has(firedKey)) return;
+                this._firedThisMinute = this._firedThisMinute || new Set();
+                this._firedThisMinute.add(firedKey);
+                setTimeout(() => this._firedThisMinute.delete(firedKey), 61000);
                 this.executeWorkflow(workflow.id, { scheduled: true });
             }
         });

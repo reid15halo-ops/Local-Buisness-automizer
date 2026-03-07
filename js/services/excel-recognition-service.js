@@ -80,6 +80,7 @@ class ExcelRecognitionService {
      * @returns {Promise<Object>} - { headers, preview, suggestedMapping, stats }
      */
     async analyzeFile(file, dataType) {
+        if (file.size > 50 * 1024 * 1024) { throw new Error('Datei zu groß'); }
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             const isCSV = file.name.toLowerCase().endsWith('.csv');
