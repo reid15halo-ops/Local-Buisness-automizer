@@ -216,11 +216,13 @@ class TenantService {
             plz: profile.address_postal,
             stadt: profile.address_city,
             steuernummer: profile.tax_number,
-            telefon: bizSettings.company_phone || '',
+            telefon: profile.phone || bizSettings.company_phone || '',
+            email: profile.email || '',
             website: bizSettings.company_website || '',
-            iban: bizSettings.bank_iban || '',
-            bic: bizSettings.bank_bic || '',
+            iban: profile.iban || bizSettings.bank_iban || '',
+            bic: profile.bic || bizSettings.bank_bic || '',
             bank: bizSettings.bank_name || '',
+            kleinunternehmer: profile.kleinunternehmer || false,
             branche: localStorage.getItem('business_type') || 'metallbau',
             logo_url: profile.company_logo || null
         };

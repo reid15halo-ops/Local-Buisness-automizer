@@ -12,14 +12,16 @@ class OnboardingTutorialService {
         this.highlightElement = null;
         this.storageKey = 'tutorial_completed';
 
-        this.steps = [
+        // All available tutorial steps (full set for Pro mode)
+        this.allSteps = [
             {
                 id: 'welcome',
                 title: 'Willkommen bei FreyAI Visions!',
                 description: 'Diese App hilft dir, deine Handwerksfirma zu organisieren. Von Anfragen über Angebote bis zu Rechnungen – alles an einem Ort.',
                 targetSelector: null, // Full screen for welcome
                 highlightClass: null,
-                position: 'center'
+                position: 'center',
+                mode: 'all'
             },
             {
                 id: 'sidebar-nav',
@@ -27,7 +29,8 @@ class OnboardingTutorialService {
                 description: 'In der linken Seitenleiste findest du alle Hauptfunktionen: Anfragen, Angebote, Aufträge und Rechnungen. Klicke auf einen Punkt, um ihn zu öffnen.',
                 targetSelector: '.sidebar nav.nav-menu',
                 highlightClass: 'highlight-nav',
-                position: 'right'
+                position: 'right',
+                mode: 'all'
             },
             {
                 id: 'neue-anfrage',
@@ -35,7 +38,8 @@ class OnboardingTutorialService {
                 description: 'Hier kannst du eine neue Kundenanfrage erfassen. Mit "+ Neue Anfrage" geht es sofort los. Später kannst du diese in ein Angebot umwandeln.',
                 targetSelector: '.btn-new-anfrage',
                 highlightClass: 'highlight-button',
-                position: 'top'
+                position: 'top',
+                mode: 'all'
             },
             {
                 id: 'anfragen-view',
@@ -43,7 +47,8 @@ class OnboardingTutorialService {
                 description: 'Alle eingehenden Anfragen findest du hier. Du kannst sie akzeptieren, ablehnen oder in Angebote umwandeln.',
                 targetSelector: '[data-view="anfragen"]',
                 highlightClass: 'highlight-nav-item',
-                position: 'right'
+                position: 'right',
+                mode: 'all'
             },
             {
                 id: 'angebote-view',
@@ -51,7 +56,8 @@ class OnboardingTutorialService {
                 description: 'Aus jeder Anfrage erstellst du ein Angebot. Die App hilft dir dabei, Preise zu kalkulieren und Angebote zu generieren.',
                 targetSelector: '[data-view="angebote"]',
                 highlightClass: 'highlight-nav-item',
-                position: 'right'
+                position: 'right',
+                mode: 'all'
             },
             {
                 id: 'auftraege-view',
@@ -59,7 +65,8 @@ class OnboardingTutorialService {
                 description: 'Wenn ein Kunde dein Angebot annimmt, wird es zum Auftrag. Hier verfolgst du den Status aller laufenden Arbeiten.',
                 targetSelector: '[data-view="auftraege"]',
                 highlightClass: 'highlight-nav-item',
-                position: 'right'
+                position: 'right',
+                mode: 'all'
             },
             {
                 id: 'rechnungen-view',
@@ -67,7 +74,8 @@ class OnboardingTutorialService {
                 description: 'Nach Abschluss eines Auftrags erstellst du eine Rechnung. Diese wird automatisch nummeriert und kann direkt versendet werden.',
                 targetSelector: '[data-view="rechnungen"]',
                 highlightClass: 'highlight-nav-item',
-                position: 'right'
+                position: 'right',
+                mode: 'all'
             },
             {
                 id: 'dashboard',
@@ -75,7 +83,8 @@ class OnboardingTutorialService {
                 description: 'Das Dashboard zeigt dir alle wichtigen Kennzahlen: offene Rechnungen, laufende Aufträge, und eine Aktivitätsübersicht.',
                 targetSelector: '[data-view="dashboard"]',
                 highlightClass: 'highlight-nav-item',
-                position: 'right'
+                position: 'right',
+                mode: 'pro'
             },
             {
                 id: 'einstellungen',
@@ -83,17 +92,37 @@ class OnboardingTutorialService {
                 description: 'In den Einstellungen konfigurierst du API-Keys für KI-Funktionen, Email-Versand und weitere Integrationen. Bei Fragen findest du hier auch Links zur Hilfe.',
                 targetSelector: '[data-view="einstellungen"]',
                 highlightClass: 'highlight-nav-item',
-                position: 'right'
+                position: 'right',
+                mode: 'all'
             },
             {
                 id: 'complete',
-                title: 'Tutorial abgeschlossen! 🎉',
+                title: 'Tutorial abgeschlossen!',
                 description: 'Du bist bereit! Starte jetzt deine erste Anfrage oder importiere Daten. Dieses Tutorial kannst du jederzeit in den Einstellungen erneut öffnen.',
                 targetSelector: null,
                 highlightClass: null,
-                position: 'center'
+                position: 'center',
+                mode: 'all'
             }
         ];
+
+        // Filter steps based on current user mode
+        this.steps = this._getFilteredSteps();
+    }
+
+    /**
+     * Get filtered steps based on current user mode (simple/pro)
+     * In Simple mode, Pro-only steps are excluded
+     * @private
+     */
+    _getFilteredSteps() {
+        const isSimple = window.userModeService?.isSimpleMode?.()
+            ?? (localStorage.getItem('freyai_user_mode') !== 'pro');
+
+        if (isSimple) {
+            return this.allSteps.filter(step => step.mode === 'all');
+        }
+        return [...this.allSteps];
     }
 
     /**
@@ -108,6 +137,9 @@ class OnboardingTutorialService {
      */
     async start(stepIndex = 0) {
         if (this.isActive) {return;}
+
+        // Re-filter steps in case mode changed since construction
+        this.steps = this._getFilteredSteps();
 
         this.isActive = true;
         this.currentStep = stepIndex;

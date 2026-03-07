@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreyAI Visions — One-Pager</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #0c1a1a;
+            color: #e0e8e8;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 8mm 10mm;
+            font-size: 10pt;
+            line-height: 1.45;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0d9488;
+            margin-bottom: 12px;
+        }
+
+        .header-logo {
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #0d9488;
+            letter-spacing: 0.5px;
+        }
+
+        .header-text .tagline {
+            font-size: 11pt;
+            color: #d4a843;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* ── Section Titles ── */
+        .section-title {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #0d9488;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid rgba(13, 148, 136, 0.3);
+        }
+
+        section {
+            margin-bottom: 11px;
+        }
+
+        /* ── Two Column Layout ── */
+        .two-col {
+            display: flex;
+            gap: 16px;
+        }
+
+        .two-col > div {
+            flex: 1;
+        }
+
+        /* ── Bullet Lists ── */
+        .bullets {
+            list-style: none;
+            padding: 0;
+        }
+
+        .bullets li {
+            padding: 3px 0 3px 18px;
+            position: relative;
+            font-size: 9.5pt;
+        }
+
+        .bullets li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .problem li::before {
+            background: #ef4444;
+        }
+
+        .solution li::before {
+            background: #0d9488;
+        }
+
+        .bullets li strong {
+            color: #ffffff;
+        }
+
+        /* ── Packages Table ── */
+        .packages-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 9pt;
+            margin-top: 4px;
+        }
+
+        .packages-table th {
+            background: #0d9488;
+            color: #0c1a1a;
+            padding: 6px 8px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 9.5pt;
+        }
+
+        .packages-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid rgba(13, 148, 136, 0.2);
+            vertical-align: top;
+        }
+
+        .packages-table tr:nth-child(even) td {
+            background: rgba(13, 148, 136, 0.06);
+        }
+
+        .packages-table .pkg-name {
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .packages-table .pkg-price {
+            font-weight: 700;
+            color: #d4a843;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .packages-table .pkg-highlight {
+            background: rgba(212, 168, 67, 0.1);
+        }
+
+        .pkg-note {
+            font-size: 8.5pt;
+            color: #9cb3b3;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* ── ROI Box ── */
+        .roi-box {
+            background: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(212, 168, 67, 0.1));
+            border: 1px solid rgba(212, 168, 67, 0.4);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-top: 4px;
+        }
+
+        .roi-box .roi-title {
+            font-weight: 700;
+            color: #d4a843;
+            font-size: 10pt;
+            margin-bottom: 3px;
+        }
+
+        .roi-box p {
+            font-size: 9.5pt;
+            color: #e0e8e8;
+        }
+
+        .roi-box .roi-highlight {
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 11pt;
+        }
+
+        /* ── Contact Block ── */
+        .contact {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            background: rgba(13, 148, 136, 0.08);
+            border: 1px solid rgba(13, 148, 136, 0.3);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-top: 4px;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-info .name {
+            font-size: 11pt;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .contact-info p {
+            font-size: 9pt;
+            color: #c0d0d0;
+            line-height: 1.5;
+        }
+
+        .contact-info a {
+            color: #0d9488;
+            text-decoration: none;
+        }
+
+        .contact-qr {
+            width: 80px;
+            height: 80px;
+            background: #ffffff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            padding: 4px;
+        }
+
+        .contact-qr svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .qr-label {
+            font-size: 7.5pt;
+            color: #9cb3b3;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            font-size: 8pt;
+            color: #6b8a8a;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(13, 148, 136, 0.2);
+        }
+
+        .footer a {
+            color: #0d9488;
+            text-decoration: none;
+        }
+
+        /* ── Print ── */
+        @media print {
+            body {
+                background: #0c1a1a !important;
+                color: #e0e8e8 !important;
+                padding: 0;
+                width: 100%;
+                min-height: auto;
+            }
+
+            .packages-table th {
+                background: #0d9488 !important;
+                color: #0c1a1a !important;
+            }
+
+            .roi-box {
+                background: rgba(13, 148, 136, 0.15) !important;
+            }
+
+            .contact {
+                background: rgba(13, 148, 136, 0.08) !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            section, .header, .contact, .roi-box, .packages-table {
+                page-break-inside: avoid;
+            }
+
+            body {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <img src="img/hero-logo.png" alt="FreyAI Visions Logo" class="header-logo">
+        <div class="header-text">
+            <h1>FreyAI Visions</h1>
+            <div class="tagline">Jonas Glawion &mdash; Gelernter Steinmetz. KI-Ingenieur.</div>
+        </div>
+    </div>
+
+    <!-- Problem & Loesung -->
+    <div class="two-col">
+        <div>
+            <section>
+                <div class="section-title">Das Problem</div>
+                <ul class="bullets problem">
+                    <li><strong>Zettelwirtschaft:</strong> Angebote, Rechnungen, Kundendaten &mdash; alles auf Papier, in Ordnern oder im Kopf. Nichts ist auffindbar, wenn man es braucht.</li>
+                    <li><strong>Zeitfresser B&uuml;ro:</strong> Abends nach der Baustelle noch Stunden am Schreibtisch &mdash; Papierkram statt Feierabend oder Akquise.</li>
+                    <li><strong>Verlorene Auftr&auml;ge:</strong> Anfragen werden zu sp&auml;t beantwortet, Angebote vergessen. Der schnellere Wettbewerber bekommt den Zuschlag.</li>
+                </ul>
+            </section>
+        </div>
+        <div>
+            <section>
+                <div class="section-title">Die L&ouml;sung</div>
+                <ul class="bullets solution">
+                    <li><strong>Ein System f&uuml;r alles:</strong> Kunden, Angebote, Rechnungen, Zeiterfassung &mdash; zentral, digital und &uuml;bersichtlich. Kein Suchen mehr.</li>
+                    <li><strong>KI-Automatisierung:</strong> Angebote werden per Foto erstellt, Rechnungen automatisch verarbeitet, Erinnerungen verschickt &mdash; ohne Ihr Zutun.</li>
+                    <li><strong>Mobil auf der Baustelle:</strong> Alles am Handy verf&uuml;gbar &mdash; Zeiten erfassen, Fotos zuordnen, Kunden kontaktieren. Direkt von unterwegs.</li>
+                </ul>
+            </section>
+        </div>
+    </div>
+
+    <!-- Pakete -->
+    <section>
+        <div class="section-title">Pakete &amp; Preise</div>
+        <table class="packages-table">
+            <thead>
+                <tr>
+                    <th>Paket</th>
+                    <th>Umfang</th>
+                    <th style="text-align:right">Preis</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="pkg-highlight">
+                    <td class="pkg-name">Pilotprojekt</td>
+                    <td>Starter-Scope mit pers&ouml;nlicher Betreuung. Bedingung: anonymisierte Fallstudie als Referenz.</td>
+                    <td class="pkg-price">800 &euro;</td>
+                </tr>
+                <tr>
+                    <td class="pkg-name">Starter</td>
+                    <td>Digitales Komplettsystem: CRM, Angebote, Rechnungen, Zeiterfassung. Einrichtung &amp; Einweisung inklusive.</td>
+                    <td class="pkg-price">1.200 &euro;</td>
+                </tr>
+                <tr>
+                    <td class="pkg-name">Business</td>
+                    <td>Starter + KI-Automatisierungen, individuelle Workflows, E-Mail-Integration, laufender Support.</td>
+                    <td class="pkg-price">3.500 &euro;<br><span style="font-size:8pt;color:#9cb3b3;font-weight:400">+ 150 &euro;/Monat</span></td>
+                </tr>
+                <tr>
+                    <td class="pkg-name">Enterprise</td>
+                    <td>Ma&szlig;geschneiderte L&ouml;sung f&uuml;r gr&ouml;&szlig;ere Betriebe. Multi-User, API-Anbindungen, Sonderfunktionen.</td>
+                    <td class="pkg-price">ab 5.000 &euro;<br><span style="font-size:8pt;color:#9cb3b3;font-weight:400">+ 500 &euro;/Monat</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="pkg-note">Alle Preise sind Endpreise gem&auml;&szlig; &sect;19 UStG (Kleinunternehmerregelung). Es wird keine Umsatzsteuer ausgewiesen.</div>
+    </section>
+
+    <!-- ROI -->
+    <section>
+        <div class="section-title">Ihre Ersparnis</div>
+        <div class="roi-box">
+            <div class="roi-title">Rechenbeispiel: Return on Investment</div>
+            <p>
+                Bei einem Stundensatz von <strong>50 &euro;/h</strong> und nur <strong>3 Stunden Zeitersparnis pro Woche</strong>
+                sparen Sie <span class="roi-highlight">600 &euro; pro Monat</span>.<br>
+                Das Starter-Paket amortisiert sich in <strong>2 Monaten</strong> &mdash; danach ist jede Stunde reiner Gewinn.
+            </p>
+        </div>
+    </section>
+
+    <!-- Kontakt -->
+    <section>
+        <div class="section-title">Kontakt &amp; Termin</div>
+        <div class="contact">
+            <div class="contact-info">
+                <div class="name">Jonas Glawion</div>
+                <p>
+                    Grabenstra&szlig;e 135, 63762 Gro&szlig;ostheim<br>
+                    Tel: <a href="tel:+491794228285">+49 179 4228285</a><br>
+                    E-Mail: <a href="mailto:kontakt@freyaivisions.de">kontakt@freyaivisions.de</a><br>
+                    Web: <a href="https://freyaivisions.de">freyaivisions.de</a>
+                </p>
+                <p style="margin-top:6px; font-size:9.5pt; color:#d4a843; font-weight:600;">
+                    Kostenloses Erstgespr&auml;ch buchen &rarr; buchung.freyaivisions.de/jonas
+                </p>
+            </div>
+            <div>
+                <div class="contact-qr">
+                    <!-- QR-Code Placeholder -->
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="100" fill="#ffffff"/>
+                        <!-- Simplified QR pattern -->
+                        <rect x="5" y="5" width="25" height="25" rx="2" fill="#0c1a1a" stroke="#0c1a1a" stroke-width="2"/>
+                        <rect x="10" y="10" width="15" height="15" rx="1" fill="#ffffff"/>
+                        <rect x="13" y="13" width="9" height="9" rx="1" fill="#0c1a1a"/>
+                        <rect x="70" y="5" width="25" height="25" rx="2" fill="#0c1a1a"/>
+                        <rect x="75" y="10" width="15" height="15" rx="1" fill="#ffffff"/>
+                        <rect x="78" y="13" width="9" height="9" rx="1" fill="#0c1a1a"/>
+                        <rect x="5" y="70" width="25" height="25" rx="2" fill="#0c1a1a"/>
+                        <rect x="10" y="75" width="15" height="15" rx="1" fill="#ffffff"/>
+                        <rect x="13" y="78" width="9" height="9" rx="1" fill="#0c1a1a"/>
+                        <!-- Center data pattern -->
+                        <rect x="35" y="8" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="45" y="8" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="55" y="8" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="35" y="18" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="50" y="18" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="35" y="35" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="45" y="35" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="55" y="35" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="65" y="35" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="35" y="45" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="55" y="45" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="75" y="45" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="85" y="45" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="35" y="55" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="45" y="55" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="65" y="55" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="85" y="55" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="45" y="65" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="55" y="65" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="75" y="65" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="45" y="75" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="55" y="75" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="65" y="75" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="85" y="75" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="45" y="85" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="65" y="85" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="75" y="85" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="85" y="85" width="5" height="5" fill="#0c1a1a"/>
+                        <rect x="8" y="38" width="22" height="4" fill="#0c1a1a"/>
+                        <rect x="8" y="55" width="22" height="4" fill="#0c1a1a"/>
+                        <rect x="38" y="8" width="4" height="22" fill="#0c1a1a"/>
+                        <rect x="55" y="8" width="4" height="22" fill="#0c1a1a"/>
+                    </svg>
+                </div>
+                <div class="qr-label">Termin buchen</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="footer">
+        FreyAI Visions &mdash; <a href="https://freyaivisions.de">freyaivisions.de</a> &mdash; Digitalisierung aus dem Handwerk, f&uuml;r das Handwerk.
+    </div>
+
+</body>
+</html>

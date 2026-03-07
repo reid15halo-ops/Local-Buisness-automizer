@@ -23,7 +23,9 @@
         // ── Email relay ────────────────────────────────────────────────────
         // The relay's server-side env var is API_SECRET.
         // The frontend key name is EMAIL_RELAY_SECRET for clarity.
-        EMAIL_RELAY_URL:    ls('freyai_email_relay_url',    ''),
+        // Default relay URL points to the FreyAI VPS proxy (nginx → port 3100).
+        // Pilotprojekt customers get this pre-configured; secret is per-tenant.
+        EMAIL_RELAY_URL:    ls('freyai_email_relay_url',    'https://app.freyaivisions.de/api'),
         EMAIL_RELAY_SECRET: ls('freyai_email_relay_secret', ''),
 
         // ── SMS provider ───────────────────────────────────────────────────

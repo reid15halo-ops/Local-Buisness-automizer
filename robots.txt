@@ -1,0 +1,14 @@
+# robots.txt - FreyAI Visions
+# https://freyaivisions.de
+
+User-agent: *
+Allow: /
+
+# Login-Bereich
+Disallow: /auth.html
+
+# Interne Services
+Disallow: /js/services/
+
+# Sitemap
+Sitemap: https://freyaivisions.de/sitemap.xml

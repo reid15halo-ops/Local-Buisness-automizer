@@ -128,6 +128,24 @@ class SetupWizardUI {
         const fieldsHTML = step.fields.map(field => {
             const currentValue = localStorage.getItem(field.name) || '';
 
+            if (field.type === 'checkbox') {
+                const checked = localStorage.getItem(field.name) === 'true';
+                return `
+                    <div class="wizard-field-group wizard-checkbox-group">
+                        <label class="wizard-checkbox-label">
+                            <input
+                                type="checkbox"
+                                id="wizard-${field.name}"
+                                name="${field.name}"
+                                class="wizard-checkbox"
+                                ${checked ? 'checked' : ''}
+                            />
+                            <span>${this._esc(field.label)}</span>
+                        </label>
+                    </div>
+                `;
+            }
+
             if (field.type === 'file') {
                 return `
                     <div class="wizard-field-group">
@@ -358,6 +376,26 @@ class SetupWizardUI {
                         <span class="summary-label">Steuernummer:</span>
                         <span class="summary-value">${esc(profile.tax_number)}</span>
                     </div>
+                    ${profile.email ? `
+                    <div class="summary-item">
+                        <span class="summary-label">E-Mail:</span>
+                        <span class="summary-value">${esc(profile.email)}</span>
+                    </div>` : ''}
+                    ${profile.phone ? `
+                    <div class="summary-item">
+                        <span class="summary-label">Telefon:</span>
+                        <span class="summary-value">${esc(profile.phone)}</span>
+                    </div>` : ''}
+                    ${profile.iban ? `
+                    <div class="summary-item">
+                        <span class="summary-label">IBAN:</span>
+                        <span class="summary-value">${esc(profile.iban)}</span>
+                    </div>` : ''}
+                    ${profile.kleinunternehmer ? `
+                    <div class="summary-item">
+                        <span class="summary-label">Kleinunternehmer:</span>
+                        <span class="summary-value">Ja (§19 UStG)</span>
+                    </div>` : ''}
                     ${profile.company_logo ? `
                         <div class="summary-item">
                             <span class="summary-label">Logo:</span>
@@ -410,9 +448,15 @@ class SetupWizardUI {
 
             const input = document.getElementById(`wizard-${field.name}`);
             if (input) {
-                input.addEventListener('input', (e) => {
-                    this.service.saveField(field.name, e.target.value);
-                });
+                if (field.type === 'checkbox') {
+                    input.addEventListener('change', (e) => {
+                        this.service.saveField(field.name, e.target.checked);
+                    });
+                } else {
+                    input.addEventListener('input', (e) => {
+                        this.service.saveField(field.name, e.target.value);
+                    });
+                }
             }
         });
 
@@ -520,11 +564,19 @@ class SetupWizardUI {
     /**
      * Handle next button
      */
-    handleNext() {
+    async handleNext() {
         const step = this.service.getCurrentStep();
 
-        // If complete step, start app
+        // If complete step, sync to Supabase (if configured) and start app
         if (step.id === 'complete') {
+            // Sync wizard data to Supabase tenants table (non-blocking, offline-safe)
+            if (window.tenantService) {
+                try {
+                    await window.tenantService.syncFromSetupWizard();
+                } catch (e) {
+                    console.warn('[SetupWizard] Supabase-Sync fehlgeschlagen (offline?):', e.message);
+                }
+            }
             this.hide();
             if (window.app && window.app.init) {
                 window.app.init();

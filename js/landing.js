@@ -1,6 +1,9 @@
 (function() {
     'use strict';
 
+    // Remove no-js class (enables CSS reveal animations)
+    document.documentElement.classList.remove('no-js');
+
     // ---- Smooth Scroll ----
     document.querySelectorAll('a[href^="#"]').forEach(function(link) {
         link.addEventListener('click', function(e) {
@@ -8,13 +11,10 @@
             if (target) {
                 e.preventDefault();
                 var offset = 70;
-                var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                var top = target.getBoundingClientRect().top + window.scrollY - offset;
                 window.scrollTo({ top: top, behavior: 'smooth' });
                 // Close mobile nav if open
-                var nav = document.getElementById('nav-menu');
-                if (nav) nav.classList.remove('open');
-                var toggle = document.querySelector('.mobile-toggle');
-                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+                closeMobileNav();
             }
         });
     });
@@ -22,6 +22,17 @@
     // ---- Mobile Nav Toggle ----
     var toggle = document.querySelector('.mobile-toggle');
     var navMenu = document.getElementById('nav-menu');
+
+    function closeMobileNav() {
+        if (navMenu && navMenu.classList.contains('open')) {
+            navMenu.classList.remove('open');
+            if (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.textContent = '\u2630';
+            }
+        }
+    }
+
     if (toggle && navMenu) {
         toggle.addEventListener('click', function() {
             var isOpen = navMenu.classList.toggle('open');
@@ -29,6 +40,11 @@
             toggle.textContent = isOpen ? '\u2715' : '\u2630';
         });
     }
+
+    // Close mobile nav on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeMobileNav();
+    });
 
     // ---- Nav Scroll Effect ----
     var nav = document.querySelector('.nav');
