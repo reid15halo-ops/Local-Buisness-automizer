@@ -6,6 +6,10 @@
 class ErrorHandler {
     constructor() {
         this.history = [];
+        this._errorCount = 0;
+        this._errorWindowStart = Date.now();
+        this._maxErrorsPerMinute = 10;
+        this._initGlobalHandlers();
     }
 
     // Log error and notify user (optional)
@@ -18,9 +22,71 @@ class ErrorHandler {
             message: error.message || error.toString(),
             stack: error.stack
         });
+        if (this.history.length > 100) this.history.shift();
+
+        this._sendToSupabase(error.message || error.toString(), error.stack, { context });
 
         if (notifyUser) {
             this.showToast(error.message || 'Ein unbekannter Fehler ist aufgetreten', 'error');
+        }
+    }
+
+    // ---- Supabase Error Logging ----
+
+    _initGlobalHandlers() {
+        const prevOnError = window.onerror;
+        window.onerror = (msg, source, line, col, error) => {
+            this.handle(error || new Error(String(msg)), 'global');
+            if (prevOnError) prevOnError(msg, source, line, col, error);
+        };
+        const prevUnhandled = window.onunhandledrejection;
+        window.onunhandledrejection = (event) => {
+            this.handle(event.reason || new Error('Unhandled rejection'), 'promise');
+            if (prevUnhandled) prevUnhandled(event);
+        };
+    }
+
+    _isRateLimited() {
+        const now = Date.now();
+        if (now - this._errorWindowStart > 60000) {
+            this._errorCount = 0;
+            this._errorWindowStart = now;
+        }
+        this._errorCount++;
+        return this._errorCount > this._maxErrorsPerMinute;
+    }
+
+    async _sendToSupabase(errorMessage, errorStack, metadata = {}) {
+        try {
+            // Skip in demo mode
+            if (window.demoGuard && window.demoGuard.isDemo()) return;
+
+            // Skip if rate limited
+            if (this._isRateLimited()) return;
+
+            // Get supabase client
+            const supabase = window.supabaseClient?.client;
+            if (!supabase || !window.supabaseClient?.isConfigured()) return;
+
+            // Get current user id if available
+            const { data: { user } } = await supabase.auth.getUser();
+            const userId = user?.id || null;
+
+            // Get tenant_id (consistent with other services)
+            const tenantId = user?.app_metadata?.tenant_id || 'a0000000-0000-0000-0000-000000000001';
+
+            await supabase.from('client_errors').insert({
+                tenant_id: tenantId,
+                user_id: userId,
+                error_message: errorMessage,
+                error_stack: errorStack || null,
+                url: window.location.href,
+                user_agent: navigator.userAgent,
+                metadata: metadata
+            });
+        } catch (e) {
+            // Silently fail — avoid infinite error loops
+            console.warn('[ErrorHandler] Failed to log error to Supabase:', e.message);
         }
     }
 

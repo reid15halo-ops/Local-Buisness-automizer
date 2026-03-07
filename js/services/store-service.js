@@ -43,6 +43,10 @@ class StoreService {
                 }
             });
         }
+
+        // Re-sync from Supabase once auth becomes available (fixes timing issue)
+        this._setupAuthSync();
+
         // Note: load() or loadForUser() must be called explicitly and awaited in app.js
     }
 
@@ -93,22 +97,16 @@ class StoreService {
                 // Merge to ensure structure integrity
                 Object.assign(this.store, data);
                 this.checkStorageUsage();
-
-                // If store exists but is effectively empty, try Supabase then demo
-                if (this.store.anfragen.length === 0 &&
-                    this.store.angebote.length === 0 &&
-                    this.store.auftraege.length === 0) {
-                    const synced = await this._syncFromSupabase();
-                    if (!synced) {await this.resetToDemo();}
-                }
             } catch (e) {
                 console.error('Failed to parse store data:', e);
-                await this.resetToDemo();
             }
-        } else {
-            // No data saved yet -> Try Supabase first, then Demo
-            const synced = await this._syncFromSupabase();
-            if (!synced) {await this.resetToDemo();}
+        }
+
+        // Always try Supabase sync when online (overrides cached/demo data)
+        const synced = await this._syncFromSupabase();
+        if (!synced && !data) {
+            // No cached data AND no Supabase → load demo
+            await this.resetToDemo();
         }
 
         this.notify();
@@ -220,24 +218,24 @@ class StoreService {
      * Adds a new Inquiry to the store.
      * @param {Object} anfrage - The inquiry object to add
      */
-    addAnfrage(anfrage) {
+    async addAnfrage(anfrage) {
         this.store.anfragen.push(anfrage);
-        this.save();
         this.addActivity('📥', `Neue Anfrage von ${anfrage.kunde?.name || 'Unbekannt'}`);
+        await this.save();
     }
 
     /**
      * Adds a new Offer to the store and updates the related Inquiry status.
      * @param {Object} angebot - The offer object
      */
-    addAngebot(angebot) {
+    async addAngebot(angebot) {
         this.store.angebote.push(angebot);
         // Update linked Anfrage
         const anfrage = this.store.anfragen.find(a => a.id === angebot.anfrageId);
         if (anfrage) {anfrage.status = 'angebot-erstellt';}
 
-        this.save();
         this.addActivity('📝', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} erstellt`);
+        await this.save();
     }
 
     /**
@@ -439,7 +437,7 @@ class StoreService {
         if (this.store.activities.length > 50) { // Increased limit
             this.store.activities = this.store.activities.slice(0, 50);
         }
-        this.save(); // Save triggers notify
+        // Note: callers (addAnfrage, addAngebot, etc.) are responsible for saving
     }
 
     // --- Helpers ---
@@ -464,6 +462,58 @@ class StoreService {
     }
 
     /**
+     * Listen for auth state changes and re-sync when user logs in.
+     */
+    _setupAuthSync() {
+        let attempts = 0;
+        const MAX_ATTEMPTS = 20;
+        const trySubscribe = () => {
+            if (attempts++ >= MAX_ATTEMPTS) {
+                console.warn('StoreService: authService not found after', MAX_ATTEMPTS, 'attempts');
+                return;
+            }
+            if (window.authService) {
+                window.authService.onAuthChange(async (user) => {
+                    if (user && window.supabaseDB?.isOnline()) {
+                        await this.forceSync();
+                    }
+                });
+            } else {
+                setTimeout(trySubscribe, 500);
+            }
+        };
+        trySubscribe();
+    }
+
+    /**
+     * Force re-sync from Supabase, replacing cached data.
+     */
+    async forceSync() {
+        const synced = await this._syncFromSupabase();
+        if (synced) {
+            this.notify();
+        }
+        return synced;
+    }
+
+    /**
+     * Transform flat Supabase rows (kunde_name, kunde_email, kunde_telefon)
+     * into the nested kunde object the frontend expects.
+     */
+    _transformSupabaseRows(rows) {
+        return rows.map(row => {
+            if (row.kunde_name && !row.kunde) {
+                row.kunde = {
+                    name: row.kunde_name,
+                    email: row.kunde_email || '',
+                    telefon: row.kunde_telefon || ''
+                };
+            }
+            return row;
+        });
+    }
+
+    /**
      * Sync data from Supabase cloud tables into local store.
      * @returns {boolean} true if data was loaded from Supabase
      */
@@ -476,7 +526,7 @@ class StoreService {
             for (const table of tables) {
                 const data = await window.supabaseDB.getAll(table);
                 if (data && data.length > 0) {
-                    this.store[table] = data;
+                    this.store[table] = this._transformSupabaseRows(data);
                     totalRecords += data.length;
                 }
             }
@@ -491,7 +541,6 @@ class StoreService {
             if (totalRecords > 0) {
                 console.warn(`[StoreService] Loaded ${totalRecords} records from Supabase`);
                 await this.save();
-                this.notify();
                 return true;
             }
             return false;

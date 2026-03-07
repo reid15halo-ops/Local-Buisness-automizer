@@ -395,22 +395,53 @@ Beispiel 2 - UNVOLLSTÄNDIG:
     return extractJsonFromGeminiResponse(text)
 }
 
-function extractJsonFromGeminiResponse(text: string): unknown {
+function extractJsonFromGeminiResponse(text: string): GeminiAnalysisResult {
+  let jsonStr: string | null = null;
+
   // Try to find JSON block wrapped in ```json ... ``` or ``` ... ```
   const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (codeBlockMatch) {
-    try { return JSON.parse(codeBlockMatch[1].trim()); } catch {}
+    jsonStr = codeBlockMatch[1].trim();
   }
-  // Try to find raw JSON object or array
-  const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
-  if (jsonMatch) {
-    try { return JSON.parse(jsonMatch[1]); } catch {}
-  }
-  // Try parsing the entire text as JSON
-  try { return JSON.parse(text.trim()); } catch {}
 
-  console.error('[extractJson] Failed to extract JSON from Gemini response, first 200 chars:', text.slice(0, 200));
-  throw new Error('Could not extract valid JSON from Gemini response');
+  // Try to find raw JSON object or array
+  if (!jsonStr) {
+    const jsonMatch = text.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+    if (jsonMatch) {
+      jsonStr = jsonMatch[1];
+    }
+  }
+
+  // Try the entire text as JSON
+  if (!jsonStr) {
+    jsonStr = text.trim();
+  }
+
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    console.error('[extractJson] Failed to extract JSON from Gemini response, first 200 chars:', text.slice(0, 200));
+    throw new Error('Could not extract valid JSON from Gemini response');
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error('Gemini returned non-object');
+  }
+
+  // Ensure required fields have safe defaults
+  parsed.positionen = Array.isArray(parsed.positionen) ? parsed.positionen : [];
+  parsed.kunde = parsed.kunde && typeof parsed.kunde === 'object' ? parsed.kunde : {};
+  parsed.kunde.name = parsed.kunde.name || 'Unbekannt';
+  parsed.anfrage = parsed.anfrage && typeof parsed.anfrage === 'object' ? parsed.anfrage : {};
+  parsed.anfrage.beschreibung = parsed.anfrage.beschreibung || 'Keine Betreffzeile';
+  parsed.anfrage.leistungsart = parsed.anfrage.leistungsart || 'sonstiges';
+  parsed.vollstaendig = typeof parsed.vollstaendig === 'boolean' ? parsed.vollstaendig : false;
+  parsed.fehlende_infos = Array.isArray(parsed.fehlende_infos) ? parsed.fehlende_infos : [];
+  parsed.rueckfragen = Array.isArray(parsed.rueckfragen) ? parsed.rueckfragen : [];
+  parsed.geschaetzteStunden = typeof parsed.geschaetzteStunden === 'number' ? parsed.geschaetzteStunden : 0;
+
+  return parsed as GeminiAnalysisResult;
 }
 
 // ============================================
@@ -475,7 +506,13 @@ async function processWithGemini(
             .select()
             .single()
 
-        kundeId = newCustomer.id
+        if (!newCustomer) {
+            console.error('Failed to create customer - insert returned null');
+            // Use a fallback so processing continues
+            kundeId = crypto.randomUUID();
+        } else {
+            kundeId = newCustomer.id
+        }
     }
 
     // 2. Create Anfrage
@@ -553,7 +590,7 @@ async function processWithGemini(
     }
 
     // 4. Generate PDF and upload to Supabase Storage
-    const { url: pdfUrl, bytes: pdfBytes } = await generateAngebotPDF(supabase, angebot, analysis, email)
+    const { url: pdfUrl, bytes: pdfBytes } = await generateAngebotPDF(supabase, angebot, analysis, email, adminSettings)
 
     // 5. Send response email with offer (PDF attached)
     await sendAngebotEmail(
@@ -604,7 +641,8 @@ async function generateAngebotPDF(
     supabase: any,
     angebot: any,
     analysis: GeminiAnalysisResult,
-    email: InboundEmail
+    email: InboundEmail,
+    adminSettings?: any
 ): Promise<{ url: string, bytes: Uint8Array }> {
     const pdfDoc = await PDFDocument.create()
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
@@ -862,7 +900,7 @@ async function sendAngebotEmail(
     const resendResult = await resendResponse.json().catch(() => ({}))
     if (!resendResponse.ok || resendResult.error) {
         console.error('[sendAngebotEmail] Resend API error:', resendResult.error)
-        throw new Error(`Email delivery failed: ${resendResult.error?.message ?? resendResponse.statusText}`)
+        console.warn('[email] Email delivery failed (non-fatal):', resendResult.error?.message ?? resendResponse.statusText); return;
     }
     console.log('[sendAngebotEmail] Email sent successfully, id:', resendResult.id)
 }
@@ -937,7 +975,7 @@ async function sendFollowUpQuestions(
     const resendResult = await resendResponse.json().catch(() => ({}))
     if (!resendResponse.ok || resendResult.error) {
         console.error('[sendFollowUpQuestions] Resend API error:', resendResult.error)
-        throw new Error(`Email delivery failed: ${resendResult.error?.message ?? resendResponse.statusText}`)
+        console.warn('[email] Email delivery failed (non-fatal):', resendResult.error?.message ?? resendResponse.statusText); return;
     }
     console.log('[sendFollowUpQuestions] Email sent successfully, id:', resendResult.id)
 
@@ -996,7 +1034,7 @@ async function sendSimpleConfirmation(to: string, name: string) {
     const resendResult = await resendResponse.json().catch(() => ({}))
     if (!resendResponse.ok || resendResult.error) {
         console.error('[sendSimpleConfirmation] Resend API error:', resendResult.error)
-        throw new Error(`Email delivery failed: ${resendResult.error?.message ?? resendResponse.statusText}`)
+        console.warn('[email] Email delivery failed (non-fatal):', resendResult.error?.message ?? resendResponse.statusText); return;
     }
     console.log('[sendSimpleConfirmation] Email sent successfully, id:', resendResult.id)
 }

@@ -31,14 +31,33 @@ class EmailTemplateService {
     }
 
     /**
-     * Get company information from eInvoiceService or localStorage
+     * Get company information from companySettingsService (primary),
+     * eInvoiceService, or localStorage (fallbacks).
      */
     getCompanyInfo() {
-        // Try to get from eInvoiceService (synced from admin settings)
+        // Primary: companySettingsService (single source of truth)
+        if (window.companySettings?._cache) {
+            const cs = window.companySettings._cache;
+            return {
+                name: cs.company_name || '',
+                street: cs.company_address || '',
+                city: '',
+                postalCode: '',
+                phone: cs.company_phone || '',
+                email: cs.company_email || '',
+                vatId: cs.tax_id || '',
+                iban: cs.bank_iban || '',
+                bic: cs.bank_bic || '',
+                bankName: cs.bank_name || '',
+                logoUrl: cs.logo_url || null
+            };
+        }
+
+        // Fallback: eInvoiceService (synced from admin settings)
         if (window.eInvoiceService?.settings?.businessData) {
             const bd = window.eInvoiceService.settings.businessData;
             return {
-                name: bd.name || 'FreyAI Visions',
+                name: bd.name || '',
                 street: bd.street || '',
                 city: bd.city || '',
                 postalCode: bd.postalCode || '',
@@ -47,15 +66,16 @@ class EmailTemplateService {
                 vatId: bd.vatId || '',
                 iban: bd.iban || '',
                 bic: bd.bic || '',
-                bankName: bd.bankName || ''
+                bankName: bd.bankName || '',
+                logoUrl: null
             };
         }
 
-        // Fallback: try admin panel settings
+        // Fallback: admin panel settings in localStorage
         let ap = {};
         try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { /* corrupted */ }
         return {
-            name: ap.company_name || 'FreyAI Visions',
+            name: ap.company_name || '',
             street: ap.address_street || '',
             city: ap.address_city || '',
             postalCode: ap.address_postal || '',
@@ -64,7 +84,8 @@ class EmailTemplateService {
             vatId: ap.tax_number || '',
             iban: ap.bank_iban || '',
             bic: ap.bank_bic || '',
-            bankName: ap.bank_name || ''
+            bankName: ap.bank_name || '',
+            logoUrl: ap.company_logo || null
         };
     }
 
@@ -92,13 +113,18 @@ class EmailTemplateService {
      * Header template with company branding
      */
     getHeader() {
+        const logoHtml = this.company.logoUrl
+            ? `<img src="${this._escHtml(this.company.logoUrl)}" alt="${this._escHtml(this.company.name)}" style="max-height: 48px; max-width: 200px; margin-bottom: 8px;">`
+            : '';
+        const addressParts = [this.company.street, [this.company.postalCode, this.company.city].filter(Boolean).join(' ')].filter(Boolean);
+        const addressLine = addressParts.length > 0 ? addressParts.join(' | ') : '';
         return `
             <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #0c1a1a; color: white; padding: 30px 0; border-bottom: 3px solid #2dd4a8;">
                 <tr>
                     <td style="padding: 20px 40px; text-align: center;">
-                        <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px; color: #2dd4a8;">⚙️</div>
+                        ${logoHtml}
                         <h1 style="margin: 10px 0 5px 0; font-size: 24px; font-family: Arial, sans-serif; font-weight: bold;">${this._escHtml(this.company.name)}</h1>
-                        <p style="margin: 0; font-size: 12px; color: #cbd5e1;">${this._escHtml(this.company.street)} | ${this._escHtml(this.company.postalCode)} ${this._escHtml(this.company.city)}</p>
+                        ${addressLine ? `<p style="margin: 0; font-size: 12px; color: #cbd5e1;">${this._escHtml(addressLine)}</p>` : ''}
                     </td>
                 </tr>
             </table>
@@ -133,10 +159,7 @@ class EmailTemplateService {
                             </tr>
                         </table>
                         <p style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569; font-size: 10px; color: #64748b;">
-                            &copy; ${new Date().getFullYear()} ${this._escHtml(this.company.name)}. Alle Rechte vorbehalten.<br>
-                            <a href="https://freyaivisions.de/impressum" style="color: #94a3b8; text-decoration: underline;">Impressum</a>
-                            &nbsp;|&nbsp;
-                            <a href="https://freyaivisions.de/datenschutz" style="color: #94a3b8; text-decoration: underline;">Datenschutz</a>
+                            &copy; ${new Date().getFullYear()} ${this._escHtml(this.company.name)}. Alle Rechte vorbehalten.
                         </p>
                         <p style="margin-top: 10px; font-size: 9px; color: #475569;">
                             Sie erhalten diese E-Mail im Rahmen einer bestehenden Gesch&auml;ftsbeziehung. Falls Sie keine weiteren E-Mails erhalten m&ouml;chten, antworten Sie bitte mit dem Betreff &bdquo;Abmelden&ldquo;.
@@ -310,7 +333,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `Angebot Nr. ${angebot.id || angebot.nummer || ''} - ${this._escHtml(comp.name)}`,
+            subject: `Angebot Nr. ${angebot.id || angebot.nummer || ''} - ${comp.name}`,
             html: html
         };
     }
@@ -496,7 +519,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${this._escHtml(comp.name)}`,
+            subject: `Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${comp.name}`,
             html: html
         };
     }
@@ -647,7 +670,7 @@ class EmailTemplateService {
                                             <div style="margin: 30px 0; padding: 15px; background-color: #fee2e2; border-left: 4px solid #ef4444; border-radius: 4px;">
                                                 <p style="margin: 0; font-size: 13px; color: #991b1b; font-weight: bold;">
                                                     ⚠️ Bitte beachten: Falls Sie bereits Zahlung geleistet haben, erkennen Sie diese E-Mail als ungültig an.
-                                                    Falls sich Ihre Zahlung in Bearbeitung befindet, informieren Sie uns bitte unter ${comp.email}.
+                                                    Falls sich Ihre Zahlung in Bearbeitung befindet, informieren Sie uns bitte unter ${this._escHtml(comp.email)}.
                                                 </p>
                                             </div>
                                         ` : ''}
@@ -659,7 +682,7 @@ class EmailTemplateService {
                                         </p>
 
                                         <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;">
-                                            Bei Fragen erreichen Sie uns unter ${comp.phone} oder ${comp.email}
+                                            Bei Fragen erreichen Sie uns unter ${this._escHtml(comp.phone)} oder ${this._escHtml(comp.email)}
                                         </p>
                                     </td>
                                 </tr>
@@ -679,7 +702,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `${level.title}: Rechnung Nr. ${this._escHtml(originalRechnung.nummer)} - ${this._escHtml(comp.name)}`,
+            subject: `${level.title}: Rechnung Nr. ${originalRechnung.nummer} - ${comp.name}`,
             html: html
         };
     }
@@ -771,7 +794,7 @@ class EmailTemplateService {
                                             <p style="margin: 0 0 10px 0; font-size: 13px; color: #15803d; font-weight: bold;">Hinweise:</p>
                                             <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #15803d;">
                                                 <li style="margin: 5px 0;">Bei Verhinderung bitte rechtzeitig absagen (mindestens 24h vorher)</li>
-                                                <li style="margin: 5px 0;">Kontakt: ${comp.phone} oder ${comp.email}</li>
+                                                <li style="margin: 5px 0;">Kontakt: ${this._escHtml(comp.phone)} oder ${this._escHtml(comp.email)}</li>
                                                 <li style="margin: 5px 0;">Termin im Kalender speichern (siehe ICS-Datei)</li>
                                             </ul>
                                         </div>
@@ -858,7 +881,7 @@ class EmailTemplateService {
                                         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 30px;">
                                             <tr>
                                                 <td>
-                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Auftragsbest&auml;tigung Nr. ${auftrag.id || auftrag.nummer || ''}</h2>
+                                                    <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0c1a1a;">Auftragsbest&auml;tigung Nr. ${this._escHtml(auftrag.id || auftrag.nummer || '')}</h2>
                                                     <p style="margin: 5px 0; font-size: 13px; color: #64748b;">
                                                         Datum: ${this.formatDate(auftrag.datum || new Date().toISOString())}
                                                     </p>
@@ -956,7 +979,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `Auftragsbest\u00e4tigung Nr. ${auftrag.id || auftrag.nummer || ''} - ${this._escHtml(comp.name)}`,
+            subject: `Auftragsbestätigung Nr. ${auftrag.id || auftrag.nummer || ''} - ${comp.name}`,
             html: html
         };
     }
@@ -1039,7 +1062,7 @@ class EmailTemplateService {
                                         </p>
 
                                         <p style="margin: 10px 0 0 0; font-size: 12px; color: #64748b;">
-                                            Bei Fragen erreichen Sie uns unter ${comp.phone} oder ${comp.email}
+                                            Bei Fragen erreichen Sie uns unter ${this._escHtml(comp.phone)} oder ${this._escHtml(comp.email)}
                                         </p>
                                     </td>
                                 </tr>
@@ -1053,7 +1076,7 @@ class EmailTemplateService {
         `;
 
         return {
-            subject: `Zahlungserinnerung: Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${this._escHtml(comp.name)}`,
+            subject: `Zahlungserinnerung: Rechnung Nr. ${rechnung.id || rechnung.nummer || ''} - ${comp.name}`,
             html: html
         };
     }
