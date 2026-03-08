@@ -186,7 +186,7 @@ function renderAuftraege() {
         statsGrid.innerHTML = mainStatuses.map(key => {
             const cfg = AUFTRAG_STATUS_CONFIG[key];
             return `
-                <div class="stat-card-mini" style="cursor:pointer;" onclick="document.querySelector('.filter-btn[data-filter=&quot;${key}&quot;]')?.click()">
+                <div class="stat-card-mini" style="cursor:pointer;" data-action="filter-status" data-filter="${key}">
                     <span class="stat-icon-mini">${cfg.icon}</span>
                     <div class="stat-content-mini">
                         <span class="stat-value-mini">${counts[key] || 0}</span>
@@ -301,13 +301,13 @@ function renderAuftragCard(a) {
     const existingRechnung = (store.rechnungen || []).find(r => r.auftragId === a.id);
     const showRechnungAction = a.status === 'abgeschlossen' && !existingRechnung;
     const rechnungBtnHtml = showRechnungAction
-        ? `<div style="margin-top:6px;"><button class="btn btn-small btn-primary" style="width:100%;font-size:11px;padding:4px 8px;" onclick="event.stopPropagation(); createRechnungFromAuftrag('${h(a.id)}')">💰 Rechnung erstellen</button></div>`
+        ? `<div style="margin-top:6px;"><button class="btn btn-small btn-primary" style="width:100%;font-size:11px;padding:4px 8px;" data-action="create-rechnung" data-id="${h(a.id)}">💰 Rechnung erstellen</button></div>`
         : (existingRechnung && a.status === 'abgeschlossen'
             ? `<div style="margin-top:6px;font-size:11px;color:var(--accent-success, #22c55e);">✅ Rechnung ${h(existingRechnung.nummer || existingRechnung.id)}</div>`
             : '');
 
     return `
-        <div class="auftrag-card" onclick="openAuftragDetail('${h(a.id)}')">
+        <div class="auftrag-card" data-action="open-detail" data-id="${h(a.id)}">
             <div class="auftrag-card-header">
                 <span class="auftrag-card-title">${h(a.kunde?.name || 'Unbekannter Kunde')}</span>
                 <span class="auftrag-card-id" title="Im Status seit ${dauerText}">${dauerText}</span>
@@ -356,7 +356,7 @@ function renderAuftraegeList(auftraege) {
                 <div style="font-size:48px;margin-bottom:16px;">⚙️</div>
                 <h3 style="margin-bottom:8px;">Keine Aufträge</h3>
                 <p style="color:var(--text-secondary);margin-bottom:24px;">Aufträge entstehen aus angenommenen Angeboten.</p>
-                <button class="btn btn-primary" onclick="window.navigationController?.navigateTo('angebote')">
+                <button class="btn btn-primary" data-action="navigate-angebote">
                     📝 Zu den Angeboten
                 </button>
             </div>`;
@@ -368,7 +368,7 @@ function renderAuftraegeList(auftraege) {
         const progressClass = fortschritt < 30 ? 'low' : fortschritt < 70 ? 'mid' : 'high';
         const statusLabel = AUFTRAG_STATUS_LABELS[a.status] || a.status;
         return `
-            <div class="item-card" onclick="openAuftragDetail('${h(a.id)}')" style="cursor:pointer;">
+            <div class="item-card" data-action="open-detail" data-id="${h(a.id)}" style="cursor:pointer;">
                 <div class="item-header">
                     <h3 class="item-title">${h(a.kunde?.name || 'Unbekannter Kunde')}</h3>
                     <span class="item-id">${h(a.id)}</span>
@@ -513,7 +513,14 @@ function initAuftragDetailHandlers() {
         }
         const btn = e.target.closest('[data-status]');
         if (!btn || !currentDetailAuftragId) {return;}
-        changeAuftragStatus(currentDetailAuftragId, btn.dataset.status);
+        const newStatus = btn.dataset.status;
+        if (AUFTRAG_STATUS_CONFIG[newStatus]?.brauchtGrund) {
+            const grund = prompt('Bitte Grund angeben:');
+            if (!grund) {return;} // cancelled
+            changeAuftragStatus(currentDetailAuftragId, newStatus, grund);
+        } else {
+            changeAuftragStatus(currentDetailAuftragId, newStatus);
+        }
         openAuftragDetail(currentDetailAuftragId); // Refresh view
     });
 
@@ -715,6 +722,52 @@ function openAuftragDetail(auftragId) {
     window.AppUtils.openModal('modal-auftrag-detail');
 }
 
+// Event delegation for all data-action handlers in the Aufträge view
+function initAuftraegeEventDelegation() {
+    const container = document.getElementById('view-auftraege');
+    if (!container) {return;}
+
+    container.addEventListener('click', (e) => {
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) {return;}
+
+        const action = actionEl.dataset.action;
+
+        switch (action) {
+            case 'open-detail': {
+                const id = actionEl.dataset.id;
+                if (id) {openAuftragDetail(id);}
+                break;
+            }
+            case 'create-rechnung': {
+                e.stopPropagation();
+                const id = actionEl.dataset.id;
+                if (id) {createRechnungFromAuftrag(id);}
+                break;
+            }
+            case 'filter-status': {
+                const filterKey = actionEl.dataset.filter;
+                if (filterKey) {
+                    const filterBtn = document.querySelector(`.filter-btn[data-filter="${filterKey}"]`);
+                    if (filterBtn) {filterBtn.click();}
+                }
+                break;
+            }
+            case 'navigate-angebote': {
+                window.navigationController?.navigateTo('angebote');
+                break;
+            }
+        }
+    });
+}
+
+// Initialize event delegation on DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuftraegeEventDelegation);
+} else {
+    initAuftraegeEventDelegation();
+}
+
 // Export auftraege functions and state
 window.AuftraegeModule = {
     renderAuftraege,
@@ -724,6 +777,7 @@ window.AuftraegeModule = {
     renderAuftragZeit,
     initAuftragForm,
     initAuftragDetailHandlers,
+    initAuftraegeEventDelegation,
     AUFTRAG_STATUS_CONFIG,
     AUFTRAG_STATUS_LABELS,
     AUFTRAG_STATUS_ICONS,

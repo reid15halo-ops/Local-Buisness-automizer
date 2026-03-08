@@ -54,27 +54,21 @@ class LandingI18n {
         };
     }
 
-    // Detect language: URL param > localStorage > browser > fallback
+    // Detect language: URL param > localStorage > default German
+    // German is always default — only switches if user explicitly chose a language
     detectLanguage() {
-        // 1. URL parameter
+        // 1. URL parameter (?lang=en)
         const urlParams = new URLSearchParams(window.location.search);
         const urlLang = urlParams.get('lang');
         if (urlLang && this.isSupported(urlLang)) {return urlLang;}
 
-        // 2. localStorage (try-catch for incognito mode)
+        // 2. localStorage — only set when user actively picks a language
         try {
             const stored = localStorage.getItem('freyai_landing_lang');
             if (stored && this.isSupported(stored)) {return stored;}
         } catch (e) { /* localStorage unavailable */ }
 
-        // 3. Browser language
-        const browserLangs = navigator.languages || [navigator.language];
-        for (const lang of browserLangs) {
-            const code = lang.split('-')[0].toLowerCase();
-            if (this.isSupported(code)) {return code;}
-        }
-
-        // 4. Fallback
+        // 3. Default: German (no browser detection — German business, German default)
         return this.fallbackLang;
     }
 

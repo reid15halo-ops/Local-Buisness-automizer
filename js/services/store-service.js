@@ -213,7 +213,13 @@ class StoreService {
     /**
      * Saves the current store state to IndexedDB (user-specific).
      */
-    async save() {
+    async save(retries = 0) {
+        if (retries > 3) {
+            console.error('StoreService: save failed after 3 retries');
+            this._saving = false;
+            this._saveQueued = false;
+            return;
+        }
         if (this._saving) {
             this._saveQueued = true;
             return;
@@ -232,7 +238,7 @@ class StoreService {
             this._saving = false;
             if (this._saveQueued) {
                 this._saveQueued = false;
-                await this.save();
+                await this.save(retries + 1);
             }
         }
     }

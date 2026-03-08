@@ -39,6 +39,7 @@ async function init() {
     window.AnfragenModule?.initAnfrageForm?.();
     window.AngeboteModule?.initAngebotForm?.();
     window.AngeboteModule?.initAngeboteFilters?.();
+    window.AngeboteModule?.initAngeboteEventDelegation?.();
     window.AuftraegeModule?.initAuftragForm?.();
     window.AuftraegeModule?.initAuftragDetailHandlers?.();
     window.RechnungenModule?.initRechnungActions?.();

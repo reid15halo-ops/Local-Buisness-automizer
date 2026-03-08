@@ -667,7 +667,7 @@ function showPositionTemplatePicker(row) {
     overlay.id = 'position-template-picker-overlay';
     overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
     overlay.innerHTML = `
-        <div id="tpl-modal" onclick="event.stopPropagation()"
+        <div id="tpl-modal"
              style="background:#fff;border-radius:12px;max-width:680px;width:100%;max-height:84vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3);">
             <div style="padding:18px 20px 14px;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
@@ -741,15 +741,15 @@ function addPosition(prefill = null) {
                    autocomplete="off">
             <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
         </div>
-        <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" oninput="updateAngebotSummary()">
+        <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" data-action="update-summary">
         <input type="text" class="pos-einheit" placeholder="Einheit" value="${(window.esc || String)(prefill?.einheit || 'Stk.')}">
-        <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" oninput="updateAngebotSummary()">
+        <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" data-action="update-summary">
         <div class="position-material-selector">
             <button type="button" class="btn btn-small position-material-picker" data-position-id="${uniqueId}">📦 Material</button>
             <span class="position-material-info" data-position-id="${uniqueId}">${materialDisplay}</span>
             ${prefill?.materialId ? `<button type="button" class="position-material-clear" data-position-id="${uniqueId}">✕</button>` : ''}
         </div>
-        <button type="button" class="position-remove" onclick="this.parentElement.remove(); updateAngebotSummary();">×</button>
+        <button type="button" class="position-remove" data-action="remove-position">×</button>
         <div class="position-extra-details" style="flex:0 0 100%;width:100%;grid-column:1/-1;padding:10px 4px 6px;margin-top:6px;border-top:1px dashed #d1d5db;display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:start;">
             <div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -1020,10 +1020,10 @@ function renderAngebote() {
                     Erstelle Angebote aus offenen Anfragen oder lege eine neue Anfrage an.
                 </p>
                 <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="window.navigationController?.navigateTo('anfragen')">
+                    <button class="btn btn-primary" data-action="navigate-anfragen">
                         📥 Anfragen ansehen
                     </button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('btn-neue-anfrage')?.click()">
+                    <button class="btn btn-secondary" data-action="neue-anfrage">
                         ➕ Neue Anfrage
                     </button>
                 </div>
@@ -1075,7 +1075,7 @@ function renderAngebote() {
         if (anfrage) {
             angebotTrailHTML = `
                 <div class="entity-trail">
-                    <span class="trail-item" onclick="event.stopPropagation(); switchView('anfragen');">📥 ${h(anfrage.id)}</span>
+                    <span class="trail-item" data-action="switch-view" data-view="anfragen">📥 ${h(anfrage.id)}</span>
                     <span class="trail-arrow">&rarr;</span>
                     <span class="trail-item trail-current">📝 ${h(a.id)}</span>
                 </div>
@@ -1088,39 +1088,39 @@ function renderAngebote() {
         if (isEntwurf) {
             // Draft: show Bearbeiten + Vorschau & Freigabe + Löschen
             actionButtons = `
-                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); editAngebot('${h(a.id)}')">
+                <button class="btn btn-secondary btn-small" data-action="edit-angebot" data-id="${h(a.id)}">
                     Bearbeiten
                 </button>
-                <button class="btn btn-primary" onclick="event.stopPropagation(); previewAngebot('${h(a.id)}')">
+                <button class="btn btn-primary" data-action="preview-angebot" data-id="${h(a.id)}">
                     Vorschau &amp; Freigabe
                 </button>
-                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteAngebot('${h(a.id)}')">
+                <button class="btn btn-danger btn-small" data-action="delete-angebot" data-id="${h(a.id)}">
                     Löschen
                 </button>
             `;
         } else {
             // Non-draft: standard buttons
             actionButtons = `
-                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); exportAngebotPDF('${h(a.id)}')">
+                <button class="btn btn-secondary btn-small" data-action="export-pdf" data-id="${h(a.id)}">
                     PDF
                 </button>
-                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); editAngebot('${h(a.id)}')">
+                <button class="btn btn-secondary btn-small" data-action="edit-angebot" data-id="${h(a.id)}">
                     Bearbeiten
                 </button>
-                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); deleteAngebot('${h(a.id)}')">
+                <button class="btn btn-danger btn-small" data-action="delete-angebot" data-id="${h(a.id)}">
                     Löschen
                 </button>
-                ${isOffen ? `<button class="btn btn-success" onclick="event.stopPropagation(); acceptAngebot('${h(a.id)}')">
+                ${isOffen ? `<button class="btn btn-success" data-action="accept-angebot" data-id="${h(a.id)}">
                     Auftrag erteilen
                 </button>` : ''}
-                ${isOffen && a.kunde?.id ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); copyPortalLinkForKunde('${h(a.kunde.id)}')" title="Portal-Link kopieren">
+                ${isOffen && a.kunde?.id ? `<button class="btn btn-secondary btn-small" data-action="copy-portal-link" data-kunde-id="${h(a.kunde.id)}" title="Portal-Link kopieren">
                     Portal-Link
                 </button>` : ''}
             `;
         }
 
         return `
-        <div class="item-card" role="button" tabindex="0" aria-label="Angebot ${h(a.id)} ${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}" onclick="showAngebotDetail('${h(a.id)}')" onkeydown="if(event.key==='Enter')showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
+        <div class="item-card" role="button" tabindex="0" aria-label="Angebot ${h(a.id)} ${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}" data-action="show-angebot-detail" data-id="${h(a.id)}" style="cursor:pointer">
             <div class="item-header">
                 <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${h(a.id)}</span>
@@ -1567,8 +1567,8 @@ function previewAngebot(id) {
 
     // Build the preview modal HTML
     const previewHTML = `
-        <div class="angebot-preview-overlay" id="angebot-preview-overlay" onclick="closeAngebotPreview(event)">
-            <div class="angebot-preview-modal" onclick="event.stopPropagation()">
+        <div class="angebot-preview-overlay" id="angebot-preview-overlay" data-action="close-preview-overlay">
+            <div class="angebot-preview-modal" data-action="stop-propagation">
 
                 <div class="angebot-preview-warning">
                     ⚠ Bitte prüfen Sie alle Angaben sorgfältig, bevor Sie das Angebot freigeben.
@@ -1640,10 +1640,10 @@ function previewAngebot(id) {
                 </div>
 
                 <div class="angebot-preview-actions">
-                    <button class="btn-zurueck" onclick="closeAngebotPreview()">
+                    <button class="btn-zurueck" data-action="close-preview">
                         Zurück zum Bearbeiten
                     </button>
-                    <button class="btn-freigabe" onclick="freigebenAngebot('${window.UI.sanitize(angebot.id)}')">
+                    <button class="btn-freigabe" data-action="freigeben-angebot" data-id="${window.UI.sanitize(angebot.id)}">
                         Angebot freigeben und senden
                     </button>
                 </div>
@@ -1657,8 +1657,37 @@ function previewAngebot(id) {
     if (existing) { existing.remove(); }
 
     // Insert into DOM
-    document.body.insertAdjacentHTML('beforeend', previewHTML);
+    const previewContainer = document.createElement('div');
+    previewContainer.innerHTML = previewHTML;
+    const overlayEl = previewContainer.firstElementChild;
+    document.body.appendChild(overlayEl);
     document.body.style.overflow = 'hidden';
+
+    // Event delegation for preview overlay
+    overlayEl.addEventListener('click', (e) => {
+        const actionEl = e.target.closest('[data-action]');
+        if (actionEl) {
+            const action = actionEl.dataset.action;
+            if (action === 'stop-propagation') {
+                e.stopPropagation();
+                return;
+            }
+            if (action === 'close-preview') {
+                e.stopPropagation();
+                closeAngebotPreview();
+                return;
+            }
+            if (action === 'freigeben-angebot') {
+                e.stopPropagation();
+                freigebenAngebot(actionEl.dataset.id);
+                return;
+            }
+        }
+        // Click on overlay background closes it
+        if (e.target === overlayEl) {
+            closeAngebotPreview();
+        }
+    });
 }
 
 function closeAngebotPreview(event) {
@@ -1718,14 +1747,14 @@ function showAngebotDetail(angebotId) {
     // Build linked document chain
     let docChainHtml = '<div class="angebot-doc-chain">';
     if (anfrage) {
-        docChainHtml += `<span class="doc-chain-item" onclick="event.stopPropagation(); switchView('anfragen');" title="Anfrage anzeigen">📥 ${h(anfrage.id)}</span><span class="doc-chain-arrow">&rarr;</span>`;
+        docChainHtml += `<span class="doc-chain-item" data-action="switch-view" data-view="anfragen" title="Anfrage anzeigen">📥 ${h(anfrage.id)}</span><span class="doc-chain-arrow">&rarr;</span>`;
     }
     docChainHtml += `<span class="doc-chain-item doc-chain-active">📝 ${h(angebot.id)}</span>`;
     if (auftrag) {
-        docChainHtml += `<span class="doc-chain-arrow">&rarr;</span><span class="doc-chain-item" onclick="event.stopPropagation(); switchView('auftraege');" title="Auftrag anzeigen">📋 ${h(auftrag.id)}</span>`;
+        docChainHtml += `<span class="doc-chain-arrow">&rarr;</span><span class="doc-chain-item" data-action="switch-view" data-view="auftraege" title="Auftrag anzeigen">📋 ${h(auftrag.id)}</span>`;
     }
     if (rechnung) {
-        docChainHtml += `<span class="doc-chain-arrow">&rarr;</span><span class="doc-chain-item" onclick="event.stopPropagation(); window.showRechnung?.('${h(rechnung.id)}');" title="Rechnung anzeigen">💰 ${h(rechnung.id)}</span>`;
+        docChainHtml += `<span class="doc-chain-arrow">&rarr;</span><span class="doc-chain-item" data-action="show-rechnung" data-id="${h(rechnung.id)}" title="Rechnung anzeigen">💰 ${h(rechnung.id)}</span>`;
     }
     docChainHtml += '</div>';
 
@@ -1830,35 +1859,18 @@ function showAngebotDetail(angebotId) {
     }
 
     // Actions
+    const portalCid = h(angebot.kunde?.id || angebot.anfrageId || '');
     const actionsHtml = `
         <div class="form-actions" style="flex-wrap:wrap;gap:8px;">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('modal-angebot-detail')">Schliessen</button>
-            ${angebot.status === 'offen' ? `<button type="button" class="btn btn-success" onclick="acceptAngebot('${h(angebot.id)}'); closeModal('modal-angebot-detail');">Auftrag erteilen</button>` : ''}
+            <button type="button" class="btn btn-secondary" data-action="close-detail-modal">Schliessen</button>
+            ${angebot.status === 'offen' ? `<button type="button" class="btn btn-success" data-action="accept-and-close-detail" data-id="${h(angebot.id)}">Auftrag erteilen</button>` : ''}
             ${portalUrl ? `
             <button type="button" class="btn btn-secondary" title="Kundenportal öffnen"
-                onclick="(async()=>{
-                    const cid='${h(angebot.kunde?.id || angebot.anfrageId || '')}';
-                    if(window.portalService&&window.supabaseConfig?.isConfigured?.()){
-                        try{const{url}=await window.portalService.generateToken(cid);window.open(url,'_blank');}
-                        catch(e){window.showToast?.('Portal-Fehler: '+e.message,'error');}
-                    }else if(window.customerPortalService){
-                        try{const link=await window.customerPortalService.generatePortalLink(cid,'quote');window.open(link.url,'_blank');}
-                        catch(e){window.showToast?.('Portal-Fehler: '+e.message,'error');}
-                    }
-                })()">
+                data-action="open-portal" data-kunde-id="${portalCid}">
                 🔗 Portal öffnen
             </button>
             <button type="button" class="btn btn-secondary" title="Direkt-Link kopieren"
-                onclick="(async()=>{
-                    const cid='${h(angebot.kunde?.id || angebot.anfrageId || '')}';
-                    if(window.portalService&&window.supabaseConfig?.isConfigured?.()){
-                        try{await window.portalService.copyPortalLink(cid);}
-                        catch(e){window.showToast?.('Fehler: '+e.message,'error');}
-                    }else if(window.customerPortalService){
-                        try{const link=await window.customerPortalService.generatePortalLink(cid,'quote');await navigator.clipboard.writeText(link.url);window.showToast?.('Link kopiert','success');}
-                        catch(e){window.showToast?.('Fehler: '+e.message,'error');}
-                    }
-                })()">
+                data-action="copy-portal-link-detail" data-kunde-id="${portalCid}">
                 📋 Link kopieren
             </button>` : ''}
         </div>`;
@@ -2132,11 +2144,153 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
     }
 }
 
+// ============================================
+// Event Delegation for Angebote Module
+// ============================================
+
+function initAngeboteEventDelegation() {
+    // --- Angebote list (cards with action buttons) ---
+    const angeboteList = document.getElementById('angebote-list');
+    if (angeboteList) {
+        angeboteList.addEventListener('click', (e) => {
+            const actionEl = e.target.closest('[data-action]');
+            if (actionEl) {
+                const action = actionEl.dataset.action;
+                e.stopPropagation();
+
+                switch (action) {
+                case 'navigate-anfragen':
+                    window.navigationController?.navigateTo('anfragen');
+                    return;
+                case 'neue-anfrage':
+                    document.getElementById('btn-neue-anfrage')?.click();
+                    return;
+                case 'switch-view':
+                    switchView(actionEl.dataset.view);
+                    return;
+                case 'edit-angebot':
+                    editAngebot(actionEl.dataset.id);
+                    return;
+                case 'preview-angebot':
+                    previewAngebot(actionEl.dataset.id);
+                    return;
+                case 'delete-angebot':
+                    deleteAngebot(actionEl.dataset.id);
+                    return;
+                case 'export-pdf':
+                    exportAngebotPDF(actionEl.dataset.id);
+                    return;
+                case 'accept-angebot':
+                    acceptAngebot(actionEl.dataset.id);
+                    return;
+                case 'copy-portal-link':
+                    window.copyPortalLinkForKunde?.(actionEl.dataset.kundeId);
+                    return;
+                case 'show-angebot-detail':
+                    // This is the card itself; handled below after action check
+                    showAngebotDetail(actionEl.dataset.id);
+                    return;
+                }
+            }
+
+            // Card-level click (no specific action button hit) — open detail
+            const card = e.target.closest('.item-card[data-action="show-angebot-detail"]');
+            if (card) {
+                showAngebotDetail(card.dataset.id);
+            }
+        });
+
+        // Keyboard support for Enter on cards
+        angeboteList.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const card = e.target.closest('.item-card[data-action="show-angebot-detail"]');
+                if (card) {
+                    showAngebotDetail(card.dataset.id);
+                }
+            }
+        });
+    }
+
+    // --- Positionen list (remove button + input updates) ---
+    const positionenList = document.getElementById('positionen-list');
+    if (positionenList) {
+        positionenList.addEventListener('click', (e) => {
+            const actionEl = e.target.closest('[data-action]');
+            if (!actionEl) return;
+
+            if (actionEl.dataset.action === 'remove-position') {
+                actionEl.closest('.position-row')?.remove();
+                updateAngebotSummary();
+            }
+        });
+
+        positionenList.addEventListener('input', (e) => {
+            const actionEl = e.target.closest('[data-action]');
+            if (actionEl && actionEl.dataset.action === 'update-summary') {
+                updateAngebotSummary();
+            }
+        });
+    }
+
+    // --- Angebot detail modal ---
+    const detailContent = document.getElementById('angebot-detail-content');
+    if (detailContent) {
+        detailContent.addEventListener('click', (e) => {
+            const actionEl = e.target.closest('[data-action]');
+            if (!actionEl) return;
+
+            const action = actionEl.dataset.action;
+            e.stopPropagation();
+
+            switch (action) {
+            case 'switch-view':
+                switchView(actionEl.dataset.view);
+                return;
+            case 'show-rechnung':
+                window.showRechnung?.(actionEl.dataset.id);
+                return;
+            case 'close-detail-modal':
+                closeModal('modal-angebot-detail');
+                return;
+            case 'accept-and-close-detail':
+                acceptAngebot(actionEl.dataset.id);
+                closeModal('modal-angebot-detail');
+                return;
+            case 'open-portal':
+                (async () => {
+                    const cid = actionEl.dataset.kundeId;
+                    if (window.portalService && window.supabaseConfig?.isConfigured?.()) {
+                        try { const { url } = await window.portalService.generateToken(cid); window.open(url, '_blank'); }
+                        catch (err) { window.showToast?.('Portal-Fehler: ' + err.message, 'error'); }
+                    } else if (window.customerPortalService) {
+                        try { const link = await window.customerPortalService.generatePortalLink(cid, 'quote'); window.open(link.url, '_blank'); }
+                        catch (err) { window.showToast?.('Portal-Fehler: ' + err.message, 'error'); }
+                    }
+                })();
+                return;
+            case 'copy-portal-link-detail':
+                (async () => {
+                    const cid = actionEl.dataset.kundeId;
+                    if (window.portalService && window.supabaseConfig?.isConfigured?.()) {
+                        try { await window.portalService.copyPortalLink(cid); }
+                        catch (err) { window.showToast?.('Fehler: ' + err.message, 'error'); }
+                    } else if (window.customerPortalService) {
+                        try { const link = await window.customerPortalService.generatePortalLink(cid, 'quote'); await navigator.clipboard.writeText(link.url); window.showToast?.('Link kopiert', 'success'); }
+                        catch (err) { window.showToast?.('Fehler: ' + err.message, 'error'); }
+                    }
+                })();
+                return;
+            }
+        });
+    }
+}
+
 // Export angebote functions
 window.AngeboteModule = {
     createAngebotFromAnfrage,
     initAngebotForm,
     initAngeboteFilters,
+    initAngeboteEventDelegation,
     addPosition,
     updateAngebotSummary,
     generateAIText,
@@ -2155,6 +2309,7 @@ window.AngeboteModule = {
 window.createAngebotFromAnfrage = createAngebotFromAnfrage;
 window.renderAngebote = renderAngebote;
 window.initAngeboteFilters = initAngeboteFilters;
+window.initAngeboteEventDelegation = initAngeboteEventDelegation;
 window.addPosition = addPosition;
 window.updateAngebotSummary = updateAngebotSummary;
 window.acceptAngebot = acceptAngebot;

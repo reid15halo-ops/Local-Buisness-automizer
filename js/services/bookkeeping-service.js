@@ -748,11 +748,17 @@ window.bookkeepingService = new BookkeepingService();
 
 // Init after Supabase is ready
 window.addEventListener('DOMContentLoaded', () => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 30;
     const tryInit = () => {
+        attempts++;
         if (window.supabaseClient?.isConfigured()) {
             window.bookkeepingService.init().then(() => {
                 console.debug('[Buchhaltung] Service initialized');
             });
+        } else if (attempts > MAX_ATTEMPTS) {
+            console.warn('BookkeepingService: Supabase not available after 30s, running local-only');
+            window.bookkeepingService.init();
         } else {
             setTimeout(tryInit, 1000);
         }
