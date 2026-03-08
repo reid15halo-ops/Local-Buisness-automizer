@@ -31,7 +31,7 @@ class WebhookEventService {
      * @param {Object} payload    - Event-spezifische Daten
      */
     async emit(eventType, payload) {
-        if (!this._enabled || !this.n8nWebhookUrl) return;
+        if (!this._enabled || !this.n8nWebhookUrl) {return;}
 
         const body = {
             event: eventType,

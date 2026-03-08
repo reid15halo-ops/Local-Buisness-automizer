@@ -644,14 +644,14 @@ class SetupWizardUI {
      * Show single error (for logo upload, etc)
      */
     showError(message) {
-        if (window.showToast) window.showToast(message, 'error'); else console.error(message);
+        if (window.showToast) {window.showToast(message, 'error');} else {console.error(message);}
     }
 
     /**
      * Show warning
      */
     showWarning(message) {
-        if (window.showToast) window.showToast(message, 'warning'); else console.warn(message);
+        if (window.showToast) {window.showToast(message, 'warning');} else {console.warn(message);}
     }
 }
 

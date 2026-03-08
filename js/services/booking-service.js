@@ -324,7 +324,7 @@ ${ci.name}`
             const res = await fetch(`${baseUrl}/api/v1/bookings`, {
                 headers: { 'Authorization': `Bearer ${apiKey}` }
             });
-            if (!res.ok) throw new Error(`Cal.com API ${res.status}: ${res.statusText}`);
+            if (!res.ok) {throw new Error(`Cal.com API ${res.status}: ${res.statusText}`);}
             const data = await res.json();
             const bookings = data.bookings || data || [];
             return bookings.map(b => this._mapCalcomBooking(b));
@@ -382,12 +382,12 @@ ${ci.name}`
     async syncCalcomToCalendar() {
         try {
             const calcomBookings = await this.fetchCalcomBookings();
-            if (!calcomBookings.length) return 0;
+            if (!calcomBookings.length) {return 0;}
 
             let added = 0;
             for (const booking of calcomBookings) {
                 // Skip cancelled
-                if (booking.status === 'cancelled') continue;
+                if (booking.status === 'cancelled') {continue;}
 
                 // Only add if not already in calendar (by calcom id)
                 if (window.calendarService) {

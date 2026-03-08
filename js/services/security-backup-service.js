@@ -526,7 +526,7 @@ class SecurityBackupService {
         }
 
         const hash = await this._hashPin(pin, this.settings.pinSalt);
-        if (hash.length !== this.settings.pinHash.length) return false;
+        if (hash.length !== this.settings.pinHash.length) {return false;}
         let result = 0;
         for (let i = 0; i < hash.length; i++) {
             result |= hash.charCodeAt(i) ^ this.settings.pinHash.charCodeAt(i);

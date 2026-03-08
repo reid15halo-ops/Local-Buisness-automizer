@@ -33,7 +33,7 @@ class DunningService {
     }
 
     async init() {
-        if (this._initialized) return;
+        if (this._initialized) {return;}
         this._initialized = true;
         try {
             const { data } = await this._supabase()?.auth?.getUser() || {};
@@ -47,7 +47,7 @@ class DunningService {
     }
 
     async _loadMahnungenFromSupabase() {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const { data, error } = await this._supabase()
                 .from('mahnungen')
@@ -247,7 +247,7 @@ class DunningService {
     // Supabase persistence
     // ============================================
     async _saveMahnungToSupabase(mahnung) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const row = this._toSupabaseRow(mahnung);
             const { error } = await this._supabase()
@@ -445,7 +445,7 @@ Nächste Schritte:
      */
     getLetzteMahnung(rechnungId) {
         const mahnungen = this.getMahnungenForRechnung(rechnungId);
-        if (mahnungen.length === 0) return null;
+        if (mahnungen.length === 0) {return null;}
         return mahnungen.sort((a, b) => new Date(b.gesendetAm || b.erstelltAm) - new Date(a.gesendetAm || a.erstelltAm))[0];
     }
 
@@ -546,9 +546,9 @@ Nächste Schritte:
     }
 
     formatDate(dateStr) {
-        if (!dateStr) return '–';
+        if (!dateStr) {return '–';}
         const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '–';
+        if (isNaN(d.getTime())) {return '–';}
         return d.toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',

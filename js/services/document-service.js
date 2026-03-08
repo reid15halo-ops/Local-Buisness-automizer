@@ -340,7 +340,7 @@ class DocumentService {
 
     // Map Paperless document_type names to app categories
     paperlessTypeToCategory(typeName) {
-        if (!typeName) return 'sonstiges';
+        if (!typeName) {return 'sonstiges';}
         const name = typeName.toLowerCase();
         const map = {
             'rechnung': 'rechnung', 'invoice': 'rechnung',
@@ -350,7 +350,7 @@ class DocumentService {
             'lieferschein': 'lieferschein', 'delivery note': 'lieferschein'
         };
         for (const [key, cat] of Object.entries(map)) {
-            if (name.includes(key)) return cat;
+            if (name.includes(key)) {return cat;}
         }
         return 'sonstiges';
     }
@@ -358,10 +358,10 @@ class DocumentService {
     async paperlessFetch(endpoint, params = {}) {
         const url = new URL(`${this.paperlessUrl}/api/${endpoint}`);
         Object.entries(params).forEach(([k, v]) => {
-            if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+            if (v !== undefined && v !== null && v !== '') {url.searchParams.set(k, v);}
         });
         const res = await fetch(url.toString(), { headers: this.paperlessHeaders });
-        if (!res.ok) throw new Error(`Paperless API Fehler: ${res.status} ${res.statusText}`);
+        if (!res.ok) {throw new Error(`Paperless API Fehler: ${res.status} ${res.statusText}`);}
         return res.json();
     }
 
@@ -397,7 +397,7 @@ class DocumentService {
     async paperlessThumbnailUrl(id) {
         try {
             const res = await fetch(`${this.paperlessUrl}/api/documents/${id}/thumb/`, { headers: this.paperlessHeaders });
-            if (!res.ok) return '';
+            if (!res.ok) {return '';}
             const blob = await res.blob();
             return URL.createObjectURL(blob);
         } catch { return ''; }
@@ -407,7 +407,7 @@ class DocumentService {
     async paperlessDownloadUrl(id) {
         try {
             const res = await fetch(`${this.paperlessUrl}/api/documents/${id}/download/`, { headers: this.paperlessHeaders });
-            if (!res.ok) return '';
+            if (!res.ok) {return '';}
             const blob = await res.blob();
             return URL.createObjectURL(blob);
         } catch { return ''; }

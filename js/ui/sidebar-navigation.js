@@ -257,10 +257,10 @@
         collapsedState[groupId] = false;
         saveCollapsedState(collapsedState);
         const container = navMenu && navMenu.querySelector('[data-group-id="' + groupId + '"]');
-        if (!container) return;
+        if (!container) {return;}
         container.classList.remove('nav-group-collapsed');
         const header = container.querySelector('.nav-group-header');
-        if (header) header.setAttribute('aria-expanded', 'true');
+        if (header) {header.setAttribute('aria-expanded', 'true');}
         const items = container.querySelector('.nav-group-items');
         if (items) {
             items.style.maxHeight = items.scrollHeight + 'px';
@@ -271,17 +271,17 @@
         collapsedState[groupId] = true;
         saveCollapsedState(collapsedState);
         const container = navMenu && navMenu.querySelector('[data-group-id="' + groupId + '"]');
-        if (!container) return;
+        if (!container) {return;}
         const items = container.querySelector('.nav-group-items');
         if (items) {
             // Set explicit max-height first so transition works
             items.style.maxHeight = items.scrollHeight + 'px';
             // Force reflow
-            items.offsetHeight; // eslint-disable-line no-unused-expressions
+            items.offsetHeight;  
         }
         container.classList.add('nav-group-collapsed');
         const header = container.querySelector('.nav-group-header');
-        if (header) header.setAttribute('aria-expanded', 'false');
+        if (header) {header.setAttribute('aria-expanded', 'false');}
     }
 
     function toggleGroup(groupId) {
@@ -297,14 +297,14 @@
         for (let i = 0; i < NAV_STRUCTURE.groups.length; i++) {
             const g = NAV_STRUCTURE.groups[i];
             for (let j = 0; j < g.items.length; j++) {
-                if (g.items[j].view === viewName) return g.id;
+                if (g.items[j].view === viewName) {return g.id;}
             }
         }
         return null;
     }
 
     function setActiveView(viewName) {
-        if (!navMenu) return;
+        if (!navMenu) {return;}
         // Remove active from all
         const allBtns = navMenu.querySelectorAll('.nav-item');
         allBtns.forEach(function (b) { b.classList.remove('active'); });
@@ -358,7 +358,7 @@
             // -- Top items (always visible) --
             NAV_STRUCTURE.topItems.forEach(function (item) {
                 const btn = createNavButton(item);
-                if (item.view === activeView) btn.classList.add('active');
+                if (item.view === activeView) {btn.classList.add('active');}
                 navMenu.appendChild(btn);
             });
 
@@ -380,7 +380,7 @@
 
                 if (activeGroupId === group.id) {
                     const btn = groupEl.querySelector('[data-view="' + activeView + '"]');
-                    if (btn) btn.classList.add('active');
+                    if (btn) {btn.classList.add('active');}
                 }
 
                 collapsedState[group.id] = isCollapsed;
@@ -395,7 +395,7 @@
 
             NAV_STRUCTURE.bottomItems.forEach(function (item) {
                 const btn = createNavButton(item);
-                if (item.view === activeView) btn.classList.add('active');
+                if (item.view === activeView) {btn.classList.add('active');}
                 bottomSection.appendChild(btn);
             });
 
@@ -405,7 +405,7 @@
 
             NAV_STRUCTURE.adminItems.forEach(function (item) {
                 const btn = createNavButton(item);
-                if (item.view === activeView) btn.classList.add('active');
+                if (item.view === activeView) {btn.classList.add('active');}
                 adminSection.appendChild(btn);
             });
 
@@ -413,8 +413,8 @@
             navMenu.appendChild(bottomSection);
 
             // -- Remove old listeners before adding new ones --
-            if (_clickHandler) document.removeEventListener('click', _clickHandler);
-            if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
+            if (_clickHandler) {document.removeEventListener('click', _clickHandler);}
+            if (_resizeHandler) {window.removeEventListener('resize', _resizeHandler);}
 
             _clickHandler = function (e) {
                 const btn = e.target.closest('[data-view]');

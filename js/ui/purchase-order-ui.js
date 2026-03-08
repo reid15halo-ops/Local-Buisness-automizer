@@ -49,7 +49,7 @@ class PurchaseOrderUI {
         // Delegated click handler for PO detail buttons
         document.getElementById('po-list-container')?.addEventListener('click', (e) => {
             const btn = e.target.closest('[data-action="po-detail"]');
-            if (btn) this.openPODetail(btn.dataset.poId);
+            if (btn) {this.openPODetail(btn.dataset.poId);}
         });
 
         // Lieferdatum default to 7 days from now

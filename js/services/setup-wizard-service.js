@@ -381,7 +381,7 @@ class SetupWizardService {
             localStorage.removeItem('admin_pin');
             return pin === oldPin;
         }
-        if (!storedHash) return false;
+        if (!storedHash) {return false;}
         const inputHash = await this._hashPin(pin);
         return inputHash === storedHash;
     }

@@ -16,8 +16,8 @@ class CashflowForecastService {
      * Gruen >= 5000, Gelb >= 1000, Rot < 1000
      */
     getAmpel(betrag) {
-        if (betrag >= 5000) return 'gruen';
-        if (betrag >= 1000) return 'gelb';
+        if (betrag >= 5000) {return 'gruen';}
+        if (betrag >= 1000) {return 'gelb';}
         return 'rot';
     }
 
@@ -81,7 +81,7 @@ class CashflowForecastService {
     async loadForecastHistory(wochen = 8) {
         try {
             const db = window.supabaseClient?.client || window.supabase;
-            if (!db) return [];
+            if (!db) {return [];}
 
             const seit = new Date();
             seit.setDate(seit.getDate() - wochen * 7);

@@ -18,7 +18,7 @@ class RecurringInvoiceService {
     // ── Initialisation (bookkeeping-service pattern) ────────────
 
     async init() {
-        if (this._ready) return;
+        if (this._ready) {return;}
         try {
             const { data } = await this._supabase()?.auth?.getUser() || {};
             this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
@@ -132,27 +132,27 @@ class RecurringInvoiceService {
     }
 
     async _upsertToSupabase(template) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const row = this._toRow(template);
             const result = await this._supabase()
                 .from('recurring_invoice_templates')
                 .upsert(row, { onConflict: 'id' });
-            if (result.error) console.error('[RecurringInvoice] Supabase upsert error:', result.error.message);
+            if (result.error) {console.error('[RecurringInvoice] Supabase upsert error:', result.error.message);}
         } catch (err) {
             console.error('[RecurringInvoice] Supabase upsert failed:', err.message);
         }
     }
 
     async _deleteFromSupabase(id) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const result = await this._supabase()
                 .from('recurring_invoice_templates')
                 .delete()
                 .eq('id', id)
                 .eq('tenant_id', this._tenantId);
-            if (result.error) console.error('[RecurringInvoice] Supabase delete error:', result.error.message);
+            if (result.error) {console.error('[RecurringInvoice] Supabase delete error:', result.error.message);}
         } catch (err) {
             console.error('[RecurringInvoice] Supabase delete failed:', err.message);
         }
@@ -210,7 +210,7 @@ class RecurringInvoiceService {
     async updateTemplate(id, changes) {
         await this._ensureReady();
         const tpl = this.templates.find(function(t) { return t.id === id; });
-        if (!tpl) return { success: false, error: 'Template nicht gefunden' };
+        if (!tpl) {return { success: false, error: 'Template nicht gefunden' };}
 
         const safeCopy = Object.assign({}, changes);
         delete safeCopy.id;
@@ -230,7 +230,7 @@ class RecurringInvoiceService {
     async activateTemplate(id) {
         await this._ensureReady();
         const tpl = this.templates.find(function(t) { return t.id === id; });
-        if (!tpl) return { success: false, error: 'Template nicht gefunden' };
+        if (!tpl) {return { success: false, error: 'Template nicht gefunden' };}
 
         tpl.status = 'aktiv';
         tpl.naechste_faelligkeit = this._berechneNaechstesDatum(tpl);
@@ -248,7 +248,7 @@ class RecurringInvoiceService {
     async deleteTemplate(id) {
         await this._ensureReady();
         const idx = this.templates.findIndex(function(t) { return t.id === id; });
-        if (idx === -1) return { success: false, error: 'Template nicht gefunden' };
+        if (idx === -1) {return { success: false, error: 'Template nicht gefunden' };}
 
         this.templates.splice(idx, 1);
         this._saveLocal();
@@ -259,8 +259,8 @@ class RecurringInvoiceService {
     getTemplates(filter) {
         filter = filter || {};
         let result = this.templates.slice();
-        if (filter.status) result = result.filter(function(t) { return t.status === filter.status; });
-        if (filter.kunde_id) result = result.filter(function(t) { return t.kunde_id === filter.kunde_id; });
+        if (filter.status) {result = result.filter(function(t) { return t.status === filter.status; });}
+        if (filter.kunde_id) {result = result.filter(function(t) { return t.kunde_id === filter.kunde_id; });}
         return result.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
     }
 
@@ -277,11 +277,11 @@ class RecurringInvoiceService {
 
         for (let i = 0; i < this.templates.length; i++) {
             const tpl = this.templates[i];
-            if (tpl.status !== 'aktiv' || !tpl.naechste_faelligkeit) continue;
-            if (tpl.naechste_faelligkeit > heute) continue;
+            if (tpl.status !== 'aktiv' || !tpl.naechste_faelligkeit) {continue;}
+            if (tpl.naechste_faelligkeit > heute) {continue;}
 
             const dupKey = 'rit_gen_' + tpl.id + '_' + heute;
-            if (sessionStorage.getItem(dupKey)) continue;
+            if (sessionStorage.getItem(dupKey)) {continue;}
 
             const rechnung = await this._generiereRechnung(tpl);
             if (rechnung) {
@@ -300,7 +300,7 @@ class RecurringInvoiceService {
     async generateNow(id) {
         await this._ensureReady();
         const tpl = this.templates.find(function(t) { return t.id === id; });
-        if (!tpl || tpl.status === 'beendet') return null;
+        if (!tpl || tpl.status === 'beendet') {return null;}
         return this._generiereRechnung(tpl);
     }
 
@@ -406,7 +406,7 @@ class RecurringInvoiceService {
             const start = new Date(tpl.start_datum);
             const heute = new Date();
             heute.setHours(0, 0, 0, 0);
-            if (start >= heute) return tpl.start_datum;
+            if (start >= heute) {return tpl.start_datum;}
             basis = start;
         } else {
             basis = new Date();
@@ -436,8 +436,8 @@ class RecurringInvoiceService {
 
         const ergebnis = naechstes.toISOString().split('T')[0];
 
-        if (tpl.end_datum && ergebnis > tpl.end_datum) return null;
-        if (tpl.max_anzahl && tpl.anzahl_erstellt >= tpl.max_anzahl) return null;
+        if (tpl.end_datum && ergebnis > tpl.end_datum) {return null;}
+        if (tpl.max_anzahl && tpl.anzahl_erstellt >= tpl.max_anzahl) {return null;}
 
         return ergebnis;
     }
@@ -559,7 +559,7 @@ class RecurringInvoiceService {
     }
 
     async _ensureReady() {
-        if (!this._ready) await this.init();
+        if (!this._ready) {await this.init();}
     }
 }
 

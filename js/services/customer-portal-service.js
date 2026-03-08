@@ -24,7 +24,7 @@ class CustomerPortalService {
     // ============================================
 
     async init() {
-        if (this._initialized) return;
+        if (this._initialized) {return;}
         this._initialized = true;
         try {
             const { data } = await this._supabase()?.auth?.getUser() || {};
@@ -45,7 +45,7 @@ class CustomerPortalService {
     }
 
     async _loadAllFromSupabase() {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             await Promise.all([
                 this._loadTokens(),
@@ -64,7 +64,7 @@ class CustomerPortalService {
                 .select('*')
                 .eq('tenant_id', this._tenantId)
                 .order('created_at', { ascending: false });
-            if (error) throw error;
+            if (error) {throw error;}
             this.tokens = (data || []).map(r => this._tokenFromRow(r));
         } catch (err) {
             console.warn('CustomerPortalService: tokens load error', err);
@@ -79,7 +79,7 @@ class CustomerPortalService {
                 .select('*')
                 .eq('tenant_id', this._tenantId)
                 .order('created_at', { ascending: true });
-            if (error) throw error;
+            if (error) {throw error;}
             this.portalMessages = (data || []).map(r => this._messageFromRow(r));
         } catch (err) {
             console.warn('CustomerPortalService: messages load error', err);
@@ -93,7 +93,7 @@ class CustomerPortalService {
                 .from('portal_shared_photos')
                 .select('*')
                 .eq('tenant_id', this._tenantId);
-            if (error) throw error;
+            if (error) {throw error;}
             this.sharedPhotos = {};
             (data || []).forEach(r => {
                 this.sharedPhotos[r.customer_id] = {
@@ -205,7 +205,7 @@ class CustomerPortalService {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             const tokenRecord = this._tokenFromRow(data);
             this.tokens.push(tokenRecord);
@@ -239,7 +239,7 @@ class CustomerPortalService {
                 .eq('id', record.id)
                 .eq('tenant_id', this._tenantId);
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             record.isActive = false;
 
@@ -328,7 +328,7 @@ class CustomerPortalService {
                 .eq('active', true)
                 .eq('tenant_id', this._tenantId)
                 .gt('expires_at', new Date().toISOString());
-            if (error) throw error;
+            if (error) {throw error;}
             return (data || []).map(r => this._tokenFromRow(r));
         } catch (err) {
             console.warn('getActiveTokens error:', err);
@@ -349,7 +349,7 @@ class CustomerPortalService {
                 .eq('customer_id', customerId)
                 .eq('tenant_id', this._tenantId)
                 .order('created_at', { ascending: false });
-            if (error) throw error;
+            if (error) {throw error;}
             return (data || []).map(r => this._tokenFromRow(r));
         } catch (err) {
             console.warn('getAllTokens error:', err);
@@ -851,7 +851,7 @@ class CustomerPortalService {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             const entry = this._messageFromRow(data);
             entry.customerName = validation.customer.name;
@@ -919,7 +919,7 @@ class CustomerPortalService {
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             const entry = this._messageFromRow(data);
 
@@ -955,7 +955,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .single();
 
-            if (tErr || !tokenRow) return [];
+            if (tErr || !tokenRow) {return [];}
 
             const { data, error } = await this._supabase()
                 .from('portal_messages')
@@ -964,7 +964,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .order('created_at', { ascending: true });
 
-            if (error) throw error;
+            if (error) {throw error;}
             return (data || []).map(r => this._messageFromRow(r));
         } catch (error) {
             console.warn('Get messages error:', error);
@@ -986,7 +986,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .order('created_at', { ascending: true });
 
-            if (error) throw error;
+            if (error) {throw error;}
             return (data || []).map(r => this._messageFromRow(r));
         } catch (err) {
             console.warn('getMessagesByCustomer error:', err);
@@ -1008,7 +1008,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .order('created_at', { ascending: true });
 
-            if (error) throw error;
+            if (error) {throw error;}
             return (data || []).map(r => this._messageFromRow(r));
         } catch (err) {
             console.warn('getUnreadMessages error:', err);
@@ -1029,7 +1029,7 @@ class CustomerPortalService {
                 .eq('id', messageId)
                 .eq('tenant_id', this._tenantId);
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             // Update local cache
             const msg = this.portalMessages.find(m => m.id === messageId);
@@ -1138,7 +1138,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .single();
 
-            if (selErr && selErr.code !== 'PGRST116') throw selErr; // PGRST116 = no rows
+            if (selErr && selErr.code !== 'PGRST116') {throw selErr;} // PGRST116 = no rows
 
             let allPhotoIds;
             if (existing) {
@@ -1153,7 +1153,7 @@ class CustomerPortalService {
                     .eq('id', existing.id)
                     .eq('tenant_id', this._tenantId);
 
-                if (error) throw error;
+                if (error) {throw error;}
             } else {
                 allPhotoIds = [...new Set(photoIds)];
 
@@ -1166,7 +1166,7 @@ class CustomerPortalService {
                         tenant_id: this._tenantId
                     });
 
-                if (error) throw error;
+                if (error) {throw error;}
             }
 
             // Update local cache
@@ -1202,7 +1202,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .single();
 
-            if (selErr || !existing) return;
+            if (selErr || !existing) {return;}
 
             const updatedIds = (existing.photo_ids || []).filter(id => id !== photoId);
 
@@ -1212,7 +1212,7 @@ class CustomerPortalService {
                 .eq('id', existing.id)
                 .eq('tenant_id', this._tenantId);
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             // Update local cache
             if (this.sharedPhotos[customerId]) {
@@ -1237,7 +1237,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .single();
 
-            if (tErr || !tokenRow) return [];
+            if (tErr || !tokenRow) {return [];}
 
             const customerId = tokenRow.customer_id;
 
@@ -1248,7 +1248,7 @@ class CustomerPortalService {
                 .eq('tenant_id', this._tenantId)
                 .single();
 
-            if (pErr || !photoRow) return [];
+            if (pErr || !photoRow) {return [];}
 
             const sharedIds = new Set(photoRow.photo_ids || []);
             const photos = [];
@@ -1402,7 +1402,7 @@ class CustomerPortalService {
                 .or(`active.eq.false,expires_at.lt.${now}`)
                 .select();
 
-            if (error) throw error;
+            if (error) {throw error;}
 
             const removed = (data || []).length;
 

@@ -21,20 +21,20 @@ class CustomerService {
     _toRow(c) {
         // Separate extra fields that don't have dedicated columns
         const extra = {};
-        if (c.firma) extra.firma = c.firma;
-        if (c.mobil) extra.mobil = c.mobil;
-        if (c.tags && c.tags.length) extra.tags = c.tags;
-        if (c.quelle) extra.quelle = c.quelle;
-        if (c.kundentyp) extra.kundentyp = c.kundentyp;
-        if (c.leitwegId) extra.leitwegId = c.leitwegId;
-        if (c.ustId) extra.ustId = c.ustId;
-        if (c.zahlungsart) extra.zahlungsart = c.zahlungsart;
-        if (c.zahlungsziel != null) extra.zahlungsziel = c.zahlungsziel;
-        if (c.rabatt) extra.rabatt = c.rabatt;
-        if (c.umsatzGesamt) extra.umsatzGesamt = c.umsatzGesamt;
-        if (c.anzahlAuftraege) extra.anzahlAuftraege = c.anzahlAuftraege;
-        if (c.letzterKontakt) extra.letzterKontakt = c.letzterKontakt;
-        if (c.customFields && Object.keys(c.customFields).length) extra.customFields = c.customFields;
+        if (c.firma) {extra.firma = c.firma;}
+        if (c.mobil) {extra.mobil = c.mobil;}
+        if (c.tags && c.tags.length) {extra.tags = c.tags;}
+        if (c.quelle) {extra.quelle = c.quelle;}
+        if (c.kundentyp) {extra.kundentyp = c.kundentyp;}
+        if (c.leitwegId) {extra.leitwegId = c.leitwegId;}
+        if (c.ustId) {extra.ustId = c.ustId;}
+        if (c.zahlungsart) {extra.zahlungsart = c.zahlungsart;}
+        if (c.zahlungsziel != null) {extra.zahlungsziel = c.zahlungsziel;}
+        if (c.rabatt) {extra.rabatt = c.rabatt;}
+        if (c.umsatzGesamt) {extra.umsatzGesamt = c.umsatzGesamt;}
+        if (c.anzahlAuftraege) {extra.anzahlAuftraege = c.anzahlAuftraege;}
+        if (c.letzterKontakt) {extra.letzterKontakt = c.letzterKontakt;}
+        if (c.customFields && Object.keys(c.customFields).length) {extra.customFields = c.customFields;}
 
         // Build notizen: preserve human-readable text, append JSON metadata
         const humanNotizen = c.notizen || '';
@@ -106,12 +106,12 @@ class CustomerService {
      * Supabase data wins on conflict (by id). Non-blocking on construction.
      */
     async _loadFromSupabase() {
-        if (this._loading) return;
+        if (this._loading) {return;}
         this._loading = true;
         try {
-            if (!window.dbService) return;
+            if (!window.dbService) {return;}
             const rows = await window.dbService.getCustomers();
-            if (!rows || rows.length === 0) return;
+            if (!rows || rows.length === 0) {return;}
 
             const supabaseCustomers = rows.map(r => this._fromRow(r));
 
@@ -146,7 +146,7 @@ class CustomerService {
      */
     async _syncToSupabase(customer) {
         try {
-            if (!window.dbService) return;
+            if (!window.dbService) {return;}
             const row = this._toRow(customer);
             await window.dbService.saveCustomer(row);
         } catch (err) {
@@ -159,7 +159,7 @@ class CustomerService {
      */
     async _deleteFromSupabase(id) {
         try {
-            if (!window.dbService) return;
+            if (!window.dbService) {return;}
             await window.dbService.deleteCustomer(id);
         } catch (err) {
             console.warn('[CustomerService] Supabase delete failed for', id, err.message);

@@ -330,7 +330,7 @@ ${companyName}`
     }
 
     _sanitizeForPrompt(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         return String(str).replace(/[<>{}]/g, '').substring(0, 2000);
     }
 

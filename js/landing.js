@@ -43,7 +43,7 @@
 
     // Close mobile nav on Escape key
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeMobileNav();
+        if (e.key === 'Escape') {closeMobileNav();}
     });
 
     // ---- Nav Scroll Effect ----

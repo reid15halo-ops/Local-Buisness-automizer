@@ -98,7 +98,7 @@ class StoreService {
                 const STORE_KEYS = ['anfragen', 'angebote', 'auftraege', 'rechnungen', 'activities', 'settings', 'kunden', 'currentAnfrageId', 'currentAuftragId', 'currentRechnungId'];
                 const filtered = {};
                 for (const key of STORE_KEYS) {
-                    if (data[key] !== undefined) filtered[key] = data[key];
+                    if (data[key] !== undefined) {filtered[key] = data[key];}
                 }
                 Object.assign(this.store, filtered);
                 this.checkStorageUsage();

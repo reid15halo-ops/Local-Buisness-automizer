@@ -24,7 +24,7 @@ class FieldModeUI {
     }
 
     _safeDataUrl(url) {
-        if (typeof url === 'string' && /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,/.test(url)) return url;
+        if (typeof url === 'string' && /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,/.test(url)) {return url;}
         return '';
     }
 
@@ -94,7 +94,7 @@ class FieldModeUI {
     // ============================================
 
     _renderJobSelection(jobs, activeTimer) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const stats = window.fieldAppService?.getTodaysStats() || {};
         const offlineCount = window.fieldAppService?.getOfflineQueueCount() || 0;
 
@@ -163,7 +163,7 @@ class FieldModeUI {
     // ============================================
 
     _renderJobDetail(job, activeTimer) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const service = window.fieldAppService;
         const isTimerForThisJob = activeTimer?.jobId === job.id;
         const offlineCount = service?.getOfflineQueueCount() || 0;
@@ -235,7 +235,7 @@ class FieldModeUI {
     }
 
     _renderTimerTab(job, activeTimer) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const service = window.fieldAppService;
         const isTimerForThisJob = activeTimer?.jobId === job.id;
         const todaysEntries = service?.getTodaysTimeEntries() || [];
@@ -308,7 +308,7 @@ class FieldModeUI {
     }
 
     _renderMaterialTab(job) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const service = window.fieldAppService;
         const materials = service?.getMaterialLog(job.id) || [];
         const storeMaterials = window.storeService?.store?.materialien || [];
@@ -411,7 +411,7 @@ class FieldModeUI {
     }
 
     _renderNotesTab(job) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const service = window.fieldAppService;
         const notes = service?.getVoiceNotes(job.id) || [];
         const hasVoice = window.voiceInputService?.isSupported;
@@ -470,7 +470,7 @@ class FieldModeUI {
     }
 
     _renderStatusTab(job) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const service = window.fieldAppService;
         const checkins = service?.getCheckins(job.id) || [];
         const signatures = service?.getSignatures(job.id) || [];
@@ -566,7 +566,7 @@ class FieldModeUI {
     // ============================================
 
     _showMaterialModal(jobId) {
-        const esc = window.esc || ((s) => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
+        const esc = window.esc || ((s) => { if (!s) {return '';} const d = document.createElement('div'); d.textContent = s; return d.innerHTML; });
         const materials = window.storeService?.store?.materialien || [];
 
         const overlay = document.createElement('div');
@@ -635,7 +635,7 @@ class FieldModeUI {
 
         // Bind events
         overlay.querySelector('[data-action="fm-close-modal"]').addEventListener('click', () => overlay.remove());
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) {overlay.remove();} });
 
         // Suggestion clicks
         overlay.querySelectorAll('.fm-mat-suggestion').forEach(btn => {
@@ -674,7 +674,7 @@ class FieldModeUI {
         overlay.querySelector('#fm-mat-save').addEventListener('click', () => {
             const name = overlay.querySelector('#fm-mat-name').value.trim();
             if (!name) {
-                if (window.UI?.showToast) window.UI.showToast('Bitte Materialname eingeben', 'warning');
+                if (window.UI?.showToast) {window.UI.showToast('Bitte Materialname eingeben', 'warning');}
                 return;
             }
             window.fieldAppService?.logMaterial(jobId, {
@@ -684,7 +684,7 @@ class FieldModeUI {
                 note: overlay.querySelector('#fm-mat-note').value.trim()
             });
             overlay.remove();
-            if (window.UI?.showToast) window.UI.showToast('Material gespeichert', 'success');
+            if (window.UI?.showToast) {window.UI.showToast('Material gespeichert', 'success');}
         });
     }
 
@@ -760,12 +760,12 @@ class FieldModeUI {
                     voiceActive = false;
                     voiceBtn.classList.remove('fm-btn-voice--recording');
                     overlay.querySelector('#fm-voice-label').textContent = 'Spracheingabe starten';
-                    if (voiceStatus) voiceStatus.style.display = 'none';
+                    if (voiceStatus) {voiceStatus.style.display = 'none';}
                 } else {
                     voiceActive = true;
                     voiceBtn.classList.add('fm-btn-voice--recording');
                     overlay.querySelector('#fm-voice-label').textContent = 'Spracheingabe stoppen';
-                    if (voiceStatus) voiceStatus.style.display = 'flex';
+                    if (voiceStatus) {voiceStatus.style.display = 'flex';}
 
                     window.voiceInputService.start({
                         targetInput: textarea,
@@ -781,12 +781,12 @@ class FieldModeUI {
             window.voiceInputService?.stop();
             const text = textarea.value.trim();
             if (!text) {
-                if (window.UI?.showToast) window.UI.showToast('Bitte Text eingeben', 'warning');
+                if (window.UI?.showToast) {window.UI.showToast('Bitte Text eingeben', 'warning');}
                 return;
             }
             window.fieldAppService?.saveVoiceNote(jobId, text);
             overlay.remove();
-            if (window.UI?.showToast) window.UI.showToast('Notiz gespeichert', 'success');
+            if (window.UI?.showToast) {window.UI.showToast('Notiz gespeichert', 'success');}
         });
     }
 
@@ -844,7 +844,7 @@ class FieldModeUI {
 
         overlay.querySelector('#fm-sig-save').addEventListener('click', () => {
             if (this.signaturePad?.isEmpty()) {
-                if (window.UI?.showToast) window.UI.showToast('Bitte unterschreiben', 'warning');
+                if (window.UI?.showToast) {window.UI.showToast('Bitte unterschreiben', 'warning');}
                 return;
             }
             const dataUrl = this.signaturePad.toDataURL();
@@ -852,7 +852,7 @@ class FieldModeUI {
             window.fieldAppService?.saveSignature(jobId, dataUrl, name);
             this._cleanupSignaturePad();
             overlay.remove();
-            if (window.UI?.showToast) window.UI.showToast('Unterschrift gespeichert', 'success');
+            if (window.UI?.showToast) {window.UI.showToast('Unterschrift gespeichert', 'success');}
         });
     }
 
@@ -887,14 +887,14 @@ class FieldModeUI {
 
         overlay.querySelector('[data-action="fm-confirm-stop"]').addEventListener('click', confirm);
         overlay.querySelector('[data-action="fm-cancel-stop"]').addEventListener('click', close);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirm(); if (e.key === 'Escape') close(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) {close();} });
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') {confirm();} if (e.key === 'Escape') {close();} });
     }
 
     _showPhotoEnlarged(photoId) {
         const photos = window.fieldAppService?.getPhotos() || [];
         const photo = photos.find(p => p.id === photoId);
-        if (!photo) return;
+        if (!photo) {return;}
 
         const overlay = document.createElement('div');
         overlay.className = 'fm-modal-overlay fm-photo-lightbox';
@@ -914,7 +914,7 @@ class FieldModeUI {
 
         overlay.querySelector('[data-action="fm-close-lightbox"]').addEventListener('click', () => overlay.remove());
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.remove();
+            if (e.target === overlay) {overlay.remove();}
         });
     }
 
@@ -926,7 +926,7 @@ class FieldModeUI {
         if (!this.container) { return; }
 
         // Abort previous listeners to prevent stacking on re-render
-        if (this._eventsAbort) this._eventsAbort.abort();
+        if (this._eventsAbort) {this._eventsAbort.abort();}
         this._eventsAbort = new AbortController();
         const sig = { signal: this._eventsAbort.signal };
 
@@ -1014,7 +1014,7 @@ class FieldModeUI {
                     const nameInput = this.container.querySelector('#fm-mat-name-inline');
                     const name = nameInput?.value.trim();
                     if (!name) {
-                        if (window.UI?.showToast) window.UI.showToast('Bitte Materialname eingeben', 'warning');
+                        if (window.UI?.showToast) {window.UI.showToast('Bitte Materialname eingeben', 'warning');}
                         return;
                     }
                     window.fieldAppService?.logMaterial(jobId || this.currentJobId, {
@@ -1024,7 +1024,7 @@ class FieldModeUI {
                     });
                     nameInput.value = '';
                     this.container.querySelector('#fm-mat-qty-inline').value = '1';
-                    if (window.UI?.showToast) window.UI.showToast('Material gespeichert', 'success');
+                    if (window.UI?.showToast) {window.UI.showToast('Material gespeichert', 'success');}
                     this.render();
                     break;
                 }
@@ -1048,12 +1048,12 @@ class FieldModeUI {
                     const textarea = this.container.querySelector('#fm-note-text-tab');
                     const text = textarea?.value.trim();
                     if (!text) {
-                        if (window.UI?.showToast) window.UI.showToast('Bitte Text eingeben', 'warning');
+                        if (window.UI?.showToast) {window.UI.showToast('Bitte Text eingeben', 'warning');}
                         return;
                     }
                     window.fieldAppService?.saveVoiceNote(jobId || this.currentJobId, text);
                     textarea.value = '';
-                    if (window.UI?.showToast) window.UI.showToast('Notiz gespeichert', 'success');
+                    if (window.UI?.showToast) {window.UI.showToast('Notiz gespeichert', 'success');}
                     this.render();
                     break;
                 }
@@ -1066,7 +1066,7 @@ class FieldModeUI {
                 case 'fm-update-status': {
                     const newStatus = btn.dataset.status;
                     window.fieldAppService?.updateJobStatus(jobId || this.currentJobId, newStatus);
-                    if (window.UI?.showToast) window.UI.showToast(`Status: ${this._statusLabel(newStatus)}`, 'success');
+                    if (window.UI?.showToast) {window.UI.showToast(`Status: ${this._statusLabel(newStatus)}`, 'success');}
                     this.render();
                     break;
                 }
@@ -1079,9 +1079,9 @@ class FieldModeUI {
                     }
                     window.fieldAppService?.checkIn(jobId || this.currentJobId).then(result => {
                         if (result.success) {
-                            if (window.UI?.showToast) window.UI.showToast('GPS Check-in erfolgreich', 'success');
+                            if (window.UI?.showToast) {window.UI.showToast('GPS Check-in erfolgreich', 'success');}
                         } else {
-                            if (window.UI?.showToast) window.UI.showToast(result.error || 'GPS-Fehler', 'error');
+                            if (window.UI?.showToast) {window.UI.showToast(result.error || 'GPS-Fehler', 'error');}
                         }
                         this.render();
                     });
@@ -1091,9 +1091,9 @@ class FieldModeUI {
                 case 'fm-sync-queue': {
                     window.fieldAppService?.syncOfflineQueue().then(result => {
                         if (result.synced > 0) {
-                            if (window.UI?.showToast) window.UI.showToast(`${result.synced} Aktion(en) synchronisiert`, 'success');
+                            if (window.UI?.showToast) {window.UI.showToast(`${result.synced} Aktion(en) synchronisiert`, 'success');}
                         } else {
-                            if (window.UI?.showToast) window.UI.showToast('Keine Aktionen zu synchronisieren', 'info');
+                            if (window.UI?.showToast) {window.UI.showToast('Keine Aktionen zu synchronisieren', 'info');}
                         }
                         this.render();
                     });
@@ -1128,18 +1128,18 @@ class FieldModeUI {
             const tabs = ['timer', 'material', 'fotos', 'notizen', 'status'];
             tabList.addEventListener('keydown', (e) => {
                 const idx = tabs.indexOf(this.activeTab);
-                if (idx === -1) return;
+                if (idx === -1) {return;}
                 let newIdx = idx;
                 if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { newIdx = (idx + 1) % tabs.length; }
                 else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { newIdx = (idx - 1 + tabs.length) % tabs.length; }
                 else if (e.key === 'Home') { newIdx = 0; }
                 else if (e.key === 'End') { newIdx = tabs.length - 1; }
-                else return;
+                else {return;}
                 e.preventDefault();
                 this.activeTab = tabs[newIdx];
                 this.render();
                 const newTab = this.container.querySelector(`#fm-tab-${tabs[newIdx]}`);
-                if (newTab) newTab.focus();
+                if (newTab) {newTab.focus();}
             }, sig);
         }
     }
@@ -1150,11 +1150,11 @@ class FieldModeUI {
 
     _renderTabContent() {
         const tabContent = this.container.querySelector('#fm-tab-content');
-        if (!tabContent) return;
+        if (!tabContent) {return;}
 
         const job = window.fieldAppService?.getJobById(this.currentJobId);
         const activeTimer = window.fieldAppService?.getCurrentTimer();
-        if (!job) return;
+        if (!job) {return;}
 
         tabContent.innerHTML = this._renderActiveTab(job, activeTimer);
 
@@ -1192,19 +1192,19 @@ class FieldModeUI {
         const voiceLabel = this.container.querySelector('#fm-voice-tab-label');
         const textarea = this.container.querySelector('#fm-note-text-tab');
 
-        if (!voiceBtn || !textarea) return;
+        if (!voiceBtn || !textarea) {return;}
 
         const isRecording = voiceBtn.classList.contains('fm-btn-voice--recording');
 
         if (isRecording) {
             window.voiceInputService?.stop();
             voiceBtn.classList.remove('fm-btn-voice--recording');
-            if (voiceLabel) voiceLabel.textContent = 'Spracheingabe starten';
-            if (voiceStatus) voiceStatus.style.display = 'none';
+            if (voiceLabel) {voiceLabel.textContent = 'Spracheingabe starten';}
+            if (voiceStatus) {voiceStatus.style.display = 'none';}
         } else {
             voiceBtn.classList.add('fm-btn-voice--recording');
-            if (voiceLabel) voiceLabel.textContent = 'Spracheingabe stoppen';
-            if (voiceStatus) voiceStatus.style.display = 'flex';
+            if (voiceLabel) {voiceLabel.textContent = 'Spracheingabe stoppen';}
+            if (voiceStatus) {voiceStatus.style.display = 'flex';}
 
             window.voiceInputService?.start({
                 targetInput: textarea,
@@ -1227,8 +1227,8 @@ class FieldModeUI {
 
             if (timer && !this.isPaused) {
                 const formatted = timer.elapsedFormatted;
-                if (display) display.textContent = formatted;
-                if (banner) banner.textContent = formatted;
+                if (display) {display.textContent = formatted;}
+                if (banner) {banner.textContent = formatted;}
             }
         }, 1000);
     }

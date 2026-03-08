@@ -17,7 +17,7 @@ class CallSummaryService {
 
     async _getUserId() {
         const sb = this._getSupabase();
-        if (!sb) return null;
+        if (!sb) {return null;}
         const { data: { user } } = await sb.auth.getUser();
         return user?.id || null;
     }
@@ -30,7 +30,7 @@ class CallSummaryService {
         }
 
         const userId = await this._getUserId();
-        if (!userId) return null;
+        if (!userId) {return null;}
 
         const record = {
             id: data.id || ('cs-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11)),
@@ -61,7 +61,7 @@ class CallSummaryService {
 
     async getSummariesForCustomer(kundeId, limit = 20) {
         const sb = this._getSupabase();
-        if (!sb) return [];
+        if (!sb) {return [];}
 
         const { data, error } = await sb
             .from(this.tableName)
@@ -79,7 +79,7 @@ class CallSummaryService {
 
     async getRecentSummaries(limit = 10) {
         const sb = this._getSupabase();
-        if (!sb) return [];
+        if (!sb) {return [];}
 
         const { data, error } = await sb
             .from(this.tableName)
@@ -96,7 +96,7 @@ class CallSummaryService {
 
     async deleteSummary(id) {
         const sb = this._getSupabase();
-        if (!sb) return false;
+        if (!sb) {return false;}
 
         const { error } = await sb
             .from(this.tableName)
@@ -112,7 +112,7 @@ class CallSummaryService {
 
     async getSummariesByPhone(phone, limit = 10) {
         const sb = this._getSupabase();
-        if (!sb) return [];
+        if (!sb) {return [];}
 
         const { data, error } = await sb
             .from(this.tableName)

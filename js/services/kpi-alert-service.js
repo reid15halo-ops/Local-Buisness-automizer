@@ -44,7 +44,7 @@ class KpiAlertService {
         if (typeof window.esc === 'function') {
             return window.esc(str);
         }
-        if (!str) return '';
+        if (!str) {return '';}
         const div = document.createElement('div');
         div.textContent = String(str);
         return div.innerHTML;
@@ -113,9 +113,9 @@ class KpiAlertService {
                 .neq('status', 'bezahlt')
                 .lt('faelligkeitsdatum', today);
 
-            if (error) throw error;
+            if (error) {throw error;}
             const n = count || 0;
-            if (n === 0) return null;
+            if (n === 0) {return null;}
 
             return {
                 type: 'danger',
@@ -147,14 +147,14 @@ class KpiAlertService {
                 .order('forecast_date', { ascending: false })
                 .limit(1);
 
-            if (error) throw error;
-            if (!data || data.length === 0) return null;
+            if (error) {throw error;}
+            if (!data || data.length === 0) {return null;}
 
             const balance = data[0].projected_balance;
-            if (typeof balance !== 'number') return null;
+            if (typeof balance !== 'number') {return null;}
 
             // Schwellwert: Warnung unter 5000 EUR, Gefahr unter 1000 EUR
-            if (balance >= 5000) return null;
+            if (balance >= 5000) {return null;}
 
             const type = balance < 1000 ? 'danger' : 'warning';
             const formatted = balance.toLocaleString('de-DE', {
@@ -190,9 +190,9 @@ class KpiAlertService {
                 .eq('status', 'gesendet')
                 .lt('datum', cutoff);
 
-            if (error) throw error;
+            if (error) {throw error;}
             const n = count || 0;
-            if (n === 0) return null;
+            if (n === 0) {return null;}
 
             return {
                 type: 'warning',
@@ -217,9 +217,9 @@ class KpiAlertService {
                 .eq('tenant_id', this._tenantId)
                 .neq('status', 'geloest');
 
-            if (error) throw error;
+            if (error) {throw error;}
             const n = count || 0;
-            if (n === 0) return null;
+            if (n === 0) {return null;}
 
             return {
                 type: 'info',
@@ -249,9 +249,9 @@ class KpiAlertService {
                 .eq('status', 'bestellt')
                 .lt('bestelldatum', cutoff);
 
-            if (error) throw error;
+            if (error) {throw error;}
             const n = count || 0;
-            if (n === 0) return null;
+            if (n === 0) {return null;}
 
             return {
                 type: 'warning',
@@ -277,7 +277,7 @@ class KpiAlertService {
     _getAlertsFromStore() {
         const alerts = [];
         const store = window.storeService?.store;
-        if (!store) return alerts;
+        if (!store) {return alerts;}
 
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];

@@ -64,7 +64,7 @@ class CalendarService {
     }
 
     updateAppointment(id, updates) {
-        if (!id || !updates) return null;
+        if (!id || !updates) {return null;}
         const index = this.appointments.findIndex(a => a.id === id);
         if (index !== -1) {
             this.appointments[index] = { ...this.appointments[index], ...updates };
@@ -144,7 +144,7 @@ class CalendarService {
     }
 
     timeToMinutes(time) {
-        if (!time || typeof time !== 'string') return 0;
+        if (!time || typeof time !== 'string') {return 0;}
         const [hours, minutes] = time.split(':').map(Number);
         return (hours || 0) * 60 + (minutes || 0);
     }

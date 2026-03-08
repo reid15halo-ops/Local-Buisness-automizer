@@ -175,7 +175,7 @@ class DashboardWidgetUI {
             // Daten nachladen und DOM aktualisieren
             dataOrPromise.then((data) => {
                 const el = document.getElementById(placeholderId);
-                if (!el) return;
+                if (!el) {return;}
                 if (data && data.error) {
                     el.innerHTML = `<div class="widget-error">${this._escapeHtml(data.message)}</div>`;
                 } else {
@@ -183,7 +183,7 @@ class DashboardWidgetUI {
                 }
             }).catch((err) => {
                 const el = document.getElementById(placeholderId);
-                if (el) el.innerHTML = '<div class="widget-error">Fehler beim Laden der Prognose.</div>';
+                if (el) {el.innerHTML = '<div class="widget-error">Fehler beim Laden der Prognose.</div>';}
                 console.error('DashboardWidgetUI: Async Widget Fehler:', err);
             });
 
@@ -283,7 +283,7 @@ class DashboardWidgetUI {
         }
 
         const fmt = (v) => {
-            if (v === null || v === undefined) return '—';
+            if (v === null || v === undefined) {return '—';}
             const abs = Math.abs(v);
             const f = abs.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             return v < 0 ? `-${f} EUR` : `+${f} EUR`;
@@ -353,7 +353,7 @@ class DashboardWidgetUI {
      */
     _renderEuerLiveContent(data) {
         const fmt = (v) => {
-            if (typeof v !== 'number' || isNaN(v)) return '0,00 \u20AC';
+            if (typeof v !== 'number' || isNaN(v)) {return '0,00 \u20AC';}
             return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v);
         };
 
@@ -830,7 +830,7 @@ class DashboardWidgetUI {
      */
     async _loadKpiAlerts() {
         const container = document.getElementById('kpi-alerts-container');
-        if (!container) return;
+        if (!container) {return;}
 
         const service = window.kpiAlertService;
         if (!service) {
@@ -858,7 +858,7 @@ class DashboardWidgetUI {
      * @private
      */
     _renderKpiAlerts(alerts) {
-        if (!alerts || alerts.length === 0) return '';
+        if (!alerts || alerts.length === 0) {return '';}
 
         let html = '<div class="kpi-alerts">';
 
@@ -892,7 +892,7 @@ class DashboardWidgetUI {
      * @private
      */
     _handleAlertClick(viewName) {
-        if (!viewName) return;
+        if (!viewName) {return;}
         try {
             if (window.navigationController && typeof window.navigationController.navigateTo === 'function') {
                 window.navigationController.navigateTo(viewName);

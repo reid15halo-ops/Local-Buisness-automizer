@@ -429,10 +429,10 @@ class BautagebuchService {
         if (w.condition || w.temperature != null || w.wind || w.precipitation) {
             sections.push({ text: 'Wetter', style: 'sectionLabel' });
             const weatherParts = [];
-            if (w.condition) weatherParts.push(w.condition);
-            if (w.temperature != null) weatherParts.push(`${w.temperature} °C`);
-            if (w.wind) weatherParts.push(`Wind: ${w.wind}`);
-            if (w.precipitation && w.precipitation !== 'Kein') weatherParts.push(`Niederschlag: ${w.precipitation}`);
+            if (w.condition) {weatherParts.push(w.condition);}
+            if (w.temperature != null) {weatherParts.push(`${w.temperature} °C`);}
+            if (w.wind) {weatherParts.push(`Wind: ${w.wind}`);}
+            if (w.precipitation && w.precipitation !== 'Kein') {weatherParts.push(`Niederschlag: ${w.precipitation}`);}
             sections.push({ text: weatherParts.join(' | '), margin: [0, 0, 0, 4] });
         }
 
@@ -621,7 +621,7 @@ class BautagebuchService {
      */
     getJobSummary(jobId) {
         const entries = this.getEntriesForJob(jobId);
-        if (entries.length === 0) return null;
+        if (entries.length === 0) {return null;}
 
         let totalWorkerHours = 0;
         let totalWorkerDays = 0;
@@ -646,9 +646,9 @@ class BautagebuchService {
                 allMaterials[key].quantity += m.quantity || 0;
             });
 
-            if (e.incidents) incidentCount++;
-            if (e.delays) delayCount++;
-            if (e.confirmedAt) confirmedCount++;
+            if (e.incidents) {incidentCount++;}
+            if (e.delays) {delayCount++;}
+            if (e.confirmedAt) {confirmedCount++;}
         });
 
         return {
@@ -676,7 +676,7 @@ class BautagebuchService {
      */
     _updateExisting(entryId, updates) {
         const index = this.entries.findIndex(e => e.id === entryId);
-        if (index === -1) return null;
+        if (index === -1) {return null;}
 
         // Tiefes Merge für verschachtelte Objekte (weather)
         if (updates.weather && this.entries[index].weather) {
@@ -706,7 +706,7 @@ class BautagebuchService {
     _getWorkersFromTimeTracking(jobId, date) {
         const workers = [];
         const tts = window.timeTrackingService;
-        if (!tts || !tts.entries) return workers;
+        if (!tts || !tts.entries) {return workers;}
 
         // Einträge für den Auftrag und das Datum filtern
         const dayEntries = tts.entries.filter(e =>
@@ -732,7 +732,7 @@ class BautagebuchService {
     _getWorkersFromFieldApp(jobId, date) {
         const workers = [];
         const fas = window.fieldAppService;
-        if (!fas || !fas.timeEntries) return workers;
+        if (!fas || !fas.timeEntries) {return workers;}
 
         const dayEntries = fas.timeEntries.filter(e =>
             e.jobId === jobId && e.date === date
@@ -754,15 +754,15 @@ class BautagebuchService {
      */
     _getPhotosFromFieldApp(jobId, date) {
         const fas = window.fieldAppService;
-        if (!fas || typeof fas.getPhotos !== 'function') return [];
+        if (!fas || typeof fas.getPhotos !== 'function') {return [];}
 
         const allPhotos = fas.getPhotos(jobId);
-        if (!allPhotos || allPhotos.length === 0) return [];
+        if (!allPhotos || allPhotos.length === 0) {return [];}
 
         // Nach Datum filtern (falls Datum vorhanden)
         return allPhotos
             .filter(p => {
-                if (!date) return true;
+                if (!date) {return true;}
                 const photoDate = (p.timestamp || p.createdAt || '').substring(0, 10);
                 return photoDate === date;
             })
@@ -777,15 +777,15 @@ class BautagebuchService {
      */
     _getMaterialsFromFieldApp(jobId, date) {
         const fas = window.fieldAppService;
-        if (!fas || typeof fas.getMaterialLog !== 'function') return [];
+        if (!fas || typeof fas.getMaterialLog !== 'function') {return [];}
 
         const allMaterials = fas.getMaterialLog(jobId);
-        if (!allMaterials || allMaterials.length === 0) return [];
+        if (!allMaterials || allMaterials.length === 0) {return [];}
 
         // Nach Datum filtern
         return allMaterials
             .filter(m => {
-                if (!date) return true;
+                if (!date) {return true;}
                 const matDate = (m.timestamp || m.createdAt || m.date || '').substring(0, 10);
                 return matDate === date;
             })
@@ -801,10 +801,10 @@ class BautagebuchService {
      */
     _enrichWithTeamData(workers) {
         const tms = window.teamManagementService;
-        if (!tms || typeof tms.getTeamMembers !== 'function') return workers;
+        if (!tms || typeof tms.getTeamMembers !== 'function') {return workers;}
 
         const members = tms.getTeamMembers();
-        if (!members || members.length === 0) return workers;
+        if (!members || members.length === 0) {return workers;}
 
         return workers.map(w => {
             const member = members.find(m =>
@@ -877,7 +877,7 @@ class BautagebuchService {
      * pdfMake sicherstellen (lazy-load)
      */
     async _ensurePdfMake() {
-        if (window.pdfMake) return;
+        if (window.pdfMake) {return;}
 
         // Über den bestehenden PDFGenerationService laden
         const pgs = window.pdfGenerationService;
@@ -912,11 +912,11 @@ class BautagebuchService {
      * Windgeschwindigkeit in deutsche Beschreibung umwandeln
      */
     _mapWindSpeed(speedMs) {
-        if (speedMs < 0.5) return 'Windstill';
-        if (speedMs < 3.4) return 'Leicht';
-        if (speedMs < 8.0) return 'Mäßig';
-        if (speedMs < 13.9) return 'Frisch';
-        if (speedMs < 20.8) return 'Stark';
+        if (speedMs < 0.5) {return 'Windstill';}
+        if (speedMs < 3.4) {return 'Leicht';}
+        if (speedMs < 8.0) {return 'Mäßig';}
+        if (speedMs < 13.9) {return 'Frisch';}
+        if (speedMs < 20.8) {return 'Stark';}
         return 'Sturm';
     }
 
@@ -924,9 +924,9 @@ class BautagebuchService {
      * Datum formatieren (DD.MM.YYYY)
      */
     _formatDate(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         const parts = dateStr.split('-');
-        if (parts.length !== 3) return dateStr;
+        if (parts.length !== 3) {return dateStr;}
         return `${parts[2]}.${parts[1]}.${parts[0]}`;
     }
 
@@ -934,7 +934,7 @@ class BautagebuchService {
      * Datum + Uhrzeit formatieren
      */
     _formatDateTime(isoStr) {
-        if (!isoStr) return '-';
+        if (!isoStr) {return '-';}
         try {
             const d = new Date(isoStr);
             return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -947,7 +947,7 @@ class BautagebuchService {
      * Wochentag ermitteln
      */
     _getDayName(dateStr) {
-        if (!dateStr) return '';
+        if (!dateStr) {return '';}
         const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
         try {
             return days[new Date(dateStr + 'T00:00:00').getDay()];

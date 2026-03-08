@@ -68,7 +68,7 @@
     // ============================================
 
     function escapeXml(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -79,7 +79,7 @@
 
     // Restrict to SEPA-allowed characters (EPC Best Practices)
     function sepaClean(str) {
-        if (!str) return '';
+        if (!str) {return '';}
         return String(str)
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '') // strip diacritics
@@ -221,15 +221,15 @@
                         .in('status', ['bestaetigt', 'geliefert', 'teilgeliefert', 'offen'])
                         .order('created_at', { ascending: false });
 
-                    if (error) throw error;
+                    if (error) {throw error;}
 
                     if (pos) {
                         for (const po of pos) {
                             // Skip already fully paid
-                            if (this._isAlreadyPaid(po.id)) continue;
+                            if (this._isAlreadyPaid(po.id)) {continue;}
 
                             const betrag = po.brutto || po.netto || 0;
-                            if (betrag <= 0) continue;
+                            if (betrag <= 0) {continue;}
 
                             invoices.push({
                                 id: po.id,
@@ -262,10 +262,10 @@
 
                     if (!error && buchungen) {
                         for (const b of buchungen) {
-                            if (this._isAlreadyPaid(b.id)) continue;
+                            if (this._isAlreadyPaid(b.id)) {continue;}
 
                             const betrag = Math.abs(b.betrag || 0);
-                            if (betrag <= 0) continue;
+                            if (betrag <= 0) {continue;}
 
                             invoices.push({
                                 id: b.id,
@@ -291,7 +291,7 @@
                 invoices.sort((a, b) => {
                     const aOverdue = a.faelligAm && a.faelligAm < now ? 1 : 0;
                     const bOverdue = b.faelligAm && b.faelligAm < now ? 1 : 0;
-                    if (aOverdue !== bOverdue) return bOverdue - aOverdue;
+                    if (aOverdue !== bOverdue) {return bOverdue - aOverdue;}
                     return (a.faelligAm || '9999') < (b.faelligAm || '9999') ? -1 : 1;
                 });
 
@@ -308,8 +308,8 @@
 
         async markAsPaid(invoiceId, { amount, date, reference, method, source }) {
             try {
-                if (!invoiceId) throw new Error('Rechnungs-ID fehlt');
-                if (!amount || amount <= 0) throw new Error('Betrag muss groesser als 0 sein');
+                if (!invoiceId) {throw new Error('Rechnungs-ID fehlt');}
+                if (!amount || amount <= 0) {throw new Error('Betrag muss groesser als 0 sein');}
 
                 const zahlung = {
                     id: 'fzahl-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
@@ -355,7 +355,7 @@
 
         _getPaymentStatus(invoiceId) {
             const zahlung = this.paymentLog.find(p => p.invoiceId === invoiceId);
-            if (zahlung) return 'bezahlt';
+            if (zahlung) {return 'bezahlt';}
 
             return 'offen';
         }
@@ -571,7 +571,7 @@
 
         downloadSepaXml(payments) {
             const result = this.generateSepaXml(payments);
-            if (!result) return null;
+            if (!result) {return null;}
 
             const blob = new Blob([result.xml], { type: 'application/xml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -692,15 +692,15 @@
                 const matched = [];
 
                 for (const invoice of result.invoices) {
-                    if (invoice.status === 'bezahlt') continue;
+                    if (invoice.status === 'bezahlt') {continue;}
 
                     for (const rule of activeRules) {
                         const nameMatch = rule.supplierName &&
                             invoice.lieferant.toLowerCase().includes(rule.supplierName.toLowerCase());
                         const idMatch = rule.supplierId && invoice.id === rule.supplierId;
 
-                        if (!nameMatch && !idMatch) continue;
-                        if (invoice.betrag > rule.maxAmount) continue;
+                        if (!nameMatch && !idMatch) {continue;}
+                        if (invoice.betrag > rule.maxAmount) {continue;}
 
                         // Check if within payment window
                         if (invoice.faelligAm) {
@@ -708,7 +708,7 @@
                             const diff = Math.ceil((faellig - today) / (1000 * 60 * 60 * 24));
 
                             // Only match if due within the configured window
-                            if (diff > rule.payWithinDays) continue;
+                            if (diff > rule.payWithinDays) {continue;}
                         }
 
                         matched.push({

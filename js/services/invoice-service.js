@@ -58,7 +58,7 @@ class InvoiceService {
         try {
             // 1. Generate invoice number
             const userId = this.storeService?.getCurrentUserId?.() || 'default';
-            if (!this.numberingService) throw new Error('Nummerierungs-Service nicht geladen');
+            if (!this.numberingService) {throw new Error('Nummerierungs-Service nicht geladen');}
             const invoiceNumber = await this.numberingService.generateNumber(userId);
 
             // 2. Calculate dates

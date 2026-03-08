@@ -49,7 +49,7 @@ class MorningBriefingService {
         const rechnungen = window.storeService?.store?.rechnungen || [];
         const today = new Date();
         const overdue = rechnungen.filter(r => {
-            if (r.status === 'bezahlt' || r.status === 'storniert') return false;
+            if (r.status === 'bezahlt' || r.status === 'storniert') {return false;}
             if (r.faelligkeitsdatum) {
                 const due = new Date(r.faelligkeitsdatum);
                 return !isNaN(due.getTime()) && due < today;
@@ -103,7 +103,7 @@ class MorningBriefingService {
 
     _getTodaysAppointments() {
         const cal = window.calendarService;
-        if (!cal) return { count: 0, items: [] };
+        if (!cal) {return { count: 0, items: [] };}
         try {
             const today = new Date().toISOString().split('T')[0];
             const apts = cal.getAppointmentsForDay ? cal.getAppointmentsForDay(today) : [];
@@ -121,7 +121,7 @@ class MorningBriefingService {
 
     _getMonthlyRevenue() {
         const bs = window.bookkeepingService;
-        if (!bs) return 0;
+        if (!bs) {return 0;}
         try {
             const year = new Date().getFullYear();
             const eur = bs.berechneEUR ? bs.berechneEUR(year) : null;
@@ -131,21 +131,21 @@ class MorningBriefingService {
 
     _getCashflowStatus() {
         const cf = window.cashFlowService || window.cashflowService;
-        if (!cf) return 'unknown';
+        if (!cf) {return 'unknown';}
         try {
             const snapshot = cf.getCurrentSnapshot ? cf.getCurrentSnapshot() : null;
-            if (!snapshot) return 'unknown';
+            if (!snapshot) {return 'unknown';}
             const balance = snapshot.currentBalance || 0;
             const buffer = cf.settings?.safetyBuffer || 5000;
-            if (balance >= buffer * 2) return 'healthy';
-            if (balance >= buffer) return 'warning';
+            if (balance >= buffer * 2) {return 'healthy';}
+            if (balance >= buffer) {return 'warning';}
             return 'critical';
         } catch { return 'unknown'; }
     }
 
     _getTeamOnDuty() {
         const tm = window.teamManagementService;
-        if (!tm) return { count: 0, members: [] };
+        if (!tm) {return { count: 0, members: [] };}
         try {
             const members = tm.teamData?.members || [];
             const active = members.filter(m => m.status === 'aktiv' || m.aktiv !== false);
@@ -161,7 +161,7 @@ class MorningBriefingService {
 
     _getOfflineQueuePending() {
         const fa = window.fieldAppService;
-        if (!fa) return 0;
+        if (!fa) {return 0;}
         try {
             return (fa.offlineQueue || []).length;
         } catch { return 0; }
@@ -246,9 +246,9 @@ class MorningBriefingService {
     _getGreeting() {
         const hour = new Date().getHours();
         let timeOfDay = 'Tag';
-        if (hour < 12) timeOfDay = 'Morgen';
-        else if (hour < 18) timeOfDay = 'Tag';
-        else timeOfDay = 'Abend';
+        if (hour < 12) {timeOfDay = 'Morgen';}
+        else if (hour < 18) {timeOfDay = 'Tag';}
+        else {timeOfDay = 'Abend';}
 
         const ownerName = window.storeService?.store?.settings?.owner
             || window.storeService?.store?.settings?.companyName
@@ -342,7 +342,7 @@ class MorningBriefingService {
 
     async _getAISummary(data, alerts) {
         const gs = window.geminiService;
-        if (!gs || !gs.isConfigured) return null;
+        if (!gs || !gs.isConfigured) {return null;}
 
         const prompt = `Du bist ein Business-Assistent. Erstelle eine kurze, natuerliche Zusammenfassung (3-5 Saetze) des Geschaeftstages auf Deutsch. Daten:
 - Ueberfaellige Rechnungen: ${data.overdueInvoices.count} (${data.overdueInvoices.total} EUR)
@@ -384,7 +384,7 @@ Antwort-Format: { "narrative": "...", "recommendations": ["...", "..."] }`;
     }
 
     isTodaysBriefing() {
-        if (!this.cachedBriefing) return false;
+        if (!this.cachedBriefing) {return false;}
         const today = new Date().toISOString().split('T')[0];
         return this.cachedBriefing.date === today;
     }
@@ -511,13 +511,13 @@ Antwort-Format: { "narrative": "...", "recommendations": ["...", "..."] }`;
      * Bind briefing action buttons via event delegation (CSP-safe, no inline onclick)
      */
     bindBriefingActions(container) {
-        if (!container) return;
+        if (!container) {return;}
         container.addEventListener('click', (e) => {
             const btn = e.target.closest('[data-action]');
-            if (!btn) return;
+            if (!btn) {return;}
             if (btn.dataset.action === 'briefing-refresh') {
                 this.generateBriefing().then(() => {
-                    if (window.dashboardWidgetService) window.dashboardWidgetService.refresh();
+                    if (window.dashboardWidgetService) {window.dashboardWidgetService.refresh();}
                 });
             } else if (btn.dataset.action === 'briefing-speak') {
                 this.speakBriefing();
@@ -531,7 +531,7 @@ Antwort-Format: { "narrative": "...", "recommendations": ["...", "..."] }`;
 
     speakBriefing() {
         const b = this.cachedBriefing;
-        if (!b) return;
+        if (!b) {return;}
 
         const s = b.summary;
         let text = b.greeting + ' ';
@@ -578,7 +578,7 @@ Antwort-Format: { "narrative": "...", "recommendations": ["...", "..."] }`;
             utterance.rate = 0.95;
             const voices = window.speechSynthesis.getVoices();
             const deVoice = voices.find(v => v.lang.startsWith('de'));
-            if (deVoice) utterance.voice = deVoice;
+            if (deVoice) {utterance.voice = deVoice;}
             window.speechSynthesis.speak(utterance);
         }
     }

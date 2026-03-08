@@ -11,7 +11,7 @@ class EmailTemplateService {
     }
 
     _escHtml(s) {
-        if (!s) return '';
+        if (!s) {return '';}
         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
@@ -23,7 +23,7 @@ class EmailTemplateService {
             return window.companySettingsService.isKleinunternehmer();
         }
         const stored = localStorage.getItem('kleinunternehmer');
-        if (stored !== null) return stored === 'true';
+        if (stored !== null) {return stored === 'true';}
         try {
             const ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
             return ap.kleinunternehmer === true;
@@ -1088,7 +1088,7 @@ class EmailTemplateService {
     generateICS(termin, company) {
         const now = new Date();
         const dateParts = (termin.datum || '').split('-');
-        if (dateParts.length !== 3) return '';
+        if (dateParts.length !== 3) {return '';}
         const [hours, minutes] = (termin.uhrzeit || '09:00').split(':');
 
         const startDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, minutes);
@@ -1127,9 +1127,9 @@ END:VCALENDAR`;
      * @private
      */
     formatDate(dateStr) {
-        if (!dateStr) return '-';
+        if (!dateStr) {return '-';}
         const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return '-';
+        if (isNaN(date.getTime())) {return '-';}
         return date.toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',

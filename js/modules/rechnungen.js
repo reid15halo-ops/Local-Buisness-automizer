@@ -764,7 +764,7 @@ function _confirmAndSendMahnung(rechnung) {
  */
 function sendMahnungClick(rechnungId) {
     const rechnung = store.rechnungen.find(r => r.id === rechnungId);
-    if (!rechnung) return;
+    if (!rechnung) {return;}
     _confirmAndSendMahnung(rechnung);
 }
 
@@ -801,7 +801,7 @@ let _aboActionsInit = false;
 
 function initMainTabs() {
     const tabContainer = document.getElementById('rechnungen-main-tabs');
-    if (!tabContainer || _mainTabsInit) return;
+    if (!tabContainer || _mainTabsInit) {return;}
     _mainTabsInit = true;
 
     tabContainer.querySelectorAll('.filter-btn').forEach(function(btn) {
@@ -811,8 +811,8 @@ function initMainTabs() {
             btn.classList.add('active');
             const rechnungenTab = document.getElementById('rechnungen-tab');
             const aboTab = document.getElementById('abo-rechnungen-tab');
-            if (rechnungenTab) rechnungenTab.style.display = (tabId === 'rechnungen-tab') ? '' : 'none';
-            if (aboTab) aboTab.style.display = (tabId === 'abo-rechnungen-tab') ? '' : 'none';
+            if (rechnungenTab) {rechnungenTab.style.display = (tabId === 'rechnungen-tab') ? '' : 'none';}
+            if (aboTab) {aboTab.style.display = (tabId === 'abo-rechnungen-tab') ? '' : 'none';}
             if (tabId === 'abo-rechnungen-tab') {
                 renderAboRechnungen();
             }
@@ -829,7 +829,7 @@ function initMainTabs() {
 
 function renderAboRechnungen() {
     const svc = window.recurringInvoiceService;
-    if (!svc) return;
+    if (!svc) {return;}
 
     const statsBar = document.getElementById('abo-stats-bar');
     if (statsBar) {
@@ -847,7 +847,7 @@ function renderAboRechnungen() {
     }
 
     const container = document.getElementById('abo-rechnungen-list');
-    if (!container) return;
+    if (!container) {return;}
 
     const templates = svc.getTemplates();
 
@@ -910,17 +910,17 @@ function renderAboRechnungen() {
 
 function initAboActions() {
     const container = document.getElementById('abo-rechnungen-list');
-    if (!container || _aboActionsInit) return;
+    if (!container || _aboActionsInit) {return;}
     _aboActionsInit = true;
 
     container.addEventListener('click', async function(e) {
         const btn = e.target.closest('[data-abo-action]');
-        if (!btn) return;
+        if (!btn) {return;}
 
         const action = btn.dataset.aboAction;
         const id = btn.dataset.aboId;
         const svc = window.recurringInvoiceService;
-        if (!svc) return;
+        if (!svc) {return;}
 
         switch (action) {
             case 'pause':
@@ -968,7 +968,7 @@ function initAboActions() {
 
 function openAboFormular(existing) {
     const modal = document.getElementById('modal-neues-abo');
-    if (!modal) return;
+    if (!modal) {return;}
 
     const isEdit = !!existing;
     const title = isEdit ? 'Abo bearbeiten' : 'Neues Abo erstellen';
@@ -1093,7 +1093,7 @@ function openAboFormular(existing) {
 
             if (!data.kunde_name && data.kunde_id) {
                 const k = kunden.find(function(k) { return k.id === data.kunde_id; });
-                if (k) data.kunde_name = k.name || k.firma || '';
+                if (k) {data.kunde_name = k.name || k.firma || '';}
             }
 
             const svc = window.recurringInvoiceService;

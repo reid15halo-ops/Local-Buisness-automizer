@@ -841,7 +841,7 @@ function addPosition(prefill = null) {
     // Handle selection via event delegation (single listener, no re-binding)
     suggestBox.addEventListener('click', (e) => {
         const item = e.target.closest('.material-suggest-item');
-        if (!item) return;
+        if (!item) {return;}
         let material; try { material = JSON.parse(decodeURIComponent(item.dataset.material)); } catch { return; }
         row.querySelector('.pos-beschreibung').value = material.bezeichnung;
         row.querySelector('.pos-preis').value = material.vkPreis || material.preis;

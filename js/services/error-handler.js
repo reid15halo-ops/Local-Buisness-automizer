@@ -22,7 +22,7 @@ class ErrorHandler {
             message: error.message || error.toString(),
             stack: error.stack
         });
-        if (this.history.length > 100) this.history.shift();
+        if (this.history.length > 100) {this.history.shift();}
 
         this._sendToSupabase(error.message || error.toString(), error.stack, { context });
 
@@ -37,12 +37,12 @@ class ErrorHandler {
         const prevOnError = window.onerror;
         window.onerror = (msg, source, line, col, error) => {
             this.handle(error || new Error(String(msg)), 'global');
-            if (prevOnError) prevOnError(msg, source, line, col, error);
+            if (prevOnError) {prevOnError(msg, source, line, col, error);}
         };
         const prevUnhandled = window.onunhandledrejection;
         window.onunhandledrejection = (event) => {
             this.handle(event.reason || new Error('Unhandled rejection'), 'promise');
-            if (prevUnhandled) prevUnhandled(event);
+            if (prevUnhandled) {prevUnhandled(event);}
         };
     }
 
@@ -59,14 +59,14 @@ class ErrorHandler {
     async _sendToSupabase(errorMessage, errorStack, metadata = {}) {
         try {
             // Skip in demo mode
-            if (window.demoGuardService && window.demoGuardService.isDemo()) return;
+            if (window.demoGuardService && window.demoGuardService.isDemo()) {return;}
 
             // Skip if rate limited
-            if (this._isRateLimited()) return;
+            if (this._isRateLimited()) {return;}
 
             // Get supabase client
             const supabase = window.supabaseClient?.client;
-            if (!supabase || !window.supabaseClient?.isConfigured()) return;
+            if (!supabase || !window.supabaseClient?.isConfigured()) {return;}
 
             // Get current user id if available
             const { data: { user } } = await supabase.auth.getUser();

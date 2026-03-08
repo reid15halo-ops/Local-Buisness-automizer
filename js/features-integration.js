@@ -260,11 +260,11 @@ function renderCustomers() {
     container.querySelectorAll('.customer-card').forEach(card => {
         card.addEventListener('click', (e) => {
             // Don't open detail if clicking on a button or link
-            if (e.target.closest('button, a, .customer-portal-actions')) return;
+            if (e.target.closest('button, a, .customer-portal-actions')) {return;}
             const id = card.dataset.id;
             const nameEl = card.querySelector('.customer-name');
             const name = nameEl ? nameEl.textContent.trim() : '';
-            if (window.openKundeDetail) window.openKundeDetail(id, name);
+            if (window.openKundeDetail) {window.openKundeDetail(id, name);}
         });
         card.style.cursor = 'pointer';
     });

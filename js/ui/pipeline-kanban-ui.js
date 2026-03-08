@@ -27,11 +27,11 @@ class PipelineKanbanUI {
 
     _mapToColumn(angebot) {
         const s = angebot.status || 'entwurf';
-        if (s === 'entwurf') return 'entwurf';
-        if (s === 'offen' || s === 'vorläufig_gesendet') return 'offen';
-        if (s === 'angenommen') return 'abgeschlossen';
-        if (s === 'abgelehnt') return 'abgeschlossen';
-        if (s === 'verhandlung') return 'verhandlung';
+        if (s === 'entwurf') {return 'entwurf';}
+        if (s === 'offen' || s === 'vorläufig_gesendet') {return 'offen';}
+        if (s === 'angenommen') {return 'abgeschlossen';}
+        if (s === 'abgelehnt') {return 'abgeschlossen';}
+        if (s === 'verhandlung') {return 'verhandlung';}
         // Fallback: map based on lead stage if available
         return 'offen';
     }
@@ -40,7 +40,7 @@ class PipelineKanbanUI {
     _isVerloren(a) { return a.status === 'abgelehnt'; }
 
     _daysSince(dateStr) {
-        if (!dateStr) return 0;
+        if (!dateStr) {return 0;}
         const diff = Date.now() - new Date(dateStr).getTime();
         return Math.floor(diff / (1000 * 60 * 60 * 24));
     }
@@ -51,7 +51,7 @@ class PipelineKanbanUI {
 
     _formatCurrency(val) {
         const { formatCurrency } = window.AppUtils || {};
-        if (formatCurrency) return formatCurrency(val);
+        if (formatCurrency) {return formatCurrency(val);}
         return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(val || 0);
     }
 
@@ -61,7 +61,7 @@ class PipelineKanbanUI {
 
     render(containerId) {
         const container = document.getElementById(containerId);
-        if (!container) return;
+        if (!container) {return;}
 
         const angebote = this._getAngebote();
 
@@ -70,7 +70,7 @@ class PipelineKanbanUI {
         this.columns.forEach(c => { groups[c.id] = []; });
         angebote.forEach(a => {
             const col = this._mapToColumn(a);
-            if (groups[col]) groups[col].push(a);
+            if (groups[col]) {groups[col].push(a);}
         });
 
         let html = '<div class="kanban-board" id="kanban-board">';
@@ -129,9 +129,9 @@ class PipelineKanbanUI {
         const verloren = this._isVerloren(angebot);
 
         let cardClass = 'kanban-card';
-        if (gewonnen) cardClass += ' kanban-card-won';
-        else if (verloren) cardClass += ' kanban-card-lost';
-        else if (isOverdue) cardClass += ' kanban-card-overdue';
+        if (gewonnen) {cardClass += ' kanban-card-won';}
+        else if (verloren) {cardClass += ' kanban-card-lost';}
+        else if (isOverdue) {cardClass += ' kanban-card-overdue';}
 
         const statusLabel = this._getStatusLabel(angebot.status);
         const statusClass = 'kanban-status-' + (angebot.status || 'entwurf');
@@ -185,7 +185,7 @@ class PipelineKanbanUI {
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', angebotId);
         requestAnimationFrame(() => {
-            if (card) card.style.opacity = '0.4';
+            if (card) {card.style.opacity = '0.4';}
         });
     }
 
@@ -207,7 +207,7 @@ class PipelineKanbanUI {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
         const col = e.target.closest('.kanban-column');
-        if (col) col.classList.add('kanban-column-dragover');
+        if (col) {col.classList.add('kanban-column-dragover');}
     }
 
     _onColumnDragLeave(e) {
@@ -220,17 +220,17 @@ class PipelineKanbanUI {
     _onColumnDrop(e, targetColumnId) {
         e.preventDefault();
         const col = e.target.closest('.kanban-column');
-        if (col) col.classList.remove('kanban-column-dragover');
+        if (col) {col.classList.remove('kanban-column-dragover');}
 
         const angebotId = this.dragState.dragging;
-        if (!angebotId) return;
+        if (!angebotId) {return;}
 
         const sourceColumn = this.dragState.sourceColumn;
-        if (sourceColumn === targetColumnId) return;
+        if (sourceColumn === targetColumnId) {return;}
 
         // Map column back to status
         const newStatus = this._columnToStatus(targetColumnId);
-        if (!newStatus) return;
+        if (!newStatus) {return;}
 
         this._updateAngebotStatus(angebotId, newStatus);
     }
@@ -243,32 +243,32 @@ class PipelineKanbanUI {
             verhandlung: 'offen' // no separate verhandlung status in data, keep as offen
         };
         // For abgeschlossen, we show a choice dialog
-        if (columnId === 'abgeschlossen') return null; // handled separately
+        if (columnId === 'abgeschlossen') {return null;} // handled separately
         return map[columnId] || 'offen';
     }
 
     _updateAngebotStatus(angebotId, newStatus) {
         const { store, saveStore, addActivity } = window.AppUtils || {};
-        if (!store) return;
+        if (!store) {return;}
 
         const angebot = store.angebote.find(a => a.id === angebotId);
-        if (!angebot) return;
+        if (!angebot) {return;}
 
         const oldStatus = angebot.status;
         angebot.status = newStatus;
         angebot.updatedAt = new Date().toISOString();
 
-        if (saveStore) saveStore();
-        if (addActivity) addActivity('📝', `Angebot ${angebotId}: Status ${oldStatus} -> ${newStatus}`);
+        if (saveStore) {saveStore();}
+        if (addActivity) {addActivity('📝', `Angebot ${angebotId}: Status ${oldStatus} -> ${newStatus}`);}
 
         const { showToast } = window.AppUtils || {};
-        if (showToast) showToast(`Angebot auf "${this._getStatusLabel(newStatus)}" verschoben`, 'success');
+        if (showToast) {showToast(`Angebot auf "${this._getStatusLabel(newStatus)}" verschoben`, 'success');}
 
         // Re-render
         this.render('kanban-container');
 
         // Also update list view badges
-        if (window.renderAngebote) window.renderAngebote();
+        if (window.renderAngebote) {window.renderAngebote();}
     }
 
     // ============================================
@@ -292,7 +292,7 @@ class PipelineKanbanUI {
         const toggleBtn = document.getElementById('btn-pipeline-toggle');
 
         if (this.visible) {
-            if (listEl) listEl.style.display = 'none';
+            if (listEl) {listEl.style.display = 'none';}
             if (kanbanEl) {
                 kanbanEl.style.display = 'block';
                 this.render('kanban-container');
@@ -302,8 +302,8 @@ class PipelineKanbanUI {
                 toggleBtn.title = 'Zur Listenansicht wechseln';
             }
         } else {
-            if (listEl) listEl.style.display = '';
-            if (kanbanEl) kanbanEl.style.display = 'none';
+            if (listEl) {listEl.style.display = '';}
+            if (kanbanEl) {kanbanEl.style.display = 'none';}
             if (toggleBtn) {
                 toggleBtn.textContent = 'Pipeline';
                 toggleBtn.title = 'Pipeline-Kanban anzeigen';

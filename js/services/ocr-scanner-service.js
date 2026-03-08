@@ -32,7 +32,7 @@ class OcrScannerService {
     }
 
     async _initFromSupabase() {
-        if (!this._isSupabaseReady()) return;
+        if (!this._isSupabaseReady()) {return;}
         try {
             const { data, error } = await this._supabase()
                 .from('scanned_documents')
@@ -126,7 +126,7 @@ class OcrScannerService {
 
     _queueOffline(entry) {
         // Don't queue during offline sync (prevents infinite loop)
-        if (this._syncing) return;
+        if (this._syncing) {return;}
         const MAX_RETRIES = 5;
         const retries = (entry.retries || 0);
         if (retries >= MAX_RETRIES) {
@@ -138,7 +138,7 @@ class OcrScannerService {
     }
 
     async _syncOfflineQueue() {
-        if (!this._isSupabaseReady() || this._offlineQueue.length === 0 || this._syncing) return;
+        if (!this._isSupabaseReady() || this._offlineQueue.length === 0 || this._syncing) {return;}
 
         this._syncing = true;
         const queue = [...this._offlineQueue];

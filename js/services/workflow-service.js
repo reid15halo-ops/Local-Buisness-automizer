@@ -348,7 +348,7 @@ class WorkflowService {
 
             if (shouldFire) {
                 const firedKey = `${workflow.id}-${currentTime}`;
-                if (this._firedThisMinute?.has(firedKey)) return;
+                if (this._firedThisMinute?.has(firedKey)) {return;}
                 this._firedThisMinute = this._firedThisMinute || new Set();
                 this._firedThisMinute.add(firedKey);
                 setTimeout(() => this._firedThisMinute.delete(firedKey), 61000);

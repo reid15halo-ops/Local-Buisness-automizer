@@ -261,7 +261,15 @@
 if (typeof DOMPurify !== 'undefined') {
     const originalSet = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
     Object.defineProperty(Element.prototype, 'innerHTML', {
-        set(value) { originalSet.call(this, DOMPurify.sanitize(value, { ADD_ATTR: ['onclick', 'onchange', 'oninput'] })); }
+        set(value) {
+            if (typeof value === 'string' && value.indexOf('<') !== -1) {
+                value = DOMPurify.sanitize(value, {
+                    ADD_ATTR: ['style', 'class', 'id', 'data-id', 'data-action', 'data-status', 'tabindex', 'role', 'aria-label', 'aria-hidden', 'disabled', 'placeholder', 'value', 'type', 'href', 'src', 'alt', 'title', 'target', 'rel'],
+                    ALLOW_UNKNOWN_PROTOCOLS: false
+                });
+            }
+            originalSet.call(this, value);
+        }
     });
 }
 

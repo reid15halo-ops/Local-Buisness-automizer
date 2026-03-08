@@ -125,7 +125,7 @@ class PhoneService {
 
     async getCallsWithSummaries(customerId) {
         const localCalls = this.getCallsForCustomer(customerId);
-        if (!window.callSummaryService) return localCalls;
+        if (!window.callSummaryService) {return localCalls;}
 
         try {
             const summaries = await window.callSummaryService.getSummariesForCustomer(customerId);

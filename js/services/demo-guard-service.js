@@ -153,7 +153,7 @@ class DemoGuardService {
     }
 
     interceptSupabaseWrites() {
-        if (!this.isDemo()) return;
+        if (!this.isDemo()) {return;}
         const client = window.supabaseClient?.client;
         if (!client) {
             // Supabase not ready yet — retry once after delay
@@ -167,8 +167,8 @@ class DemoGuardService {
         const makeChainable = () => {
             const handler = {
                 get(target, prop) {
-                    if (prop === 'then') return (resolve) => resolve(blockedResult);
-                    if (prop === 'data' || prop === 'error' || prop === 'count') return target[prop];
+                    if (prop === 'then') {return (resolve) => resolve(blockedResult);}
+                    if (prop === 'data' || prop === 'error' || prop === 'count') {return target[prop];}
                     // Any chained method (.select(), .eq(), .single(), etc.) returns the same proxy
                     return () => new Proxy({ ...blockedResult }, handler);
                 }

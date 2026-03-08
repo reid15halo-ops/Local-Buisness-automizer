@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v33';
+const CACHE_NAME = 'freyai-visions-v34';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -209,8 +209,9 @@ async function cacheFirst(request) {
     } catch (e) {
         // Network failed, return offline page for navigation requests
         if (request.mode === 'navigate') {
-            const offlinePage = await caches.match(OFFLINE_URL);
-            return offlinePage || caches.match('/index.html');
+            return (await caches.match(OFFLINE_URL))
+                || (await caches.match('/index.html'))
+                || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
         }
         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
     }
@@ -237,8 +238,9 @@ async function networkFirst(request) {
         }
         // No cache and no network for navigation - show offline page
         if (request.mode === 'navigate') {
-            const offlinePage = await caches.match(OFFLINE_URL);
-            return offlinePage || caches.match('/index.html');
+            return (await caches.match(OFFLINE_URL))
+                || (await caches.match('/index.html'))
+                || new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
         }
         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
     }
@@ -283,10 +285,6 @@ async function syncOfflineData() {
     clients.forEach(client => {
         client.postMessage({
             type: 'PROCESS_OFFLINE_QUEUE',
-            timestamp: new Date().toISOString()
-        });
-        client.postMessage({
-            type: 'SYNC_COMPLETE',
             timestamp: new Date().toISOString()
         });
     });
@@ -375,13 +373,15 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 
-    if (event.data.type === 'GET_VERSION') {
+    if (event.data.type === 'GET_VERSION' && event.ports && event.ports[0]) {
         event.ports[0].postMessage({ version: CACHE_NAME });
     }
 
     if (event.data.type === 'CLEAR_CACHE') {
         caches.delete(CACHE_NAME).then(() => {
-            event.ports[0].postMessage({ success: true });
+            if (event.ports && event.ports[0]) {
+                event.ports[0].postMessage({ success: true });
+            }
         });
     }
 });

@@ -357,7 +357,7 @@ class GoBDComplianceService {
             status: integrity.invalid === 0 ? 'passed' : 'failed',
             details: `${integrity.valid} von ${integrity.total} Eintraegen gueltig`
         });
-        if (integrity.invalid > 0) report.overallScore -= 30;
+        if (integrity.invalid > 0) {report.overallScore -= 30;}
 
         // 2. Rechnungsnummern
         if (state?.rechnungen) {
@@ -432,7 +432,7 @@ class GoBDComplianceService {
     // ============================================
 
     _generateId() {
-        if (crypto.randomUUID) return 'gobd_' + crypto.randomUUID();
+        if (crypto.randomUUID) {return 'gobd_' + crypto.randomUUID();}
         return 'gobd_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
     }
 

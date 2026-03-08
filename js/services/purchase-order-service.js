@@ -87,7 +87,7 @@ class PurchaseOrderService {
     }
 
     async _loadFromSupabase() {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const { data, error } = await this._supabase()
                 .from('purchase_orders')
@@ -114,7 +114,7 @@ class PurchaseOrderService {
             let maxNum = 0;
             for (const po of this.bestellungen) {
                 const match = po.nummer?.match(/PO-\d{4}-(\d+)/);
-                if (match) maxNum = Math.max(maxNum, parseInt(match[1], 10));
+                if (match) {maxNum = Math.max(maxNum, parseInt(match[1], 10));}
             }
             this.poCounter = maxNum;
 
@@ -125,26 +125,26 @@ class PurchaseOrderService {
     }
 
     async _upsertToSupabase(po) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const row = this._toSupabaseRow(po);
             const { error } = await this._supabase()
                 .from('purchase_orders')
                 .upsert(row, { onConflict: 'id' });
-            if (error) console.error('[PO] Supabase upsert error:', error.message);
+            if (error) {console.error('[PO] Supabase upsert error:', error.message);}
         } catch (err) {
             console.error('[PO] Supabase upsert failed:', err.message);
         }
     }
 
     async _deleteFromSupabase(poId) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const { error } = await this._supabase()
                 .from('purchase_orders')
                 .delete()
                 .eq('id', poId);
-            if (error) console.error('[PO] Supabase delete error:', error.message);
+            if (error) {console.error('[PO] Supabase delete error:', error.message);}
         } catch (err) {
             console.error('[PO] Supabase delete failed:', err.message);
         }
@@ -203,7 +203,7 @@ class PurchaseOrderService {
 
     async updatePO(poId, updates) {
         const po = this.bestellungen.find(p => p.id === poId);
-        if (!po) return null;
+        if (!po) {return null;}
 
         Object.assign(po, updates);
         if (updates.positionen) {
@@ -216,7 +216,7 @@ class PurchaseOrderService {
 
     async deletePO(poId) {
         const index = this.bestellungen.findIndex(p => p.id === poId);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         const po = this.bestellungen[index];
         if (po.status !== 'entwurf') {
@@ -253,7 +253,7 @@ class PurchaseOrderService {
 
     async submitPO(poId) {
         const po = this.getPO(poId);
-        if (!po || po.status !== 'entwurf') return null;
+        if (!po || po.status !== 'entwurf') {return null;}
 
         po.status = 'bestellt';
         po.bestelldatum = new Date().toISOString().split('T')[0];
@@ -263,8 +263,8 @@ class PurchaseOrderService {
 
     async recordDelivery(poId, items) {
         const po = this.getPO(poId);
-        if (!po) return null;
-        if (po.status === 'entwurf' || po.status === 'storniert') return null;
+        if (!po) {return null;}
+        if (po.status === 'entwurf' || po.status === 'storniert') {return null;}
 
         items.forEach(item => {
             const pos = po.positionen.find(p => p.materialId === item.materialId);
@@ -299,8 +299,8 @@ class PurchaseOrderService {
 
     async cancelPO(poId) {
         const po = this.getPO(poId);
-        if (!po) return null;
-        if (po.status === 'geliefert' || po.status === 'storniert') return null;
+        if (!po) {return null;}
+        if (po.status === 'geliefert' || po.status === 'storniert') {return null;}
 
         po.status = 'storniert';
         await this._upsertToSupabase(po);
@@ -312,17 +312,17 @@ class PurchaseOrderService {
     // ============================================
 
     async generatePOFromShortage(shortageItems) {
-        if (!window.materialService) return [];
+        if (!window.materialService) {return [];}
 
         const createdPOs = [];
         const bySupplier = {};
 
         shortageItems.forEach(item => {
             const material = window.materialService.getMaterial(item.materialId);
-            if (!material) return;
+            if (!material) {return;}
 
             const supplier = material.lieferant || 'Unknown';
-            if (!bySupplier[supplier]) bySupplier[supplier] = [];
+            if (!bySupplier[supplier]) {bySupplier[supplier] = [];}
 
             const safetyBuffer = material.minBestand || 10;
             bySupplier[supplier].push({
@@ -348,9 +348,9 @@ class PurchaseOrderService {
     }
 
     async generatePOFromLowStock() {
-        if (!window.materialService) return [];
+        if (!window.materialService) {return [];}
         const lowStockItems = window.materialService.getLowStockItems();
-        if (lowStockItems.length === 0) return [];
+        if (lowStockItems.length === 0) {return [];}
 
         return await this.generatePOFromShortage(lowStockItems.map(material => ({
             materialId: material.id,
@@ -373,7 +373,7 @@ class PurchaseOrderService {
         const now = new Date();
         const cutoff = new Date(now.getTime() + days * 86400000);
         return this.bestellungen.filter(po => {
-            if (!['bestellt', 'teillieferung'].includes(po.status)) return false;
+            if (!['bestellt', 'teillieferung'].includes(po.status)) {return false;}
             const d = new Date(po.lieferdatum_erwartet);
             return d >= now && d <= cutoff;
         });
@@ -382,8 +382,8 @@ class PurchaseOrderService {
     getPOHistory(dateRange = {}) {
         const { startDate, endDate } = dateRange;
         return this.bestellungen.filter(po => {
-            if (startDate && po.bestelldatum < startDate) return false;
-            if (endDate && po.bestelldatum > endDate) return false;
+            if (startDate && po.bestelldatum < startDate) {return false;}
+            if (endDate && po.bestelldatum > endDate) {return false;}
             return ['geliefert', 'storniert'].includes(po.status);
         });
     }
@@ -394,7 +394,7 @@ class PurchaseOrderService {
 
     addSupplier(supplierData) {
         const existing = this.lieferanten.find(s => s.name === supplierData.name);
-        if (existing) return existing;
+        if (existing) {return existing;}
 
         const supplier = {
             name: supplierData.name || '',
@@ -417,19 +417,19 @@ class PurchaseOrderService {
 
     updateSupplier(name, updates) {
         const supplier = this.getSupplier(name);
-        if (!supplier) return null;
+        if (!supplier) {return null;}
         Object.assign(supplier, updates);
         return supplier;
     }
 
     deleteSupplier(name) {
         const index = this.lieferanten.findIndex(s => s.name === name);
-        if (index === -1) return false;
+        if (index === -1) {return false;}
 
         const activePOs = this.getPOsByLieferant(name).filter(po =>
             ['bestellt', 'teillieferung'].includes(po.status)
         );
-        if (activePOs.length > 0) return false;
+        if (activePOs.length > 0) {return false;}
 
         this.lieferanten.splice(index, 1);
         return true;
@@ -471,7 +471,7 @@ class PurchaseOrderService {
     // ============================================
 
     _calculatePOTotals(po) {
-        if (!po.positionen) po.positionen = [];
+        if (!po.positionen) {po.positionen = [];}
         const netto = po.positionen.reduce((sum, pos) =>
             sum + ((pos.menge || 0) * (pos.ekPreis || 0)), 0
         );

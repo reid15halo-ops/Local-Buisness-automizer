@@ -11,7 +11,7 @@
     // -- Inject scoped styles once --
     let stylesInjected = false;
     function injectDashboardStyles() {
-        if (stylesInjected) return;
+        if (stylesInjected) {return;}
         stylesInjected = true;
 
         const style = document.createElement('style');
@@ -375,9 +375,9 @@
 
     function getTimeGreeting() {
         const h = new Date().getHours();
-        if (h < 5) return 'Gute Nacht';
-        if (h < 12) return 'Guten Morgen';
-        if (h < 18) return 'Guten Tag';
+        if (h < 5) {return 'Gute Nacht';}
+        if (h < 12) {return 'Guten Morgen';}
+        if (h < 18) {return 'Guten Tag';}
         return 'Guten Abend';
     }
 
@@ -388,7 +388,7 @@
     }
 
     function isThisMonth(dateStr) {
-        if (!dateStr) return false;
+        if (!dateStr) {return false;}
         const d = new Date(dateStr);
         const now = new Date();
         return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
@@ -396,7 +396,7 @@
 
     function navigateTo(viewId) {
         const sw = window.switchView || window.AppUtils?.switchView;
-        if (sw) sw(viewId);
+        if (sw) {sw(viewId);}
     }
 
     function clickBtn(id, delayMs) {
@@ -419,8 +419,8 @@
 
         // Overdue invoices
         const overdueInvoices = (store.rechnungen || []).filter(r => {
-            if (r.status !== 'offen') return false;
-            if (!r.faelligkeitsdatum) return false;
+            if (r.status !== 'offen') {return false;}
+            if (!r.faelligkeitsdatum) {return false;}
             return new Date(r.faelligkeitsdatum) < today;
         });
         if (overdueInvoices.length > 0) {
@@ -429,7 +429,7 @@
 
         // New inquiries waiting > 24h
         const staleAnfragen = (store.anfragen || []).filter(a => {
-            if (a.status !== 'neu') return false;
+            if (a.status !== 'neu') {return false;}
             const created = new Date(a.createdAt || a.datum || 0);
             return created < oneDayAgo;
         });
@@ -439,8 +439,8 @@
 
         // Tasks overdue today
         const overdueTasks = (store.aufgaben || []).filter(t => {
-            if (t.status === 'erledigt' || t.status === 'done') return false;
-            if (!t.dueDate && !t.faellig) return false;
+            if (t.status === 'erledigt' || t.status === 'done') {return false;}
+            if (!t.dueDate && !t.faellig) {return false;}
             const due = new Date(t.dueDate || t.faellig);
             return due < today;
         });
@@ -502,7 +502,7 @@
 
         // Tasks due today
         (store.aufgaben || []).forEach(t => {
-            if (t.status === 'erledigt' || t.status === 'done') return;
+            if (t.status === 'erledigt' || t.status === 'done') {return;}
             const due = new Date(t.dueDate || t.faellig || 0);
             if (isSameDay(due, now)) {
                 items.push({
@@ -807,7 +807,7 @@
     function openEmailComposeModal() {
         // Remove any existing modal
         const existing = document.getElementById('dash-email-modal');
-        if (existing) existing.remove();
+        if (existing) {existing.remove();}
 
         const customers = (window.customerService?.getAllCustomers?.() || [])
             .filter(c => c.email);
@@ -871,12 +871,12 @@
         const closeModal = () => overlay.remove();
         document.getElementById('dash-email-close').addEventListener('click', closeModal);
         document.getElementById('dash-email-cancel').addEventListener('click', closeModal);
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) {closeModal();} });
 
         // Template selection fills subject + body
         document.getElementById('dash-email-template').addEventListener('change', function () {
             const key = this.value;
-            if (!key || !templates[key]) return;
+            if (!key || !templates[key]) {return;}
             const t = templates[key];
             // Get selected customer name for placeholder replacement
             const toSelect = document.getElementById('dash-email-to');

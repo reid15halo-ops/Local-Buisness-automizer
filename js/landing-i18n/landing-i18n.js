@@ -59,19 +59,19 @@ class LandingI18n {
         // 1. URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const urlLang = urlParams.get('lang');
-        if (urlLang && this.isSupported(urlLang)) return urlLang;
+        if (urlLang && this.isSupported(urlLang)) {return urlLang;}
 
         // 2. localStorage (try-catch for incognito mode)
         try {
             const stored = localStorage.getItem('freyai_landing_lang');
-            if (stored && this.isSupported(stored)) return stored;
+            if (stored && this.isSupported(stored)) {return stored;}
         } catch (e) { /* localStorage unavailable */ }
 
         // 3. Browser language
         const browserLangs = navigator.languages || [navigator.language];
         for (const lang of browserLangs) {
             const code = lang.split('-')[0].toLowerCase();
-            if (this.isSupported(code)) return code;
+            if (this.isSupported(code)) {return code;}
         }
 
         // 4. Fallback
@@ -85,7 +85,7 @@ class LandingI18n {
     // Load translation JSON file
     async loadTranslation(lang) {
         // Check cache
-        if (this.translations[lang]) return this.translations[lang];
+        if (this.translations[lang]) {return this.translations[lang];}
 
         // Check localStorage cache (try-catch for incognito mode)
         const cacheKey = `freyai_i18n_${lang}`;
@@ -131,7 +131,9 @@ class LandingI18n {
     // Deep merge: base object with override values
     _deepMerge(base, override) {
         const result = {};
+        const UNSAFE = ['__proto__', 'constructor', 'prototype'];
         for (const key of Object.keys(base)) {
+            if (UNSAFE.includes(key)) {continue;}
             if (
                 override[key] !== undefined &&
                 typeof base[key] === 'object' && base[key] !== null &&
@@ -147,6 +149,7 @@ class LandingI18n {
         }
         // Include keys only in override
         for (const key of Object.keys(override)) {
+            if (UNSAFE.includes(key)) {continue;}
             if (result[key] === undefined) {
                 result[key] = override[key];
             }
@@ -161,24 +164,26 @@ class LandingI18n {
 
     // Apply translations to the DOM
     applyTranslations(translations) {
-        if (!translations) return;
+        if (!translations) {return;}
 
         const safeAttrs = ['alt', 'title', 'placeholder', 'content', 'aria-label'];
 
         // Text content elements (skip elements that only need attribute translation)
         document.querySelectorAll('[data-i18n]').forEach(el => {
-            if (el.hasAttribute('data-i18n-attr')) return; // handled below
+            if (el.hasAttribute('data-i18n-attr')) {return;} // handled below
             const key = el.getAttribute('data-i18n');
             const value = this._getNestedValue(translations, key);
-            if (value === null) return;
+            if (value === null) {return;}
 
             if (el.hasAttribute('data-i18n-html') && el.getAttribute('data-i18n-html') !== 'false') {
-                el.innerHTML = typeof DOMPurify !== 'undefined'
-                    ? DOMPurify.sanitize(value, {
+                if (typeof DOMPurify !== 'undefined') {
+                    el.innerHTML = DOMPurify.sanitize(value, {
                         ALLOWED_TAGS: ['span', 'br', 'a', 'strong', 'em'],
                         ALLOWED_ATTR: ['class', 'aria-hidden', 'href', 'target', 'rel']
-                    })
-                    : value;
+                    });
+                } else {
+                    el.textContent = value; // Safe fallback: strip HTML
+                }
             } else {
                 el.textContent = value;
             }
@@ -187,7 +192,7 @@ class LandingI18n {
         // Attribute translations (whitelisted: alt, title, placeholder, content, aria-label)
         document.querySelectorAll('[data-i18n-attr]').forEach(el => {
             const attr = el.getAttribute('data-i18n-attr');
-            if (!safeAttrs.includes(attr)) return;
+            if (!safeAttrs.includes(attr)) {return;}
             const key = el.getAttribute('data-i18n');
             const value = this._getNestedValue(translations, key);
             if (value !== null) {
@@ -199,7 +204,7 @@ class LandingI18n {
         document.querySelectorAll('[data-i18n-meta]').forEach(el => {
             const key = el.getAttribute('data-i18n-meta');
             const value = this._getNestedValue(translations, key);
-            if (value === null) return;
+            if (value === null) {return;}
 
             if (el.tagName === 'TITLE') {
                 el.textContent = value;
@@ -220,11 +225,18 @@ class LandingI18n {
 
     // Switch language with race condition guard and fallback merge
     async switchLanguage(lang) {
-        if (!this.isSupported(lang)) return;
-        if (this._switchingLang) return;
+        if (!this.isSupported(lang)) {return;}
+        if (this._switchingLang) {return;}
         this._switchingLang = true;
 
         try {
+            // Load fallback (German) as base, merge target language on top
+            const fallback = await this.loadTranslation(this.fallbackLang);
+            if (!fallback) {return;} // Cannot proceed without fallback
+            const target = lang !== this.fallbackLang ? await this.loadTranslation(lang) : fallback;
+            const merged = this._deepMerge(fallback, target || {});
+
+            // Only update state after successful load
             this.currentLang = lang;
 
             try {
@@ -240,10 +252,6 @@ class LandingI18n {
             }
             history.replaceState(null, '', url);
 
-            // Load fallback (German) as base, merge target language on top
-            const fallback = await this.loadTranslation(this.fallbackLang);
-            const target = lang !== this.fallbackLang ? await this.loadTranslation(lang) : fallback;
-            const merged = this._deepMerge(fallback || {}, target || {});
             this.applyTranslations(merged);
 
             // Update switcher button text
@@ -265,10 +273,10 @@ class LandingI18n {
     // Build language switcher UI into existing #lang-switcher container
     buildSwitcher() {
         const container = document.getElementById('lang-switcher');
-        if (!container) return;
+        if (!container) {return;}
 
         // Prevent duplicate modal
-        if (document.getElementById('lang-modal')) return;
+        if (document.getElementById('lang-modal')) {return;}
 
         const langInfo = this.supportedLangs.find(l => l.code === this.currentLang) || this.supportedLangs[0];
 
@@ -321,7 +329,7 @@ class LandingI18n {
             this._triggerButton.setAttribute('aria-expanded', 'true');
             // Focus first language option
             const firstOption = modal.querySelector('.lang-option');
-            if (firstOption) firstOption.focus();
+            if (firstOption) {firstOption.focus();}
         };
 
         // Events
@@ -334,7 +342,7 @@ class LandingI18n {
         });
 
         modal.querySelector('.lang-modal-close').addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        modal.addEventListener('click', (e) => { if (e.target === modal) {closeModal();} });
 
         modal.querySelectorAll('.lang-option').forEach(opt => {
             opt.addEventListener('click', () => {
@@ -345,7 +353,7 @@ class LandingI18n {
 
         // Keyboard: Escape to close + focus trap
         document.addEventListener('keydown', (e) => {
-            if (!modal.classList.contains('visible')) return;
+            if (!modal.classList.contains('visible')) {return;}
 
             if (e.key === 'Escape') {
                 closeModal();
@@ -355,7 +363,7 @@ class LandingI18n {
             // Focus trap: Tab/Shift+Tab wrap within modal
             if (e.key === 'Tab') {
                 const focusable = modal.querySelectorAll('button:not([disabled])');
-                if (focusable.length === 0) return;
+                if (focusable.length === 0) {return;}
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
 
@@ -388,5 +396,5 @@ class LandingI18n {
 // Auto-init when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.landingI18n = new LandingI18n();
-    window.landingI18n.init();
+    window.landingI18n.init().catch(e => console.warn('[i18n] Init failed:', e.message));
 });

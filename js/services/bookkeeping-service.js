@@ -80,7 +80,7 @@ class BookkeepingService {
     }
 
     async _loadFromSupabase() {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const { data, error } = await this._supabase()
                 .from('buchungen')
@@ -99,26 +99,26 @@ class BookkeepingService {
     }
 
     async _upsertToSupabase(buchung) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const row = this._toSupabaseRow(buchung);
             const { error } = await this._supabase()
                 .from('buchungen')
                 .upsert(row, { onConflict: 'id' });
-            if (error) console.error('[Buchhaltung] Supabase upsert error:', error.message);
+            if (error) {console.error('[Buchhaltung] Supabase upsert error:', error.message);}
         } catch (err) {
             console.error('[Buchhaltung] Supabase upsert failed:', err.message);
         }
     }
 
     async _deleteFromSupabase(id) {
-        if (!this._isOnline()) return;
+        if (!this._isOnline()) {return;}
         try {
             const { error } = await this._supabase()
                 .from('buchungen')
                 .delete()
                 .eq('id', id);
-            if (error) console.error('[Buchhaltung] Supabase delete error:', error.message);
+            if (error) {console.error('[Buchhaltung] Supabase delete error:', error.message);}
         } catch (err) {
             console.error('[Buchhaltung] Supabase delete failed:', err.message);
         }
@@ -202,7 +202,7 @@ class BookkeepingService {
 
     // Ausgabe aus Eingangsrechnung (Purchase Order) erstellen
     async addFromPurchaseOrder(po) {
-        if (this.buchungen.some(b => b.poId === po.id)) return null;
+        if (this.buchungen.some(b => b.poId === po.id)) {return null;}
 
         const buchung = {
             typ: 'ausgabe',
@@ -223,16 +223,16 @@ class BookkeepingService {
 
     // Sync alle POs als Buchungen
     async syncFromPurchaseOrders() {
-        if (!window.purchaseOrderService) return;
+        if (!window.purchaseOrderService) {return;}
         const pos = window.purchaseOrderService.getAllPOs();
         let added = 0;
         for (const po of pos) {
-            if (po.status === 'entwurf' || po.status === 'storniert') continue;
-            if (this.buchungen.some(b => b.poId === po.id)) continue;
+            if (po.status === 'entwurf' || po.status === 'storniert') {continue;}
+            if (this.buchungen.some(b => b.poId === po.id)) {continue;}
             await this.addFromPurchaseOrder(po);
             added++;
         }
-        if (added > 0) console.debug(`[Buchhaltung] ${added} Eingangsrechnungen als Buchungen erfasst`);
+        if (added > 0) {console.debug(`[Buchhaltung] ${added} Eingangsrechnungen als Buchungen erfasst`);}
     }
 
     // Ausgabe hinzufügen
