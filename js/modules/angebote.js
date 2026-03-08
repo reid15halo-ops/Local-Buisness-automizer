@@ -827,7 +827,7 @@ function addPosition(prefill = null) {
         }
 
         suggestBox.innerHTML = materials.slice(0, 5).map(m => `
-            <div class="material-suggest-item" data-material='${h(JSON.stringify(m))}'>
+            <div class="material-suggest-item" data-material="${encodeURIComponent(JSON.stringify(m))}">
                 <span class="material-suggest-name">${h(m.bezeichnung)}</span>
                 <span class="material-suggest-meta">
                     <span class="price">${formatCurrency(m.vkPreis || m.preis)}</span>
@@ -842,7 +842,7 @@ function addPosition(prefill = null) {
     suggestBox.addEventListener('click', (e) => {
         const item = e.target.closest('.material-suggest-item');
         if (!item) return;
-        let material; try { material = JSON.parse(item.dataset.material); } catch { return; }
+        let material; try { material = JSON.parse(decodeURIComponent(item.dataset.material)); } catch { return; }
         row.querySelector('.pos-beschreibung').value = material.bezeichnung;
         row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
         row.querySelector('.pos-einheit').value = material.einheit;

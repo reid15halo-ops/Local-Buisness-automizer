@@ -137,6 +137,7 @@ class StoreService {
         this.store.angebote = [];
         this.store.auftraege = [];
         this.store.rechnungen = [];
+        this.store.kunden = [];
         this.store.activities = [];
         this.store.currentAnfrageId = null;
         this.store.currentAuftragId = null;
@@ -213,17 +214,25 @@ class StoreService {
      * Saves the current store state to IndexedDB (user-specific).
      */
     async save() {
+        if (this._saving) {
+            this._saveQueued = true;
+            return;
+        }
+        this._saving = true;
         try {
-            // Determine user ID
             const userId = this.currentUserId || 'default';
-
-            // Save to user-specific store
             await window.dbService.setUserData(userId, this.STORAGE_KEY, this.store);
             this.notify();
         } catch (e) {
             console.error('Save failed:', e);
             if (window.errorHandler) {
                 window.errorHandler.error('Fehler beim Speichern der Daten.');
+            }
+        } finally {
+            this._saving = false;
+            if (this._saveQueued) {
+                this._saveQueued = false;
+                await this.save();
             }
         }
     }

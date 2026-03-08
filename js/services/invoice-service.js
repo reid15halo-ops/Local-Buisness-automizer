@@ -100,7 +100,7 @@ class InvoiceService {
                 throw new Error('Store service not initialized');
             }
             this.storeService.state.rechnungen.push(invoice);
-            this.storeService.save();
+            await this.storeService.save();
 
             // 6. Activity log
             this.storeService.addActivity('💰', `Rechnung ${invoiceNumber} erstellt`);
@@ -143,7 +143,7 @@ class InvoiceService {
 
             // 9. Update store if PDF or e-invoice was generated
             if (invoice.pdfGenerated || invoice.eInvoiceGenerated) {
-                this.storeService.save();
+                await this.storeService.save();
             }
 
             return invoice;
@@ -174,7 +174,7 @@ class InvoiceService {
         invoice.paymentMethod = paymentData.method || 'Überweisung';
         invoice.paymentNote = paymentData.note || '';
 
-        this.storeService.save();
+        await this.storeService.save();
         this.storeService.addActivity('✅', `Rechnung ${invoice.nummer} als bezahlt markiert`);
 
         // n8n Webhook Event
@@ -227,7 +227,7 @@ class InvoiceService {
         invoice.cancelledAt = new Date().toISOString();
         invoice.cancellationReason = reason;
 
-        this.storeService.save();
+        await this.storeService.save();
         this.storeService.addActivity('❌', `Rechnung ${invoice.nummer} storniert`);
 
         return invoice;
@@ -301,7 +301,7 @@ class InvoiceService {
 
             invoice.pdfGenerated = true;
             invoice.lastPdfGeneratedAt = new Date().toISOString();
-            this.storeService.save();
+            await this.storeService.save();
 
             return {
                 success: true,
@@ -347,7 +347,7 @@ class InvoiceService {
                 invoice.eInvoiceRecordId = result.recordId;
                 invoice.lastEInvoiceGeneratedAt = new Date().toISOString();
 
-                this.storeService.save();
+                await this.storeService.save();
                 this.storeService.addActivity('🔐', `E-Rechnung für ${invoice.nummer} erstellt`);
 
                 // Download if requested

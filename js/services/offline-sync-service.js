@@ -182,14 +182,13 @@ class OfflineSyncService {
      * Process the sync queue when back online
      */
     async processQueue() {
-        if (!this._isOnline || this._syncInProgress) {return;}
-        this._syncInProgress = true;
+        if (!this._isOnline || this._processing) {return;}
+        this._processing = true;
 
         try {
             await this.init();
             const supabase = window.supabaseClient?.client || window.supabase;
             if (!supabase) {
-                this._syncInProgress = false;
                 return;
             }
 
@@ -202,13 +201,11 @@ class OfflineSyncService {
             });
 
             if (items.length === 0) {
-                this._syncInProgress = false;
                 return;
             }
 
             console.debug(`[OfflineSync] Processing ${items.length} queued actions...`);
 
-            // Sort by timestamp
             items.sort((a, b) => a.timestamp - b.timestamp);
 
             const processedIds = [];
@@ -230,17 +227,15 @@ class OfflineSyncService {
 
                     if (result?.error) {
                         console.warn(`[OfflineSync] Sync failed for ${item.type} ${item.table}:`, result.error);
-                        // Server wins on conflict - skip this item
                     }
 
                     processedIds.push(item.queueId);
                 } catch (err) {
                     console.warn(`[OfflineSync] Error processing queue item:`, err);
-                    processedIds.push(item.queueId); // Remove on error too (server wins)
+                    processedIds.push(item.queueId);
                 }
             }
 
-            // Remove processed items
             if (processedIds.length > 0) {
                 const delTx = this.db.transaction(this.QUEUE_STORE, 'readwrite');
                 const delStore = delTx.objectStore(this.QUEUE_STORE);
@@ -250,17 +245,16 @@ class OfflineSyncService {
 
             console.debug(`[OfflineSync] Queue processed: ${processedIds.length} items synced`);
 
-            // Notify the app
             if (window.storeService?.load) {
                 await window.storeService.load();
             }
 
         } catch (err) {
             console.error('[OfflineSync] Queue processing error:', err);
+        } finally {
+            this._processing = false;
+            this._updateIndicator();
         }
-
-        this._syncInProgress = false;
-        this._updateIndicator();
     }
 
     // ============================================

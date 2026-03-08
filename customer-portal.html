@@ -417,9 +417,11 @@ function renderPortal(data) {
 
 function renderQuotes(quotes) {
     const tbody = document.getElementById('quotes-tbody');
+    const validStatuses = ['offen', 'angenommen', 'abgelehnt', 'bezahlt', 'ueberfaellig', 'entwurf', 'storniert'];
     tbody.innerHTML = quotes.map(q => {
         const statusLabel = { offen: 'Offen', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' };
-        const badge = `<span class="badge badge-${['offen','angenommen','abgelehnt','versendet','bezahlt','storniert'].includes(q.status) ? q.status : 'offen'}">${statusLabel[q.status] || esc(q.status)}</span>`;
+        const safeStatus = validStatuses.includes(q.status) ? q.status : 'offen';
+        const badge = `<span class="badge badge-${safeStatus}">${statusLabel[q.status] || esc(q.status)}</span>`;
         const actions = q.status === 'offen' ? `
             <button class="btn btn-sm btn-success" onclick="openApproveModal('${esc(q.id)}')">Annehmen</button>
             <button class="btn btn-sm btn-danger" onclick="openRejectModal('${esc(q.id)}')">Ablehnen</button>
@@ -439,9 +441,11 @@ function renderQuotes(quotes) {
 
 function renderInvoices(invoices) {
     const tbody = document.getElementById('invoices-tbody');
+    const validStatuses = ['offen', 'angenommen', 'abgelehnt', 'bezahlt', 'ueberfaellig', 'entwurf', 'storniert'];
     tbody.innerHTML = invoices.map(inv => {
         const statusLabel = { offen: 'Offen', bezahlt: 'Bezahlt', storniert: 'Storniert' };
-        const badge = `<span class="badge badge-${['offen','bezahlt','storniert','ueberfaellig'].includes(inv.status) ? inv.status : 'offen'}">${statusLabel[inv.status] || esc(inv.status)}</span>`;
+        const safeStatus = validStatuses.includes(inv.status) ? inv.status : 'offen';
+        const badge = `<span class="badge badge-${safeStatus}">${statusLabel[inv.status] || esc(inv.status)}</span>`;
         const payBtn = inv.status === 'offen' && inv.stripePaymentUrl
             ? `<a class="btn btn-sm btn-primary" href="${inv.stripePaymentUrl && inv.stripePaymentUrl.startsWith('https://') ? esc(inv.stripePaymentUrl) : '#'}" target="_blank" rel="noopener noreferrer">Jetzt zahlen</a>`
             : '';
