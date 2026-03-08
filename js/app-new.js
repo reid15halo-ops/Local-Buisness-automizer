@@ -911,8 +911,8 @@ async function runDemoWorkflow() {
         arbeitszeit: demoAuftrag.arbeitszeit,
         materialKosten: demoAuftrag.materialKosten,
         netto: demoAuftrag.netto + demoAuftrag.materialKosten,
-        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * (typeof _getTaxRate === 'function' ? _getTaxRate() : 0.19),
-        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + (typeof _getTaxRate === 'function' ? _getTaxRate() : 0.19)),
+        mwst: (demoAuftrag.netto + demoAuftrag.materialKosten) * ((typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19),
+        brutto: (demoAuftrag.netto + demoAuftrag.materialKosten) * (1 + ((typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19)),
         status: 'offen',
         createdAt: new Date().toISOString()
     };

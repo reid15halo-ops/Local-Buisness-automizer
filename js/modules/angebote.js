@@ -532,7 +532,7 @@ function initAngebotForm() {
             return;
         }
 
-        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
         const mwst = netto * taxRate;
         const brutto = netto + mwst;
 
@@ -875,7 +875,7 @@ function updateAngebotSummary() {
         netto += menge * preis;
     });
 
-    const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+    const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
     const mwst = netto * taxRate;
     const brutto = netto + mwst;
 

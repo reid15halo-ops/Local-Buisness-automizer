@@ -34,16 +34,12 @@ class ErrorHandler {
     // ---- Supabase Error Logging ----
 
     _initGlobalHandlers() {
-        const prevOnError = window.onerror;
         window.onerror = (msg, source, line, col, error) => {
             this.handle(error || new Error(String(msg)), 'global');
-            if (prevOnError) {prevOnError(msg, source, line, col, error);}
         };
-        const prevUnhandled = window.onunhandledrejection;
-        window.onunhandledrejection = (event) => {
+        window.addEventListener('unhandledrejection', (event) => {
             this.handle(event.reason || new Error('Unhandled rejection'), 'promise');
-            if (prevUnhandled) {prevUnhandled(event);}
-        };
+        });
     }
 
     _isRateLimited() {

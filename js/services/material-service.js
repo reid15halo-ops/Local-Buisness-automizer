@@ -199,8 +199,8 @@ class MaterialService {
             materialkosten: gesamtMaterial,
             arbeitskosten: gesamtArbeit,
             netto: gesamtMaterial + gesamtArbeit,
-            mwst: (gesamtMaterial + gesamtArbeit) * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19),
-            brutto: (gesamtMaterial + gesamtArbeit) * (1 + ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19))
+            mwst: (gesamtMaterial + gesamtArbeit) * ((typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19),
+            brutto: (gesamtMaterial + gesamtArbeit) * (1 + ((typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19))
         };
     }
 

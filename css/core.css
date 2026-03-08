@@ -20,6 +20,27 @@
    - Consolidated responsive media queries into logical sections
    ============================================ */
 
+.skip-to-content {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    z-index: 9999;
+    padding: 8px 16px;
+    background: var(--accent, #0071e3);
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    border-radius: 0 0 4px 0;
+}
+.skip-to-content:focus {
+    left: 0;
+    width: auto;
+    height: auto;
+}
+
 :root {
     /* ============================================
        Color Palette - Dark Industrial Theme

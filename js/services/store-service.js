@@ -375,54 +375,19 @@ class StoreService {
         // Create Invoice using InvoiceService
         try {
             if (!window.invoiceService) {
-                console.error('InvoiceService not available, falling back to enhanced invoice creation');
+                console.error('InvoiceService not available, falling back to basic invoice creation');
 
-                // Fallback: Enhanced invoice creation with Stückliste support
-                // Build invoice positions: original positions + Stückliste + extra costs
-                const rechnungsPositionen = [...(auftrag.positionen || [])];
-                const stueckliste = auftrag.stueckliste || [];
-
-                stueckliste.forEach(item => {
-                    rechnungsPositionen.push({
-                        beschreibung: `Material: ${item.bezeichnung}`,
-                        menge: item.menge,
-                        einheit: item.einheit,
-                        preis: item.vkPreis,
-                        isMaterial: true,
-                        artikelnummer: item.artikelnummer,
-                        ekPreis: item.ekPreis
-                    });
-                });
-
-                if ((auftrag.extraMaterialKosten || 0) > 0) {
-                    rechnungsPositionen.push({
-                        beschreibung: 'Sonstige Materialkosten',
-                        menge: 1,
-                        einheit: 'pauschal',
-                        preis: auftrag.extraMaterialKosten,
-                        isMaterial: true
-                    });
-                }
-
-                const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-                const isKleinunternehmer = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').kleinunternehmer;
-                const taxRate = isKleinunternehmer ? 0 : (typeof window._getTaxRate === 'function' ? window._getTaxRate() : 0.19);
+                const netto = (auftrag.positionen || []).reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
+                const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
 
                 const rechnung = {
                     id: this.generateId('RE'),
-                    nummer: this.generateId('RE'), // Simple fallback number
+                    nummer: this.generateId('RE'),
                     auftragId,
                     angebotId: auftrag.angebotId,
                     kunde: auftrag.kunde,
                     leistungsart: auftrag.leistungsart,
-                    positionen: rechnungsPositionen,
-                    stueckliste: stueckliste,
-                    arbeitszeit: auftrag.arbeitszeit,
-                    materialKosten: auftrag.materialKosten || 0,
-                    extraMaterialKosten: auftrag.extraMaterialKosten || 0,
-                    stuecklisteVK: auftrag.stuecklisteVK || 0,
-                    stuecklisteEK: auftrag.stuecklisteEK || 0,
-                    notizen: auftrag.notizen,
+                    positionen: auftrag.positionen || [],
                     netto: netto,
                     mwst: Math.round(netto * taxRate * 100) / 100,
                     brutto: Math.round(netto * (1 + taxRate) * 100) / 100,
@@ -433,7 +398,7 @@ class StoreService {
                 };
 
                 this.store.rechnungen.push(rechnung);
-                this.addActivity('💰', `Rechnung ${rechnung.nummer} erstellt`);
+                this.addActivity('\u{1F4B0}', `Rechnung ${rechnung.nummer} erstellt`);
                 await this.save();
 
                 return rechnung;

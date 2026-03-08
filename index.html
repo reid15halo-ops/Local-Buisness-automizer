@@ -64,7 +64,7 @@
                 if (typeof value === "string" && value.indexOf("<") !== -1) {
                     value = DOMPurify.sanitize(value, {
                         ADD_TAGS: ["style"],
-                        ADD_ATTR: ["style", "class", "id", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-event-id", "data-event-typ", "data-test", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step"],
+                        ADD_ATTR: ["style", "class", "id", "onclick", "onchange", "oninput", "onkeydown", "onsubmit", "ondragstart", "ondragover", "ondrop", "data-id", "data-action", "data-tab", "data-status", "data-field", "data-type", "data-view", "data-group", "data-section", "data-step", "data-index", "data-page", "data-kunde-id", "data-value", "data-key", "data-category", "data-provider", "data-tooltip", "data-lang", "data-mode", "data-format", "data-sort", "data-filter", "data-target", "data-toggle", "data-role", "data-priority", "data-node-id", "data-connection-id", "data-option", "data-item", "data-invoice-id", "data-quote-id", "data-order-id", "data-event-id", "data-event-typ", "data-test", "data-material", "tabindex", "role", "aria-label", "aria-hidden", "aria-selected", "aria-expanded", "aria-modal", "disabled", "checked", "selected", "placeholder", "value", "type", "name", "for", "href", "src", "alt", "title", "width", "height", "colspan", "rowspan", "target", "rel", "min", "max", "step", "maxlength", "pattern", "required", "readonly", "multiple", "accept", "draggable"],
                         ALLOW_UNKNOWN_PROTOCOLS: false
                     });
                 }
@@ -76,64 +76,7 @@
         console.log("[Security] innerHTML XSS protection active");
     })();
     </script>
-    <script>
-    /* Global Error Monitoring → Supabase client_errors table */
-    (function() {
-        var errorQueue = [];
-        var sending = false;
-        var sessionId = Math.random().toString(36).substr(2, 9);
-
-        function sendErrors() {
-            if (sending || errorQueue.length === 0) return;
-            sending = true;
-            var batch = errorQueue.splice(0, 10);
-            var url = window.SUPABASE_URL;
-            var key = window.SUPABASE_ANON_KEY || "";
-            if (!url || !key) { sending = false; return; }
-            url = url + "/rest/v1/client_errors";
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    "apikey": key,
-                    "Authorization": "Bearer " + key,
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                body: JSON.stringify(batch)
-            }).catch(function(){}).finally(function(){ sending = false; });
-        }
-
-        function queueError(msg, source, line, col, stack) {
-            if (errorQueue.length >= 50) return;
-            errorQueue.push({
-                error_message: String(msg).substring(0, 1000),
-                error_source: source ? String(source).substring(0, 500) : null,
-                error_line: line || null,
-                error_col: col || null,
-                error_stack: stack ? String(stack).substring(0, 2000) : null,
-                user_agent: navigator.userAgent.substring(0, 500),
-                url: location.href.substring(0, 500),
-                session_id: sessionId,
-                app_version: "1.0"
-            });
-            if (errorQueue.length === 1) setTimeout(sendErrors, 2000);
-            else if (errorQueue.length >= 5) sendErrors();
-        }
-
-        window.onerror = function(msg, source, line, col, error) {
-            queueError(msg, source, line, col, error && error.stack);
-        };
-        window.addEventListener("unhandledrejection", function(e) {
-            var reason = e.reason || {};
-            queueError(
-                reason.message || String(reason).substring(0, 1000),
-                null, null, null,
-                reason.stack || null
-            );
-        });
-        console.log("[Monitoring] Error tracking active");
-    })();
-    </script>
+    <!-- Error monitoring handled by js/services/error-handler.js (deferred) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
     <script src="js/services/supabase-config.js"></script>
     <script src="js/services/supabase-client.js"></script>
@@ -185,6 +128,7 @@
         })();
     </script>
 
+    <a href="#main" class="skip-to-content">Zum Inhalt springen</a>
     <div class="app-container">
         <!-- Mobile Header -->
         <header class="mobile-header" role="banner">
@@ -426,7 +370,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="main-content" id="main">
             <!-- Notification Panel -->
             <div id="notification-panel" class="notification-panel" style="display: none;" role="region" aria-label="Benachrichtigungen">
                 <div class="notification-panel-header">

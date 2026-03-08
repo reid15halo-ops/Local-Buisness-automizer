@@ -900,7 +900,7 @@ class AufmassService {
 
         // Recalculate totals
         const netto = angebot.positionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
         angebot.netto = this._round(netto);
         angebot.mwst = this._round(netto * taxRate);
         angebot.brutto = this._round(netto * (1 + taxRate));
@@ -928,7 +928,7 @@ class AufmassService {
         if (positions.length === 0) {return null;}
 
         const netto = positions.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-        const taxRate2 = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const taxRate2 = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
 
         const angebot = {
             id: window.storeService.generateId('ANG'),

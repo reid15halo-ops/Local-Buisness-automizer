@@ -459,7 +459,7 @@ class PurchaseOrderUI {
             netto += (pos.menge || 0) * (pos.ekPreis || 0);
         });
 
-        const taxRate = (typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19;
+        const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
         const mwst = netto * taxRate;
         const brutto = netto * (1 + taxRate);
 

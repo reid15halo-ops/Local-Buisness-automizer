@@ -112,7 +112,7 @@ class BankingService {
         this.saveTransactions();
 
         // Auto-match invoices
-        this.autoMatchInvoices();
+        await this.autoMatchInvoices();
     }
 
     // Generate random transactions
@@ -238,7 +238,7 @@ class BankingService {
     }
 
     // Auto-match incoming payments to open invoices
-    autoMatchInvoices() {
+    async autoMatchInvoices() {
         const rechnungen = window.storeService?.store?.rechnungen || [];
         const openInvoices = rechnungen.filter(r => r.status === 'offen' || r.status === 'versendet');
 
@@ -248,7 +248,7 @@ class BankingService {
 
         let matchCount = 0;
 
-        unmatchedCredits.forEach(tx => {
+        for (const tx of unmatchedCredits) {
             // Try to match by reference number in purpose
             const purposeLower = (tx.purpose || '').toLowerCase();
 
@@ -262,7 +262,7 @@ class BankingService {
                     const tolerance = (invoice.brutto || invoice.betrag || 0) * 0.01;
 
                     if (amountDiff <= tolerance) {
-                        this.matchPaymentToInvoice(tx.id, invoice.id);
+                        await this.matchPaymentToInvoice(tx.id, invoice.id);
                         matchCount++;
                         break;
                     }
@@ -272,13 +272,13 @@ class BankingService {
                 if (Math.abs(tx.amount - (invoice.brutto || invoice.betrag || 0)) < 0.01) {
                     const customerName = (invoice.kunde?.name || invoice.kunde?.firma || '').toLowerCase();
                     if (customerName && (tx.name || '').toLowerCase().includes(customerName.split(' ')[0])) {
-                        this.matchPaymentToInvoice(tx.id, invoice.id);
+                        await this.matchPaymentToInvoice(tx.id, invoice.id);
                         matchCount++;
                         break;
                     }
                 }
             }
-        });
+        }
 
         return { matched: matchCount };
     }

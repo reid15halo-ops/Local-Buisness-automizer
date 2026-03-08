@@ -641,12 +641,12 @@ class CustomerPortalService {
 
             // Accept the quote through the store service
             if (window.storeService.acceptAngebot) {
-                window.storeService.acceptAngebot(quoteId);
+                await window.storeService.acceptAngebot(quoteId);
             } else {
                 angebot.status = 'angenommen';
                 angebot.acceptedAt = new Date().toISOString();
                 angebot.acceptedVia = 'portal';
-                window.storeService.save();
+                await window.storeService.save();
             }
 
             // Log message if provided
@@ -719,7 +719,7 @@ class CustomerPortalService {
             angebot.rejectedAt = new Date().toISOString();
             angebot.rejectedVia = 'portal';
             if (reason) { angebot.rejectionReason = reason; }
-            window.storeService.save();
+            await window.storeService.save();
 
             if (reason) {
                 await this.sendCustomerMessage(token, `Angebot ${quoteId} abgelehnt: ${reason}`);
@@ -782,7 +782,7 @@ class CustomerPortalService {
             });
 
             angebot.status = 'aenderung-angefragt';
-            window.storeService.save();
+            await window.storeService.save();
 
             // Log as portal message
             await this.sendCustomerMessage(

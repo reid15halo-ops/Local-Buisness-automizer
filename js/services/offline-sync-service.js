@@ -11,7 +11,6 @@ class OfflineSyncService {
         this.QUEUE_STORE = 'sync_queue';
         this.db = null;
         this._isOnline = navigator.onLine;
-        this._syncInProgress = false;
         this._indicatorEl = null;
 
         // Listen for online/offline events
