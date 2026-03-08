@@ -893,6 +893,13 @@ class CustomerPortalService {
      */
     async sendBusinessMessage(customerId, message) {
         try {
+            if (!customerId) {
+                return { success: false, message: 'Kunden-ID fehlt' };
+            }
+            if (!message || !message.trim()) {
+                return { success: false, message: 'Nachricht darf nicht leer sein' };
+            }
+
             const row = {
                 customer_id: customerId,
                 token_id: null,
@@ -1056,7 +1063,7 @@ class CustomerPortalService {
                 return { success: false, error: 'Systemfehler' };
             }
 
-            const invoice = store.rechnungen.find(r => r.id === invoiceId);
+            const invoice = (store.rechnungen || []).find(r => r.id === invoiceId);
             if (!invoice) {
                 return { success: false, error: 'Rechnung nicht gefunden' };
             }

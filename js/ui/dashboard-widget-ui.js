@@ -277,7 +277,7 @@ class DashboardWidgetUI {
         if (!data.hasData) {
             return `<div class="cashflow-ai-empty">
                 <div class="cashflow-ai-empty-icon">KI</div>
-                <p>${data.message || 'Keine Prognose verfuegbar.'}</p>
+                <p>${this._escapeHtml(data.message || 'Keine Prognose verfügbar.')}</p>
             </div>`;
         }
 
@@ -469,7 +469,7 @@ class DashboardWidgetUI {
      */
     _renderListContent(data) {
         if (!data.items || data.items.length === 0) {
-            return `<div class="widget-list-empty">${data.emptyMessage || 'Keine Eintr\u00E4ge.'}</div>`;
+            return `<div class="widget-list-empty">${this._escapeHtml(data.emptyMessage || 'Keine Einträge.')}</div>`;
         }
 
         // Summary line for overdue invoices

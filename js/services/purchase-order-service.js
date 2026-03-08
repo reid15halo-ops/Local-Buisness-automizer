@@ -81,7 +81,7 @@ class PurchaseOrderService {
             auftragId: remote.auftrag_id || null,
             notizen: remote.notizen || '',
             eingangsrechnungNr: remote.eingangsrechnung_nr || '',
-            confidence: parseFloat(remote.confidence) || 0,
+            confidence: remote.confidence != null ? parseFloat(remote.confidence) : null,
             erstelltAm: remote.created_at || new Date().toISOString()
         };
     }

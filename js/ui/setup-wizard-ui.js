@@ -88,12 +88,14 @@ class SetupWizardUI {
         const step = this.service.getCurrentStep();
         const body = document.getElementById('wizard-body');
         const subtitle = document.getElementById('wizard-subtitle');
+        if (!body || !subtitle) {return;}
 
         subtitle.textContent = step.description;
 
         // Update buttons
         const prevBtn = document.getElementById('wizard-prev-btn');
         const nextBtn = document.getElementById('wizard-next-btn');
+        if (!prevBtn || !nextBtn) {return;}
 
         prevBtn.style.display = this.service.currentStep > 0 ? 'block' : 'none';
 
@@ -419,8 +421,8 @@ class SetupWizardUI {
         const nextBtn = document.getElementById('wizard-next-btn');
         const prevBtn = document.getElementById('wizard-prev-btn');
 
-        nextBtn.addEventListener('click', () => this.handleNext());
-        prevBtn.addEventListener('click', () => this.handlePrevious());
+        if (nextBtn) {nextBtn.addEventListener('click', () => this.handleNext());}
+        if (prevBtn) {prevBtn.addEventListener('click', () => this.handlePrevious());}
 
         // Prevent closing modal by clicking outside
         this.modal.addEventListener('click', (e) => {

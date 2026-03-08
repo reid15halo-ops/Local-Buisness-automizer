@@ -17,6 +17,7 @@ class ReportService {
 
     // Generate Sales Report
     generateSalesReport(startDate, endDate) {
+        if (!startDate || !endDate) { return { error: 'Start- und Enddatum erforderlich' }; }
         const rechnungen = window.storeService?.state?.rechnungen || [];
         const filtered = rechnungen.filter(r => {
             const date = r.datum?.split('T')[0] || r.datum;
@@ -62,6 +63,7 @@ class ReportService {
 
     // Generate Customer Report
     generateCustomerReport(startDate, endDate) {
+        if (!startDate || !endDate) { return { error: 'Start- und Enddatum erforderlich' }; }
         const customers = window.customerService?.getAllCustomers() || [];
         const rechnungen = window.storeService?.state?.rechnungen || [];
 
@@ -105,6 +107,7 @@ class ReportService {
 
     // Generate Time Report
     generateTimeReport(startDate, endDate, employeeId = null) {
+        if (!startDate || !endDate) { return { error: 'Start- und Enddatum erforderlich' }; }
         if (!window.timeTrackingService) {
             return { error: 'Zeiterfassung nicht verfügbar' };
         }
@@ -155,6 +158,7 @@ class ReportService {
 
     // Generate Task Report
     generateTaskReport(startDate, endDate) {
+        if (!startDate || !endDate) { return { error: 'Start- und Enddatum erforderlich' }; }
         if (!window.taskService) {
             return { error: 'Aufgabenverwaltung nicht verfügbar' };
         }
@@ -204,6 +208,7 @@ class ReportService {
 
     // Generate Bookkeeping Report
     generateBookkeepingReport(year) {
+        if (!year) { return { error: 'Jahr erforderlich' }; }
         if (!window.bookkeepingService) {
             return { error: 'Buchhaltung nicht verfügbar' };
         }
@@ -255,7 +260,7 @@ class ReportService {
             });
         }
 
-        return csv;
+        return '\uFEFF' + csv;
     }
 
     // Export to PDF (returns HTML for printing)
@@ -295,9 +300,10 @@ class ReportService {
 
     // Save Report
     saveReport(report, name) {
+        if (!report || !name) { return null; }
         const saved = {
             id: 'report-' + Date.now(),
-            name: name,
+            name: String(name).substring(0, 200),
             type: report.type,
             data: report,
             savedAt: new Date().toISOString()

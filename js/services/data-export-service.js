@@ -71,6 +71,10 @@ class DataExportService {
      */
     async downloadCSV(dataType, data = null) {
         try {
+            if (!dataType) {
+                this.showError('Datentyp nicht angegeben');
+                return;
+            }
             if (!data) {
                 data = this.getDataByType(dataType);
             }
@@ -101,6 +105,10 @@ class DataExportService {
      */
     async importFromJSON(file) {
         return new Promise((resolve, reject) => {
+            if (!file) { reject(new Error('Keine Datei angegeben')); return; }
+            const MAX_SIZE = 50 * 1024 * 1024; // 50 MB
+            if (file.size > MAX_SIZE) { reject(new Error('Datei zu gross (max. 50 MB)')); return; }
+
             const reader = new FileReader();
 
             reader.onload = async (event) => {
@@ -161,6 +169,11 @@ class DataExportService {
      */
     async importFromCSV(file, dataType) {
         return new Promise((resolve, reject) => {
+            if (!file) { reject(new Error('Keine Datei angegeben')); return; }
+            if (!dataType) { reject(new Error('Datentyp nicht angegeben')); return; }
+            const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
+            if (file.size > MAX_SIZE) { reject(new Error('CSV-Datei zu gross (max. 20 MB)')); return; }
+
             const reader = new FileReader();
 
             reader.onload = async (event) => {
@@ -602,7 +615,7 @@ class DataExportService {
             materialien: 'MAT'
         }[dataType] || 'ID';
 
-        return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     }
 
     /**

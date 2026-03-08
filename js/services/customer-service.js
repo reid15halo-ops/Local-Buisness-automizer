@@ -304,7 +304,7 @@ class CustomerService {
             mobil: primary.mobil || secondary.mobil,
             email: primary.email || secondary.email,
             notizen: [stripMeta(primary.notizen), stripMeta(secondary.notizen)].filter(Boolean).join('\n---\n'),
-            tags: [...new Set([...primary.tags, ...secondary.tags])],
+            tags: [...new Set([...(primary.tags || []), ...(secondary.tags || [])])],
             umsatzGesamt: primary.umsatzGesamt + secondary.umsatzGesamt,
             anzahlAuftraege: primary.anzahlAuftraege + secondary.anzahlAuftraege
         };

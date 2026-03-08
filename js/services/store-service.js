@@ -315,7 +315,7 @@ class StoreService {
         auftrag.kommentare.push(kommentar);
 
         if (!auftrag.historie) {auftrag.historie = [];}
-        auftrag.historie.push({ aktion: 'kommentar', datum: kommentar.datum, details: text.substring(0, 50) });
+        auftrag.historie.push({ aktion: 'kommentar', datum: kommentar.datum, details: (text || '').substring(0, 50) });
 
         await this.save();
         return kommentar;
@@ -345,7 +345,7 @@ class StoreService {
             ...completionData
         });
 
-        this.save();
+        await this.save();
 
         // Create Invoice using InvoiceService
         try {
@@ -380,6 +380,8 @@ class StoreService {
                 }
 
                 const netto = rechnungsPositionen.reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
+                const isKleinunternehmer = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').kleinunternehmer;
+                const taxRate = isKleinunternehmer ? 0 : (typeof window._getTaxRate === 'function' ? window._getTaxRate() : 0.19);
 
                 const rechnung = {
                     id: this.generateId('RE'),
@@ -397,8 +399,8 @@ class StoreService {
                     stuecklisteEK: auftrag.stuecklisteEK || 0,
                     notizen: auftrag.notizen,
                     netto: netto,
-                    mwst: netto * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19),
-                    brutto: netto * (1 + ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19)),
+                    mwst: Math.round(netto * taxRate * 100) / 100,
+                    brutto: Math.round(netto * (1 + taxRate) * 100) / 100,
                     status: 'offen',
                     datum: new Date().toISOString(),
                     faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
@@ -406,7 +408,7 @@ class StoreService {
                 };
 
                 this.store.rechnungen.push(rechnung);
-                this.save();
+                await this.save();
                 this.addActivity('💰', `Rechnung ${rechnung.nummer} erstellt`);
 
                 return rechnung;

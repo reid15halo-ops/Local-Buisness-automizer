@@ -164,7 +164,7 @@ class TaskService {
 
     searchTasks(query) {
         const q = query.toLowerCase();
-        return this.tasks.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q));
+        return this.tasks.filter(t => (t.title || '').toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q));
     }
 
     // Helpers

@@ -469,13 +469,15 @@ function createAngebotFromAnfrage(anfrageId) {
     addPosition();
 
     // Clear text
-    document.getElementById('angebot-text').value = '';
+    const angebotTextEl = document.getElementById('angebot-text');
+    if (angebotTextEl) {angebotTextEl.value = '';}
 
     openModal('modal-angebot');
 }
 
 function initAngebotForm() {
     const form = document.getElementById('form-angebot');
+    if (!form) {return;}
     const addBtn = document.getElementById('btn-add-position');
     const aiBtn = document.getElementById('btn-ai-text');
 
@@ -485,7 +487,7 @@ function initAngebotForm() {
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const anfrageId = document.getElementById('angebot-anfrage-id').value;
+        const anfrageId = document.getElementById('angebot-anfrage-id')?.value;
         const anfrage = store.anfragen.find(a => a.id === anfrageId);
 
         const positionen = [];
@@ -539,7 +541,7 @@ function initAngebotForm() {
             const existing = store.angebote.find(a => a.id === store.editingAngebotId);
             if (existing) {
                 existing.positionen = positionen;
-                existing.text = document.getElementById('angebot-text').value;
+                existing.text = document.getElementById('angebot-text')?.value || '';
                 existing.netto = netto;
                 existing.mwst = mwst;
                 existing.brutto = brutto;
@@ -560,7 +562,7 @@ function initAngebotForm() {
                 kunde: anfrage.kunde,
                 leistungsart: anfrage.leistungsart,
                 positionen,
-                text: document.getElementById('angebot-text').value,
+                text: document.getElementById('angebot-text')?.value || '',
                 netto,
                 mwst,
                 brutto,
@@ -715,6 +717,7 @@ function showPositionTemplatePicker(row) {
 
 function addPosition(prefill = null) {
     const container = document.getElementById('positionen-list');
+    if (!container) {return;}
     const row = document.createElement('div');
     row.className = 'position-row';
 
@@ -734,12 +737,12 @@ function addPosition(prefill = null) {
             <input type="text" class="pos-beschreibung" placeholder="Beschreibung tippen..."
                    data-suggest-id="${uniqueId}"
                    data-material-id="${prefill?.materialId || ''}"
-                   value="${(window.UI?.sanitize || String)(prefill?.beschreibung || '')}"
+                   value="${(window.esc || String)(prefill?.beschreibung || '')}"
                    autocomplete="off">
             <div class="material-suggest" id="suggest-${uniqueId}" style="display:none;"></div>
         </div>
         <input type="number" class="pos-menge" placeholder="Menge" step="0.5" value="${prefill?.menge || 1}" oninput="updateAngebotSummary()">
-        <input type="text" class="pos-einheit" placeholder="Einheit" value="${(window.UI?.sanitize || String)(prefill?.einheit || 'Stk.')}">
+        <input type="text" class="pos-einheit" placeholder="Einheit" value="${(window.esc || String)(prefill?.einheit || 'Stk.')}">
         <input type="number" class="pos-preis" placeholder="€/Einheit" step="0.01" value="${prefill?.preis || ''}" oninput="updateAngebotSummary()">
         <div class="position-material-selector">
             <button type="button" class="btn btn-small position-material-picker" data-position-id="${uniqueId}">📦 Material</button>
@@ -753,11 +756,11 @@ function addPosition(prefill = null) {
                     <label style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Leistungsbeschreibung <span style="color:#2dd4a8;">(Vorlage nutzen – mehr Details = mehr Vertrauen)</span></label>
                     <button type="button" class="btn-vorlage" style="font-size:11px;color:#2dd4a8;background:none;border:1px solid #2dd4a8;border-radius:4px;padding:3px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:8px;">📋 Vorlage</button>
                 </div>
-                <textarea class="pos-details" rows="2" placeholder="Was genau wird gemacht? Was ist im Preis enthalten? Nutzen Sie den Button 'Vorlage' für fertige Texte – oder schreiben Sie frei. Z.B.: Vollständige Demontage der alten Anlage, fachgerechte Neuinstallation inkl. Dichtheitsprüfung, Spülung aller Leitungen und Übergabe-Protokoll." style="width:100%;resize:vertical;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;color:#374151;line-height:1.5;">${(window.UI?.sanitize || String)(prefill?.details || '')}</textarea>
+                <textarea class="pos-details" rows="2" placeholder="Was genau wird gemacht? Was ist im Preis enthalten? Nutzen Sie den Button 'Vorlage' für fertige Texte – oder schreiben Sie frei. Z.B.: Vollständige Demontage der alten Anlage, fachgerechte Neuinstallation inkl. Dichtheitsprüfung, Spülung aller Leitungen und Übergabe-Protokoll." style="width:100%;resize:vertical;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;color:#374151;line-height:1.5;">${(window.esc || String)(prefill?.details || '')}</textarea>
             </div>
             <div>
                 <label style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Ausführung (optional)</label>
-                <input type="text" class="pos-verantwortlich" placeholder="z.B. Fachbetrieb, Inhaber" value="${(window.UI?.sanitize || String)(prefill?.verantwortlich || '')}" style="width:100%;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;color:#374151;">
+                <input type="text" class="pos-verantwortlich" placeholder="z.B. Fachbetrieb, Inhaber" value="${(window.esc || String)(prefill?.verantwortlich || '')}" style="width:100%;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;box-sizing:border-box;color:#374151;">
             </div>
         </div>
     `;
@@ -833,18 +836,18 @@ function addPosition(prefill = null) {
             </div>
         `).join('');
         suggestBox.style.display = 'block';
+    });
 
-        // Handle selection
-        suggestBox.querySelectorAll('.material-suggest-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const material = JSON.parse(item.dataset.material);
-                row.querySelector('.pos-beschreibung').value = material.bezeichnung;
-                row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
-                row.querySelector('.pos-einheit').value = material.einheit;
-                suggestBox.style.display = 'none';
-                updateAngebotSummary();
-            });
-        });
+    // Handle selection via event delegation (single listener, no re-binding)
+    suggestBox.addEventListener('click', (e) => {
+        const item = e.target.closest('.material-suggest-item');
+        if (!item) return;
+        let material; try { material = JSON.parse(item.dataset.material); } catch { return; }
+        row.querySelector('.pos-beschreibung').value = material.bezeichnung;
+        row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
+        row.querySelector('.pos-einheit').value = material.einheit;
+        suggestBox.style.display = 'none';
+        updateAngebotSummary();
     });
 
     // Hide on blur (with delay for click)
@@ -876,13 +879,16 @@ function updateAngebotSummary() {
     const mwst = netto * taxRate;
     const brutto = netto + mwst;
 
-    document.getElementById('angebot-netto').textContent = formatCurrency(netto);
-    document.getElementById('angebot-mwst').textContent = formatCurrency(mwst);
-    document.getElementById('angebot-brutto').textContent = formatCurrency(brutto);
+    const nettoEl = document.getElementById('angebot-netto');
+    const mwstEl = document.getElementById('angebot-mwst');
+    const bruttoEl = document.getElementById('angebot-brutto');
+    if (nettoEl) {nettoEl.textContent = formatCurrency(netto);}
+    if (mwstEl) {mwstEl.textContent = formatCurrency(mwst);}
+    if (bruttoEl) {bruttoEl.textContent = formatCurrency(brutto);}
 }
 
 function generateAIText() {
-    const anfrageId = document.getElementById('angebot-anfrage-id').value;
+    const anfrageId = document.getElementById('angebot-anfrage-id')?.value;
     const anfrage = store.anfragen.find(a => a.id === anfrageId);
     if (!anfrage) {return;}
 
@@ -939,7 +945,8 @@ Hinweise:
 
 Wir freuen uns auf eine gute Zusammenarbeit.
 ${signoff}`;
-        document.getElementById('angebot-text').value = text;
+        const angebotTextField = document.getElementById('angebot-text');
+        if (angebotTextField) {angebotTextField.value = text;}
 
         // KI-Transparenz: Vorschlag klar kennzeichnen und Nutzer entscheiden lassen
         if (window.kiTransparencyUI) {
@@ -949,7 +956,8 @@ ${signoff}`;
                     window.AppUtils.showToast('KI-Text übernommen', 'success');
                 },
                 onReject: () => {
-                    document.getElementById('angebot-text').value = '';
+                    const el = document.getElementById('angebot-text');
+                    if (el) {el.value = '';}
                     window.AppUtils.showToast('KI-Text verworfen', 'info');
                 }
             });
@@ -1112,7 +1120,7 @@ function renderAngebote() {
         }
 
         return `
-        <div class="item-card" onclick="showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
+        <div class="item-card" role="button" tabindex="0" aria-label="Angebot ${h(a.id)} ${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}" onclick="showAngebotDetail('${h(a.id)}')" onkeydown="if(event.key==='Enter')showAngebotDetail('${h(a.id)}')" style="cursor:pointer">
             <div class="item-header">
                 <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
                 <span class="item-id">${h(a.id)}</span>
@@ -1157,7 +1165,8 @@ function editAngebot(id) {
     }
 
     // Fill the hidden anfrage ID field
-    document.getElementById('angebot-anfrage-id').value = angebot.anfrageId || '';
+    const anfrageIdField = document.getElementById('angebot-anfrage-id');
+    if (anfrageIdField) {anfrageIdField.value = angebot.anfrageId || '';}
 
     // Fill the kunde info section
     const kundeInfoEl = document.getElementById('angebot-kunde-info');
@@ -1171,6 +1180,7 @@ function editAngebot(id) {
 
     // Clear existing positions and re-add from the angebot
     const posContainer = document.getElementById('positionen-list');
+    if (!posContainer) {return;}
     posContainer.innerHTML = '';
 
     if (angebot.positionen && angebot.positionen.length > 0) {
@@ -1190,7 +1200,8 @@ function editAngebot(id) {
     }
 
     // Fill the angebot text
-    document.getElementById('angebot-text').value = angebot.text || '';
+    const angebotTextInput = document.getElementById('angebot-text');
+    if (angebotTextInput) {angebotTextInput.value = angebot.text || '';}
 
     // Update the summary calculation
     updateAngebotSummary();
@@ -1307,7 +1318,7 @@ function acceptAngebot(angebotId) {
             addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
 
             switchView('auftraege');
-            document.querySelector('[data-view="auftraege"]').click();
+            document.querySelector('[data-view="auftraege"]')?.click();
         }
     );
 }
@@ -1853,7 +1864,9 @@ function showAngebotDetail(angebotId) {
         </div>`;
 
     // Render
-    document.getElementById('angebot-detail-content').innerHTML = `
+    const detailContent = document.getElementById('angebot-detail-content');
+    if (!detailContent) {return;}
+    detailContent.innerHTML = `
         <div style="padding:24px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <div>
@@ -1992,22 +2005,22 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
                  ${p.details ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.6;">${escH(p.details)}</div>` : ''}
                  ${p.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:5px;font-weight:600;">&#128100; Ausführung: ${escH(p.verantwortlich)}</div>` : ''}
                </td>
-               <td style="padding:10px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${p.menge} ${p.einheit}</td>
+               <td style="padding:10px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${p.menge} ${escH(p.einheit || '')}</td>
                <td style="padding:10px 8px;text-align:right;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${eur(p.preis)}</td>
                <td style="padding:10px 8px;text-align:right;vertical-align:top;border-bottom:1px solid #e5e7eb;font-weight:600;color:#1f2937;">${eur((p.menge||0)*(p.preis||0))}</td>
              </tr>`
         ).join('');
 
         const bodyHtml = `
-            <p style="margin:0 0 16px;font-size:15px;">Sehr geehrte(r) ${kundeName},</p>
+            <p style="margin:0 0 16px;font-size:15px;">Sehr geehrte(r) ${escH(kundeName)},</p>
             <p style="margin:0 0 20px;line-height:1.6;color:#374151;">
               vielen Dank für Ihre Anfrage. Gerne unterbreiten wir Ihnen unser
-              <strong>vorläufiges Angebot (Nr. ${angebot.id})</strong>.
+              <strong>vorläufiges Angebot (Nr. ${escH(angebot.id)})</strong>.
               Im Folgenden finden Sie eine detaillierte Aufstellung aller Leistungen und Materialien
               mit den zuständigen Fachkräften – damit Sie genau wissen, was wir für Sie tun.<br><br>
               Sobald wir Ihre Rückmeldung erhalten, erstellen wir das verbindliche Angebot für Sie.
             </p>
-            ${angebot.text ? `<div style="margin:0 0 20px;padding:14px 18px;background:#f8fafc;border-left:4px solid #2dd4a8;border-radius:4px;font-size:13px;color:#374151;line-height:1.6;">${angebot.text.replace(/\n/g,'<br>')}</div>` : ''}
+            ${angebot.text ? `<div style="margin:0 0 20px;padding:14px 18px;background:#f8fafc;border-left:4px solid #2dd4a8;border-radius:4px;font-size:13px;color:#374151;line-height:1.6;">${escH(angebot.text).replace(/\n/g,'<br>')}</div>` : ''}
             <h3 style="margin:0 0 10px;font-size:14px;color:#0c1a1a;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #0c1a1a;padding-bottom:6px;">Leistungsübersicht</h3>
             <table width="100%" cellpadding="0" cellspacing="0"
                    style="border-collapse:collapse;font-size:13px;margin-bottom:20px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">

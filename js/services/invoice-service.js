@@ -58,6 +58,7 @@ class InvoiceService {
         try {
             // 1. Generate invoice number
             const userId = this.storeService?.getCurrentUserId?.() || 'default';
+            if (!this.numberingService) throw new Error('Nummerierungs-Service nicht geladen');
             const invoiceNumber = await this.numberingService.generateNumber(userId);
 
             // 2. Calculate dates
@@ -67,7 +68,7 @@ class InvoiceService {
             // 3. Calculate totals
             const isKleinunternehmer = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}').kleinunternehmer;
             const taxRate = isKleinunternehmer ? 0 : (typeof window._getTaxRate === 'function' ? window._getTaxRate() : 0.19);
-            const netto = this._round2(auftrag.netto + (auftrag.materialKosten || 0));
+            const netto = this._round2((parseFloat(auftrag.netto) || 0) + (parseFloat(auftrag.materialKosten) || 0));
             const mwst = this._round2(netto * taxRate);
             const brutto = this._round2(netto + mwst);
 

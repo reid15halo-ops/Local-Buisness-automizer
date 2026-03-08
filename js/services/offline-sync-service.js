@@ -245,7 +245,7 @@ class OfflineSyncService {
                 const delTx = this.db.transaction(this.QUEUE_STORE, 'readwrite');
                 const delStore = delTx.objectStore(this.QUEUE_STORE);
                 processedIds.forEach(id => delStore.delete(id));
-                await new Promise((resolve) => { delTx.oncomplete = resolve; });
+                await new Promise((resolve, reject) => { delTx.oncomplete = resolve; delTx.onerror = () => reject(delTx.error); });
             }
 
             console.log(`[OfflineSync] Queue processed: ${processedIds.length} items synced`);

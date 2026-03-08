@@ -183,11 +183,14 @@ Antworte im JSON-Format:
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) {
+                return this.calculatePriceFallback(positionen, materialBestand);
+            }
 
             // Try to parse JSON from response
             const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                return JSON.parse(jsonMatch[0]);
+                try { return JSON.parse(jsonMatch[0]); } catch { /* malformed JSON from AI */ }
             }
 
             return this.calculatePriceFallback(positionen, materialBestand);
@@ -199,8 +202,10 @@ Antworte im JSON-Format:
 
     async chat(message, history) {
         if (!this.isConfigured) {return null;}
+        if (!message || typeof message !== 'string') {return null;}
 
-        const context = history.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${m.content}`).join('\n');
+        const safeHistory = Array.isArray(history) ? history : [];
+        const context = safeHistory.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${m.content}`).join('\n');
 
         const companyName = this._getCompanyName();
         const bizType = this._getBusinessType();

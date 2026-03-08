@@ -262,7 +262,7 @@ class WorkflowService {
 
     // Parse delay string like "5 minutes"
     parseDelay(delayStr) {
-        const match = String(delayStr).match(/(\d+)\s*(sekunde|minute|stunde|tag|second|minute|hour|day)/i);
+        const match = String(delayStr).match(/(\d+)\s*(sekunde|minute|stunde|tag|second|hour|day)/i);
         if (!match) {return 0;}
         const value = parseInt(match[1]);
         const unit = match[2].toLowerCase();
@@ -352,7 +352,7 @@ class WorkflowService {
                 this._firedThisMinute = this._firedThisMinute || new Set();
                 this._firedThisMinute.add(firedKey);
                 setTimeout(() => this._firedThisMinute.delete(firedKey), 61000);
-                this.executeWorkflow(workflow.id, { scheduled: true });
+                this.executeWorkflow(workflow.id, { scheduled: true }).catch(e => console.error('[Workflow] Scheduled execution failed:', e));
             }
         });
     }

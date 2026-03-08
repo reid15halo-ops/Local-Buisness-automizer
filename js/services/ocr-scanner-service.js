@@ -354,9 +354,9 @@ class OcrScannerService {
     searchDocuments(query) {
         const lowerQuery = query.toLowerCase();
         return this.scannedDocuments.filter(doc =>
-            doc.text.toLowerCase().includes(lowerQuery) ||
-            doc.filename.toLowerCase().includes(lowerQuery) ||
-            JSON.stringify(doc.extractedData).toLowerCase().includes(lowerQuery)
+            (doc.text || '').toLowerCase().includes(lowerQuery) ||
+            (doc.filename || '').toLowerCase().includes(lowerQuery) ||
+            JSON.stringify(doc.extractedData || {}).toLowerCase().includes(lowerQuery)
         );
     }
 

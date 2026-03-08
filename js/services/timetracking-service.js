@@ -193,6 +193,7 @@ class TimeTrackingService {
 
     // Calculations
     calculateDuration(startTime, endTime, breakMinutes = 0) {
+        if (!startTime || !endTime) return 0;
         const [startH, startM] = startTime.split(':').map(Number);
         const [endH, endM] = endTime.split(':').map(Number);
         const startTotal = startH * 60 + startM;

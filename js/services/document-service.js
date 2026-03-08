@@ -225,6 +225,9 @@ class DocumentService {
         try {
             // Capture image
             const captured = await (options.fromCamera ? this.captureFromCamera() : this.uploadDocument());
+            if (!captured) {
+                return { success: false, error: 'Keine Datei ausgewählt' };
+            }
 
             // Perform OCR
             const ocrResult = await this.performOCR(captured.content, options.lang || 'deu');
@@ -286,9 +289,9 @@ class DocumentService {
     searchDocuments(query) {
         const q = query.toLowerCase();
         return this.documents.filter(d =>
-            d.name.toLowerCase().includes(q) ||
-            d.ocrText.toLowerCase().includes(q) ||
-            d.tags.some(t => t.toLowerCase().includes(q)) ||
+            (d.name || '').toLowerCase().includes(q) ||
+            (d.ocrText || '').toLowerCase().includes(q) ||
+            (d.tags || []).some(t => t.toLowerCase().includes(q)) ||
             d.extractedData?.firma?.toLowerCase().includes(q)
         );
     }

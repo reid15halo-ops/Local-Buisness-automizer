@@ -23,6 +23,11 @@ class CalendarService {
 
     // Appointment CRUD
     addAppointment(apt) {
+        if (!apt || !apt.title || !apt.date || !apt.startTime || !apt.endTime) {
+            console.warn('[CalendarService] Pflichtfelder fehlen: title, date, startTime, endTime');
+            return null;
+        }
+
         // Check for conflicts and warn (but allow force-add)
         const conflicts = this.checkConflicts(apt.date, apt.startTime, apt.endTime, apt.id);
         if (conflicts.length > 0 && !apt.forceAdd) {
@@ -59,6 +64,7 @@ class CalendarService {
     }
 
     updateAppointment(id, updates) {
+        if (!id || !updates) return null;
         const index = this.appointments.findIndex(a => a.id === id);
         if (index !== -1) {
             this.appointments[index] = { ...this.appointments[index], ...updates };
@@ -138,8 +144,9 @@ class CalendarService {
     }
 
     timeToMinutes(time) {
+        if (!time || typeof time !== 'string') return 0;
         const [hours, minutes] = time.split(':').map(Number);
-        return hours * 60 + minutes;
+        return (hours || 0) * 60 + (minutes || 0);
     }
 
     minutesToTime(minutes) {
@@ -150,6 +157,7 @@ class CalendarService {
 
     // Available Slots
     getAvailableSlots(date, durationMinutes = 60) {
+        if (!date || !durationMinutes || durationMinutes <= 0) { return []; }
         const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date).getDay()];
         const workHours = this.settings.workingHours[dayOfWeek];
 
@@ -241,7 +249,7 @@ class CalendarService {
     }
 
     // Helpers
-    generateId() { return 'apt-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+    generateId() { return 'apt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11); }
 
     getTypeColor(type) {
         const colors = {

@@ -293,7 +293,7 @@ class ReorderEngineService {
      * @private
      */
     _calculateMinBestandQty(material, shortage) {
-        const safetyStock = material.minBestand * this.settings.safetyStockMultiplier;
+        const safetyStock = (material.minBestand || 0) * this.settings.safetyStockMultiplier;
         return Math.ceil(shortage + safetyStock);
     }
 
@@ -318,9 +318,9 @@ class ReorderEngineService {
         const annualDemand = monthlyConsumption * 12;
         const orderingCost = 25; // Fixed cost per order (€)
         const holdingCostPercentage = 0.20; // 20% of unit cost per year
-        const holdingCostPerUnit = material.preis * holdingCostPercentage;
+        const holdingCostPerUnit = (material.preis || 0) * holdingCostPercentage;
 
-        if (holdingCostPerUnit === 0 || annualDemand === 0) {
+        if (!holdingCostPerUnit || annualDemand === 0) {
             // Fallback to min_bestand strategy if unable to calculate
             return this._calculateMinBestandQty(material, 0);
         }

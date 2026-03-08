@@ -33,21 +33,25 @@ class ProfitabilityService {
             endDate
         } = jobData;
 
-        // Calculate costs
-        const laborCost = actualHours * laborRate;
-        const overheadCost = actualHours * this.overheadSettings.hourlyOverhead;
+        // Calculate costs (guard against NaN from undefined inputs)
+        const safeActualHours = parseFloat(actualHours) || 0;
+        const safeLaborRate = parseFloat(laborRate) || 0;
+        const safeInvoicedAmount = parseFloat(invoicedAmount) || 0;
+        const laborCost = safeActualHours * safeLaborRate;
+        const overheadCost = safeActualHours * this.overheadSettings.hourlyOverhead;
         const totalCost = laborCost + overheadCost + materialCosts + travelCosts + otherCosts;
 
         // Calculate profit
-        const grossProfit = invoicedAmount - totalCost;
-        const profitMargin = invoicedAmount > 0 ? (grossProfit / invoicedAmount) * 100 : 0;
+        const grossProfit = safeInvoicedAmount - totalCost;
+        const profitMargin = safeInvoicedAmount > 0 ? (grossProfit / safeInvoicedAmount) * 100 : 0;
 
         // Efficiency metrics
-        const hoursDifference = actualHours - estimatedHours;
-        const hoursEfficiency = estimatedHours > 0 ? (estimatedHours / actualHours) * 100 : 100;
+        const safeEstimatedHours = parseFloat(estimatedHours) || 0;
+        const hoursDifference = safeActualHours - safeEstimatedHours;
+        const hoursEfficiency = safeEstimatedHours > 0 ? (safeEstimatedHours / safeActualHours) * 100 : 100;
 
         // Calculate effective hourly rate
-        const effectiveHourlyRate = actualHours > 0 ? invoicedAmount / actualHours : 0;
+        const effectiveHourlyRate = safeActualHours > 0 ? safeInvoicedAmount / safeActualHours : 0;
 
         const analysis = {
             id: 'prof-' + Date.now(),
@@ -58,7 +62,7 @@ class ProfitabilityService {
             description: description,
 
             // Financial
-            invoicedAmount: invoicedAmount,
+            invoicedAmount: safeInvoicedAmount,
             totalCost: totalCost,
             grossProfit: grossProfit,
             profitMargin: Math.round(profitMargin * 100) / 100,
@@ -73,13 +77,13 @@ class ProfitabilityService {
             },
 
             // Time analysis
-            estimatedHours: estimatedHours,
-            actualHours: actualHours,
+            estimatedHours: safeEstimatedHours,
+            actualHours: safeActualHours,
             hoursDifference: hoursDifference,
             hoursEfficiency: Math.round(hoursEfficiency * 100) / 100,
 
             // Rates
-            laborRate: laborRate,
+            laborRate: safeLaborRate,
             effectiveHourlyRate: Math.round(effectiveHourlyRate * 100) / 100,
 
             // Performance indicators
@@ -296,9 +300,9 @@ class ProfitabilityService {
         const totalProfit = jobs.reduce((sum, j) => sum + j.grossProfit, 0);
         const totalHours = jobs.reduce((sum, j) => sum + j.actualHours, 0);
         const totalEstimatedHours = jobs.reduce((sum, j) => sum + j.estimatedHours, 0);
-        const totalLaborCost = jobs.reduce((sum, j) => sum + j.costs.labor, 0);
-        const totalOverhead = jobs.reduce((sum, j) => sum + j.costs.overhead, 0);
-        const totalMaterialCost = jobs.reduce((sum, j) => sum + j.costs.material, 0);
+        const totalLaborCost = jobs.reduce((sum, j) => sum + (j.costs?.labor || 0), 0);
+        const totalOverhead = jobs.reduce((sum, j) => sum + (j.costs?.overhead || 0), 0);
+        const totalMaterialCost = jobs.reduce((sum, j) => sum + (j.costs?.material || 0), 0);
 
         const profitableJobs = jobs.filter(j => j.isProfitable).length;
         const onTimeJobs = jobs.filter(j => j.onTime).length;

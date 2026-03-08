@@ -662,16 +662,24 @@
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
+    align-items: stretch;
 }
 
 .steps-grid--two .step-card {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
 }
 
 .steps-grid--two .step-card p {
     max-width: none;
+    text-align: center;
+    margin: 0;
 }
 
 .steps-grid--two::before { display: none; }

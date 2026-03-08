@@ -158,14 +158,6 @@ class ErrorHandler {
         }
     }
 
-    getColorForType(type) {
-        switch (type) {
-            case 'success': return 'var(--accent-success, #22c55e)';
-            case 'error': return 'var(--accent-danger, #ef4444)';
-            case 'warning': return 'var(--accent-warning, #f59e0b)';
-            default: return 'var(--accent-info, #3b82f6)';
-        }
-    }
 }
 
 window.errorHandler = new ErrorHandler();

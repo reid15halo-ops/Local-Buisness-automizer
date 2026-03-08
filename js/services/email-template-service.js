@@ -1087,31 +1087,34 @@ class EmailTemplateService {
      */
     generateICS(termin, company) {
         const now = new Date();
-        const dateParts = termin.datum.split('-');
+        const dateParts = (termin.datum || '').split('-');
+        if (dateParts.length !== 3) return '';
         const [hours, minutes] = (termin.uhrzeit || '09:00').split(':');
 
         const startDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2], hours, minutes);
-        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
 
         const formatICSDate = (date) => {
             return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         };
 
+        const icsEsc = (s) => String(s || '').replace(/[\r\n]+/g, '\\n').replace(/[\\;,]/g, c => '\\' + c);
+
         const ics = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//${company.name}//Calendar//DE
+PRODID:-//${icsEsc(company.name)}//Calendar//DE
 CALSCALE:GREGORIAN
 METHOD:REQUEST
 BEGIN:VEVENT
-UID:termin-${termin.id || Date.now()}@${company.email}
+UID:termin-${termin.id || Date.now()}@${icsEsc(company.email)}
 DTSTAMP:${formatICSDate(now)}
 DTSTART:${formatICSDate(startDate)}
 DTEND:${formatICSDate(endDate)}
-SUMMARY:Termin mit ${company.name}
-DESCRIPTION:Terminbestätigung
-LOCATION:${termin.ort || 'Nach Vereinbarung'}
-ORGANIZER:CN=${company.name};EMAIL=${company.email}
-CONTACT:${company.phone}
+SUMMARY:Termin mit ${icsEsc(company.name)}
+DESCRIPTION:Terminbest\\u00e4tigung
+LOCATION:${icsEsc(termin.ort || 'Nach Vereinbarung')}
+ORGANIZER;CN=${icsEsc(company.name)}:mailto:${icsEsc(company.email)}
+CONTACT:${icsEsc(company.phone)}
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;
@@ -1124,7 +1127,9 @@ END:VCALENDAR`;
      * @private
      */
     formatDate(dateStr) {
+        if (!dateStr) return '-';
         const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '-';
         return date.toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',

@@ -364,7 +364,7 @@ class ExcelRecognitionService {
     }
 
     parseInt(valueStr, result) {
-        const num = parseInt(valueStr);
+        const num = Number.parseInt(valueStr, 10);
         if (isNaN(num)) {
             result.warnings.push(`Ungültige Zahl: ${valueStr}`);
             return 0;
@@ -640,7 +640,7 @@ class ExcelRecognitionService {
         return { action: 'imported', id: material?.id };
     }
 
-    importAnfrage(item, _skipDuplicates, _updateExisting) {
+    async importAnfrage(item, _skipDuplicates, _updateExisting) {
         // Anfragen werden immer neu erstellt, da keine direkten Duplikate
         // Aber Kunde wird aus customerService geholt/erstellt
 
@@ -661,10 +661,17 @@ class ExcelRecognitionService {
             quelle: 'excel-import'
         };
 
-        // Speichere in localStorage (wie in demo-data-service.js)
-        let anfragen; try { anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]'); } catch { anfragen = []; }
-        anfragen.push(anfrage);
-        localStorage.setItem('anfragen', JSON.stringify(anfragen));
+        // Route through storeService so Supabase sync, activity log,
+        // subscriber notifications and IndexedDB cache are all triggered.
+        if (window.storeService) {
+            await window.storeService.addAnfrage(anfrage);
+        } else {
+            // Absolute fallback if storeService is not yet initialised
+            console.warn('[ExcelImport] storeService not available, writing to localStorage');
+            let anfragen; try { anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]'); } catch { anfragen = []; }
+            anfragen.push(anfrage);
+            localStorage.setItem('anfragen', JSON.stringify(anfragen));
+        }
 
         return { action: 'imported', id: anfrage.id };
     }
@@ -697,8 +704,12 @@ class ExcelRecognitionService {
     }
 
     loadSavedMappings() {
-        const saved = localStorage.getItem('excel_import_mappings');
-        return saved ? JSON.parse(saved) : {};
+        try {
+            const saved = localStorage.getItem('excel_import_mappings');
+            return saved ? JSON.parse(saved) : {};
+        } catch {
+            return {};
+        }
     }
 
     getSavedMapping(dataType, name = 'default') {

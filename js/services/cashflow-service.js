@@ -37,7 +37,7 @@ class CashFlowService {
         // Get overdue invoices
         const overdueAmount = rechnungen
             .filter(r => {
-                if (r.status !== 'bezahlt' && r.faelligkeitsdatum) {
+                if (r.status !== 'bezahlt' && r.status !== 'storniert' && r.faelligkeitsdatum) {
                     const dueDate = new Date(r.faelligkeitsdatum);
                     return !isNaN(dueDate.getTime()) && dueDate < today;
                 }
@@ -209,7 +209,7 @@ class CashFlowService {
                     date: date,
                     type: 'tax',
                     name: 'USt-Vorauszahlung',
-                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * ((typeof _getTaxRate === 'function') ? _getTaxRate() : 0.19) * 0.5
+                    estimatedAmount: this.calculateMonthlyAverage('income') * 3 * ((typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19) * 0.5
                 });
             }
         });

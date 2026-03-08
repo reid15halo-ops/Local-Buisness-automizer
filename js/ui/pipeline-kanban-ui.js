@@ -138,10 +138,13 @@ class PipelineKanbanUI {
 
         return `<div class="${cardClass}"
                      draggable="true"
+                     role="button" tabindex="0"
+                     aria-label="Angebot ${this._esc(angebot.kunde?.name || 'Unbekannt')} ${this._formatCurrency(angebot.brutto || 0)}"
                      data-angebot-id="${this._esc(angebot.id)}"
                      ondragstart="window.pipelineKanbanUI._onCardDragStart(event, '${this._esc(angebot.id)}')"
                      ondragend="window.pipelineKanbanUI._onCardDragEnd(event)"
-                     onclick="window.pipelineKanbanUI._onCardClick('${this._esc(angebot.id)}')">
+                     onclick="window.pipelineKanbanUI._onCardClick('${this._esc(angebot.id)}')"
+                     onkeydown="if(event.key==='Enter')window.pipelineKanbanUI._onCardClick('${this._esc(angebot.id)}')">
                     <div class="kanban-card-header">
                         <span class="kanban-card-name">${this._esc(angebot.kunde?.name || 'Unbekannt')}</span>
                         <span class="kanban-card-id">${this._esc(angebot.id)}</span>

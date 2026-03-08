@@ -90,7 +90,7 @@ class DatevExportService {
 
         // Map category to DATEV Sachkonto (SKR03)
         const sachkonto = this.getSachkonto(buchung.kategorie, buchung.typ);
-        const gegenkonto = isEinnahme ? '8400' : '1200'; // Erlöse 19% / Bank
+        const gegenkonto = '1200'; // Gegenkonto: Bank
 
         return {
             satzNr: recordNumber,
@@ -101,7 +101,7 @@ class DatevExportService {
             gegenKonto: gegenkonto,
             buchungsSchluessel: isEinnahme ? '3' : '2', // 19% USt
             datum: this.formatDatevDate(buchung.datum),
-            belegfeld1: buchung.belegNummer || '',
+            belegfeld1: buchung.belegnummer || buchung.belegNummer || '',
             belegfeld2: '',
             skonto: 0,
             buchungstext: (buchung.beschreibung || '').slice(0, 60),

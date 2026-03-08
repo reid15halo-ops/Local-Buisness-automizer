@@ -220,9 +220,10 @@ class PaymentService {
 
             if (link.referenceType === 'rechnung') {
                 // Update invoice
-                if (typeof store !== 'undefined' && store?.rechnungen) {
+                const storeService = window.storeService;
+                if (storeService?.store?.rechnungen) {
                     try {
-                        const invoice = store.rechnungen.find(r => r.id === link.referenceId);
+                        const invoice = storeService.store.rechnungen.find(r => r.id === link.referenceId);
                         if (invoice) {
                             if (link.type === 'deposit') {
                                 invoice.anzahlung = link.amount;
@@ -232,7 +233,7 @@ class PaymentService {
                                 invoice.status = 'bezahlt';
                                 invoice.bezahltAm = link.paidAt;
                             }
-                            if (typeof saveStore === 'function') {saveStore();}
+                            storeService.save();
                         }
                     } catch (invoiceError) {
                         console.error('Error updating invoice:', invoiceError);

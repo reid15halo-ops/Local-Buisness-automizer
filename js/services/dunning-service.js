@@ -232,7 +232,8 @@ class DunningService {
             // In Supabase speichern
             const mahnung = await this.erstelleMahnung(rechnung, stufe);
 
-            window.showToast?.(`${stufe.name} an ${window.h ? window.h(kundeEmail) : kundeEmail} gesendet`, 'success');
+            const safeEmail = typeof window.esc === 'function' ? window.esc(kundeEmail) : String(kundeEmail).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+            window.showToast?.(`${stufe.name} an ${safeEmail} gesendet`, 'success');
             return mahnung;
 
         } catch (err) {
@@ -548,7 +549,10 @@ Nächste Schritte:
     }
 
     formatDate(dateStr) {
-        return new Date(dateStr).toLocaleDateString('de-DE', {
+        if (!dateStr) return '–';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '–';
+        return d.toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'

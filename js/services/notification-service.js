@@ -72,7 +72,7 @@ class NotificationService {
         }
 
         // Only send push notification if app is in background
-        if (!document.hidden && Notification.permission !== 'granted') {
+        if (!document.hidden) {
             return;
         }
 
@@ -109,6 +109,7 @@ class NotificationService {
         if (recentDupe) {return recentDupe;}
 
         const notification = {
+            ...metadata,
             id: this.generateId(),
             type,
             icon: notificationType.icon,
@@ -116,8 +117,7 @@ class NotificationService {
             title,
             description: description || notificationType.label,
             timestamp: new Date().toISOString(),
-            read: false,
-            ...metadata
+            read: false
         };
 
         // Add to beginning of array
@@ -436,7 +436,8 @@ class NotificationService {
         try {
             const data = localStorage.getItem(this.storageKey);
             if (data) {
-                this.notificationHistory = JSON.parse(data);
+                const parsed = JSON.parse(data);
+                this.notificationHistory = Array.isArray(parsed) ? parsed : [];
                 this.updateUnreadCount();
             }
         } catch (error) {

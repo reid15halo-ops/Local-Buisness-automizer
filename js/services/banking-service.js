@@ -250,7 +250,7 @@ class BankingService {
 
         unmatchedCredits.forEach(tx => {
             // Try to match by reference number in purpose
-            const purposeLower = tx.purpose.toLowerCase();
+            const purposeLower = (tx.purpose || '').toLowerCase();
 
             for (const invoice of openInvoices) {
                 const invoiceRef = (invoice.nummer || invoice.id).toLowerCase();
@@ -271,7 +271,7 @@ class BankingService {
                 // Fallback: Match by exact amount and customer name
                 if (Math.abs(tx.amount - (invoice.brutto || invoice.betrag || 0)) < 0.01) {
                     const customerName = (invoice.kunde?.name || invoice.kunde?.firma || '').toLowerCase();
-                    if (customerName && tx.name.toLowerCase().includes(customerName.split(' ')[0])) {
+                    if (customerName && (tx.name || '').toLowerCase().includes(customerName.split(' ')[0])) {
                         this.matchPaymentToInvoice(tx.id, invoice.id);
                         matchCount++;
                         break;
@@ -284,7 +284,7 @@ class BankingService {
     }
 
     // Match a payment to an invoice
-    matchPaymentToInvoice(transactionId, invoiceId) {
+    async matchPaymentToInvoice(transactionId, invoiceId) {
         const tx = this.transactions.find(t => t.id === transactionId);
         if (!tx) {return { success: false };}
 
@@ -306,7 +306,7 @@ class BankingService {
                 invoice.status = 'bezahlt';
                 invoice.bezahltAm = new Date().toISOString();
                 invoice.zahlungseingang = tx.amount;
-                if (typeof saveStore === 'function') {saveStore();}
+                await window.storeService?.save();
             }
         }
 
@@ -398,8 +398,8 @@ class BankingService {
         if (filters.search) {
             const q = filters.search.toLowerCase();
             txs = txs.filter(t =>
-                t.name.toLowerCase().includes(q) ||
-                t.purpose.toLowerCase().includes(q) ||
+                (t.name || '').toLowerCase().includes(q) ||
+                (t.purpose || '').toLowerCase().includes(q) ||
                 (t.reference && t.reference.toLowerCase().includes(q))
             );
         }

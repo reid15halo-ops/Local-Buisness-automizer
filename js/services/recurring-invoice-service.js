@@ -525,19 +525,20 @@ class RecurringInvoiceService {
     // ── Benachrichtigungen ──────────────────────────────────────
 
     _benachrichtigen(tpl, rechnung) {
+        var betragStr = (parseFloat(rechnung.brutto) || 0).toFixed(2);
         if (window.notificationService && window.notificationService.sendTelegram) {
             var msg = [
                 '📄 Abo-Rechnung erstellt',
                 'Kunde: ' + tpl.kunde_name,
                 'Rechnung: ' + rechnung.nummer,
-                'Betrag: ' + rechnung.brutto.toFixed(2) + ' EUR (brutto)',
+                'Betrag: ' + betragStr + ' EUR (brutto)',
                 'Naechste: ' + (tpl.naechste_faelligkeit || 'Keine (beendet)')
             ].join('\n');
             window.notificationService.sendTelegram(msg);
         } else if (window.notificationService && window.notificationService.send) {
             window.notificationService.send(
                 'Abo-Rechnung erstellt',
-                rechnung.nummer + ' - ' + tpl.kunde_name + ': ' + rechnung.brutto.toFixed(2) + ' EUR'
+                rechnung.nummer + ' - ' + tpl.kunde_name + ': ' + betragStr + ' EUR'
             );
         }
     }
