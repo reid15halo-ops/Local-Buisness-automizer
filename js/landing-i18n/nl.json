@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI-digitalisering voor ambachtsbedrijven",
+    "description": "Premium digitalisering voor ambachtsbedrijven en het MKB. Offertes, facturen, urenregistratie — alles AI-gestuurd in één systeem. Op maat vanaf 1 medewerker.",
+    "ogTitle": "FreyAI Visions — AI-digitalisering voor ambachtsbedrijven",
+    "ogDescription": "Uw digitale ruggengraat: CRM, offertes, facturen, uren — alles AI-gestuurd. Op maat voor ambachtsbedrijven en het MKB."
+  },
+  "a11y": {
+    "skipToContent": "Naar inhoud gaan"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Functies",
+    "ablauf": "Werkwijze",
+    "preise": "Tarieven",
+    "faq": "FAQ",
+    "cta": "Afspraak inplannen",
+    "openMenu": "Menu openen"
+  },
+  "hero": {
+    "badge": "Pilotproject: 800 € — slechts 3 plekken",
+    "label": "Functionele AI-tools en automatiseringen",
+    "title": "Processen<br>automatiseren.<br><span class=\"gradient\">Intelligent.</span>",
+    "subtitle": "Opgeleide steenhouwer, nu AI-ingenieur — ik ken de dagelijkse realiteit van het ambacht uit eigen ervaring. Maatwerk automatisering voor ambachtsbedrijven en het MKB — AVG-conform, efficiënt, betaalbaar.",
+    "portraitAlt": "Jonas Glawion — Oprichter van FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Contact opnemen",
+    "ctaSecondary": "Meer weten",
+    "role": "Steenhouwer & AI-ingenieur",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15 uur",
+    "timeLabel": "Klaar om 17:15 in plaats van 20:00",
+    "price": "vanaf 800€",
+    "priceLabel": "Eenmalig, zonder abonnement",
+    "onsite": "Ter plaatse",
+    "onsiteLabel": "Persoonlijke installatie",
+    "gdpr": "AVG",
+    "gdprLabel": "Data blijft in Europa"
+  },
+  "problem": {
+    "label": "Het Probleem",
+    "title": "Herkent u dit?",
+    "subtitle": "De meeste ambachtsbedrijven verliezen wekelijks uren aan administratieve chaos.",
+    "card1": {
+      "title": "Papierchaos",
+      "text": "Orders op briefjes, offertes in Excel, facturen in mappen. Niets past bij elkaar."
+    },
+    "card2": {
+      "title": "Kantoor vreet uw tijd",
+      "text": "Nog 2 uur 's avonds offertes typen in plaats van bij het gezin — dat hoeft niet zo."
+    },
+    "card3": {
+      "title": "Verloren opdrachten",
+      "text": "Aanvragen raken zoek, offertes worden vergeten, klanten haken af."
+    },
+    "card4": {
+      "title": "Software-jungle",
+      "text": "5 verschillende tools die niet met elkaar communiceren. Dubbele invoer overal."
+    }
+  },
+  "solution": {
+    "label": "De Oplossing",
+    "title": "Één systeem. Alles erin.",
+    "subtitle": "FreyAI Visions bouwt u een digitale ruggengraat — op maat voor uw bedrijf.",
+    "card1": {
+      "title": "Alles op één plek",
+      "text": "Klanten, offertes, facturen, uren — één systeem in plaats van vijf."
+    },
+    "card2": {
+      "title": "AI werkt voor u",
+      "text": "Offertes worden automatisch gegenereerd, follow-ups verlopen vanzelf."
+    },
+    "card3": {
+      "title": "Mobiel op de bouwplaats",
+      "text": "Uren registreren, foto's uploaden, status bijwerken — direct van uw telefoon."
+    },
+    "card4": {
+      "title": "Op maat",
+      "text": "Geen standaardoplossing. Uw systeem wordt exact afgestemd op uw processen."
+    }
+  },
+  "trust": {
+    "label": "Vertrouwen",
+    "title": "Waarom FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Van vakman voor vakmensen",
+      "text": "Als opgeleide steenhouwer ken ik het dagelijks leven op de bouwplaats — en wat echt helpt."
+    },
+    "card2": {
+      "title": "100% AVG-conform",
+      "text": "Alle data op EU-servers. Geen Amerikaanse cloud, geen tracking, geen kleine lettertjes."
+    },
+    "card3": {
+      "title": "Eerlijke prijzen",
+      "text": "Starters betalen eenmalig. Grotere bedrijven krijgen een servicecontract — maandelijks opzegbaar, geen looptijd."
+    },
+    "card4": {
+      "title": "Persoonlijk aanspreekpunt",
+      "text": "Geen callcenter, geen ticketsysteem. U belt mij direct — ik regel het."
+    }
+  },
+  "comparison": {
+    "label": "Voor / Na",
+    "title": "Uw avond met FreyAI",
+    "without": {
+      "title": "Zonder FreyAI",
+      "text": "17:00 uur, einde van de dag. Maar eerst: 3 offertes typen, facturen zoeken, klanten terugbellen. Eindelijk klaar om 20:00."
+    },
+    "with": {
+      "title": "Met FreyAI",
+      "text": "17:00 uur, even op de telefoon: offertes zijn klaar, facturen automatisch verwerkt, klanten hebben al antwoord. Om 17:15 echt vrij."
+    }
+  },
+  "features": {
+    "label": "Modules",
+    "title": "Alles wat uw bedrijf nodig heeft",
+    "subtitle": "Elke module is perfect geïntegreerd — geen lapwerk, maar een compleet systeem.",
+    "card1": {
+      "title": "Nooit meer een klant vergeten",
+      "text": "Alle klantgegevens op één plek. Wie belde wanneer? Wanneer opvolgen? Het systeem herinnert u automatisch.",
+      "tag1": "Klantbeheer",
+      "tag2": "Follow-ups",
+      "tag3": "Contactgeschiedenis"
+    },
+    "card2": {
+      "title": "Offerte in minuten, niet uren",
+      "text": "Posten selecteren, prijzen aanpassen, verzenden. Vanaf het Business-pakket schrijft de AI zelfs de teksten voor u.",
+      "tag1": "Snelle offertes",
+      "tag2": "PDF-verzending",
+      "tag3": "Factuur met 1 klik"
+    },
+    "card3": {
+      "title": "AI die vooruitdenkt",
+      "text": "Uw digitale assistent analyseert aanvragen, stelt prijzen voor en herinnert aan openstaande offertes. U behoudt de controle — de AI doet suggesties.",
+      "tag1": "Vanaf Business-pakket",
+      "tag2": "Tekstsuggesties",
+      "tag3": "Prijsaanbevelingen"
+    },
+    "card4": {
+      "title": "Urenregistratie — op de bouwplaats",
+      "text": "Uw medewerkers tikken 's ochtends op hun telefoon en klaar. Geen papieren tijdschriften meer aan het einde van de maand. Salarisexport met één klik.",
+      "tag1": "Vanaf Business-pakket",
+      "tag2": "Mobiel",
+      "tag3": "Salarisexport"
+    },
+    "card5": {
+      "title": "Werkt op elke telefoon",
+      "text": "Geen app store, geen installatie. Gewoon openen in de browser — op telefoon, tablet of pc. Ook offline bruikbaar.",
+      "tag1": "Browser-app",
+      "tag2": "Offline",
+      "tag3": "Geen app store"
+    },
+    "card6": {
+      "title": "Uw accountant zal blij zijn",
+      "text": "Compatibele export voor uw accountant. Inkomsten, uitgaven, bonnen — alles netjes verwerkt. Geschikt voor Europese boekhoudnormen.",
+      "tag1": "Vanaf Business-pakket",
+      "tag2": "Boekhoudexport",
+      "tag3": "Bonnenarchief"
+    }
+  },
+  "betweenCta": {
+    "text": "Klinkt goed? Plan nu uw gratis gesprek"
+  },
+  "steps": {
+    "label": "Hoe het werkt",
+    "title": "In 3 stappen naar een digitaal bedrijf",
+    "subtitle": "Geen project van maanden. Ik zet u in enkele weken op koers.",
+    "step1": {
+      "number": "1",
+      "title": "Analyse & Inrichting",
+      "text": "Ik analyseer uw huidige processen en richt het systeem precies in voor uw bedrijf."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Aanpassing & Training",
+      "text": "Uw sjablonen, uw prijzen, uw workflows. Ik train u en uw team persoonlijk."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatiseren & Groeien",
+      "text": "AI-automatiseringen draaien op de achtergrond. U focust op uw vak — ik op de techniek."
+    }
+  },
+  "pricing": {
+    "label": "Investering",
+    "title": "Transparante tarieven. Geen kleine lettertjes.",
+    "subtitle": "Starten zonder risico — groeien met een servicecontract.",
+    "note": "Alle prijzen zijn eindprijzen. Vrijgesteld van BTW conform §19 UStG (Duitse BTW-vrijstelling voor kleine ondernemers). Pilotproject & Starter zonder doorlopende kosten. Business & Enterprise met servicecontract (maandelijks opzegbaar).",
+    "pilot": {
+      "name": "Pilotproject",
+      "desc": "Ideaal voor zzp'ers die willen uitproberen.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Eenmalig",
+      "cta": "Nu starten",
+      "f1": "Factuurregistratie (OCR)",
+      "f2": "Klantbeheer (CRM)",
+      "f3": "E-mailassistent",
+      "f4": "Persoonlijke inrichting (1–2u)",
+      "f5": "8 weken begeleiding",
+      "f6": "PWA voor telefoon + desktop"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideaal voor kleine bedrijven (1–3 medewerkers).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Eenmalig",
+      "cta": "Afspraak inplannen",
+      "f1": "Alles uit Pilotproject",
+      "f2": "Offertes maken",
+      "f3": "Opdrachtbeheer",
+      "f4": "Boekhouding (inkomsten/uitgaven)",
+      "f5": "PDF-export",
+      "f6": "3 maanden support"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Voor groeiende bedrijven (3–10 medewerkers).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Eenmalig + 150 €/maand service",
+      "cta": "Afspraak inplannen",
+      "f1": "Alles uit Starter",
+      "f2": "Multi-gebruiker (tot 5)",
+      "f3": "Urenregistratie",
+      "f4": "Terugkerende facturen",
+      "f5": "Kanban-pipeline",
+      "f6": "WhatsApp-integratie",
+      "f7": "Eigen huisstijl",
+      "f8": "Updates & onderhoud inbegrepen"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Voor grotere bedrijven (10+ medewerkers).",
+      "price": "vanaf 5.000",
+      "currency": "€",
+      "sub": "Eenmalig + vanaf 500 €/maand service",
+      "cta": "Contact opnemen",
+      "amount": "vanaf 5.000",
+      "f1": "Alles uit Business",
+      "f2": "Onbeperkte gebruikers",
+      "f3": "API-toegang",
+      "f4": "Maatwerk integraties",
+      "f5": "Dedicated aanspreekpunt",
+      "f6": "SLA-garantie",
+      "f7": "Trainingen ter plaatse"
+    },
+    "recommended": "Aanbevolen"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Veelgestelde vragen",
+    "q1": {
+      "question": "Heb ik technische kennis nodig?",
+      "answer": "Nee, absoluut niet. Het systeem is even gemakkelijk als WhatsApp. Ik train u en uw team persoonlijk en ben altijd bereikbaar voor vragen."
+    },
+    "q2": {
+      "question": "Hoe lang duurt de inrichting?",
+      "answer": "Doorgaans 2–4 weken. In de eerste week analyseer ik uw processen, in week 2–3 richt ik alles in en in week 4 train ik uw team."
+    },
+    "q3": {
+      "question": "Waar worden mijn gegevens opgeslagen?",
+      "answer": "Uw gegevens worden uitsluitend opgeslagen in Europese datacenters en zijn AVG-conform beveiligd. U behoudt altijd de volledige controle en kunt alles exporteren."
+    },
+    "q4": {
+      "question": "Wat gebeurt er als ik wil opzeggen?",
+      "answer": "De maandelijkse begeleiding is altijd opzegbaar aan het einde van de maand. Uw gegevens zijn van u — ik exporteer alles netjes voor u."
+    },
+    "q5": {
+      "question": "Voor welke sectoren is het systeem geschikt?",
+      "answer": "Het systeem is ideaal voor ambachtsbedrijven vanaf 1 medewerker — van zzp'er tot bedrijf met 30+ mensen. Metaalbewerking, loodgieterswerk, elektriciteit, timmermansbedrijf of schildersbedrijf — ik pas het precies aan voor uw branche."
+    },
+    "q6": {
+      "question": "Wat betekent 'AI-gestuurd'?",
+      "answer": "Kunstmatige intelligentie helpt u bijvoorbeeld bij het opstellen van offertes, het herkennen van patronen in klantvragen en automatische follow-ups. U behoudt altijd de volledige controle — de AI doet suggesties, u beslist."
+    },
+    "q7": {
+      "question": "Is het kennismakingsgesprek echt gratis?",
+      "answer": "Ja, 100%. Ik kijk samen met u naar uw bedrijf en laat zien waar digitalisering het meest oplevert. Zonder verplichtingen."
+    }
+  },
+  "cta": {
+    "title": "Klaar voor de volgende stap?",
+    "text": "In 15 minuten laat ik u zien hoe uw bedrijf er digitaal uit zou kunnen zien. Gratis en vrijblijvend.",
+    "ctaPrimary": "Gratis gesprek inplannen",
+    "ctaSecondary": "Of per e-mail contact opnemen",
+    "hint": "Beschikbaar: ma–vr 16–20 uur, za 10–16 uur",
+    "legal": "Door te boeken, stemt u in met de verwerking van uw gegevens conform ons <a href=\"/datenschutz.html\">privacybeleid</a>."
+  },
+  "footer": {
+    "impressum": "Colofon",
+    "datenschutz": "Privacy",
+    "agb": "Voorwaarden",
+    "kontakt": "Contact",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Alle rechten voorbehouden."
+  },
+  "stickyCta": {
+    "text": "Gratis gesprek"
+  }
+}

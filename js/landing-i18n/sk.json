@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI digitalizácia pre remeselné firmy",
+    "description": "Prémiová digitalizácia pre remeselníkov a malé firmy. Ponuky, faktúry, evidencia času — všetko AI v jednom systéme. Na mieru od 1 zamestnanca.",
+    "ogTitle": "FreyAI Visions — AI digitalizácia pre remeselníkov",
+    "ogDescription": "Váš digitálny chrbát: CRM, ponuky, faktúry, čas — všetko AI. Na mieru pre remeselníkov."
+  },
+  "a11y": {
+    "skipToContent": "Prejsť na obsah"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funkcie",
+    "ablauf": "Postup",
+    "preise": "Ceny",
+    "faq": "FAQ",
+    "cta": "Rezervovať konzultáciu",
+    "openMenu": "Otvoriť menu"
+  },
+  "hero": {
+    "badge": "Pilotný projekt: 800 € — iba 3 miesta",
+    "label": "Funkčné AI nástroje a automatizácie",
+    "title": "Automatizovať<br>procesy.<br><span class=\"gradient\">Inteligentne.</span>",
+    "subtitle": "Vyučený kamenár, teraz AI inžinier — poznám každodennú realitu remeselníkov z vlastnej skúsenosti. Individuálna automatizácia pre remeselníkov a malé firmy — v súlade s GDPR, efektívna, dostupná.",
+    "portraitAlt": "Jonas Glawion — Zakladateľ FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Kontaktovať",
+    "ctaSecondary": "Zistiť viac",
+    "role": "Kamenár a AI inžinier",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Voľno o 17:15 namiesto o 20:00",
+    "price": "od 800€",
+    "priceLabel": "Jednorazovo, bez predplatného",
+    "onsite": "Na mieste",
+    "onsiteLabel": "Osobné nastavenie",
+    "gdpr": "GDPR",
+    "gdprLabel": "Dáta zostávajú v Európe"
+  },
+  "problem": {
+    "label": "Problém",
+    "title": "Poznávate sa?",
+    "subtitle": "Väčšina remeselných firiem stráca každý týždeň hodiny na administratívny chaos.",
+    "card1": {
+      "title": "Papierový chaos",
+      "text": "Objednávky na lístetkoch, ponuky v Exceli, faktúry v priečinkoch. Nič k sebe nepasuje."
+    },
+    "card2": {
+      "title": "Kancelária pohlcuje čas",
+      "text": "Tráviť ešte 2 hodiny večer písaním ponúk namiesto toho, aby ste boli s rodinou — tak to byť nemusí."
+    },
+    "card3": {
+      "title": "Stratené zákazky",
+      "text": "Dopyty sa strácajú, ponuky sa zabúdajú, zákazníci odchádzajú."
+    },
+    "card4": {
+      "title": "Džungľa softvéru",
+      "text": "5 rôznych nástrojov, ktoré spolu nekomunikujú. Dvojité zadávanie dát všade."
+    }
+  },
+  "solution": {
+    "label": "Riešenie",
+    "title": "Jeden systém. Všetko v ňom.",
+    "subtitle": "FreyAI Visions vám postaví digitálny chrbát — na mieru vašej firme.",
+    "card1": {
+      "title": "Všetko na jednom mieste",
+      "text": "Zákazníci, ponuky, faktúry, čas — jeden systém namiesto piatich."
+    },
+    "card2": {
+      "title": "AI pracuje za vás",
+      "text": "Ponuky sa generujú automaticky, follow-upy prebiehajú samy."
+    },
+    "card3": {
+      "title": "Mobilne na stavbe",
+      "text": "Evidujte hodiny, nahrávajte fotky, aktualizujte stav — priamo z telefónu."
+    },
+    "card4": {
+      "title": "Na mieru",
+      "text": "Žiadne krabicové riešenie. Váš systém je prispôsobený presne vašim procesom."
+    }
+  },
+  "trust": {
+    "label": "Dôvera",
+    "title": "Prečo FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Od remeselníka pre remeselníkov",
+      "text": "Ako vyučený kamenár poznám každodennú realitu na stavbe — a viem, čo skutočne pomáha."
+    },
+    "card2": {
+      "title": "100% v súlade s GDPR",
+      "text": "Všetky dáta na serveroch EÚ. Žiadny americký cloud, žiadne sledovanie, žiadny drobný tlač."
+    },
+    "card3": {
+      "title": "Poctivé ceny",
+      "text": "Začiatočníci platia raz. Väčšie firmy dostanú servisnú zmluvu — vypovedateľnú mesačne, bez záväzkov."
+    },
+    "card4": {
+      "title": "Osobná kontaktná osoba",
+      "text": "Žiadne call centrum, žiadny ticketový systém. Zavoláte mi priamo — ja sa o to postarám."
+    }
+  },
+  "comparison": {
+    "label": "Pred / Po",
+    "title": "Váš večer s FreyAI",
+    "without": {
+      "title": "Bez FreyAI",
+      "text": "17:00, koniec pracovného dňa. Ale najprv: napísať 3 ponuky, hľadať faktúry, zavolať zákazníkom. Konečne hotovo o 20:00."
+    },
+    "with": {
+      "title": "S FreyAI",
+      "text": "17:00, rýchly pohľad na telefón: ponuky pripravené, faktúry automaticky zaznamenané, zákazníci už dostali odpoveď. Naozaj voľno o 17:15."
+    }
+  },
+  "features": {
+    "label": "Moduly",
+    "title": "Všetko, čo vaša firma potrebuje",
+    "subtitle": "Každý modul je dokonale integrovaný — žiadne záplaty, ale kompletný systém.",
+    "card1": {
+      "title": "Nikdy nezabudnite na zákazníka",
+      "text": "Všetky zákaznícke dáta na jednom mieste. Kto volal kedy? Kedy mám urobiť follow-up? Systém vás automaticky upozorní.",
+      "tag1": "Správa zákazníkov",
+      "tag2": "Follow-upy",
+      "tag3": "História kontaktov"
+    },
+    "card2": {
+      "title": "Ponuka za minúty, nie hodiny",
+      "text": "Vyberte položky, upravte ceny, odošlite. Od Business balíka AI píše aj texty za vás.",
+      "tag1": "Rýchle ponuky",
+      "tag2": "Doručenie PDF",
+      "tag3": "Faktúra 1 kliknutím"
+    },
+    "card3": {
+      "title": "AI, ktorá myslí dopredu",
+      "text": "Váš digitálny asistent analyzuje dopyty, navrhuje ceny a pripomína otvorené ponuky. Zostávate v kontrole — AI navrhuje.",
+      "tag1": "Od Business balíka",
+      "tag2": "Návrhy textov",
+      "tag3": "Odporúčania cien"
+    },
+    "card4": {
+      "title": "Evidencia času — na stavbe",
+      "text": "Vaši zamestnanci ráno kliknú na telefón a je hotovo. Koniec so zbieraním papierov na konci mesiaca. Export miezd jedným kliknutím.",
+      "tag1": "Od Business balíka",
+      "tag2": "Mobilne",
+      "tag3": "Export miezd"
+    },
+    "card5": {
+      "title": "Funguje na každom telefóne",
+      "text": "Žiadny App Store, žiadna inštalácia. Stačí otvoriť v prehliadači — na telefóne, tablete alebo PC. Funguje aj offline.",
+      "tag1": "Prehliadačová aplikácia",
+      "tag2": "Offline",
+      "tag3": "Bez App Store"
+    },
+    "card6": {
+      "title": "Váš účtovník bude spokojný",
+      "text": "Kompatibilný export pre vášho účtovníka. Príjmy, výdavky, doklady — všetko starostlivo pripravené. Podporuje európske účtovné štandardy.",
+      "tag1": "Od Business balíka",
+      "tag2": "Účtovný export",
+      "tag3": "Archív dokladov"
+    }
+  },
+  "betweenCta": {
+    "text": "Znie to dobre? Rezervujte si bezplatnú konzultáciu hneď"
+  },
+  "steps": {
+    "label": "Ako to funguje",
+    "title": "3 kroky k digitálnej firme",
+    "subtitle": "Žiadny projekt na mesiace. Dostanem vás na správnu cestu za pár týždňov.",
+    "step1": {
+      "number": "1",
+      "title": "Analýza a nastavenie",
+      "text": "Analyzujem vaše súčasné procesy a nastavím systém presne pre vašu firmu."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Prispôsobenie a školenie",
+      "text": "Vaše šablóny, vaše ceny, vaše pracovné postupy. Osobne vyškolím vás aj váš tím."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizovať a rásť",
+      "text": "AI automatizácie bežia na pozadí. Vy sa sústreďujete na remeslo — ja na techniku."
+    }
+  },
+  "pricing": {
+    "label": "Investícia",
+    "title": "Transparentné ceny. Žiadny drobný tlač.",
+    "subtitle": "Začnite bez rizika — rast so servisnou zmluvou.",
+    "note": "Všetky ceny sú konečné. Oslobodené od DPH podľa §19 UStG (nemecká výnimka DPH pre malé podniky). Pilotný projekt a Starter bez priebežných nákladov. Business a Enterprise vrátane servisnej zmluvy (vypovedateľnej mesačne).",
+    "pilot": {
+      "name": "Pilotný projekt",
+      "desc": "Ideálne pre živnostníkov, ktorí chcú vyskúšať.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Jednorazovo",
+      "cta": "Začať teraz",
+      "f1": "Evidencia faktúr (OCR)",
+      "f2": "Správa zákazníkov (CRM)",
+      "f3": "E-mailový asistent",
+      "f4": "Osobné nastavenie (1–2h)",
+      "f5": "8 týždňov starostlivosti",
+      "f6": "PWA pre telefón + počítač"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideálne pre malé firmy (1–3 zamestnanci).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Jednorazovo",
+      "cta": "Rezervovať konzultáciu",
+      "f1": "Všetko z Pilotného projektu",
+      "f2": "Tvorba ponúk",
+      "f3": "Správa zákaziek",
+      "f4": "Účtovníctvo (príjmy/výdavky)",
+      "f5": "Export PDF",
+      "f6": "3 mesiace podpory"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Pre rastúce firmy (3–10 zamestnancov).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Jednorazovo + 150 €/mes. servis",
+      "cta": "Rezervovať konzultáciu",
+      "f1": "Všetko zo Starter",
+      "f2": "Viac používateľov (až 5)",
+      "f3": "Evidencia času",
+      "f4": "Opakujúce sa faktúry",
+      "f5": "Kanban pipeline",
+      "f6": "Integrácia WhatsApp",
+      "f7": "Vlastný branding",
+      "f8": "Aktualizácie a údržba v cene"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Pre väčšie firmy (10+ zamestnancov).",
+      "price": "od 5.000",
+      "currency": "€",
+      "sub": "Jednorazovo + od 500 €/mes. servis",
+      "cta": "Kontaktovať",
+      "amount": "od 5.000",
+      "f1": "Všetko z Business",
+      "f2": "Neobmedzený počet používateľov",
+      "f3": "Prístup API",
+      "f4": "Individuálne integrácie",
+      "f5": "Dedikovaná kontaktná osoba",
+      "f6": "Záruka SLA",
+      "f7": "Školenia na mieste"
+    },
+    "recommended": "Odporúčané"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Často kladené otázky",
+    "q1": {
+      "question": "Potrebujem technické znalosti?",
+      "answer": "Nie, vôbec nie. Systém je rovnako jednoduchý ako WhatsApp. Osobne vyškolím vás aj váš tím a som vždy k dispozícii na otázky."
+    },
+    "q2": {
+      "question": "Ako dlho trvá nastavenie?",
+      "answer": "Zvyčajne 2–4 týždne. V prvom týždni analyzujem vaše procesy, v 2.–3. týždni všetko nastavím a v 4. týždni vyškolím váš tím."
+    },
+    "q3": {
+      "question": "Kde sú moje dáta uložené?",
+      "answer": "Vaše dáta sú uložené výhradne v európskych dátových centrách a sú zabezpečené v súlade s GDPR. Vždy máte plnú kontrolu a môžete všetko exportovať."
+    },
+    "q4": {
+      "question": "Čo sa stane, keď chcem zrušiť?",
+      "answer": "Mesačná starostlivosť je kedykoľvek vypovedateľná ku koncu mesiaca. Vaše dáta vám patria — všetko vám prehľadne exportujem."
+    },
+    "q5": {
+      "question": "Pre ktoré remeslá je systém vhodný?",
+      "answer": "Systém je ideálny pre remeselné firmy od 1 zamestnanca — od živnostníka po firmu s 30+ ľuďmi. Či je to zámočníctvo, inštalatérstvo, elektromontáže, tesárstvo alebo maliarstvo — prispôsobím ho presne vášmu odboru."
+    },
+    "q6": {
+      "question": "Čo znamená 'podporované AI'?",
+      "answer": "Umelá inteligencia vám pomáha napr. pri formulovaní ponúk, rozpoznávaní vzorov v dopytoch zákazníkov a automatickom follow-upe. Vždy zostávate v plnej kontrole — AI navrhuje, vy rozhodujete."
+    },
+    "q7": {
+      "question": "Je prvá konzultácia naozaj zadarmo?",
+      "answer": "Áno, na 100 %. Spoločne prejdem vašu firmu a ukážem, kde digitalizácia prináša najväčšiu hodnotu. Bez záväzkov."
+    }
+  },
+  "cta": {
+    "title": "Pripravení na ďalší krok?",
+    "text": "Za 15 minút vám ukážem, ako by vaša firma mohla vyzerať digitálne. Zadarmo a nezáväzne.",
+    "ctaPrimary": "Rezervovať bezplatnú konzultáciu",
+    "ctaSecondary": "Alebo kontaktovať e-mailom",
+    "hint": "Dostupný: po–pi 16–20, so 10–16",
+    "legal": "Rezerváciou súhlasíte so spracovaním vašich dát podľa našej <a href=\"/datenschutz.html\">politiky ochrany osobných údajov</a>."
+  },
+  "footer": {
+    "impressum": "Právne informácie",
+    "datenschutz": "Súkromie",
+    "agb": "Podmienky",
+    "kontakt": "Kontakt",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Všetky práva vyhradené."
+  },
+  "stickyCta": {
+    "text": "Bezplatná konzultácia"
+  }
+}

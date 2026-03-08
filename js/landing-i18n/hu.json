@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI-digitalizáció kézműves vállalkozásoknak",
+    "description": "Prémium digitalizáció kézműves vállalkozásoknak és kkv-knak. Ajánlatok, számlák, munkaidő-nyilvántartás — minden AI-vezérelt egy rendszerben. Egyedi megoldás 1 alkalmazottól.",
+    "ogTitle": "FreyAI Visions — AI-digitalizáció kézműveseknek",
+    "ogDescription": "Digitális gerince: CRM, ajánlatok, számlák, munkaidő — minden AI-vezérelt. Egyedi megoldás kézműveseknek."
+  },
+  "a11y": {
+    "skipToContent": "Ugrás a tartalomhoz"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funkciók",
+    "ablauf": "Folyamat",
+    "preise": "Árak",
+    "faq": "FAQ",
+    "cta": "Konzultáció foglalása",
+    "openMenu": "Menü megnyitása"
+  },
+  "hero": {
+    "badge": "Pilotprojekt: 800 € — csak 3 hely",
+    "label": "Funkcionális AI-eszközök és automatizálások",
+    "title": "Automatizálja<br>folyamatait.<br><span class=\"gradient\">Intelligensen.</span>",
+    "subtitle": "Képzett kőfaragó, most AI-mérnök — saját tapasztalatból ismerem a kézművesek mindennapjait. Egyedi automatizálás kézműveseknek és kkv-knak — GDPR-megfelelő, hatékony, megfizethető.",
+    "portraitAlt": "Jonas Glawion — A FreyAI Visions alapítója",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Kapcsolatfelvétel",
+    "ctaSecondary": "Tudjon meg többet",
+    "role": "Kőfaragó és AI-mérnök",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Vége van 17:15-kor 20:00 helyett",
+    "price": "800€-tól",
+    "priceLabel": "Egyszeri fizetés, előfizetés nélkül",
+    "onsite": "Helyszínen",
+    "onsiteLabel": "Személyes beállítás",
+    "gdpr": "GDPR",
+    "gdprLabel": "Az adatok Európában maradnak"
+  },
+  "problem": {
+    "label": "A probléma",
+    "title": "Ismerős?",
+    "subtitle": "A legtöbb kézműves vállalkozás hetente órákat veszít az adminisztratív káoszban.",
+    "card1": {
+      "title": "Papírkáosz",
+      "text": "Megrendelések cédulákon, ajánlatok Excelben, számlák mappákban. Semmi sem illeszkedik egymáshoz."
+    },
+    "card2": {
+      "title": "Az iroda felemészti az időt",
+      "text": "Még 2 órát tölteni este ajánlatok írásával a család helyett — ennek nem kell így lennie."
+    },
+    "card3": {
+      "title": "Elveszett megrendelések",
+      "text": "Az érdeklődések elvesznek, az ajánlatok elfelejtődnek, az ügyfelek elmennek."
+    },
+    "card4": {
+      "title": "Szoftver-dzsungel",
+      "text": "5 különböző eszköz, amelyek nem kommunikálnak egymással. Dupla adatbevitel mindenütt."
+    }
+  },
+  "solution": {
+    "label": "A megoldás",
+    "title": "Egy rendszer. Minden benne.",
+    "subtitle": "A FreyAI Visions digitális gerincet épít Önnek — az Ön vállalkozásához szabva.",
+    "card1": {
+      "title": "Minden egy helyen",
+      "text": "Ügyfelek, ajánlatok, számlák, munkaidő — egy rendszer öt helyett."
+    },
+    "card2": {
+      "title": "Az AI dolgozik Önért",
+      "text": "Az ajánlatok automatikusan generálódnak, az utánkövetések maguktól zajlanak."
+    },
+    "card3": {
+      "title": "Mobil az építkezésen",
+      "text": "Rögzítse az órákat, töltsön fel fotókat, frissítse az állapotot — közvetlenül a telefonjáról."
+    },
+    "card4": {
+      "title": "Egyedi megoldás",
+      "text": "Nincs dobozos megoldás. Az Ön rendszere pontosan az Ön folyamataihoz van igazítva."
+    }
+  },
+  "trust": {
+    "label": "Bizalom",
+    "title": "Miért a FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Kézművestől kézműveseknek",
+      "text": "Képzett kőfaragóként ismerem az építkezés mindennapjait — és tudom, mi segít igazán."
+    },
+    "card2": {
+      "title": "100% GDPR-megfelelő",
+      "text": "Minden adat EU-szervereken. Nincs amerikai felhő, nincs nyomkövetés, nincs apró betűs szöveg."
+    },
+    "card3": {
+      "title": "Becsületes árak",
+      "text": "A kezdők egyszer fizetnek. A nagyobb vállalkozások szervizsszerződést kapnak — havonta felmondható, kötöttség nélkül."
+    },
+    "card4": {
+      "title": "Személyes kapcsolattartó",
+      "text": "Nincs call center, nincs jegyrendszer. Közvetlenül felhív engem — én intézem."
+    }
+  },
+  "comparison": {
+    "label": "Előtte / Utána",
+    "title": "Az Ön estéje a FreyAI-val",
+    "without": {
+      "title": "FreyAI nélkül",
+      "text": "17:00, a munkanap vége. De először: 3 ajánlatot begépelni, számlákat keresni, ügyfeleket visszahívni. Végre kész 20:00-ra."
+    },
+    "with": {
+      "title": "FreyAI-val",
+      "text": "17:00, gyors pillantás a telefonra: ajánlatok készen, számlák automatikusan rögzítve, az ügyfelek már kaptak választ. Valóban szabad 17:15-kor."
+    }
+  },
+  "features": {
+    "label": "Modulok",
+    "title": "Minden, amire vállalkozásának szüksége van",
+    "subtitle": "Minden modul tökéletesen integrált — nem foltozott megoldás, hanem teljes rendszer.",
+    "card1": {
+      "title": "Soha többé ne felejtsen el ügyfelet",
+      "text": "Minden ügyféladat egy helyen. Ki hívott mikor? Mikor kell utánkövetni? A rendszer automatikusan emlékezteti.",
+      "tag1": "Ügyfélkezelés",
+      "tag2": "Utánkövetések",
+      "tag3": "Kapcsolattörténet"
+    },
+    "card2": {
+      "title": "Ajánlat percek alatt, nem órák",
+      "text": "Válassza ki a tételeket, állítsa be az árakat, küldje el. A Business csomagtól az AI még szövegeket is ír Önnek.",
+      "tag1": "Gyors ajánlatok",
+      "tag2": "PDF-küldés",
+      "tag3": "Számla 1 kattintással"
+    },
+    "card3": {
+      "title": "AI, amely előre gondolkodik",
+      "text": "Digitális asszisztense elemzi az érdeklődéseket, árakat javasol és emlékeztet a nyitott ajánlatokra. Ön tartja az irányítást — az AI javaslatokat tesz.",
+      "tag1": "Business csomagtól",
+      "tag2": "Szövegjavalatok",
+      "tag3": "Árrekommendációk"
+    },
+    "card4": {
+      "title": "Munkaidő-nyilvántartás — az építkezésen",
+      "text": "Alkalmazottai reggel megnyomják a telefont és kész. Nincs több papírgyűjtés hónap végén. Bérexport egy kattintással.",
+      "tag1": "Business csomagtól",
+      "tag2": "Mobil",
+      "tag3": "Bérexport"
+    },
+    "card5": {
+      "title": "Minden telefonon működik",
+      "text": "Nincs App Store, nincs telepítés. Egyszerűen nyissa meg böngészőben — telefonon, tableten vagy PC-n. Offline is használható.",
+      "tag1": "Böngészőalkalmazás",
+      "tag2": "Offline",
+      "tag3": "App Store nélkül"
+    },
+    "card6": {
+      "title": "Könyvelője örülni fog",
+      "text": "Kompatibilis export könyvelője számára. Bevételek, kiadások, bizonylatok — minden gondosan előkészítve. Európai könyvelési szabványoknak megfelelő.",
+      "tag1": "Business csomagtól",
+      "tag2": "Könyvelési export",
+      "tag3": "Bizonylattár"
+    }
+  },
+  "betweenCta": {
+    "text": "Jól hangzik? Foglaljon ingyenes konzultációt most"
+  },
+  "steps": {
+    "label": "Hogyan működik",
+    "title": "3 lépés a digitális vállalkozáshoz",
+    "subtitle": "Nem hónapos projekt. Néhány héten belül pályára állítom Önt.",
+    "step1": {
+      "number": "1",
+      "title": "Elemzés és beállítás",
+      "text": "Elemzem jelenlegi folyamatait és pontosan beállítom a rendszert az Ön vállalkozásához."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Testreszabás és képzés",
+      "text": "Az Ön sablonjai, árai, munkafolyamatai. Személyesen képzem Önt és csapatát."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizálás és növekedés",
+      "text": "Az AI-automatizálások a háttérben futnak. Ön a mesterségére koncentrál — én a technikára."
+    }
+  },
+  "pricing": {
+    "label": "Befektetés",
+    "title": "Átlátható árak. Nincs apró betűs szöveg.",
+    "subtitle": "Kezdjen kockázat nélkül — növekedjen szervizsszerződéssel.",
+    "note": "Minden ár végső ár. ÁFA-mentes a §19 UStG szerint (német kisvállalkozói ÁFA-mentesség). Pilotprojekt és Starter folyamatos költségek nélkül. Business és Enterprise szervizsszerződéssel (havonta felmondható).",
+    "pilot": {
+      "name": "Pilotprojekt",
+      "desc": "Ideális egyéni vállalkozóknak, akik ki akarják próbálni.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Egyszeri",
+      "cta": "Kezdjen most",
+      "f1": "Számlák rögzítése (OCR)",
+      "f2": "Ügyfélkezelés (CRM)",
+      "f3": "E-mail asszisztens",
+      "f4": "Személyes beállítás (1–2ó)",
+      "f5": "8 hét gondoskodás",
+      "f6": "PWA telefonra + asztali gépre"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideális kis vállalkozásoknak (1–3 alkalmazott).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Egyszeri",
+      "cta": "Konzultáció foglalása",
+      "f1": "Minden a Pilotprojektből",
+      "f2": "Ajánlatkészítés",
+      "f3": "Megrendeléskezelés",
+      "f4": "Könyvelés (bevételek/kiadások)",
+      "f5": "PDF-export",
+      "f6": "3 hónap támogatás"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Növekvő vállalkozásoknak (3–10 alkalmazott).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Egyszeri + 150 €/hó szerviz",
+      "cta": "Konzultáció foglalása",
+      "f1": "Minden a Starterből",
+      "f2": "Több felhasználó (legfeljebb 5)",
+      "f3": "Munkaidő-nyilvántartás",
+      "f4": "Ismétlődő számlák",
+      "f5": "Kanban-pipeline",
+      "f6": "WhatsApp integráció",
+      "f7": "Egyéni arculat",
+      "f8": "Frissítések és karbantartás beleértve"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Nagyobb vállalkozásoknak (10+ alkalmazott).",
+      "price": "5.000€-tól",
+      "currency": "€",
+      "sub": "Egyszeri + 500 €/hótól szerviz",
+      "cta": "Kapcsolatfelvétel",
+      "amount": "5.000€-tól",
+      "f1": "Minden a Businessből",
+      "f2": "Korlátlan felhasználók",
+      "f3": "API-hozzáférés",
+      "f4": "Egyéni integrációk",
+      "f5": "Dedikált kapcsolattartó",
+      "f6": "SLA-garancia",
+      "f7": "Helyszíni képzések"
+    },
+    "recommended": "Ajánlott"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Gyakran ismételt kérdések",
+    "q1": {
+      "question": "Szükségem van műszaki ismeretekre?",
+      "answer": "Nem, egyáltalán nem. A rendszer olyan egyszerű, mint a WhatsApp. Személyesen képzem Önt és csapatát, és mindig elérhető vagyok kérdések esetén."
+    },
+    "q2": {
+      "question": "Mennyi ideig tart a beállítás?",
+      "answer": "Általában 2–4 hét. Az első héten elemzem a folyamatait, a 2–3. héten mindent beállítok, a 4. héten pedig képzem a csapatát."
+    },
+    "q3": {
+      "question": "Hol tárolják az adataimat?",
+      "answer": "Az Ön adatait kizárólag európai adatközpontokban tároljuk, és GDPR-megfelelően vannak biztosítva. Mindig teljes ellenőrzést tart, és mindent exportálhat."
+    },
+    "q4": {
+      "question": "Mi történik, ha le akarok mondani?",
+      "answer": "A havi gondoskodás bármikor felmondható a hónap végén. Az Ön adatai az Öné — mindent rendezetten exportálok Önnek."
+    },
+    "q5": {
+      "question": "Mely iparágaknak megfelelő a rendszer?",
+      "answer": "A rendszer ideális kézműves vállalkozásoknak 1 alkalmazottól — az egyéni vállalkozótól a 30+ fős céig. Legyen az lakatos, vízvezeték-szerelő, villanyszerelő, asztalos vagy festő — pontosan az Ön iparágához igazítom."
+    },
+    "q6": {
+      "question": "Mit jelent az 'AI-vezérelt'?",
+      "answer": "A mesterséges intelligencia például segít ajánlatok megfogalmazásában, minták felismerésében az ügyfélérdeklődésekben és automatikus utánkövetésekben. Mindig teljes irányítást tart — az AI javaslatokat tesz, Ön dönt."
+    },
+    "q7": {
+      "question": "Az első konzultáció tényleg ingyenes?",
+      "answer": "Igen, 100%-ban. Együtt átnézem az Ön vállalkozását, és megmutatom, hol hoz a digitalizáció legtöbbet. Kötelezettség nélkül."
+    }
+  },
+  "cta": {
+    "title": "Készen áll a következő lépésre?",
+    "text": "15 perc alatt megmutatom, hogyan nézhet ki digitálisan a vállalkozása. Ingyenesen és kötelezettség nélkül.",
+    "ctaPrimary": "Ingyenes konzultáció foglalása",
+    "ctaSecondary": "Vagy kapcsolatfelvétel e-mailben",
+    "hint": "Elérhető: hé–pé 16–20, szo 10–16",
+    "legal": "A foglalással hozzájárul adatai feldolgozásához <a href=\"/datenschutz.html\">adatvédelmi irányelvünk</a> szerint."
+  },
+  "footer": {
+    "impressum": "Jogi információk",
+    "datenschutz": "Adatvédelem",
+    "agb": "Feltételek",
+    "kontakt": "Kapcsolat",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Minden jog fenntartva."
+  },
+  "stickyCta": {
+    "text": "Ingyenes konzultáció"
+  }
+}

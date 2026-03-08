@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | Digitalização com IA para artesãos e PMEs",
+    "description": "Digitalização premium para artesãos e PMEs. Orçamentos, faturas, controlo de horas — tudo com IA num único sistema. Personalizado a partir de 1 colaborador.",
+    "ogTitle": "FreyAI Visions — Digitalização com IA para artesãos",
+    "ogDescription": "A sua espinha dorsal digital: CRM, orçamentos, faturas, horas — tudo com IA. Personalizado para artesãos e PMEs."
+  },
+  "a11y": {
+    "skipToContent": "Ir para o conteúdo"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funcionalidades",
+    "ablauf": "Processo",
+    "preise": "Preços",
+    "faq": "FAQ",
+    "cta": "Agendar consulta",
+    "openMenu": "Abrir menu"
+  },
+  "hero": {
+    "badge": "Projeto-piloto: 800 € — apenas 3 vagas",
+    "label": "Ferramentas de IA funcionais e automatizações",
+    "title": "Automatizar<br>processos.<br><span class=\"gradient\">Inteligentemente.</span>",
+    "subtitle": "Canteiro de formação, agora engenheiro de IA — conheço o dia-a-dia dos artesãos por experiência própria. Automatização personalizada para artesãos e PMEs — conforme RGPD, eficiente, acessível.",
+    "portraitAlt": "Jonas Glawion — Fundador da FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Entrar em contacto",
+    "ctaSecondary": "Saber mais",
+    "role": "Canteiro & Engenheiro de IA",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17h15",
+    "timeLabel": "Fim do dia às 17h15 em vez das 20h",
+    "price": "a partir de 800€",
+    "priceLabel": "Pagamento único, sem subscrição",
+    "onsite": "No local",
+    "onsiteLabel": "Configuração pessoal",
+    "gdpr": "RGPD",
+    "gdprLabel": "Dados alojados na Europa"
+  },
+  "problem": {
+    "label": "O Problema",
+    "title": "Reconhece-se?",
+    "subtitle": "A maioria dos artesãos perde horas todas as semanas no caos administrativo.",
+    "card1": {
+      "title": "Caos de papel",
+      "text": "Encomendas em notas, orçamentos no Excel, faturas em pastas. Nada se encaixa."
+    },
+    "card2": {
+      "title": "O escritório consome o seu tempo",
+      "text": "Passar mais 2 horas à noite a fazer orçamentos em vez de estar com a família — não tem de ser assim."
+    },
+    "card3": {
+      "title": "Encomendas perdidas",
+      "text": "Os pedidos perdem-se, os orçamentos são esquecidos, os clientes vão embora."
+    },
+    "card4": {
+      "title": "Jungla de software",
+      "text": "5 ferramentas diferentes que não comunicam entre si. Introdução duplicada de dados em todo o lado."
+    }
+  },
+  "solution": {
+    "label": "A Solução",
+    "title": "Um sistema. Tudo incluído.",
+    "subtitle": "A FreyAI Visions constrói-lhe uma espinha dorsal digital — personalizada para o seu negócio.",
+    "card1": {
+      "title": "Tudo num só lugar",
+      "text": "Clientes, orçamentos, faturas, horas — um sistema em vez de cinco."
+    },
+    "card2": {
+      "title": "A IA trabalha por si",
+      "text": "Os orçamentos são gerados automaticamente, os follow-ups fazem-se sozinhos."
+    },
+    "card3": {
+      "title": "Móvel na obra",
+      "text": "Registar horas, carregar fotos, atualizar o estado — diretamente do telemóvel."
+    },
+    "card4": {
+      "title": "Personalizado",
+      "text": "Sem soluções genéricas. O seu sistema é adaptado exatamente aos seus processos."
+    }
+  },
+  "trust": {
+    "label": "Confiança",
+    "title": "Porquê a FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "De artesão para artesãos",
+      "text": "Como canteiro de formação, conheço o quotidiano na obra — e sei o que realmente ajuda."
+    },
+    "card2": {
+      "title": "100% conforme RGPD",
+      "text": "Todos os dados em servidores europeus. Sem cloud americana, sem tracking, sem letra pequena."
+    },
+    "card3": {
+      "title": "Preços honestos",
+      "text": "Os clientes novos pagam uma só vez. As empresas maiores obtêm um contrato de serviço — cancelável mensalmente, sem fidelização."
+    },
+    "card4": {
+      "title": "Interlocutor pessoal",
+      "text": "Sem call center, sem sistema de tickets. Liga-me diretamente — eu trato do assunto."
+    }
+  },
+  "comparison": {
+    "label": "Antes / Depois",
+    "title": "A sua tarde com a FreyAI",
+    "without": {
+      "title": "Sem FreyAI",
+      "text": "17h00, fim do dia. Mas antes: escrever 3 orçamentos, procurar faturas, devolver chamadas. Finalmente terminado às 20h00."
+    },
+    "with": {
+      "title": "Com FreyAI",
+      "text": "17h00, um olhar rápido ao telemóvel: orçamentos preparados, faturas capturadas automaticamente, clientes já receberam resposta. Às 17h15 verdadeiramente livre."
+    }
+  },
+  "features": {
+    "label": "Módulos",
+    "title": "Tudo o que o seu negócio precisa",
+    "subtitle": "Cada módulo está perfeitamente integrado — não é um remendo, mas um sistema completo.",
+    "card1": {
+      "title": "Nunca mais esquecer um cliente",
+      "text": "Todos os dados dos clientes num só lugar. Quem ligou quando? Quando fazer follow-up? O sistema lembra-o automaticamente.",
+      "tag1": "Gestão de clientes",
+      "tag2": "Follow-ups",
+      "tag3": "Histórico de contactos"
+    },
+    "card2": {
+      "title": "Orçamento em minutos, não horas",
+      "text": "Selecionar itens, ajustar preços, enviar. A partir do plano Business, a IA redige até os textos por si.",
+      "tag1": "Orçamentos rápidos",
+      "tag2": "Envio PDF",
+      "tag3": "Fatura em 1 clique"
+    },
+    "card3": {
+      "title": "IA que antecipa",
+      "text": "O seu assistente digital analisa pedidos, sugere preços e lembra-o dos orçamentos em aberto. Mantém o controlo — a IA propõe.",
+      "tag1": "A partir do plano Business",
+      "tag2": "Sugestões de texto",
+      "tag3": "Recomendações de preço"
+    },
+    "card4": {
+      "title": "Registo de horas — na obra",
+      "text": "Os seus colaboradores tocam no telemóvel de manhã e está feito. Sem recolher folhas no fim do mês. Exportação de salários com um clique.",
+      "tag1": "A partir do plano Business",
+      "tag2": "Móvel",
+      "tag3": "Exportação salários"
+    },
+    "card5": {
+      "title": "Funciona em qualquer telemóvel",
+      "text": "Sem app store, sem instalação. Abra diretamente no browser — no telemóvel, tablet ou PC. Funciona também sem internet.",
+      "tag1": "App browser",
+      "tag2": "Offline",
+      "tag3": "Sem app store"
+    },
+    "card6": {
+      "title": "O seu contabilista vai adorar",
+      "text": "Exportação compatível para o seu contabilista. Receitas, despesas, comprovativos — tudo organizado. Compatível com normas contabilísticas europeias.",
+      "tag1": "A partir do plano Business",
+      "tag2": "Exportação contabilística",
+      "tag3": "Arquivo de comprovativos"
+    }
+  },
+  "betweenCta": {
+    "text": "Parece-lhe bem? Agende a sua consulta gratuita agora"
+  },
+  "steps": {
+    "label": "Como funciona",
+    "title": "3 passos para um negócio digital",
+    "subtitle": "Sem projetos de meses. Ponho-o a funcionar em poucas semanas.",
+    "step1": {
+      "number": "1",
+      "title": "Análise & Configuração",
+      "text": "Analiso os seus processos atuais e configuro o sistema precisamente para o seu negócio."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Personalização & Formação",
+      "text": "Os seus modelos, os seus preços, os seus fluxos de trabalho. Formo pessoalmente você e a sua equipa."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizar & Crescer",
+      "text": "As automatizações de IA funcionam em segundo plano. Você concentra-se no seu ofício — eu cuido da tecnologia."
+    }
+  },
+  "pricing": {
+    "label": "Investimento",
+    "title": "Preços transparentes. Sem surpresas.",
+    "subtitle": "Comece sem riscos — cresça com um contrato de serviço.",
+    "note": "Todos os preços são finais. Isento de IVA ao abrigo do §19 UStG (isenção de IVA alemã para pequenas empresas). Projeto-Piloto & Starter sem custos recorrentes. Business & Enterprise com contrato de serviço (cancelável mensalmente).",
+    "pilot": {
+      "name": "Projeto-Piloto",
+      "desc": "Ideal para trabalhadores independentes que querem experimentar.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Pagamento único",
+      "cta": "Começar agora",
+      "f1": "Captura de faturas (OCR)",
+      "f2": "Gestão de clientes (CRM)",
+      "f3": "Assistente de email",
+      "f4": "Configuração pessoal (1–2h)",
+      "f5": "8 semanas de acompanhamento",
+      "f6": "PWA para telemóvel + desktop"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideal para pequenas empresas (1–3 colaboradores).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Pagamento único",
+      "cta": "Agendar consulta",
+      "f1": "Tudo do Projeto-Piloto",
+      "f2": "Criação de orçamentos",
+      "f3": "Gestão de encomendas",
+      "f4": "Contabilidade (receitas/despesas)",
+      "f5": "Exportação PDF",
+      "f6": "3 meses de suporte"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Para empresas em crescimento (3–10 colaboradores).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Único + 150 €/mês serviço",
+      "cta": "Agendar consulta",
+      "f1": "Tudo do Starter",
+      "f2": "Multi-utilizador (até 5)",
+      "f3": "Registo de horas",
+      "f4": "Faturas recorrentes",
+      "f5": "Pipeline Kanban",
+      "f6": "Integração WhatsApp",
+      "f7": "Branding personalizado",
+      "f8": "Atualizações & manutenção incluídas"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Para grandes empresas (10+ colaboradores).",
+      "price": "a partir de 5.000",
+      "currency": "€",
+      "sub": "Único + a partir de 500 €/mês serviço",
+      "cta": "Entrar em contacto",
+      "amount": "a partir de 5.000",
+      "f1": "Tudo do Business",
+      "f2": "Utilizadores ilimitados",
+      "f3": "Acesso API",
+      "f4": "Integrações personalizadas",
+      "f5": "Interlocutor dedicado",
+      "f6": "Garantia SLA",
+      "f7": "Formações no local"
+    },
+    "recommended": "Recomendado"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Perguntas frequentes",
+    "q1": {
+      "question": "Preciso de conhecimentos técnicos?",
+      "answer": "Não, absolutamente não. O sistema é tão fácil de usar como o WhatsApp. Formo pessoalmente você e a sua equipa e estou sempre disponível para questões."
+    },
+    "q2": {
+      "question": "Quanto tempo demora a configuração?",
+      "answer": "Geralmente 2–4 semanas. Na primeira semana analiso os seus processos, nas semanas 2–3 configuro tudo e na semana 4 formo a sua equipa."
+    },
+    "q3": {
+      "question": "Onde são armazenados os meus dados?",
+      "answer": "Os seus dados são armazenados exclusivamente em centros de dados europeus e protegidos em conformidade com o RGPD. Mantém sempre o controlo total e pode exportar tudo."
+    },
+    "q4": {
+      "question": "O que acontece se quiser cancelar?",
+      "answer": "O acompanhamento mensal pode ser cancelado em qualquer momento no final do mês. Os seus dados pertencem-lhe — exporto tudo de forma organizada para si."
+    },
+    "q5": {
+      "question": "Para que ofícios é adequado o sistema?",
+      "answer": "O sistema é ideal para artesãos a partir de 1 colaborador — do trabalhador independente à empresa com 30+ pessoas. Serralharia, canalização, eletricidade, carpintaria ou pintura — adapto-o exatamente ao seu setor."
+    },
+    "q6": {
+      "question": "O que significa «com IA»?",
+      "answer": "A inteligência artificial ajuda-o, por exemplo, a redigir orçamentos, identificar padrões nos pedidos de clientes e fazer follow-ups automáticos. Mantém sempre o controlo total — a IA propõe, você decide."
+    },
+    "q7": {
+      "question": "A primeira consulta é mesmo gratuita?",
+      "answer": "Sim, a 100%. Analiso o seu negócio consigo e mostro-lhe onde a digitalização traz mais valor. Sem compromisso."
+    }
+  },
+  "cta": {
+    "title": "Pronto para o próximo passo?",
+    "text": "Em 15 minutos mostro-lhe como o seu negócio poderia ser digitalmente. Gratuito e sem compromisso.",
+    "ctaPrimary": "Agendar consulta gratuita",
+    "ctaSecondary": "Ou contactar por email",
+    "hint": "Disponível: seg–sex 16–20h, sáb 10–16h",
+    "legal": "Ao agendar, aceita o tratamento dos seus dados conforme a nossa <a href=\"/datenschutz.html\">política de privacidade</a>."
+  },
+  "footer": {
+    "impressum": "Informação legal",
+    "datenschutz": "Privacidade",
+    "agb": "Condições",
+    "kontakt": "Contacto",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Todos os direitos reservados."
+  },
+  "stickyCta": {
+    "text": "Consulta gratuita"
+  }
+}

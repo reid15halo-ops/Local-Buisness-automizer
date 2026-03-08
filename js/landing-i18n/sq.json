@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | Dixhitalizim AI per bizneset e vogla",
+    "description": "Dixhitalizim premium per bizneset e vogla. Oferta, fatura, gjurmim kohe - te gjitha me AI ne nje sistem. Per zejtare dhe biznese te vogla nga 1 punetor.",
+    "ogTitle": "FreyAI Visions - Dixhitalizim AI per bizneset e vogla",
+    "ogDescription": "Shtylla juaj dixhitale: CRM, oferta, fatura, gjurmim kohe - te gjitha me AI."
+  },
+  "a11y": {
+    "skipToContent": "Kalo te permbajtja"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funksionet",
+    "ablauf": "Procesi",
+    "preise": "Cmimet",
+    "faq": "FAQ",
+    "cta": "Konsultime falas",
+    "openMenu": "Open navigation"
+  },
+  "hero": {
+    "badge": "Projekt pilot: 800 EUR - kane mbetur vetem 3 vende",
+    "label": "Mjete praktike AI dhe automatizim",
+    "title": "Automatizoni<br>proceset.<br><span class=\"gradient\">Mendjemprehet.</span>",
+    "subtitle": "Muratori i trajnuar, tani inxhinier AI - e njoh jeten e perditshme te biznesit te vogel nga pervoja personale. Automatizim i personalizuar per zejtare dhe NMV - ne perputhje me GDPR, eficient, i perballueshëm.",
+    "portraitAlt": "Jonas Glawion - Grundatel FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Kontaktoni",
+    "ctaSecondary": "Mesoni me shume",
+    "role": "Muratori dhe inxhinier AI",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Perfunduam ne 17:15 jo ne 20:00",
+    "price": "nga 800 EUR",
+    "priceLabel": "Njehershem, pa abonim",
+    "onsite": "Ne vend",
+    "onsiteLabel": "Konfigurim personal",
+    "gdpr": "GDPR",
+    "gdprLabel": "Te dhenat mbeten ne BE"
+  },
+  "problem": {
+    "label": "Problemi",
+    "title": "Ju tingullon njohur?",
+    "subtitle": "Shumica e bizneseve te vogla humbin ore cdo jave per shkak te kaosit administrativ.",
+    "card1": {
+      "title": "Kaos letre",
+      "text": "Porosite ne ngjitese, ofertat ne Excel, faturat ne dosje. Asgje nuk perputhet."
+    },
+    "card2": {
+      "title": "Humbje kohe ne zyre",
+      "text": "Edhe dy ore me vone shkruani oferta ne vend te jeni me familjen - nuk duhet te jete keshtu."
+    },
+    "card3": {
+      "title": "Porosi te humbura",
+      "text": "Kerkesat humbasin, ofertat harrohen, klientet largohen."
+    },
+    "card4": {
+      "title": "Xhungel softuerësh",
+      "text": "Pese mjete te ndryshme, asnjera nuk komunikon me tjetren. Futje e dyfishte te dhenash kudo."
+    }
+  },
+  "solution": {
+    "label": "Zgjidhja",
+    "title": "Nje sistem. Gjithe perfshire.",
+    "subtitle": "FreyAI Visions ju nderton shtylle dixhitale - te personalizuar per biznesin tuaj.",
+    "card1": {
+      "title": "Gjithe ne nje vend",
+      "text": "Klientet, ofertat, faturat, gjurmim kohe - nje sistem ne vend te pese."
+    },
+    "card2": {
+      "title": "AI punon per ju",
+      "text": "Ofertat gjenerohen automatikisht, kujteset degjojne vete."
+    },
+    "card3": {
+      "title": "Celulare ne kantier",
+      "text": "Regjistroni oret, ngarkoni foto, perditesoni statusin - direkt nga telefoni."
+    },
+    "card4": {
+      "title": "Bere me porosi",
+      "text": "Asnje zgjidhje standarde. Sistemi juaj eshte saktesisht i pershtatur per rrjedhat tuaja te punes."
+    }
+  },
+  "trust": {
+    "label": "Besimi",
+    "title": "Pse FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Nga zejtari per zejtaret",
+      "text": "Si muratori i trajnuar e njoh jeten e perditshme ne kantier - dhe cka ndihmon vertet."
+    },
+    "card2": {
+      "title": "100% ne perputhje me GDPR",
+      "text": "Te gjitha te dhenat ne serverat e BE. Asnje cloud amerikan, asnje gjurmim, asnje shkrim me shkronja te imeta."
+    },
+    "card3": {
+      "title": "Cmime te ndershme",
+      "text": "Starteret paguajne njehershem. Bizneset me te medha marrin kontrate sherbimi - anulim mujor, pa lidhje."
+    },
+    "card4": {
+      "title": "Kontakt personal",
+      "text": "Asnje qender thirrjesh, asnje sistem biletash. Me telefononi direkt - une zgjidh."
+    }
+  },
+  "comparison": {
+    "label": "Para / Pas",
+    "title": "Mbrëmja juaj me FreyAI",
+    "without": {
+      "title": "Pa FreyAI",
+      "text": "17:00, mbarimi i dites se punes. Por me pare: shkruani 3 oferta, gjeni faturat, ktheni thirrjet. Perfunduam ne 20:00."
+    },
+    "with": {
+      "title": "Me FreyAI",
+      "text": "17:00, kontroll i shpejte ne telefon: ofertat jane gati, faturat u regjistruan automatikisht, klientet moren pergjigje. Ne 17:15 jeni vertet te lire."
+    }
+  },
+  "features": {
+    "label": "Modulet",
+    "title": "Gjithe cka i duhet biznesit tuaj",
+    "subtitle": "Cdo modul eshte perfektesisht i integruar - jo arnime, por sistem i plote.",
+    "card1": {
+      "title": "Kurrë me klient i harruar",
+      "text": "Te gjithe te dhenat e klienteve ne nje vend. Kush thirri kur? Kur duhet te telefonoj? Sistemi kujton automatikisht.",
+      "tag1": "Menaxhim klientesh",
+      "tag2": "Kujtesa",
+      "tag3": "Histori kontaktesh"
+    },
+    "card2": {
+      "title": "Oferta ne minuta, jo ore",
+      "text": "Zgjidhni artikujt, pershtatsni cmimet, dergoni. Nga plani Business AI harton edhe tekstin per ju.",
+      "tag1": "Oferta te shpejta",
+      "tag2": "Dorezim PDF",
+      "tag3": "Fature me nje klik"
+    },
+    "card3": {
+      "title": "AI qe mendon perpara",
+      "text": "Asistenti juaj dixhital analizon kerkesa, sugjeron cmime dhe kujton per ofertat e hapura. Ju mbeteni ne kontroll - AI ben sugjerime.",
+      "tag1": "Nga plani Business",
+      "tag2": "Sugjerime teksti",
+      "tag3": "Rekomandime cmimesh"
+    },
+    "card4": {
+      "title": "Gjurmim kohe - direkt ne kantier",
+      "text": "Punonjesit tuaj ne mengjes prekin telefonin dhe jane gati. Nuk mblidhen raporte letre ne fund te muajit. Eksport pagash me nje klik.",
+      "tag1": "Nga plani Business",
+      "tag2": "Celulare",
+      "tag3": "Eksport pagash"
+    },
+    "card5": {
+      "title": "Punon ne cdo smartphone",
+      "text": "Asnje dyqan aplikacionesh, asnje instalim. Thjesht hapeni ne shfletues - ne telefon, tablet ose kompjuter. Punon edhe offline.",
+      "tag1": "Aplikacion shfletuesi",
+      "tag2": "Modalitet offline",
+      "tag3": "Pa dyqan aplikacionesh"
+    },
+    "card6": {
+      "title": "Kontabilisti juaj do jete i kenaqur",
+      "text": "Eksport DATEV i pajtueshëm per kontabilistin tuaj. Te ardhura, shpenzime, fatura - te gjitha te pergatitura me rregull.",
+      "tag1": "Nga plani Business",
+      "tag2": "Eksport DATEV",
+      "tag3": "Arkiv dokumentesh"
+    }
+  },
+  "betweenCta": {
+    "text": "Tingullon mire? Rezervoni konsultimin falas tani"
+  },
+  "steps": {
+    "label": "Si funksionon",
+    "title": "3 hapa drejt biznesit dixhital",
+    "subtitle": "Asnje projekt me muaj te tere. Do ju vej ne rruge te drejte brenda disa javesh.",
+    "step1": {
+      "number": "1",
+      "title": "Analiza dhe konfigurimi",
+      "text": "Analizoj rrjedhat tuaja aktuale te punes dhe konfiguroj sistemin saktesisht per biznesin tuaj."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Personalizimi dhe trajnimi",
+      "text": "Shabllonet tuaja, cmimet tuaja, rrjedhat tuaja te punes. Personalisht trajnoj ju dhe ekipin tuaj."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizimi dhe rritja",
+      "text": "Automatizimi AI funksionon ne sfond. Ju fokusoheni ne zejen tuaj - une kujdesem per teknologjine."
+    }
+  },
+  "pricing": {
+    "label": "Investimi",
+    "title": "Cmime transparente. Pa shkrim me shkronja te imeta.",
+    "subtitle": "Filloni pa rrezik - rrituni me kontrate sherbimi.",
+    "recommended": "Rekomanduar",
+    "note": "Te gjitha cmimet jane perfundimtare. I liruar nga TVSH sipas par. 19 UStG (ligji tatimor gjerman - perjashtim per bizneset e vogla). Projekti pilot dhe Starter pa kosto te perhershme. Business dhe Enterprise perfshijne kontrate sherbimi (anulim mujor).",
+    "pilot": {
+      "name": "Projekt pilot",
+      "desc": "Ideal per veteputnesuesit qe duan te provojne.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Njehershem",
+      "cta": "Filloni",
+      "f1": "Kapje faturash (OCR)",
+      "f2": "Menaxhim klientesh (CRM)",
+      "f3": "Asistent emaili",
+      "f4": "Konfigurim personal (1-2h)",
+      "f5": "8 jave mbeshtetje",
+      "f6": "PWA per telefon dhe kompjuter"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideal per bizneset e vogla (1-3 punetore).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Njehershem",
+      "cta": "Rezervoni konsultim",
+      "f1": "Gjithe nga Projekti pilot",
+      "f2": "Gjenerimi i ofertave",
+      "f3": "Menaxhim porosish",
+      "f4": "Kontabilitet (te ardhura/shpenzime)",
+      "f5": "Eksport PDF",
+      "f6": "3 muaj mbeshtetje"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Per bizneset ne rritje (3-10 punetore).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Njehershem + 150 EUR/muj sherbim",
+      "cta": "Rezervoni konsultim",
+      "f1": "Gjithe nga Starter",
+      "f2": "Shume perdorues (deri ne 5)",
+      "f3": "Gjurmim kohe",
+      "f4": "Fatura te perhershme",
+      "f5": "Tabela Kanban",
+      "f6": "Integrimi WhatsApp",
+      "f7": "Dizajn korporativ",
+      "f8": "Perditesime dhe mirembajtje te perfshira"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Per kompani me te medha (10+ punetore).",
+      "price": "nga 5.000",
+      "currency": "€",
+      "sub": "Njehershem + nga 500 EUR/muj sherbim",
+      "cta": "Kontaktoni",
+      "amount": "nga 5.000",
+      "f1": "Gjithe nga Business",
+      "f2": "Perdorues te pakufizuar",
+      "f3": "Qasje API",
+      "f4": "Integrime te personalizuara",
+      "f5": "Menaxher kontakti i dedikuar",
+      "f6": "Garanci SLA",
+      "f7": "Trajnim ne vend"
+    }
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Pyetje te shpeshta",
+    "q1": {
+      "question": "A me duhen njohuri teknike?",
+      "answer": "Jo, aspak. Sistemi eshte po aq i thjeshte sa WhatsApp. Personalisht trajnoj ju dhe ekipin tuaj dhe jam gjithmone i disponueshem per pyetje."
+    },
+    "q2": {
+      "question": "Sa kohe merr konfigurimi?",
+      "answer": "Zakonisht 2-4 jave. Ne javen e pare analizoj rrjedhat tuaja te punes, ne javën 2-3 konfiguroj gjithe, dhe ne javen e 4-te trajnoj ekipin tuaj."
+    },
+    "q3": {
+      "question": "Ku ruhen te dhenat e mia?",
+      "answer": "Te dhenat tuaja ruhen ekskluzivisht ne qendrat e te dhenave te BE dhe jane te mbrojtura ne perputhje me GDPR. Gjithmone ruani kontrollin e plote dhe mund te eksportoni gjithe."
+    },
+    "q4": {
+      "question": "Cfare ndodh nese dua te anuloj?",
+      "answer": "Mbeshtetja mujore mund te anulohet ne cdo kohe ne fund te muajit. Te dhenat tuaja jane tuajat - do t'i eksportoj me rregull per ju."
+    },
+    "q5": {
+      "question": "Per cilat biznese eshte i pershtatshem sistemi?",
+      "answer": "Sistemi eshte ideal per bizneset e vogla nga 1 punetor - nga veteputnesuesit deri te kompanite me 30+ njerez. Pavaresisht sektorit - e pershtasim saktesisht per industrine tuaj."
+    },
+    "q6": {
+      "question": "Cfare do te thote mbeshtetja me AI?",
+      "answer": "Inteligjenca artificiale ju ndihmon, per shembull, ne hartimin e ofertave, njohjen e modeleve ne kerkesat e klienteve dhe kujtesa automatike. Gjithmone ruani kontrollin e plote - AI ben sugjerime, ju vendosni."
+    },
+    "q7": {
+      "question": "A eshte vertet falas konsultimi fillestar?",
+      "answer": "Po, 100%. Se bashku do te shohim biznesin tuaj dhe do t'ju tregoj ku dixhitalizimi ka ndikimin me te madh. Pa detyrime."
+    }
+  },
+  "cta": {
+    "title": "Gati per hapin tjeter?",
+    "text": "Ne 15 minuta do t'ju tregoj si mund te dukej biznesi juaj dixhitalisht. Falas dhe pa detyrime.",
+    "ctaPrimary": "Rezervoni konsultim falas",
+    "ctaSecondary": "Ose dergoni email",
+    "hint": "I disponueshem: Hën-Pre 16:00-20:00, Shtune 10:00-16:00",
+    "legal": "Duke rezervuar, pranoni perpunimin e te dhenave tuaja sipas"
+  },
+  "footer": {
+    "impressum": "Impresumi",
+    "datenschutz": "Politika e privatesise",
+    "agb": "Termat dhe kushtet",
+    "kontakt": "Kontakti",
+    "contact": "Kontakti",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Te gjitha te drejtat e rezervuara."
+  },
+  "stickyCta": {
+    "text": "Konsultim falas"
+  }
+}

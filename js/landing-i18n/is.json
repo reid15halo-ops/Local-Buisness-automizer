@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI-stafræn umbreyting fyrir iðnfyrirtæki",
+    "description": "Premium stafræn umbreyting fyrir iðnfyrirtæki og lítil fyrirtæki. Tilboð, reikningar, tímaskráning — allt AI-knúið í einu kerfi. Sniðið frá 1 starfsmanni.",
+    "ogTitle": "FreyAI Visions — AI-stafræn umbreyting fyrir iðnfyrirtæki",
+    "ogDescription": "Þitt stafræna hryggjarstykki: CRM, tilboð, reikningar, tími — allt AI-knúið. Sniðið fyrir iðnfyrirtæki."
+  },
+  "a11y": {
+    "skipToContent": "Fara í efni"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Eiginleikar",
+    "ablauf": "Ferli",
+    "preise": "Verð",
+    "faq": "FAQ",
+    "cta": "Bóka ráðgjöf",
+    "openMenu": "Opna valmynd"
+  },
+  "hero": {
+    "badge": "Tilraunaverkefni: 800 € — aðeins 3 pláss",
+    "label": "Virkir AI-verkfæri og sjálfvirkni",
+    "title": "Sjálfvirkja<br>ferli.<br><span class=\"gradient\">Snjallt.</span>",
+    "subtitle": "Menntaður steinsmíðamaður, nú AI-verkfræðingur — ég þekki daglegt líf iðnaðarmanna af eigin reynslu. Sérsniðin sjálfvirkni fyrir iðnfyrirtæki og lítil fyrirtæki — GDPR-samræmt, skilvirkt, viðráðanlegt.",
+    "portraitAlt": "Jonas Glawion — Stofnandi FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Hafðu samband",
+    "ctaSecondary": "Læra meira",
+    "role": "Steinsmíðamaður & AI-verkfræðingur",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Frír kl. 17:15 í stað 20:00",
+    "price": "frá 800€",
+    "priceLabel": "Eingreiðsla, án áskriftar",
+    "onsite": "Á staðnum",
+    "onsiteLabel": "Persónuleg uppsetning",
+    "gdpr": "GDPR",
+    "gdprLabel": "Gögn eru í Evrópu"
+  },
+  "problem": {
+    "label": "Vandinn",
+    "title": "Þekkir þú þetta?",
+    "subtitle": "Flest iðnfyrirtæki missa klukkustundir á hverri viku í stjórnunarlegt kaos.",
+    "card1": {
+      "title": "Pappírskaos",
+      "text": "Pantanir á miðum, tilboð í Excel, reikningar í möppum. Ekkert passar saman."
+    },
+    "card2": {
+      "title": "Skrifstofan étur tímann þinn",
+      "text": "Eyða 2 klukkustundum til viðbótar á kvöldin í að skrifa tilboð í stað þess að vera með fjölskylduna — það þarf ekki að vera svona."
+    },
+    "card3": {
+      "title": "Týnd verkefni",
+      "text": "Fyrirspurnir hverfa, tilboð gleymast, viðskiptavinir fara."
+    },
+    "card4": {
+      "title": "Hugbúnaðarfrumskógur",
+      "text": "5 mismunandi verkfæri sem tala ekki saman. Tvöföld gagnaskráning alls staðar."
+    }
+  },
+  "solution": {
+    "label": "Lausnin",
+    "title": "Eitt kerfi. Allt innifalið.",
+    "subtitle": "FreyAI Visions byggir þér stafrænt hryggjarstykki — sniðið að þínu fyrirtæki.",
+    "card1": {
+      "title": "Allt á einum stað",
+      "text": "Viðskiptavinir, tilboð, reikningar, tími — eitt kerfi í stað fimm."
+    },
+    "card2": {
+      "title": "AI vinnur fyrir þig",
+      "text": "Tilboð eru búin til sjálfkrafa, eftirfylgni gerist af sjálfu sér."
+    },
+    "card3": {
+      "title": "Farsími á byggingarsvæðinu",
+      "text": "Skráðu tíma, hladdu upp myndum, uppfærðu stöðu — beint úr símanum."
+    },
+    "card4": {
+      "title": "Sérsniðið",
+      "text": "Engin staðlæð lausn. Kerfið þitt er aðlagað nákvæmlega að ferlum þínum."
+    }
+  },
+  "trust": {
+    "label": "Traust",
+    "title": "Af hverju FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Frá iðnaðarmanni til iðnaðarmanna",
+      "text": "Sem menntaður steinsmíðamaður þekki ég daglegt líf á byggingarsvæðinu — og veit hvað hjálpar í raun."
+    },
+    "card2": {
+      "title": "100% GDPR-samræmt",
+      "text": "Öll gögn á EU-þjónum. Engin amerísk ský, engin rakning, engin leyniskrift."
+    },
+    "card3": {
+      "title": "Heiðarleg verð",
+      "text": "Byrjendur greiða einu sinni. Stærri fyrirtæki fá þjónustusamning — seg upp mánaðarlega, engin binding."
+    },
+    "card4": {
+      "title": "Persónulegur tengiliður",
+      "text": "Ekkert símaver, ekkert miðakerfi. Þú hringir beint í mig — ég sé um það."
+    }
+  },
+  "comparison": {
+    "label": "Fyrir / Eftir",
+    "title": "Kvöldið þitt með FreyAI",
+    "without": {
+      "title": "Án FreyAI",
+      "text": "17:00, vinnudagurinn búinn. En fyrst: skrifa 3 tilboð, leita að reikningum, hringja í viðskiptavini. Loksins búinn kl. 20:00."
+    },
+    "with": {
+      "title": "Með FreyAI",
+      "text": "17:00, fljótt yfirlit á símanum: tilboð tilbúin, reikningar skráðir sjálfkrafa, viðskiptavinir hafa þegar fengið svar. Virkilega frír kl. 17:15."
+    }
+  },
+  "features": {
+    "label": "Einingar",
+    "title": "Allt sem fyrirtækið þitt þarf",
+    "subtitle": "Sérhver eining er fullkomlega samþætt — ekki lappað saman, heldur heilt kerfi.",
+    "card1": {
+      "title": "Gleymdu aldrei viðskiptavini",
+      "text": "Öll gögn viðskiptavina á einum stað. Hver hringdi hvenær? Hvenær á að fylgja eftir? Kerfið minnir þig sjálfkrafa.",
+      "tag1": "Viðskiptavinastjórnun",
+      "tag2": "Eftirfylgni",
+      "tag3": "Samskiptasaga"
+    },
+    "card2": {
+      "title": "Tilboð á mínútum, ekki klukkustundum",
+      "text": "Veldu liði, stilltu verð, sendu. Frá Business-pakkanum skrifar AI jafnvel texta fyrir þig.",
+      "tag1": "Hraðar tilboð",
+      "tag2": "PDF-sending",
+      "tag3": "Reikningur með 1 smelli"
+    },
+    "card3": {
+      "title": "AI sem hugsar fram á við",
+      "text": "Stafræni aðstoðarmaðurinn þinn greinir beiðnir, leggur til verð og minnir á opin tilboð. Þú heldur stjórnin — AI leggur til.",
+      "tag1": "Frá Business-pakkanum",
+      "tag2": "Textатillögur",
+      "tag3": "Verðmæleggingar"
+    },
+    "card4": {
+      "title": "Tímaskráning — á byggingarsvæðinu",
+      "text": "Starfsmenn þínir pikka á símann um morguninn og það er gert. Engin pappírssöfnun í mánaðarlok. Launaútflutningur með einum smelli.",
+      "tag1": "Frá Business-pakkanum",
+      "tag2": "Farsími",
+      "tag3": "Launaútflutningur"
+    },
+    "card5": {
+      "title": "Virkar á öllum símum",
+      "text": "Engin forritsverslun, engin uppsetning. Opnaðu bara í vafranum — í síma, spjaldtölvu eða tölvu. Virkar einnig án nettengingar.",
+      "tag1": "Vafrapp",
+      "tag2": "Án nettengingar",
+      "tag3": "Engin forritsverslun"
+    },
+    "card6": {
+      "title": "Endurskoðandinn þinn verður ánægður",
+      "text": "Samhæfður útflutningur fyrir endurskoðandann þinn. Tekjur, gjöld, kvittanir — allt vandlega undirbúið. Styður evrópska bókhaldsstaðla.",
+      "tag1": "Frá Business-pakkanum",
+      "tag2": "Bókhaldsútflutningur",
+      "tag3": "Kvittanaarkiv"
+    }
+  },
+  "betweenCta": {
+    "text": "Hljómar þetta vel? Bókaðu ókeypis ráðgjöf núna"
+  },
+  "steps": {
+    "label": "Hvernig það virkar",
+    "title": "3 skref að stafrænu fyrirtæki",
+    "subtitle": "Ekkert mánuðalángt verkefni. Ég set þig á rétta braut á nokkrum vikum.",
+    "step1": {
+      "number": "1",
+      "title": "Greining & Uppsetning",
+      "text": "Ég greini núverandi ferla þína og stilli kerfið nákvæmlega fyrir fyrirtækið þitt."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Aðlögun & Þjálfun",
+      "text": "Þínar sniðmát, þín verð, þínir vinnuferlar. Ég þjálfa þig og teymið þitt persónulega."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Sjálfvirkja & Vaxa",
+      "text": "AI-sjálfvirkni keyrir í bakgrunni. Þú einbeitir þér að iðngrein þinni — ég um tæknina."
+    }
+  },
+  "pricing": {
+    "label": "Fjárfesting",
+    "title": "Gagnsæ verð. Engar leyndar gjaldtökur.",
+    "subtitle": "Byrjaðu án áhættu — vaxtu með þjónustusamningi.",
+    "note": "Öll verð eru lokverð. Virðisaukaskattsfrí skv. §19 UStG (þýsk undanþága virðisaukaskatts fyrir lítil fyrirtæki). Tilraunaverkefni & Starter án endurtekinna kostnaðar. Business & Enterprise með þjónustusamningi (uppsegjanlegur mánaðarlega).",
+    "pilot": {
+      "name": "Tilraunaverkefni",
+      "desc": "Kjörið fyrir einstaklingsrekendur sem vilja prófa.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Eingreiðsla",
+      "cta": "Byrjaðu núna",
+      "f1": "Reikningsskráning (OCR)",
+      "f2": "Viðskiptavinastjórnun (CRM)",
+      "f3": "Tölvupóstassistenti",
+      "f4": "Persónuleg uppsetning (1–2h)",
+      "f5": "8 vikna stuðningur",
+      "f6": "PWA fyrir síma + tölvu"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Kjörið fyrir lítil fyrirtæki (1–3 starfsmenn).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Eingreiðsla",
+      "cta": "Bóka ráðgjöf",
+      "f1": "Allt frá Tilraunaverkefni",
+      "f2": "Tilboðagerð",
+      "f3": "Pöntunarstjórnun",
+      "f4": "Bókhald (tekjur/gjöld)",
+      "f5": "PDF-útflutningur",
+      "f6": "3 mánaða stuðningur"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Fyrir vaxandi fyrirtæki (3–10 starfsmenn).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Eingreiðsla + 150 €/mán þjónusta",
+      "cta": "Bóka ráðgjöf",
+      "f1": "Allt frá Starter",
+      "f2": "Margir notendur (allt að 5)",
+      "f3": "Tímaskráning",
+      "f4": "Endurteknir reikningar",
+      "f5": "Kanban-leiðsla",
+      "f6": "WhatsApp-samþætting",
+      "f7": "Einstakt vörumerki",
+      "f8": "Uppfærslur & viðhald innifalið"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Fyrir stærri fyrirtæki (10+ starfsmenn).",
+      "price": "frá 5.000",
+      "currency": "€",
+      "sub": "Eingreiðsla + frá 500 €/mán þjónusta",
+      "cta": "Hafðu samband",
+      "amount": "frá 5.000",
+      "f1": "Allt frá Business",
+      "f2": "Ótakmarkaðir notendur",
+      "f3": "API-aðgangur",
+      "f4": "Sérsniðin samþætting",
+      "f5": "Sérstakur tengiliður",
+      "f6": "SLA-ábyrgð",
+      "f7": "Þjálfun á staðnum"
+    },
+    "recommended": "Mælt með"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Algengar spurningar",
+    "q1": {
+      "question": "Þarf ég tæknilega þekkingu?",
+      "answer": "Nei, alls ekki. Kerfið er jafn auðvelt í notkun og WhatsApp. Ég þjálfa þig og teymið þitt persónulega og er alltaf tiltækur fyrir spurningar."
+    },
+    "q2": {
+      "question": "Hversu langan tíma tekur uppsetningin?",
+      "answer": "Venjulega 2–4 vikur. Fyrstu vikuna greini ég ferla þína, vikur 2–3 stilli ég allt og viku 4 þjálfa ég teymið þitt."
+    },
+    "q3": {
+      "question": "Hvar eru gögnin mín geymd?",
+      "answer": "Gögnin þín eru geymd eingöngu í evrópskum gagnaverum og eru tryggð í samræmi við GDPR. Þú heldur alltaf fullri stjórn og getur flutt út allt."
+    },
+    "q4": {
+      "question": "Hvað gerist ef ég vil segja upp?",
+      "answer": "Mánaðarlega þjónustan er uppsegjanleg hvenær sem er í mánaðarlok. Gögnin þín tilheyra þér — ég flyt allt út á skipulegan hátt fyrir þig."
+    },
+    "q5": {
+      "question": "Fyrir hvaða greinar hentar kerfið?",
+      "answer": "Kerfið er kjörið fyrir iðnfyrirtæki frá 1 starfsmanni — frá einstaklingsfyrirtæki til fyrirtækis með 30+ manns. Hvort sem það er málmsmíði, pípulagnir, rafmagn, trésmíði eða málning — ég sníð það nákvæmlega að þínum geira."
+    },
+    "q6": {
+      "question": "Hvað þýðir 'AI-knúið'?",
+      "answer": "Gervigreind hjálpar þér til dæmis við að semja tilboð, þekkja mynstur í beiðnum viðskiptavina og sjálfvirka eftirfylgni. Þú heldur alltaf fullri stjórn — AI leggur til, þú ákveður."
+    },
+    "q7": {
+      "question": "Er fyrsta ráðgjöfin virkilega ókeypis?",
+      "answer": "Já, 100%. Ég skoða fyrirtækið þitt saman með þér og sýni hvar stafræn umbreyting skilar mestum ávinningi. Án skuldbindinga."
+    }
+  },
+  "cta": {
+    "title": "Tilbúinn fyrir næsta skref?",
+    "text": "Á 15 mínútum sýni ég þér hvernig fyrirtækið þitt gæti litið út stafrænt. Ókeypis og án skuldbindinga.",
+    "ctaPrimary": "Bókaðu ókeypis ráðgjöf",
+    "ctaSecondary": "Eða hafðu samband með tölvupósti",
+    "hint": "Til staðar: mán–fim 16–20, lau 10–16",
+    "legal": "Með bókun samþykkir þú meðferð gagna þinna samkvæmt <a href=\"/datenschutz.html\">persónuverndarstefnu</a> okkar."
+  },
+  "footer": {
+    "impressum": "Lagalegar upplýsingar",
+    "datenschutz": "Friðhelgi",
+    "agb": "Skilmálar",
+    "kontakt": "Samband",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Öll réttindi áskilin."
+  },
+  "stickyCta": {
+    "text": "Ókeypis ráðgjöf"
+  }
+}

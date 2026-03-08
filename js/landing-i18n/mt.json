@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | Diggitalizazzjoni AI ghan-negozji zghar",
+    "description": "Diggitalizazzjoni premium ghan-negozji zghar. Kwotazzjonijiet, fatturi, tracking tal-hin - kollox bil-AI f'sistema wahda. Ghal artigjani u negozji zghar minn 1 impjegat.",
+    "ogTitle": "FreyAI Visions - Diggitalizazzjoni AI ghan-negozji zghar",
+    "ogDescription": "Il-hajja diggitali tieghek: CRM, kwotazzjonijiet, fatturi, tracking tal-hin - kollox bil-AI."
+  },
+  "a11y": {
+    "skipToContent": "Mur ghall-kontenut"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Karatteristici",
+    "ablauf": "Process",
+    "preise": "Prezzijiet",
+    "faq": "FAQ",
+    "cta": "Konsultazzjoni bla hlas",
+    "openMenu": "Open navigation"
+  },
+  "hero": {
+    "badge": "Proggett Pilota: 800 EUR - fadal biss 3 postijiet",
+    "label": "Ghodod AI pratici u awtomazjoni",
+    "title": "Awtomaizza<br>il-processi.<br><span class=\"gradient\">B'mod intelliggenti.</span>",
+    "subtitle": "Bennej imharregh, issa inginjer AI - naf il-hajja ta' kuljum tan-negozji zghar mill-esperjenza personali. Awtomazjoni customizzata ghal artigjani u SMEs - konformi mal-GDPR, effettiv, bizzejjed.",
+    "portraitAlt": "Jonas Glawion - Grundatel FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Ikkuntattja",
+    "ctaSecondary": "Tghallem aktar",
+    "role": "Bennej u inginjer AI",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Lestejt fl-17:15 minflok fit-20:00",
+    "price": "minn 800 EUR",
+    "priceLabel": "Darba biss, minghayr abbonament",
+    "onsite": "Fuq il-post",
+    "onsiteLabel": "Setup personali",
+    "gdpr": "GDPR",
+    "gdprLabel": "Id-data tibqa' fl-UE"
+  },
+  "problem": {
+    "label": "Il-Problema",
+    "title": "Dan jidher familjari?",
+    "subtitle": "Il-bicciet'l kbira tan-negozji zghar jitilfew sighat kull gimgha minhabba kaos amministrattiv.",
+    "card1": {
+      "title": "Kaos tal-karta",
+      "text": "Ordnijiet fuq notes tal-glue, kwotazzjonijiet f'Excel, fatturi f'kartella. Xejn ma jaqbel."
+    },
+    "card2": {
+      "title": "Telf ta' hin fuq xoghol tal-ufficju",
+      "text": "Saghtejn ohrajn bil-lejl tkiteb kwotazzjonijiet minflok tkun mal-familja - m'hemmx ghalfejn ikun hekk."
+    },
+    "card3": {
+      "title": "Ordnijiet mitlufa",
+      "text": "It-talbiet jindiefnu, il-kwotazzjonijiet jintesew, il-klijenti jitilqu."
+    },
+    "card4": {
+      "title": "Gungla ta' software",
+      "text": "Hamsa ghodod differenti, l-ebda wahda ma titkellem mal-ohra. Input doppju tad-data kullimkien."
+    }
+  },
+  "solution": {
+    "label": "Is-Soluzzjoni",
+    "title": "Sistema wahda. Kollox inkluzu.",
+    "subtitle": "FreyAI Visions tibni l-hajja diggitali tieghek - customizzata ghann-negozju tieghek.",
+    "card1": {
+      "title": "Kollox f'post wiehed",
+      "text": "Klijenti, kwotazzjonijiet, fatturi, tracking tal-hin - sistema wahda minflok hamsa."
+    },
+    "card2": {
+      "title": "Il-AI jahdem ghalik",
+      "text": "Il-kwotazzjonijiet jinholqu awtomatikament, it-tfakkir jintbaghat wahdu."
+    },
+    "card3": {
+      "title": "Mobilment fuq il-kantier",
+      "text": "Irrekordjaw sighat, iploda ritratti, agornar l-istat - direttament mill-mowbajl."
+    },
+    "card4": {
+      "title": "Maghmul apposta",
+      "text": "L-ebda soluzzjoni standard. Is-sistema tieghek hija customizzata ezattament ghall-workflows tieghek."
+    }
+  },
+  "trust": {
+    "label": "Fiducja",
+    "title": "Ghaliex FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Minn artizan ghal artigjani",
+      "text": "Bhala bennej imharregh, naf il-hajja ta' kuljum fuq il-kantier - u dak li verament jghin."
+    },
+    "card2": {
+      "title": "100% konformi mal-GDPR",
+      "text": "Id-data kollha fuq servers tal-UE. L-ebda cloud Amerikan, l-ebda tracking, l-ebda print fin."
+    },
+    "card3": {
+      "title": "Prezzijiet onesti",
+      "text": "Is-starters ihallsu darba. Negozji akbar jiehdu kuntratt ta' servizz - cancellazzjoni kull xahar, minghayr perjodu ta' tielf."
+    },
+    "card4": {
+      "title": "Kuntatt personali",
+      "text": "L-ebda call center, l-ebda sistema ta' tikets. Tcellifni direttament - jien nindokra."
+    }
+  },
+  "comparison": {
+    "label": "Qabel / Wara",
+    "title": "Il-ghaxija tieghek ma' FreyAI",
+    "without": {
+      "title": "Minghajar FreyAI",
+      "text": "17:00, tmiem tal-jum tax-xoghol. Izda l-ewwel: ikteb 3 kwotazzjonijiet, sib il-fatturi, irritorna l-telefonati. Lestejt fit-20:00."
+    },
+    "with": {
+      "title": "Ma' FreyAI",
+      "text": "17:00, cekk malajr fuq il-mowbajl: il-kwotazzjonijiet huma lesti, il-fatturi nqabdu awtomatikament, il-klijenti diga riecevew risposta. Fl-17:15 tleqt tassew."
+    }
+  },
+  "features": {
+    "label": "Moduli",
+    "title": "Dak kollu li jrid in-negozju tieghek",
+    "subtitle": "Kull modulu huwa integrat perfettament - mhux patchwork, izda sistema kompleta.",
+    "card1": {
+      "title": "Qatt aktar ma tinsew klijent",
+      "text": "Id-data kollha tal-klijenti f'post wiehed. Min cahd meta? Meta rrid nahdem? Is-sistema tfakkar awtomatikament.",
+      "tag1": "Mmaniggjar tal-klijenti",
+      "tag2": "Tfakkir",
+      "tag3": "Storja tal-kuntatti"
+    },
+    "card2": {
+      "title": "Kwotazzjonijiet f'minuti, mhux sighat",
+      "text": "Agghazzel l-oghla, agornar il-prezzijiet, ibghat. Mill-Pjan Business, l-AI sahansitra jabbozza t-test ghalik.",
+      "tag1": "Kwotazzjonijiet malajr",
+      "tag2": "Konsenja tal-PDF",
+      "tag3": "Fattura b'klikk wiehed"
+    },
+    "card3": {
+      "title": "AI li jahseb bil-quddiem",
+      "text": "L-assistent diggitali tieghek janalizza t-talbiet, jissuggixxi prezzijiet u jfakkar kwotazzjonijiet miftuha. Int tibqa' fil-kontroll - l-AI jaghmel suggesti.",
+      "tag1": "Mill-Pjan Business",
+      "tag2": "Suggesti tat-test",
+      "tag3": "Rakkomandazzjonijiet tal-prezzijiet"
+    },
+    "card4": {
+      "title": "Tracking tal-hin - direttament fuq il-kantier",
+      "text": "L-impjegati tieghek filghodu jdottu l-mowbajl u huma lesti. L-ebda ghamla ta' records tal-karta fl-ahhar tax-xahar. Esportazzjoni tal-paga b'klikk wiehed.",
+      "tag1": "Mill-Pjan Business",
+      "tag2": "Mobilment",
+      "tag3": "Esportazzjoni tal-paga"
+    },
+    "card5": {
+      "title": "Jahdem fuq kull smartphone",
+      "text": "L-ebda app store, l-ebda installazzjoni. Semplicement iftah fil-browser - fuq il-mowbajl, tablet jew PC. Jahdem ukoll offline.",
+      "tag1": "App tal-browser",
+      "tag2": "Modalita' offline",
+      "tag3": "Minghayr app store"
+    },
+    "card6": {
+      "title": "Il-kontabilist tieghek ikun kuntent",
+      "text": "Esportazzjoni DATEV kompatibbli ghall-kontabilist tieghek. Dhul, nefqa, ricevuti - kollox ippreparati b'ordni.",
+      "tag1": "Mill-Pjan Business",
+      "tag2": "Esportazzjoni DATEV",
+      "tag3": "Arkivju tad-dokumenti"
+    }
+  },
+  "betweenCta": {
+    "text": "Jidher tajjeb? Reserva konsultazzjoni bla hlas issa"
+  },
+  "steps": {
+    "label": "Kif jahdem",
+    "title": "3 passi ghall-negozju diggitali",
+    "subtitle": "L-ebda proggett ta' xhur. Inpoggik fit-triq it-tajba f'ftit gimghat.",
+    "step1": {
+      "number": "1",
+      "title": "Analisi u setup",
+      "text": "Nanalizza l-workflows tieghek attwali u nopra s-sistema ezattament ghann-negozju tieghek."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Customizzazzjoni u tahlita",
+      "text": "Il-templates tieghek, il-prezzijiet tieghek, il-workflows tieghek. Personalment nahdem lilek u l-imsiehi tieghek."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Awtomazjoni u tkabbir",
+      "text": "L-awtomazjoni tal-AI tahdem fl-isfond. Int tiffoka fuq is-sengha tieghek - jien nindokra tat-teknologija."
+    }
+  },
+  "pricing": {
+    "label": "Investiment",
+    "title": "Prezzijiet trasparenti. Minghayr print fin.",
+    "subtitle": "Ibda minghayr riskju - ikber b'kuntratt ta' servizz.",
+    "recommended": "Rakkomandat",
+    "note": "Il-prezzijiet kollha huma finali. Ezentat mill-VAT taht l-art. 19 UStG (ligg fiskali Germaniz - ezenzjoni ghan-negozji zghar). Proggett Pilota u Starter minghayr spejjez rikorrenti. Business u Enterprise jinkludu kuntratt ta' servizz (cancellazzjoni kull xahar).",
+    "pilot": {
+      "name": "Proggett Pilota",
+      "desc": "Ideali ghal self-employed li jridu jippruvaw.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Darba biss",
+      "cta": "Ibda",
+      "f1": "Qbid tal-fatturi (OCR)",
+      "f2": "Mmaniggjar tal-klijenti (CRM)",
+      "f3": "Assistent tal-email",
+      "f4": "Setup personali (1-2s)",
+      "f5": "8 gimghat ta' supporti",
+      "f6": "PWA ghall-mowbajl u PC"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideali ghan-negozji zghar (1-3 impjegati).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Darba biss",
+      "cta": "Reserva konsultazzjoni",
+      "f1": "Kollox mill-Proggett Pilota",
+      "f2": "Generazjoni ta' kwotazzjonijiet",
+      "f3": "Mmaniggjar tal-ordnijiet",
+      "f4": "Kontabilita' (dhul/nefqa)",
+      "f5": "Esportazzjoni tal-PDF",
+      "f6": "3 xhur ta' supporti"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Ghan-negozji li qed jikbru (3-10 impjegati).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Darba biss + 150 EUR/xahar servizz",
+      "cta": "Reserva konsultazzjoni",
+      "f1": "Kollox mis-Starter",
+      "f2": "Multi-user (sa 5)",
+      "f3": "Tracking tal-hin",
+      "f4": "Fatturi rikorrenti",
+      "f5": "Kanban board",
+      "f6": "Integrazzjoni WhatsApp",
+      "f7": "Branding customizzat",
+      "f8": "Agornar u manutenzjoni inkluzi"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Ghall-kumpaniji akbar (10+ impjegati).",
+      "price": "minn 5.000",
+      "currency": "€",
+      "sub": "Darba biss + minn 500 EUR/xahar servizz",
+      "cta": "Ikkuntattja",
+      "amount": "minn 5.000",
+      "f1": "Kollox mill-Business",
+      "f2": "Utenti bla limitu",
+      "f3": "Accesso API",
+      "f4": "Integrazzjonijiet customizzati",
+      "f5": "Punt ta' kuntatt dedikat",
+      "f6": "Garanzija SLA",
+      "f7": "Tahlita fuq il-post"
+    }
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Mistoqsijiet Frekwenti",
+    "q1": {
+      "question": "Nihtieg gharfien tekniku?",
+      "answer": "Le, assolutament le. Is-sistema hija daqshekk faciola bhal WhatsApp. Personalment nahdem lilek u l-imsiehi tieghek u dejjem ninsab disponibbli ghall-mistoqsijiet."
+    },
+    "q2": {
+      "question": "Kemm ihud is-setup?",
+      "answer": "Tipikament 2-4 gimghat. Fl-ewwel gimgha nanalizza l-workflows tieghek, fil-gimghat 2-3 nopra kollox, u fir-raba' gimgha nindokra l-imsiehi tieghek."
+    },
+    "q3": {
+      "question": "Fejn jinhazen id-data tieghi?",
+      "answer": "Id-data tieghek tinhazen b'mod esklussiv f'data centers tal-UE u hija protetta b'mod konformi mal-GDPR. Dejjem tibqa' fil-kontroll kollu u tista' tesporta kollox."
+    },
+    "q4": {
+      "question": "X'jigri jekk irrid nikkancella?",
+      "answer": "Is-supporti ta' kull xahar jista' jigi kkancellat f'kull hin fl-ahhar tax-xahar. Id-data tieghek hija tieghek - nesportaha b'ordni ghalik."
+    },
+    "q5": {
+      "question": "Ghal liema negozji hija adattata s-sistema?",
+      "answer": "Is-sistema hija ideali ghan-negozji zghar minn 1 impjegat - minn self-employed sa kumpaniji bi 30+ persuni. Ikun xi jkun is-settur - nadhtha b'mod ezatt gall-industrija tieghek."
+    },
+    "q6": {
+      "question": "X'ifisser supporti tal-AI?",
+      "answer": "L-intelliggenza artifikcjali tghinik, per ezempju, fl-abbozzar ta' kwotazzjonijiet, fl-identifikazzjoni ta' patterns fit-talbiet tal-klijenti u fit-tfakkir awtomatiku. Dejjem tibqa' fil-kontroll kollu - l-AI jaghmel suggesti, int tiddeciedi."
+    },
+    "q7": {
+      "question": "Il-konsultazzjoni inizjali hija verament bla hlas?",
+      "answer": "Iva, 100%. Inhares lejn in-negozju tieghek flimkien mieghek u nurik fejn id-diggitalizazzjoni ghandha l-akbar impatt. Minghayr obbligazzjonijiet."
+    }
+  },
+  "cta": {
+    "title": "Lest ghall-pass li jmiss?",
+    "text": "F'15-il minuta nurik kif jista' jidher in-negozju tieghek diggitalment. Bla hlas u minghayr obbligazzjonijiet.",
+    "ctaPrimary": "Reserva konsultazzjoni bla hlas",
+    "ctaSecondary": "Jew ibghat email",
+    "hint": "Disponibbli: Tnejn-Gimgha 16:00-20:00, Sibt 10:00-16:00",
+    "legal": "Billi tibbukkja, taqbel mal-ipprocessar tad-data tieghek skont l-"
+  },
+  "footer": {
+    "impressum": "Impronta",
+    "datenschutz": "Politika tal-Privatezza",
+    "agb": "Termini u Kondizzjonijiet",
+    "kontakt": "Kuntatt",
+    "contact": "Kuntatt",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Id-drittijiet kollha riservati."
+  },
+  "stickyCta": {
+    "text": "Konsultazzjoni bla hlas"
+  }
+}

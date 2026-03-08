@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | Digitalizare AI pentru meseriași și IMM-uri",
+    "description": "Digitalizare premium pentru meseriași și IMM-uri. Oferte, facturi, pontaj — totul cu AI într-un singur sistem. Personalizat de la 1 angajat.",
+    "ogTitle": "FreyAI Visions — Digitalizare AI pentru meseriași",
+    "ogDescription": "Coloana ta vertebrală digitală: CRM, oferte, facturi, pontaj — totul cu AI. Personalizat pentru meseriași."
+  },
+  "a11y": {
+    "skipToContent": "Sari la conținut"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funcții",
+    "ablauf": "Proces",
+    "preise": "Prețuri",
+    "faq": "FAQ",
+    "cta": "Rezervă consultație",
+    "openMenu": "Deschide meniu"
+  },
+  "hero": {
+    "badge": "Proiect pilot: 800 € — doar 3 locuri",
+    "label": "Instrumente AI funcționale și automatizări",
+    "title": "Automatizează<br>procesele.<br><span class=\"gradient\">Inteligent.</span>",
+    "subtitle": "Pietrar de meserie, acum inginer AI — cunosc din experiență proprie viața de zi cu zi a meseriaților. Automatizare personalizată pentru meseriași și IMM-uri — conformă GDPR, eficientă, accesibilă.",
+    "portraitAlt": "Jonas Glawion — Fondatorul FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Contactează-ne",
+    "ctaSecondary": "Află mai multe",
+    "role": "Pietrar și inginer AI",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Gata la 17:15 în loc de 20:00",
+    "price": "de la 800€",
+    "priceLabel": "O singură plată, fără abonament",
+    "onsite": "La fața locului",
+    "onsiteLabel": "Configurare personală",
+    "gdpr": "GDPR",
+    "gdprLabel": "Datele rămân în Europa"
+  },
+  "problem": {
+    "label": "Problema",
+    "title": "Sună familiar?",
+    "subtitle": "Majoritatea meseriaților pierd ore în fiecare săptămână din cauza haosului administrativ.",
+    "card1": {
+      "title": "Haos de hârtii",
+      "text": "Comenzi pe bileșele, oferte în Excel, facturi în dosare. Nimic nu se potrivește."
+    },
+    "card2": {
+      "title": "Biroul îți mănâncă timpul",
+      "text": "Să mai petreci 2 ore seara scriind oferte în loc să fii cu familia — nu trebuie să fie așa."
+    },
+    "card3": {
+      "title": "Comenzi pierdute",
+      "text": "Solicitările se pierd, ofertele sunt uitate, clienții pleacă."
+    },
+    "card4": {
+      "title": "Jungla de software",
+      "text": "5 instrumente diferite care nu comunică între ele. Introducere dublă de date peste tot."
+    }
+  },
+  "solution": {
+    "label": "Soluția",
+    "title": "Un sistem. Totul inclus.",
+    "subtitle": "FreyAI Visions îți construiește o coloană vertebrală digitală — personalizată pentru afacerea ta.",
+    "card1": {
+      "title": "Totul într-un singur loc",
+      "text": "Clienți, oferte, facturi, pontaj — un sistem în loc de cinci."
+    },
+    "card2": {
+      "title": "AI lucrează pentru tine",
+      "text": "Ofertele sunt generate automat, urmăririle se fac singure."
+    },
+    "card3": {
+      "title": "Mobil pe șantier",
+      "text": "Înregistrează ore, încarcă poze, actualizează starea — direct de pe telefon."
+    },
+    "card4": {
+      "title": "Personalizat",
+      "text": "Fără soluții generice. Sistemul tău este adaptat exact proceselor tale."
+    }
+  },
+  "trust": {
+    "label": "Încredere",
+    "title": "De ce FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "De la un meseriaș pentru meseriași",
+      "text": "Ca pietrar de meserie, cunosc viața de zi cu zi de pe șantier — și știu ce ajută cu adevărat."
+    },
+    "card2": {
+      "title": "100% conform GDPR",
+      "text": "Toate datele pe servere UE. Fără cloud american, fără urmărire, fără caractere mici."
+    },
+    "card3": {
+      "title": "Prețuri corecte",
+      "text": "Începătorii plătesc o singură dată. Firmele mai mari primesc contract de service — reziliabil lunar, fără perioadă minimă."
+    },
+    "card4": {
+      "title": "Persoană de contact personală",
+      "text": "Fără call center, fără sistem de tichete. Mă suni direct — eu mă ocup."
+    }
+  },
+  "comparison": {
+    "label": "Înainte / După",
+    "title": "Seara ta cu FreyAI",
+    "without": {
+      "title": "Fără FreyAI",
+      "text": "17:00, ziua de lucru s-a terminat. Dar mai întâi: scris 3 oferte, căutat facturi, sunat clienți. În fine gata la 20:00."
+    },
+    "with": {
+      "title": "Cu FreyAI",
+      "text": "17:00, o privire rapidă pe telefon: ofertele sunt gata, facturile capturate automat, clienții au primit deja răspuns. Cu adevărat liber la 17:15."
+    }
+  },
+  "features": {
+    "label": "Module",
+    "title": "Tot ce are nevoie afacerea ta",
+    "subtitle": "Fiecare modul este perfect integrat — nu o soluție improvizată, ci un sistem complet.",
+    "card1": {
+      "title": "Nu mai uita niciodată un client",
+      "text": "Toate datele clienților într-un singur loc. Cine a sunat când? Când trebuie să urmăresc? Sistemul te reamintește automat.",
+      "tag1": "Gestionare clienți",
+      "tag2": "Urmăriri",
+      "tag3": "Istoric contacte"
+    },
+    "card2": {
+      "title": "Ofertă în minute, nu ore",
+      "text": "Selectează pozițiile, ajustează prețurile, trimite. Din planul Business, AI scrie chiar și textele pentru tine.",
+      "tag1": "Oferte rapide",
+      "tag2": "Trimitere PDF",
+      "tag3": "Factură cu 1 clic"
+    },
+    "card3": {
+      "title": "AI care gândește înainte",
+      "text": "Asistentul tău digital analizează solicitările, sugerează prețuri și te reamintește de ofertele deschise. Tu păstrezi controlul — AI propune.",
+      "tag1": "Din planul Business",
+      "tag2": "Sugestii de text",
+      "tag3": "Recomandări de prețuri"
+    },
+    "card4": {
+      "title": "Pontaj — pe șantier",
+      "text": "Angajații tăi ating telefonul dimineața și gata. Nu mai aduni hârtii la sfârșitul lunii. Export salarizare cu un clic.",
+      "tag1": "Din planul Business",
+      "tag2": "Mobil",
+      "tag3": "Export salarizare"
+    },
+    "card5": {
+      "title": "Funcționează pe orice telefon",
+      "text": "Fără App Store, fără instalare. Deschide doar în browser — pe telefon, tabletă sau PC. Funcționează și offline.",
+      "tag1": "Aplicație browser",
+      "tag2": "Offline",
+      "tag3": "Fără App Store"
+    },
+    "card6": {
+      "title": "Contabilul tău va fi mulțumit",
+      "text": "Export compatibil pentru contabilul tău. Venituri, cheltuieli, documente — totul bine pregătit. Compatibil cu standardele contabile europene.",
+      "tag1": "Din planul Business",
+      "tag2": "Export contabilitate",
+      "tag3": "Arhivă documente"
+    }
+  },
+  "betweenCta": {
+    "text": "Sună bine? Rezervă consultația gratuită acum"
+  },
+  "steps": {
+    "label": "Cum funcționează",
+    "title": "3 pași către o afacere digitală",
+    "subtitle": "Nu un proiect de luni de zile. Te pun pe calea cea bună în câteva săptămâni.",
+    "step1": {
+      "number": "1",
+      "title": "Analiză și configurare",
+      "text": "Analizez procesele tale actuale și configurez sistemul exact pentru afacerea ta."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Personalizare și instruire",
+      "text": "Șabloanele tale, prețurile tale, fluxurile tale de lucru. Te instruiesc personal pe tine și echipa ta."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizează și crește",
+      "text": "Automatizările AI rulează în fundal. Tu te concentrezi pe meserie — eu pe tehnologie."
+    }
+  },
+  "pricing": {
+    "label": "Investiție",
+    "title": "Prețuri transparente. Fără caractere mici.",
+    "subtitle": "Începe fără risc — crește cu un contract de service.",
+    "note": "Toate prețurile sunt finale. Scutit de TVA conform §19 UStG (scutire TVA germană pentru microîntreprinderi). Proiect Pilot și Starter fără costuri recurente. Business și Enterprise cu contract de service (reziliabil lunar).",
+    "pilot": {
+      "name": "Proiect Pilot",
+      "desc": "Ideal pentru freelanceri care vor să testeze.",
+      "price": "800",
+      "currency": "€",
+      "sub": "O singură plată",
+      "cta": "Începe acum",
+      "f1": "Captură facturi (OCR)",
+      "f2": "Gestionare clienți (CRM)",
+      "f3": "Asistent email",
+      "f4": "Configurare personală (1–2h)",
+      "f5": "8 săptămâni de îndrumare",
+      "f6": "PWA pentru telefon + desktop"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideal pentru firme mici (1–3 angajați).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "O singură plată",
+      "cta": "Rezervă consultație",
+      "f1": "Totul din Proiectul Pilot",
+      "f2": "Creare oferte",
+      "f3": "Gestionare comenzi",
+      "f4": "Contabilitate (venituri/cheltuieli)",
+      "f5": "Export PDF",
+      "f6": "3 luni suport"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Pentru firme în creștere (3–10 angajați).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "O singură plată + 150 €/lună service",
+      "cta": "Rezervă consultație",
+      "f1": "Totul din Starter",
+      "f2": "Mai mulți utilizatori (până la 5)",
+      "f3": "Pontaj",
+      "f4": "Facturi recurente",
+      "f5": "Pipeline Kanban",
+      "f6": "Integrare WhatsApp",
+      "f7": "Branding personalizat",
+      "f8": "Actualizări și întreținere incluse"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Pentru firme mai mari (10+ angajați).",
+      "price": "de la 5.000",
+      "currency": "€",
+      "sub": "O singură plată + de la 500 €/lună service",
+      "cta": "Contactează-ne",
+      "amount": "de la 5.000",
+      "f1": "Totul din Business",
+      "f2": "Utilizatori nelimitați",
+      "f3": "Acces API",
+      "f4": "Integrări personalizate",
+      "f5": "Persoană de contact dedicată",
+      "f6": "Garanție SLA",
+      "f7": "Instruiri la fața locului"
+    },
+    "recommended": "Recomandat"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Întrebări frecvente",
+    "q1": {
+      "question": "Am nevoie de cunoștințe tehnice?",
+      "answer": "Nu, absolut deloc. Sistemul este la fel de ușor de utilizat ca WhatsApp. Te instruiesc personal pe tine și echipa ta și sunt mereu disponibil pentru întrebări."
+    },
+    "q2": {
+      "question": "Cât durează configurarea?",
+      "answer": "De obicei 2–4 săptămâni. În prima săptămână analizez procesele tale, în săptămânile 2–3 configurez totul, iar în săptămâna 4 instruiesc echipa ta."
+    },
+    "q3": {
+      "question": "Unde sunt stocate datele mele?",
+      "answer": "Datele tale sunt stocate exclusiv în centre de date europene și sunt securizate conform GDPR. Păstrezi întotdeauna controlul deplin și poți exporta totul."
+    },
+    "q4": {
+      "question": "Ce se întâmplă dacă vreau să renunț?",
+      "answer": "Îngrijirea lunară poate fi reziliată oricând la sfârșitul lunii. Datele tale îți aparțin — le export ordonat pentru tine."
+    },
+    "q5": {
+      "question": "Pentru ce meserii este potrivit sistemul?",
+      "answer": "Sistemul este ideal pentru meseriași de la 1 angajat — de la PFA la firmă cu 30+ persoane. Fie că e construcții metalice, instalații, electricitate, tâmplărie sau vopsitorie — îl adaptez exact domeniului tău."
+    },
+    "q6": {
+      "question": "Ce înseamnă 'cu AI'?",
+      "answer": "Inteligența artificială te ajută de exemplu la formularea ofertelor, identificarea tiparelor în solicitările clienților și urmăriri automate. Păstrezi întotdeauna controlul deplin — AI propune, tu decizi."
+    },
+    "q7": {
+      "question": "Prima consultație este chiar gratuită?",
+      "answer": "Da, 100%. Analizăm împreună afacerea ta și îți arăt unde digitalizarea aduce cea mai mare valoare. Fără obligații."
+    }
+  },
+  "cta": {
+    "title": "Gata pentru următorul pas?",
+    "text": "În 15 minute îți arăt cum ar putea arăta afacerea ta digital. Gratuit și fără obligații.",
+    "ctaPrimary": "Rezervă consultație gratuită",
+    "ctaSecondary": "Sau contactează-ne prin email",
+    "hint": "Disponibil: lun–vin 16–20, sâm 10–16",
+    "legal": "Prin rezervare, ești de acord cu prelucrarea datelor tale conform <a href=\"/datenschutz.html\">politicii noastre de confidențialitate</a>."
+  },
+  "footer": {
+    "impressum": "Informații legale",
+    "datenschutz": "Confidențialitate",
+    "agb": "Termeni",
+    "kontakt": "Contact",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Toate drepturile rezervate."
+  },
+  "stickyCta": {
+    "text": "Consultație gratuită"
+  }
+}

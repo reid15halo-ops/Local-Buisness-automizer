@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI-digitalisering for håndværksvirksomheder",
+    "description": "Premium digitalisering for håndværksvirksomheder og SMV. Tilbud, fakturaer, tidsregistrering — alt AI-drevet i ét system. Skræddersyet fra 1 medarbejder.",
+    "ogTitle": "FreyAI Visions — AI-digitalisering for håndværkere",
+    "ogDescription": "Din digitale rygrad: CRM, tilbud, fakturaer, tid — alt AI-drevet. Skræddersyet til håndværkere."
+  },
+  "a11y": {
+    "skipToContent": "Gå til indhold"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funktioner",
+    "ablauf": "Proces",
+    "preise": "Priser",
+    "faq": "FAQ",
+    "cta": "Book konsultation",
+    "openMenu": "Åbn menu"
+  },
+  "hero": {
+    "badge": "Pilotprojekt: 800 € — kun 3 pladser",
+    "label": "Funktionelle AI-værktøjer og automatiseringer",
+    "title": "Automatisér<br>processer.<br><span class=\"gradient\">Intelligent.</span>",
+    "subtitle": "Uddannet stenhugger, nu AI-ingeniør — jeg kender håndværkerens hverdag fra egen erfaring. Individuel automatisering til håndværkere og SMV — GDPR-kompatibel, effektiv, overkommelig.",
+    "portraitAlt": "Jonas Glawion — Grundlægger af FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Kontakt os",
+    "ctaSecondary": "Læs mere",
+    "role": "Stenhugger & AI-ingeniør",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Fri kl. 17:15 i stedet for 20:00",
+    "price": "fra 800€",
+    "priceLabel": "Engangsbetaling, uden abonnement",
+    "onsite": "På stedet",
+    "onsiteLabel": "Personlig installation",
+    "gdpr": "GDPR",
+    "gdprLabel": "Data forbliver i Europa"
+  },
+  "problem": {
+    "label": "Problemet",
+    "title": "Kender du det?",
+    "subtitle": "De fleste håndværksvirksomheder mister timer hver uge på administrativt kaos.",
+    "card1": {
+      "title": "Papirkaos",
+      "text": "Ordrer på sedler, tilbud i Excel, fakturaer i mapper. Intet hænger sammen."
+    },
+    "card2": {
+      "title": "Kontoret spiser din tid",
+      "text": "Bruge 2 timer mere om aftenen på at skrive tilbud i stedet for at være med familien — det behøver ikke at være sådan."
+    },
+    "card3": {
+      "title": "Tabte ordrer",
+      "text": "Forespørgsler drukner, tilbud glemmes, kunder falder fra."
+    },
+    "card4": {
+      "title": "Softwarejungle",
+      "text": "5 forskellige værktøjer, der ikke taler sammen. Dobbelt dataindtastning overalt."
+    }
+  },
+  "solution": {
+    "label": "Løsningen",
+    "title": "Ét system. Alt inkluderet.",
+    "subtitle": "FreyAI Visions bygger dig en digital rygrad — skræddersyet til din virksomhed.",
+    "card1": {
+      "title": "Alt på ét sted",
+      "text": "Kunder, tilbud, fakturaer, tid — ét system i stedet for fem."
+    },
+    "card2": {
+      "title": "AI arbejder for dig",
+      "text": "Tilbud genereres automatisk, opfølgninger kører af sig selv."
+    },
+    "card3": {
+      "title": "Mobil på byggepladsen",
+      "text": "Registrer timer, upload billeder, opdater status — direkte fra telefonen."
+    },
+    "card4": {
+      "title": "Skræddersyet",
+      "text": "Ingen standardløsning. Dit system tilpasses præcis til dine processer."
+    }
+  },
+  "trust": {
+    "label": "Tillid",
+    "title": "Hvorfor FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Fra håndværker til håndværkere",
+      "text": "Som uddannet stenhugger kender jeg hverdagen på byggepladsen — og ved, hvad der virkelig hjælper."
+    },
+    "card2": {
+      "title": "100% GDPR-kompatibel",
+      "text": "Alle data på EU-servere. Intet amerikansk cloud, ingen sporing, ingen skjulte betingelser."
+    },
+    "card3": {
+      "title": "Ærlige priser",
+      "text": "Startere betaler én gang. Større virksomheder får serviceaftale — opsigelig månedligt, ingen binding."
+    },
+    "card4": {
+      "title": "Personlig kontaktperson",
+      "text": "Intet callcenter, intet billetsystem. Du ringer direkte til mig — jeg tager mig af det."
+    }
+  },
+  "comparison": {
+    "label": "Før / Efter",
+    "title": "Din aften med FreyAI",
+    "without": {
+      "title": "Uden FreyAI",
+      "text": "17:00, arbejdsdagen slut. Men først: skrive 3 tilbud, lede efter fakturaer, ringe kunder tilbage. Endelig færdig kl. 20:00."
+    },
+    "with": {
+      "title": "Med FreyAI",
+      "text": "17:00, et hurtigt blik på telefonen: tilbud klar, fakturaer automatisk registreret, kunder har allerede fået svar. Virkelig fri kl. 17:15."
+    }
+  },
+  "features": {
+    "label": "Moduler",
+    "title": "Alt hvad din virksomhed har brug for",
+    "subtitle": "Hvert modul er perfekt integreret — ikke lappet sammen, men et komplet system.",
+    "card1": {
+      "title": "Glem aldrig en kunde igen",
+      "text": "Alle kundedata ét sted. Hvem ringede hvornår? Hvornår skal jeg følge op? Systemet minder dig automatisk.",
+      "tag1": "Kundehåndtering",
+      "tag2": "Opfølgninger",
+      "tag3": "Kontakthistorik"
+    },
+    "card2": {
+      "title": "Tilbud på minutter, ikke timer",
+      "text": "Vælg poster, juster priser, send. Fra Business-pakken skriver AI'en endda tekster for dig.",
+      "tag1": "Hurtige tilbud",
+      "tag2": "PDF-levering",
+      "tag3": "Faktura med 1 klik"
+    },
+    "card3": {
+      "title": "AI der tænker fremad",
+      "text": "Din digitale assistent analyserer forespørgsler, foreslår priser og minder om åbne tilbud. Du beholder kontrollen — AI'en kommer med forslag.",
+      "tag1": "Fra Business-pakken",
+      "tag2": "Tekstforslag",
+      "tag3": "Prisanbefalinger"
+    },
+    "card4": {
+      "title": "Tidsregistrering — på byggepladsen",
+      "text": "Dine medarbejdere trykker på telefonen om morgenen og så er det klaret. Ingen papirindsamling ved månedens slutning. Løneksport med ét klik.",
+      "tag1": "Fra Business-pakken",
+      "tag2": "Mobil",
+      "tag3": "Løneksport"
+    },
+    "card5": {
+      "title": "Virker på alle telefoner",
+      "text": "Ingen app-butik, ingen installation. Åbn bare i browseren — på telefon, tablet eller pc. Virker også offline.",
+      "tag1": "Browser-app",
+      "tag2": "Offline",
+      "tag3": "Ingen app-butik"
+    },
+    "card6": {
+      "title": "Din revisor bliver glad",
+      "text": "Kompatibel eksport til din revisor. Indtægter, udgifter, bilag — alt pænt forberedt. Understøtter europæisk bogføringsstandarder.",
+      "tag1": "Fra Business-pakken",
+      "tag2": "Bogføringseksport",
+      "tag3": "Bilagsarkiv"
+    }
+  },
+  "betweenCta": {
+    "text": "Lyder det godt? Book din gratis konsultation nu"
+  },
+  "steps": {
+    "label": "Sådan fungerer det",
+    "title": "3 trin til en digital virksomhed",
+    "subtitle": "Ikke et projekt på måneder. Jeg får dig på sporet på få uger.",
+    "step1": {
+      "number": "1",
+      "title": "Analyse & Opsætning",
+      "text": "Jeg analyserer dine nuværende processer og konfigurerer systemet præcist til din virksomhed."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Tilpasning & Oplæring",
+      "text": "Dine skabeloner, dine priser, dine workflows. Jeg oplærer dig og dit team personligt."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatisér & Voks",
+      "text": "AI-automatiseringer kører i baggrunden. Du fokuserer på håndværket — jeg på teknologien."
+    }
+  },
+  "pricing": {
+    "label": "Investering",
+    "title": "Transparente priser. Ingen skjulte omkostninger.",
+    "subtitle": "Kom i gang uden risiko — voks med en serviceaftale.",
+    "note": "Alle priser er slutpriser. Momsfritaget i henhold til §19 UStG (tysk momsundtagelse for småvirksomheder). Pilotprojekt & Starter uden løbende omkostninger. Business & Enterprise inkl. serviceaftale (opsigelig månedligt).",
+    "pilot": {
+      "name": "Pilotprojekt",
+      "desc": "Ideel til enkeltmandsfirmaer, der vil prøve.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Engangsbetaling",
+      "cta": "Kom i gang nu",
+      "f1": "Fakturaregistrering (OCR)",
+      "f2": "Kundehåndtering (CRM)",
+      "f3": "E-mailassistent",
+      "f4": "Personlig opsætning (1–2t)",
+      "f5": "8 ugers support",
+      "f6": "PWA til telefon + computer"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideel til små virksomheder (1–3 medarbejdere).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Engangsbetaling",
+      "cta": "Book konsultation",
+      "f1": "Alt fra Pilotprojektet",
+      "f2": "Tilbudsoprettelse",
+      "f3": "Ordrehåndtering",
+      "f4": "Bogføring (indtægter/udgifter)",
+      "f5": "PDF-eksport",
+      "f6": "3 måneders support"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Til voksende virksomheder (3–10 medarbejdere).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Engangsbetaling + 150 €/måned service",
+      "cta": "Book konsultation",
+      "f1": "Alt fra Starter",
+      "f2": "Flere brugere (op til 5)",
+      "f3": "Tidsregistrering",
+      "f4": "Tilbagevendende fakturaer",
+      "f5": "Kanban-pipeline",
+      "f6": "WhatsApp-integration",
+      "f7": "Eget branding",
+      "f8": "Opdateringer & vedligeholdelse inkluderet"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Til større virksomheder (10+ medarbejdere).",
+      "price": "fra 5.000",
+      "currency": "€",
+      "sub": "Engangsbetaling + fra 500 €/måned service",
+      "cta": "Kontakt os",
+      "amount": "fra 5.000",
+      "f1": "Alt fra Business",
+      "f2": "Ubegrænsede brugere",
+      "f3": "API-adgang",
+      "f4": "Tilpassede integrationer",
+      "f5": "Dedikeret kontaktperson",
+      "f6": "SLA-garanti",
+      "f7": "Oplæring på stedet"
+    },
+    "recommended": "Anbefalet"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Ofte stillede spørgsmål",
+    "q1": {
+      "question": "Har jeg brug for teknisk viden?",
+      "answer": "Nej, absolut ikke. Systemet er lige så nemt at bruge som WhatsApp. Jeg oplærer dig og dit team personligt og er altid tilgængelig for spørgsmål."
+    },
+    "q2": {
+      "question": "Hvor lang tid tager opsætningen?",
+      "answer": "Normalt 2–4 uger. Den første uge analyserer jeg dine processer, uge 2–3 konfigurerer jeg alt og uge 4 oplærer jeg dit team."
+    },
+    "q3": {
+      "question": "Hvor gemmes mine data?",
+      "answer": "Dine data gemmes udelukkende i europæiske datacentre og er sikret i overensstemmelse med GDPR. Du beholder altid fuld kontrol og kan eksportere alt."
+    },
+    "q4": {
+      "question": "Hvad sker der, hvis jeg vil opsige?",
+      "answer": "Det månedlige abonnement kan opsiges til enhver tid ved månedens slutning. Dine data tilhører dig — jeg eksporterer alt pænt for dig."
+    },
+    "q5": {
+      "question": "Til hvilke fag passer systemet?",
+      "answer": "Systemet er ideelt til håndværksvirksomheder fra 1 medarbejder — fra enkeltmandsvirksomhed til firma med 30+ personer. Uanset om det er metalarbejde, VVS, el, tømrer eller malerfirma — jeg tilpasser det præcist til din branche."
+    },
+    "q6": {
+      "question": "Hvad betyder 'AI-drevet'?",
+      "answer": "Kunstig intelligens hjælper dig f.eks. med at formulere tilbud, identificere mønstre i kundeforespørgsler og automatiske opfølgninger. Du beholder altid fuld kontrol — AI'en giver forslag, du beslutter."
+    },
+    "q7": {
+      "question": "Er den første konsultation virkelig gratis?",
+      "answer": "Ja, 100 %. Jeg kigger sammen med dig på din virksomhed og viser, hvor digitalisering giver mest værdi. Uden forpligtelser."
+    }
+  },
+  "cta": {
+    "title": "Klar til næste skridt?",
+    "text": "På 15 minutter viser jeg dig, hvordan din virksomhed kunne se ud digitalt. Gratis og uforpligtende.",
+    "ctaPrimary": "Book din gratis konsultation",
+    "ctaSecondary": "Eller kontakt os via e-mail",
+    "hint": "Tilgængelig: man–fre 16–20, lør 10–16",
+    "legal": "Ved booking accepterer du behandling af dine data i henhold til vores <a href=\"/datenschutz.html\">privatlivspolitik</a>."
+  },
+  "footer": {
+    "impressum": "Juridisk information",
+    "datenschutz": "Privatliv",
+    "agb": "Betingelser",
+    "kontakt": "Kontakt",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Alle rettigheder forbeholdes."
+  },
+  "stickyCta": {
+    "text": "Gratis konsultation"
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI digitaliseerimine käsitööettevõtetele ja VKEdele",
+    "description": "Tippklassi digitaliseerimine käsitööliste ja VKEde jaoks. Pakkumised, arved, tööaja arvestus — kõik AI-ga ühes süsteemis. Kohandatud alates 1 töötajast.",
+    "ogTitle": "FreyAI Visions — AI digitaliseerimine käsitöölistele",
+    "ogDescription": "Teie digitaalne selgroog: CRM, pakkumised, arved, aeg — kõik AI-ga. Kohandatud käsitöölistele."
+  },
+  "a11y": {
+    "skipToContent": "Mine sisule"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funktsioonid",
+    "ablauf": "Protsess",
+    "preise": "Hinnad",
+    "faq": "FAQ",
+    "cta": "Broneeri konsultatsioon",
+    "openMenu": "Ava menüü"
+  },
+  "hero": {
+    "badge": "Pilootprojekt: 800 € — ainult 3 kohta",
+    "label": "Funktsionaalsed AI-tööriistad ja automatiseeringud",
+    "title": "Automatiseerige<br>protsesse.<br><span class=\"gradient\">Intelligentselt.</span>",
+    "subtitle": "Koolitatud kiviraiuja, nüüd AI insener — tean käsitööliste igapäevaelu omast kogemusest. Individuaalne automatiseerimine käsitööliste ja VKEde jaoks — GDPR-nõuetele vastav, tõhus, taskukohane.",
+    "portraitAlt": "Jonas Glawion — FreyAI Visions asutaja",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Võtke ühendust",
+    "ctaSecondary": "Lisateave",
+    "role": "Kiviraiuja ja AI insener",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Vaba kell 17:15 mitte 20:00",
+    "price": "alates 800€",
+    "priceLabel": "Ühekordne makse, ilma tellimuseta",
+    "onsite": "Kohapeal",
+    "onsiteLabel": "Isiklik seadistamine",
+    "gdpr": "GDPR",
+    "gdprLabel": "Andmed jäävad Euroopasse"
+  },
+  "problem": {
+    "label": "Probleem",
+    "title": "Kas see tundub tuttav?",
+    "subtitle": "Enamik käsitööettevõtteid kaotab igal nädalal tunde administratiivse kaose tõttu.",
+    "card1": {
+      "title": "Paberimajanduse kaos",
+      "text": "Tellimused paberilehtedel, pakkumised Excelis, arved mappides. Miski ei ühildu."
+    },
+    "card2": {
+      "title": "Kontor neelab aja",
+      "text": "Veeta veel 2 tundi õhtul pakkumiste kirjutamisel perekonna asemel — nii ei pea olema."
+    },
+    "card3": {
+      "title": "Kadunud tellimused",
+      "text": "Päringud lähevad kaotsi, pakkumised unustatakse, kliendid lahkuvad."
+    },
+    "card4": {
+      "title": "Tarkvara džungel",
+      "text": "5 erinevat tööriista, mis omavahel ei suhtle. Topeltandmete sisestus kõikjal."
+    }
+  },
+  "solution": {
+    "label": "Lahendus",
+    "title": "Üks süsteem. Kõik sees.",
+    "subtitle": "FreyAI Visions ehitab teile digitaalse selgroo — kohandatud teie ettevõttele.",
+    "card1": {
+      "title": "Kõik ühes kohas",
+      "text": "Kliendid, pakkumised, arved, aeg — üks süsteem viie asemel."
+    },
+    "card2": {
+      "title": "AI töötab teie eest",
+      "text": "Pakkumised genereeritakse automaatselt, järelmeetmed toimuvad iseenesest."
+    },
+    "card3": {
+      "title": "Mobiilselt ehitusplatsil",
+      "text": "Registreerige tunnid, laadige üles fotod, uuendage olekut — otse telefonist."
+    },
+    "card4": {
+      "title": "Kohandatud",
+      "text": "Ei mingeid üldlahendusi. Teie süsteem on kohandatud täpselt teie protsessidele."
+    }
+  },
+  "trust": {
+    "label": "Usaldus",
+    "title": "Miks FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Käsitööliselt käsitöölistele",
+      "text": "Koolitatud kiviraiujana tean ehitusplatsi igapäevaelu — ja tean, mis tegelikult aitab."
+    },
+    "card2": {
+      "title": "100% GDPR-nõuetele vastav",
+      "text": "Kõik andmed EL-i serverites. Ei mingit Ameerika pilve, jälgimist ega peenkirja."
+    },
+    "card3": {
+      "title": "Ausad hinnad",
+      "text": "Algajad maksavad üks kord. Suuremad ettevõtted saavad teenuselepingu — tühistatav igakuiselt, ilma sidumisperioodita."
+    },
+    "card4": {
+      "title": "Isiklik kontaktisik",
+      "text": "Ei mingit kõnekeskust, ei mingit piletisüsteemi. Helistate mulle otse — mina hoolitsen."
+    }
+  },
+  "comparison": {
+    "label": "Enne / Pärast",
+    "title": "Teie õhtu FreyAI-ga",
+    "without": {
+      "title": "Ilma FreyAI-ta",
+      "text": "17:00, tööpäev läbi. Aga enne: kirjutada 3 pakkumist, otsida arveid, helistada klientidele tagasi. Lõpuks valmis 20:00."
+    },
+    "with": {
+      "title": "FreyAI-ga",
+      "text": "17:00, kiire pilk telefoni: pakkumised on valmis, arved automaatselt registreeritud, kliendid on juba vastuse saanud. Tõeliselt vaba kell 17:15."
+    }
+  },
+  "features": {
+    "label": "Moodulid",
+    "title": "Kõik, mida teie ettevõte vajab",
+    "subtitle": "Iga moodul on täiuslikult integreeritud — mitte lapiline lahendus, vaid täielik süsteem.",
+    "card1": {
+      "title": "Ärge unustage klienti enam kunagi",
+      "text": "Kõik kliendiandmed ühes kohas. Kes millal helistas? Millal peaksin jälgima? Süsteem tuletab automaatselt meelde.",
+      "tag1": "Kliendihaldus",
+      "tag2": "Järelmeetmed",
+      "tag3": "Kontaktide ajalugu"
+    },
+    "card2": {
+      "title": "Pakkumine minutitega, mitte tundidega",
+      "text": "Valige read, kohandage hindu, saatke. Alates Business paketist kirjutab AI isegi tekstid teie eest.",
+      "tag1": "Kiired pakkumised",
+      "tag2": "PDF saatmine",
+      "tag3": "Arve 1 klikiga"
+    },
+    "card3": {
+      "title": "AI, mis mõtleb ette",
+      "text": "Teie digitaalne assistent analüüsib päringuid, soovitab hindu ja tuletab meelde avatud pakkumisi. Jääte kontrolli alla — AI teeb ettepanekuid.",
+      "tag1": "Alates Business paketist",
+      "tag2": "Tekstisoovitused",
+      "tag3": "Hinnasoovitused"
+    },
+    "card4": {
+      "title": "Tööaja arvestus — ehitusplatsil",
+      "text": "Teie töötajad puudutavad hommikul telefoni ja ongi valmis. Ei mingit paberite kogumist kuu lõpus. Palgaeksport ühe klikiga.",
+      "tag1": "Alates Business paketist",
+      "tag2": "Mobiilselt",
+      "tag3": "Palgaeksport"
+    },
+    "card5": {
+      "title": "Töötab igal telefonil",
+      "text": "Ei mingit App Store'i, ei mingit installimist. Avage lihtsalt brauseris — telefonis, tahvelarvutis või arvutis. Töötab ka ilma internetita.",
+      "tag1": "Brauserirakendus",
+      "tag2": "Võrguühenduseta",
+      "tag3": "Ilma App Store'ita"
+    },
+    "card6": {
+      "title": "Teie raamatupidaja on rõõmus",
+      "text": "Ühilduv eksport teie raamatupidajale. Tulud, kulud, dokumendid — kõik hoolikalt ette valmistatud. Toetab Euroopa raamatupidamisstandardeid.",
+      "tag1": "Alates Business paketist",
+      "tag2": "Raamatupidamise eksport",
+      "tag3": "Dokumentide arhiiv"
+    }
+  },
+  "betweenCta": {
+    "text": "Kõlab hästi? Broneeri tasuta konsultatsioon kohe"
+  },
+  "steps": {
+    "label": "Kuidas see töötab",
+    "title": "3 sammu digitaalse ettevõtteni",
+    "subtitle": "Ei mingit kuudepikkust projekti. Seon teid õigele teele mõne nädalaga.",
+    "step1": {
+      "number": "1",
+      "title": "Analüüs ja seadistamine",
+      "text": "Analüüsin teie praeguseid protsesse ja konfigureeerin süsteemi täpselt teie ettevõttele."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Kohandamine ja koolitus",
+      "text": "Teie mallid, teie hinnad, teie töövood. Koolitan teid ja teie meeskonda isiklikult."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatiseerige ja kasvage",
+      "text": "AI automatiseeringud töötavad taustal. Teie keskendute käsitööle — mina tehnoloogiale."
+    }
+  },
+  "pricing": {
+    "label": "Investeering",
+    "title": "Läbipaistvad hinnad. Ei mingit peenkirja.",
+    "subtitle": "Alustage ilma riskita — kasvage teenuselepinguga.",
+    "note": "Kõik hinnad on lõplikud. Käibemaksuvaba vastavalt §19 UStG (Saksamaa käibemaksuvabastus väikeettevõtetele). Pilootprojekt ja Starter ilma jooksvate kuludeta. Business ja Enterprise teenuslepinguga (tühistatav igakuiselt).",
+    "pilot": {
+      "name": "Pilootprojekt",
+      "desc": "Ideaalne füüsilisest isikust ettevõtjatele, kes soovivad järele proovida.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Ühekordne",
+      "cta": "Alusta kohe",
+      "f1": "Arvete registreerimine (OCR)",
+      "f2": "Kliendihaldus (CRM)",
+      "f3": "E-posti assistent",
+      "f4": "Isiklik seadistamine (1–2h)",
+      "f5": "8 nädalat hooldust",
+      "f6": "PWA telefoni + arvuti jaoks"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideaalne väikeettevõtetele (1–3 töötajat).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Ühekordne",
+      "cta": "Broneeri konsultatsioon",
+      "f1": "Kõik pilootprojektist",
+      "f2": "Pakkumiste koostamine",
+      "f3": "Tellimuste haldamine",
+      "f4": "Raamatupidamine (tulud/kulud)",
+      "f5": "PDF eksport",
+      "f6": "3 kuud tuge"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Kasvavate ettevõtete jaoks (3–10 töötajat).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Ühekordne + 150 €/kuu teenus",
+      "cta": "Broneeri konsultatsioon",
+      "f1": "Kõik Starterist",
+      "f2": "Mitu kasutajat (kuni 5)",
+      "f3": "Tööaja arvestus",
+      "f4": "Korduvad arved",
+      "f5": "Kanban pipeline",
+      "f6": "WhatsApp integratsioon",
+      "f7": "Isikupärastatud bränd",
+      "f8": "Uuendused ja hooldus kaasas"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Suurematele ettevõtetele (10+ töötajat).",
+      "price": "alates 5.000",
+      "currency": "€",
+      "sub": "Ühekordne + alates 500 €/kuu teenus",
+      "cta": "Võtke ühendust",
+      "amount": "alates 5.000",
+      "f1": "Kõik Businessist",
+      "f2": "Piiramatu arv kasutajaid",
+      "f3": "API juurdepääs",
+      "f4": "Individuaalsed integratsioonid",
+      "f5": "Pühendatud kontakt",
+      "f6": "SLA garantii",
+      "f7": "Koolitused kohapeal"
+    },
+    "recommended": "Soovitatud"
+  },
+  "faq": {
+    "label": "KKK",
+    "title": "Korduma kippuvad küsimused",
+    "q1": {
+      "question": "Kas mul on vaja tehnilisi teadmisi?",
+      "answer": "Ei, absoluutselt mitte. Süsteem on sama lihtne kasutada kui WhatsApp. Koolitan teid ja teie meeskonda isiklikult ning olen alati küsimuste jaoks kättesaadav."
+    },
+    "q2": {
+      "question": "Kui kaua seadistamine aega võtab?",
+      "answer": "Tavaliselt 2–4 nädalat. Esimesel nädalal analüüsin teie protsesse, nädalatel 2–3 konfigureeerin kõik ning 4. nädalal koolitan teie meeskonda."
+    },
+    "q3": {
+      "question": "Kus minu andmeid hoitakse?",
+      "answer": "Teie andmeid hoitakse ainult Euroopa andmekeskustes ja need on kaitstud vastavalt GDPR-ile. Säilitate alati täieliku kontrolli ja saate kõike eksportida."
+    },
+    "q4": {
+      "question": "Mis juhtub, kui tahan loobuda?",
+      "answer": "Igakuist teenust saab igal ajal kuu lõpus tühistada. Teie andmed kuuluvad teile — ekspordin kõik korrektselt teie jaoks."
+    },
+    "q5": {
+      "question": "Millisele valdkonnale süsteem sobib?",
+      "answer": "Süsteem on ideaalne käsitööettevõtetele alates 1 töötajast — üksikettevõtjatest kuni 30+ töötajaga ettevõteteni. Olgu tegemist metallitöö, torustiku, elektri-, puusepa- või maalritöödega — kohanadan selle täpselt teie valdkonnale."
+    },
+    "q6": {
+      "question": "Mida tähendab 'AI-ga'?",
+      "answer": "Tehisintellekt aitab teil näiteks pakkumiste koostamisel, klientide päringute mustrite tuvastamisel ja automaatsetel järelmeetmetel. Säilitate alati täieliku kontrolli — AI teeb ettepanekuid, teie otsustate."
+    },
+    "q7": {
+      "question": "Kas esimene konsultatsioon on tõesti tasuta?",
+      "answer": "Jah, 100%. Vaatame koos teie ettevõtte läbi ja näitan, kus digitaliseerimine toob kõige rohkem väärtust. Ilma kohustuseta."
+    }
+  },
+  "cta": {
+    "title": "Valmis järgmiseks sammuks?",
+    "text": "15 minutiga näitan teile, kuidas teie ettevõte digitaalselt välja näha võiks. Tasuta ja ilma kohustuseta.",
+    "ctaPrimary": "Broneeri tasuta konsultatsioon",
+    "ctaSecondary": "Või võtke ühendust e-posti teel",
+    "hint": "Saadaval: E–R 16–20, L 10–16",
+    "legal": "Broneerides nõustute oma andmete töötlemisega vastavalt meie <a href=\"/datenschutz.html\">privaatsuspoliitikale</a>."
+  },
+  "footer": {
+    "impressum": "Juriidiline teave",
+    "datenschutz": "Privaatsus",
+    "agb": "Tingimused",
+    "kontakt": "Kontakt",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Kõik õigused kaitstud."
+  },
+  "stickyCta": {
+    "text": "Tasuta konsultatsioon"
+  }
+}

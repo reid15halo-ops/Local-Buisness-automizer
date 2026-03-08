@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI digitalizacija za male biznise",
+    "description": "Premium digitalizacija za male biznise. Predracuni, fakture, pracenje vremena - sve AI-podrZano u jednom sistemu. Za zanatlije i mala preduzeca od 1 zaposlenog.",
+    "ogTitle": "FreyAI Visions - AI digitalizacija za male biznise",
+    "ogDescription": "Vas digitalni stub: CRM, predracuni, fakture, pracenje vremena - sve AI-podrZano."
+  },
+  "a11y": {
+    "skipToContent": "Preskoci na sadrzaj"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funkcije",
+    "ablauf": "Proces",
+    "preise": "Cene",
+    "faq": "FAQ",
+    "cta": "Besplatne konsultacije",
+    "openMenu": "Open navigation"
+  },
+  "hero": {
+    "badge": "Pilot projekat: 800 EUR - ostalo samo 3 mesta",
+    "label": "Prakticni AI alati i automatizacija",
+    "title": "Automatizujte<br>procese.<br><span class=\"gradient\">Pametno.</span>",
+    "subtitle": "Skolovani zidar, sada AI inzenjer - poznajem svakodnevni zivot malih preduzeca iz licnog iskustva. Prilagodjena automatizacija za zanatlije i MSP - u skladu sa GDPR, efikasno, pristupacno.",
+    "portraitAlt": "Jonas Glawion - Grundatel FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Stupite u kontakt",
+    "ctaSecondary": "Saznajte vise",
+    "role": "Zidar i AI inzenjer",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Gotovi u 17:15 umesto u 20:00",
+    "price": "od 800 EUR",
+    "priceLabel": "Jednokratno, bez pretplate",
+    "onsite": "Na licu mesta",
+    "onsiteLabel": "Licno podesavanje",
+    "gdpr": "GDPR",
+    "gdprLabel": "Podaci ostaju u EU"
+  },
+  "problem": {
+    "label": "Problem",
+    "title": "Zvuci li vam poznato?",
+    "subtitle": "Vecina malih preduzeca gubi sate svake nedelje zbog administrativnog haosa.",
+    "card1": {
+      "title": "Papirni haos",
+      "text": "Narudzbine na lepljivim beleskama, predracuni u Excel-u, fakture u fascikli. Nista se ne uklapa."
+    },
+    "card2": {
+      "title": "Gubitak vremena na kancelarijski rad",
+      "text": "Jos dva sata uvece kucate predracune umesto da budete sa porodicom - ne mora biti tako."
+    },
+    "card3": {
+      "title": "Izgubljene narudzbine",
+      "text": "Upiti se zatrpaju, predracuni se zaborave, klijenti odlaze."
+    },
+    "card4": {
+      "title": "Programska dzungla",
+      "text": "Pet razlicitih alata, nijedan ne komunicira sa drugim. Dvostruki unos podataka svuda."
+    }
+  },
+  "solution": {
+    "label": "Resenje",
+    "title": "Jedan sistem. Sve ukljuceno.",
+    "subtitle": "FreyAI Visions vam gradi digitalni stub - prilagodjen vasem poslovanju.",
+    "card1": {
+      "title": "Sve na jednom mestu",
+      "text": "Klijenti, predracuni, fakture, pracenje vremena - jedan sistem umesto pet."
+    },
+    "card2": {
+      "title": "AI radi za vas",
+      "text": "Predracuni se generisu automatski, podsecanja se salju sama."
+    },
+    "card3": {
+      "title": "Mobilno na gradilistu",
+      "text": "Belezite sate, otpremate fotografije, azurirate status - direktno sa smartphones."
+    },
+    "card4": {
+      "title": "Pravljeno po meri",
+      "text": "Nema standardnih resenja. Vas sistem je tacno prilagodjen vasim radnim tokovima."
+    }
+  },
+  "trust": {
+    "label": "Poverenje",
+    "title": "Zasto FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Od zanatlije za zanatlije",
+      "text": "Kao skolovani zidar znam svakodnevni zivot na gradilistu - i ono sto zaista pomaze."
+    },
+    "card2": {
+      "title": "100% u skladu sa GDPR",
+      "text": "Svi podaci na EU serverima. Nema US oblaka, nema pracenja, nema sitnog slova."
+    },
+    "card3": {
+      "title": "Pogtene cene",
+      "text": "Starter-i placaju jednom. Veca preduzeca dobijaju ugovor o usluzi - otkazivanje mesecno, bez vezivanja."
+    },
+    "card4": {
+      "title": "Licni kontakt",
+      "text": "Nema call centra, nema sistema tiketa. Zovete me direktno - ja resavam."
+    }
+  },
+  "comparison": {
+    "label": "Pre / Posle",
+    "title": "Vase vece sa FreyAI",
+    "without": {
+      "title": "Bez FreyAI",
+      "text": "17:00, kraj radnog dana. Ali najpre: otkucajte 3 predracuna, pronadjite fakture, povratite poziv klijentima. Gotovi u 20:00."
+    },
+    "with": {
+      "title": "Sa FreyAI",
+      "text": "17:00, brza provera na smartphone-u: predracuni su spremni, fakture automatski zabelezene, klijenti su vec dobili odgovor. U 17:15 zaista ste slobodni."
+    }
+  },
+  "features": {
+    "label": "Moduli",
+    "title": "Sve sto vam je potrebno za poslovanje",
+    "subtitle": "Svaki modul je savrseno integrisan - ne zakrpljen, vec kompletan sistem.",
+    "card1": {
+      "title": "Nikad vise zaboravljenih klijenata",
+      "text": "Svi podaci o klijentima na jednom mestu. Ko je zvao kada? Kada treba da pozovem? Sistem automatski podseca.",
+      "tag1": "Upravljanje klijentima",
+      "tag2": "Podsecanja",
+      "tag3": "Istorija kontakata"
+    },
+    "card2": {
+      "title": "Predracuni za minute, ne za sate",
+      "text": "Izaberite stavke, prilagodite cene, posaljite. Od Business paketa AI cak sastavlja tekst za vas.",
+      "tag1": "Brzi predracuni",
+      "tag2": "PDF isporuka",
+      "tag3": "Faktura jednim klikom"
+    },
+    "card3": {
+      "title": "AI koji misli unapred",
+      "text": "Vas digitalni asistent analizira upite, predlaze cene i podseca na otvorene predracune. Vi ostajete u kontroli - AI daje predloge.",
+      "tag1": "Od Business paketa",
+      "tag2": "Predlozi teksta",
+      "tag3": "Preporuke cena"
+    },
+    "card4": {
+      "title": "Pracenje vremena - direktno na gradilistu",
+      "text": "Vasi zaposleni ujutru tapnu telefon i gotovi. Nema skupljanja papirnih evidencija na kraju meseca. Izvoz za plate jednim klikom.",
+      "tag1": "Od Business paketa",
+      "tag2": "Mobilno",
+      "tag3": "Izvoz plata"
+    },
+    "card5": {
+      "title": "Radi na svakom smartphone-u",
+      "text": "Bez prodavnice aplikacija, bez instalacije. Jednostavno otvorite u pregledacu - na telefonu, tabletu ili racunaru. Radi i offline.",
+      "tag1": "Aplikacija u pregledacu",
+      "tag2": "Offline rezim",
+      "tag3": "Bez prodavnice aplikacija"
+    },
+    "card6": {
+      "title": "Vas racunovodja ce biti odusevljen",
+      "text": "Kompatibilan DATEV izvoz za vaseg racunovodju. Prihodi, rashodi, racuni - sve uredno pripremljeno.",
+      "tag1": "Od Business paketa",
+      "tag2": "DATEV izvoz",
+      "tag3": "Arhiv dokumenata"
+    }
+  },
+  "betweenCta": {
+    "text": "Zvuci dobro? Zakljucite besplatne konsultacije sada"
+  },
+  "steps": {
+    "label": "Kako funkcionise",
+    "title": "3 koraka do digitalnog poslovanja",
+    "subtitle": "Nema mesecnih projekata. Odvescu vas na pravi put za nekoliko nedelja.",
+    "step1": {
+      "number": "1",
+      "title": "Analiza i podesavanje",
+      "text": "Analiziram vase trenutne radne tokove i podesavam sistem tacno za vase poslovanje."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Prilagodjavanja i obuka",
+      "text": "Vasi sabloni, vase cene, vasi radni tokovi. Licno obucavam vas i vas tim."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizacija i rast",
+      "text": "AI automatizacija radi u pozadini. Vi se fokusirate na zanat - ja se brinem o tehnologiji."
+    }
+  },
+  "pricing": {
+    "label": "Ulaganje",
+    "title": "Transparentne cene. Bez sitnog slova.",
+    "subtitle": "Pocnite bez rizika - rastite sa ugovorom o usluzi.",
+    "recommended": "Препоручено",
+    "note": "Sve cene su konacne. Oslobodjeno PDV-a na osnovu par. 19 UStG (nemacki poreski zakon - oslobodjenje za mala preduzeca). Pilot projekat i Starter bez redovnih troskova. Business i Enterprise ukljucuju ugovor o usluzi (otkazivanje mesecno).",
+    "pilot": {
+      "name": "Pilot projekat",
+      "desc": "Idealno za samostalne preduzetnike koji zele da isprobaju.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Jednokratno",
+      "cta": "Pocnite",
+      "f1": "Hvatanje faktura (OCR)",
+      "f2": "Upravljanje klijentima (CRM)",
+      "f3": "Asistent e-poste",
+      "f4": "Licno podesavanje (1-2h)",
+      "f5": "8 nedelja podrske",
+      "f6": "PWA za telefon i racunar"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Idealno za mala preduzeca (1-3 zaposlena).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Jednokratno",
+      "cta": "Zakljucite konsultacije",
+      "f1": "Sve iz Pilot projekta",
+      "f2": "Generisanje predracuna",
+      "f3": "Upravljanje narudzbinama",
+      "f4": "Knjigovodstvo (prihodi/rashodi)",
+      "f5": "PDF izvoz",
+      "f6": "3 meseca podrske"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Za rastuuca preduzeca (3-10 zaposlenih).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Jednokratno + 150 EUR/mes. usluge",
+      "cta": "Zakljucite konsultacije",
+      "f1": "Sve iz Starter-a",
+      "f2": "Vise korisnika (do 5)",
+      "f3": "Pracenje vremena",
+      "f4": "Redovne fakture",
+      "f5": "Kanban tabla",
+      "f6": "WhatsApp integracija",
+      "f7": "Korporativni dizajn",
+      "f8": "Azuriranja i odrzavanje ukljuceni"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Za veca preduzeca (10+ zaposlenih).",
+      "price": "od 5.000",
+      "currency": "€",
+      "sub": "Jednokratno + od 500 EUR/mes. usluge",
+      "cta": "Stupite u kontakt",
+      "amount": "od 5.000",
+      "f1": "Sve iz Business-a",
+      "f2": "Neograniceni korisnici",
+      "f3": "API pristup",
+      "f4": "Prilagodljive integracije",
+      "f5": "Posveceni kontakt menadzjer",
+      "f6": "SLA garancija",
+      "f7": "Obuka na licu mesta"
+    }
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Cesto postavljana pitanja",
+    "q1": {
+      "question": "Da li su mi potrebna tehnicka znanja?",
+      "answer": "Ne, apsolutno ne. Sistem je jednostavan za koristenje kao WhatsApp. Licno obucavam vas i vas tim i uvek sam dostupan za pitanja."
+    },
+    "q2": {
+      "question": "Koliko dugo traje podesavanje?",
+      "answer": "Obicno 2-4 nedelje. U prvoj nedelji analiziram vase radne tokove, u 2-3. nedelji podescavam sve, a u 4. nedelji obucavam vas tim."
+    },
+    "q3": {
+      "question": "Gde se cuvaju moji podaci?",
+      "answer": "Vasi podaci se cuvaju iskljucivo u EU centrima za podatke i zasticeni su u skladu sa GDPR. Uvek zadrzavate punu kontrolu i mozete sve da izvezete."
+    },
+    "q4": {
+      "question": "Sta se desava ako zelim da otkazem?",
+      "answer": "Mesecna podrska moze se otkazati u bilo kom trenutku na kraju meseca. Vasi podaci su vasi - uredno cu sve izvesti za vas."
+    },
+    "q5": {
+      "question": "Za koja preduzeca je sistem pogodan?",
+      "answer": "Sistem je idealan za mala preduzeca od 1 zaposlenog - od samostalnih preduzetnika do kompanija sa 30+ zaposlenih. Bez obzira na sektor - tacno ga prilagodjavamo vasoj industriji."
+    },
+    "q6": {
+      "question": "Sta znaci AI podrska?",
+      "answer": "Vestacka inteligencija vam pomaze, na primer, pri sastavljanju predracuna, prepoznavanju obrazaca u upitima klijenata i automatskim podsecanjima. Uvek zadrzavate punu kontrolu - AI daje predloge, vi odlucujete."
+    },
+    "q7": {
+      "question": "Da li je pocetna konsultacija zaista besplatna?",
+      "answer": "Da, 100%. Zajedno cu pogledati vase poslovanje i pokazati gde digitalizacija ima najveci uticaj. Bez obaveza."
+    }
+  },
+  "cta": {
+    "title": "Spremni za sledeci korak?",
+    "text": "Za 15 minuta pokazacu vam kako bi vase poslovanje moglo izgledati digitalno. Besplatno i bez obaveza.",
+    "ctaPrimary": "Zakljucite besplatne konsultacije",
+    "ctaSecondary": "Ili posaljite e-postu",
+    "hint": "Dostupno: Pon-Pet 16-20h, Sub 10-16h",
+    "legal": "Rezervacijom se slazete sa obradom vasih podataka prema nasoj"
+  },
+  "footer": {
+    "impressum": "Impresum",
+    "datenschutz": "Politika privatnosti",
+    "agb": "Uslovi i odredbe",
+    "kontakt": "Kontakt",
+    "contact": "Kontakt",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Sva prava zadrzana."
+  },
+  "stickyCta": {
+    "text": "Besplatne konsultacije"
+  }
+}

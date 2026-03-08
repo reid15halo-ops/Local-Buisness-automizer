@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | Digitealu AI do ghnothachtala beaga",
+    "description": "Digitealu préimhe do ghnothachtala beaga. Luachanna, sonrascanna, rianú ama - gach rud AI-chumhachtaithe in aon chóras amháin. Do cheardaithe agus gnothachtala beaga ó 1 fostai.",
+    "ogTitle": "FreyAI Visions - Digitealu AI do ghnothachtala beaga",
+    "ogDescription": "Do chnámh droma digiteach: CRM, luachanna, sonrascanna, rianú ama - gach rud AI-chumhachtaithe."
+  },
+  "a11y": {
+    "skipToContent": "Léim go dtí an t-ábhar"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Gnéithe",
+    "ablauf": "Próiseas",
+    "preise": "Praghsanna",
+    "faq": "FAQ",
+    "cta": "Comhairliúchán saor in aisce",
+    "openMenu": "Open navigation"
+  },
+  "hero": {
+    "badge": "Tionscadal Píolóta: 800 EUR - 3 áit amháin fágtha",
+    "label": "Uirlisí AI praiticiúla agus uathoibriú",
+    "title": "Uathoibrigh<br>próisis.<br><span class=\"gradient\">Go cliste.</span>",
+    "subtitle": "Saoir cloiche oilte, anois innealtóir AI - tá aithne agam ar shaol laethúil gnothachtala beaga ó thaithí phearsanta. Uathoibriú saincheaptha do cheardaithe agus FBManna - GDPR-comhlíontach, éifeachtach, inacmhainne.",
+    "portraitAlt": "Jonas Glawion - Grundatel FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Déan teagmháil",
+    "ctaSecondary": "Foghlaim tuilleadh",
+    "role": "Saor cloiche agus innealtóir AI",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "5:15 in",
+    "timeLabel": "Criochnaithe ag 5:15 in seachas 8 in",
+    "price": "ó 800 EUR",
+    "priceLabel": "Aon uair amháin, gan síntiús",
+    "onsite": "Ar an láthair",
+    "onsiteLabel": "Socrú pearsanta",
+    "gdpr": "GDPR",
+    "gdprLabel": "Fanann sonraí san AE"
+  },
+  "problem": {
+    "label": "An Fhadhb",
+    "title": "An gcloisteann tú seo ort féin?",
+    "subtitle": "Cailleann formhór na ngnothachtala beaga uaireanta gach seachtain de dheasca anord riaracháin.",
+    "card1": {
+      "title": "Anord páipéir",
+      "text": "Orduithe ar nótaí greamaitheacha, luachanna in Excel, sonrascanna i bhfillteán. Ní oireann aon rud dá chéile."
+    },
+    "card2": {
+      "title": "Am a chailliúint ar obair oifige",
+      "text": "Dhá uair an chloig eile istoíche ag clóscríobh luachanna in ionad a bheith leis an gclann - ní gá é sin a bheith amhlaidh."
+    },
+    "card3": {
+      "title": "Orduithe caillte",
+      "text": "Caitear iontrálacha i dteannta a chéile, déantar dearmad luachanna, téann cliaint ar shiúl."
+    },
+    "card4": {
+      "title": "Muir bogearraí",
+      "text": "Cúig uirlis dhifriúla, ní labhraíonn ceann ar bith acu leis an gceann eile. Iontráil dúblach sonraí i ngach áit."
+    }
+  },
+  "solution": {
+    "label": "An Réiteach",
+    "title": "Aon chóras amháin. Gach rud san áireamh.",
+    "subtitle": "Tógann FreyAI Visions cnámh droma digiteach duit - saincheaptha do do ghnó.",
+    "card1": {
+      "title": "Gach rud in aon áit",
+      "text": "Cliaint, luachanna, sonrascanna, rianú ama - aon chóras in ionad cúig."
+    },
+    "card2": {
+      "title": "Oibríonn an AI ar do shon",
+      "text": "Gintear luachanna go huathoibríoch, seoltar meabhrúcháin leo féin."
+    },
+    "card3": {
+      "title": "Soghluaiste ar an láthair",
+      "text": "Cláraigh uaireanta, uaslódáil grianghraif, nuashonraigh stádas - díreach ó d'fhón."
+    },
+    "card4": {
+      "title": "Déanta de réir do mhéide",
+      "text": "Gan réiteach caighdeánach. Tá do chóras saincheaptha go beacht do do shreafaí oibre."
+    }
+  },
+  "trust": {
+    "label": "Muinín",
+    "title": "Cén fáth FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Ó cheardaí do cheardaithe",
+      "text": "Mar shaor cloiche oilte, tá aithne agam ar shaol laethúil na láithreán - agus an rud a chabhraíonn go dáiríre."
+    },
+    "card2": {
+      "title": "100% GDPR-comhlíontach",
+      "text": "Gach sonra ar fhreastalaithe AE. Gan scamall Meiriceánach, gan rianú, gan cló beag."
+    },
+    "card3": {
+      "title": "Praghsáil ionraic",
+      "text": "Íocann tosaitheoirí uair amháin. Faigheann gnothachtala níos mó conradh seirbhíse - cealú míosúil, gan tréimhse ceangail."
+    },
+    "card4": {
+      "title": "Teagmhálaí pearsanta",
+      "text": "Gan ionad glao, gan córas ticéad. Glaonn tú ormsa go díreach - déanaim aire de."
+    }
+  },
+  "comparison": {
+    "label": "Roimh / Ina dhiaidh",
+    "title": "Do thráthnóna le FreyAI",
+    "without": {
+      "title": "Gan FreyAI",
+      "text": "5:00 in, deireadh an lae oibre. Ach ar dtús: clóscríobh 3 luacháin, aimsigh sonrascanna, cuir glaoch ar ais ar chliaint. Críochnaithe ag 8:00 in."
+    },
+    "with": {
+      "title": "Le FreyAI",
+      "text": "5:00 in, seiceáil ghasta ar d'fhón: tá luachanna réidh, gabhtar sonrascanna go huathoibríoch, fuair cliaint freagra cheana féin. Ag 5:15 in tá tú críochnaithe go dáiríre."
+    }
+  },
+  "features": {
+    "label": "Modúil",
+    "title": "Gach rud a theastaíonn ó do ghnó",
+    "subtitle": "Tá gach modúl comhtháite go foirfe - ní paistíocht é, ach córas iomlán.",
+    "card1": {
+      "title": "Níl cliant feicthe le dearmad a dhéanamh air arís",
+      "text": "Gach sonra cliaint in aon áit amháin. Cé a ghlaoigh cathain? Cathain is gá dom glaoch a chur? Cuireann an córas meabhrú go huathoibríoch.",
+      "tag1": "Bainistiú cliaint",
+      "tag2": "Meabhrúcháin",
+      "tag3": "Stair teagmhálacha"
+    },
+    "card2": {
+      "title": "Luachanna i nóiméid, ní i gcéadta uaire",
+      "text": "Roghnaigh míreanna, coigeartaigh praghsanna, seol. Ón bPlean Business, dréachtaíonn an AI fiú an téacs duit.",
+      "tag1": "Luachanna tapaidha",
+      "tag2": "Seachadadh PDF",
+      "tag3": "Sonrasc le cliceáil amháin"
+    },
+    "card3": {
+      "title": "AI a smaoineann chun tosaigh",
+      "text": "Déanann do chúntóir digiteach anailís ar iarratais, molann praghsanna agus meabhraíonn luachanna oscailte. Fanann tú i gceannas - déanann an AI moltaí.",
+      "tag1": "Ón bPlean Business",
+      "tag2": "Moltaí téacs",
+      "tag3": "Moltaí praghsanna"
+    },
+    "card4": {
+      "title": "Rianú ama - díreach ar an láthair",
+      "text": "Buaileann d'fhostaithe a bhfón ar maidin agus tá siad réidh. Gan tuairiscí páipéir a bhailiú ag deireadh na míosa. Easpórtáil párolla le cliceáil amháin.",
+      "tag1": "Ón bPlean Business",
+      "tag2": "Soghluaiste",
+      "tag3": "Easpórtáil párolla"
+    },
+    "card5": {
+      "title": "Oibríonn ar aon smartphone",
+      "text": "Gan siopa feidhmchlár, gan suiteáil. Oscail sa bhrabhsálaí - ar d'fhón, táibléad nó ríomhaire. Oibríonn freisin as líne.",
+      "tag1": "Feidhmchlár brabhsálaí",
+      "tag2": "Mód as líne",
+      "tag3": "Gan siopa feidhmchlár"
+    },
+    "card6": {
+      "title": "Beidh áthas ar do chuntasóir",
+      "text": "Easpórtáil DATEV comhoiriúnach do do chuntasóir. Ioncam, caiteachas, admhálacha - gach rud ullmhaithe go néata.",
+      "tag1": "Ón bPlean Business",
+      "tag2": "Easpórtáil DATEV",
+      "tag3": "Cartlann doiciméad"
+    }
+  },
+  "betweenCta": {
+    "text": "Cloiseann maith é? Cuir comhairliúchán saor in aisce in áirithe anois"
+  },
+  "steps": {
+    "label": "Conas a oibríonn sé",
+    "title": "3 chéim go gnó digiteach",
+    "subtitle": "Gan tionscadal míosa. Cuirfidh mé tú ar an mbóthar ceart i gcúpla seachtain.",
+    "step1": {
+      "number": "1",
+      "title": "Anailís agus socrú",
+      "text": "Déanaim anailís ar do shreafaí oibre reatha agus socraím an córas go beacht do do ghnó."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Saincheapadh agus oiliúint",
+      "text": "Do theimpléid, do phraghsanna, do shreafaí oibre. Oibrím thú féin agus do fhoireann go pearsanta."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Uathoibriú agus fás",
+      "text": "Ritheann uathoibriú AI sa chúlra. Dírigh tú ar do cheird - déanaim féin cúram den teicneolaíocht."
+    }
+  },
+  "pricing": {
+    "label": "Infheistíocht",
+    "title": "Praghsanna trédhearcacha. Gan cló beag.",
+    "subtitle": "Tosaigh gan riosca - fás le conradh seirbhíse.",
+    "recommended": "Molta",
+    "note": "Tá gach praghsanna críochnaitheach. Díolmhaithe ó CBL faoi alt 19 UStG (dlí cánach na Gearmáine - díolúine do ghnothachtala beaga). Gan costais athfhillteacha le haghaidh Tionscadal Píolóta agus Starter. Áirítear conradh seirbhíse le Business agus Enterprise (cealú míosúil).",
+    "pilot": {
+      "name": "Tionscadal Píolóta",
+      "desc": "Foirfe do fheicheamhnaigh aonair ar mhaith leo triail a bhaint.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Aon uair amháin",
+      "cta": "Tosaigh",
+      "f1": "Gabháil sonrascanna (OCR)",
+      "f2": "Bainistiú cliaint (CRM)",
+      "f3": "Cúntóir ríomhphoist",
+      "f4": "Socrú pearsanta (1-2u)",
+      "f5": "8 seachtain tacaíochta",
+      "f6": "PWA d'fhón agus ríomhaire"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Foirfe do ghnothachtala beaga (1-3 fostaithe).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Aon uair amháin",
+      "cta": "Cuir comhairliúchán in áirithe",
+      "f1": "Gach rud ón Tionscadal Píolóta",
+      "f2": "Giniúint luachanna",
+      "f3": "Bainistiú orduithe",
+      "f4": "Cuntasaíocht (ioncam/caiteachas)",
+      "f5": "Easpórtáil PDF",
+      "f6": "3 mhí tacaíochta"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Do ghnothachtala ag fás (3-10 fostaithe).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Aon uair amháin + 150 EUR/mí seirbhís",
+      "cta": "Cuir comhairliúchán in áirithe",
+      "f1": "Gach rud ón Starter",
+      "f2": "Il-úsáideoirí (suas le 5)",
+      "f3": "Rianú ama",
+      "f4": "Sonrascanna athfhillteacha",
+      "f5": "Painéal Kanban",
+      "f6": "Comhtháthú WhatsApp",
+      "f7": "Branda saincheaptha",
+      "f8": "Nuashonruithe agus cothabháil san áireamh"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Do chuideachtaí níos mó (10+ fostaithe).",
+      "price": "ó 5.000",
+      "currency": "€",
+      "sub": "Aon uair amháin + ó 500 EUR/mí seirbhís",
+      "cta": "Déan teagmháil",
+      "amount": "ó 5.000",
+      "f1": "Gach rud ón Business",
+      "f2": "Úsáideoirí gan teorainn",
+      "f3": "Rochtain API",
+      "f4": "Comhtháthuithe saincheaptha",
+      "f5": "Pointe teagmhála tiomnaithe",
+      "f6": "Ráthaíocht SLA",
+      "f7": "Oiliúint ar an láthair"
+    }
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Ceisteanna Coitianta",
+    "q1": {
+      "question": "An bhfuil eolas teicniúil ag teastáil uaim?",
+      "answer": "Níl, ar chor ar bith. Tá an córas chomh simplí le WhatsApp. Oibrím thú féin agus do fhoireann go pearsanta agus tá mé i gcónaí ar fáil le haghaidh ceisteanna."
+    },
+    "q2": {
+      "question": "Cé chomh fada a thógann an socrú?",
+      "answer": "De ghnáth 2-4 seachtain. Sa chéad seachtain, déanaim anailís ar do shreafaí oibre, in seachtainí 2-3 socraím gach rud, agus in seachtain 4 oibrím do fhoireann."
+    },
+    "q3": {
+      "question": "Cá stóráiltear mo chuid sonraí?",
+      "answer": "Stóráiltear do chuid sonraí i lárionaid sonraí AE go heisiach agus tá siad cosanta go GDPR-comhlíontach. Coinnigh tú cóir iomlán i gcónaí agus is féidir leat gach rud a easpórtáil."
+    },
+    "q4": {
+      "question": "Cad a tharlaíonn má tá mé ag iarraidh cealú?",
+      "answer": "Is féidir an tacaíocht mhíosúil a chealú am ar bith ag deireadh na míosa. Is leatsa do chuid sonraí - easpórtálfaidh mé gach rud go néata duit."
+    },
+    "q5": {
+      "question": "Do cé na gnothachtala atá an córas oiriúnach?",
+      "answer": "Tá an córas foirfe do ghnothachtala beaga ó 1 fostai - ó fheicheamhnaigh aonair go cuideachtaí le 30+ duine. Beag beann ar an earnáil - tairgim go beacht do do thionscal é."
+    },
+    "q6": {
+      "question": "Cad is brí le tacaíocht AI?",
+      "answer": "Cabhraíonn an intleacht shaorga leat, mar shampla, le dréachtú luachanna, aithint patrún i n-iarratais cliaint agus meabhrúcháin uathoibríocha. Coinnigh tú cóir iomlán i gcónaí - déanann an AI moltaí, tusa cinneann."
+    },
+    "q7": {
+      "question": "An bhfuil an comhairliúchán tosaigh saor in aisce i ndáiríre?",
+      "answer": "Sea, 100%. Féachfaidh mé ar do ghnó i dteannta leat agus taispeánfaidh mé cá bhfuil an tionchar is mó ag an digitiú. Gan aon oibleagáidí."
+    }
+  },
+  "cta": {
+    "title": "Réidh don chéad chéim eile?",
+    "text": "I 15 nóiméad, taispeánfaidh mé duit cad é an chuma a bheadh ar do ghnó go digiteach. Saor in aisce agus gan oibleagáidí.",
+    "ctaPrimary": "Cuir comhairliúchán saor in aisce in áirithe",
+    "ctaSecondary": "Nó seol ríomhphost",
+    "hint": "Ar fáil: Luan-Aoine 4-8 in, Satharn 10rn-4in",
+    "legal": "Trí choinne a dhéanamh, aontaíonn tú le próiseáil do chuid sonraí de réir ár"
+  },
+  "footer": {
+    "impressum": "Priontáil",
+    "datenschutz": "Beartas Príobháideachta",
+    "agb": "Téarmaí agus Coinníollacha",
+    "kontakt": "Teagmháil",
+    "contact": "Teagmháil",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Gach ceart ar cosaint."
+  },
+  "stickyCta": {
+    "text": "Comhairliúchán saor in aisce"
+  }
+}

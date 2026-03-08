@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | KI-Digitalisierung für Handwerksbetriebe",
+    "description": "Premium-Digitalisierung für deutsche Handwerksbetriebe. Angebote, Rechnungen, Zeiterfassung – alles KI-gestützt in einem System. Massgeschneidert für Handwerksbetriebe und kleine Unternehmen ab 1 Mitarbeiter.",
+    "ogTitle": "FreyAI Visions – KI-Digitalisierung für Handwerksbetriebe",
+    "ogDescription": "Ihr digitales Rückgrat: CRM, Angebote, Rechnungen, Zeiterfassung – alles KI-gestützt. Massgeschneidert für Handwerksbetriebe."
+  },
+  "a11y": {
+    "skipToContent": "Zum Inhalt springen"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Features",
+    "ablauf": "Ablauf",
+    "preise": "Preise",
+    "faq": "FAQ",
+    "cta": "Erstgespräch buchen",
+    "openMenu": "Navigation öffnen"
+  },
+  "hero": {
+    "badge": "Pilotprojekt: 800 € – nur 3 Plätze",
+    "label": "Funktionale AI Tools und Automatisierungen",
+    "title": "Prozesse<br>automatisieren.<br><span class=\"gradient\">Intelligent.</span>",
+    "subtitle": "Gelernter Steinmetz, jetzt KI-Ingenieur — ich kenne den Handwerker-Alltag aus eigener Erfahrung. Individuelle Automatisierung für Handwerk und Mittelstand — DSGVO-konform, effizient, bezahlbar.",
+    "portraitAlt": "Jonas Glawion - Gründer von FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Kontakt aufnehmen",
+    "ctaSecondary": "Mehr erfahren",
+    "role": "Steinmetz & KI-Ingenieur",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15 Uhr",
+    "timeLabel": "Feierabend statt 20 Uhr",
+    "price": "ab 800€",
+    "priceLabel": "Einmalig, ohne Abo-Pflicht",
+    "onsite": "Vor Ort",
+    "onsiteLabel": "Persönlich eingerichtet",
+    "gdpr": "DSGVO",
+    "gdprLabel": "Daten bleiben in Deutschland"
+  },
+  "problem": {
+    "label": "Das Problem",
+    "title": "Kennen Sie das?",
+    "subtitle": "Die meisten Handwerksbetriebe verlieren jede Woche Stunden an Verwaltungschaos.",
+    "card1": {
+      "title": "Zettelwirtschaft",
+      "text": "Aufträge auf Zetteln, Angebote in Excel, Rechnungen im Ordner. Nichts passt zusammen."
+    },
+    "card2": {
+      "title": "Zeitfresser Büro",
+      "text": "Abends noch 2 Stunden Angebote schreiben statt bei der Familie – das muss nicht sein."
+    },
+    "card3": {
+      "title": "Verlorene Aufträge",
+      "text": "Anfragen gehen unter, Angebote werden vergessen, Kunden springen ab."
+    },
+    "card4": {
+      "title": "Software-Dschungel",
+      "text": "5 verschiedene Tools, keins redet mit dem anderen. Doppelte Eingaben überall."
+    }
+  },
+  "solution": {
+    "label": "Die Lösung",
+    "title": "Ein System. Alles drin.",
+    "subtitle": "FreyAI Visions baut Ihnen ein digitales Rückgrat – massgeschneidert auf Ihren Betrieb.",
+    "card1": {
+      "title": "Alles an einem Ort",
+      "text": "Kunden, Angebote, Rechnungen, Zeiten – ein System statt fünf."
+    },
+    "card2": {
+      "title": "KI arbeitet für Sie",
+      "text": "Angebote werden automatisch erstellt, Nachfassaktionen laufen von selbst."
+    },
+    "card3": {
+      "title": "Mobil auf der Baustelle",
+      "text": "Zeiten erfassen, Fotos hochladen, Status ändern – direkt vom Handy."
+    },
+    "card4": {
+      "title": "Massgeschneidert",
+      "text": "Kein Baukasten. Ihr System wird genau auf Ihre Abläufe zugeschnitten."
+    }
+  },
+  "trust": {
+    "label": "Vertrauen",
+    "title": "Warum FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Vom Handwerker für Handwerker",
+      "text": "Als gelernter Steinmetz kenne ich den Alltag auf der Baustelle — und weiß, was wirklich hilft."
+    },
+    "card2": {
+      "title": "100% DSGVO-konform",
+      "text": "Alle Daten auf EU-Servern. Keine US-Cloud, kein Tracking, kein Kleingedrucktes."
+    },
+    "card3": {
+      "title": "Ehrliche Preise",
+      "text": "Einsteiger zahlen einmalig. Größere Betriebe bekommen Service-Vertrag — monatlich kündbar, keine Laufzeit."
+    },
+    "card4": {
+      "title": "Persönlicher Ansprechpartner",
+      "text": "Kein Callcenter, kein Ticket-System. Sie rufen mich direkt an — ich kümmere mich."
+    }
+  },
+  "comparison": {
+    "label": "Vorher / Nachher",
+    "title": "Ihr Feierabend mit FreyAI",
+    "without": {
+      "title": "Ohne FreyAI",
+      "text": "17 Uhr, Feierabend. Aber erst noch: 3 Angebote tippen, Rechnungen suchen, Kunden zurückrufen. Um 20 Uhr endlich fertig."
+    },
+    "with": {
+      "title": "Mit FreyAI",
+      "text": "17 Uhr, kurz aufs Handy: Angebote sind vorbereitet, Rechnungen automatisch erfasst, Kunden haben schon Antwort bekommen. Um 17:15 wirklich Feierabend."
+    }
+  },
+  "features": {
+    "label": "Module",
+    "title": "Alles, was Ihr Betrieb braucht",
+    "subtitle": "Jedes Modul ist perfekt aufeinander abgestimmt – kein Flickwerk, sondern ein Gesamtsystem.",
+    "card1": {
+      "title": "Nie wieder Kunden vergessen",
+      "text": "Alle Kundendaten an einem Ort. Wer hat wann angerufen? Wann muss ich nachfassen? Das System erinnert Sie automatisch.",
+      "tag1": "Kundenverwaltung",
+      "tag2": "Wiedervorlagen",
+      "tag3": "Kontakthistorie"
+    },
+    "card2": {
+      "title": "Angebot in Minuten statt Stunden",
+      "text": "Positionen auswählen, Preise anpassen, absenden. Ab dem Business-Paket schreibt die KI sogar Texte für Sie vor.",
+      "tag1": "Schnelle Angebote",
+      "tag2": "PDF-Versand",
+      "tag3": "Ein-Klick-Rechnung"
+    },
+    "card3": {
+      "title": "KI, die mitdenkt",
+      "text": "Ihr digitaler Assistent analysiert Anfragen, schlägt Preise vor und erinnert an offene Angebote. Sie behalten die Kontrolle — die KI macht Vorschläge.",
+      "tag1": "Ab Business-Paket",
+      "tag2": "Textvorschläge",
+      "tag3": "Preisempfehlungen"
+    },
+    "card4": {
+      "title": "Zeiten erfassen — direkt auf der Baustelle",
+      "text": "Ihre Mitarbeiter tippen morgens kurz aufs Handy und fertig. Kein Zettel-Sammeln am Monatsende. Export für die Lohnbuchhaltung mit einem Klick.",
+      "tag1": "Ab Business-Paket",
+      "tag2": "Mobil",
+      "tag3": "Lohn-Export"
+    },
+    "card5": {
+      "title": "Funktioniert auf jedem Handy",
+      "text": "Kein App-Store, keine Installation. Einfach im Browser öffnen — auf dem Handy, Tablet oder PC. Auch ohne Internet nutzbar.",
+      "tag1": "Browser-App",
+      "tag2": "Offline-fähig",
+      "tag3": "Kein App-Store"
+    },
+    "card6": {
+      "title": "Steuerberater freut sich",
+      "text": "DATEV-kompatibler Export für Ihren Steuerberater. Einnahmen, Ausgaben, Belege — alles sauber aufbereitet. Unterstützt GoBD-konforme Buchführung.",
+      "tag1": "Ab Business-Paket",
+      "tag2": "DATEV-Export",
+      "tag3": "Belegarchiv"
+    }
+  },
+  "betweenCta": {
+    "text": "Klingt gut? Jetzt Erstgespräch buchen"
+  },
+  "steps": {
+    "label": "So funktioniert's",
+    "title": "In 3 Schritten zum digitalen Betrieb",
+    "subtitle": "Kein monatelanges Projekt. Ich bringe Sie in wenigen Wochen auf Kurs.",
+    "step1": {
+      "number": "1",
+      "title": "Analyse & Setup",
+      "text": "Ich analysiere Ihre aktuellen Abläufe und richte das System passgenau für Ihren Betrieb ein."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Anpassung & Schulung",
+      "text": "Ihre Vorlagen, Ihre Preise, Ihre Workflows. Ich schule Sie und Ihr Team persönlich ein."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatisieren & Wachsen",
+      "text": "KI-Automatisierungen laufen im Hintergrund. Sie konzentrieren sich aufs Handwerk – ich auf die Technik."
+    }
+  },
+  "pricing": {
+    "label": "Investition",
+    "title": "Transparente Preise. Kein Kleingedrucktes.",
+    "subtitle": "Einsteigen ohne Risiko — wachsen mit Service-Vertrag.",
+    "recommended": "Empfohlen",
+    "note": "Alle Preise sind Endpreise. Gem. §19 UStG wird keine Umsatzsteuer berechnet. Pilotprojekt & Starter ohne laufende Kosten. Business & Enterprise inkl. Service-Vertrag (monatlich kündbar).",
+    "pilot": {
+      "name": "Pilotprojekt",
+      "desc": "Ideal für Einzelunternehmer, die testen wollen.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Einmalig",
+      "cta": "Jetzt starten",
+      "f1": "Rechnungserfassung (OCR)",
+      "f2": "Kundenverwaltung (CRM)",
+      "f3": "Email-Assistent",
+      "f4": "Persönliches Setup (1–2h)",
+      "f5": "8 Wochen Betreuung",
+      "f6": "PWA für Handy + Desktop"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideal für kleine Betriebe (1–3 Mitarbeiter).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Einmalig",
+      "cta": "Beratung buchen",
+      "f1": "Alles aus Pilotprojekt",
+      "f2": "Angebotserstellung",
+      "f3": "Auftragsmanagement",
+      "f4": "Buchhaltung (EÜR)",
+      "f5": "PDF-Export",
+      "f6": "3 Monate Support"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Für wachsende Betriebe (3–10 Mitarbeiter).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Einmalig + 150 €/Monat Service",
+      "cta": "Beratung buchen",
+      "f1": "Alles aus Starter",
+      "f2": "Multi-User (bis 5)",
+      "f3": "Zeiterfassung",
+      "f4": "Wiederkehrende Rechnungen",
+      "f5": "Kanban-Pipeline",
+      "f6": "WhatsApp Integration",
+      "f7": "Individuelles Branding",
+      "f8": "Updates & Wartung inklusive"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Für größere Unternehmen (10+ Mitarbeiter).",
+      "price": "ab 5.000",
+      "currency": "€",
+      "sub": "Einmalig + ab 500 €/Monat Service",
+      "cta": "Kontakt aufnehmen",
+      "amount": "ab 5.000",
+      "f1": "Alles aus Business",
+      "f2": "Unbegrenzte User",
+      "f3": "API-Zugang",
+      "f4": "Individuelle Integrationen",
+      "f5": "Dedizierter Ansprechpartner",
+      "f6": "SLA-Garantie",
+      "f7": "Schulungen vor Ort"
+    }
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Häufig gestellte Fragen",
+    "q1": {
+      "question": "Brauche ich technische Vorkenntnisse?",
+      "answer": "Nein, absolut nicht. Das System ist so einfach wie WhatsApp bedienbar. Ich schule Sie und Ihr Team persönlich ein und bin bei Fragen immer erreichbar."
+    },
+    "q2": {
+      "question": "Wie lange dauert die Einrichtung?",
+      "answer": "In der Regel 2–4 Wochen. In der ersten Woche analysiere ich Ihre Abläufe, in Woche 2–3 richte ich alles ein und in Woche 4 schule ich Ihr Team."
+    },
+    "q3": {
+      "question": "Wo werden meine Daten gespeichert?",
+      "answer": "Ihre Daten werden ausschließlich in EU-Rechenzentren gespeichert und sind DSGVO-konform gesichert. Sie behalten jederzeit die volle Kontrolle über Ihre Daten und können alles exportieren."
+    },
+    "q4": {
+      "question": "Was passiert, wenn ich kündigen will?",
+      "answer": "Die monatliche Betreuung ist jederzeit zum Monatsende kündbar. Ihre Daten gehören Ihnen – ich exportiere alles sauber für Sie."
+    },
+    "q5": {
+      "question": "Für welche Gewerke ist das System geeignet?",
+      "answer": "Das System ist ideal für Handwerksbetriebe ab 1 Mitarbeiter — vom Einzelunternehmer bis zum Betrieb mit 30+ Leuten. Ob Metallbau, SHK, Elektro, Schreinerei oder Malerbetrieb — ich passe es genau auf Ihre Branche an."
+    },
+    "q6": {
+      "question": "Was bedeutet „KI-gestützt“?",
+      "answer": "Künstliche Intelligenz hilft Ihnen z.B. beim Formulieren von Angeboten, beim Erkennen von Mustern in Kundenanfragen und beim automatischen Nachfassen. Sie behalten immer die volle Kontrolle – die KI macht Vorschläge, Sie entscheiden."
+    },
+    "q7": {
+      "question": "Ist die Erstberatung wirklich kostenlos?",
+      "answer": "Ja, zu 100%. Ich schaue mir gemeinsam mit Ihnen Ihren Betrieb an und zeige Ihnen, wo Digitalisierung am meisten bringt. Ohne Verpflichtungen."
+    }
+  },
+  "cta": {
+    "title": "Bereit für den nächsten Schritt?",
+    "text": "In 15 Minuten zeige ich Ihnen, wie Ihr Betrieb digital aussehen könnte. Kostenlos und unverbindlich.",
+    "ctaPrimary": "Jetzt Erstgespräch buchen",
+    "ctaSecondary": "Oder per E-Mail anfragen",
+    "hint": "Verfügbar: Mo–Fr 16–20 Uhr, Sa 10–16 Uhr",
+    "legal": "Mit der Buchung stimmen Sie der Verarbeitung Ihrer Daten gem. unserer <a href=\"/datenschutz.html\">Datenschutzerklärung</a> zu."
+  },
+  "footer": {
+    "impressum": "Impressum",
+    "datenschutz": "Datenschutz",
+    "agb": "AGB",
+    "kontakt": "Kontakt",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Alle Rechte vorbehalten."
+  },
+  "stickyCta": {
+    "text": "Erstgespräch buchen"
+  }
+}

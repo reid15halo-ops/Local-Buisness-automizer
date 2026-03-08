@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI digitalizacija za obrtnike in MSP",
+    "description": "Premium digitalizacija za obrtnike in MSP. Ponudbe, računi, evidentiranje časa — vse z AI v enem sistemu. Po meri od 1 zaposlenega.",
+    "ogTitle": "FreyAI Visions — AI digitalizacija za obrtnike",
+    "ogDescription": "Vaša digitalna hrbtenica: CRM, ponudbe, računi, čas — vse z AI. Po meri za obrtnike."
+  },
+  "a11y": {
+    "skipToContent": "Pojdi na vsebino"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funkcije",
+    "ablauf": "Postopek",
+    "preise": "Cene",
+    "faq": "FAQ",
+    "cta": "Rezervirajte posvet",
+    "openMenu": "Odpri meni"
+  },
+  "hero": {
+    "badge": "Pilotni projekt: 800 € — samo 3 mesta",
+    "label": "Funkcionalna AI orodja in avtomatizacije",
+    "title": "Avtomatizirajte<br>procese.<br><span class=\"gradient\">Inteligentno.</span>",
+    "subtitle": "Izučen kamnosek, zdaj AI inženir — poznam vsakdanjik obrtnikov iz lastnih izkušenj. Individualna avtomatizacija za obrtnike in MSP — skladna z GDPR, učinkovita, dostopna.",
+    "portraitAlt": "Jonas Glawion — Ustanovitelj FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Stopite v stik",
+    "ctaSecondary": "Izvejte več",
+    "role": "Kamnosek in AI inženir",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Prosti ob 17:15 namesto ob 20:00",
+    "price": "od 800€",
+    "priceLabel": "Enkratno plačilo, brez naročnine",
+    "onsite": "Na kraju",
+    "onsiteLabel": "Osebna namestitev",
+    "gdpr": "GDPR",
+    "gdprLabel": "Podatki ostanejo v Evropi"
+  },
+  "problem": {
+    "label": "Problem",
+    "title": "Vam je znano?",
+    "subtitle": "Večina obrtniških podjetij vsak teden izgubi ure v administrativnem kaosu.",
+    "card1": {
+      "title": "Papirni kaos",
+      "text": "Naročila na listkih, ponudbe v Excelu, računi v mapah. Nič se ne ujema."
+    },
+    "card2": {
+      "title": "Pisarna požira čas",
+      "text": "Preživeti še 2 uri zvečer s pisanjem ponudb namesto da ste z družino — tako ne mora biti."
+    },
+    "card3": {
+      "title": "Izgubljene naročbe",
+      "text": "Povpraševanja se izgubijo, ponudbe se pozabijo, stranke odidejo."
+    },
+    "card4": {
+      "title": "Džungla programske opreme",
+      "text": "5 različnih orodij, ki med seboj ne komunicirajo. Dvojni vnos podatkov povsod."
+    }
+  },
+  "solution": {
+    "label": "Rešitev",
+    "title": "En sistem. Vse v njem.",
+    "subtitle": "FreyAI Visions vam zgradi digitalno hrbtenico — prilagojeno vašemu podjetju.",
+    "card1": {
+      "title": "Vse na enem mestu",
+      "text": "Stranke, ponudbe, računi, čas — en sistem namesto petih."
+    },
+    "card2": {
+      "title": "AI dela za vas",
+      "text": "Ponudbe se ustvarjajo samodejno, nadaljnja dejanja tečejo sama."
+    },
+    "card3": {
+      "title": "Mobilno na gradbišču",
+      "text": "Evidentirajte ure, naložite fotografije, posodobite status — neposredno s telefona."
+    },
+    "card4": {
+      "title": "Po meri",
+      "text": "Brez splošnih rešitev. Vaš sistem je prilagojen točno vašim procesom."
+    }
+  },
+  "trust": {
+    "label": "Zaupanje",
+    "title": "Zakaj FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Od obrtnika za obrtnike",
+      "text": "Kot izučen kamnosek poznam vsakdanjik na gradbišču — in vem, kaj resnično pomaga."
+    },
+    "card2": {
+      "title": "100% skladno z GDPR",
+      "text": "Vsi podatki na strežnikih EU. Brez ameriškega oblaka, brez sledenja, brez drobnega tiska."
+    },
+    "card3": {
+      "title": "Poštene cene",
+      "text": "Začetniki plačajo enkrat. Večja podjetja dobijo pogodbo o storitvi — odpovedljivo mesečno, brez vezave."
+    },
+    "card4": {
+      "title": "Osebna kontaktna oseba",
+      "text": "Brez klicnega centra, brez sistema vstopnic. Pokličete me neposredno — jaz poskrbim."
+    }
+  },
+  "comparison": {
+    "label": "Pred / Po",
+    "title": "Vaš večer s FreyAI",
+    "without": {
+      "title": "Brez FreyAI",
+      "text": "17:00, konec delovnega dne. Najprej pa: napisati 3 ponudbe, iskati račune, poklicati stranke. Končno gotovo ob 20:00."
+    },
+    "with": {
+      "title": "S FreyAI",
+      "text": "17:00, hiter pogled na telefon: ponudbe so pripravljene, računi samodejno evidentirani, stranke so že prejele odgovor. Resnično prosti ob 17:15."
+    }
+  },
+  "features": {
+    "label": "Moduli",
+    "title": "Vse, kar vaše podjetje potrebuje",
+    "subtitle": "Vsak modul je popolnoma integriran — ne zakrpe, ampak celovit sistem.",
+    "card1": {
+      "title": "Nikoli več ne pozabite stranke",
+      "text": "Vsi podatki o strankah na enem mestu. Kdo je klical kdaj? Kdaj moram slediti? Sistem vas samodejno opomni.",
+      "tag1": "Upravljanje strank",
+      "tag2": "Sledenja",
+      "tag3": "Zgodovina stikov"
+    },
+    "card2": {
+      "title": "Ponudba v minutah, ne urah",
+      "text": "Izberite postavke, prilagodite cene, pošljite. Od paketa Business AI piše celo besedila za vas.",
+      "tag1": "Hitre ponudbe",
+      "tag2": "Dostava PDF",
+      "tag3": "Račun z 1 klikom"
+    },
+    "card3": {
+      "title": "AI, ki razmišlja vnaprej",
+      "text": "Vaš digitalni asistent analizira povpraševanja, predlaga cene in opominja na odprte ponudbe. Vi ohranite nadzor — AI predlaga.",
+      "tag1": "Od paketa Business",
+      "tag2": "Predlogi besedil",
+      "tag3": "Priporočila cen"
+    },
+    "card4": {
+      "title": "Evidentiranje časa — na gradbišču",
+      "text": "Vaši zaposleni zjutraj tapnejo telefon in je opravljeno. Konec zbiranja papirjev ob koncu meseca. Izvoz plač z enim klikom.",
+      "tag1": "Od paketa Business",
+      "tag2": "Mobilno",
+      "tag3": "Izvoz plač"
+    },
+    "card5": {
+      "title": "Deluje na vsakem telefonu",
+      "text": "Brez App Stora, brez namestitve. Preprosto odprite v brskalniku — na telefonu, tabletu ali PC-ju. Deluje tudi brez interneta.",
+      "tag1": "Brskalniška aplikacija",
+      "tag2": "Brez interneta",
+      "tag3": "Brez App Stora"
+    },
+    "card6": {
+      "title": "Vaš računovodja bo zadovoljen",
+      "text": "Združljiv izvoz za vašega računovodjo. Prihodki, odhodki, dokumenti — vse skrbno pripravljeno. Podpira evropske računovodske standarde.",
+      "tag1": "Od paketa Business",
+      "tag2": "Računovodski izvoz",
+      "tag3": "Arhiv dokumentov"
+    }
+  },
+  "betweenCta": {
+    "text": "Se sliši dobro? Rezervirajte brezplačen posvet zdaj"
+  },
+  "steps": {
+    "label": "Kako deluje",
+    "title": "3 koraki do digitalnega podjetja",
+    "subtitle": "Nobenega mesečnega projekta. V nekaj tednih vas postavim na pravo pot.",
+    "step1": {
+      "number": "1",
+      "title": "Analiza in nastavitev",
+      "text": "Analiziram vaše trenutne procese in nastavim sistem natančno za vaše podjetje."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Prilagoditev in usposabljanje",
+      "text": "Vaše predloge, vaše cene, vaši delovni tokovi. Osebno usposabljam vas in vašo ekipo."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Avtomatizirajte in rastite",
+      "text": "AI avtomatizacije tečejo v ozadju. Vi se osredotočate na obrt — jaz na tehnologijo."
+    }
+  },
+  "pricing": {
+    "label": "Naložba",
+    "title": "Transparentne cene. Brez drobnega tiska.",
+    "subtitle": "Začnite brez tveganja — rastite s pogodbo o storitvi.",
+    "note": "Vse cene so končne. Oproščeno DDV po §19 UStG (nemška oprostitev DDV za mala podjetja). Pilotni projekt in Starter brez tekočih stroškov. Business in Enterprise s pogodbo o storitvi (odpovedljivo mesečno).",
+    "pilot": {
+      "name": "Pilotni projekt",
+      "desc": "Idealno za samozaposlene, ki želijo preizkusiti.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Enkratno",
+      "cta": "Začnite zdaj",
+      "f1": "Evidentiranje računov (OCR)",
+      "f2": "Upravljanje strank (CRM)",
+      "f3": "E-poštni asistent",
+      "f4": "Osebna nastavitev (1–2h)",
+      "f5": "8 tednov skrbi",
+      "f6": "PWA za telefon + računalnik"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Idealno za majhna podjetja (1–3 zaposleni).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Enkratno",
+      "cta": "Rezervirajte posvet",
+      "f1": "Vse iz Pilotnega projekta",
+      "f2": "Ustvarjanje ponudb",
+      "f3": "Upravljanje naročil",
+      "f4": "Računovodstvo (prihodki/odhodki)",
+      "f5": "Izvoz PDF",
+      "f6": "3 mesece podpore"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Za rastoča podjetja (3–10 zaposlenih).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Enkratno + 150 €/mes. storitev",
+      "cta": "Rezervirajte posvet",
+      "f1": "Vse iz Starterja",
+      "f2": "Več uporabnikov (do 5)",
+      "f3": "Evidentiranje časa",
+      "f4": "Ponavljajoči računi",
+      "f5": "Kanban pipeline",
+      "f6": "Integracija WhatsApp",
+      "f7": "Personalizirana znamka",
+      "f8": "Posodobitve in vzdrževanje vključeni"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Za večja podjetja (10+ zaposlenih).",
+      "price": "od 5.000",
+      "currency": "€",
+      "sub": "Enkratno + od 500 €/mes. storitev",
+      "cta": "Stopite v stik",
+      "amount": "od 5.000",
+      "f1": "Vse iz Businessа",
+      "f2": "Neomejeni uporabniki",
+      "f3": "Dostop API",
+      "f4": "Individualne integracije",
+      "f5": "Namenski kontakt",
+      "f6": "Jamstvo SLA",
+      "f7": "Usposabljanja na kraju"
+    },
+    "recommended": "Priporočeno"
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Pogosto zastavljena vprašanja",
+    "q1": {
+      "question": "Ali potrebujem tehnično znanje?",
+      "answer": "Ne, absolutno ne. Sistem je tako enostaven za uporabo kot WhatsApp. Osebno usposabljam vas in vašo ekipo ter sem vedno na voljo za vprašanja."
+    },
+    "q2": {
+      "question": "Kako dolgo traja nastavitev?",
+      "answer": "Običajno 2–4 tedne. V prvem tednu analiziram vaše procese, v tednih 2–3 vse nastavim, v 4. tednu pa usposabljam vašo ekipo."
+    },
+    "q3": {
+      "question": "Kje so shranjeni moji podatki?",
+      "answer": "Vaši podatki so shranjeni izključno v evropskih podatkovnih centrih in so zaščiteni v skladu z GDPR. Vedno ohranite popoln nadzor in lahko vse izvozite."
+    },
+    "q4": {
+      "question": "Kaj se zgodi, če se želim odjaviti?",
+      "answer": "Mesečna storitev je odpovedljiva kadar koli ob koncu meseca. Vaši podatki so vaši — vse vam bom urejeno izvozil."
+    },
+    "q5": {
+      "question": "Za katere obrti je sistem primeren?",
+      "answer": "Sistem je idealen za obrtniška podjetja od 1 zaposlenega — od samozaposlenega do podjetja z 30+ osebami. Bodisi kovaštvo, vodovodne inštalacije, elektrika, tesarstvo ali slikarstvo — prilagodim ga natančno vašemu področju."
+    },
+    "q6": {
+      "question": "Kaj pomeni 'z AI'?",
+      "answer": "Umetna inteligencija vam pomaga na primer pri oblikovanju ponudb, prepoznavanju vzorcev v povpraševanjih strank in samodejnih nadaljnjih dejanjih. Vedno ohranite popoln nadzor — AI predlaga, vi odločate."
+    },
+    "q7": {
+      "question": "Je prvi posvet res brezplačen?",
+      "answer": "Da, 100%. Skupaj bomo pregledali vaše podjetje in pokazal vam bom, kje digitalizacija prinese največ vrednosti. Brez obveznosti."
+    }
+  },
+  "cta": {
+    "title": "Pripravljeni na naslednji korak?",
+    "text": "V 15 minutah vam pokažem, kako bi vaše podjetje lahko izgledalo digitalno. Brezplačno in brez obveznosti.",
+    "ctaPrimary": "Rezervirajte brezplačen posvet",
+    "ctaSecondary": "Ali stopite v stik po e-pošti",
+    "hint": "Na voljo: pon–pet 16–20, sob 10–16",
+    "legal": "Z rezervacijo se strinjate z obdelavo vaših podatkov v skladu z našo <a href=\"/datenschutz.html\">politiko zasebnosti</a>."
+  },
+  "footer": {
+    "impressum": "Pravne informacije",
+    "datenschutz": "Zasebnost",
+    "agb": "Pogoji",
+    "kontakt": "Kontakt",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Vse pravice pridržane."
+  },
+  "stickyCta": {
+    "text": "Brezplačen posvet"
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI Digitalization for Trade Businesses",
+    "description": "Premium digitalization for German trade businesses. Quotes, invoices, time tracking — all AI-powered in one system. Tailored for skilled trades and small businesses from 1 employee.",
+    "ogTitle": "FreyAI Visions — AI Digitalization for Trade Businesses",
+    "ogDescription": "Your digital backbone: CRM, quotes, invoices, time tracking — all AI-powered. Tailored for trade businesses."
+  },
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Features",
+    "ablauf": "Process",
+    "preise": "Pricing",
+    "faq": "FAQ",
+    "cta": "Free consultation",
+    "openMenu": "Open navigation"
+  },
+  "hero": {
+    "badge": "Pilot project: 800 € — only 3 spots left",
+    "label": "Functional AI Tools and Automations",
+    "title": "Automate<br>processes.<br><span class=\"gradient\">Intelligently.</span>",
+    "subtitle": "Trained stonemason, now AI engineer — I know the daily reality of trade businesses from first-hand experience. Custom automation for skilled trades and SMEs — GDPR-compliant, efficient, affordable.",
+    "portraitAlt": "Jonas Glawion — Founder of FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Get in touch",
+    "ctaSecondary": "Learn more",
+    "role": "Stonemason & AI Engineer",
+    "statsLabel": "Key benefits"
+  },
+  "stats": {
+    "time": "5:15 PM",
+    "timeLabel": "Done for the day instead of 8 PM",
+    "price": "from 800€",
+    "priceLabel": "One-time, no subscription required",
+    "onsite": "On-site",
+    "onsiteLabel": "Personally set up for you",
+    "gdpr": "GDPR",
+    "gdprLabel": "Data stays in Germany"
+  },
+  "problem": {
+    "label": "The Problem",
+    "title": "Does this sound familiar?",
+    "subtitle": "Most trade businesses lose hours every week to administrative chaos.",
+    "card1": {
+      "title": "Paper chaos",
+      "text": "Orders on sticky notes, quotes in Excel, invoices in a folder. Nothing fits together."
+    },
+    "card2": {
+      "title": "Office time drain",
+      "text": "Spending two more hours writing quotes in the evening instead of being with your family — it doesn’t have to be this way."
+    },
+    "card3": {
+      "title": "Lost orders",
+      "text": "Inquiries get buried, quotes are forgotten, customers move on."
+    },
+    "card4": {
+      "title": "Software jungle",
+      "text": "Five different tools, none of them talk to each other. Duplicate data entry everywhere."
+    }
+  },
+  "solution": {
+    "label": "The Solution",
+    "title": "One system. Everything included.",
+    "subtitle": "FreyAI Visions builds you a digital backbone — tailored to your business.",
+    "card1": {
+      "title": "Everything in one place",
+      "text": "Customers, quotes, invoices, time tracking — one system instead of five."
+    },
+    "card2": {
+      "title": "AI works for you",
+      "text": "Quotes are generated automatically, follow-ups run on their own."
+    },
+    "card3": {
+      "title": "Mobile on the job site",
+      "text": "Track hours, upload photos, update status — right from your phone."
+    },
+    "card4": {
+      "title": "Custom-built",
+      "text": "No cookie-cutter solution. Your system is tailored exactly to your workflows."
+    }
+  },
+  "trust": {
+    "label": "Trust",
+    "title": "Why FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "By a tradesman, for tradespeople",
+      "text": "As a trained stonemason, I know daily life on the job site — and what actually helps."
+    },
+    "card2": {
+      "title": "100% GDPR-compliant",
+      "text": "All data on EU servers. No US cloud, no tracking, no fine print."
+    },
+    "card3": {
+      "title": "Honest pricing",
+      "text": "Starters pay once. Larger businesses get a service contract — cancel monthly, no lock-in period."
+    },
+    "card4": {
+      "title": "Personal point of contact",
+      "text": "No call center, no ticket system. You call me directly — I take care of it."
+    }
+  },
+  "comparison": {
+    "label": "Before / After",
+    "title": "Your evening with FreyAI",
+    "without": {
+      "title": "Without FreyAI",
+      "text": "5 PM, end of the workday. But first: type up 3 quotes, track down invoices, call customers back. Finally done at 8 PM."
+    },
+    "with": {
+      "title": "With FreyAI",
+      "text": "5 PM, quick check on your phone: quotes are prepared, invoices automatically captured, customers already received a response. By 5:15 PM, you’re truly done for the day."
+    }
+  },
+  "features": {
+    "label": "Modules",
+    "title": "Everything your business needs",
+    "subtitle": "Every module is perfectly integrated — not a patchwork, but a complete system.",
+    "card1": {
+      "title": "Never forget a customer again",
+      "text": "All customer data in one place. Who called when? When do I need to follow up? The system reminds you automatically.",
+      "tag1": "Customer management",
+      "tag2": "Follow-ups",
+      "tag3": "Contact history"
+    },
+    "card2": {
+      "title": "Quotes in minutes, not hours",
+      "text": "Select items, adjust prices, send. Starting with the Business plan, AI even drafts the text for you.",
+      "tag1": "Fast quotes",
+      "tag2": "PDF delivery",
+      "tag3": "One-click invoice"
+    },
+    "card3": {
+      "title": "AI that thinks ahead",
+      "text": "Your digital assistant analyzes inquiries, suggests prices, and reminds you of open quotes. You stay in control — the AI makes suggestions.",
+      "tag1": "From Business plan",
+      "tag2": "Text suggestions",
+      "tag3": "Price recommendations"
+    },
+    "card4": {
+      "title": "Time tracking — right on the job site",
+      "text": "Your employees tap their phone in the morning and they’re done. No collecting paper timesheets at the end of the month. Payroll export with one click.",
+      "tag1": "From Business plan",
+      "tag2": "Mobile",
+      "tag3": "Payroll export"
+    },
+    "card5": {
+      "title": "Works on any phone",
+      "text": "No app store, no installation. Simply open in your browser — on your phone, tablet, or PC. Works offline too.",
+      "tag1": "Browser app",
+      "tag2": "Offline-capable",
+      "tag3": "No app store"
+    },
+    "card6": {
+      "title": "Your accountant will love it",
+      "text": "DATEV-compatible export for your accountant. Revenue, expenses, receipts — all neatly prepared. Supports GoBD-compliant bookkeeping.",
+      "tag1": "From Business plan",
+      "tag2": "DATEV export",
+      "tag3": "Receipt archive"
+    }
+  },
+  "betweenCta": {
+    "text": "Sounds good? Book your free consultation now"
+  },
+  "steps": {
+    "label": "How it works",
+    "title": "3 steps to a digital business",
+    "subtitle": "No months-long project. I’ll get you on track in just a few weeks.",
+    "step1": {
+      "number": "1",
+      "title": "Analysis & Setup",
+      "text": "I analyze your current workflows and set up the system precisely for your business."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Customization & Training",
+      "text": "Your templates, your prices, your workflows. I personally train you and your team."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automate & Grow",
+      "text": "AI automations run in the background. You focus on your craft — I handle the technology."
+    }
+  },
+  "pricing": {
+    "label": "Investment",
+    "title": "Transparent pricing. No fine print.",
+    "subtitle": "Get started risk-free — grow with a service contract.",
+    "recommended": "Recommended",
+    "note": "All prices are final. VAT exempt under §19 UStG (German tax law). Pilot Project & Starter have no recurring costs. Business & Enterprise include a service contract (cancel monthly).",
+    "pilot": {
+      "name": "Pilot Project",
+      "desc": "Ideal for sole proprietors who want to try it out.",
+      "price": "800",
+      "currency": "€",
+      "sub": "One-time",
+      "cta": "Get started",
+      "f1": "Invoice capture (OCR)",
+      "f2": "Customer management (CRM)",
+      "f3": "Email assistant",
+      "f4": "Personal setup (1–2h)",
+      "f5": "8 weeks of support",
+      "f6": "PWA for phone + desktop"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Ideal for small businesses (1–3 employees).",
+      "price": "1,200",
+      "currency": "€",
+      "sub": "One-time",
+      "cta": "Book a consultation",
+      "f1": "Everything from Pilot Project",
+      "f2": "Quote generation",
+      "f3": "Order management",
+      "f4": "Bookkeeping (income/expense)",
+      "f5": "PDF export",
+      "f6": "3 months of support"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "For growing businesses (3–10 employees).",
+      "price": "3,500",
+      "currency": "€",
+      "sub": "One-time + 150 €/month service",
+      "cta": "Book a consultation",
+      "f1": "Everything from Starter",
+      "f2": "Multi-user (up to 5)",
+      "f3": "Time tracking",
+      "f4": "Recurring invoices",
+      "f5": "Kanban pipeline",
+      "f6": "WhatsApp integration",
+      "f7": "Custom branding",
+      "f8": "Updates & maintenance included"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "For larger companies (10+ employees).",
+      "price": "from 5,000",
+      "currency": "€",
+      "sub": "One-time + from 500 €/month service",
+      "cta": "Get in touch",
+      "amount": "from 5,000",
+      "f1": "Everything from Business",
+      "f2": "Unlimited users",
+      "f3": "API access",
+      "f4": "Custom integrations",
+      "f5": "Dedicated point of contact",
+      "f6": "SLA guarantee",
+      "f7": "On-site training"
+    }
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Frequently Asked Questions",
+    "q1": {
+      "question": "Do I need technical knowledge?",
+      "answer": "No, absolutely not. The system is as easy to use as WhatsApp. I personally train you and your team and am always available for questions."
+    },
+    "q2": {
+      "question": "How long does the setup take?",
+      "answer": "Typically 2–4 weeks. In the first week I analyze your workflows, in weeks 2–3 I set everything up, and in week 4 I train your team."
+    },
+    "q3": {
+      "question": "Where is my data stored?",
+      "answer": "Your data is stored exclusively in EU data centers and is GDPR-compliant. You retain full control over your data at all times and can export everything."
+    },
+    "q4": {
+      "question": "What happens if I want to cancel?",
+      "answer": "The monthly service can be cancelled at any time at the end of the month. Your data belongs to you — I export everything cleanly for you."
+    },
+    "q5": {
+      "question": "Which trades is the system suitable for?",
+      "answer": "The system is ideal for trade businesses from 1 employee — from sole proprietors to companies with 30+ people. Whether metalwork, plumbing, electrical, carpentry, or painting — I tailor it precisely to your industry."
+    },
+    "q6": {
+      "question": "What does “AI-powered” mean?",
+      "answer": "Artificial intelligence helps you, for example, by drafting quotes, recognizing patterns in customer inquiries, and automating follow-ups. You always retain full control — the AI makes suggestions, you decide."
+    },
+    "q7": {
+      "question": "Is the initial consultation really free?",
+      "answer": "Yes, 100%. I look at your business together with you and show you where digitalization brings the most value. No obligations."
+    }
+  },
+  "cta": {
+    "title": "Ready for the next step?",
+    "text": "In 15 minutes, I’ll show you what your business could look like digitally. Free and no obligation.",
+    "ctaPrimary": "Book your free consultation",
+    "ctaSecondary": "Or send an email",
+    "hint": "Available: Mon–Fri 4–8 PM, Sat 10 AM–4 PM",
+    "legal": "By booking, you agree to the processing of your data according to our <a href=\"/datenschutz.html\">Privacy Policy</a>."
+  },
+  "footer": {
+    "impressum": "Imprint",
+    "datenschutz": "Privacy Policy",
+    "agb": "Terms & Conditions",
+    "kontakt": "Contact",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. All rights reserved."
+  },
+  "stickyCta": {
+    "text": "Book free consultation"
+  }
+}

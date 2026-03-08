@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI skaitmeninimas amatininkams ir MVĮ",
+    "description": "Aukščiausios klasės skaitmeninimas amatininkams ir MVĮ. Pasiūlymai, sąskaitos, darbo laiko apskaita — viskas su AI vienoje sistemoje. Pritaikyta nuo 1 darbuotojo.",
+    "ogTitle": "FreyAI Visions — AI skaitmeninimas amatininkams",
+    "ogDescription": "Jūsų skaitmeninis stuburas: CRM, pasiūlymai, sąskaitos, laikas — viskas su AI. Pritaikyta amatininkams."
+  },
+  "a11y": {
+    "skipToContent": "Pereiti į turinį"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funkcijos",
+    "ablauf": "Procesas",
+    "preise": "Kainos",
+    "faq": "FAQ",
+    "cta": "Rezervuoti konsultaciją",
+    "openMenu": "Atidaryti meniu"
+  },
+  "hero": {
+    "badge": "Pilotinis projektas: 800 € — tik 3 vietos",
+    "label": "Funkciniai AI įrankiai ir automatizavimas",
+    "title": "Automatizuokite<br>procesus.<br><span class=\"gradient\">Protingai.</span>",
+    "subtitle": "Išmokytas akmenskaldys, dabar AI inžinierius — iš asmeninės patirties žinau amatininkų kasdienybę. Individualus automatizavimas amatininkams ir MVĮ — atitinka BDAR, efektyvus, įperkamas.",
+    "portraitAlt": "Jonas Glawion — FreyAI Visions įkūrėjas",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Susisiekite",
+    "ctaSecondary": "Sužinoti daugiau",
+    "role": "Akmenskaldys ir AI inžinierius",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Laisvas 17:15 vietoje 20:00",
+    "price": "nuo 800€",
+    "priceLabel": "Vienkartinis mokėjimas, be prenumeratos",
+    "onsite": "Vietoje",
+    "onsiteLabel": "Asmeninė sąranka",
+    "gdpr": "GDPR",
+    "gdprLabel": "Duomenys lieka Europoje"
+  },
+  "problem": {
+    "label": "Problema",
+    "title": "Ar tai jums pažįstama?",
+    "subtitle": "Dauguma amatininkų įmonių kiekvieną savaitę praranda valandas dėl administracinio chaoso.",
+    "card1": {
+      "title": "Popierių chaosas",
+      "text": "Užsakymai ant lapelių, pasiūlymai Excel, sąskaitos aplankuose. Niekas nesiderina."
+    },
+    "card2": {
+      "title": "Biuras ryja laiką",
+      "text": "Praleisti dar 2 valandas vakare rašant pasiūlymus, o ne su šeima — taip neturi būti."
+    },
+    "card3": {
+      "title": "Prarasti užsakymai",
+      "text": "Užklausos dingsta, pasiūlymai pamirštami, klientai išeina."
+    },
+    "card4": {
+      "title": "Programinės įrangos džiunglės",
+      "text": "5 skirtingi įrankiai, kurie tarpusavyje nekomunikuoja. Dvigubas duomenų įvedimas visur."
+    }
+  },
+  "solution": {
+    "label": "Sprendimas",
+    "title": "Viena sistema. Viskas joje.",
+    "subtitle": "FreyAI Visions jums sukuria skaitmeninį stuburą — pritaikytą jūsų verslui.",
+    "card1": {
+      "title": "Viskas vienoje vietoje",
+      "text": "Klientai, pasiūlymai, sąskaitos, laikas — viena sistema vietoje penkių."
+    },
+    "card2": {
+      "title": "AI dirba už jus",
+      "text": "Pasiūlymai generuojami automatiškai, tolesni veiksmai vyksta patys."
+    },
+    "card3": {
+      "title": "Mobiliai statybvietėje",
+      "text": "Registruokite valandas, įkelkite nuotraukas, atnaujinkite statusą — tiesiogiai iš telefono."
+    },
+    "card4": {
+      "title": "Pritaikyta",
+      "text": "Jokių šabloniškų sprendimų. Jūsų sistema pritaikyta tiksliai prie jūsų procesų."
+    }
+  },
+  "trust": {
+    "label": "Pasitikėjimas",
+    "title": "Kodėl FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Iš amatininko amatininkams",
+      "text": "Kaip išmokytas akmenskaldys pažįstu statybvietės kasdienybę — ir žinau, kas tikrai padeda."
+    },
+    "card2": {
+      "title": "100% atitinka BDAR",
+      "text": "Visi duomenys ES serveriuose. Jokio amerikietiško debesies, jokio sekimo, jokio smulkaus teksto."
+    },
+    "card3": {
+      "title": "Sąžiningos kainos",
+      "text": "Pradedantieji moka vieną kartą. Didesnės įmonės gauna paslaugų sutartį — nutraukiamą kas mėnesį, be įsipareigojimų."
+    },
+    "card4": {
+      "title": "Asmeninis kontaktas",
+      "text": "Jokio skambučių centro, jokios bilietų sistemos. Skambinate man tiesiogiai — aš pasirūpinu."
+    }
+  },
+  "comparison": {
+    "label": "Prieš / Po",
+    "title": "Jūsų vakaras su FreyAI",
+    "without": {
+      "title": "Be FreyAI",
+      "text": "17:00, darbo dienos pabaiga. Bet pirmiau: parašyti 3 pasiūlymus, ieškoti sąskaitų, paskambinti klientams. Pagaliau baigta 20:00."
+    },
+    "with": {
+      "title": "Su FreyAI",
+      "text": "17:00, greitas žvilgsnis į telefoną: pasiūlymai paruošti, sąskaitos automatiškai užregistruotos, klientai jau gavo atsakymą. Tikrai laisvas 17:15."
+    }
+  },
+  "features": {
+    "label": "Moduliai",
+    "title": "Viskas, ko reikia jūsų verslui",
+    "subtitle": "Kiekvienas modulis yra puikiai integruotas — ne lopai, o pilna sistema.",
+    "card1": {
+      "title": "Niekada nebepamirškite kliento",
+      "text": "Visi klientų duomenys vienoje vietoje. Kas kada skambino? Kada reikia sekti? Sistema automatiškai primena.",
+      "tag1": "Klientų valdymas",
+      "tag2": "Tolesniai veiksmai",
+      "tag3": "Kontaktų istorija"
+    },
+    "card2": {
+      "title": "Pasiūlymas per minutes, ne valandas",
+      "text": "Pasirinkite pozicijas, koreguokite kainas, siųskite. Nuo Business paketo AI net rašo tekstus už jus.",
+      "tag1": "Greiti pasiūlymai",
+      "tag2": "PDF pristatymas",
+      "tag3": "Sąskaita 1 paspaudimu"
+    },
+    "card3": {
+      "title": "AI, kuris mąsto į priekį",
+      "text": "Jūsų skaitmeninis asistentas analizuoja užklausas, siūlo kainas ir primena apie atvirus pasiūlymus. Jūs išlaikote kontrolę — AI siūlo.",
+      "tag1": "Nuo Business paketo",
+      "tag2": "Teksto pasiūlymai",
+      "tag3": "Kainų rekomendacijos"
+    },
+    "card4": {
+      "title": "Darbo laiko apskaita — statybvietėje",
+      "text": "Jūsų darbuotojai ryte paliečia telefoną ir baigta. Jokio popierių rinkimo mėnesio pabaigoje. Atlyginimų eksportas vienu paspaudimu.",
+      "tag1": "Nuo Business paketo",
+      "tag2": "Mobiliai",
+      "tag3": "Atlyginimų eksportas"
+    },
+    "card5": {
+      "title": "Veikia kiekviename telefone",
+      "text": "Jokio App Store, jokio diegimo. Tiesiog atidarykite naršyklėje — telefone, planšetėje ar PC. Veikia ir be interneto.",
+      "tag1": "Naršyklės programa",
+      "tag2": "Be interneto",
+      "tag3": "Be App Store"
+    },
+    "card6": {
+      "title": "Jūsų buhalteris džiaugsis",
+      "text": "Suderinamas eksportas jūsų buhalteriui. Pajamos, išlaidos, dokumentai — viskas kruopščiai paruošta. Atitinka Europos apskaitos standartus.",
+      "tag1": "Nuo Business paketo",
+      "tag2": "Apskaitos eksportas",
+      "tag3": "Dokumentų archyvas"
+    }
+  },
+  "betweenCta": {
+    "text": "Skamba gerai? Rezervuokite nemokamą konsultaciją dabar"
+  },
+  "steps": {
+    "label": "Kaip tai veikia",
+    "title": "3 žingsniai iki skaitmeninio verslo",
+    "subtitle": "Jokio kelių mėnesių projekto. Per kelias savaites jus nukreipsiu teisinga kryptimi.",
+    "step1": {
+      "number": "1",
+      "title": "Analizė ir sąranka",
+      "text": "Analizuoju jūsų dabartinius procesus ir sukonfigūruoju sistemą tiksliai jūsų verslui."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Pritaikymas ir mokymai",
+      "text": "Jūsų šablonai, jūsų kainos, jūsų darbo eigos. Asmeniškai apmokau jus ir jūsų komandą."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizuokite ir auginkite",
+      "text": "AI automatizavimas veikia fone. Jūs sutelkiate dėmesį į amatą — aš į technologijas."
+    }
+  },
+  "pricing": {
+    "label": "Investicija",
+    "title": "Skaidrios kainos. Jokio smulkaus teksto.",
+    "subtitle": "Pradėkite be rizikos — auginkite su paslaugų sutartimi.",
+    "note": "Visos kainos yra galutinės. Atleista nuo PVM pagal §19 UStG (Vokietijos PVM atleidimas mažoms įmonėms). Pilotinis projektas ir Starter be einamųjų išlaidų. Business ir Enterprise su paslaugų sutartimi (nutraukiama kas mėnesį).",
+    "pilot": {
+      "name": "Pilotinis projektas",
+      "desc": "Puikiai tinka savarankiškai dirbantiems, norintiems išbandyti.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Vienkartinis",
+      "cta": "Pradėti dabar",
+      "f1": "Sąskaitų registravimas (OCR)",
+      "f2": "Klientų valdymas (CRM)",
+      "f3": "El. pašto asistentas",
+      "f4": "Asmeninė sąranka (1–2h)",
+      "f5": "8 savaičių priežiūra",
+      "f6": "PWA telefonui + kompiuteriui"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Puikiai tinka mažoms įmonėms (1–3 darbuotojai).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Vienkartinis",
+      "cta": "Rezervuoti konsultaciją",
+      "f1": "Viskas iš pilotinio projekto",
+      "f2": "Pasiūlymų kūrimas",
+      "f3": "Užsakymų valdymas",
+      "f4": "Apskaita (pajamos/išlaidos)",
+      "f5": "PDF eksportas",
+      "f6": "3 mėnesių palaikymas"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Augančioms įmonėms (3–10 darbuotojų).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Vienkartinis + 150 €/mėn. paslauga",
+      "cta": "Rezervuoti konsultaciją",
+      "f1": "Viskas iš Starter",
+      "f2": "Keli vartotojai (iki 5)",
+      "f3": "Darbo laiko apskaita",
+      "f4": "Pasikartojančios sąskaitos",
+      "f5": "Kanban kanalai",
+      "f6": "WhatsApp integracija",
+      "f7": "Asmeninis prekės ženklas",
+      "f8": "Atnaujinimai ir priežiūra įtraukti"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Didesnėms įmonėms (10+ darbuotojų).",
+      "price": "nuo 5.000",
+      "currency": "€",
+      "sub": "Vienkartinis + nuo 500 €/mėn. paslauga",
+      "cta": "Susisiekite",
+      "amount": "nuo 5.000",
+      "f1": "Viskas iš Business",
+      "f2": "Neriboti vartotojai",
+      "f3": "API prieiga",
+      "f4": "Individualios integracijos",
+      "f5": "Dedikuotas kontaktas",
+      "f6": "SLA garantija",
+      "f7": "Mokymai vietoje"
+    },
+    "recommended": "Rekomenduojama"
+  },
+  "faq": {
+    "label": "DUK",
+    "title": "Dažnai užduodami klausimai",
+    "q1": {
+      "question": "Ar man reikia techninių žinių?",
+      "answer": "Ne, visiškai ne. Sistema yra tokia pat paprasta naudoti kaip WhatsApp. Asmeniškai apmokau jus ir jūsų komandą ir visada esu prieinamas klausimams."
+    },
+    "q2": {
+      "question": "Kiek laiko trunka sąranka?",
+      "answer": "Paprastai 2–4 savaitės. Pirmą savaitę analizuoju jūsų procesus, 2–3 savaitę viską sukonfigūruoju, o 4 savaitę apmokau jūsų komandą."
+    },
+    "q3": {
+      "question": "Kur saugomi mano duomenys?",
+      "answer": "Jūsų duomenys saugomi išimtinai Europos duomenų centruose ir apsaugoti pagal BDAR. Visada išlaikote visišką kontrolę ir galite viską eksportuoti."
+    },
+    "q4": {
+      "question": "Kas atsitinka, jei noriu atsisakyti?",
+      "answer": "Mėnesio paslauga gali būti nutraukta bet kada mėnesio pabaigoje. Jūsų duomenys priklauso jums — viską tvarkingai eksportuosiu jums."
+    },
+    "q5": {
+      "question": "Kurioms pramonės šakoms tinka sistema?",
+      "answer": "Sistema puikiai tinka amatininkų įmonėms nuo 1 darbuotojo — nuo savarankiškai dirbančio iki įmonės su 30+ žmonių. Ar tai metalų apdirbimas, santechnika, elektra, dailidystė ar tapyba — pritaikysiu ją tiksliai jūsų sektoriui."
+    },
+    "q6": {
+      "question": "Ką reiškia su AI?",
+      "answer": "Dirbtinis intelektas padeda jums, pavyzdžiui, formuluoti pasiūlymus, atpažinti modelius klientų užklausose ir automatiškai tęsti veiksmus. Visada išlaikote visišką kontrolę - AI siūlo, jūs sprendžiate."
+    },
+    "q7": {
+      "question": "Ar pirmoji konsultacija tikrai nemokama?",
+      "answer": "Taip, 100%. Kartu peržiūrėsime jūsų verslą ir parodysiu, kur skaitmeninimas atnešą didžiausią vertę. Be įsipareigojimų."
+    }
+  },
+  "cta": {
+    "title": "Pasiruošęs kitam žingsniui?",
+    "text": "Per 15 minučių parodysiu, kaip jūsų verslas galėtų atrodyti skaitmeniniu būdu. Nemokamai ir be įsipareigojimų.",
+    "ctaPrimary": "Rezervuoti nemokamą konsultaciją",
+    "ctaSecondary": "Arba susisiekti el. paštu",
+    "hint": "Pasiekiamas: pir–pen 16–20, šeš 10–16",
+    "legal": "Rezervuodami sutinkate su jūsų duomenų tvarkymu pagal mūsų <a href=\"/datenschutz.html\">privatumo politiką</a>."
+  },
+  "footer": {
+    "impressum": "Teisinė informacija",
+    "datenschutz": "Privatumas",
+    "agb": "Sąlygos",
+    "kontakt": "Kontaktas",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Visos teisės saugomos."
+  },
+  "stickyCta": {
+    "text": "Nemokama konsultacija"
+  }
+}

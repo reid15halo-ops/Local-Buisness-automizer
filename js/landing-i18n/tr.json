@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | Kucuk isletmeler icin AI dijitallestirme",
+    "description": "Kucuk isletmeler icin premium dijitallestirme. Teklifler, faturalar, zaman takibi - hepsi AI destekli tek bir sistemde. 1 calisan'dan itibaren zanaatkarlar ve kucuk isletmeler icin.",
+    "ogTitle": "FreyAI Visions - Kucuk isletmeler icin AI dijitallestirme",
+    "ogDescription": "Dijital omurganiz: CRM, teklifler, faturalar, zaman takibi - hepsi AI destekli."
+  },
+  "a11y": {
+    "skipToContent": "Icerege gec"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Ozellikler",
+    "ablauf": "Surec",
+    "preise": "Fiyatlar",
+    "faq": "SSS",
+    "cta": "Ucretsiz danismanlik",
+    "openMenu": "Open navigation"
+  },
+  "hero": {
+    "badge": "Pilot proje: 800 EUR - sadece 3 yer kaldi",
+    "label": "Pratik AI araclari ve otomasyon",
+    "title": "SureCleri<br>otomatiklestirin.<br><span class=\"gradient\">Akillica.</span>",
+    "subtitle": "Egitimli tasgci, simdi AI muhendisi - kucuk isletmelerin gunluk hayatini birinci elden biliyorum. Zanaatkarlar ve KOBIler icin ozel otomasyon - GDPR uyumlu, verimli, uygun fiyatli.",
+    "portraitAlt": "Jonas Glawion - Grundatel FreyAI Visions",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Iletisime gecin",
+    "ctaSecondary": "Daha fazla ogren",
+    "role": "Tasgci ve AI muhendisi",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "20:00 yerine 17:15'te bitti",
+    "price": "800 EUR'dan",
+    "priceLabel": "Tek seferlik, abonelik yok",
+    "onsite": "Yerinde",
+    "onsiteLabel": "Kisisel kurulum",
+    "gdpr": "GDPR",
+    "gdprLabel": "Veriler AB'de kaliyor"
+  },
+  "problem": {
+    "label": "Sorun",
+    "title": "Bu size tanindiR mi geliyor?",
+    "subtitle": "Coguu kucuk isletme, idari kaos nedeniyle her hafta saatler kaybediyor.",
+    "card1": {
+      "title": "Kagit kaos",
+      "text": "Yapismali notlarda siparisler, Excel'de teklifler, klasorde faturalar. Hicbir sey birbiriyle uyusmuyor."
+    },
+    "card2": {
+      "title": "Ofis isleri icin zaman kaybi",
+      "text": "Ailenizle olmak yerine aksam iki saat daha teklif yazmak zorunda kalmak - boyle olmak zorunda degil."
+    },
+    "card3": {
+      "title": "Kaybolan siparisler",
+      "text": "Sorgular gom oluyor, teklifler unutuluyor, musteriler gidiyor."
+    },
+    "card4": {
+      "title": "Yazilim ormani",
+      "text": "Bes farkli arac, hicbiri digeRiyle konusmuyor. Her yerde cift veri girisi."
+    }
+  },
+  "solution": {
+    "label": "Cozum",
+    "title": "Tek sistem. Her sey dahil.",
+    "subtitle": "FreyAI Visions size dijital bir omurga kuruyor - isletmenize ozel.",
+    "card1": {
+      "title": "Her sey bir yerde",
+      "text": "Musteriler, teklifler, faturalar, zaman takibi - bes yerine tek sistem."
+    },
+    "card2": {
+      "title": "AI sizin icin calisiyor",
+      "text": "Teklifler otomatik olusturuluyor, hatirlat malar kendi kendine gidiyor."
+    },
+    "card3": {
+      "title": "Sahada mobil",
+      "text": "Saatleri kaydedin, fotograf yukleyin, durumu guncelleyin - dogrudan telefonunuzdan."
+    },
+    "card4": {
+      "title": "Ozel yapilmis",
+      "text": "Standart cozum yok. Sisteminiz tam olarak is akislariniza gore uyarlanmistir."
+    }
+  },
+  "trust": {
+    "label": "Guven",
+    "title": "Neden FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "Zanaatkardan zanaatkarlara",
+      "text": "Egitimli bir tasgci olarak sahad aki gunluk hayati biliyorum - ve gercekten neyin isediGini."
+    },
+    "card2": {
+      "title": "Yuzde 100 GDPR uyumlu",
+      "text": "Tum veriler AB sunucularda. ABD bulut yok, takip yok, kucuk yazi yok."
+    },
+    "card3": {
+      "title": "Donust fiyatlandirma",
+      "text": "Baslangiccak bir kez oduyor. Buyuk isletmeler hizmet sozlesmesi aliyor - aylik iptal, baGlanma suresi yok."
+    },
+    "card4": {
+      "title": "Kisisel iletisim noktasi",
+      "text": "Cagri merkezi yok, bilet sistemi yok. Beni dogrudan arayin - ben hallederim."
+    }
+  },
+  "comparison": {
+    "label": "Once / Sonra",
+    "title": "FreyAI ile aksaminiZ",
+    "without": {
+      "title": "FreyAI olmadan",
+      "text": "17:00, is gununun sonu. Ama once: 3 teklif yazip gonderin, faturalari bulun, musterileri geri arayin. 20:00'de bitti."
+    },
+    "with": {
+      "title": "FreyAI ile",
+      "text": "17:00, telefonda hizli kontrol: teklifler hazir, faturalar otomatik kaydedildi, musteriler zaten yanit aldi. 17:15'te gercekten bittiniz."
+    }
+  },
+  "features": {
+    "label": "Moduller",
+    "title": "Isletmenizin ihtiyac duydugu her sey",
+    "subtitle": "Her modul mekemmel entegre edilmistir - yamali degil, eksiksiz bir sistem.",
+    "card1": {
+      "title": "Artik hicbir musteri unutulmayacak",
+      "text": "Tum musteri verileri tek bir yerde. Kim ne zaman arad? Ne zaman aramam gerekiyor? Sistem otomatik olarak hatirlatiyor.",
+      "tag1": "Musteri yonetimi",
+      "tag2": "Hatirlatilar",
+      "tag3": "Iletisim gecmisi"
+    },
+    "card2": {
+      "title": "Saatler degil dakikalar icinde teklifler",
+      "text": "Ogeler secin, fiyatlari ayarlayin, gonderin. Business planindanItibaren AI sizin icin metni bile hazirlIyor.",
+      "tag1": "Hizli teklifler",
+      "tag2": "PDF teslimati",
+      "tag3": "Tek tikla fatura"
+    },
+    "card3": {
+      "title": "Ileride dusuncen bir AI",
+      "text": "Dijital asistaniniz sorgu lari analiz eder, fiyat onerir ve acik teklifleri hatirlatiyor. Siz kontrolde kaliniz - AI oneriler yapar.",
+      "tag1": "Business planIndan itibaren",
+      "tag2": "Metin onerileri",
+      "tag3": "Fiyat onerileri"
+    },
+    "card4": {
+      "title": "Zaman takibi - dogrudan sahada",
+      "text": "Calisan lariniz sabah telefona dokunuyor ve hazirlar. Ay sonunda kagit deVam cizelgelerini toplamaya gerek yok. Tek tikla maas bordrosu exportu.",
+      "tag1": "Business planIndan itibaren",
+      "tag2": "Mobil",
+      "tag3": "Maas bordrosu exportu"
+    },
+    "card5": {
+      "title": "Her akilli telefonda calisiyor",
+      "text": "Uygulama magazasi yok, kurulum yok. Tarayicide acin - telefonda, tablette veya bilgisayarda. Cevrimdisi da calisiyor.",
+      "tag1": "Tarayici uygulamasi",
+      "tag2": "Cevrimdisi mod",
+      "tag3": "Uygulama magazasi olmadan"
+    },
+    "card6": {
+      "title": "Muhasebecini mutlu edecek",
+      "text": "Muhasebecinin icin DATEV uyumlu export. Gelir, gider, makbuzlar - hepsi duzgunce hazirlanmis.",
+      "tag1": "Business planIndan itibaren",
+      "tag2": "DATEV exportu",
+      "tag3": "Belge arsivi"
+    }
+  },
+  "betweenCta": {
+    "text": "Kulaga guzel geliyor mu? Simdi ucretsiz danismanlik rezervasyonu yapin"
+  },
+  "steps": {
+    "label": "Nasil calisiyor",
+    "title": "Dijital isletmeye 3 adim",
+    "subtitle": "Aylar suren proje yok. Sizi birkaC hafta icerisinde dogru yola koyarim.",
+    "step1": {
+      "number": "1",
+      "title": "Analiz ve kurulum",
+      "text": "Mevcut is akislarinizi analiz ediyor ve sistemi tam olarak isletmenize gore ayarliyorum."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Ozellestirme ve egitim",
+      "text": "Sablonlariniz, fiyatlariniz, is akislariniz. Sizi ve ekibinizi kisisel olarak egitiyorum."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Otomasyon ve buyume",
+      "text": "AI otomasyonu arka planda calisiyor. Siz zanaatinize odaklanin - teknolojiyle ben ilgileniyorum."
+    }
+  },
+  "pricing": {
+    "label": "Yatirim",
+    "title": "Seffaf fiyatlar. Kucuk yazi yok.",
+    "subtitle": "Risksiz baslayin - hizmet sozlesmesiyle buyuyun.",
+    "recommended": "Önerilen",
+    "note": "Tum fiyatlar kesindir. Paragraf 19 UStG uyarinca KDV'den muaf (Alman vergi hukuku - kucuk isletme muafiyeti). Pilot proje ve Starterde tekrarlayan maliyet yoktur. Business ve Enterprise, hizmet sozlesmesi icerir (aylik iptal).",
+    "pilot": {
+      "name": "Pilot proje",
+      "desc": "Denemek isteyen serbest calIsanlar icin ideal.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Tek seferlik",
+      "cta": "Baslayin",
+      "f1": "Fatura yakalama (OCR)",
+      "f2": "Musteri yonetimi (CRM)",
+      "f3": "E-posta asistani",
+      "f4": "Kisisel kurulum (1-2sa)",
+      "f5": "8 hafta destek",
+      "f6": "Telefon ve PC icin PWA"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Kucuk isletmeler icin ideal (1-3 caliSan).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Tek seferlik",
+      "cta": "Danismanlik rezervasyonu yap",
+      "f1": "Pilot projeden her sey",
+      "f2": "Teklif olusturma",
+      "f3": "Siparis yonetimi",
+      "f4": "Muhasebe (gelir/gider)",
+      "f5": "PDF exportu",
+      "f6": "3 aylik destek"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Buyuyen isletmeler icin (3-10 caliSan).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Tek seferlik + Aylik 150 EUR hizmet",
+      "cta": "Danismanlik rezervasyonu yap",
+      "f1": "Starterden her sey",
+      "f2": "Cok kullanici (5'e kadar)",
+      "f3": "Zaman takibi",
+      "f4": "Tekrarlayan faturalar",
+      "f5": "Kanban panosu",
+      "f6": "WhatsApp entegrasyonu",
+      "f7": "Ozel marka kimliGi",
+      "f8": "Guncellemeler ve bakim dahil"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Daha buyuk sirketler icin (10'dan fazla caliSan).",
+      "price": "5.000'den",
+      "currency": "€",
+      "sub": "Tek seferlik + Aylik 500 EUR'dan hizmet",
+      "cta": "Iletisime gecin",
+      "amount": "5.000'den",
+      "f1": "Businessten her sey",
+      "f2": "SinIrsiz kullanici",
+      "f3": "API erisimi",
+      "f4": "Ozel entegrasyonlar",
+      "f5": "Ozel iletisim noktasi",
+      "f6": "SLA garantisi",
+      "f7": "Yerinde egitim"
+    }
+  },
+  "faq": {
+    "label": "SSS",
+    "title": "Sik Sorulan Sorular",
+    "q1": {
+      "question": "Teknik bilgiye ihtiyacim var mi?",
+      "answer": "Hayir, kesinlikle hayir. Sistem WhatsApp kadar kullanImI kolay. Sizi ve ekibinizi kisisel olarak egitiyorum ve sorular icin her zaman mevcut oluyorum."
+    },
+    "q2": {
+      "question": "Kurulum ne kadar surer?",
+      "answer": "Genellikle 2-4 hafta. Birinci haftada is akislarinizi analiz ediyorum, 2-3. haftada her seyi kuruyorum ve 4. haftada ekibinizi egitiyorum."
+    },
+    "q3": {
+      "question": "Verilerim nerede saklanir?",
+      "answer": "Verileriniz yalnizca AB veri merkezlerinde saklanir ve GDPR uyumlu olarak korunur. Her zaman tam kontrolu elinizde tutarsIniz ve her seyi export edebilirsiniz."
+    },
+    "q4": {
+      "question": "Iptal etmek istersem ne olur?",
+      "answer": "Aylik destek, ayin sonunda istediginiz zaman iptal edilebilir. Verileriniz size aittir - her seyi duzgunce export ederim."
+    },
+    "q5": {
+      "question": "Sistem hangi isletmeler icin uygundur?",
+      "answer": "Sistem, 1 calisandan itibaren kucuk isletmeler icin idealdir - serbest calIsanlardan 30'dan fazla kisilik sirketlere. Sektorden bagimsiz olarak - tam olarak sektorunuze gore uyarlIyorum."
+    },
+    "q6": {
+      "question": "AI destegi ne anlama geliyor?",
+      "answer": "Yapay zeka, ornegin teklif hazirlama, musteri sorgularindaki kaliplari tespit etme ve otomatik hatirlatmalar gibi konularda size yardimci olur. Her zaman tam kontrolu elinizde tutarsIniz - AI oneriler yapar, siz karar verirsiniz."
+    },
+    "q7": {
+      "question": "Ilk danismanlik gercekten ucretsiz mi?",
+      "answer": "Evet, yuzde 100. Isletmenizi birlikte inceleyecegiz ve dijitallesmenin en buyuk etkiyi nerede yaptiGini gostereceGim. Hicbir yukumluluk yoktur."
+    }
+  },
+  "cta": {
+    "title": "Bir sonraki adima hazir misiniz?",
+    "text": "15 dakikada isletmenizin dijital ortamda nasil gorunebileceGini gosteririm. Ucretsiz ve yuksuksuz.",
+    "ctaPrimary": "Ucretsiz danismanlik rezervasyonu yapin",
+    "ctaSecondary": "Veya e-posta gonderin",
+    "hint": "Musait: Pzt-Cum 16:00-20:00, Cts 10:00-16:00",
+    "legal": "Rezervasyon yaparak verilerinizin bizim tarafimizdan islenmesini kabul etmis olursunuz:"
+  },
+  "footer": {
+    "impressum": "Imprint",
+    "datenschutz": "Gizlilik politikasi",
+    "agb": "Kullanim sartlari",
+    "kontakt": "Iletisim",
+    "contact": "Iletisim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Tum haklari saklidir."
+  },
+  "stickyCta": {
+    "text": "Ucretsiz danismanlik"
+  }
+}

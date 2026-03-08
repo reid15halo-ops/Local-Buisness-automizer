@@ -1,0 +1,307 @@
+{
+  "meta": {
+    "title": "FreyAI Visions | AI digitalizācija amatniekiem un MVU",
+    "description": "Augstākās klases digitalizācija amatniekiem un MVU. Piedāvājumi, rēķini, darba laika uzskaite — viss ar AI vienā sistēmā. Pielāgots no 1 darbinieka.",
+    "ogTitle": "FreyAI Visions — AI digitalizācija amatniekiem",
+    "ogDescription": "Jūsu digitālā mugurkauls: CRM, piedāvājumi, rēķini, laiks — viss ar AI. Pielāgots amatniekiem."
+  },
+  "a11y": {
+    "skipToContent": "Pāriet uz saturu"
+  },
+  "nav": {
+    "brand": "FreyAI Visions",
+    "features": "Funkcijas",
+    "ablauf": "Process",
+    "preise": "Cenas",
+    "faq": "FAQ",
+    "cta": "Rezervēt konsultāciju",
+    "openMenu": "Atvērt izvēlni"
+  },
+  "hero": {
+    "badge": "Pilotprojekts: 800 € — tikai 3 vietas",
+    "label": "Funkcionāli AI rīki un automatizācija",
+    "title": "Automatizējiet<br>procesus.<br><span class=\"gradient\">Inteliģenti.</span>",
+    "subtitle": "Izglītots akmens cirtējs, tagad AI inženieris — no savas pieredzes zinu amatnieku ikdienu. Individuāla automatizācija amatniekiem un MVU — atbilstoša VDAR, efektīva, pieejama.",
+    "portraitAlt": "Jonas Glawion — FreyAI Visions dibinātājs",
+    "visualName": "Jonas Glawion",
+    "ctaPrimary": "Sazinieties ar mums",
+    "ctaSecondary": "Uzzināt vairāk",
+    "role": "Akmens cirtējs un AI inženieris",
+    "statsLabel": "Kernvorteile"
+  },
+  "stats": {
+    "time": "17:15",
+    "timeLabel": "Brīvs 17:15 nevis 20:00",
+    "price": "no 800€",
+    "priceLabel": "Vienreizējs maksājums, bez abonēšanas",
+    "onsite": "Uz vietas",
+    "onsiteLabel": "Personīga uzstādīšana",
+    "gdpr": "GDPR",
+    "gdprLabel": "Dati paliek Eiropā"
+  },
+  "problem": {
+    "label": "Problēma",
+    "title": "Vai tas jums ir pazīstami?",
+    "subtitle": "Lielākā daļa amatniecības uzņēmumu katru nedēļu zaudē stundas administratīvā haosā.",
+    "card1": {
+      "title": "Papīru haoss",
+      "text": "Pasūtījumi uz lapiņām, piedāvājumi Excel, rēķini mapēs. Nekas neder kopā."
+    },
+    "card2": {
+      "title": "Birojs aprij laiku",
+      "text": "Pavadīt vēl 2 stundas vakarā rakstot piedāvājumus, nevis būt ar ģimeni — tam nav jābūt tā."
+    },
+    "card3": {
+      "title": "Zaudēti pasūtījumi",
+      "text": "Pieprasījumi pazūd, piedāvājumi tiek aizmirsti, klienti aiziet."
+    },
+    "card4": {
+      "title": "Programmatūras džungļi",
+      "text": "5 dažādi rīki, kas savā starpā nekomunicē. Divkārša datu ievade visur."
+    }
+  },
+  "solution": {
+    "label": "Risinājums",
+    "title": "Viena sistēma. Viss tajā.",
+    "subtitle": "FreyAI Visions jums izveido digitālo mugurkaulu — pielāgotu jūsu uzņēmumam.",
+    "card1": {
+      "title": "Viss vienā vietā",
+      "text": "Klienti, piedāvājumi, rēķini, laiks — viena sistēma piecu vietā."
+    },
+    "card2": {
+      "title": "AI strādā jūsu vietā",
+      "text": "Piedāvājumi tiek ģenerēti automātiski, turpmākās darbības notiek pašas."
+    },
+    "card3": {
+      "title": "Mobili būvobjektā",
+      "text": "Reģistrējiet stundas, augšupielādējiet fotoattēlus, atjauniniet statusu — tieši no tālruņa."
+    },
+    "card4": {
+      "title": "Pielāgots",
+      "text": "Bez tipveida risinājumiem. Jūsu sistēma ir pielāgota tieši jūsu procesiem."
+    }
+  },
+  "trust": {
+    "label": "Uzticamība",
+    "title": "Kāpēc FreyAI Visions?",
+    "subtitle": "",
+    "card1": {
+      "title": "No amatnieka amatniekiem",
+      "text": "Kā izglītots akmens cirtējs zinu būvobjekta ikdienu — un zinu, kas tiešām palīdz."
+    },
+    "card2": {
+      "title": "100% atbilst VDAR",
+      "text": "Visi dati ES serveros. Nav ASV mākoņa, nav izsekošanas, nav sīkā drukājuma."
+    },
+    "card3": {
+      "title": "Godīgas cenas",
+      "text": "Iesācēji maksā vienu reizi. Lielāki uzņēmumi saņem pakalpojumu līgumu — mēneša laikā atceļams, bez saistībām."
+    },
+    "card4": {
+      "title": "Personīgs kontakts",
+      "text": "Nav zvanu centra, nav biļešu sistēmas. Zvanāt man tieši — es parūpējos."
+    }
+  },
+  "comparison": {
+    "label": "Pirms / Pēc",
+    "title": "Jūsu vakars ar FreyAI",
+    "without": {
+      "title": "Bez FreyAI",
+      "text": "17:00, darba dienas beigas. Bet vispirms: uzrakstīt 3 piedāvājumus, meklēt rēķinus, atzvanīt klientiem. Beidzot gatavs 20:00."
+    },
+    "with": {
+      "title": "Ar FreyAI",
+      "text": "17:00, ātrs skats uz tālruni: piedāvājumi gatavi, rēķini automātiski reģistrēti, klienti jau saņēmuši atbildi. Tiešām brīvs 17:15."
+    }
+  },
+  "features": {
+    "label": "Moduļi",
+    "title": "Viss, kas nepieciešams jūsu uzņēmumam",
+    "subtitle": "Katrs modulis ir lieliski integrēts — ne ielāpi, bet pilnīga sistēma.",
+    "card1": {
+      "title": "Nekad vairs neaizmirstiet klientu",
+      "text": "Visi klientu dati vienā vietā. Kurš kad zvanīja? Kad jāseko līdzi? Sistēma automātiski atgādina.",
+      "tag1": "Klientu pārvaldība",
+      "tag2": "Turpmākās darbības",
+      "tag3": "Kontaktu vēsture"
+    },
+    "card2": {
+      "title": "Piedāvājums minūtēs, nevis stundās",
+      "text": "Izvēlieties pozīcijas, pielāgojiet cenas, nosūtiet. Sākot ar Business paketu, AI pat raksta tekstus jūsu vietā.",
+      "tag1": "Ātrī piedāvājumi",
+      "tag2": "PDF piegāde",
+      "tag3": "Rēķins ar 1 klikšķi"
+    },
+    "card3": {
+      "title": "AI, kas domā uz priekšu",
+      "text": "Jūsu digitālais asistents analizē pieprasījumus, iesaka cenas un atgādina par atvērtiem piedāvājumiem. Jūs saglabājat kontroli — AI iesaka.",
+      "tag1": "No Business paketa",
+      "tag2": "Tekstu ieteikumi",
+      "tag3": "Cenu ieteikumi"
+    },
+    "card4": {
+      "title": "Darba laika uzskaite — būvobjektā",
+      "text": "Jūsu darbinieki no rīta pieskaras tālrunim un tas ir izdarīts. Nav vairs jāvāc papīri mēneša beigās. Algu eksports ar vienu klikšķi.",
+      "tag1": "No Business paketa",
+      "tag2": "Mobili",
+      "tag3": "Algu eksports"
+    },
+    "card5": {
+      "title": "Darbojas uz jebkura tālruņa",
+      "text": "Nav App Store, nav instalācijas. Vienkārši atveriet pārlūkprogrammā — tālrunī, planšetē vai PC. Darbojas arī bez interneta.",
+      "tag1": "Pārlūka lietotne",
+      "tag2": "Bezsaistē",
+      "tag3": "Bez App Store"
+    },
+    "card6": {
+      "title": "Jūsu grāmatvedis priecāsies",
+      "text": "Saderīgs eksports jūsu grāmatvedim. Ieņēmumi, izdevumi, dokumenti — viss rūpīgi sagatavots. Atbilst Eiropas grāmatvedības standartiem.",
+      "tag1": "No Business paketa",
+      "tag2": "Grāmatvedības eksports",
+      "tag3": "Dokumentu arhīvs"
+    }
+  },
+  "betweenCta": {
+    "text": "Izklausās labi? Rezervējiet bezmaksas konsultāciju tagad"
+  },
+  "steps": {
+    "label": "Kā tas darbojas",
+    "title": "3 soļi uz digitālu uzņēmumu",
+    "subtitle": "Nav daudzus mēnešus ilga projekta. Dažu nedēļu laikā jūs novirzīšu pareizajā ceļā.",
+    "step1": {
+      "number": "1",
+      "title": "Analīze un uzstādīšana",
+      "text": "Analizēju jūsu pašreizējos procesus un konfigurēju sistēmu tieši jūsu uzņēmumam."
+    },
+    "step2": {
+      "number": "2",
+      "title": "Pielāgošana un apmācība",
+      "text": "Jūsu veidnes, jūsu cenas, jūsu darbplūsmas. Personīgi apmācīšu jūs un jūsu komandu."
+    },
+    "step3": {
+      "number": "3",
+      "title": "Automatizējiet un augiet",
+      "text": "AI automatizācija darbojas fonā. Jūs koncentrējaties uz amatu — es uz tehnoloģijām."
+    }
+  },
+  "pricing": {
+    "label": "Investīcija",
+    "title": "Caurspīdīgas cenas. Nav sīkā drukājuma.",
+    "subtitle": "Sāciet bez riska — augiet ar pakalpojumu līgumu.",
+    "note": "Visas cenas ir galīgās. Atbrīvots no PVN saskaņā ar §19 UStG (Vācijas PVN atbrīvojums mazajiem uzņēmumiem). Pilotprojekts un Starter bez pastāvīgām izmaksām. Business un Enterprise ar pakalpojumu līgumu (atceļams mēneša laikā).",
+    "pilot": {
+      "name": "Pilotprojekts",
+      "desc": "Lieliski piemērots pašnodarbinātajiem, kuri vēlas izmēģināt.",
+      "price": "800",
+      "currency": "€",
+      "sub": "Vienreizējs",
+      "cta": "Sākt tagad",
+      "f1": "Rēķinu reģistrācija (OCR)",
+      "f2": "Klientu pārvaldība (CRM)",
+      "f3": "E-pasta asistents",
+      "f4": "Personīga uzstādīšana (1–2h)",
+      "f5": "8 nedēļu aprūpe",
+      "f6": "PWA tālrunim + datoram"
+    },
+    "starter": {
+      "name": "Starter",
+      "desc": "Lieliski piemērots maziem uzņēmumiem (1–3 darbinieki).",
+      "price": "1.200",
+      "currency": "€",
+      "sub": "Vienreizējs",
+      "cta": "Rezervēt konsultāciju",
+      "f1": "Viss no pilotprojekta",
+      "f2": "Piedāvājumu izveide",
+      "f3": "Pasūtījumu pārvaldība",
+      "f4": "Grāmatvedība (ieņēmumi/izdevumi)",
+      "f5": "PDF eksports",
+      "f6": "3 mēneši atbalsta"
+    },
+    "business": {
+      "name": "Business",
+      "desc": "Augošiem uzņēmumiem (3–10 darbinieki).",
+      "price": "3.500",
+      "currency": "€",
+      "sub": "Vienreizējs + 150 €/mēn. pakalpojums",
+      "cta": "Rezervēt konsultāciju",
+      "f1": "Viss no Starter",
+      "f2": "Vairāki lietotāji (līdz 5)",
+      "f3": "Darba laika uzskaite",
+      "f4": "Atkārtoti rēķini",
+      "f5": "Kanban pipeline",
+      "f6": "WhatsApp integrācija",
+      "f7": "Personalizēts zīmols",
+      "f8": "Atjauninājumi un uzturēšana iekļauti"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "desc": "Lielākiem uzņēmumiem (10+ darbinieki).",
+      "price": "no 5.000",
+      "currency": "€",
+      "sub": "Vienreizējs + no 500 €/mēn. pakalpojums",
+      "cta": "Sazinieties ar mums",
+      "amount": "no 5.000",
+      "f1": "Viss no Business",
+      "f2": "Neierobežoti lietotāji",
+      "f3": "API piekļuve",
+      "f4": "Individuālas integrācijas",
+      "f5": "Veltīts kontakts",
+      "f6": "SLA garantija",
+      "f7": "Apmācības uz vietas"
+    },
+    "recommended": "Ieteicams"
+  },
+  "faq": {
+    "label": "BUJ",
+    "title": "Bieži uzdotie jautājumi",
+    "q1": {
+      "question": "Vai man ir nepieciešamas tehniskas zināšanas?",
+      "answer": "Nē, absolūti nē. Sistēma ir tikpat vienkārša lietošanā kā WhatsApp. Personīgi apmācīšu jūs un jūsu komandu un vienmēr esmu pieejams jautājumiem."
+    },
+    "q2": {
+      "question": "Cik ilgi ilgst uzstādīšana?",
+      "answer": "Parasti 2–4 nedēļas. Pirmajā nedēļā analizēju jūsu procesus, 2.–3. nedēļā visu konfigurēju, bet 4. nedēļā apmācīšu jūsu komandu."
+    },
+    "q3": {
+      "question": "Kur tiek glabāti mani dati?",
+      "answer": "Jūsu dati tiek glabāti tikai Eiropas datu centros un ir aizsargāti saskaņā ar VDAR. Jūs vienmēr saglabājat pilnu kontroli un varat visu eksportēt."
+    },
+    "q4": {
+      "question": "Kas notiek, ja es vēlos atteikties?",
+      "answer": "Mēneša pakalpojumu var atcelt jebkurā brīdī mēneša beigās. Jūsu dati pieder jums — es visu kārtīgi eksportēšu jūsu vietā."
+    },
+    "q5": {
+      "question": "Kurām nozarēm sistēma ir piemērota?",
+      "answer": "Sistēma ir lieliski piemērota amatniecības uzņēmumiem no 1 darbinieka — no pašnodarbinātā līdz uzņēmumam ar 30+ cilvēkiem. Neatkarīgi no tā, vai tas ir metālapstrāde, santehnika, elektrika, galdniecība vai krāsošana — es to pielāgošu tieši jūsu nozarei."
+    },
+    "q6": {
+      "question": "Ko nozīmē 'ar AI'?",
+      "answer": "Mākslīgais intelekts palīdz jums, piemēram, formulēt piedāvājumus, atpazīt modeļus klientu pieprasījumos un automātiskās turpmākās darbībās. Jūs vienmēr saglabājat pilnu kontroli — AI iesaka, jūs izlemjat."
+    },
+    "q7": {
+      "question": "Vai pirmā konsultācija tiešām ir bezmaksas?",
+      "answer": "Jā, 100%. Kopā apskatīsim jūsu uzņēmumu un parādīšu, kur digitalizācija sniedz vislielāko vērtību. Bez saistībām."
+    }
+  },
+  "cta": {
+    "title": "Gatavs nākamajam solim?",
+    "text": "15 minūšu laikā parādīšu, kā jūsu uzņēmums varētu izskatīties digitāli. Bez maksas un bez saistībām.",
+    "ctaPrimary": "Rezervēt bezmaksas konsultāciju",
+    "ctaSecondary": "Vai sazināties pa e-pastu",
+    "hint": "Pieejams: pir–piek 16–20, ses 10–16",
+    "legal": "Rezervējot jūs piekrītat savu datu apstrādei saskaņā ar mūsu <a href=\"/datenschutz.html\">privātuma politiku</a>."
+  },
+  "footer": {
+    "impressum": "Juridiskā informācija",
+    "datenschutz": "Privātums",
+    "agb": "Noteikumi",
+    "kontakt": "Kontakts",
+    "contact": "FreyAI Visions – Jonas Glawion<br>Grabenstraße 135, 63762 Großostheim",
+    "phone": "+49 179 4228285",
+    "email": "kontakt@freyaivisions.de",
+    "copy": "© 2026 FreyAI Visions. Visas tiesības aizsargātas."
+  },
+  "stickyCta": {
+    "text": "Bezmaksas konsultācija"
+  }
+}
