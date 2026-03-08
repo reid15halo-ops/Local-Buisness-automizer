@@ -12,6 +12,7 @@ let tickets = [];
 let kbArticles = [];
 let currentFilter = { status: '', priority: '', search: '' };
 let currentTicket = null;
+let _overlayClickHandler = null;
 
 async function getHeaders() {
     const key = window.SUPABASE_ANON_KEY || '';
@@ -210,9 +211,15 @@ async function openTicketDetail(ticketId) {
     document.getElementById('support-detail-close').addEventListener('click', () => {
         overlay.classList.remove('open');
     });
-    overlay.addEventListener('click', (e) => {
+
+    // Remove previous overlay click handler before attaching a new one
+    if (_overlayClickHandler) {
+        overlay.removeEventListener('click', _overlayClickHandler);
+    }
+    _overlayClickHandler = (e) => {
         if (e.target === overlay) {overlay.classList.remove('open');}
-    });
+    };
+    overlay.addEventListener('click', _overlayClickHandler);
 
     document.getElementById('support-save-meta').addEventListener('click', async () => {
         const newStatus = document.getElementById('support-status-select').value;

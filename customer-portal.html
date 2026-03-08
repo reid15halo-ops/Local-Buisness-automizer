@@ -255,7 +255,16 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="/js/vendor/purify.min.js"></script>
 <script>
+// DOMPurify global innerHTML interceptor
+if (typeof DOMPurify !== 'undefined') {
+    const originalSet = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+    Object.defineProperty(Element.prototype, 'innerHTML', {
+        set(value) { originalSet.call(this, DOMPurify.sanitize(value, { ADD_ATTR: ['onclick', 'onchange', 'oninput'] })); }
+    });
+}
+
 /* ============================================
    Customer Portal — client-side logic
    Token-based, no login required beyond the link.

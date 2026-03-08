@@ -14,7 +14,8 @@ class DashboardWidgetUI {
             dragging: null,
             dragOverIndex: null
         };
-        this._boundHandlers = {};
+        // Note: drag handlers attach to innerHTML-replaced cards (auto-cleanup).
+        // The escape key handler in renderAddWidgetDialog self-removes.
     }
 
     // ============================================
