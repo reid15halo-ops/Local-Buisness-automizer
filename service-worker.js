@@ -194,7 +194,7 @@ async function cacheFirst(request) {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
         // Return cached version, but update cache in background
-        updateCache(request);
+        updateCache(request).catch(() => {});
         return cachedResponse;
     }
 
