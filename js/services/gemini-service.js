@@ -11,7 +11,6 @@ class GeminiService {
     constructor(apiKey) {
         this.apiKey = apiKey;
         this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-        this.isConfigured = !!apiKey;
         this.useProxy = false;
         this.proxyUrl = null;
 
@@ -28,6 +27,9 @@ class GeminiService {
                 this.useProxy = true;
             }
         }
+
+        // isConfigured if we have a direct API key OR can use the Supabase proxy
+        this.isConfigured = !!apiKey || this.useProxy;
     }
 
     /**

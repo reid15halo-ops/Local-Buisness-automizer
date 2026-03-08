@@ -440,8 +440,8 @@ function renderQuotes(quotes) {
         const safeStatus = validStatuses.includes(q.status) ? q.status : 'offen';
         const badge = `<span class="badge badge-${safeStatus}">${statusLabel[q.status] || esc(q.status)}</span>`;
         const actions = q.status === 'offen' ? `
-            <button class="btn btn-sm btn-success" onclick="openApproveModal('${esc(q.id)}')">Annehmen</button>
-            <button class="btn btn-sm btn-danger" onclick="openRejectModal('${esc(q.id)}')">Ablehnen</button>
+            <button class="btn btn-sm btn-success" data-action="approve" data-quote-id="${esc(q.id)}">Annehmen</button>
+            <button class="btn btn-sm btn-danger" data-action="reject" data-quote-id="${esc(q.id)}">Ablehnen</button>
         ` : '';
         return `
             <tr>
@@ -454,6 +454,18 @@ function renderQuotes(quotes) {
             </tr>
         `;
     }).join('');
+
+    // Event delegation for approve/reject buttons (onclick is stripped by DOMPurify)
+    // Only attach once to avoid stacking listeners on re-render
+    if (!tbody._quoteDelegation) {
+        tbody._quoteDelegation = true;
+        tbody.addEventListener('click', (e) => {
+            const approveBtn = e.target.closest('[data-action="approve"]');
+            const rejectBtn = e.target.closest('[data-action="reject"]');
+            if (approveBtn) openApproveModal(approveBtn.dataset.quoteId);
+            if (rejectBtn) openRejectModal(rejectBtn.dataset.quoteId);
+        });
+    }
 }
 
 function renderInvoices(invoices) {

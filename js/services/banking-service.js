@@ -312,7 +312,7 @@ class BankingService {
 
         // Add to bookkeeping
         if (window.bookkeepingService) {
-            window.bookkeepingService.addBuchung({
+            await window.bookkeepingService.addBuchung({
                 typ: 'einnahme',
                 datum: tx.date.split('T')[0],
                 brutto: tx.amount,

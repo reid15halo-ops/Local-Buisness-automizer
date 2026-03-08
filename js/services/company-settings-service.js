@@ -60,11 +60,11 @@ class CompanySettingsService {
 
     async _fetchSettings() {
         // Try Supabase first
-        if (window.supabaseClient && window.supabaseConfig?.isConfigured?.()) {
+        if (window.supabaseClient?.client && window.supabaseConfig?.isConfigured?.()) {
             try {
-                const { data: { user } } = await window.supabaseClient.auth.getUser();
+                const { data: { user } } = await window.supabaseClient.client.auth.getUser();
                 if (user) {
-                    const { data, error } = await window.supabaseClient
+                    const { data, error } = await window.supabaseClient.client
                         .from('company_settings')
                         .select('*')
                         .eq('user_id', user.id)
@@ -176,7 +176,7 @@ class CompanySettingsService {
      * @param {Object} updates - Partial settings to update
      */
     async save(updates) {
-        if (!window.supabaseClient || !window.supabaseConfig?.isConfigured?.()) {
+        if (!window.supabaseClient?.client || !window.supabaseConfig?.isConfigured?.()) {
             // Offline: persist to localStorage only
             this._cache = { ...(this._cache ?? this._defaults), ...updates };
             this._persistToLocalStorage(this._cache);
@@ -184,10 +184,10 @@ class CompanySettingsService {
         }
 
         try {
-            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            const { data: { user } } = await window.supabaseClient.client.auth.getUser();
             if (!user) { throw new Error('Nicht angemeldet'); }
 
-            const { data, error } = await window.supabaseClient
+            const { data, error } = await window.supabaseClient.client
                 .from('company_settings')
                 .upsert({ user_id: user.id, ...updates }, { onConflict: 'user_id' })
                 .select()

@@ -17,14 +17,23 @@ class BookkeepingService {
             geschaeftsjahr: new Date().getFullYear()
         };
         this._ready = false;
+        this._localOnly = false;
     }
 
     async init() {
         try {
             const { data } = await this._supabase()?.auth?.getUser() || {};
-            this._userId = data?.user?.id || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+            if (!data?.user) {
+                console.warn('BookkeepingService: No authenticated user, using local-only mode');
+                this._userId = 'local-' + crypto.randomUUID();
+                this._localOnly = true;
+            } else {
+                this._userId = data.user.id;
+            }
         } catch {
-            this._userId = '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
+            console.warn('BookkeepingService: Auth failed, using local-only mode');
+            this._userId = 'local-' + crypto.randomUUID();
+            this._localOnly = true;
         }
         await this._loadFromSupabase();
 
@@ -50,7 +59,7 @@ class BookkeepingService {
     _toSupabaseRow(b) {
         return {
             id: b.id,
-            user_id: this._userId || '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc',
+            user_id: this._userId,
             tenant_id: 'a0000000-0000-0000-0000-000000000001',
             typ: b.typ,
             kategorie: b.kategorie,
@@ -108,7 +117,7 @@ class BookkeepingService {
     }
 
     async _upsertToSupabase(buchung) {
-        if (!this._isOnline()) {return;}
+        if (this._localOnly || !this._isOnline()) {return;}
         try {
             const row = this._toSupabaseRow(buchung);
             const { error } = await this._supabase()
@@ -121,7 +130,7 @@ class BookkeepingService {
     }
 
     async _deleteFromSupabase(id) {
-        if (!this._isOnline()) {return;}
+        if (this._localOnly || !this._isOnline()) {return;}
         try {
             const { error } = await this._supabase()
                 .from('buchungen')
