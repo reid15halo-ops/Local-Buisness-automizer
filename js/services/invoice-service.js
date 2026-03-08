@@ -44,6 +44,17 @@ class InvoiceService {
     async createInvoice(auftrag, options = {}) {
         await this.init();
 
+        // Duplicate guard: check if invoice already exists for this auftrag
+        if (auftrag.id && this.storeService?.state?.rechnungen) {
+            const existing = this.storeService.state.rechnungen.find(
+                r => r.auftragId === auftrag.id && r.status !== 'storniert'
+            );
+            if (existing) {
+                console.warn(`Invoice already exists for Auftrag ${auftrag.id}: ${existing.nummer || existing.id}`);
+                return existing;
+            }
+        }
+
         const defaults = {
             generatePDF: false,
             openPDF: false,

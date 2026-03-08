@@ -443,18 +443,16 @@ async function createRechnungFromAuftrag(auftragId) {
     }
 
     try {
-        let rechnung = null;
-
-        if (window.invoiceService) {
-            // Use InvoiceService for GoBD-compliant invoice
-            rechnung = await window.invoiceService.createInvoice(auftrag, {
-                generatePDF: false,
-                paymentTermDays: 14
-            });
-        } else if (window.storeService) {
-            // Fallback to storeService.completeAuftrag which creates invoice internally
-            rechnung = await window.storeService.completeAuftrag(auftragId);
+        if (!window.invoiceService) {
+            window.AppUtils.showToast('Invoice-Service nicht verfügbar. Rechnung kann nicht erstellt werden.', 'error');
+            return;
         }
+
+        // Use InvoiceService as single source of truth (includes its own duplicate guard)
+        const rechnung = await window.invoiceService.createInvoice(auftrag, {
+            generatePDF: false,
+            paymentTermDays: 14
+        });
 
         if (rechnung) {
             window.AppUtils.showToast(

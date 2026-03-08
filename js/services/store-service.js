@@ -378,39 +378,14 @@ class StoreService {
 
         await this.save();
 
-        // Create Invoice using InvoiceService
+        // Create Invoice using InvoiceService (single source of truth)
         try {
             if (!window.invoiceService) {
-                console.error('InvoiceService not available, falling back to basic invoice creation');
-
-                const netto = (auftrag.positionen || []).reduce((sum, p) => sum + ((p.menge || 0) * (p.preis || 0)), 0);
-                const taxRate = (typeof window._getTaxRate === 'function') ? window._getTaxRate() : 0.19;
-
-                const rechnung = {
-                    id: this.generateId('RE'),
-                    nummer: this.generateId('RE'),
-                    auftragId,
-                    angebotId: auftrag.angebotId,
-                    kunde: auftrag.kunde,
-                    leistungsart: auftrag.leistungsart,
-                    positionen: auftrag.positionen || [],
-                    netto: netto,
-                    mwst: Math.round(netto * taxRate * 100) / 100,
-                    brutto: Math.round(netto * (1 + taxRate) * 100) / 100,
-                    status: 'offen',
-                    datum: new Date().toISOString(),
-                    faelligkeitsdatum: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-                    createdAt: new Date().toISOString()
-                };
-
-                this.store.rechnungen.push(rechnung);
-                this.addActivity('\u{1F4B0}', `Rechnung ${rechnung.nummer} erstellt`);
-                await this.save();
-
-                return rechnung;
+                console.error('InvoiceService not available — cannot create invoice. No fallback.');
+                return null;
             }
 
-            // Use InvoiceService for GoBD-compliant invoice creation
+            // Delegate to InvoiceService for GoBD-compliant invoice creation
             const invoiceOptions = {
                 generatePDF: completionData.generatePDF || false,
                 openPDF: completionData.openPDF || false,
@@ -421,12 +396,10 @@ class StoreService {
             };
 
             const rechnung = await window.invoiceService.createInvoice(auftrag, invoiceOptions);
-
             return rechnung;
 
         } catch (error) {
             console.error('Error creating invoice:', error);
-            // Still return something if invoice creation fails
             return null;
         }
     }

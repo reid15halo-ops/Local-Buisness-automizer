@@ -1,23 +1,27 @@
 /* ============================================
    Offline Sync Service
-   IndexedDB cache + offline action queue
+   localStorage queue + offline indicator
+
+   Uses localStorage for the action queue (small
+   list of pending mutations) instead of a
+   separate IndexedDB database. Data caching
+   goes through StoreService's dbService.
    ============================================ */
 
 class OfflineSyncService {
     constructor() {
-        this.DB_NAME = 'freyai-offline';
-        this.DB_VERSION = 1;
         this.STORES = ['kunden', 'anfragen', 'angebote', 'auftraege', 'rechnungen'];
-        this.QUEUE_STORE = 'sync_queue';
-        this.db = null;
+        this.QUEUE_KEY = 'freyai-offline-queue';
+        this.MAX_RETRIES = 3;
         this._isOnline = navigator.onLine;
         this._indicatorEl = null;
+        this._processing = false;
 
         // Listen for online/offline events
         window.addEventListener('online', () => {
             this._isOnline = true;
             this._updateIndicator();
-            this.processQueue();
+            this._onOnline();
         });
         window.addEventListener('offline', () => {
             this._isOnline = false;
@@ -26,87 +30,91 @@ class OfflineSyncService {
     }
 
     /**
-     * Initialize IndexedDB
+     * Initialize the service (no separate DB needed).
+     * Cleans up the old freyai-offline IndexedDB if it exists.
      */
     async init() {
-        if (this.db) {return this.db;}
-
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
-                // Create object stores for each data type
-                this.STORES.forEach(storeName => {
-                    if (!db.objectStoreNames.contains(storeName)) {
-                        db.createObjectStore(storeName, { keyPath: 'id' });
-                    }
-                });
-                // Sync queue store
-                if (!db.objectStoreNames.contains(this.QUEUE_STORE)) {
-                    const queueStore = db.createObjectStore(this.QUEUE_STORE, { keyPath: 'queueId', autoIncrement: true });
-                    queueStore.createIndex('timestamp', 'timestamp');
-                }
-            };
-
-            request.onsuccess = (event) => {
-                this.db = event.target.result;
-                resolve(this.db);
-            };
-
-            request.onerror = (event) => {
-                console.error('IndexedDB open failed:', event.target.error);
-                reject(event.target.error);
-            };
-        });
+        try {
+            indexedDB.deleteDatabase('freyai-offline');
+        } catch { /* ignore */ }
     }
 
+    // ============================================
+    // Online transition — correct order
+    // ============================================
+
     /**
-     * Cache data from Supabase into IndexedDB
-     * Call this after successful data loads
+     * When coming back online:
+     * 1. FIRST process the offline queue (push pending changes TO Supabase)
+     * 2. THEN reload from Supabase (pull fresh data)
+     */
+    async _onOnline() {
+        await this.processQueue();
+        // After queue is drained, pull fresh data
+        if (window.storeService?.load) {
+            await window.storeService.load();
+        }
+    }
+
+    // ============================================
+    // Data Caching (through StoreService's dbService)
+    // ============================================
+
+    /**
+     * Cache data into StoreService's IndexedDB via dbService.
      */
     async cacheData(storeName, items) {
-        if (!this.STORES.includes(storeName)) {return;}
-        await this.init();
-
-        const tx = this.db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-
-        // Clear old data and write new
-        store.clear();
-        items.forEach(item => {
-            if (item.id) {store.put(item);}
-        });
-
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = resolve;
-            tx.onerror = () => reject(tx.error);
-        });
+        if (!this.STORES.includes(storeName)) { return; }
+        if (window.dbService?._cacheEntities) {
+            const storeMap = {
+                'kunden': 'customers',
+                'rechnungen': 'invoices',
+                'angebote': 'quotes',
+                'auftraege': 'orders'
+            };
+            const dbStoreName = storeMap[storeName];
+            if (dbStoreName) {
+                try {
+                    await window.dbService._cacheEntities(dbStoreName, items);
+                } catch (err) {
+                    console.warn(`[OfflineSync] cacheData via dbService failed for ${storeName}:`, err);
+                }
+            }
+        }
     }
 
     /**
-     * Read cached data from IndexedDB
+     * Read cached data via dbService.
      */
     async getCachedData(storeName) {
-        if (!this.STORES.includes(storeName)) {return [];}
-        await this.init();
+        if (!this.STORES.includes(storeName)) { return []; }
 
-        const tx = this.db.transaction(storeName, 'readonly');
-        const store = tx.objectStore(storeName);
-        const request = store.getAll();
+        const methodMap = {
+            'kunden': 'getCustomers',
+            'rechnungen': 'getInvoices',
+            'angebote': 'getQuotes',
+            'auftraege': 'getOrders'
+        };
 
-        return new Promise((resolve, reject) => {
-            request.onsuccess = () => resolve(request.result || []);
-            request.onerror = () => reject(request.error);
-        });
+        const method = methodMap[storeName];
+        if (method && window.dbService?.[method]) {
+            try {
+                return await window.dbService[method]();
+            } catch {
+                return [];
+            }
+        }
+
+        // Fallback: read from storeService state
+        return window.storeService?.state?.[storeName] || [];
     }
 
     /**
-     * Cache all current store data
+     * Cache all current store data into dbService.
      */
     async cacheAllFromStore() {
         const state = window.storeService?.state;
-        if (!state) {return;}
+        if (!state) { return; }
 
         const promises = this.STORES.map(storeName => {
             const data = state[storeName];
@@ -117,17 +125,18 @@ class OfflineSyncService {
         });
 
         await Promise.allSettled(promises);
-        console.debug('[OfflineSync] All data cached to IndexedDB');
+        console.debug('[OfflineSync] All data cached via dbService');
     }
 
     /**
-     * Load cached data into store when offline
+     * Load cached data into store when offline.
+     * Calls storeService.save() after mutating state to persist properly.
      */
     async loadCachedIntoStore() {
-        if (this._isOnline) {return false;}
+        if (this._isOnline) { return false; }
 
         const state = window.storeService?.state;
-        if (!state) {return false;}
+        if (!state) { return false; }
 
         let loaded = false;
         for (const storeName of this.STORES) {
@@ -139,77 +148,85 @@ class OfflineSyncService {
         }
 
         if (loaded) {
-            console.debug('[OfflineSync] Loaded cached data into store');
+            await window.storeService.save();
+            console.debug('[OfflineSync] Loaded cached data into store and saved');
         }
         return loaded;
     }
 
     // ============================================
-    // Offline Action Queue
+    // Offline Action Queue (localStorage)
     // ============================================
 
     /**
-     * Queue an action for later sync
+     * Read the queue from localStorage.
+     * @returns {Array} queue items
+     */
+    _getQueue() {
+        try {
+            const raw = localStorage.getItem(this.QUEUE_KEY);
+            return raw ? JSON.parse(raw) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    /**
+     * Write the queue to localStorage.
+     * @param {Array} queue
+     */
+    _setQueue(queue) {
+        localStorage.setItem(this.QUEUE_KEY, JSON.stringify(queue));
+    }
+
+    /**
+     * Queue an action for later sync.
      * @param {string} type - 'CREATE', 'UPDATE', 'DELETE'
      * @param {string} table - Table/store name
      * @param {object} data - The data to sync
      */
     async queueAction(type, table, data) {
-        await this.init();
-
-        const tx = this.db.transaction(this.QUEUE_STORE, 'readwrite');
-        const store = tx.objectStore(this.QUEUE_STORE);
-
-        store.add({
+        const queue = this._getQueue();
+        queue.push({
+            id: Date.now() + '-' + Math.random().toString(36).substring(2, 7),
             type,
             table,
             data,
             timestamp: Date.now(),
-            retries: 0,
+            retries: 0
         });
-
-        return new Promise((resolve, reject) => {
-            tx.oncomplete = () => {
-                console.debug(`[OfflineSync] Queued ${type} for ${table}`);
-                resolve();
-            };
-            tx.onerror = () => reject(tx.error);
-        });
+        this._setQueue(queue);
+        console.debug(`[OfflineSync] Queued ${type} for ${table}`);
     }
 
     /**
-     * Process the sync queue when back online
+     * Process the sync queue when back online.
+     * Failed items get retried up to MAX_RETRIES times before being discarded.
      */
     async processQueue() {
-        if (!this._isOnline || this._processing) {return;}
+        if (!this._isOnline || this._processing) { return; }
         this._processing = true;
 
         try {
-            await this.init();
             const supabase = window.supabaseClient?.client || window.supabase;
             if (!supabase) {
                 return;
             }
 
-            const tx = this.db.transaction(this.QUEUE_STORE, 'readonly');
-            const store = tx.objectStore(this.QUEUE_STORE);
-            const items = await new Promise((resolve, reject) => {
-                const req = store.getAll();
-                req.onsuccess = () => resolve(req.result || []);
-                req.onerror = () => reject(req.error);
-            });
-
-            if (items.length === 0) {
+            let queue = this._getQueue();
+            if (queue.length === 0) {
                 return;
             }
 
-            console.debug(`[OfflineSync] Processing ${items.length} queued actions...`);
+            console.debug(`[OfflineSync] Processing ${queue.length} queued actions...`);
 
-            items.sort((a, b) => a.timestamp - b.timestamp);
+            queue.sort((a, b) => a.timestamp - b.timestamp);
 
-            const processedIds = [];
+            const remaining = [];
+            let synced = 0;
+            let discarded = 0;
 
-            for (const item of items) {
+            for (const item of queue) {
                 try {
                     let result;
                     switch (item.type) {
@@ -225,28 +242,36 @@ class OfflineSyncService {
                     }
 
                     if (result?.error) {
-                        console.warn(`[OfflineSync] Sync failed for ${item.type} ${item.table}:`, result.error);
+                        item.retries = (item.retries || 0) + 1;
+                        if (item.retries >= this.MAX_RETRIES) {
+                            console.warn(`[OfflineSync] Discarding item after ${this.MAX_RETRIES} failed retries:`, item.type, item.table, item.data?.id, result.error);
+                            discarded++;
+                        } else {
+                            console.warn(`[OfflineSync] Retry ${item.retries}/${this.MAX_RETRIES} for ${item.type} ${item.table}:`, result.error);
+                            remaining.push(item);
+                        }
+                    } else {
+                        synced++;
                     }
-
-                    processedIds.push(item.queueId);
                 } catch (err) {
-                    console.warn(`[OfflineSync] Error processing queue item:`, err);
-                    processedIds.push(item.queueId);
+                    item.retries = (item.retries || 0) + 1;
+                    if (item.retries >= this.MAX_RETRIES) {
+                        console.warn(`[OfflineSync] Discarding item after ${this.MAX_RETRIES} failed retries:`, item.type, item.table, item.data?.id, err);
+                        discarded++;
+                    } else {
+                        console.warn(`[OfflineSync] Retry ${item.retries}/${this.MAX_RETRIES} for ${item.type} ${item.table}:`, err);
+                        remaining.push(item);
+                    }
                 }
             }
 
-            if (processedIds.length > 0) {
-                const delTx = this.db.transaction(this.QUEUE_STORE, 'readwrite');
-                const delStore = delTx.objectStore(this.QUEUE_STORE);
-                processedIds.forEach(id => delStore.delete(id));
-                await new Promise((resolve, reject) => { delTx.oncomplete = resolve; delTx.onerror = () => reject(delTx.error); });
-            }
+            // Save only items that still need retry
+            this._setQueue(remaining);
 
-            console.debug(`[OfflineSync] Queue processed: ${processedIds.length} items synced`);
+            console.debug(`[OfflineSync] Queue processed: ${synced} synced, ${remaining.length} pending retry, ${discarded} discarded`);
 
-            if (window.storeService?.load) {
-                await window.storeService.load();
-            }
+            // NOTE: storeService.load() is called by _onOnline() AFTER processQueue,
+            // so we do NOT call it here — that was the old reversed-order bug.
 
         } catch (err) {
             console.error('[OfflineSync] Queue processing error:', err);
@@ -267,7 +292,6 @@ class OfflineSyncService {
         if (!this._indicatorEl) {
             this._indicatorEl = document.getElementById('offline-sync-indicator');
             if (!this._indicatorEl) {
-                // Create indicator element
                 const header = document.querySelector('.mobile-header') || document.querySelector('header');
                 if (header) {
                     this._indicatorEl = document.createElement('div');
@@ -307,7 +331,6 @@ class OfflineSyncService {
             try {
                 return await onlineFn();
             } catch (err) {
-                // Network error while supposedly online
                 console.warn('[OfflineSync] Online operation failed, queuing:', err);
                 await this.queueAction(type, table, data);
             }
