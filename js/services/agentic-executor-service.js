@@ -1168,8 +1168,11 @@ class AgenticExecutorService {
                     source: 'agent'
                 });
                 localStorage.setItem('freyai_communications', JSON.stringify(comms));
-            } catch {
-                // Ignore localStorage errors
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    console.warn('localStorage quota exceeded for freyai_communications');
+                    if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                }
             }
 
             // Log activity
@@ -1550,7 +1553,12 @@ class AgenticExecutorService {
             }
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(toSave));
         } catch (e) {
-            console.warn('[AgenticExecutor] Konfiguration speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.warn('[AgenticExecutor] Konfiguration speichern fehlgeschlagen:', e);
+            }
         }
     }
 
@@ -1570,7 +1578,12 @@ class AgenticExecutorService {
         try {
             localStorage.setItem(this.HISTORY_KEY, JSON.stringify(this.executionHistory));
         } catch (e) {
-            console.warn('[AgenticExecutor] Historie speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.HISTORY_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.warn('[AgenticExecutor] Historie speichern fehlgeschlagen:', e);
+            }
         }
     }
 
@@ -1590,7 +1603,12 @@ class AgenticExecutorService {
         try {
             localStorage.setItem(this.UNDO_KEY, JSON.stringify(this.undoableActions));
         } catch (e) {
-            console.warn('[AgenticExecutor] Undo-Daten speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.UNDO_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.warn('[AgenticExecutor] Undo-Daten speichern fehlgeschlagen:', e);
+            }
         }
     }
 

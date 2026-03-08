@@ -34,6 +34,9 @@ const STATIC_ASSETS = [
     '/booking.html',
     '/customer-portal.html',
     '/fragebogen-beta-v1.html',
+    '/leistungen.html',
+    '/flyer.html',
+    '/sales-deck.html',
 
     // --- Config ---
     '/config/app-config.js',
@@ -61,6 +64,7 @@ const STATIC_ASSETS = [
     '/css/kanban.css',
     '/css/communication.css',
     '/css/timeline.css',
+    '/css/leistungen.css',
 
     // --- Core JS (app shell entry points) ---
     '/js/app-new.js',

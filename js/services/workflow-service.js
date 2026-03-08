@@ -461,7 +461,7 @@ class WorkflowService {
         if (this.executionLog.length > 500) {
             this.executionLog = this.executionLog.slice(-500);
         }
-        localStorage.setItem('freyai_workflow_log', JSON.stringify(this.executionLog));
+        this._safeSetItem('freyai_workflow_log', this.executionLog);
     }
 
     // Get statistics
@@ -478,7 +478,18 @@ class WorkflowService {
 
     // Persistence
     save() {
-        localStorage.setItem('freyai_workflows', JSON.stringify(this.workflows));
+        this._safeSetItem('freyai_workflows', this.workflows);
+    }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
     }
 }
 

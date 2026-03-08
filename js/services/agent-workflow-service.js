@@ -1289,7 +1289,12 @@ Antworte NUR mit dem JSON-Array.`;
         try {
             localStorage.setItem(this.logKey, JSON.stringify(this.executionLog));
         } catch (e) {
-            console.warn('[AgentWorkflow] Log speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.logKey);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.warn('[AgentWorkflow] Log speichern fehlgeschlagen:', e);
+            }
         }
     }
 
@@ -1393,7 +1398,12 @@ Antworte NUR mit dem JSON-Array.`;
             this._savedConfig = config;
             localStorage.setItem(this.configKey, JSON.stringify(config));
         } catch (e) {
-            console.warn('[AgentWorkflow] Konfiguration speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.configKey);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.warn('[AgentWorkflow] Konfiguration speichern fehlgeschlagen:', e);
+            }
         }
     }
 

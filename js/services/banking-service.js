@@ -435,9 +435,20 @@ class BankingService {
     }
 
     // Persistence
-    saveAccounts() { localStorage.setItem('freyai_bank_accounts', JSON.stringify(this.accounts)); }
-    saveTransactions() { localStorage.setItem('freyai_bank_transactions', JSON.stringify(this.transactions)); }
-    saveMatchedPayments() { localStorage.setItem('freyai_matched_payments', JSON.stringify(this.matchedPayments)); }
+    saveAccounts() { this._safeSetItem('freyai_bank_accounts', this.accounts); }
+    saveTransactions() { this._safeSetItem('freyai_bank_transactions', this.transactions); }
+    saveMatchedPayments() { this._safeSetItem('freyai_matched_payments', this.matchedPayments); }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
+    }
 }
 
 window.bankingService = new BankingService();

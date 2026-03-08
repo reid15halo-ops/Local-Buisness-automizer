@@ -165,7 +165,7 @@ class NavigationController {
                 break;
             // Views with render functions not triggered by viewchange event
             case 'wareneingang':
-                if (window.WareneingangModule?.renderHistory) { window.WareneingangModule.renderHistory(); }
+                if (window.WareneingangModule?.renderWareneingang) { window.WareneingangModule.renderWareneingang(); }
                 break;
             case 'buchhaltung':
                 if (window.renderBuchhaltung) { window.renderBuchhaltung(); }
@@ -177,7 +177,7 @@ class NavigationController {
                 if (window.renderMaterial) { window.renderMaterial(); }
                 break;
             case 'bestellungen':
-                if (window.purchaseOrderUI) { window.purchaseOrderUI.render(); }
+                if (window.poUI) { window.poUI.render(); }
                 break;
             case 'kommunikation':
                 if (window.communicationHubController?.init) { window.communicationHubController.init(); }
@@ -193,6 +193,9 @@ class NavigationController {
                 if (window.renderCustomers) { window.renderCustomers(); }
                 break;
             case 'kalender':
+                if (window.calendarUIService && !window.calendarUIService.viewContainer) {
+                    window.calendarUIService.mount('calendar-ui-mount');
+                }
                 if (window.renderCalendar) { window.renderCalendar(); }
                 break;
             case 'zeiterfassung':

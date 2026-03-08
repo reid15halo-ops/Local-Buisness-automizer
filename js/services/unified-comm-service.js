@@ -442,19 +442,30 @@ class UnifiedCommService {
     // PERSISTENCE
     // =====================================================
     saveConversations() {
-        localStorage.setItem('freyai_conversations', JSON.stringify(this.conversations));
+        this._safeSetItem('freyai_conversations', this.conversations);
     }
 
     saveMessages() {
-        localStorage.setItem('freyai_conversation_messages', JSON.stringify(this.messages));
+        this._safeSetItem('freyai_conversation_messages', this.messages);
     }
 
     saveUnreadCounts() {
-        localStorage.setItem('freyai_unread_counts', JSON.stringify(this.unreadCounts));
+        this._safeSetItem('freyai_unread_counts', this.unreadCounts);
     }
 
     saveCommunicationLog() {
-        localStorage.setItem('freyai_communication_log', JSON.stringify(this.communicationLog));
+        this._safeSetItem('freyai_communication_log', this.communicationLog);
+    }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
     }
 }
 

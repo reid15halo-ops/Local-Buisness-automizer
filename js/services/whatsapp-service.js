@@ -1262,19 +1262,30 @@ class WhatsAppService {
     // =====================================================
 
     _saveConfig() {
-        localStorage.setItem(this.CONFIG_KEY, JSON.stringify(this.config));
+        this._safeSetItem(this.CONFIG_KEY, this.config);
     }
 
     _saveConversations() {
-        localStorage.setItem(this.CONVERSATIONS_KEY, JSON.stringify(this.conversations));
+        this._safeSetItem(this.CONVERSATIONS_KEY, this.conversations);
     }
 
     _saveMessages() {
-        localStorage.setItem(this.MESSAGES_KEY, JSON.stringify(this.messageLog));
+        this._safeSetItem(this.MESSAGES_KEY, this.messageLog);
     }
 
     _saveSettings() {
-        localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(this.settings));
+        this._safeSetItem(this.SETTINGS_KEY, this.settings);
+    }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
     }
 
     /**

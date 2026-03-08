@@ -27,6 +27,15 @@ class BookkeepingService {
             this._userId = '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc';
         }
         await this._loadFromSupabase();
+
+        // Load Kleinunternehmer setting from company settings
+        const isKU = window.companySettings?.isKleinunternehmer?.() ||
+                     localStorage.getItem('kleinunternehmer') === 'true';
+        this.einstellungen.kleinunternehmer = isKU;
+        if (isKU) {
+            this.einstellungen.umsatzsteuersatz = 0;
+        }
+
         this._ready = true;
     }
 

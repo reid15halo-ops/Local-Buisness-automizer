@@ -974,8 +974,13 @@ class BautagebuchService {
     _save() {
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.entries));
-        } catch (err) {
-            console.error('[Bautagebuch] Speicherfehler:', err.message);
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('[Bautagebuch] Speicherfehler:', e.message);
+            }
         }
     }
 
@@ -985,8 +990,13 @@ class BautagebuchService {
     _saveSettings() {
         try {
             localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(this.settings));
-        } catch (err) {
-            console.error('[Bautagebuch] Einstellungen konnten nicht gespeichert werden:', err.message);
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.SETTINGS_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('[Bautagebuch] Einstellungen konnten nicht gespeichert werden:', e.message);
+            }
         }
     }
 }

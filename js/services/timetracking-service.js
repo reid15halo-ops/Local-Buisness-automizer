@@ -606,10 +606,21 @@ class TimeTrackingService {
     }
 
     // Persistence
-    save() { localStorage.setItem('freyai_time_entries', JSON.stringify(this.entries)); }
-    saveTimers() { localStorage.setItem('freyai_active_timers', JSON.stringify(this.activeTimers)); }
-    saveEmployees() { localStorage.setItem('freyai_employees', JSON.stringify(this.employees)); }
-    saveSettings() { localStorage.setItem('freyai_time_settings', JSON.stringify(this.settings)); }
+    save() { this._safeSetItem('freyai_time_entries', this.entries); }
+    saveTimers() { this._safeSetItem('freyai_active_timers', this.activeTimers); }
+    saveEmployees() { this._safeSetItem('freyai_employees', this.employees); }
+    saveSettings() { this._safeSetItem('freyai_time_settings', this.settings); }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
+    }
 }
 
 window.timeTrackingService = new TimeTrackingService();

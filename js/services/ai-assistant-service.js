@@ -326,7 +326,7 @@ Antworte direkt und hilfreich:`;
             this.conversationHistory = this.conversationHistory.slice(-100);
         }
 
-        localStorage.setItem('freyai_ai_history', JSON.stringify(this.conversationHistory));
+        this._safeSetItem('freyai_ai_history', this.conversationHistory);
     }
 
     // Get conversation history
@@ -337,7 +337,18 @@ Antworte direkt und hilfreich:`;
     // Clear history
     clearHistory() {
         this.conversationHistory = [];
-        localStorage.setItem('freyai_ai_history', JSON.stringify([]));
+        this._safeSetItem('freyai_ai_history', []);
+    }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
     }
 }
 

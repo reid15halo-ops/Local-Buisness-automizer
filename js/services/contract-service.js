@@ -369,8 +369,19 @@ class ContractService {
     }
 
     // Persistence
-    save() { localStorage.setItem('freyai_contracts', JSON.stringify(this.contracts)); }
-    saveInvoiceHistory() { localStorage.setItem('freyai_contract_invoices', JSON.stringify(this.invoiceHistory)); }
+    save() { this._safeSetItem('freyai_contracts', this.contracts); }
+    saveInvoiceHistory() { this._safeSetItem('freyai_contract_invoices', this.invoiceHistory); }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
+    }
 }
 
 window.contractService = new ContractService();

@@ -1079,7 +1079,12 @@ class AufmassService {
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.projects));
         } catch (e) {
-            console.error('Aufma\u00DF save failed:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('Aufma\u00DF save failed:', e);
+            }
         }
     }
 

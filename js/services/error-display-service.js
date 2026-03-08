@@ -407,3 +407,4 @@ if (typeof module !== 'undefined' && module.exports) {
 
 })();
 } // end redeclaration guard
+window.errorDisplayService = window.ErrorDisplay;

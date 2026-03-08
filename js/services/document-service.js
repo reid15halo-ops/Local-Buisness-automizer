@@ -124,8 +124,8 @@ class DocumentService {
         // Load Tesseract.js from CDN
         return new Promise((resolve) => {
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
-            script.integrity = 'sha384-+56qagDlzJ3YYkDcyAXRdhrP7/+ai8qJcS6HpjACl2idDoCyCqRf5VVi7E/XkGae';
+            script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            script.integrity = 'sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F';
             script.crossOrigin = 'anonymous';
             script.onload = () => { this.ocrLibLoaded = true; resolve(true); };
             script.onerror = () => resolve(false);
@@ -463,7 +463,16 @@ class DocumentService {
     }
 
     // Persistence
-    save() { localStorage.setItem('freyai_documents', JSON.stringify(this.documents)); }
+    save() {
+        try {
+            localStorage.setItem('freyai_documents', JSON.stringify(this.documents));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for freyai_documents');
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
+    }
 }
 
 window.documentService = new DocumentService();

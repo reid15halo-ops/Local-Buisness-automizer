@@ -131,8 +131,9 @@ class CompanySettingsService {
     // Synchronous getters (use after load() has resolved)
     // ============================================
 
-    /** German VAT rate as decimal (e.g. 0.19 for 19%) */
+    /** German VAT rate as decimal (e.g. 0.19 for 19%). Returns 0 for Kleinunternehmer. */
     getTaxRate() {
+        if (this.isKleinunternehmer()) return 0;
         return this._cache?.default_tax_rate ?? this._defaults.default_tax_rate;
     }
 
@@ -216,3 +217,4 @@ window.companySettings = new CompanySettingsService();
 // All modules must call window._getTaxRate() instead of defining their own copy.
 window._getTaxRate = () => window.companySettings?.getTaxRate?.() ?? 0.19;
 window._isKleinunternehmer = () => window._getTaxRate() === 0;
+window.companySettingsService = window.companySettings;

@@ -243,8 +243,19 @@ class CommunicationService {
     }
 
     // Persistence
-    save() { localStorage.setItem('freyai_messages', JSON.stringify(this.messages)); }
-    saveCallLogs() { localStorage.setItem('freyai_call_logs', JSON.stringify(this.callLogs)); }
+    save() { this._safeSetItem('freyai_messages', this.messages); }
+    saveCallLogs() { this._safeSetItem('freyai_call_logs', this.callLogs); }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
+    }
 }
 
 window.communicationService = new CommunicationService();

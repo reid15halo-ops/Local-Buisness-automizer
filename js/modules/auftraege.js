@@ -298,6 +298,14 @@ function renderAuftragCard(a) {
 
     const grundHtml = a.statusGrund ? `<div style="font-size:11px;color:${statusCfg?.color || 'var(--text-muted, #94a3b8)'};margin-top:4px;font-style:italic;">${h(a.statusGrund)}</div>` : '';
 
+    const existingRechnung = (store.rechnungen || []).find(r => r.auftragId === a.id);
+    const showRechnungAction = a.status === 'abgeschlossen' && !existingRechnung;
+    const rechnungBtnHtml = showRechnungAction
+        ? `<div style="margin-top:6px;"><button class="btn btn-small btn-primary" style="width:100%;font-size:11px;padding:4px 8px;" onclick="event.stopPropagation(); createRechnungFromAuftrag('${h(a.id)}')">💰 Rechnung erstellen</button></div>`
+        : (existingRechnung && a.status === 'abgeschlossen'
+            ? `<div style="margin-top:6px;font-size:11px;color:var(--accent-success, #22c55e);">✅ Rechnung ${h(existingRechnung.nummer || existingRechnung.id)}</div>`
+            : '');
+
     return `
         <div class="auftrag-card" onclick="openAuftragDetail('${h(a.id)}')">
             <div class="auftrag-card-header">
@@ -318,6 +326,7 @@ function renderAuftragCard(a) {
                 <span>${fortschritt}%</span>
                 ${checkTotal > 0 ? `<span>${checkDone}/${checkTotal}</span>` : ''}
             </div>
+            ${rechnungBtnHtml}
         </div>
     `;
 }
@@ -418,6 +427,54 @@ function initAuftragForm() {
     });
 }
 
+// Create Rechnung from Auftrag
+async function createRechnungFromAuftrag(auftragId) {
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (!auftrag) {
+        window.AppUtils.showToast('Auftrag nicht gefunden', 'error');
+        return;
+    }
+
+    // Check if a Rechnung already exists for this Auftrag
+    const existing = (store.rechnungen || []).find(r => r.auftragId === auftragId);
+    if (existing) {
+        window.AppUtils.showToast(`Rechnung ${existing.nummer || existing.id} existiert bereits für diesen Auftrag`, 'warning');
+        return;
+    }
+
+    try {
+        let rechnung = null;
+
+        if (window.invoiceService) {
+            // Use InvoiceService for GoBD-compliant invoice
+            rechnung = await window.invoiceService.createInvoice(auftrag, {
+                generatePDF: false,
+                paymentTermDays: 14
+            });
+        } else if (window.storeService) {
+            // Fallback to storeService.completeAuftrag which creates invoice internally
+            rechnung = await window.storeService.completeAuftrag(auftragId);
+        }
+
+        if (rechnung) {
+            window.AppUtils.showToast(
+                `Rechnung ${rechnung.nummer || rechnung.id} erstellt`,
+                'success'
+            );
+            // Refresh detail view
+            if (currentDetailAuftragId === auftragId) {
+                openAuftragDetail(auftragId);
+            }
+            renderAuftraege();
+        } else {
+            window.AppUtils.showToast('Rechnung konnte nicht erstellt werden', 'error');
+        }
+    } catch (err) {
+        console.error('Fehler beim Erstellen der Rechnung:', err);
+        window.AppUtils.showToast('Fehler: ' + (err.message || 'Unbekannter Fehler'), 'error');
+    }
+}
+
 // Auftrag detail view handlers (tabs, status buttons, time tracking)
 function initAuftragDetailHandlers() {
     // Tab switching
@@ -447,6 +504,13 @@ function initAuftragDetailHandlers() {
 
     // Status action buttons (delegated)
     document.getElementById('ad-status-actions')?.addEventListener('click', (e) => {
+        // Handle "Rechnung erstellen" button
+        if (e.target.closest('#ad-btn-rechnung')) {
+            if (currentDetailAuftragId) {
+                createRechnungFromAuftrag(currentDetailAuftragId);
+            }
+            return;
+        }
         const btn = e.target.closest('[data-status]');
         if (!btn || !currentDetailAuftragId) {return;}
         changeAuftragStatus(currentDetailAuftragId, btn.dataset.status);
@@ -629,10 +693,17 @@ function openAuftragDetail(auftragId) {
     // Status action buttons
     const actions = document.getElementById('ad-status-actions');
     if (actions && statusConfig.erlaubteUebergaenge) {
+        const existingRechnung = (store.rechnungen || []).find(r => r.auftragId === auftragId);
+        const showRechnungBtn = ['abgeschlossen', 'in_bearbeitung', 'qualitaetskontrolle', 'abnahme'].includes(auftrag.status) && !existingRechnung;
+
         actions.innerHTML = statusConfig.erlaubteUebergaenge.map(s => {
             const cfg = AUFTRAG_STATUS_CONFIG[s] || {};
             return `<button class="btn btn-small" data-status="${s}">${cfg.icon || ''} ${cfg.label || s}</button>`;
-        }).join('');
+        }).join('') + (showRechnungBtn
+            ? `<button class="btn btn-small btn-primary" id="ad-btn-rechnung" style="margin-left:8px;" title="Rechnung aus diesem Auftrag erstellen">💰 Rechnung erstellen</button>`
+            : (existingRechnung
+                ? `<span style="font-size:12px;color:var(--accent-success, #22c55e);margin-left:8px;">✅ Rechnung ${h(existingRechnung.nummer || existingRechnung.id)}</span>`
+                : ''));
     }
 
     // Reset to first tab
@@ -649,6 +720,7 @@ window.AuftraegeModule = {
     renderAuftraege,
     changeAuftragStatus,
     openAuftragDetail,
+    createRechnungFromAuftrag,
     renderAuftragZeit,
     initAuftragForm,
     initAuftragDetailHandlers,
@@ -665,5 +737,6 @@ window.AuftraegeModule = {
 window.renderAuftraege = renderAuftraege;
 window.changeAuftragStatus = changeAuftragStatus;
 window.openAuftragDetail = openAuftragDetail;
+window.createRechnungFromAuftrag = createRechnungFromAuftrag;
 
 })();

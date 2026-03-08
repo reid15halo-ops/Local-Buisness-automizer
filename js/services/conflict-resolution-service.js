@@ -450,7 +450,14 @@ class ConflictResolutionService {
                 items.push({ ...resolvedRecord, updated_at: new Date().toISOString() });
             }
 
-            localStorage.setItem(storageKey, JSON.stringify(items));
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(items));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    console.warn('localStorage quota exceeded for', storageKey);
+                    if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                }
+            }
 
             // Queue the resolved record for sync to Supabase
             if (window.syncService) {
@@ -494,8 +501,13 @@ class ConflictResolutionService {
     _saveConflicts() {
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.conflicts));
-        } catch (err) {
-            console.error('ConflictResolutionService: Error saving conflicts:', err);
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('ConflictResolutionService: Error saving conflicts:', e);
+            }
         }
     }
 
@@ -516,8 +528,13 @@ class ConflictResolutionService {
     _saveSettings(settings) {
         try {
             localStorage.setItem(this.SETTINGS_KEY, JSON.stringify(settings));
-        } catch (err) {
-            console.error('ConflictResolutionService: Error saving settings:', err);
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.SETTINGS_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('ConflictResolutionService: Error saving settings:', e);
+            }
         }
     }
 

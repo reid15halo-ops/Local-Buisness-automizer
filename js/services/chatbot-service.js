@@ -611,9 +611,20 @@ class ChatbotService {
     updateSettings(updates) { this.settings = { ...this.settings, ...updates }; this.saveSettings(); }
     getSettings() { return this.settings; }
 
-    saveConversations() { localStorage.setItem('freyai_chatbot_conversations', JSON.stringify(this.conversations)); }
-    saveQueue() { localStorage.setItem('freyai_chatbot_queue', JSON.stringify(this.messageQueue)); }
-    saveSettings() { localStorage.setItem('freyai_chatbot_settings', JSON.stringify(this.settings)); }
+    saveConversations() { this._safeSetItem('freyai_chatbot_conversations', this.conversations); }
+    saveQueue() { this._safeSetItem('freyai_chatbot_queue', this.messageQueue); }
+    saveSettings() { this._safeSetItem('freyai_chatbot_settings', this.settings); }
+
+    _safeSetItem(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', key);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            }
+        }
+    }
 }
 
 window.chatbotService = new ChatbotService();

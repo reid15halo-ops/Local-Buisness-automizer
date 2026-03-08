@@ -1382,7 +1382,12 @@ class WorkflowBuilderService {
         try {
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.workflows));
         } catch (e) {
-            console.error('[WorkflowBuilder] Speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('[WorkflowBuilder] Speichern fehlgeschlagen:', e);
+            }
         }
     }
 
@@ -1411,7 +1416,12 @@ class WorkflowBuilderService {
         try {
             localStorage.setItem(this.HISTORY_KEY, JSON.stringify(this.executionHistory));
         } catch (e) {
-            console.error('[WorkflowBuilder] History-Speichern fehlgeschlagen:', e);
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('localStorage quota exceeded for', this.HISTORY_KEY);
+                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+            } else {
+                console.error('[WorkflowBuilder] History-Speichern fehlgeschlagen:', e);
+            }
         }
     }
 

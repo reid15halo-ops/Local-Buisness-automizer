@@ -2036,14 +2036,23 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
               <tbody>${posRows}</tbody>
             </table>
             <table cellpadding="0" cellspacing="0" style="margin-left:auto;font-size:13px;min-width:260px;">
+              ${window._isKleinunternehmer?.() ? `
+              <tr style="font-weight:700;font-size:15px;">
+                <td style="padding:10px 12px;border-top:2px solid #0c1a1a;color:#0c1a1a;">Gesamtbetrag</td>
+                <td style="padding:10px 12px;text-align:right;border-top:2px solid #0c1a1a;color:#0c1a1a;">${eur(angebot.brutto)}</td>
+              </tr>
+              <tr><td colspan="2" style="padding:8px 12px;font-size:11px;color:#6b7280;">
+                Gemäß §19 UStG wird keine Umsatzsteuer berechnet.</td></tr>
+              ` : `
               <tr><td style="padding:5px 12px;color:#6b7280;">Netto</td>
                   <td style="padding:5px 12px;text-align:right;color:#374151;">${eur(angebot.netto)}</td></tr>
-              <tr><td style="padding:5px 12px;color:#6b7280;">MwSt. 19 %</td>
+              <tr><td style="padding:5px 12px;color:#6b7280;">MwSt. ${(window._getTaxRate?.() * 100) || 19} %</td>
                   <td style="padding:5px 12px;text-align:right;color:#374151;">${eur(angebot.mwst)}</td></tr>
               <tr style="font-weight:700;font-size:15px;">
                 <td style="padding:10px 12px;border-top:2px solid #0c1a1a;color:#0c1a1a;">Gesamtbetrag</td>
                 <td style="padding:10px 12px;text-align:right;border-top:2px solid #0c1a1a;color:#0c1a1a;">${eur(angebot.brutto)}</td>
               </tr>
+              `}
             </table>
             <div style="margin:24px 0 0;padding:14px 18px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:12px;color:#166534;">
               <strong>Im Leistungsumfang enthalten:</strong><br>

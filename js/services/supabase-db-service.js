@@ -292,3 +292,4 @@ class SupabaseDBService {
 }
 
 window.supabaseDB = new SupabaseDBService();
+window.supabaseDBService = window.supabaseDB;
