@@ -37,7 +37,7 @@ class TrashService {
         }
 
         const trashedItem = {
-            id: 'trash-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            id: 'trash-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
             entityType: entityType, // 'kunde', 'anfrage', 'angebot', 'auftrag', 'rechnung', 'material'
             originalId: item.id,
             data: JSON.parse(JSON.stringify(item)), // deep clone
@@ -362,13 +362,13 @@ class TrashService {
         case 'kunde':
             return `Kunde "${item.name || item.firma || 'Unbekannt'}"`;
         case 'anfrage':
-            return `Anfrage #${item.nummer || item.id?.substr(-6) || '?'}`;
+            return `Anfrage #${item.nummer || item.id?.slice(-6) || '?'}`;
         case 'angebot':
-            return `Angebot #${item.nummer || item.id?.substr(-6) || '?'}`;
+            return `Angebot #${item.nummer || item.id?.slice(-6) || '?'}`;
         case 'auftrag':
-            return `Auftrag #${item.nummer || item.id?.substr(-6) || '?'}`;
+            return `Auftrag #${item.nummer || item.id?.slice(-6) || '?'}`;
         case 'rechnung':
-            return `Rechnung #${item.nummer || item.id?.substr(-6) || '?'}`;
+            return `Rechnung #${item.nummer || item.id?.slice(-6) || '?'}`;
         case 'material':
             return `Material "${item.name || item.bezeichnung || 'Unbekannt'}"`;
         default:

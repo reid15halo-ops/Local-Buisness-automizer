@@ -42,7 +42,7 @@ class CashflowForecastService {
         }
 
         try {
-            const db = window.supabaseClient || window.supabase;
+            const db = window.supabaseClient?.client || window.supabase;
             if (!db) {
                 console.warn('CashflowForecastService: kein Supabase-Client verfuegbar');
                 return null;
@@ -80,7 +80,7 @@ class CashflowForecastService {
      */
     async loadForecastHistory(wochen = 8) {
         try {
-            const db = window.supabaseClient || window.supabase;
+            const db = window.supabaseClient?.client || window.supabase;
             if (!db) return [];
 
             const seit = new Date();
@@ -116,44 +116,49 @@ class CashflowForecastService {
      * @returns {Promise<Object>}
      */
     async getWidgetData() {
-        const forecast = await this.loadLatestForecast();
+        try {
+            const forecast = await this.loadLatestForecast();
 
-        if (!forecast) {
+            if (!forecast) {
+                return {
+                    type: 'cashflow-ai',
+                    hasData: false,
+                    message: 'Noch keine KI-Prognose verfuegbar. Script laeuft montags um 9:00 Uhr.',
+                };
+            }
+
+            const details = forecast.details || {};
+            const forecastDate = new Date(forecast.forecast_date);
+            const ageMs = Date.now() - forecastDate.getTime();
+            const ageTage = Math.floor(ageMs / 86400000);
+
             return {
                 type: 'cashflow-ai',
-                hasData: false,
-                message: 'Noch keine KI-Prognose verfuegbar. Script laeuft montags um 9:00 Uhr.',
+                hasData: true,
+                forecastDate: forecast.forecast_date,
+                ageTage,
+                currentBalance: forecast.current_balance,
+                forecast30d: forecast.forecast_30d,
+                forecast60d: forecast.forecast_60d,
+                forecast90d: forecast.forecast_90d,
+                bewertung: details.bewertung || this.getAmpel(forecast.current_balance).toUpperCase(),
+                analyse: details.gemini_analyse || '',
+                empfehlung: details.gemini_empfehlung || '',
+                offeneForderungen: details.offene_forderungen || 0,
+                offeneVerbindlichkeiten: details.offene_verbindlichkeiten || 0,
+                avgEinnahmen: details.avg_einnahmen || 0,
+                avgAusgaben: details.avg_ausgaben || 0,
+                ampel: {
+                    current: this.getAmpel(forecast.current_balance),
+                    d30: this.getAmpel(forecast.forecast_30d),
+                    d60: this.getAmpel(forecast.forecast_60d),
+                    d90: this.getAmpel(forecast.forecast_90d),
+                },
             };
+        } catch (e) {
+            window.errorHandler?.handle(e, 'CashflowForecastService');
+            return { type: 'cashflow-ai', hasData: false, message: 'Fehler beim Laden der Prognose.' };
         }
-
-        const details = forecast.details || {};
-        const forecastDate = new Date(forecast.forecast_date);
-        const ageMs = Date.now() - forecastDate.getTime();
-        const ageTage = Math.floor(ageMs / 86400000);
-
-        return {
-            type: 'cashflow-ai',
-            hasData: true,
-            forecastDate: forecast.forecast_date,
-            ageTage,
-            currentBalance: forecast.current_balance,
-            forecast30d: forecast.forecast_30d,
-            forecast60d: forecast.forecast_60d,
-            forecast90d: forecast.forecast_90d,
-            bewertung: details.bewertung || this.getAmpel(forecast.current_balance).toUpperCase(),
-            analyse: details.gemini_analyse || '',
-            empfehlung: details.gemini_empfehlung || '',
-            offeneForderungen: details.offene_forderungen || 0,
-            offeneVerbindlichkeiten: details.offene_verbindlichkeiten || 0,
-            avgEinnahmen: details.avg_einnahmen || 0,
-            avgAusgaben: details.avg_ausgaben || 0,
-            ampel: {
-                current: this.getAmpel(forecast.current_balance),
-                d30: this.getAmpel(forecast.forecast_30d),
-                d60: this.getAmpel(forecast.forecast_60d),
-                d90: this.getAmpel(forecast.forecast_90d),
-            },
-        };
     }
 
     /**
@@ -161,7 +166,13 @@ class CashflowForecastService {
      * @returns {Promise<string>}
      */
     async renderWidget() {
-        const data = await this.getWidgetData();
+        let data;
+        try {
+            data = await this.getWidgetData();
+        } catch (e) {
+            window.errorHandler?.handle(e, 'CashflowForecastService');
+            data = { hasData: false, message: 'Widget-Fehler.' };
+        }
 
         if (!data.hasData) {
             return `

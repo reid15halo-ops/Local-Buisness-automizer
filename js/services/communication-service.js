@@ -219,7 +219,7 @@ class CommunicationService {
     }
 
     // Helpers
-    generateId() { return 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+    generateId() { return 'msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11); }
 
     getTypeIcon(type) {
         const icons = { email: '📧', sms: '💬', whatsapp: '📱', call: '📞' };

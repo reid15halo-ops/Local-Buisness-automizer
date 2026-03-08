@@ -38,6 +38,8 @@
 </head>
 <body class="landing-page">
 
+    <a href="#hero" class="skip-to-content" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:8px 16px;background:var(--accent,#0071e3);color:#fff;text-decoration:none;font-size:14px;border-radius:0 0 4px 0;" onfocus="this.style.left='0';this.style.width='auto';this.style.height='auto';" onblur="this.style.left='-9999px';this.style.width='1px';this.style.height='1px';">Zum Inhalt springen</a>
+
     <!-- ====== Navigation ====== -->
     <nav class="nav" role="navigation" aria-label="Hauptnavigation">
         <a href="#hero" class="nav-brand" aria-label="FreyAI Visions Startseite">
@@ -106,12 +108,12 @@
         </div>
         <div class="hero-stats" aria-label="Kernvorteile">
             <div class="hero-stat">
-                <div class="number">1&ndash;8h</div>
-                <div class="label">Pro Woche sparen</div>
+                <div class="number">17:15 Uhr</div>
+                <div class="label">Feierabend statt 20 Uhr</div>
             </div>
             <div class="hero-stat">
-                <div class="number">ab 1.200&euro;</div>
-                <div class="label">Einmalig, kein Abo</div>
+                <div class="number">0&nbsp;&euro;/Monat</div>
+                <div class="label">Einmalig zahlen, fertig</div>
             </div>
             <div class="hero-stat">
                 <div class="number">Vor Ort</div>
@@ -119,7 +121,7 @@
             </div>
             <div class="hero-stat">
                 <div class="number">DSGVO</div>
-                <div class="label">EU-Server</div>
+                <div class="label">Daten bleiben in Deutschland</div>
             </div>
         </div>
     </section>
@@ -302,6 +304,38 @@
             <a href="https://buchung.freyaivisions.de/jonas" class="btn btn-primary btn-large" target="_blank" rel="noopener noreferrer">
                 Klingt gut? Jetzt Erstgespr&auml;ch buchen
             </a>
+        </div>
+    </section>
+
+    <!-- ====== Trust / Social Proof ====== -->
+    <section class="section" id="vertrauen" aria-labelledby="vertrauen-title">
+        <div class="section-inner">
+            <div class="section-header">
+                <span class="section-label">Vertrauen</span>
+                <h2 class="section-title" id="vertrauen-title">Warum FreyAI Visions?</h2>
+            </div>
+            <div class="trust-grid reveal">
+                <div class="trust-card">
+                    <div class="trust-icon" aria-hidden="true">&#127959;</div>
+                    <h3>Vom Handwerker f&uuml;r Handwerker</h3>
+                    <p>Als gelernter Steinmetz kenne ich den Alltag auf der Baustelle &mdash; und wei&szlig;, was wirklich hilft.</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon" aria-hidden="true">&#128274;</div>
+                    <h3>100% DSGVO-konform</h3>
+                    <p>Alle Daten auf EU-Servern. Keine US-Cloud, kein Tracking, kein Kleingedrucktes.</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon" aria-hidden="true">&#128182;</div>
+                    <h3>Ehrliche Preise</h3>
+                    <p>Einmalige Investition. Keine versteckten Kosten, keine Abos, keine b&ouml;sen &Uuml;berraschungen.</p>
+                </div>
+                <div class="trust-card">
+                    <div class="trust-icon" aria-hidden="true">&#129309;</div>
+                    <h3>Pers&ouml;nlicher Ansprechpartner</h3>
+                    <p>Kein Callcenter, kein Ticket-System. Sie rufen mich direkt an &mdash; ich k&uuml;mmere mich.</p>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -639,6 +673,12 @@
         ]
     }
     </script>
+
+    <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
+        <a href="https://buchung.freyaivisions.de/jonas" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+            Erstgespr&auml;ch buchen
+        </a>
+    </div>
 
     <!-- ====== JavaScript (external, CSP-compliant) ====== -->
     <script defer src="js/landing.js"></script>

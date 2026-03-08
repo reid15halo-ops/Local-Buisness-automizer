@@ -354,7 +354,7 @@ Mit freundlichen Grüßen
     }
 
     generateId() {
-        return 'email_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        return 'email_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
     }
 
     /**

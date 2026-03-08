@@ -91,7 +91,7 @@ class BankingService {
         ];
 
         const transactions = demoTransactions.map((t, i) => ({
-            id: 'tx-' + Date.now() + '-' + i,
+            id: crypto?.randomUUID ? `tx-${crypto.randomUUID()}` : 'tx-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9) + '-' + i,
             accountId: accountId,
             date: new Date(Date.now() - (i * 2 * 24 * 60 * 60 * 1000)).toISOString(),
             valueDate: new Date(Date.now() - (i * 2 * 24 * 60 * 60 * 1000)).toISOString(),
@@ -99,7 +99,7 @@ class BankingService {
             currency: 'EUR',
             type: t.type,
             name: t.name,
-            iban: 'DE89' + Math.random().toString().substr(2, 18),
+            iban: 'DE89' + Math.random().toString().substring(2, 20),
             purpose: t.purpose,
             reference: t.reference,
             category: this.categorizeTransaction({ purpose: t.purpose, amount: t.amount }),
@@ -130,7 +130,7 @@ class BankingService {
                 : -Math.round((50 + Math.random() * 500) * 100) / 100;
 
             return {
-                id: 'tx-' + Date.now() + '-' + i,
+                id: crypto?.randomUUID ? `tx-${crypto.randomUUID()}` : 'tx-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9) + '-' + i,
                 accountId: accountId,
                 date: new Date().toISOString(),
                 valueDate: new Date().toISOString(),
@@ -138,7 +138,7 @@ class BankingService {
                 currency: 'EUR',
                 type: isCredit ? 'credit' : 'debit',
                 name: template.names[Math.floor(Math.random() * template.names.length)],
-                iban: 'DE89' + Math.random().toString().substr(2, 18),
+                iban: 'DE89' + Math.random().toString().substring(2, 20),
                 purpose: template.purposes[Math.floor(Math.random() * template.purposes.length)],
                 category: null,
                 matched: false,
@@ -431,10 +431,7 @@ class BankingService {
 
     // Format currency
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
+        return window.formatCurrency(amount);
     }
 
     // Persistence

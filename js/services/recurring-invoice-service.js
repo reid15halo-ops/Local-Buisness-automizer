@@ -28,7 +28,7 @@ class RecurringInvoiceService {
         await this._loadFromSupabase();
         this._ready = true;
         this._startScheduler();
-        console.log('[RecurringInvoice] Initialised - ' + this.templates.length + ' templates loaded');
+        console.debug('[RecurringInvoice] Initialised - ' + this.templates.length + ' templates loaded');
     }
 
     _supabase() {
@@ -73,7 +73,7 @@ class RecurringInvoiceService {
     }
 
     _fromRow(r) {
-        var positionen = r.positionen || [];
+        let positionen = r.positionen || [];
         if (typeof positionen === 'string') {
             try { positionen = JSON.parse(positionen); } catch { positionen = []; }
         }
@@ -113,7 +113,7 @@ class RecurringInvoiceService {
             return;
         }
         try {
-            var result = await this._supabase()
+            const result = await this._supabase()
                 .from('recurring_invoice_templates')
                 .select('*')
                 .eq('tenant_id', this._tenantId)
@@ -134,8 +134,8 @@ class RecurringInvoiceService {
     async _upsertToSupabase(template) {
         if (!this._isOnline()) return;
         try {
-            var row = this._toRow(template);
-            var result = await this._supabase()
+            const row = this._toRow(template);
+            const result = await this._supabase()
                 .from('recurring_invoice_templates')
                 .upsert(row, { onConflict: 'id' });
             if (result.error) console.error('[RecurringInvoice] Supabase upsert error:', result.error.message);
@@ -147,7 +147,7 @@ class RecurringInvoiceService {
     async _deleteFromSupabase(id) {
         if (!this._isOnline()) return;
         try {
-            var result = await this._supabase()
+            const result = await this._supabase()
                 .from('recurring_invoice_templates')
                 .delete()
                 .eq('id', id)
@@ -171,7 +171,7 @@ class RecurringInvoiceService {
     async createTemplate(data) {
         await this._ensureReady();
 
-        var template = {
+        const template = {
             id:                       'rit-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
             kunde_id:                 data.kunde_id || null,
             kunde_name:               data.kunde_name || '',
@@ -209,10 +209,10 @@ class RecurringInvoiceService {
 
     async updateTemplate(id, changes) {
         await this._ensureReady();
-        var tpl = this.templates.find(function(t) { return t.id === id; });
+        const tpl = this.templates.find(function(t) { return t.id === id; });
         if (!tpl) return { success: false, error: 'Template nicht gefunden' };
 
-        var safeCopy = Object.assign({}, changes);
+        const safeCopy = Object.assign({}, changes);
         delete safeCopy.id;
         delete safeCopy.created_at;
         Object.assign(tpl, safeCopy, { updated_at: new Date().toISOString() });
@@ -229,7 +229,7 @@ class RecurringInvoiceService {
 
     async activateTemplate(id) {
         await this._ensureReady();
-        var tpl = this.templates.find(function(t) { return t.id === id; });
+        const tpl = this.templates.find(function(t) { return t.id === id; });
         if (!tpl) return { success: false, error: 'Template nicht gefunden' };
 
         tpl.status = 'aktiv';
@@ -247,7 +247,7 @@ class RecurringInvoiceService {
 
     async deleteTemplate(id) {
         await this._ensureReady();
-        var idx = this.templates.findIndex(function(t) { return t.id === id; });
+        const idx = this.templates.findIndex(function(t) { return t.id === id; });
         if (idx === -1) return { success: false, error: 'Template nicht gefunden' };
 
         this.templates.splice(idx, 1);
@@ -258,7 +258,7 @@ class RecurringInvoiceService {
 
     getTemplates(filter) {
         filter = filter || {};
-        var result = this.templates.slice();
+        let result = this.templates.slice();
         if (filter.status) result = result.filter(function(t) { return t.status === filter.status; });
         if (filter.kunde_id) result = result.filter(function(t) { return t.kunde_id === filter.kunde_id; });
         return result.sort(function(a, b) { return new Date(b.created_at) - new Date(a.created_at); });
@@ -272,18 +272,18 @@ class RecurringInvoiceService {
 
     async generateDueInvoices() {
         await this._ensureReady();
-        var heute = new Date().toISOString().split('T')[0];
-        var erstellte = [];
+        const heute = new Date().toISOString().split('T')[0];
+        const erstellte = [];
 
-        for (var i = 0; i < this.templates.length; i++) {
-            var tpl = this.templates[i];
+        for (let i = 0; i < this.templates.length; i++) {
+            const tpl = this.templates[i];
             if (tpl.status !== 'aktiv' || !tpl.naechste_faelligkeit) continue;
             if (tpl.naechste_faelligkeit > heute) continue;
 
-            var dupKey = 'rit_gen_' + tpl.id + '_' + heute;
+            const dupKey = 'rit_gen_' + tpl.id + '_' + heute;
             if (sessionStorage.getItem(dupKey)) continue;
 
-            var rechnung = await this._generiereRechnung(tpl);
+            const rechnung = await this._generiereRechnung(tpl);
             if (rechnung) {
                 erstellte.push(rechnung);
                 sessionStorage.setItem(dupKey, '1');
@@ -291,7 +291,7 @@ class RecurringInvoiceService {
         }
 
         if (erstellte.length > 0) {
-            console.log('[RecurringInvoice] ' + erstellte.length + ' Rechnung(en) automatisch erstellt');
+            console.debug('[RecurringInvoice] ' + erstellte.length + ' Rechnung(en) automatisch erstellt');
         }
 
         return { erstellt: erstellte.length, rechnungen: erstellte };
@@ -299,37 +299,37 @@ class RecurringInvoiceService {
 
     async generateNow(id) {
         await this._ensureReady();
-        var tpl = this.templates.find(function(t) { return t.id === id; });
+        const tpl = this.templates.find(function(t) { return t.id === id; });
         if (!tpl || tpl.status === 'beendet') return null;
         return this._generiereRechnung(tpl);
     }
 
     async _generiereRechnung(tpl) {
-        var storeService = window.storeService;
+        const storeService = window.storeService;
         if (!storeService || !storeService.store || !storeService.store.rechnungen) {
             console.warn('[RecurringInvoice] StoreService nicht verfuegbar');
             return null;
         }
 
         try {
-            var mwst = Math.round(tpl.netto_betrag * tpl.steuersatz * 100) / 100;
-            var brutto = Math.round((tpl.netto_betrag + mwst) * 100) / 100;
-            var heute = new Date().toISOString().split('T')[0];
-            var faellig = this._addTage(heute, tpl.zahlungsziel_tage);
+            const mwst = Math.round(tpl.netto_betrag * tpl.steuersatz * 100) / 100;
+            const brutto = Math.round((tpl.netto_betrag + mwst) * 100) / 100;
+            const heute = new Date().toISOString().split('T')[0];
+            const faellig = this._addTage(heute, tpl.zahlungsziel_tage);
 
-            var nummer = 'RE-ABO-' + Date.now();
+            let nummer = 'RE-ABO-' + Date.now();
             if (window.invoiceNumberingService) {
                 try {
-                    var userId = (storeService.getCurrentUserId && storeService.getCurrentUserId()) || 'default';
+                    const userId = (storeService.getCurrentUserId && storeService.getCurrentUserId()) || 'default';
                     nummer = await window.invoiceNumberingService.generateNumber(userId);
                 } catch (e) {
                     console.warn('[RecurringInvoice] Nummernfallback', e);
                 }
             }
 
-            var aboVermerk = 'Auto-generiert aus Abo "' + (tpl.bezeichnung || '') + '"';
+            const aboVermerk = 'Auto-generiert aus Abo "' + (tpl.bezeichnung || '') + '"';
 
-            var rechnung = {
+            const rechnung = {
                 id: (storeService.generateId && storeService.generateId('RE')) || ('RE-' + Date.now()),
                 nummer: nummer,
                 kunde: {
@@ -398,13 +398,13 @@ class RecurringInvoiceService {
     // ── Datumsberechnung ────────────────────────────────────────
 
     _berechneNaechstesDatum(tpl) {
-        var basis;
+        let basis;
 
         if (tpl.letzte_rechnung) {
             basis = new Date(tpl.letzte_rechnung);
         } else if (tpl.start_datum) {
-            var start = new Date(tpl.start_datum);
-            var heute = new Date();
+            const start = new Date(tpl.start_datum);
+            const heute = new Date();
             heute.setHours(0, 0, 0, 0);
             if (start >= heute) return tpl.start_datum;
             basis = start;
@@ -412,7 +412,7 @@ class RecurringInvoiceService {
             basis = new Date();
         }
 
-        var naechstes = new Date(basis);
+        const naechstes = new Date(basis);
 
         switch (tpl.intervall) {
             case 'monatlich':
@@ -430,11 +430,11 @@ class RecurringInvoiceService {
         }
 
         if (tpl.tag_im_monat) {
-            var maxTag = new Date(naechstes.getFullYear(), naechstes.getMonth() + 1, 0).getDate();
+            const maxTag = new Date(naechstes.getFullYear(), naechstes.getMonth() + 1, 0).getDate();
             naechstes.setDate(Math.min(tpl.tag_im_monat, maxTag));
         }
 
-        var ergebnis = naechstes.toISOString().split('T')[0];
+        const ergebnis = naechstes.toISOString().split('T')[0];
 
         if (tpl.end_datum && ergebnis > tpl.end_datum) return null;
         if (tpl.max_anzahl && tpl.anzahl_erstellt >= tpl.max_anzahl) return null;
@@ -443,7 +443,7 @@ class RecurringInvoiceService {
     }
 
     _addTage(datumStr, tage) {
-        var d = new Date(datumStr);
+        const d = new Date(datumStr);
         d.setDate(d.getDate() + tage);
         return d.toISOString().split('T')[0];
     }
@@ -451,9 +451,9 @@ class RecurringInvoiceService {
     // ── Statistiken & Vorschau ──────────────────────────────────
 
     getStatistiken() {
-        var aktive = this.templates.filter(function(t) { return t.status === 'aktiv'; });
+        const aktive = this.templates.filter(function(t) { return t.status === 'aktiv'; });
 
-        var mrr = aktive.reduce(function(sum, t) {
+        const mrr = aktive.reduce(function(sum, t) {
             switch (t.intervall) {
                 case 'monatlich': return sum + t.netto_betrag;
                 case 'quartalsweise': return sum + (t.netto_betrag / 3);
@@ -476,16 +476,16 @@ class RecurringInvoiceService {
 
     getVorschau(monate) {
         monate = monate || 12;
-        var vorschau = [];
-        var endDatum = new Date();
+        const vorschau = [];
+        const endDatum = new Date();
         endDatum.setMonth(endDatum.getMonth() + monate);
-        var endStr = endDatum.toISOString().split('T')[0];
+        const endStr = endDatum.toISOString().split('T')[0];
 
-        var aktiveTpls = this.templates.filter(function(t) { return t.status === 'aktiv'; });
-        for (var i = 0; i < aktiveTpls.length; i++) {
-            var tpl = aktiveTpls[i];
-            var temp = Object.assign({}, tpl);
-            var naechstes = temp.naechste_faelligkeit;
+        const aktiveTpls = this.templates.filter(function(t) { return t.status === 'aktiv'; });
+        for (let i = 0; i < aktiveTpls.length; i++) {
+            const tpl = aktiveTpls[i];
+            const temp = Object.assign({}, tpl);
+            let naechstes = temp.naechste_faelligkeit;
 
             while (naechstes && naechstes <= endStr) {
                 vorschau.push({
@@ -508,7 +508,7 @@ class RecurringInvoiceService {
     // ── Hilfsfunktionen ─────────────────────────────────────────
 
     getIntervallName(intervall) {
-        var namen = {
+        const namen = {
             'monatlich': 'Monatlich',
             'quartalsweise': 'Quartalsweise',
             'jaehrlich': 'Jaehrlich',
@@ -518,16 +518,16 @@ class RecurringInvoiceService {
     }
 
     getStatusName(status) {
-        var namen = { 'aktiv': 'Aktiv', 'pausiert': 'Pausiert', 'beendet': 'Beendet' };
+        const namen = { 'aktiv': 'Aktiv', 'pausiert': 'Pausiert', 'beendet': 'Beendet' };
         return namen[status] || status;
     }
 
     // ── Benachrichtigungen ──────────────────────────────────────
 
     _benachrichtigen(tpl, rechnung) {
-        var betragStr = (parseFloat(rechnung.brutto) || 0).toFixed(2);
+        const betragStr = (parseFloat(rechnung.brutto) || 0).toFixed(2);
         if (window.notificationService && window.notificationService.sendTelegram) {
-            var msg = [
+            const msg = [
                 '📄 Abo-Rechnung erstellt',
                 'Kunde: ' + tpl.kunde_name,
                 'Rechnung: ' + rechnung.nummer,
@@ -546,7 +546,7 @@ class RecurringInvoiceService {
     // ── Scheduler ───────────────────────────────────────────────
 
     _startScheduler() {
-        var self = this;
+        const self = this;
         setTimeout(function() { self.generateDueInvoices(); }, 10000);
         this._schedulerInterval = setInterval(function() { self.generateDueInvoices(); }, 6 * 60 * 60 * 1000);
     }

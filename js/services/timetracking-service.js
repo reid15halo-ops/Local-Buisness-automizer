@@ -593,7 +593,7 @@ class TimeTrackingService {
     }
 
     // Helpers
-    generateId() { return 'time-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+    generateId() { return 'time-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11); }
 
     formatDuration(minutes) {
         const h = Math.floor(minutes / 60);

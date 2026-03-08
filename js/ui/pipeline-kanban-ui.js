@@ -91,7 +91,7 @@ class PipelineKanbanUI {
                      </div>`;
 
             // Cards
-            html += '<div class="kanban-column-body">';
+            html += '<div class="kanban-column-body" role="list" aria-label="' + this._esc(col.name) + '">';
             items.forEach(a => {
                 html += this._renderCard(a);
             });
@@ -138,7 +138,7 @@ class PipelineKanbanUI {
 
         return `<div class="${cardClass}"
                      draggable="true"
-                     role="button" tabindex="0"
+                     role="listitem" tabindex="0"
                      aria-label="Angebot ${this._esc(angebot.kunde?.name || 'Unbekannt')} ${this._formatCurrency(angebot.brutto || 0)}"
                      data-angebot-id="${this._esc(angebot.id)}"
                      ondragstart="window.pipelineKanbanUI._onCardDragStart(event, '${this._esc(angebot.id)}')"

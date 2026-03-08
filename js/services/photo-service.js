@@ -268,7 +268,7 @@ class PhotoService {
             }
 
             const photo = {
-                id: 'photo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+                id: 'photo-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
                 dataUrl: photoData.dataUrl || photoData,
                 referenceType: 'auftrag',
                 referenceId: jobId,
@@ -699,7 +699,7 @@ class PhotoService {
     <script class="no-print">
         // Auto-print button
         document.addEventListener('DOMContentLoaded', function() {
-            var btn = document.createElement('button');
+            const btn = document.createElement('button');
             btn.textContent = 'Drucken';
             btn.className = 'no-print';
             btn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 24px;background:var(--accent-primary, #2dd4a8);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;z-index:9999;';
@@ -989,7 +989,7 @@ class PhotoService {
     // Save photo to storage (flat list - backward compat)
     savePhoto(dataUrl, referenceData) {
         const photo = {
-            id: 'photo-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+            id: 'photo-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
             dataUrl: dataUrl,
             referenceType: referenceData.type || null,
             referenceId: referenceData.id || null,

@@ -111,7 +111,7 @@ function renderAnfragen() {
         <div class="item-card">
             <div class="item-header">
                 <h3 class="item-title">${window.UI.sanitize(a.kunde?.name || 'Unbekannt')}</h3>
-                <span class="item-id">${a.id}</span>
+                <span class="item-id">${h(a.id)}</span>
             </div>
             <div class="item-meta">
                 <span>📧 ${window.UI.sanitize(a.kunde?.email || '') || '-'}</span>

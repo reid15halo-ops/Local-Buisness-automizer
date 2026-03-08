@@ -14,9 +14,9 @@ class DemoDataService {
             anfragen: [
                 {
                     id: 'ANF-DEMO-001',
-                    kunde: { name: 'Bauunternehmen Müller', email: 'mueller@bau-mueller.de', telefon: '0151-123456' },
-                    leistungsart: 'metallbau',
-                    beschreibung: 'Edelstahlgeländer für 3 Balkone, ca. 15 lfm, satiniert.',
+                    kunde: { name: 'Webagentur Digital First', email: 'info@digital-first.de', telefon: '0151-123456' },
+                    leistungsart: 'ki-integration',
+                    beschreibung: 'KI-Chatbot Integration für Kundenservice-Portal. GPT-basiert mit FAQ-Training.',
                     budget: 4500,
                     termin: '2026-02-10',
                     status: 'neu',
@@ -24,40 +24,40 @@ class DemoDataService {
                 },
                 {
                     id: 'ANF-DEMO-002',
-                    kunde: { name: 'Getränke Logistik West', email: 'service@glw.de', telefon: '0231-998877' },
-                    leistungsart: 'hydraulik',
-                    beschreibung: 'Defekter Hubzylinder an Laderampe 4. Ölverlust an der Kolbenstange.',
-                    budget: 800,
+                    kunde: { name: 'Steuerberater Müller & Partner', email: 'office@mueller-partner.de', telefon: '0231-998877' },
+                    leistungsart: 'crm-setup',
+                    beschreibung: 'CRM Setup + Schulung für 8 Mitarbeiter. Migration bestehender Excel-Daten.',
+                    budget: 3200,
                     termin: '2026-01-20',
                     status: 'neu',
                     createdAt: now.toISOString()
                 },
                 {
                     id: 'ANF-DEMO-003',
-                    kunde: { name: 'Privatkunde Schmidt', email: 'h.schmidt@web.de', telefon: '0170-554433' },
-                    leistungsart: 'metallbau',
-                    beschreibung: 'Hoftor (2-flügelig) verzinkt und pulverbeschichtet (RAL 7016).',
-                    budget: 3200,
+                    kunde: { name: 'Zahnarztpraxis Dr. Weber', email: 'praxis@dr-weber.de', telefon: '0170-554433' },
+                    leistungsart: 'automatisierung',
+                    beschreibung: 'Prozessautomatisierung Terminverwaltung + automatische Erinnerungen per SMS/Email.',
+                    budget: 2800,
                     termin: '2026-03-01',
                     status: 'neu',
                     createdAt: fiveDaysAgo
                 },
                 {
                     id: 'ANF-DEMO-004',
-                    kunde: { name: 'Industrie Instandhaltung GmbH', email: 'info@ii-gmbh.net', telefon: '069-123000' },
-                    leistungsart: 'rohrleitungsbau',
-                    beschreibung: 'Druckluftleitung in neuer Werkshalle verlegen (Ermeto/Edelstahl).',
-                    budget: 12000,
+                    kunde: { name: 'Bäckerei Goldkruste', email: 'info@baeckerei-goldkruste.de', telefon: '069-123000' },
+                    leistungsart: 'website',
+                    beschreibung: 'Website-Relaunch + SEO-Optimierung. Bestellsystem für Vorbestellungen integrieren.',
+                    budget: 5500,
                     termin: '2026-02-15',
                     status: 'neu',
                     createdAt: twoDaysAgo
                 },
                 {
                     id: 'ANF-DEMO-005',
-                    kunde: { name: 'Logistikzentrum Süd', email: 'wartung@lz-sued.com', telefon: '089-445566' },
-                    leistungsart: 'reparatur',
-                    beschreibung: 'Sicherheitsprüfung (UVV) an 5 Hebebühnen.',
-                    budget: 1500,
+                    kunde: { name: 'Autohaus Schmidt', email: 'service@autohaus-schmidt.de', telefon: '089-445566' },
+                    leistungsart: 'email-marketing',
+                    beschreibung: 'Email-Marketing Automation: Newsletter-System, Lead-Nurturing, Kundensegmentierung.',
+                    budget: 1800,
                     termin: '2026-01-25',
                     status: 'neu',
                     createdAt: tenDaysAgo
@@ -67,31 +67,31 @@ class DemoDataService {
                 {
                     id: 'ANG-DEMO-101',
                     anfrageId: 'ANF-DEMO-001',
-                    kunde: { name: 'Bauunternehmen Müller', email: 'mueller@bau-mueller.de' },
-                    leistungsart: 'metallbau',
+                    kunde: { name: 'Webagentur Digital First', email: 'info@digital-first.de' },
+                    leistungsart: 'ki-integration',
                     positionen: [
-                        { beschreibung: 'Geländerpfosten Edelstahl', menge: 12, einheit: 'Stk.', preis: 125 },
-                        { beschreibung: 'Handlauf Edelstahl Ø42mm', menge: 15, einheit: 'lfm', preis: 45 },
-                        { beschreibung: 'Montage Kleinmaterial', menge: 1, einheit: 'Paush.', preis: 350 }
+                        { beschreibung: 'KI-Chatbot Entwicklung + Training', menge: 1, einheit: 'Pauschal', preis: 2800 },
+                        { beschreibung: 'FAQ-Datenaufbereitung', menge: 8, einheit: 'Std.', preis: 95 },
+                        { beschreibung: 'Integration + Deployment', menge: 1, einheit: 'Pauschal', preis: 650 }
                     ],
-                    netto: 2525,
-                    mwst: 479.75,
-                    brutto: 3004.75,
+                    netto: 4210,
+                    mwst: 799.90,
+                    brutto: 5009.90,
                     status: 'offen',
                     createdAt: twoDaysAgo
                 },
                 {
                     id: 'ANG-DEMO-102',
                     anfrageId: 'ANF-DEMO-003',
-                    kunde: { name: 'Privatkunde Schmidt', email: 'h.schmidt@web.de' },
-                    leistungsart: 'metallbau',
+                    kunde: { name: 'Zahnarztpraxis Dr. Weber', email: 'praxis@dr-weber.de' },
+                    leistungsart: 'automatisierung',
                     positionen: [
-                        { beschreibung: 'Doppelflügel-Tor Set complete', menge: 1, einheit: 'Set', preis: 2800 },
-                        { beschreibung: 'Elektrischer Antrieb inkl. Funk', menge: 1, einheit: 'Set', preis: 1200 }
+                        { beschreibung: 'Prozessautomatisierung Terminverwaltung', menge: 1, einheit: 'Pauschal', preis: 1800 },
+                        { beschreibung: 'SMS/Email-Erinnerungssystem Setup', menge: 1, einheit: 'Pauschal', preis: 950 }
                     ],
-                    netto: 4000,
-                    mwst: 760,
-                    brutto: 4760,
+                    netto: 2750,
+                    mwst: 522.50,
+                    brutto: 3272.50,
                     status: 'offen',
                     createdAt: fiveDaysAgo
                 }
@@ -100,21 +100,21 @@ class DemoDataService {
                 {
                     id: 'AUF-DEMO-201',
                     angebotId: 'ANG-DEMO-101',
-                    kunde: { name: 'Auto-Service Weber', email: 'weber@autoservice.de', telefon: '06021-554433' },
-                    leistungsart: 'reparatur',
-                    angebotsWert: 1250, netto: 1250, mwst: 237.50,
+                    kunde: { name: 'Webagentur Digital First', email: 'info@digital-first.de', telefon: '0151-123456' },
+                    leistungsart: 'ki-integration',
+                    angebotsWert: 4210, netto: 4210, mwst: 799.90,
                     status: 'in_bearbeitung',
                     fortschritt: 60,
                     mitarbeiter: ['Jonas G.'],
                     checkliste: [
-                        { text: 'Diagnose durchgeführt', erledigt: true },
-                        { text: 'Ersatzteile bestellt', erledigt: true },
-                        { text: 'Reparatur durchführen', erledigt: false },
-                        { text: 'Funktionstest', erledigt: false }
+                        { text: 'Anforderungsanalyse abgeschlossen', erledigt: true },
+                        { text: 'FAQ-Daten aufbereitet', erledigt: true },
+                        { text: 'Chatbot trainieren + testen', erledigt: false },
+                        { text: 'Go-Live + Monitoring', erledigt: false }
                     ],
                     historie: [
-                        { aktion: 'status', datum: '2026-02-20T08:00:00Z', details: 'Geplant → Material bestellt' },
-                        { aktion: 'status', datum: '2026-02-22T10:00:00Z', details: 'Material bestellt → In Bearbeitung' }
+                        { aktion: 'status', datum: '2026-02-20T08:00:00Z', details: 'Geplant → In Bearbeitung' },
+                        { aktion: 'status', datum: '2026-02-22T10:00:00Z', details: 'Daten-Aufbereitung gestartet' }
                     ],
                     startDatum: '2026-02-19', endDatum: '2026-03-05',
                     createdAt: tenDaysAgo,
@@ -122,16 +122,16 @@ class DemoDataService {
                 },
                 {
                     id: 'AUF-DEMO-202',
-                    kunde: { name: 'Stadtwerke Musterstadt', email: 'technik@stadtwerke-ms.de', telefon: '06022-887766' },
-                    leistungsart: 'hydraulik',
-                    angebotsWert: 850, netto: 850, mwst: 161.50,
+                    kunde: { name: 'Steuerberater Müller & Partner', email: 'office@mueller-partner.de', telefon: '0231-998877' },
+                    leistungsart: 'crm-setup',
+                    angebotsWert: 3200, netto: 3200, mwst: 608,
                     status: 'geplant',
                     fortschritt: 0,
                     mitarbeiter: [],
                     checkliste: [
-                        { text: 'Vor-Ort-Termin vereinbaren', erledigt: false },
-                        { text: 'Hydrauliköl beschaffen', erledigt: false },
-                        { text: 'Dichtungen prüfen', erledigt: false }
+                        { text: 'Kick-Off-Termin vereinbaren', erledigt: false },
+                        { text: 'Excel-Daten analysieren', erledigt: false },
+                        { text: 'CRM konfigurieren + Datenmigration', erledigt: false }
                     ],
                     historie: [],
                     startDatum: '2026-03-03', endDatum: '2026-03-07',
@@ -141,21 +141,21 @@ class DemoDataService {
                 {
                     id: 'AUF-DEMO-203',
                     angebotId: 'ANG-DEMO-102',
-                    kunde: { name: 'Bauunternehmen Müller', email: 'mueller@bau-mueller.de', telefon: '0151-123456' },
-                    leistungsart: 'metallbau',
-                    angebotsWert: 4500, netto: 4500, mwst: 855,
+                    kunde: { name: 'Zahnarztpraxis Dr. Weber', email: 'praxis@dr-weber.de', telefon: '0170-554433' },
+                    leistungsart: 'automatisierung',
+                    angebotsWert: 2750, netto: 2750, mwst: 522.50,
                     status: 'material_bestellt',
                     fortschritt: 25,
-                    mitarbeiter: ['Jonas G.', 'Extern: Schlosser Braun'],
+                    mitarbeiter: ['Jonas G.'],
                     checkliste: [
-                        { text: 'Aufmaß genommen', erledigt: true },
-                        { text: 'Material bestellt (V2A Rohr)', erledigt: true },
-                        { text: 'Fertigung Geländer', erledigt: false },
-                        { text: 'Montage vor Ort', erledigt: false },
-                        { text: 'Abnahme mit Kunde', erledigt: false }
+                        { text: 'Prozessanalyse abgeschlossen', erledigt: true },
+                        { text: 'SMS-Provider Account erstellt', erledigt: true },
+                        { text: 'Automatisierung implementieren', erledigt: false },
+                        { text: 'Testlauf mit Praxis-Team', erledigt: false },
+                        { text: 'Go-Live + Schulung', erledigt: false }
                     ],
                     historie: [
-                        { aktion: 'status', datum: '2026-02-25T09:00:00Z', details: 'Geplant → Material bestellt' }
+                        { aktion: 'status', datum: '2026-02-25T09:00:00Z', details: 'Geplant → In Vorbereitung' }
                     ],
                     startDatum: '2026-02-24', endDatum: '2026-03-14',
                     createdAt: fiveDaysAgo,
@@ -163,21 +163,21 @@ class DemoDataService {
                 },
                 {
                     id: 'AUF-DEMO-204',
-                    kunde: { name: 'Schreinerei Holzmann', email: 'holzmann@schreinerei.de', telefon: '06028-112233' },
-                    leistungsart: 'schweissen',
-                    angebotsWert: 420, netto: 420, mwst: 79.80,
+                    kunde: { name: 'Bäckerei Goldkruste', email: 'info@baeckerei-goldkruste.de', telefon: '069-123000' },
+                    leistungsart: 'website',
+                    angebotsWert: 5500, netto: 5500, mwst: 1045,
                     status: 'abnahme',
                     fortschritt: 90,
                     mitarbeiter: ['Jonas G.'],
                     checkliste: [
-                        { text: 'Schweißarbeiten erledigt', erledigt: true },
-                        { text: 'Nachbearbeitung', erledigt: true },
-                        { text: 'Kunde zur Abnahme einladen', erledigt: false }
+                        { text: 'Design + Layout fertig', erledigt: true },
+                        { text: 'Bestellsystem implementiert', erledigt: true },
+                        { text: 'Kunden-Abnahme + Feedback', erledigt: false }
                     ],
                     historie: [
                         { aktion: 'status', datum: '2026-02-18T08:00:00Z', details: 'Geplant → In Bearbeitung' },
-                        { aktion: 'status', datum: '2026-02-23T16:00:00Z', details: 'In Bearbeitung → Qualitätskontrolle' },
-                        { aktion: 'status', datum: '2026-02-26T10:00:00Z', details: 'Qualitätskontrolle → Abnahme' }
+                        { aktion: 'status', datum: '2026-02-23T16:00:00Z', details: 'In Bearbeitung → Review' },
+                        { aktion: 'status', datum: '2026-02-26T10:00:00Z', details: 'Review → Abnahme' }
                     ],
                     startDatum: '2026-02-18', endDatum: '2026-02-28',
                     createdAt: tenDaysAgo,
@@ -185,22 +185,22 @@ class DemoDataService {
                 },
                 {
                     id: 'AUF-DEMO-205',
-                    kunde: { name: 'Spedition Schnell', email: 'technik@spedition-schnell.de', telefon: '0171-445566' },
-                    leistungsart: 'hydraulik',
-                    angebotsWert: 1335, netto: 1335, mwst: 253.65,
+                    kunde: { name: 'Autohaus Schmidt', email: 'service@autohaus-schmidt.de', telefon: '089-445566' },
+                    leistungsart: 'email-marketing',
+                    angebotsWert: 1800, netto: 1800, mwst: 342,
                     status: 'abgeschlossen',
                     fortschritt: 100,
                     mitarbeiter: ['Jonas G.'],
                     checkliste: [
-                        { text: 'Ladebordwand demontiert', erledigt: true },
-                        { text: 'Hydraulikzylinder getauscht', erledigt: true },
-                        { text: 'System entlüftet', erledigt: true },
-                        { text: 'Funktionstest bestanden', erledigt: true }
+                        { text: 'Newsletter-Template erstellt', erledigt: true },
+                        { text: 'Kundenlisten segmentiert', erledigt: true },
+                        { text: 'Automations-Flows eingerichtet', erledigt: true },
+                        { text: 'Schulung durchgeführt', erledigt: true }
                     ],
                     historie: [
                         { aktion: 'status', datum: '2026-02-10T08:00:00Z', details: 'Geplant → In Bearbeitung' },
-                        { aktion: 'status', datum: '2026-02-14T15:00:00Z', details: 'In Bearbeitung → Qualitätskontrolle' },
-                        { aktion: 'status', datum: '2026-02-15T09:00:00Z', details: 'Qualitätskontrolle → Abnahme' },
+                        { aktion: 'status', datum: '2026-02-14T15:00:00Z', details: 'In Bearbeitung → Review' },
+                        { aktion: 'status', datum: '2026-02-15T09:00:00Z', details: 'Review → Abnahme' },
                         { aktion: 'status', datum: '2026-02-15T14:00:00Z', details: 'Abnahme → Abgeschlossen' }
                     ],
                     startDatum: '2026-02-10', endDatum: '2026-02-15',
@@ -210,16 +210,16 @@ class DemoDataService {
                 },
                 {
                     id: 'AUF-DEMO-206',
-                    kunde: { name: 'Getränke Logistik West', email: 'service@glw.de', telefon: '0231-998877' },
-                    leistungsart: 'hydraulik',
-                    angebotsWert: 780, netto: 780, mwst: 148.20,
+                    kunde: { name: 'Steuerberater Müller & Partner', email: 'office@mueller-partner.de', telefon: '0231-998877' },
+                    leistungsart: 'crm-setup',
+                    angebotsWert: 1900, netto: 1900, mwst: 361,
                     status: 'qualitaetskontrolle',
                     fortschritt: 80,
                     mitarbeiter: ['Jonas G.'],
                     checkliste: [
-                        { text: 'Hubzylinder ausgebaut', erledigt: true },
-                        { text: 'Dichtung ersetzt', erledigt: true },
-                        { text: 'Drucktest durchführen', erledigt: false }
+                        { text: 'CRM-System konfiguriert', erledigt: true },
+                        { text: 'Daten migriert', erledigt: true },
+                        { text: 'Abschlusstest + Dokumentation', erledigt: false }
                     ],
                     historie: [
                         { aktion: 'status', datum: '2026-02-24T08:00:00Z', details: 'Geplant → In Bearbeitung' },
@@ -233,49 +233,49 @@ class DemoDataService {
             rechnungen: [
                 {
                     id: 'RE-DEMO-301',
-                    kunde: { name: 'Spedition Schnell' },
+                    kunde: { name: 'Autohaus Schmidt' },
                     positionen: [
-                        { beschreibung: 'Hydraulik-Instandsetzung LKW-Ladebordwand', menge: 1, einheit: 'Pauschal', preis: 1250 },
-                        { beschreibung: 'Anfahrtspauschale Zone 2', menge: 1, einheit: 'Stk.', preis: 85 }
+                        { beschreibung: 'Email-Marketing Automation Setup', menge: 1, einheit: 'Pauschal', preis: 1500 },
+                        { beschreibung: 'Schulung Marketing-Team (2 Std.)', menge: 2, einheit: 'Std.', preis: 150 }
                     ],
-                    netto: 1335.00,
-                    mwst: 253.65,
-                    brutto: 1588.65,
+                    netto: 1800.00,
+                    mwst: 342.00,
+                    brutto: 2142.00,
                     status: 'offen',
                     createdAt: fiveDaysAgo
                 },
                 {
                     id: 'RE-DEMO-302',
-                    kunde: { name: 'Schreinerei Holzmann' },
+                    kunde: { name: 'Bäckerei Goldkruste' },
                     positionen: [
-                        { beschreibung: 'Schweißarbeiten Gestell Buche-Trockner', menge: 4, einheit: 'Std.', preis: 65 },
-                        { beschreibung: 'Materialzulage S235JR', menge: 1, einheit: 'Pauschal', preis: 160 }
+                        { beschreibung: 'Website-Relaunch inkl. SEO', menge: 1, einheit: 'Pauschal', preis: 4200 },
+                        { beschreibung: 'Bestellsystem-Integration', menge: 1, einheit: 'Pauschal', preis: 1300 }
                     ],
-                    netto: 420.00,
-                    mwst: 79.80,
-                    brutto: 499.80,
+                    netto: 5500.00,
+                    mwst: 1045.00,
+                    brutto: 6545.00,
                     status: 'bezahlt',
                     paidAt: twoDaysAgo,
                     createdAt: tenDaysAgo
                 }
             ],
             activities: [
-                { icon: '💰', title: 'Zahlung für RE-DEMO-302 erhalten', time: twoDaysAgo },
-                { icon: '📥', title: 'Neue Anfrage: Getränke Logistik West', time: now.toISOString() },
-                { icon: '📝', title: 'Angebot ANG-DEMO-101 erstellt', time: twoDaysAgo },
-                { icon: '✅', title: 'Auftrag AUF-DEMO-202 bestätigt', time: fiveDaysAgo },
-                { icon: '💰', title: 'Rechnung RE-DEMO-301 erstellt', time: fiveDaysAgo },
-                { icon: '📥', title: 'Anfrage von Logistikzentrum Süd empfangen', time: tenDaysAgo },
+                { icon: '💰', title: 'Zahlung für RE-DEMO-302 erhalten (Bäckerei Goldkruste)', time: twoDaysAgo },
+                { icon: '📥', title: 'Neue Anfrage: Steuerberater Müller & Partner', time: now.toISOString() },
+                { icon: '📝', title: 'Angebot ANG-DEMO-101 erstellt (KI-Chatbot)', time: twoDaysAgo },
+                { icon: '✅', title: 'Auftrag AUF-DEMO-202 bestätigt (CRM Setup)', time: fiveDaysAgo },
+                { icon: '💰', title: 'Rechnung RE-DEMO-301 erstellt (Email-Marketing)', time: fiveDaysAgo },
+                { icon: '📥', title: 'Anfrage von Autohaus Schmidt empfangen', time: tenDaysAgo },
                 { icon: '⚙️', title: 'System-Initialisierung abgeschlossen', time: tenDaysAgo }
             ],
             settings: {
-                companyName: 'FreyAI Visions',
-                owner: 'Max Mustermann',
-                address: 'Handwerkerring 38a, 63776 Mömbris',
-                taxId: '12/345/67890',
-                vatId: 'DE123456789',
-                phone: '+49 6029 9922964',
-                email: 'info@freyai-visions.de',
+                companyName: 'Demo Firma GmbH',
+                owner: 'Max Demo',
+                address: 'Musterstraße 1, 12345 Musterstadt',
+                taxId: '00/000/00000',
+                vatId: 'DE000000000',
+                phone: '+49 000 0000000',
+                email: 'info@demo-firma.de',
                 theme: 'dark'
             }
         };

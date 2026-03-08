@@ -25,12 +25,8 @@ class NotificationService {
         // Load notifications from localStorage
         this.loadFromStorage();
 
-        // Subscribe to store changes if available
-        if (window.storeService) {
-            window.storeService.subscribe(() => {
-                this.checkForStoreChanges();
-            });
-        }
+        // Note: storeService subscription removed — checkForStoreChanges() was a no-op.
+        // Notifications are triggered explicitly via notifyNewAnfrage(), notifyAngebotAccepted(), etc.
     }
 
     /**
@@ -451,7 +447,7 @@ class NotificationService {
      * @private
      */
     generateId() {
-        return `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return `notif-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     }
 }
 

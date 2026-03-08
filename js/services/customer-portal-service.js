@@ -755,6 +755,8 @@ class CustomerPortalService {
                 return { success: false, message: 'Bitte beschreiben Sie die gewuenschten Aenderungen' };
             }
 
+            const sanitizedChangeRequest = changeRequest.trim().substring(0, 2000);
+
             const store = window.storeService?.state;
             if (!store) {
                 return { success: false, message: 'Systemfehler' };
@@ -772,7 +774,7 @@ class CustomerPortalService {
 
             angebot.changeRequests.push({
                 id: 'cr-' + Date.now(),
-                message: changeRequest.trim(),
+                message: sanitizedChangeRequest,
                 createdAt: new Date().toISOString(),
                 via: 'portal',
                 customerName: validation.customer.name,
@@ -785,7 +787,7 @@ class CustomerPortalService {
             // Log as portal message
             await this.sendCustomerMessage(
                 token,
-                `Aenderungswunsch zu Angebot ${quoteId}: ${changeRequest.trim()}`
+                `Aenderungswunsch zu Angebot ${quoteId}: ${sanitizedChangeRequest}`
             );
 
             // Activity + notification
@@ -832,11 +834,13 @@ class CustomerPortalService {
                 return { success: false, message: 'Bitte geben Sie eine Nachricht ein' };
             }
 
+            const sanitizedText = message.trim().substring(0, 2000);
+
             const row = {
                 customer_id: validation.customerId,
                 token_id: validation.tokenId || null,
                 sender: 'customer',
-                text: message.trim(),
+                text: sanitizedText,
                 read: false,
                 tenant_id: this._tenantId
             };
@@ -860,7 +864,7 @@ class CustomerPortalService {
                     direction: 'inbound',
                     from: validation.customer.name,
                     to: this._getCompanyInfo().name,
-                    content: message.trim(),
+                    content: sanitizedText,
                     customerId: validation.customerId,
                     customerName: validation.customer.name,
                     status: 'delivered'
@@ -872,7 +876,7 @@ class CustomerPortalService {
                 window.notificationService.sendNotification(
                     'Neue Portal-Nachricht',
                     {
-                        body: `${validation.customer.name}: ${message.trim().substring(0, 80)}`,
+                        body: `${validation.customer.name}: ${sanitizedText.substring(0, 80)}`,
                         tag: `portal-msg-${entry.id}`
                     }
                 );
@@ -904,7 +908,7 @@ class CustomerPortalService {
                 customer_id: customerId,
                 token_id: null,
                 sender: 'business',
-                text: message.trim(),
+                text: message.trim().substring(0, 5000),
                 read: false,
                 tenant_id: this._tenantId
             };
@@ -1445,10 +1449,7 @@ class CustomerPortalService {
      * @private
      */
     _formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount || 0);
+        return window.formatCurrency(amount);
     }
 
     /**

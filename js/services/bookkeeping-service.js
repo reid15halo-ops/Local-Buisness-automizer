@@ -92,7 +92,7 @@ class BookkeepingService {
                 return;
             }
             this.buchungen = (data || []).map(r => this._fromSupabaseRow(r));
-            console.log(`[Buchhaltung] Loaded ${this.buchungen.length} buchungen from Supabase`);
+            console.debug(`[Buchhaltung] Loaded ${this.buchungen.length} buchungen from Supabase`);
         } catch (err) {
             console.error('[Buchhaltung] Supabase load failed:', err.message);
         }
@@ -232,7 +232,7 @@ class BookkeepingService {
             await this.addFromPurchaseOrder(po);
             added++;
         }
-        if (added > 0) console.log(`[Buchhaltung] ${added} Eingangsrechnungen als Buchungen erfasst`);
+        if (added > 0) console.debug(`[Buchhaltung] ${added} Eingangsrechnungen als Buchungen erfasst`);
     }
 
     // Ausgabe hinzufügen
@@ -721,10 +721,7 @@ class BookkeepingService {
     // Formatierung
     // ============================================
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
+        return window.formatCurrency(amount);
     }
 }
 
@@ -736,7 +733,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const tryInit = () => {
         if (window.supabaseClient?.isConfigured()) {
             window.bookkeepingService.init().then(() => {
-                console.log('[Buchhaltung] Service initialized');
+                console.debug('[Buchhaltung] Service initialized');
             });
         } else {
             setTimeout(tryInit, 1000);

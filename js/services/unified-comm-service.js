@@ -74,7 +74,7 @@ class UnifiedCommService {
 
         if (!conversation) {
             conversation = {
-                id: 'conv-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+                id: 'conv-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
                 customerId: customerId,
                 customerName: customerName,
                 customerPhone: customerPhone,
@@ -112,7 +112,7 @@ class UnifiedCommService {
         if (!conversation) {return null;}
 
         const message = {
-            id: 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            id: 'msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
             conversationId: conversationId,
             customerId: conversation.customerId,
             direction: data.direction, // 'sent' or 'received'
@@ -332,7 +332,7 @@ class UnifiedCommService {
     // =====================================================
     logCommunication(data) {
         const logEntry = {
-            id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            id: 'log-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
             type: data.type, // sms, email, chat
             direction: data.direction,
             customerId: data.customerId,

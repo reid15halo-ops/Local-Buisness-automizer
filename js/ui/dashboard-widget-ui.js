@@ -645,7 +645,7 @@ class DashboardWidgetUI {
         let html = `
             <div class="widget-add-dialog-overlay" id="widget-add-dialog-overlay"
                  onclick="if(event.target===this) window.dashboardWidgetUI._closeAddWidgetDialog()">
-                <div class="widget-add-dialog" role="dialog" aria-label="Widget hinzuf\u00FCgen">
+                <div class="widget-add-dialog" role="dialog" aria-modal="true" aria-label="Widget hinzuf\u00FCgen">
                     <div class="widget-add-dialog-header">
                         <h3>Widget hinzuf\u00FCgen</h3>
                         <button class="widget-add-dialog-close"

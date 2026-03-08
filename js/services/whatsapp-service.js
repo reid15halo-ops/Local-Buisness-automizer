@@ -989,7 +989,7 @@ class WhatsAppService {
      */
     _fallbackSend(formattedPhone, message, customerId) {
         const waUrl = `https://wa.me/${formattedPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
-        const msgId = 'local-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        const msgId = 'local-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7);
 
         this._logMessage({
             id: msgId,
@@ -1282,7 +1282,7 @@ class WhatsAppService {
      * @returns {string}
      */
     generateId() {
-        return 'wa-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        return 'wa-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
     }
 
     /**

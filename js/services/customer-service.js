@@ -133,7 +133,7 @@ class CustomerService {
                 this._syncToSupabase(c);
             }
 
-            console.log(`[CustomerService] Loaded ${supabaseCustomers.length} from Supabase, ${localOnly.length} local-only`);
+            console.debug(`[CustomerService] Loaded ${supabaseCustomers.length} from Supabase, ${localOnly.length} local-only`);
         } catch (err) {
             console.warn('[CustomerService] Supabase load failed, using localStorage:', err.message);
         } finally {
@@ -489,7 +489,7 @@ class CustomerService {
     }
 
     // Helpers
-    generateId() { return 'cust-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+    generateId() { return 'cust-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11); }
 
     formatAddress(customer) {
         const a = customer.adresse || {};

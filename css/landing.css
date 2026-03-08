@@ -669,7 +669,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     padding: 32px 24px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1276,4 +1276,61 @@ html.no-js .reveal {
     .reveal { opacity: 1 !important; transform: none !important; }
     .dot, .hero-logo-badge, .hero-glow, .hero-particles { animation: none !important; }
     .landing-page * { transition-duration: 0s !important; }
+}
+
+/* ============================================
+   Trust Grid
+   ============================================ */
+.trust-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+.trust-card {
+    background: var(--glass-bg, rgba(255,255,255,0.03));
+    border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+}
+.trust-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.trust-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary, #fff);
+}
+.trust-card p {
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+@media (max-width: 960px) {
+    .trust-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .trust-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================
+   Sticky CTA
+   ============================================ */
+.sticky-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    background: rgba(12, 26, 26, 0.95);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+.sticky-cta.visible {
+    transform: translateY(0);
 }

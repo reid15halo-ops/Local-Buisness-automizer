@@ -321,7 +321,7 @@ class ReportService {
 
     // Helpers
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(amount);
+        return window.formatCurrency(amount);
     }
 
     getReportTypes() { return this.reportTypes; }

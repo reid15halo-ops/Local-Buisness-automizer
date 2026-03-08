@@ -72,7 +72,16 @@ class CashFlowService {
         });
 
         const total = relevantBuchungen.reduce((sum, b) => sum + (b.brutto || 0), 0);
-        return total / 6;
+
+        // Count distinct months that actually have bookings instead of hardcoded 6
+        const distinctMonths = new Set(
+            relevantBuchungen.map(b => {
+                const d = new Date(b.datum);
+                return `${d.getFullYear()}-${d.getMonth()}`;
+            })
+        ).size;
+
+        return distinctMonths > 0 ? total / distinctMonths : 0;
     }
 
     // Generate future cash flow forecast
@@ -327,10 +336,7 @@ class CashFlowService {
 
     // Format currency
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
+        return window.formatCurrency(amount);
     }
 
     // Persistence

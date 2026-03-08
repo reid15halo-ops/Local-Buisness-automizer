@@ -77,7 +77,7 @@ class SmsReminderService {
     // Create a reminder entry
     createReminder(appointment, type, sendAt) {
         const reminder = {
-            id: 'rem-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            id: 'rem-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
             appointmentId: appointment.id,
             type: type, // '24h', '1h', 'custom'
             recipient: appointment.kunde?.telefon || appointment.telefon,

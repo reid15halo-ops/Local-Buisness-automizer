@@ -186,7 +186,7 @@ function renderAuftraege() {
         statsGrid.innerHTML = mainStatuses.map(key => {
             const cfg = AUFTRAG_STATUS_CONFIG[key];
             return `
-                <div class="stat-card-mini" style="cursor:pointer;" onclick="document.querySelector('.filter-btn[data-filter=${key}]')?.click()">
+                <div class="stat-card-mini" style="cursor:pointer;" onclick="document.querySelector('.filter-btn[data-filter=&quot;${key}&quot;]')?.click()">
                     <span class="stat-icon-mini">${cfg.icon}</span>
                     <div class="stat-content-mini">
                         <span class="stat-value-mini">${counts[key] || 0}</span>
@@ -362,7 +362,7 @@ function renderAuftraegeList(auftraege) {
             <div class="item-card" onclick="openAuftragDetail('${h(a.id)}')" style="cursor:pointer;">
                 <div class="item-header">
                     <h3 class="item-title">${h(a.kunde?.name || 'Unbekannter Kunde')}</h3>
-                    <span class="item-id">${a.id}</span>
+                    <span class="item-id">${h(a.id)}</span>
                 </div>
                 <div class="item-meta">
                     <span>${AUFTRAG_STATUS_ICONS[a.status] || ''} ${statusLabel}</span>

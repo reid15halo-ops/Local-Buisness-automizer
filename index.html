@@ -741,7 +741,7 @@
                 </div>
 
                 <!-- Modal: Neues Abo erstellen -->
-                <div class="modal" id="modal-neues-abo">
+                <div class="modal" id="modal-neues-abo" role="dialog" aria-modal="true" aria-label="Neues Abo erstellen">
                     <div class="modal-content" style="max-width:560px;"></div>
                 </div>
             </section>
@@ -988,7 +988,7 @@
                 </div>
                 <div class="support-tab-panel active" id="support-panel-tickets">
                     <div class="support-toolbar">
-                        <select id="support-filter-status">
+                        <select id="support-filter-status" aria-label="Tickets nach Status filtern">
                             <option value="">Alle Status</option>
                             <option value="offen">Offen</option>
                             <option value="in_bearbeitung">In Bearbeitung</option>
@@ -997,7 +997,7 @@
                             <option value="geloest">Geloest</option>
                             <option value="geschlossen">Geschlossen</option>
                         </select>
-                        <select id="support-filter-priority">
+                        <select id="support-filter-priority" aria-label="Tickets nach Prioritaet filtern">
                             <option value="">Alle Prioritaeten</option>
                             <option value="dringend">Dringend</option>
                             <option value="hoch">Hoch</option>

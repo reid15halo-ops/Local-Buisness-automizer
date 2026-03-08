@@ -796,7 +796,7 @@ class BonScannerService {
     processWareneingang(data) {
         try {
             const wareneingang = {
-                id: `WE-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+                id: `WE-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
                 source: data.source || 'bon_scan',
                 supplier: data.supplier || 'Unbekannt',
                 belegNummer: data.belegNummer || null,

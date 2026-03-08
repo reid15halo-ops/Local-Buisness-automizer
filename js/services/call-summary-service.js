@@ -33,7 +33,7 @@ class CallSummaryService {
         if (!userId) return null;
 
         const record = {
-            id: data.id || ('cs-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)),
+            id: data.id || ('cs-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11)),
             user_id: userId,
             kunde_id: data.kundeId || data.kunde_id || null,
             kunde_name: data.kundeName || data.kunde_name || null,

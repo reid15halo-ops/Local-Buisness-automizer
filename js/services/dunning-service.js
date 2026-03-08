@@ -43,7 +43,7 @@ class DunningService {
         }
         await this._loadMahnungenFromSupabase();
         this._ready = true;
-        console.log(`[Dunning] Initialisiert – ${this.mahnungen.length} Mahnungen geladen`);
+        console.debug(`[Dunning] Initialisiert – ${this.mahnungen.length} Mahnungen geladen`);
     }
 
     async _loadMahnungenFromSupabase() {
@@ -482,10 +482,7 @@ Nächste Schritte:
     // Helpers
     // ============================================
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
+        return window.formatCurrency(amount);
     }
 
     _getBankDetails() {

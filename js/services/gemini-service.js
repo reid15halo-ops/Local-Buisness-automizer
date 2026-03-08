@@ -205,7 +205,7 @@ Antworte im JSON-Format:
         if (!message || typeof message !== 'string') {return null;}
 
         const safeHistory = Array.isArray(history) ? history : [];
-        const context = safeHistory.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${m.content}`).join('\n');
+        const context = safeHistory.slice(-5).map(m => `${m.role === 'assistant' ? 'Bot' : 'Kunde'}: ${this._sanitizeForPrompt(m.content)}`).join('\n');
 
         const companyName = this._getCompanyName();
         const bizType = this._getBusinessType();

@@ -11,12 +11,16 @@ class WebhookEventService {
     }
 
     async init() {
-        // Optional: URL aus Settings überschreiben
-        const settingsUrl = window.storeService?.state?.settings?.n8nWebhookUrl;
-        if (settingsUrl) {
-            this.n8nWebhookUrl = settingsUrl;
+        try {
+            // Optional: URL aus Settings überschreiben
+            const settingsUrl = window.storeService?.state?.settings?.n8nWebhookUrl;
+            if (settingsUrl) {
+                this.n8nWebhookUrl = settingsUrl;
+            }
+            console.debug('[WebhookEvents] Initialisiert. Endpoint:', this.n8nWebhookUrl);
+        } catch (e) {
+            window.errorHandler?.handle(e, 'WebhookEventService');
         }
-        console.log('[WebhookEvents] Initialisiert. Endpoint:', this.n8nWebhookUrl);
     }
 
     /**
@@ -45,7 +49,7 @@ class WebhookEventService {
             if (!response.ok) {
                 console.warn(`[WebhookEvents] ${eventType} → HTTP ${response.status}`);
             } else {
-                console.log(`[WebhookEvents] ${eventType} gesendet`);
+                console.debug(`[WebhookEvents] ${eventType} gesendet`);
             }
         } catch (err) {
             // Nie den App-Flow unterbrechen

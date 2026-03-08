@@ -4,7 +4,7 @@
    ============================================ */
 (function() {
 
-const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h } = window.AppUtils;
+const { store, saveStore, addActivity, generateId, formatDate, formatCurrency, getLeistungsartLabel, openModal, closeModal, showToast, h } = window.AppUtils || {};
 
 // Filter and search state
 let currentRechnungenFilter = 'alle';
@@ -818,21 +818,21 @@ async function downloadInvoicePDF(id) {
 //  Abo-Rechnungen Tab (Recurring Invoice Templates)
 // ═══════════════════════════════════════════════════════════════
 
-var _mainTabsInit = false;
-var _aboActionsInit = false;
+let _mainTabsInit = false;
+let _aboActionsInit = false;
 
 function initMainTabs() {
-    var tabContainer = document.getElementById('rechnungen-main-tabs');
+    const tabContainer = document.getElementById('rechnungen-main-tabs');
     if (!tabContainer || _mainTabsInit) return;
     _mainTabsInit = true;
 
     tabContainer.querySelectorAll('.filter-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            var tabId = btn.dataset.maintab;
+            const tabId = btn.dataset.maintab;
             tabContainer.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
             btn.classList.add('active');
-            var rechnungenTab = document.getElementById('rechnungen-tab');
-            var aboTab = document.getElementById('abo-rechnungen-tab');
+            const rechnungenTab = document.getElementById('rechnungen-tab');
+            const aboTab = document.getElementById('abo-rechnungen-tab');
             if (rechnungenTab) rechnungenTab.style.display = (tabId === 'rechnungen-tab') ? '' : 'none';
             if (aboTab) aboTab.style.display = (tabId === 'abo-rechnungen-tab') ? '' : 'none';
             if (tabId === 'abo-rechnungen-tab') {
@@ -841,7 +841,7 @@ function initMainTabs() {
         });
     });
 
-    var btnNeuesAbo = document.getElementById('btn-neues-abo');
+    const btnNeuesAbo = document.getElementById('btn-neues-abo');
     if (btnNeuesAbo) {
         btnNeuesAbo.addEventListener('click', function() {
             openAboFormular();
@@ -850,12 +850,12 @@ function initMainTabs() {
 }
 
 function renderAboRechnungen() {
-    var svc = window.recurringInvoiceService;
+    const svc = window.recurringInvoiceService;
     if (!svc) return;
 
-    var statsBar = document.getElementById('abo-stats-bar');
+    const statsBar = document.getElementById('abo-stats-bar');
     if (statsBar) {
-        var stats = svc.getStatistiken();
+        const stats = svc.getStatistiken();
         statsBar.innerHTML =
             '<span style="padding:4px 12px; background:var(--bg-secondary); border-radius:6px; font-size:13px;">' +
                 'Aktiv: <strong>' + stats.aktiv + '</strong>' +
@@ -868,10 +868,10 @@ function renderAboRechnungen() {
             '</span>';
     }
 
-    var container = document.getElementById('abo-rechnungen-list');
+    const container = document.getElementById('abo-rechnungen-list');
     if (!container) return;
 
-    var templates = svc.getTemplates();
+    const templates = svc.getTemplates();
 
     if (templates.length === 0) {
         container.innerHTML =
@@ -887,28 +887,28 @@ function renderAboRechnungen() {
     }
 
     container.innerHTML = templates.map(function(t) {
-        var statusColors = { aktiv: '#22c55e', pausiert: '#f59e0b', beendet: '#9ca3af' };
-        var borderColor = statusColors[t.status] || '#f59e0b';
-        var statusLabel = svc.getStatusName(t.status);
-        var intervallLabel = svc.getIntervallName(t.intervall);
-        var brutto = t.netto_betrag * (1 + t.steuersatz);
-        var safeId = h(t.id);
-        var safeName = h(t.kunde_name || 'Unbekannt');
-        var safeBez = h(t.bezeichnung || '-');
+        const statusColors = { aktiv: '#22c55e', pausiert: '#f59e0b', beendet: '#9ca3af' };
+        const borderColor = statusColors[t.status] || '#f59e0b';
+        const statusLabel = svc.getStatusName(t.status);
+        const intervallLabel = svc.getIntervallName(t.intervall);
+        const brutto = t.netto_betrag * (1 + t.steuersatz);
+        const safeId = h(t.id);
+        const safeName = h(t.kunde_name || 'Unbekannt');
+        const safeBez = h(t.bezeichnung || '-');
 
-        var pauseBtn = '';
+        let pauseBtn = '';
         if (t.status === 'aktiv') {
             pauseBtn = '<button class="btn btn-secondary btn-small" data-abo-action="pause" data-abo-id="' + safeId + '">⏸ Pausieren</button>';
         } else if (t.status === 'pausiert') {
             pauseBtn = '<button class="btn btn-primary btn-small" data-abo-action="activate" data-abo-id="' + safeId + '">▶ Fortsetzen</button>';
         }
 
-        var generateBtn = '';
+        let generateBtn = '';
         if (t.status !== 'beendet') {
             generateBtn = '<button class="btn btn-secondary btn-small" data-abo-action="generate" data-abo-id="' + safeId + '">⚡ Jetzt generieren</button>';
         }
 
-        var deleteBtn = '<button class="btn btn-danger btn-small" data-abo-action="delete" data-abo-id="' + safeId + '">🗑 Loeschen</button>';
+        const deleteBtn = '<button class="btn btn-danger btn-small" data-abo-action="delete" data-abo-id="' + safeId + '">🗑 Loeschen</button>';
 
         return '<div class="item-card" style="border-left: 4px solid ' + borderColor + ';">' +
             '<div class="item-header">' +
@@ -931,17 +931,17 @@ function renderAboRechnungen() {
 }
 
 function initAboActions() {
-    var container = document.getElementById('abo-rechnungen-list');
+    const container = document.getElementById('abo-rechnungen-list');
     if (!container || _aboActionsInit) return;
     _aboActionsInit = true;
 
     container.addEventListener('click', async function(e) {
-        var btn = e.target.closest('[data-abo-action]');
+        const btn = e.target.closest('[data-abo-action]');
         if (!btn) return;
 
-        var action = btn.dataset.aboAction;
-        var id = btn.dataset.aboId;
-        var svc = window.recurringInvoiceService;
+        const action = btn.dataset.aboAction;
+        const id = btn.dataset.aboId;
+        const svc = window.recurringInvoiceService;
         if (!svc) return;
 
         switch (action) {
@@ -956,7 +956,7 @@ function initAboActions() {
                 renderAboRechnungen();
                 break;
             case 'generate':
-                var rechnung = await svc.generateNow(id);
+                const rechnung = await svc.generateNow(id);
                 if (rechnung) {
                     showToast('Rechnung ' + rechnung.nummer + ' erstellt', 'success');
                     renderAboRechnungen();
@@ -989,16 +989,16 @@ function initAboActions() {
 }
 
 function openAboFormular(existing) {
-    var modal = document.getElementById('modal-neues-abo');
+    const modal = document.getElementById('modal-neues-abo');
     if (!modal) return;
 
-    var isEdit = !!existing;
-    var title = isEdit ? 'Abo bearbeiten' : 'Neues Abo erstellen';
+    const isEdit = !!existing;
+    const title = isEdit ? 'Abo bearbeiten' : 'Neues Abo erstellen';
 
-    var kunden = (store && store.kunden) ? store.kunden : [];
-    var kundenOptions = '<option value="">-- Kunde waehlen --</option>';
+    const kunden = (store && store.kunden) ? store.kunden : [];
+    let kundenOptions = '<option value="">-- Kunde waehlen --</option>';
     kunden.forEach(function(k) {
-        var sel = (existing && existing.kunde_id === k.id) ? ' selected' : '';
+        const sel = (existing && existing.kunde_id === k.id) ? ' selected' : '';
         kundenOptions += '<option value="' + h(k.id) + '"' + sel + '>' + h(k.name || k.firma || k.id) + '</option>';
     });
 
@@ -1074,23 +1074,23 @@ function openAboFormular(existing) {
             '</form>' +
         '</div>';
 
-    var kundeSelect = document.getElementById('abo-kunde');
-    var kundeNameInput = document.getElementById('abo-kunde-name');
+    const kundeSelect = document.getElementById('abo-kunde');
+    const kundeNameInput = document.getElementById('abo-kunde-name');
     if (kundeSelect) {
         kundeSelect.addEventListener('change', function() {
-            var selected = kunden.find(function(k) { return k.id === kundeSelect.value; });
+            const selected = kunden.find(function(k) { return k.id === kundeSelect.value; });
             if (selected && kundeNameInput) {
                 kundeNameInput.value = selected.name || selected.firma || '';
             }
         });
     }
 
-    var form = document.getElementById('form-neues-abo');
+    const form = document.getElementById('form-neues-abo');
     if (form) {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            var data = {
+            const data = {
                 kunde_id: document.getElementById('abo-kunde').value || null,
                 kunde_name: document.getElementById('abo-kunde-name').value.trim(),
                 bezeichnung: document.getElementById('abo-bezeichnung').value.trim(),
@@ -1114,17 +1114,17 @@ function openAboFormular(existing) {
             }
 
             if (!data.kunde_name && data.kunde_id) {
-                var k = kunden.find(function(k) { return k.id === data.kunde_id; });
+                const k = kunden.find(function(k) { return k.id === data.kunde_id; });
                 if (k) data.kunde_name = k.name || k.firma || '';
             }
 
-            var svc = window.recurringInvoiceService;
+            const svc = window.recurringInvoiceService;
             if (!svc) {
                 showToast('Service nicht verfuegbar', 'error');
                 return;
             }
 
-            var result;
+            let result;
             if (isEdit && existing) {
                 result = await svc.updateTemplate(existing.id, data);
             } else {

@@ -166,6 +166,22 @@ class StoreService {
         Object.keys(this.store).forEach(key => {
             if (Array.isArray(this.store[key])) {
                 this.store[key] = [];
+            } else if (key === 'settings') {
+                // Reset settings to constructor defaults so demoData can override cleanly
+                this.store.settings = {
+                    companyName: '',
+                    owner: '',
+                    address: '',
+                    taxId: '',
+                    vatId: '',
+                    phone: '',
+                    email: '',
+                    iban: '',
+                    bic: '',
+                    bank: '',
+                    businessType: '',
+                    theme: 'dark'
+                };
             }
         });
 
@@ -275,8 +291,8 @@ class StoreService {
         };
 
         this.store.auftraege.push(auftrag);
-        await this.save();
         this.addActivity('✅', `Angebot ${angebotId} angenommen → Auftrag ${auftrag.id}`);
+        await this.save();
 
         return auftrag;
     }
@@ -408,8 +424,8 @@ class StoreService {
                 };
 
                 this.store.rechnungen.push(rechnung);
-                await this.save();
                 this.addActivity('💰', `Rechnung ${rechnung.nummer} erstellt`);
+                await this.save();
 
                 return rechnung;
             }
@@ -454,7 +470,7 @@ class StoreService {
             return `${prefix}-${crypto.randomUUID()}`.toUpperCase();
         }
         const timestamp = Date.now().toString(36);
-        const random = Math.random().toString(36).substr(2, 5);
+        const random = Math.random().toString(36).substring(2, 7);
         return `${prefix}-${timestamp}-${random}`.toUpperCase();
     }
 

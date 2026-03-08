@@ -8,6 +8,11 @@ class DemoGuardService {
     constructor() {
         this.isDeveloperMode = this.getDevMode();
         this.listeners = [];
+        this._intercepted = false;
+
+        if (this.isDemo()) {
+            this.interceptSupabaseWrites();
+        }
     }
 
     getDevMode() {
@@ -67,6 +72,7 @@ class DemoGuardService {
             <div class="demo-banner-content">
                 <span class="demo-banner-icon">🔧</span>
                 <span class="demo-banner-text">Demo-Daten aktiv — Nicht für Produktivbetrieb</span>
+                <button class="demo-banner-exit" onclick="window.demoGuardService?.exitDemoMode()">Demo beenden</button>
                 <button class="demo-banner-close" onclick="document.getElementById('demo-mode-banner')?.remove()">✕</button>
             </div>
         `;
@@ -121,8 +127,8 @@ class DemoGuardService {
         if (settingsGrid) {
             settingsGrid.appendChild(devModeSection);
 
-            // Add event listener
-            document.getElementById('dev-mode-toggle')?.addEventListener('change', (e) => {
+            // Add event listener (named function for cleanup)
+            this._devModeHandler = (e) => {
                 this.setDevMode(e.target.checked);
                 if (e.target.checked) {
                     // Show demo buttons
@@ -133,7 +139,8 @@ class DemoGuardService {
                     // Hide demo buttons
                     this.hideDemoButtons();
                 }
-            });
+            };
+            document.getElementById('dev-mode-toggle')?.addEventListener('change', this._devModeHandler);
         }
     }
 
@@ -143,6 +150,91 @@ class DemoGuardService {
         return () => {
             this.listeners = this.listeners.filter(l => l !== callback);
         };
+    }
+
+    interceptSupabaseWrites() {
+        if (!this.isDemo()) return;
+        const client = window.supabaseClient?.client;
+        if (!client) {
+            // Supabase not ready yet — retry once after delay
+            setTimeout(() => this.interceptSupabaseWrites(), 2000);
+            return;
+        }
+
+        const originalFrom = client.from.bind(client);
+        const blockedResult = { data: null, error: null, count: 0 };
+        // Make blocked result thenable so await works, and chainable for .select()/.eq() etc.
+        const makeChainable = () => {
+            const handler = {
+                get(target, prop) {
+                    if (prop === 'then') return (resolve) => resolve(blockedResult);
+                    if (prop === 'data' || prop === 'error' || prop === 'count') return target[prop];
+                    // Any chained method (.select(), .eq(), .single(), etc.) returns the same proxy
+                    return () => new Proxy({ ...blockedResult }, handler);
+                }
+            };
+            return new Proxy({ ...blockedResult }, handler);
+        };
+
+        client.from = (table) => {
+            const builder = originalFrom(table);
+            const blockWrite = (method) => {
+                builder[method] = (...args) => {
+                    console.warn(`[DemoGuard] Blocked ${method} on ${table} in demo mode`);
+                    if (window.errorHandler) {
+                        window.errorHandler.info('Im Demo-Modus können keine Daten gespeichert werden.');
+                    }
+                    return makeChainable();
+                };
+            };
+            ['insert', 'update', 'delete', 'upsert'].forEach(blockWrite);
+            return builder;
+        };
+        this._intercepted = true;
+    }
+
+    async exitDemoMode() {
+        // Lösche Demo-Daten aus localStorage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('demo_') || key.includes('DEMO'))) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+
+        // Lösche gecachte Store-Daten die Demo-IDs haben
+        ['anfragen', 'angebote', 'auftraege', 'rechnungen'].forEach(key => {
+            const data = localStorage.getItem(key);
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (Array.isArray(parsed)) {
+                        const filtered = parsed.filter(item => !String(item.id || '').includes('DEMO'));
+                        localStorage.setItem(key, JSON.stringify(filtered));
+                    }
+                } catch(e) {}
+            }
+        });
+
+        this.clearDemoFlag();
+        document.getElementById('demo-mode-banner')?.remove();
+
+        if (window.errorHandler) {
+            window.errorHandler.success('Demo-Modus beendet. Daten wurden zurückgesetzt.');
+        }
+
+        setTimeout(() => location.reload(), 1500);
+    }
+
+    // Cleanup event listeners to prevent memory leaks
+    destroy() {
+        const toggle = document.getElementById('dev-mode-toggle');
+        if (toggle && this._devModeHandler) {
+            toggle.removeEventListener('change', this._devModeHandler);
+        }
+        this._devModeHandler = null;
     }
 
     _notify() {

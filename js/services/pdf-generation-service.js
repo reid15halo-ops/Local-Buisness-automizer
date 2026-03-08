@@ -462,10 +462,7 @@ class PDFGenerationService {
      * Format currency
      */
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
+        return window.formatCurrency(amount);
     }
 }
 

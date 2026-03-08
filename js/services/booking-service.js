@@ -264,10 +264,10 @@ ${ci.name}`
     }
 
     // Helpers
-    generateId() { return 'book-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+    generateId() { return 'book-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11); }
 
     generateConfirmationCode() {
-        return 'FREY-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        return 'FREY-' + Math.random().toString(36).substring(2, 8).toUpperCase();
     }
 
     addMinutes(time, minutes) {
@@ -380,42 +380,47 @@ ${ci.name}`
     // Syncs Cal.com bookings into calendar view.
     // Call this on app init or when calendar is opened.
     async syncCalcomToCalendar() {
-        const calcomBookings = await this.fetchCalcomBookings();
-        if (!calcomBookings.length) return 0;
+        try {
+            const calcomBookings = await this.fetchCalcomBookings();
+            if (!calcomBookings.length) return 0;
 
-        let added = 0;
-        for (const booking of calcomBookings) {
-            // Skip cancelled
-            if (booking.status === 'cancelled') continue;
+            let added = 0;
+            for (const booking of calcomBookings) {
+                // Skip cancelled
+                if (booking.status === 'cancelled') continue;
 
-            // Only add if not already in calendar (by calcom id)
-            if (window.calendarService) {
-                const existing = window.calendarService.getAppointment(booking.id);
-                if (!existing) {
-                    window.calendarService.addAppointment({
-                        id: booking.id,
-                        title: `Cal.com: ${booking.customer.name || booking.serviceType}`,
-                        description: booking.notes,
-                        date: booking.date,
-                        startTime: booking.startTime,
-                        endTime: booking.endTime,
-                        customerName: booking.customer.name,
-                        type: 'termin',
-                        status: booking.status === 'confirmed' ? 'bestaetigt' : 'geplant',
-                        color: '#8b5cf6', // Purple to distinguish Cal.com bookings
-                        forceAdd: true
-                    });
-                    added++;
+                // Only add if not already in calendar (by calcom id)
+                if (window.calendarService) {
+                    const existing = window.calendarService.getAppointment(booking.id);
+                    if (!existing) {
+                        window.calendarService.addAppointment({
+                            id: booking.id,
+                            title: `Cal.com: ${booking.customer.name || booking.serviceType}`,
+                            description: booking.notes,
+                            date: booking.date,
+                            startTime: booking.startTime,
+                            endTime: booking.endTime,
+                            customerName: booking.customer.name,
+                            type: 'termin',
+                            status: booking.status === 'confirmed' ? 'bestaetigt' : 'geplant',
+                            color: '#8b5cf6', // Purple to distinguish Cal.com bookings
+                            forceAdd: true
+                        });
+                        added++;
+                    }
                 }
             }
-        }
 
-        if (added > 0) {
-            console.log(`[BookingService] ${added} Cal.com-Buchungen synchronisiert.`);
-            document.dispatchEvent(new CustomEvent('calcom:synced', { detail: { count: added } }));
-        }
+            if (added > 0) {
+                console.debug(`[BookingService] ${added} Cal.com-Buchungen synchronisiert.`);
+                document.dispatchEvent(new CustomEvent('calcom:synced', { detail: { count: added } }));
+            }
 
-        return added;
+            return added;
+        } catch (e) {
+            window.errorHandler?.handle(e, 'BookingService');
+            return 0;
+        }
     }
 
     // Persistence

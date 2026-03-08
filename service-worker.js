@@ -3,7 +3,7 @@
    Offline capability and background sync
    ============================================ */
 
-const CACHE_NAME = 'freyai-visions-v30';
+const CACHE_NAME = 'freyai-visions-v31';
 const OFFLINE_URL = 'offline.html';
 
 // API URL patterns that should use network-first strategy
@@ -218,8 +218,13 @@ async function networkFirst(request) {
     try {
         const networkResponse = await fetch(request);
         if (networkResponse.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, networkResponse.clone());
+            // Never cache auth-related responses (tokens, sessions)
+            const url = new URL(request.url);
+            const isAuthRequest = /\/auth\//.test(url.pathname) || /token/.test(url.pathname);
+            if (!isAuthRequest) {
+                const cache = await caches.open(CACHE_NAME);
+                cache.put(request, networkResponse.clone());
+            }
         }
         return networkResponse;
     } catch (e) {

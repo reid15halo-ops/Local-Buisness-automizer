@@ -118,7 +118,7 @@ class PurchaseOrderService {
             }
             this.poCounter = maxNum;
 
-            console.log(`[PO] Loaded ${this.bestellungen.length} POs from Supabase`);
+            console.debug(`[PO] Loaded ${this.bestellungen.length} POs from Supabase`);
         } catch (err) {
             console.error('[PO] Supabase load failed:', err.message);
         }

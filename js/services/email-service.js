@@ -650,7 +650,7 @@ FreyAI Visions`
     }
 
     generateId() {
-        return 'email-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        return 'email-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
     }
 
     // ============================================

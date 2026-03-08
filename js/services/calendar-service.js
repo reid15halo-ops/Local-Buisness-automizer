@@ -158,7 +158,7 @@ class CalendarService {
     // Available Slots
     getAvailableSlots(date, durationMinutes = 60) {
         if (!date || !durationMinutes || durationMinutes <= 0) { return []; }
-        const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date).getDay()];
+        const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date + 'T00:00:00').getDay()];
         const workHours = this.settings.workingHours[dayOfWeek];
 
         if (!workHours || !workHours.active) {return [];}

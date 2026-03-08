@@ -7,11 +7,11 @@
     // ---- Smooth Scroll ----
     document.querySelectorAll('a[href^="#"]').forEach(function(link) {
         link.addEventListener('click', function(e) {
-            var target = document.querySelector(this.getAttribute('href'));
+            const target = document.querySelector(this.getAttribute('href'));
             if (target) {
                 e.preventDefault();
-                var offset = 70;
-                var top = target.getBoundingClientRect().top + window.scrollY - offset;
+                const offset = 70;
+                const top = target.getBoundingClientRect().top + window.scrollY - offset;
                 window.scrollTo({ top: top, behavior: 'smooth' });
                 // Close mobile nav if open
                 closeMobileNav();
@@ -20,8 +20,8 @@
     });
 
     // ---- Mobile Nav Toggle ----
-    var toggle = document.querySelector('.mobile-toggle');
-    var navMenu = document.getElementById('nav-menu');
+    const toggle = document.querySelector('.mobile-toggle');
+    const navMenu = document.getElementById('nav-menu');
 
     function closeMobileNav() {
         if (navMenu && navMenu.classList.contains('open')) {
@@ -35,7 +35,7 @@
 
     if (toggle && navMenu) {
         toggle.addEventListener('click', function() {
-            var isOpen = navMenu.classList.toggle('open');
+            const isOpen = navMenu.classList.toggle('open');
             toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
             toggle.textContent = isOpen ? '\u2715' : '\u2630';
         });
@@ -47,7 +47,7 @@
     });
 
     // ---- Nav Scroll Effect ----
-    var nav = document.querySelector('.nav');
+    const nav = document.querySelector('.nav');
     if (nav) {
         window.addEventListener('scroll', function() {
             if (window.scrollY > 60) {
@@ -61,8 +61,8 @@
     // ---- FAQ Accordion ----
     document.querySelectorAll('.faq-question').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            var item = this.closest('.faq-item');
-            var isOpen = item.classList.contains('open');
+            const item = this.closest('.faq-item');
+            const isOpen = item.classList.contains('open');
             // Close all
             document.querySelectorAll('.faq-item.open').forEach(function(openItem) {
                 openItem.classList.remove('open');
@@ -79,9 +79,9 @@
     });
 
     // ---- Scroll Reveal ----
-    var reveals = document.querySelectorAll('.reveal');
+    const reveals = document.querySelectorAll('.reveal');
     if (reveals.length > 0 && 'IntersectionObserver' in window) {
-        var observer = new IntersectionObserver(function(entries) {
+        const observer = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
@@ -93,6 +93,24 @@
     } else {
         // Fallback: show everything
         reveals.forEach(function(el) { el.classList.add('visible'); });
+    }
+
+    // ---- Sticky CTA — show when hero scrolls out of view ----
+    const stickyCta = document.getElementById('sticky-cta');
+    const heroSection = document.getElementById('hero');
+    if (stickyCta && heroSection) {
+        const stickyObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    stickyCta.classList.remove('visible');
+                    stickyCta.setAttribute('aria-hidden', 'true');
+                } else {
+                    stickyCta.classList.add('visible');
+                    stickyCta.setAttribute('aria-hidden', 'false');
+                }
+            });
+        }, { threshold: 0.1 });
+        stickyObserver.observe(heroSection);
     }
 
 })();

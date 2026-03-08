@@ -650,7 +650,7 @@ class AgenticExecutorService {
      * Execute an action immediately and store undo data.
      */
     async _executeWithUndo(agentId, actionId, params) {
-        const executionId = `exec-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 4)}`;
+        const executionId = `exec-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
 
         try {
             // Execute the action
@@ -712,7 +712,7 @@ class AgenticExecutorService {
      * Execute all relevant actions from an agent result (auto level).
      */
     async _executeAgentActions(agentId, agentResult) {
-        const executionId = `exec-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 4)}`;
+        const executionId = `exec-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
         const actionsExecuted = [];
         const errors = [];
 
@@ -1436,7 +1436,7 @@ class AgenticExecutorService {
     }
 
     _addToHistory(entry) {
-        entry.id = `hist-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 4)}`;
+        entry.id = `hist-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
         this.executionHistory.unshift(entry);
 
         // Keep history manageable
@@ -1620,10 +1620,7 @@ class AgenticExecutorService {
     }
 
     _formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount || 0);
+        return window.formatCurrency(amount);
     }
 
     _getActionDescriptions() {

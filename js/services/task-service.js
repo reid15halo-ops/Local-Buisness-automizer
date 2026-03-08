@@ -168,7 +168,7 @@ class TaskService {
     }
 
     // Helpers
-    generateId() { return 'task-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+    generateId() { return 'task-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11); }
     getPriorityIcon(p) { return { low: '🔵', normal: '🟢', high: '🟠', urgent: '🔴' }[p] || '⚪'; }
     getPriorityLabel(p) { return { low: 'Niedrig', normal: 'Normal', high: 'Hoch', urgent: 'Dringend' }[p] || p; }
     getStatusIcon(s) { return { offen: '⭕', in_bearbeitung: '🔄', warten: '⏸️', erledigt: '✅' }[s] || '⚪'; }

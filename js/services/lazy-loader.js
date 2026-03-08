@@ -337,6 +337,25 @@ class LazyLoader {
     }
 
     /**
+     * Load multiple services sequentially (preserves order for dependency chains).
+     * @param {string[]} serviceNames - Array of service names to load in order
+     * @returns {Promise} Resolves when all services are loaded
+     */
+    async loadServicesSequential(serviceNames) {
+        const failed = [];
+        for (const name of serviceNames) {
+            try {
+                await this.loadScript(name);
+            } catch (err) {
+                failed.push(name);
+            }
+        }
+        if (failed.length > 0) {
+            console.warn(`⚠️ ${failed.length} service(s) failed to load sequentially:`, failed.join(', '));
+        }
+    }
+
+    /**
      * Load a service group
      * @param {string} groupName - Name of the service group
      * @returns {Promise} Resolves when all services in group are loaded
@@ -348,8 +367,13 @@ class LazyLoader {
             return Promise.resolve();
         }
 
-        // Loading service group
-        await this.loadServices(services);
+        // Groups with dependency ordering must load sequentially
+        const orderedGroups = ['agent-workflows'];
+        if (orderedGroups.includes(groupName)) {
+            await this.loadServicesSequential(services);
+        } else {
+            await this.loadServices(services);
+        }
 
         // Also load corresponding UI scripts if any
         const uiScripts = this.uiGroups?.[groupName];

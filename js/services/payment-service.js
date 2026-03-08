@@ -5,33 +5,16 @@
 
 class PaymentService {
     constructor() {
-        try {
-            try { this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]'); } catch { this.payments = []; }
-            try { this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]'); } catch { this.paymentLinks = []; }
-            try { this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}'); } catch { this.settings = {}; }
+        try { this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]'); } catch { this.payments = []; }
+        try { this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]'); } catch { this.paymentLinks = []; }
+        try { this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}'); } catch { this.settings = {}; }
 
-            // Default settings
-            if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
-            if (!this.settings.depositRequired) {this.settings.depositRequired = false;}
-            if (!this.settings.depositThreshold) {this.settings.depositThreshold = 1000;} // Require deposit over €1000
-            if (!this.settings.paymentMethods) {this.settings.paymentMethods = ['bank', 'paypal'];}
-            if (!this.settings.businessName) {this.settings.businessName = 'FreyAI Visions';}
-        } catch (error) {
-            console.error('PaymentService initialization error:', error);
-            if (window.errorHandler) {
-                window.errorHandler.handle(error, 'PaymentService.constructor', false);
-            }
-            // Fallback to defaults
-            this.payments = [];
-            this.paymentLinks = [];
-            this.settings = {
-                depositPercentage: 30,
-                depositRequired: false,
-                depositThreshold: 1000,
-                paymentMethods: ['bank', 'paypal'],
-                businessName: 'FreyAI Visions'
-            };
-        }
+        // Default settings
+        if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
+        if (!this.settings.depositRequired) {this.settings.depositRequired = false;}
+        if (!this.settings.depositThreshold) {this.settings.depositThreshold = 1000;} // Require deposit over €1000
+        if (!this.settings.paymentMethods) {this.settings.paymentMethods = ['bank', 'paypal'];}
+        if (!this.settings.businessName) {this.settings.businessName = 'FreyAI Visions';}
     }
 
     // Create a payment link for invoice/deposit
@@ -58,7 +41,7 @@ class PaymentService {
             }
 
             const link = {
-                id: 'pay-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6),
+                id: 'pay-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8),
                 type: type,
                 referenceId: referenceId,
                 referenceType: referenceType, // 'rechnung', 'angebot', 'termin'
@@ -101,7 +84,7 @@ class PaymentService {
                 link.url = this.generatePayPalLink(amount, description, referenceId);
             }
 
-            link.shortUrl = `pay.local/${link.id.substr(-8)}`;
+            link.shortUrl = `pay.local/${link.id.slice(-8)}`;
 
             if (this.paymentLinks) {
                 this.paymentLinks.push(link);
@@ -446,10 +429,7 @@ class PaymentService {
 
     // Format currency
     formatCurrency(amount) {
-        return new Intl.NumberFormat('de-DE', {
-            style: 'currency',
-            currency: 'EUR'
-        }).format(amount);
+        return window.formatCurrency(amount);
     }
 
     // Update settings

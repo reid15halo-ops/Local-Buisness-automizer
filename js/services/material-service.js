@@ -301,7 +301,7 @@ class MaterialService {
 
                 // Record the reservation
                 const reservation = {
-                    id: `RES-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                    id: `RES-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
                     auftragId,
                     materialId: item.materialId,
                     menge: item.menge,
@@ -435,7 +435,7 @@ class MaterialService {
      */
     _recordStockMovement(movement) {
         const record = {
-            id: `MOV-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: `MOV-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
             materialId: movement.materialId,
             auftragId: movement.auftragId,
             type: movement.type, // 'reserved' | 'released' | 'consumed' | 'received' | 'adjusted'

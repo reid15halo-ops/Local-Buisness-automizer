@@ -118,7 +118,7 @@ class OfflineSyncService {
         });
 
         await Promise.allSettled(promises);
-        console.log('[OfflineSync] All data cached to IndexedDB');
+        console.debug('[OfflineSync] All data cached to IndexedDB');
     }
 
     /**
@@ -140,7 +140,7 @@ class OfflineSyncService {
         }
 
         if (loaded) {
-            console.log('[OfflineSync] Loaded cached data into store');
+            console.debug('[OfflineSync] Loaded cached data into store');
         }
         return loaded;
     }
@@ -171,7 +171,7 @@ class OfflineSyncService {
 
         return new Promise((resolve, reject) => {
             tx.oncomplete = () => {
-                console.log(`[OfflineSync] Queued ${type} for ${table}`);
+                console.debug(`[OfflineSync] Queued ${type} for ${table}`);
                 resolve();
             };
             tx.onerror = () => reject(tx.error);
@@ -206,7 +206,7 @@ class OfflineSyncService {
                 return;
             }
 
-            console.log(`[OfflineSync] Processing ${items.length} queued actions...`);
+            console.debug(`[OfflineSync] Processing ${items.length} queued actions...`);
 
             // Sort by timestamp
             items.sort((a, b) => a.timestamp - b.timestamp);
@@ -248,7 +248,7 @@ class OfflineSyncService {
                 await new Promise((resolve, reject) => { delTx.oncomplete = resolve; delTx.onerror = () => reject(delTx.error); });
             }
 
-            console.log(`[OfflineSync] Queue processed: ${processedIds.length} items synced`);
+            console.debug(`[OfflineSync] Queue processed: ${processedIds.length} items synced`);
 
             // Notify the app
             if (window.storeService?.load) {

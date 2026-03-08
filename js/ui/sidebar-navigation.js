@@ -259,7 +259,7 @@
         const container = navMenu && navMenu.querySelector('[data-group-id="' + groupId + '"]');
         if (!container) return;
         container.classList.remove('nav-group-collapsed');
-        var header = container.querySelector('.nav-group-header');
+        const header = container.querySelector('.nav-group-header');
         if (header) header.setAttribute('aria-expanded', 'true');
         const items = container.querySelector('.nav-group-items');
         if (items) {
@@ -280,7 +280,7 @@
             items.offsetHeight; // eslint-disable-line no-unused-expressions
         }
         container.classList.add('nav-group-collapsed');
-        var header = container.querySelector('.nav-group-header');
+        const header = container.querySelector('.nav-group-header');
         if (header) header.setAttribute('aria-expanded', 'false');
     }
 
@@ -294,9 +294,9 @@
 
     /** Find which group contains a given view */
     function findGroupForView(viewName) {
-        for (var i = 0; i < NAV_STRUCTURE.groups.length; i++) {
-            var g = NAV_STRUCTURE.groups[i];
-            for (var j = 0; j < g.items.length; j++) {
+        for (let i = 0; i < NAV_STRUCTURE.groups.length; i++) {
+            const g = NAV_STRUCTURE.groups[i];
+            for (let j = 0; j < g.items.length; j++) {
                 if (g.items[j].view === viewName) return g.id;
             }
         }
@@ -306,17 +306,17 @@
     function setActiveView(viewName) {
         if (!navMenu) return;
         // Remove active from all
-        var allBtns = navMenu.querySelectorAll('.nav-item');
+        const allBtns = navMenu.querySelectorAll('.nav-item');
         allBtns.forEach(function (b) { b.classList.remove('active'); });
 
         // Set active
-        var target = navMenu.querySelector('[data-view="' + viewName + '"]');
+        const target = navMenu.querySelector('[data-view="' + viewName + '"]');
         if (target) {
             target.classList.add('active');
         }
 
         // Auto-expand parent group
-        var groupId = findGroupForView(viewName);
+        const groupId = findGroupForView(viewName);
         if (groupId && collapsedState[groupId]) {
             expandGroup(groupId);
         }
@@ -332,9 +332,9 @@
     }
 
     // ── Event listener refs (prevent duplicates) ──────────────────────
-    var _clickHandler = null;
-    var _resizeHandler = null;
-    var _resizeTimer = null;
+    let _clickHandler = null;
+    let _resizeHandler = null;
+    let _resizeTimer = null;
 
     // ── Init ───────────────────────────────────────────────────────────
 
@@ -349,37 +349,37 @@
             collapsedState = loadCollapsedState();
 
             // Determine currently active view before we clear
-            var currentActive = navMenu.querySelector('.nav-item.active');
-            var activeView = currentActive ? currentActive.getAttribute('data-view') : 'quick-actions';
+            const currentActive = navMenu.querySelector('.nav-item.active');
+            const activeView = currentActive ? currentActive.getAttribute('data-view') : 'quick-actions';
 
             // Clear existing content
             navMenu.innerHTML = '';
 
             // -- Top items (always visible) --
             NAV_STRUCTURE.topItems.forEach(function (item) {
-                var btn = createNavButton(item);
+                const btn = createNavButton(item);
                 if (item.view === activeView) btn.classList.add('active');
                 navMenu.appendChild(btn);
             });
 
             // -- Groups --
             NAV_STRUCTURE.groups.forEach(function (group) {
-                var isCollapsed;
+                let isCollapsed;
                 if (collapsedState.hasOwnProperty(group.id)) {
                     isCollapsed = collapsedState[group.id];
                 } else {
                     isCollapsed = !group.defaultExpanded;
                 }
 
-                var activeGroupId = findGroupForView(activeView);
+                const activeGroupId = findGroupForView(activeView);
                 if (activeGroupId === group.id) {
                     isCollapsed = false;
                 }
 
-                var groupEl = createGroup(group, isCollapsed);
+                const groupEl = createGroup(group, isCollapsed);
 
                 if (activeGroupId === group.id) {
-                    var btn = groupEl.querySelector('[data-view="' + activeView + '"]');
+                    const btn = groupEl.querySelector('[data-view="' + activeView + '"]');
                     if (btn) btn.classList.add('active');
                 }
 
@@ -390,21 +390,21 @@
             saveCollapsedState(collapsedState);
 
             // -- Bottom section --
-            var bottomSection = document.createElement('div');
+            const bottomSection = document.createElement('div');
             bottomSection.className = 'nav-group-bottom-section';
 
             NAV_STRUCTURE.bottomItems.forEach(function (item) {
-                var btn = createNavButton(item);
+                const btn = createNavButton(item);
                 if (item.view === activeView) btn.classList.add('active');
                 bottomSection.appendChild(btn);
             });
 
-            var adminSection = document.createElement('div');
+            const adminSection = document.createElement('div');
             adminSection.className = 'nav-group-admin-section';
             adminSection.setAttribute('data-mode', 'pro');
 
             NAV_STRUCTURE.adminItems.forEach(function (item) {
-                var btn = createNavButton(item);
+                const btn = createNavButton(item);
                 if (item.view === activeView) btn.classList.add('active');
                 adminSection.appendChild(btn);
             });
@@ -417,7 +417,7 @@
             if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
 
             _clickHandler = function (e) {
-                var btn = e.target.closest('[data-view]');
+                const btn = e.target.closest('[data-view]');
                 if (btn && navMenu.contains(btn)) {
                     setActiveView(btn.getAttribute('data-view'));
                 }
@@ -427,7 +427,7 @@
             _resizeHandler = function () {
                 clearTimeout(_resizeTimer);
                 _resizeTimer = setTimeout(function () {
-                    var expanded = navMenu.querySelectorAll('.nav-group-container:not(.nav-group-collapsed) .nav-group-items');
+                    const expanded = navMenu.querySelectorAll('.nav-group-container:not(.nav-group-collapsed) .nav-group-items');
                     expanded.forEach(function (el) {
                         el.style.maxHeight = el.scrollHeight + 'px';
                     });

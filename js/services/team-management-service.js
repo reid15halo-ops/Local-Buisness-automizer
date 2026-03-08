@@ -177,7 +177,7 @@ class TeamManagementService {
     // ============================================
 
     _generateId() {
-        return 'tm_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 8);
+        return 'tm_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 10);
     }
 
     _generateInviteToken() {
