@@ -512,10 +512,11 @@ class PhotoService {
                         hour: '2-digit', minute: '2-digit'
                     });
 
+                    const safeDataUrl = (photo.dataUrl && /^data:image\/(jpeg|png|gif|webp|svg\+xml);base64,/.test(photo.dataUrl)) ? photo.dataUrl : '';
                     categorySections += `
                         <div class="baudoku-photo-item">
                             <div class="baudoku-photo-number">${photoIndex}</div>
-                            <img src="${photo.dataUrl}" alt="${title}" class="baudoku-photo-img" />
+                            <img src="${safeDataUrl}" alt="${title}" class="baudoku-photo-img" />
                             <div class="baudoku-photo-meta">
                                 <strong>${title}</strong>
                                 <span class="baudoku-date">${date}</span>

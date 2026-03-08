@@ -543,45 +543,13 @@ function showRechnung(rechnungId) {
     // XRechnung export
     const xrBtn = modal.querySelector('#btn-xrechnung');
     if (xrBtn) {
-        xrBtn.addEventListener('click', () => {
-            if (!window.eInvoiceService) {
-                showToast('E-Rechnung Service nicht verfuegbar', 'error');
-                return;
-            }
-            const result = window.eInvoiceService.generateXRechnung(rechnung);
-            if (result.success) {
-                window.eInvoiceService.downloadXml(result.recordId);
-                showToast('XRechnung XML generiert', 'success');
-            } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
-                showToast('Validierungsfehler: ' + result.validation.errors.join(', '), 'error');
-            } else {
-                showToast('XRechnung Fehler', 'error');
-            }
-        });
+        xrBtn.addEventListener('click', () => handleEInvoiceExport(rechnung, 'xrechnung'));
     }
 
     // ZUGFeRD export
     const zfBtn = modal.querySelector('#btn-zugferd');
     if (zfBtn) {
-        zfBtn.addEventListener('click', async () => {
-            if (!window.eInvoiceService) {
-                showToast('E-Rechnung Service nicht verfuegbar', 'error');
-                return;
-            }
-            showToast('ZUGFeRD wird generiert...', 'info');
-            const result = await window.eInvoiceService.generateZugferd(rechnung);
-            if (result.success && result.pdfBytes) {
-                window.eInvoiceService.downloadZugferdPdf(result.recordId);
-                showToast('ZUGFeRD PDF generiert', 'success');
-            } else if (result.success) {
-                window.eInvoiceService.downloadXml(result.recordId);
-                showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfuegbar)', 'warning');
-            } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
-                showToast('Validierungsfehler: ' + result.validation.errors.join(', '), 'error');
-            } else {
-                showToast('ZUGFeRD Fehler', 'error');
-            }
-        });
+        zfBtn.addEventListener('click', () => handleEInvoiceExport(rechnung, 'zugferd'));
     }
 
     // Send Mahnung from modal
@@ -635,6 +603,45 @@ function showRechnung(rechnungId) {
     openModal('modal-rechnung');
 }
 
+/**
+ * Shared helper for XRechnung / ZUGFeRD export.
+ * @param {object} rechnung - The invoice object
+ * @param {'xrechnung'|'zugferd'} format - Export format
+ */
+async function handleEInvoiceExport(rechnung, format) {
+    if (!window.eInvoiceService) {
+        showToast('E-Rechnung Service nicht verfuegbar', 'error');
+        return;
+    }
+
+    if (format === 'xrechnung') {
+        showToast('XRechnung wird generiert...', 'info');
+        const result = window.eInvoiceService.generateXRechnung(rechnung);
+        if (result.success) {
+            window.eInvoiceService.downloadXml(result.recordId);
+            showToast('XRechnung XML generiert', 'success');
+        } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
+            showToast('Validierungsfehler: ' + result.validation.errors.join(', '), 'error');
+        } else {
+            showToast('XRechnung Fehler', 'error');
+        }
+    } else {
+        showToast('ZUGFeRD wird generiert...', 'info');
+        const result = await window.eInvoiceService.generateZugferd(rechnung);
+        if (result.success && result.pdfBytes) {
+            window.eInvoiceService.downloadZugferdPdf(result.recordId);
+            showToast('ZUGFeRD PDF generiert', 'success');
+        } else if (result.success) {
+            window.eInvoiceService.downloadXml(result.recordId);
+            showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfuegbar)', 'warning');
+        } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
+            showToast('Validierungsfehler: ' + result.validation.errors.join(', '), 'error');
+        } else {
+            showToast('ZUGFeRD Fehler', 'error');
+        }
+    }
+}
+
 function initRechnungActions() {
     // Delegated click handler for invoice action buttons
     document.getElementById('view-rechnungen')?.addEventListener('click', async (e) => {
@@ -658,44 +665,15 @@ function initRechnungActions() {
                 }
                 break;
             case 'xrechnung':
-                if (window.eInvoiceService) {
-                    if (window.showToast) {showToast('XRechnung wird generiert…', 'info');}
-                    const result = window.eInvoiceService.generateXRechnung(rechnung);
-                    if (result.success) {
-                        window.eInvoiceService.downloadXml(result.recordId);
-                        if (window.showToast) {showToast('XRechnung XML generiert', 'success');}
-                    } else if (result.validation && result.validation.errors && result.validation.errors.length > 0) {
-                        if (window.showToast) {showToast('Validierungsfehler:\n' + result.validation.errors.join('\n'), 'error');}
-                    } else {
-                        if (window.showToast) {showToast('XRechnung Fehler', 'error');}
-                    }
-                } else {
-                    if (window.showToast) {showToast('E-Rechnung Service nicht verfügbar', 'error');}
-                }
+                await handleEInvoiceExport(rechnung, 'xrechnung');
                 break;
             case 'zugferd':
-                if (window.eInvoiceService) {
-                    if (window.showToast) {showToast('ZUGFeRD wird generiert…', 'info');}
-                    const zfResult = await window.eInvoiceService.generateZugferd(rechnung);
-                    if (zfResult.success && zfResult.pdfBytes) {
-                        window.eInvoiceService.downloadZugferdPdf(zfResult.recordId);
-                        if (window.showToast) {showToast('ZUGFeRD PDF generiert', 'success');}
-                    } else if (zfResult.success) {
-                        window.eInvoiceService.downloadXml(zfResult.recordId);
-                        if (window.showToast) {showToast('ZUGFeRD XML generiert (PDF-Einbettung nicht verfügbar)', 'warning');}
-                    } else if (zfResult.validation && zfResult.validation.errors && zfResult.validation.errors.length > 0) {
-                        if (window.showToast) {showToast('Validierungsfehler:\n' + zfResult.validation.errors.join('\n'), 'error');}
-                    } else {
-                        if (window.showToast) {showToast('ZUGFeRD Fehler', 'error');}
-                    }
-                } else {
-                    if (window.showToast) {showToast('E-Rechnung Service nicht verfügbar', 'error');}
-                }
+                await handleEInvoiceExport(rechnung, 'zugferd');
                 break;
             case 'mark-paid':
                 if (rechnung.status === 'offen') {
                     rechnung.status = 'bezahlt';
-                    rechnung.bezahltAm = new Date().toISOString();
+                    rechnung.paidAt = new Date().toISOString();
                     saveStore();
                     addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
                     renderRechnungen();

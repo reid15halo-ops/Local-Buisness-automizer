@@ -245,13 +245,13 @@ class CashflowForecastService {
                 ${data.analyse ? `
                 <div class="cashflow-ai-analyse">
                     <div class="cashflow-ai-analyse-title">Analyse</div>
-                    <div class="cashflow-ai-analyse-text">${data.analyse}</div>
+                    <div class="cashflow-ai-analyse-text">${String(data.analyse).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</div>
                 </div>` : ''}
 
                 ${data.empfehlung ? `
                 <div class="cashflow-ai-empfehlung">
                     <div class="cashflow-ai-empfehlung-title">Empfehlung</div>
-                    <div class="cashflow-ai-empfehlung-text">${data.empfehlung}</div>
+                    <div class="cashflow-ai-empfehlung-text">${String(data.empfehlung).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}</div>
                 </div>` : ''}
             </div>`;
     }

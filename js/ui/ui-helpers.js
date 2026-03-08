@@ -59,7 +59,7 @@ window.UI = {
             'reparatur': 'Reparatur / Wartung',
             'sonstiges': 'Sonstiges'
         };
-        return labels[key] || key;
+        return labels[key] || (window.esc ? window.esc(key) : key);
     },
 
     // --- Security ---

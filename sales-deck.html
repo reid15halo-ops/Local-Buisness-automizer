@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'none'; img-src 'self' data:; font-src 'self';">
+    <title>FreyAI Visions &mdash; Sales Deck</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 11pt;
+            line-height: 1.5;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* ── Slide Base ── */
+        .slide {
+            width: 297mm;
+            min-height: 210mm;
+            margin: 0 auto;
+            padding: 28mm 32mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+            background: #0f172a;
+        }
+
+        .slide:last-child {
+            page-break-after: auto;
+        }
+
+        /* ── Slide Number ── */
+        .slide-number {
+            position: absolute;
+            bottom: 12mm;
+            right: 16mm;
+            font-size: 8pt;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 1px;
+        }
+
+        /* ── Footer Bar ── */
+        .slide-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #2dd4a8, #f59e0b);
+        }
+
+        /* ── Typography ── */
+        h1 {
+            font-size: 32pt;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 22pt;
+            font-weight: 700;
+            color: #2dd4a8;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        h3 {
+            font-size: 14pt;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 14pt;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .accent {
+            color: #2dd4a8;
+        }
+
+        .gold {
+            color: #f59e0b;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(45, 212, 168, 0.12), rgba(245, 158, 11, 0.08));
+            border: 1px solid rgba(45, 212, 168, 0.3);
+            border-radius: 8px;
+            padding: 16px 20px;
+        }
+
+        /* ── Grid Layouts ── */
+        .grid-2 {
+            display: flex;
+            gap: 32px;
+        }
+
+        .grid-2 > div {
+            flex: 1;
+        }
+
+        .grid-3 {
+            display: flex;
+            gap: 24px;
+        }
+
+        .grid-3 > div {
+            flex: 1;
+        }
+
+        .grid-2x3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(45, 212, 168, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .card-icon {
+            font-size: 28pt;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .card h3 {
+            font-size: 12pt;
+            margin-bottom: 6px;
+        }
+
+        .card p {
+            font-size: 10pt;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* ── Pain Point Cards ── */
+        .pain-card {
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .pain-card .pain-icon {
+            font-size: 36pt;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .pain-card h3 {
+            color: #ef4444;
+            font-size: 13pt;
+            margin-bottom: 8px;
+        }
+
+        .pain-card p {
+            font-size: 10pt;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .pain-card .pain-stat {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #ef4444;
+            margin-top: 10px;
+            display: block;
+        }
+
+        /* ── Step Cards ── */
+        .step-card {
+            text-align: center;
+            padding: 24px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2dd4a8, #0d9488);
+            color: #0f172a;
+            font-size: 20pt;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .step-card h3 {
+            font-size: 14pt;
+            margin-bottom: 8px;
+        }
+
+        .step-card p {
+            font-size: 10pt;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .step-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24pt;
+            color: rgba(45, 212, 168, 0.4);
+            padding-top: 20px;
+        }
+
+        /* ── Pricing Table ── */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .price-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(45, 212, 168, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card.featured {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.08);
+        }
+
+        .price-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f59e0b;
+            color: #0f172a;
+            font-size: 7.5pt;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 10px;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .price-card h3 {
+            font-size: 13pt;
+            margin-bottom: 8px;
+        }
+
+        .price-amount {
+            font-size: 22pt;
+            font-weight: 700;
+            color: #f59e0b;
+            margin-bottom: 4px;
+        }
+
+        .price-monthly {
+            font-size: 9pt;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .price-features {
+            list-style: none;
+            text-align: left;
+            font-size: 9pt;
+            color: #94a3b8;
+        }
+
+        .price-features li {
+            padding: 3px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .price-features li::before {
+            content: "\2713";
+            position: absolute;
+            left: 0;
+            color: #2dd4a8;
+            font-weight: 700;
+        }
+
+        /* ── Trust Points ── */
+        .trust-card {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(45, 212, 168, 0.15);
+            border-radius: 10px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .trust-card .trust-icon {
+            font-size: 32pt;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .trust-card h3 {
+            font-size: 12pt;
+            margin-bottom: 6px;
+        }
+
+        .trust-card p {
+            font-size: 9.5pt;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* ── ROI Table ── */
+        .roi-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin: 16px 0;
+        }
+
+        .roi-table td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(45, 212, 168, 0.1);
+        }
+
+        .roi-table td:first-child {
+            color: #94a3b8;
+        }
+
+        .roi-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .roi-result {
+            background: linear-gradient(135deg, rgba(45, 212, 168, 0.15), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 10px;
+            padding: 20px 24px;
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .roi-result .big-number {
+            font-size: 28pt;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+
+        .roi-result p {
+            font-size: 11pt;
+            color: #e2e8f0;
+            margin-top: 4px;
+        }
+
+        /* ── Case Study ── */
+        .case-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(45, 212, 168, 0.2);
+            border-radius: 10px;
+            padding: 28px 32px;
+        }
+
+        .case-box .quote {
+            font-size: 13pt;
+            font-style: italic;
+            color: #cbd5e1;
+            line-height: 1.6;
+            border-left: 3px solid #2dd4a8;
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .case-box .case-meta {
+            font-size: 10pt;
+            color: #64748b;
+        }
+
+        .case-stats {
+            display: flex;
+            gap: 32px;
+            margin-top: 20px;
+        }
+
+        .case-stat {
+            text-align: center;
+        }
+
+        .case-stat .stat-num {
+            font-size: 22pt;
+            font-weight: 700;
+            color: #2dd4a8;
+        }
+
+        .case-stat .stat-label {
+            font-size: 9pt;
+            color: #94a3b8;
+        }
+
+        /* ── CTA Slide ── */
+        .cta-box {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .cta-box h2 {
+            font-size: 26pt;
+            margin-bottom: 12px;
+        }
+
+        .cta-steps {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 24px 0;
+        }
+
+        .cta-step {
+            text-align: center;
+        }
+
+        .cta-step .cta-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #2dd4a8;
+            color: #0f172a;
+            font-size: 14pt;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .cta-step p {
+            font-size: 10pt;
+            color: #94a3b8;
+        }
+
+        .qr-placeholder {
+            width: 100px;
+            height: 100px;
+            background: #ffffff;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 16px auto;
+            padding: 6px;
+        }
+
+        .qr-placeholder svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .contact-line {
+            font-size: 10pt;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .contact-line a {
+            color: #2dd4a8;
+            text-decoration: none;
+        }
+
+        /* ── Contact Slide ── */
+        .contact-final {
+            text-align: center;
+        }
+
+        .contact-final .name-big {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+
+        .contact-final .title-line {
+            font-size: 11pt;
+            color: #2dd4a8;
+            margin-bottom: 20px;
+        }
+
+        .contact-details {
+            display: inline-block;
+            text-align: left;
+            font-size: 11pt;
+            color: #cbd5e1;
+            line-height: 2;
+        }
+
+        .contact-details span {
+            color: #64748b;
+            display: inline-block;
+            width: 70px;
+        }
+
+        .contact-details a {
+            color: #2dd4a8;
+            text-decoration: none;
+        }
+
+        /* ── Divider ── */
+        .divider {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #2dd4a8, #f59e0b);
+            border-radius: 2px;
+            margin: 16px 0;
+        }
+
+        .divider-center {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ── App Screenshot Placeholder ── */
+        .app-placeholder {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(45, 212, 168, 0.2);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            color: #475569;
+            font-size: 10pt;
+        }
+
+        /* ── KI Feature List ── */
+        .ki-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .ki-feature .ki-icon {
+            font-size: 22pt;
+            flex-shrink: 0;
+            width: 40px;
+            text-align: center;
+        }
+
+        .ki-feature h3 {
+            font-size: 11pt;
+            margin-bottom: 3px;
+        }
+
+        .ki-feature p {
+            font-size: 9.5pt;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* ── No-Abo Badge ── */
+        .no-abo-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #2dd4a8, #0d9488);
+            color: #0f172a;
+            font-size: 9pt;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        /* ── Print Styles ── */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #1e293b !important;
+            }
+
+            .slide {
+                background: #ffffff !important;
+                color: #1e293b !important;
+                padding: 20mm 24mm;
+            }
+
+            .slide-footer {
+                background: linear-gradient(90deg, #0d9488, #d97706) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            h1 {
+                color: #0f172a !important;
+            }
+
+            h2 {
+                color: #0d9488 !important;
+            }
+
+            h3 {
+                color: #0f172a !important;
+            }
+
+            .subtitle {
+                color: #475569 !important;
+            }
+
+            .accent {
+                color: #0d9488 !important;
+            }
+
+            .gold {
+                color: #b45309 !important;
+            }
+
+            .card, .trust-card, .price-card {
+                background: #f8fafc !important;
+                border-color: #e2e8f0 !important;
+            }
+
+            .price-card.featured {
+                background: #fffbeb !important;
+                border-color: #f59e0b !important;
+            }
+
+            .pain-card {
+                background: #fef2f2 !important;
+                border-color: #fecaca !important;
+            }
+
+            .pain-card h3 {
+                color: #dc2626 !important;
+            }
+
+            .pain-card .pain-stat {
+                color: #dc2626 !important;
+            }
+
+            .highlight-box {
+                background: #f0fdfa !important;
+                border-color: #99f6e4 !important;
+            }
+
+            .roi-result {
+                background: #fffbeb !important;
+                border-color: #fcd34d !important;
+            }
+
+            .roi-result .big-number {
+                color: #b45309 !important;
+            }
+
+            .case-box {
+                background: #f8fafc !important;
+                border-color: #e2e8f0 !important;
+            }
+
+            .case-box .quote {
+                color: #334155 !important;
+                border-left-color: #0d9488 !important;
+            }
+
+            p, .card p, .trust-card p, .ki-feature p, .step-card p, .price-features li {
+                color: #475569 !important;
+            }
+
+            .slide-number {
+                color: rgba(0,0,0,0.2) !important;
+            }
+
+            .step-number {
+                background: #0d9488 !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-abo-badge {
+                background: #0d9488 !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .price-badge {
+                background: #f59e0b !important;
+                color: #0f172a !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .price-amount {
+                color: #b45309 !important;
+            }
+
+            .price-features li::before {
+                color: #0d9488 !important;
+            }
+
+            .contact-details a {
+                color: #0d9488 !important;
+            }
+
+            .divider {
+                background: linear-gradient(90deg, #0d9488, #d97706) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .roi-table td {
+                border-bottom-color: #e2e8f0 !important;
+            }
+
+            .roi-table td:first-child {
+                color: #475569 !important;
+            }
+
+            .roi-table td:last-child {
+                color: #0f172a !important;
+            }
+
+            .contact-final .name-big {
+                color: #0f172a !important;
+            }
+
+            .contact-final .title-line {
+                color: #0d9488 !important;
+            }
+
+            .contact-details {
+                color: #334155 !important;
+            }
+
+            .contact-details span {
+                color: #64748b !important;
+            }
+
+            .cta-step p, .contact-line, .case-box .case-meta {
+                color: #475569 !important;
+            }
+
+            .case-stat .stat-num {
+                color: #0d9488 !important;
+            }
+
+            .case-stat .stat-label {
+                color: #475569 !important;
+            }
+
+            .app-placeholder {
+                background: #f8fafc !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            .cta-step .cta-num {
+                background: #0d9488 !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .price-monthly {
+                color: #64748b !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* ── Screen: spacing between slides ── */
+        @media screen {
+            .slide + .slide {
+                border-top: 1px solid rgba(45, 212, 168, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SLIDE 1: Titel -->
+<!-- ============================================================ -->
+<div class="slide">
+    <div style="text-align: center;">
+        <div style="margin-bottom: 20px;">
+            <img src="img/hero-logo.png" alt="FreyAI Visions Logo" style="width: 80px; height: 80px;">
+        </div>
+        <h1 style="font-size: 36pt; margin-bottom: 8px;">FreyAI Visions</h1>
+        <div class="divider divider-center" style="width: 80px; margin-bottom: 20px;"></div>
+        <p style="font-size: 16pt; color: #94a3b8; margin-bottom: 32px;">
+            Digitalisierung aus dem Handwerk,<br>
+            <span class="accent" style="font-weight: 600;">f&uuml;r das Handwerk.</span>
+        </p>
+        <div class="highlight-box" style="display: inline-block; padding: 14px 28px;">
+            <p style="font-size: 12pt; color: #e2e8f0;">
+                <strong>Jonas Glawion</strong><br>
+                <span style="color: #94a3b8;">Gelernter Steinmetz. KI-Ingenieur.</span>
+            </p>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">01 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 2: Das Problem -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2>Das Problem</h2>
+    <p class="subtitle" style="margin-bottom: 28px;">
+        Handwerker verlieren jede Woche wertvolle Zeit &mdash; und bares Geld.
+    </p>
+    <div class="grid-3">
+        <div class="pain-card">
+            <span class="pain-icon">&#128196;</span>
+            <h3>Zettelwirtschaft</h3>
+            <p>Angebote auf Schmierzetteln, Kundendaten im Kopf, Rechnungen im Ordner. Nichts ist auffindbar, wenn es z&auml;hlt.</p>
+            <span class="pain-stat">73% arbeiten ohne CRM</span>
+        </div>
+        <div class="pain-card">
+            <span class="pain-icon">&#9201;</span>
+            <h3>Zeitfresser B&uuml;ro</h3>
+            <p>Nach der Baustelle noch Stunden am Schreibtisch. Papierkram statt Feierabend, Akquise oder Familie.</p>
+            <span class="pain-stat">8&ndash;12h / Woche</span>
+        </div>
+        <div class="pain-card">
+            <span class="pain-icon">&#128181;</span>
+            <h3>Verlorene Auftr&auml;ge</h3>
+            <p>Anfragen zu sp&auml;t beantwortet, Angebote vergessen. Der schnellere Wettbewerber bekommt den Zuschlag.</p>
+            <span class="pain-stat">15&ndash;25.000 &euro; / Jahr</span>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">02 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 3: Die Loesung -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2>Die L&ouml;sung</h2>
+    <div class="grid-2">
+        <div>
+            <div class="app-placeholder" style="height: 100%; min-height: 200px;">
+                <p style="margin-top: 60px;">[ App-Screenshot ]</p>
+                <p style="margin-top: 8px; font-size: 9pt;">Dashboard &mdash; Kunden, Angebote, Rechnungen auf einen Blick</p>
+            </div>
+        </div>
+        <div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128202;</span>
+                <div>
+                    <h3>Ein System f&uuml;r alles</h3>
+                    <p>Kunden, Angebote, Rechnungen, Zeiten &mdash; zentral und &uuml;bersichtlich. Kein Suchen, kein Chaos.</p>
+                </div>
+            </div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#129302;</span>
+                <div>
+                    <h3>KI-Automatisierung</h3>
+                    <p>Rechnungen scannen, Angebote erstellen, Erinnerungen versenden &mdash; automatisch.</p>
+                </div>
+            </div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128241;</span>
+                <div>
+                    <h3>Mobil auf der Baustelle</h3>
+                    <p>Alles am Handy: Zeiten erfassen, Fotos zuordnen, Kunden kontaktieren &mdash; von unterwegs.</p>
+                </div>
+            </div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128274;</span>
+                <div>
+                    <h3>DSGVO-konform &amp; sicher</h3>
+                    <p>Deutsche Server, verschl&uuml;sselte Daten, keine Weitergabe an Dritte.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">03 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 4: So funktioniert's -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2 style="text-align: center;">So funktioniert&rsquo;s</h2>
+    <p class="subtitle" style="text-align: center; margin-bottom: 36px;">
+        In drei Schritten zur digitalen Verwaltung
+    </p>
+    <div class="grid-3" style="align-items: flex-start;">
+        <div class="step-card">
+            <div class="step-number">1</div>
+            <h3>Analyse</h3>
+            <p>Wir schauen gemeinsam, wie Ihr Betrieb heute arbeitet. Wo brennt es? Wo geht Zeit verloren? Kostenloses 15-Minuten-Gespr&auml;ch.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Anpassung</h3>
+                <p>Das System wird auf Ihren Betrieb zugeschnitten: Ihre Leistungen, Ihre Preise, Ihre Abl&auml;ufe. Kein Standard von der Stange.</p>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-number">3</div>
+            <h3>Automatisierung</h3>
+            <p>Rechnungen, Erinnerungen, Nachfass-Mails &mdash; alles l&auml;uft automatisch. Sie k&uuml;mmern sich ums Handwerk.</p>
+        </div>
+    </div>
+    <div style="text-align: center; margin-top: 24px;">
+        <div class="highlight-box" style="display: inline-block; padding: 12px 24px;">
+            <p style="font-size: 11pt;">
+                <span class="accent" style="font-weight: 600;">Ergebnis:</span> Mehr Zeit f&uuml;rs Handwerk. Weniger B&uuml;ro. Mehr Umsatz.
+            </p>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">04 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 5: Features im Detail -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2>Features im Detail</h2>
+    <p class="subtitle" style="margin-bottom: 24px;">Alles, was Ihr Betrieb braucht &mdash; in einer App.</p>
+    <div class="grid-2x3">
+        <div class="card">
+            <span class="card-icon">&#128101;</span>
+            <h3>CRM &amp; Kundenverwaltung</h3>
+            <p>Alle Kunden, Kontakte und Kommunikation an einem Ort. Nie wieder Zettel suchen.</p>
+        </div>
+        <div class="card">
+            <span class="card-icon">&#128203;</span>
+            <h3>Angebote &amp; Auftr&auml;ge</h3>
+            <p>Professionelle Angebote in Minuten erstellen. Per Klick zum Auftrag umwandeln.</p>
+        </div>
+        <div class="card">
+            <span class="card-icon">&#128176;</span>
+            <h3>Rechnungswesen</h3>
+            <p>Rechnungen erstellen, versenden und nachverfolgen. Automatische Zahlungserinnerungen.</p>
+        </div>
+        <div class="card">
+            <span class="card-icon">&#129302;</span>
+            <h3>KI-Assistent</h3>
+            <p>Intelligente Texterstellung, Preiskalkulation und Dokumentenanalyse per K&uuml;nstlicher Intelligenz.</p>
+        </div>
+        <div class="card">
+            <span class="card-icon">&#9200;</span>
+            <h3>Zeiterfassung</h3>
+            <p>Arbeitszeiten mobil erfassen, Projekten zuordnen und f&uuml;r die Abrechnung exportieren.</p>
+        </div>
+        <div class="card">
+            <span class="card-icon">&#128200;</span>
+            <h3>DATEV-Export</h3>
+            <p>Nahtlose &Uuml;bergabe an den Steuerberater. DATEV-kompatible Exporte auf Knopfdruck.</p>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">05 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 6: KI-Power -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2>KI-Power</h2>
+    <p class="subtitle" style="margin-bottom: 28px;">
+        Was die K&uuml;nstliche Intelligenz konkret f&uuml;r Sie erledigt
+    </p>
+    <div class="grid-2">
+        <div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128247;</span>
+                <div>
+                    <h3>Automatischer Rechnungsscan</h3>
+                    <p>Eingangsrechnungen fotografieren oder per E-Mail weiterleiten. Die KI erkennt Betr&auml;ge, Lieferanten und F&auml;lligkeiten &mdash; und bucht automatisch.</p>
+                </div>
+            </div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128221;</span>
+                <div>
+                    <h3>Angebots-KI</h3>
+                    <p>Beschreiben Sie den Auftrag in Stichpunkten. Die KI erstellt daraus ein professionelles Angebot mit realistischer Kalkulation.</p>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128172;</span>
+                <div>
+                    <h3>Chat-Assistent</h3>
+                    <p>Fragen Sie den Assistenten zu Ihren Daten: &bdquo;Was schuldet Kunde M&uuml;ller noch?&ldquo; oder &bdquo;Welche Angebote sind offen?&ldquo; &mdash; sofortige Antwort.</p>
+                </div>
+            </div>
+            <div class="ki-feature">
+                <span class="ki-icon">&#128178;</span>
+                <div>
+                    <h3>Preiskalkulation</h3>
+                    <p>Material, Arbeitszeit, Anfahrt &mdash; die KI kalkuliert basierend auf Ihren Erfahrungswerten und aktuellen Marktpreisen.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top: 24px;">
+        <div class="highlight-box" style="text-align: center;">
+            <p style="font-size: 11pt;">
+                <span class="gold" style="font-weight: 600;">Keine Raketenwissenschaft.</span>
+                Einfach Aufgaben, die die KI schneller und genauer erledigt als jeder Sachbearbeiter.
+            </p>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">06 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 7: ROI-Rechnung -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2>Ihre Ersparnis</h2>
+    <p class="subtitle" style="margin-bottom: 20px;">
+        Konkrete Zahlen &mdash; kein Marketing-Gebl&auml;se.
+    </p>
+    <div class="grid-2">
+        <div>
+            <h3 style="margin-bottom: 12px;">Beispielrechnung</h3>
+            <table class="roi-table">
+                <tr>
+                    <td>Ihr Stundensatz (produktiv)</td>
+                    <td><span class="accent">55&ndash;75 &euro;</span></td>
+                </tr>
+                <tr>
+                    <td>Zeitersparnis pro Woche</td>
+                    <td>3&ndash;5 Stunden</td>
+                </tr>
+                <tr>
+                    <td>Ersparnis pro Woche</td>
+                    <td><span class="gold" style="font-weight: 700;">165&ndash;375 &euro;</span></td>
+                </tr>
+                <tr>
+                    <td>Ersparnis pro Monat</td>
+                    <td><span class="gold" style="font-weight: 700;">660&ndash;1.500 &euro;</span></td>
+                </tr>
+                <tr>
+                    <td>Ersparnis pro Jahr</td>
+                    <td><strong style="color: #2dd4a8; font-size: 13pt;">7.920&ndash;18.000 &euro;</strong></td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <div class="roi-result" style="margin-top: 0; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                <p style="font-size: 10pt; color: #94a3b8; margin-bottom: 8px;">Break-Even</p>
+                <div class="big-number">4&ndash;7 Wochen</div>
+                <p style="margin-top: 12px; font-size: 11pt;">
+                    Danach ist jede gesparte Stunde<br><strong>reiner Gewinn.</strong>
+                </p>
+                <div class="divider divider-center" style="margin: 16px auto;"></div>
+                <p style="font-size: 9.5pt; color: #94a3b8;">
+                    Basierend auf durchschnittlichen Handwerksbetrieben<br>mit 1&ndash;8 Mitarbeitern
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">07 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 8: Preise -->
+<!-- ============================================================ -->
+<div class="slide">
+    <div style="text-align: center;">
+        <h2>Pakete &amp; Preise</h2>
+        <div class="no-abo-badge">Keine monatlichen Kosten beim Einstieg</div>
+    </div>
+    <div class="pricing-grid" style="margin-top: 8px;">
+        <div class="price-card featured" style="margin-top: 0;">
+            <div class="price-badge">Limitiert</div>
+            <h3>Pilotprojekt</h3>
+            <div class="price-amount">800 &euro;</div>
+            <div class="price-monthly">einmalig</div>
+            <ul class="price-features">
+                <li>Rechnungsscan (OCR + KI)</li>
+                <li>Kunden-CRM</li>
+                <li>Email-Assistent</li>
+                <li>8 Wochen pers&ouml;nliche Betreuung</li>
+                <li>Einrichtung &amp; Schulung</li>
+                <li>Anonymisierte Referenz</li>
+            </ul>
+        </div>
+        <div class="price-card">
+            <h3>Starter</h3>
+            <div class="price-amount">1.200 &euro;</div>
+            <div class="price-monthly">einmalig</div>
+            <ul class="price-features">
+                <li>CRM &amp; Kundenverwaltung</li>
+                <li>Angebote &amp; Rechnungen</li>
+                <li>Auftragsmanagement</li>
+                <li>Buchhaltung (E&Uuml;R)</li>
+                <li>Einrichtung &amp; Einweisung</li>
+            </ul>
+        </div>
+        <div class="price-card">
+            <h3>Business</h3>
+            <div class="price-amount">3.500 &euro;</div>
+            <div class="price-monthly">+ 150 &euro;/Monat</div>
+            <ul class="price-features">
+                <li>Alles aus Starter</li>
+                <li>KI-Automatisierungen</li>
+                <li>Individuelle Workflows</li>
+                <li>E-Mail-Integration</li>
+                <li>Laufender Support</li>
+            </ul>
+        </div>
+        <div class="price-card">
+            <h3>Enterprise</h3>
+            <div class="price-amount">ab 5.000 &euro;</div>
+            <div class="price-monthly">+ 500 &euro;/Monat</div>
+            <ul class="price-features">
+                <li>Alles aus Business</li>
+                <li>Multi-User</li>
+                <li>API-Anbindungen</li>
+                <li>Sonderfunktionen</li>
+                <li>Pers&ouml;nlicher Ansprechpartner</li>
+            </ul>
+        </div>
+    </div>
+    <p style="text-align: center; font-size: 8.5pt; color: #64748b; margin-top: 14px; font-style: italic;">
+        Alle Preise sind Endpreise gem&auml;&szlig; &sect;19 UStG (Kleinunternehmerregelung). Es wird keine Umsatzsteuer ausgewiesen.
+    </p>
+    <div class="slide-footer"></div>
+    <div class="slide-number">08 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 9: Warum FreyAI -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2 style="text-align: center;">Warum FreyAI Visions?</h2>
+    <p class="subtitle" style="text-align: center; margin-bottom: 32px;">
+        Was uns von Standard-Software unterscheidet
+    </p>
+    <div class="grid-2" style="gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="trust-card">
+                <span class="trust-icon">&#128736;</span>
+                <h3>Handwerker-Background</h3>
+                <p>Gegr&uuml;ndet von einem gelernten Steinmetz. Wir kennen den Alltag auf der Baustelle &mdash; nicht nur vom H&ouml;rensagen.</p>
+            </div>
+            <div class="trust-card">
+                <span class="trust-icon">&#128176;</span>
+                <h3>Ehrliche Preise</h3>
+                <p>Einmalpreis statt ewiger Abo-Falle. Sie wissen vorher, was es kostet. Keine versteckten Geb&uuml;hren.</p>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            <div class="trust-card">
+                <span class="trust-icon">&#128737;</span>
+                <h3>DSGVO &amp; Datenschutz</h3>
+                <p>Deutsche Server, Verschl&uuml;sselung, keine Datenweitergabe. Ihre Kundendaten geh&ouml;ren Ihnen &mdash; Punkt.</p>
+            </div>
+            <div class="trust-card">
+                <span class="trust-icon">&#128222;</span>
+                <h3>Pers&ouml;nlicher Support</h3>
+                <p>Kein Callcenter, kein Ticket-System. Sie erreichen direkt den Menschen, der Ihre L&ouml;sung gebaut hat.</p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">09 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 10: Fallstudie -->
+<!-- ============================================================ -->
+<div class="slide">
+    <h2>Aus der Praxis</h2>
+    <p class="subtitle" style="margin-bottom: 28px;">Fallstudie &mdash; Pilotprojekt</p>
+    <div class="case-box">
+        <div class="quote">
+            &bdquo;Vorher habe ich abends zwei Stunden Rechnungen geschrieben. Jetzt macht die App das in zehn Minuten. Ich habe endlich wieder Feierabend.&ldquo;
+        </div>
+        <p class="case-meta">
+            <strong style="color: #e2e8f0;">Schreinerei aus Unterfranken</strong> &mdash; 4 Mitarbeiter, Meisterbetrieb<br>
+            <span style="font-style: italic;">[ Name und Details werden nach Abschluss des Pilotprojekts erg&auml;nzt ]</span>
+        </p>
+        <div class="case-stats">
+            <div class="case-stat">
+                <div class="stat-num">-8h</div>
+                <div class="stat-label">B&uuml;rozeit pro Woche</div>
+            </div>
+            <div class="case-stat">
+                <div class="stat-num">+35%</div>
+                <div class="stat-label">Schnellere Angebote</div>
+            </div>
+            <div class="case-stat">
+                <div class="stat-num">0</div>
+                <div class="stat-label">Vergessene Rechnungen</div>
+            </div>
+            <div class="case-stat">
+                <div class="stat-num">3 Wo.</div>
+                <div class="stat-label">Break-Even erreicht</div>
+            </div>
+        </div>
+    </div>
+    <p style="text-align: center; font-size: 9pt; color: #475569; margin-top: 16px; font-style: italic;">
+        Erwartete Ergebnisse basierend auf der Analyse typischer Handwerksbetriebe. Wird durch echte Pilotprojekt-Daten ersetzt.
+    </p>
+    <div class="slide-footer"></div>
+    <div class="slide-number">10 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 11: Naechster Schritt -->
+<!-- ============================================================ -->
+<div class="slide">
+    <div class="cta-box">
+        <h2>Bereit f&uuml;r weniger B&uuml;ro?</h2>
+        <p style="font-size: 13pt; color: #94a3b8; margin-bottom: 28px;">
+            Kostenloses 15-Minuten-Erstgespr&auml;ch &mdash; unverbindlich und ehrlich.
+        </p>
+        <div class="cta-steps">
+            <div class="cta-step">
+                <div class="cta-num">1</div>
+                <p><strong style="color: #e2e8f0;">Termin buchen</strong><br>15 Min. &mdash; kostenlos</p>
+            </div>
+            <div class="cta-step">
+                <div class="cta-num">2</div>
+                <p><strong style="color: #e2e8f0;">Analyse</strong><br>Wir schauen, wo es hakt</p>
+            </div>
+            <div class="cta-step">
+                <div class="cta-num">3</div>
+                <p><strong style="color: #e2e8f0;">Angebot</strong><br>Transparent, ohne Abo-Falle</p>
+            </div>
+        </div>
+        <div class="qr-placeholder">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" fill="#ffffff"/>
+                <rect x="5" y="5" width="25" height="25" rx="2" fill="#0f172a"/>
+                <rect x="10" y="10" width="15" height="15" rx="1" fill="#ffffff"/>
+                <rect x="13" y="13" width="9" height="9" rx="1" fill="#0f172a"/>
+                <rect x="70" y="5" width="25" height="25" rx="2" fill="#0f172a"/>
+                <rect x="75" y="10" width="15" height="15" rx="1" fill="#ffffff"/>
+                <rect x="78" y="13" width="9" height="9" rx="1" fill="#0f172a"/>
+                <rect x="5" y="70" width="25" height="25" rx="2" fill="#0f172a"/>
+                <rect x="10" y="75" width="15" height="15" rx="1" fill="#ffffff"/>
+                <rect x="13" y="78" width="9" height="9" rx="1" fill="#0f172a"/>
+                <rect x="35" y="8" width="5" height="5" fill="#0f172a"/>
+                <rect x="45" y="8" width="5" height="5" fill="#0f172a"/>
+                <rect x="55" y="8" width="5" height="5" fill="#0f172a"/>
+                <rect x="35" y="35" width="5" height="5" fill="#0f172a"/>
+                <rect x="45" y="35" width="5" height="5" fill="#0f172a"/>
+                <rect x="55" y="35" width="5" height="5" fill="#0f172a"/>
+                <rect x="65" y="35" width="5" height="5" fill="#0f172a"/>
+                <rect x="35" y="55" width="5" height="5" fill="#0f172a"/>
+                <rect x="45" y="55" width="5" height="5" fill="#0f172a"/>
+                <rect x="65" y="55" width="5" height="5" fill="#0f172a"/>
+                <rect x="85" y="55" width="5" height="5" fill="#0f172a"/>
+                <rect x="45" y="75" width="5" height="5" fill="#0f172a"/>
+                <rect x="55" y="75" width="5" height="5" fill="#0f172a"/>
+                <rect x="65" y="75" width="5" height="5" fill="#0f172a"/>
+                <rect x="85" y="75" width="5" height="5" fill="#0f172a"/>
+                <rect x="45" y="85" width="5" height="5" fill="#0f172a"/>
+                <rect x="75" y="85" width="5" height="5" fill="#0f172a"/>
+                <rect x="85" y="85" width="5" height="5" fill="#0f172a"/>
+            </svg>
+        </div>
+        <p style="font-size: 9pt; color: #64748b; margin-bottom: 16px;">buchung.freyaivisions.de/jonas</p>
+        <div class="contact-line">
+            <strong style="color: #e2e8f0;">Jonas Glawion</strong> &nbsp;|&nbsp;
+            <a href="tel:+491794228285">+49 179 4228285</a> &nbsp;|&nbsp;
+            <a href="mailto:kontakt@freyaivisions.de">kontakt@freyaivisions.de</a>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">11 / 12</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SLIDE 12: Kontakt -->
+<!-- ============================================================ -->
+<div class="slide">
+    <div class="contact-final">
+        <div style="margin-bottom: 20px;">
+            <img src="img/hero-logo.png" alt="FreyAI Visions Logo" style="width: 60px; height: 60px;">
+        </div>
+        <div class="name-big">Jonas Glawion</div>
+        <div class="title-line">FreyAI Visions &mdash; Gr&uuml;nder &amp; Entwickler</div>
+        <div class="divider divider-center" style="margin-bottom: 24px;"></div>
+        <div class="contact-details">
+            <span>Adresse</span> Grabenstra&szlig;e 135, 63762 Gro&szlig;ostheim<br>
+            <span>Telefon</span> <a href="tel:+491794228285">+49 179 4228285</a><br>
+            <span>E-Mail</span> <a href="mailto:kontakt@freyaivisions.de">kontakt@freyaivisions.de</a><br>
+            <span>Web</span> <a href="https://freyaivisions.de">freyaivisions.de</a><br>
+            <span>Termin</span> <a href="https://buchung.freyaivisions.de/jonas">buchung.freyaivisions.de/jonas</a>
+        </div>
+        <div style="margin-top: 32px;">
+            <div class="highlight-box" style="display: inline-block; padding: 12px 28px;">
+                <p style="font-size: 11pt;">
+                    Digitalisierung aus dem Handwerk, <span class="accent" style="font-weight: 600;">f&uuml;r das Handwerk.</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-footer"></div>
+    <div class="slide-number">12 / 12</div>
+</div>
+
+</body>
+</html>
