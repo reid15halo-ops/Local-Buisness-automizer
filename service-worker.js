@@ -367,6 +367,7 @@ self.addEventListener('notificationclick', (event) => {
 
 // Message handler for client communication
 self.addEventListener('message', (event) => {
+    if (!event.data) {return;}
     console.log('[SW] Message received:', event.data);
 
     if (event.data.type === 'SKIP_WAITING') {

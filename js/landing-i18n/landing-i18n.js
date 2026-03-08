@@ -125,11 +125,12 @@ class LandingI18n {
     }
 
     _getCacheVersion() {
-        return '2'; // Bump when translations change
+        return '3'; // Tied to SW CACHE_NAME v34
     }
 
-    // Deep merge: base object with override values
-    _deepMerge(base, override) {
+    // Deep merge: base object with override values (max 5 levels deep)
+    _deepMerge(base, override, depth = 0) {
+        if (depth > 5) {return override || base;}
         const result = {};
         const UNSAFE = ['__proto__', 'constructor', 'prototype'];
         for (const key of Object.keys(base)) {
@@ -140,7 +141,7 @@ class LandingI18n {
                 typeof override[key] === 'object' && override[key] !== null &&
                 !Array.isArray(base[key])
             ) {
-                result[key] = this._deepMerge(base[key], override[key]);
+                result[key] = this._deepMerge(base[key], override[key], depth + 1);
             } else if (override[key] !== undefined) {
                 result[key] = override[key];
             } else {
@@ -280,42 +281,83 @@ class LandingI18n {
 
         const langInfo = this.supportedLangs.find(l => l.code === this.currentLang) || this.supportedLangs[0];
 
-        // Button
-        container.innerHTML = `<button class="lang-switcher-btn" id="lang-switcher-btn" aria-label="Sprache wechseln" aria-haspopup="dialog" aria-expanded="false">
-            <span class="lang-current">${langInfo.flag} ${langInfo.code.toUpperCase()}</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
-        </button>`;
+        // Button (built with DOM APIs for defense-in-depth)
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'lang-switcher-btn';
+        btn.id = 'lang-switcher-btn';
+        btn.setAttribute('aria-label', 'Sprache wechseln');
+        btn.setAttribute('aria-haspopup', 'dialog');
+        btn.setAttribute('aria-expanded', 'false');
+        const currentSpan = document.createElement('span');
+        currentSpan.className = 'lang-current';
+        currentSpan.textContent = langInfo.flag + ' ' + langInfo.code.toUpperCase();
+        btn.appendChild(currentSpan);
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '12');
+        svg.setAttribute('height', '12');
+        svg.setAttribute('viewBox', '0 0 12 12');
+        svg.setAttribute('aria-hidden', 'true');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M3 5l3 3 3-3');
+        path.setAttribute('stroke', 'currentColor');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('fill', 'none');
+        svg.appendChild(path);
+        btn.appendChild(svg);
+        container.textContent = '';
+        container.appendChild(btn);
 
-        this._triggerButton = container.querySelector('button');
+        this._triggerButton = btn;
 
-        // Modal overlay
+        // Modal overlay (built with DOM APIs)
         const modal = document.createElement('div');
         modal.id = 'lang-modal';
         modal.className = 'lang-modal';
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-label', 'Sprache / Language');
-        modal.innerHTML = `
-            <div class="lang-modal-content">
-                <div class="lang-modal-header">
-                    <h3>Sprache / Language</h3>
-                    <button class="lang-modal-close" aria-label="Schlie\u00dfen">&times;</button>
-                </div>
-                <div class="lang-grid">
-                    ${this.supportedLangs.map(l => `
-                        <button class="lang-option${l.code === this.currentLang ? ' active' : ''}" data-lang="${l.code}">
-                            <span class="lang-flag">${l.flag}</span>
-                            <span class="lang-name">${l.name}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'lang-modal-content';
+
+        const header = document.createElement('div');
+        header.className = 'lang-modal-header';
+        const h3 = document.createElement('h3');
+        h3.textContent = 'Sprache / Language';
+        header.appendChild(h3);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'lang-modal-close';
+        closeBtn.setAttribute('aria-label', 'Schlie\u00dfen');
+        closeBtn.textContent = '\u00d7';
+        header.appendChild(closeBtn);
+        modalContent.appendChild(header);
+
+        const grid = document.createElement('div');
+        grid.className = 'lang-grid';
+        this.supportedLangs.forEach(l => {
+            const optBtn = document.createElement('button');
+            optBtn.type = 'button';
+            optBtn.className = 'lang-option' + (l.code === this.currentLang ? ' active' : '');
+            optBtn.dataset.lang = l.code;
+            const flagSpan = document.createElement('span');
+            flagSpan.className = 'lang-flag';
+            flagSpan.textContent = l.flag;
+            optBtn.appendChild(flagSpan);
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'lang-name';
+            nameSpan.textContent = l.name;
+            optBtn.appendChild(nameSpan);
+            grid.appendChild(optBtn);
+        });
+        modalContent.appendChild(grid);
+        modal.appendChild(modalContent);
         document.body.appendChild(modal);
 
         const closeModal = () => {
             modal.classList.remove('visible');
-            document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
             this._triggerButton.setAttribute('aria-expanded', 'false');
             // Return focus to trigger button
             if (this._triggerButton) {
@@ -325,7 +367,7 @@ class LandingI18n {
 
         const openModal = () => {
             modal.classList.add('visible');
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
             this._triggerButton.setAttribute('aria-expanded', 'true');
             // Focus first language option
             const firstOption = modal.querySelector('.lang-option');
