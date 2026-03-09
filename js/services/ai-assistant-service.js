@@ -201,7 +201,11 @@ Frage: ${question}
 Antworte direkt und hilfreich:`;
 
         try {
-            const response = await window.geminiService.generateText(prompt);
+            const data = await window.geminiService._callGeminiAPI({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.3, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+            });
+            const response = data.candidates?.[0]?.content?.parts?.[0]?.text;
             return {
                 success: true,
                 answer: response,

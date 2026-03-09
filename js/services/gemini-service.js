@@ -33,10 +33,21 @@ class GeminiService {
         this.isConfigured = !!apiKey || this.useProxy;
     }
 
+    // Prompt response cache (reduces API calls for repeated queries)
+    static _cache = new Map();
+    static CACHE_TTL = 24 * 60 * 60 * 1000; // 24h for general, overridable
+
     /**
      * Helper method to call Gemini API through proxy or direct
      */
     async _callGeminiAPI(payload) {
+        // Check cache before making API call
+        const cacheKey = GeminiService._hashPrompt(JSON.stringify(payload));
+        const cached = GeminiService._cache.get(cacheKey);
+        if (cached && !payload._skipCache && (Date.now() - cached.ts < (payload._cacheTTL || GeminiService.CACHE_TTL))) {
+            return cached.data;
+        }
+
         // Check rate limit before making API call
         if (window.securityService) {
             const rateLimitCheck = window.securityService.checkRateLimit(
@@ -91,7 +102,9 @@ class GeminiService {
             throw new Error(`Gemini API error ${response.status}: ${errorData.error || 'Unknown error'}`);
         }
 
-        return response.json();
+        const result = await response.json();
+        GeminiService._cache.set(cacheKey, { data: result, ts: Date.now() });
+        return result;
     }
 
     async generateAngebotText(anfrage) {
@@ -129,6 +142,7 @@ Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
                 generationConfig: {
                     temperature: 0.7,
                     maxOutputTokens: 500,
+                    thinkingConfig: { thinkingBudget: 0 },
                 }
             });
 
@@ -184,6 +198,7 @@ Antworte im JSON-Format:
                 generationConfig: {
                     temperature: 0.3,
                     maxOutputTokens: 500,
+                    thinkingConfig: { thinkingBudget: 1024 },
                 }
             });
 
@@ -230,7 +245,7 @@ Antwort:`;
         try {
             const data = await this._callGeminiAPI({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.4, maxOutputTokens: 300 }
+                generationConfig: { temperature: 0.4, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
             });
 
             return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
@@ -332,6 +347,16 @@ ${companyName}`
             geschaetzte_materialkosten: gesamtkosten,
             empfohlene_arbeitsstunden: positionen.length * 2
         };
+    }
+
+    static _hashPrompt(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash |= 0;
+        }
+        return 'gc_' + hash;
     }
 
     _sanitizeForPrompt(str) {

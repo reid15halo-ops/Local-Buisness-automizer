@@ -167,7 +167,7 @@ Antworte NUR im JSON-Format:
             if (!window.geminiService) { throw new Error('Gemini service not available'); }
             const data = await window.geminiService._callGeminiAPI({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.3 }
+                generationConfig: { temperature: 0.3, maxOutputTokens: 400, thinkingConfig: { thinkingBudget: 1024 } }
             });
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 

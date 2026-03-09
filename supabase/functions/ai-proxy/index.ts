@@ -51,6 +51,12 @@ serve(async (req) => {
         // Get request body
         const body = await req.json()
 
+        // Default to no-thinking if client doesn't specify (saves tokens)
+        if (!body.generationConfig?.thinkingConfig) {
+            body.generationConfig = body.generationConfig || {}
+            body.generationConfig.thinkingConfig = { thinkingBudget: 0 }
+        }
+
         // Validate required fields
         if (!body.contents) {
             return new Response(
