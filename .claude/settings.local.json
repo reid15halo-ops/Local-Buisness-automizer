@@ -167,7 +167,21 @@
       "Bash(command -v node)",
       "Bash(command -v npm)",
       "Bash(command -v deno)",
-      "mcp__claude_ai_Gmail__gmail_create_draft"
+      "mcp__claude_ai_Gmail__gmail_create_draft",
+      "Bash(gh run list --limit 1 --json databaseId,status,conclusion --jq '.[0].databaseId')",
+      "Bash(npx eslint js/ --max-warnings 500)",
+      "Bash(where npm)",
+      "Bash(scp tmp_fix_lead_responder.py tmp_fix_email_organizer.py root@72.61.187.24:/tmp/)",
+      "WebFetch(domain:app.finom.co)",
+      "WebFetch(domain:community.n8n.io)",
+      "WebFetch(domain:www.openbankingtracker.com)",
+      "WebFetch(domain:apitracker.io)",
+      "WebFetch(domain:priora.saltedge.com)",
+      "WebFetch(domain:www.solarisgroup.com)",
+      "WebFetch(domain:finom.co)",
+      "WebFetch(domain:zapier.com)",
+      "WebFetch(domain:help.finom.co)",
+      "Bash(ssh -o ConnectTimeout=10 root@72.61.187.24 'curl -s -X POST \"\"http://172.19.0.1:5678/webhook/feedback-loop\"\" -H \"\"Content-Type: application/json\"\" -d \"\"{:*)"
     ]
   }
 }

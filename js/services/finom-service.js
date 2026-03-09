@@ -801,6 +801,247 @@
         }
 
         // ========================================
+        // Bank Transactions (from Zapier → n8n → Supabase)
+        // ========================================
+
+        /**
+         * Fetch real bank transactions from Supabase (synced via Zapier/n8n).
+         * @param {Object} options - Filter options
+         * @param {string} options.from - Start date (YYYY-MM-DD)
+         * @param {string} options.to - End date (YYYY-MM-DD)
+         * @param {boolean} options.unmatchedOnly - Only unmatched transactions
+         * @param {number} options.limit - Max results (default 100)
+         */
+        async getTransactions({ from, to, unmatchedOnly, limit } = {}) {
+            if (!isOnline()) {
+                return { success: false, error: 'Offline — Transaktionen nicht verfügbar', transactions: [] };
+            }
+
+            try {
+                let query = supabase()
+                    .from('finom_transactions')
+                    .select('*')
+                    .eq('tenant_id', this.TENANT_ID)
+                    .order('transaction_date', { ascending: false })
+                    .limit(limit || 100);
+
+                if (from) { query = query.gte('transaction_date', from); }
+                if (to) { query = query.lte('transaction_date', to); }
+                if (unmatchedOnly) {
+                    query = query.is('matched_invoice_id', null).is('matched_buchung_id', null);
+                }
+
+                const { data, error } = await query;
+                if (error) { throw error; }
+
+                return {
+                    success: true,
+                    transactions: (data || []).map(tx => ({
+                        id: tx.id,
+                        externalId: tx.external_id,
+                        datum: tx.transaction_date,
+                        buchungsDatum: tx.booking_date,
+                        betrag: parseFloat(tx.amount),
+                        waehrung: tx.currency || 'EUR',
+                        gegenpartei: tx.counterparty_name || '',
+                        gegenparteiIban: tx.counterparty_iban || '',
+                        verwendungszweck: tx.reference || '',
+                        kategorie: tx.category || '',
+                        typ: tx.transaction_type || '',
+                        status: tx.status || 'booked',
+                        matchedInvoiceId: tx.matched_invoice_id,
+                        matchedBuchungId: tx.matched_buchung_id,
+                        matchConfidence: tx.match_confidence,
+                        matchMethod: tx.match_method,
+                        isMatched: !!(tx.matched_invoice_id || tx.matched_buchung_id),
+                        syncedAt: tx.synced_at
+                    }))
+                };
+            } catch (error) {
+                handleError(error, 'getTransactions');
+                return { success: false, error: error.message, transactions: [] };
+            }
+        }
+
+        /**
+         * Get account balance summary from synced transactions.
+         */
+        async getBalanceSummary({ days } = { days: 30 }) {
+            const from = new Date(Date.now() - days * 86400000).toISOString().split('T')[0];
+            const result = await this.getTransactions({ from, limit: 500 });
+
+            if (!result.success) {
+                return { success: false, error: result.error };
+            }
+
+            const txs = result.transactions;
+            const einnahmen = txs.filter(t => t.betrag > 0);
+            const ausgaben = txs.filter(t => t.betrag < 0);
+
+            return {
+                success: true,
+                zeitraum: `${days} Tage`,
+                einnahmenGesamt: Math.round(einnahmen.reduce((s, t) => s + t.betrag, 0) * 100) / 100,
+                ausgabenGesamt: Math.round(ausgaben.reduce((s, t) => s + Math.abs(t.betrag), 0) * 100) / 100,
+                saldo: Math.round(txs.reduce((s, t) => s + t.betrag, 0) * 100) / 100,
+                anzahlTransaktionen: txs.length,
+                anzahlUnmatched: txs.filter(t => !t.isMatched).length,
+                topAusgaben: this._topCounterparties(ausgaben, 5),
+                topEinnahmen: this._topCounterparties(einnahmen, 5)
+            };
+        }
+
+        _topCounterparties(transactions, limit) {
+            const grouped = {};
+            for (const tx of transactions) {
+                const name = tx.gegenpartei || 'Unbekannt';
+                if (!grouped[name]) { grouped[name] = { name, total: 0, count: 0 }; }
+                grouped[name].total += Math.abs(tx.betrag);
+                grouped[name].count++;
+            }
+            return Object.values(grouped)
+                .sort((a, b) => b.total - a.total)
+                .slice(0, limit)
+                .map(g => ({ ...g, total: Math.round(g.total * 100) / 100 }));
+        }
+
+        /**
+         * Manually match a transaction to an invoice or buchung.
+         */
+        async matchTransaction(transactionId, { invoiceId, buchungId }) {
+            if (!isOnline()) {
+                return { success: false, error: 'Offline — Matching nicht möglich' };
+            }
+
+            try {
+                const updateData = {
+                    match_method: 'manual',
+                    match_confidence: 1.0,
+                    matched_at: new Date().toISOString()
+                };
+
+                if (invoiceId) {
+                    updateData.matched_invoice_id = invoiceId;
+                    updateData.matched_entity_type = 'rechnung';
+                }
+                if (buchungId) { updateData.matched_buchung_id = buchungId; }
+
+                const { error } = await supabase()
+                    .from('finom_transactions')
+                    .update(updateData)
+                    .eq('id', transactionId)
+                    .eq('tenant_id', this.TENANT_ID);
+
+                if (error) { throw error; }
+
+                // Also mark the invoice/buchung as paid
+                if (buchungId) {
+                    await supabase()
+                        .from('buchungen')
+                        .update({ bezahlt: true, bezahlt_am: new Date().toISOString().split('T')[0] })
+                        .eq('id', buchungId)
+                        .eq('tenant_id', this.TENANT_ID);
+                }
+
+                showToast('Transaktion erfolgreich zugeordnet', 'success');
+                return { success: true };
+            } catch (error) {
+                handleError(error, 'matchTransaction');
+                return { success: false, error: error.message };
+            }
+        }
+
+        /**
+         * Unmatch a previously matched transaction.
+         * Reverts buchungen.bezahlt if it was set by matchTransaction.
+         */
+        async unmatchTransaction(transactionId) {
+            if (!isOnline()) {
+                return { success: false, error: 'Offline' };
+            }
+
+            try {
+                // First fetch the current match to know what to revert
+                const { data: txData, error: fetchError } = await supabase()
+                    .from('finom_transactions')
+                    .select('matched_buchung_id, matched_invoice_id, matched_entity_type')
+                    .eq('id', transactionId)
+                    .eq('tenant_id', this.TENANT_ID)
+                    .single();
+
+                if (fetchError) { throw fetchError; }
+
+                // Revert buchung bezahlt status if was matched
+                if (txData?.matched_buchung_id) {
+                    await supabase()
+                        .from('buchungen')
+                        .update({ bezahlt: false, bezahlt_am: null })
+                        .eq('id', txData.matched_buchung_id)
+                        .eq('tenant_id', this.TENANT_ID);
+                }
+
+                // Clear the match on the transaction
+                const { error } = await supabase()
+                    .from('finom_transactions')
+                    .update({
+                        matched_invoice_id: null,
+                        matched_entity_type: null,
+                        matched_buchung_id: null,
+                        match_confidence: null,
+                        match_method: null,
+                        matched_at: null
+                    })
+                    .eq('id', transactionId)
+                    .eq('tenant_id', this.TENANT_ID);
+
+                if (error) { throw error; }
+
+                showToast('Zuordnung aufgehoben', 'info');
+                return { success: true };
+            } catch (error) {
+                handleError(error, 'unmatchTransaction');
+                return { success: false, error: error.message };
+            }
+        }
+
+        /**
+         * Get sync status (last sync time, stats).
+         */
+        async getSyncStatus() {
+            if (!isOnline()) {
+                return { success: false, configured: false };
+            }
+
+            try {
+                const { data, error } = await supabase()
+                    .from('finom_sync_log')
+                    .select('*')
+                    .eq('tenant_id', this.TENANT_ID)
+                    .order('started_at', { ascending: false })
+                    .limit(5);
+
+                if (error) { throw error; }
+
+                const lastSync = data?.[0];
+                return {
+                    success: true,
+                    configured: true,
+                    lastSync: lastSync ? {
+                        zeit: lastSync.started_at,
+                        typ: lastSync.sync_type,
+                        transaktionen: lastSync.transactions_synced,
+                        matched: lastSync.transactions_matched,
+                        status: lastSync.status
+                    } : null,
+                    recentSyncs: (data || []).length
+                };
+            } catch (error) {
+                handleError(error, 'getSyncStatus');
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ========================================
         // IBAN Utilities (exposed for UI usage)
         // ========================================
 
