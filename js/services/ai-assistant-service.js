@@ -203,7 +203,8 @@ Antworte direkt und hilfreich:`;
         try {
             const data = await window.geminiService._callGeminiAPI({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.3, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+                generationConfig: { temperature: 0.3, maxOutputTokens: 300 },
+                thinkingConfig: { thinkingBudget: 0 }
             });
             const response = data.candidates?.[0]?.content?.parts?.[0]?.text;
             return {

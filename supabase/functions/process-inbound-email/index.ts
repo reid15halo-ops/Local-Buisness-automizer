@@ -385,9 +385,9 @@ Beispiel 2 - UNVOLLSTÄNDIG:
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.3,
-                    maxOutputTokens: 600,
-                    thinkingConfig: { thinkingBudget: 1024 }
-                }
+                    maxOutputTokens: 800
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             })
         }
     )

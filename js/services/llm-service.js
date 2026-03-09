@@ -141,7 +141,8 @@ Halte die Antwort kurz (max 3-4 Sätze).`;
         const payload = {
             contents: contents,
             system_instruction: { parts: [{ text: systemPrompt }] },
-            generationConfig: { temperature: 0.4, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+            generationConfig: { temperature: 0.4, maxOutputTokens: 300 },
+            thinkingConfig: { thinkingBudget: 0 }
         };
 
         // Determine URL and headers based on proxy availability

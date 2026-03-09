@@ -419,9 +419,9 @@ Antworte NUR mit dem Briefing-Text auf Deutsch.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 500,
-                    thinkingConfig: { thinkingBudget: 0 }
-                }
+                    maxOutputTokens: 500
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -625,9 +625,9 @@ Antworte NUR mit dem Mahntext.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.5,
-                    maxOutputTokens: 400,
-                    thinkingConfig: { thinkingBudget: 0 }
-                }
+                    maxOutputTokens: 400
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -803,9 +803,9 @@ Antworte NUR mit dem Nachfass-Text.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.7,
-                    maxOutputTokens: 300,
-                    thinkingConfig: { thinkingBudget: 0 }
-                }
+                    maxOutputTokens: 300
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -934,9 +934,9 @@ Antworte NUR mit dem JSON.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.4,
-                    maxOutputTokens: 500,
-                    thinkingConfig: { thinkingBudget: 1024 }
-                }
+                    maxOutputTokens: 600
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -1169,9 +1169,9 @@ Antworte NUR mit dem JSON-Array.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.5,
-                    maxOutputTokens: 400,
-                    thinkingConfig: { thinkingBudget: 1024 }
-                }
+                    maxOutputTokens: 400
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;

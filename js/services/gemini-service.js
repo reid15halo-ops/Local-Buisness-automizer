@@ -35,16 +35,18 @@ class GeminiService {
 
     // Prompt response cache (reduces API calls for repeated queries)
     static _cache = new Map();
-    static CACHE_TTL = 24 * 60 * 60 * 1000; // 24h for general, overridable
+    static CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+    static CACHE_MAX_SIZE = 200;
 
     /**
      * Helper method to call Gemini API through proxy or direct
      */
     async _callGeminiAPI(payload) {
         // Check cache before making API call
-        const cacheKey = GeminiService._hashPrompt(JSON.stringify(payload));
+        const payloadStr = JSON.stringify(payload);
+        const cacheKey = GeminiService._hashPrompt(payloadStr);
         const cached = GeminiService._cache.get(cacheKey);
-        if (cached && !payload._skipCache && (Date.now() - cached.ts < (payload._cacheTTL || GeminiService.CACHE_TTL))) {
+        if (cached && !payload._skipCache && cached.key === payloadStr && (Date.now() - cached.ts < (payload._cacheTTL || GeminiService.CACHE_TTL))) {
             return cached.data;
         }
 
@@ -103,7 +105,12 @@ class GeminiService {
         }
 
         const result = await response.json();
-        GeminiService._cache.set(cacheKey, { data: result, ts: Date.now() });
+        // Evict oldest entries if cache exceeds max size
+        if (GeminiService._cache.size >= GeminiService.CACHE_MAX_SIZE) {
+            const oldest = GeminiService._cache.keys().next().value;
+            GeminiService._cache.delete(oldest);
+        }
+        GeminiService._cache.set(cacheKey, { data: result, ts: Date.now(), key: payloadStr });
         return result;
     }
 
@@ -142,8 +149,8 @@ Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
                 generationConfig: {
                     temperature: 0.7,
                     maxOutputTokens: 500,
-                    thinkingConfig: { thinkingBudget: 0 },
-                }
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -198,8 +205,8 @@ Antworte im JSON-Format:
                 generationConfig: {
                     temperature: 0.3,
                     maxOutputTokens: 500,
-                    thinkingConfig: { thinkingBudget: 1024 },
-                }
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -245,7 +252,8 @@ Antwort:`;
         try {
             const data = await this._callGeminiAPI({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.4, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+                generationConfig: { temperature: 0.4, maxOutputTokens: 300 },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
