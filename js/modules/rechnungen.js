@@ -268,6 +268,10 @@ function renderRechnungen() {
                     <span>💰 ${formatCurrency(r.brutto || 0)}</span>
                     <span>📅 ${formatDate(r.createdAt)}</span>
                     ${r.faelligkeitsdatum ? `<span>⏰ Fällig: ${formatDate(r.faelligkeitsdatum)}</span>` : ''}
+                    ${r.skontoPercent && r.status === 'offen' && r.skontoZielDatum && new Date() <= new Date(r.skontoZielDatum)
+                        ? `<span style="color:#22c55e;font-weight:600;">🏷️ ${r.skontoPercent}% Skonto bis ${formatDate(r.skontoZielDatum)}</span>`
+                        : ''}
+                    ${r.skontoGenutzt ? `<span style="color:#22c55e;">✅ Skonto genutzt (−${formatCurrency(r.skontoAbzug || 0)})</span>` : ''}
                 </div>
                 <p class="item-description" style="${textStyle}">${getLeistungsartLabel(r.leistungsart)}</p>
                 <div class="item-actions">
@@ -512,6 +516,44 @@ function showRechnung(rechnungId) {
                 </div>
             </div>
 
+            ${rechnung.skontoPercent ? (() => {
+                const skontoEligible = rechnung.status === 'offen' && rechnung.skontoZielDatum && new Date() <= new Date(rechnung.skontoZielDatum);
+                const skontoUsed = rechnung.skontoGenutzt;
+                if (skontoEligible) {
+                    return `<div style="margin-bottom: 20px; padding: 12px; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05)); border: 1px solid rgba(34,197,94,0.3); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <span style="font-size: 18px;">🏷️</span>
+                            <strong style="color: #22c55e;">Skonto-Angebot</strong>
+                        </div>
+                        <div style="font-size: 14px; color: var(--text);">
+                            Bei Zahlung bis <strong>${formatDate(rechnung.skontoZielDatum)}</strong>:
+                            <strong>${rechnung.skontoPercent}% Skonto</strong>
+                            (Sie sparen <strong>${formatCurrency(rechnung.skontoBetrag || 0)}</strong>)
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(34,197,94,0.3);">
+                            <span style="font-weight: bold; color: #22c55e;">Zahlbetrag mit Skonto:</span>
+                            <strong style="font-size: 16px; color: #22c55e;">${formatCurrency(rechnung.betragNachSkonto || 0)}</strong>
+                        </div>
+                    </div>`;
+                } else if (skontoUsed) {
+                    return `<div style="margin-bottom: 20px; padding: 12px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>✅ <strong>Skonto genutzt</strong> (${rechnung.skontoPercent}%)</span>
+                            <span>Abzug: <strong>−${formatCurrency(rechnung.skontoAbzug || 0)}</strong></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <span>Bezahlt:</span>
+                            <strong>${formatCurrency(rechnung.bezahltBetrag || rechnung.betragNachSkonto || 0)}</strong>
+                        </div>
+                    </div>`;
+                } else if (rechnung.status === 'offen') {
+                    return `<div style="margin-bottom: 20px; padding: 8px 12px; background: rgba(156,163,175,0.1); border-radius: 8px; font-size: 13px; color: var(--text-secondary);">
+                        🏷️ Skonto-Frist abgelaufen (${rechnung.skontoPercent}% bis ${formatDate(rechnung.skontoZielDatum)})
+                    </div>`;
+                }
+                return '';
+            })() : ''}
+
             <div style="display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
                 <button class="btn btn-secondary" id="btn-download-pdf">
                     📄 PDF herunterladen
@@ -564,21 +606,72 @@ function showRechnung(rechnungId) {
     if (canAct) {
         const markPaidBtnEl = modal.querySelector('#btn-mark-paid');
         if (markPaidBtnEl) {
-            markPaidBtnEl.addEventListener('click', () => {
-                window.confirmDialogService?.confirmMarkAsPaid(
-                    rechnung.id,
-                    rechnung.brutto || 0,
-                    () => {
-                        rechnung.status = 'bezahlt';
-                        rechnung.paidAt = new Date().toISOString();
-                        saveStore();
-                        addActivity('✅', `Rechnung ${rechnung.id} als bezahlt markiert`);
+            markPaidBtnEl.addEventListener('click', async () => {
+                // Check if Skonto is still eligible
+                const skontoEligible = rechnung.skontoPercent > 0
+                    && rechnung.skontoZielDatum
+                    && new Date() <= new Date(rechnung.skontoZielDatum);
+
+                const doMarkPaid = async (skontoGenutzt) => {
+                    try {
+                        if (window.invoiceService?.markAsPaid) {
+                            await window.invoiceService.markAsPaid(rechnung.id, {
+                                method: 'Überweisung',
+                                skontoGenutzt: skontoGenutzt
+                            });
+                        } else {
+                            // Manual fallback
+                            rechnung.status = 'bezahlt';
+                            rechnung.paidAt = new Date().toISOString();
+                            if (skontoGenutzt && rechnung.skontoBetrag > 0) {
+                                rechnung.skontoGenutzt = true;
+                                rechnung.skontoAbzug = rechnung.skontoBetrag;
+                                rechnung.bezahltBetrag = rechnung.betragNachSkonto;
+                            } else {
+                                rechnung.skontoGenutzt = false;
+                                rechnung.skontoAbzug = 0;
+                                rechnung.bezahltBetrag = rechnung.brutto;
+                            }
+                            saveStore();
+                            const hint = skontoGenutzt ? ` (Skonto ${rechnung.skontoPercent}%)` : '';
+                            addActivity('✅', `Rechnung ${rechnung.id} als bezahlt markiert${hint}`);
+                        }
                         closeModal('modal-rechnung');
                         renderRechnungen();
                         window.DashboardModule?.updateDashboard?.();
-                        showToast('Rechnung als bezahlt markiert \u2713', 'success');
+                        const skontoMsg = skontoGenutzt ? ' (mit Skonto)' : '';
+                        showToast(`Rechnung als bezahlt markiert${skontoMsg} \u2713`, 'success');
+                    } catch (err) {
+                        console.error('Mark as paid failed:', err);
+                        showToast('Fehler: ' + err.message, 'error');
                     }
-                );
+                };
+
+                if (skontoEligible) {
+                    // Show Skonto choice dialog
+                    const skontoAmount = formatCurrency(rechnung.skontoBetrag || 0);
+                    const fullAmount = formatCurrency(rechnung.brutto || 0);
+                    const reducedAmount = formatCurrency(rechnung.betragNachSkonto || 0);
+
+                    if (window.confirmDialogService?.confirm) {
+                        window.confirmDialogService.confirm(
+                            `Skonto nutzen?\n\nVollbetrag: ${fullAmount}\nMit ${rechnung.skontoPercent}% Skonto: ${reducedAmount} (Ersparnis: ${skontoAmount})`,
+                            () => doMarkPaid(true),   // Yes = with Skonto
+                            () => doMarkPaid(false)   // No = full amount
+                        );
+                    } else if (confirm(`Skonto nutzen?\n\nVollbetrag: ${fullAmount}\nMit ${rechnung.skontoPercent}% Skonto: ${reducedAmount} (Ersparnis: ${skontoAmount})`)) {
+                        await doMarkPaid(true);
+                    } else {
+                        await doMarkPaid(false);
+                    }
+                } else {
+                    // No Skonto available — use standard confirm flow
+                    window.confirmDialogService?.confirmMarkAsPaid(
+                        rechnung.id,
+                        rechnung.brutto || 0,
+                        () => doMarkPaid(false)
+                    );
+                }
             });
         }
 
@@ -672,10 +765,29 @@ function initRechnungActions() {
                 break;
             case 'mark-paid':
                 if (rechnung.status === 'offen') {
-                    rechnung.status = 'bezahlt';
-                    rechnung.paidAt = new Date().toISOString();
-                    saveStore();
-                    addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
+                    // Check Skonto eligibility
+                    const skontoOk = rechnung.skontoPercent > 0
+                        && rechnung.skontoZielDatum
+                        && new Date() <= new Date(rechnung.skontoZielDatum);
+
+                    if (window.invoiceService?.markAsPaid) {
+                        await window.invoiceService.markAsPaid(rechnung.id, {
+                            method: 'Überweisung',
+                            skontoGenutzt: skontoOk
+                        });
+                    } else {
+                        rechnung.status = 'bezahlt';
+                        rechnung.paidAt = new Date().toISOString();
+                        if (skontoOk && rechnung.skontoBetrag > 0) {
+                            rechnung.skontoGenutzt = true;
+                            rechnung.skontoAbzug = rechnung.skontoBetrag;
+                            rechnung.bezahltBetrag = rechnung.betragNachSkonto;
+                        } else {
+                            rechnung.bezahltBetrag = rechnung.brutto;
+                        }
+                        saveStore();
+                        addActivity('💰', `Rechnung ${rechnung.nummer || rechnung.id} als bezahlt markiert`);
+                    }
                     renderRechnungen();
                     if (window.showToast) {showToast('Als bezahlt markiert', 'success');}
                 }
