@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <title>Blog | FreyAI Visions &ndash; Wissen &amp; Insights f&uuml;r Handwerksbetriebe</title>
+    <meta name="description" content="Praxiswissen zu Digitalisierung, KI und Automatisierung im Handwerk. Expertenwissen f&uuml;r deutsche Handwerksbetriebe von FreyAI Visions.">
+    <meta name="keywords" content="Handwerker Software, Digitalisierung Handwerk, KI Handwerk, E-Rechnung, DATEV Handwerker, Handwerksbetrieb automatisieren">
+    <meta name="author" content="FreyAI Visions">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://freyaivisions.de/blog.html">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Wissen &amp; Insights f&uuml;r Handwerksbetriebe | FreyAI Visions Blog">
+    <meta property="og:description" content="Praxiswissen zu Digitalisierung, KI und Automatisierung im Handwerk. Expertenwissen f&uuml;r deutsche Handwerksbetriebe.">
+    <meta property="og:url" content="https://freyaivisions.de/blog.html">
+    <meta property="og:site_name" content="FreyAI Visions">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:image" content="https://freyaivisions.de/img/og-blog.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Wissen &amp; Insights f&uuml;r Handwerksbetriebe | FreyAI Visions Blog">
+    <meta name="twitter:description" content="Praxiswissen zu Digitalisierung, KI und Automatisierung im Handwerk.">
+    <meta name="twitter:image" content="https://freyaivisions.de/img/og-blog.png">
+
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "FreyAI Visions Blog",
+        "description": "Praxiswissen zu Digitalisierung, KI und Automatisierung im Handwerk",
+        "url": "https://freyaivisions.de/blog.html",
+        "publisher": {
+            "@type": "Organization",
+            "name": "FreyAI Visions",
+            "url": "https://freyaivisions.de"
+        },
+        "blogPost": [
+            {
+                "@type": "BlogPosting",
+                "headline": "E-Rechnung im Handwerk: Was Sie bis 2027 umsetzen m\u00fcssen",
+                "url": "https://freyaivisions.de/articles/e-rechnung-handwerk-pflicht-2027.html",
+                "datePublished": "2026-03-01",
+                "author": { "@type": "Organization", "name": "FreyAI Visions" }
+            },
+            {
+                "@type": "BlogPosting",
+                "headline": "Handwerker Software Vergleich 2026",
+                "url": "https://freyaivisions.de/articles/handwerker-software-vergleich-2026.html",
+                "datePublished": "2026-02-20",
+                "author": { "@type": "Organization", "name": "FreyAI Visions" }
+            },
+            {
+                "@type": "BlogPosting",
+                "headline": "DATEV-Schnittstelle f\u00fcr Handwerker",
+                "url": "https://freyaivisions.de/articles/datev-schnittstelle-handwerker.html",
+                "datePublished": "2026-02-10",
+                "author": { "@type": "Organization", "name": "FreyAI Visions" }
+            },
+            {
+                "@type": "BlogPosting",
+                "headline": "Schluss mit Zettelwirtschaft: In 4 Wochen komplett digital",
+                "url": "https://freyaivisions.de/articles/zettelwirtschaft-handwerk-digital.html",
+                "datePublished": "2026-01-28",
+                "author": { "@type": "Organization", "name": "FreyAI Visions" }
+            },
+            {
+                "@type": "BlogPosting",
+                "headline": "KI im Handwerk 2026: 7 Wege, wie KI Ihrem Betrieb 2 Stunden B\u00fcroarbeit spart",
+                "url": "https://freyaivisions.de/articles/ki-im-handwerk-2026.html",
+                "datePublished": "2026-01-15",
+                "author": { "@type": "Organization", "name": "FreyAI Visions" }
+            }
+        ]
+    }
+    </script>
+
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --bg-card-hover: #1f1f23;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --text: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border: #27272a;
+            --radius: 16px;
+            --radius-sm: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ---- Navigation ---- */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(9, 9, 11, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .nav-links a.active {
+            color: var(--accent);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.25);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(34, 197, 94, 0.35);
+        }
+
+        /* ---- Blog Hero ---- */
+        .blog-hero {
+            padding: 140px 32px 80px;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .blog-hero-label {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 24px;
+        }
+
+        .blog-hero h1 {
+            font-size: clamp(28px, 5vw, 44px);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .blog-hero h1 .gradient {
+            background: linear-gradient(135deg, var(--accent), #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .blog-hero p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ---- Blog Grid ---- */
+        .blog-section {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 32px 100px;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 28px;
+        }
+
+        /* ---- Article Card ---- */
+        .article-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 40px var(--accent-glow);
+        }
+
+        .article-card:nth-child(5) {
+            grid-column: 1 / -1;
+            max-width: calc(50% - 14px);
+            justify-self: center;
+        }
+
+        .article-thumbnail {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .article-card:nth-child(1) .article-thumbnail {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #6366f1 100%);
+        }
+
+        .article-card:nth-child(2) .article-thumbnail {
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 50%, #2dd4bf 100%);
+        }
+
+        .article-card:nth-child(3) .article-thumbnail {
+            background: linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #fbbf24 100%);
+        }
+
+        .article-card:nth-child(4) .article-thumbnail {
+            background: linear-gradient(135deg, #059669 0%, #22c55e 50%, #4ade80 100%);
+        }
+
+        .article-card:nth-child(5) .article-thumbnail {
+            background: linear-gradient(135deg, #be185d 0%, #ec4899 50%, #f472b6 100%);
+        }
+
+        .thumbnail-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            opacity: 0.3;
+        }
+
+        .thumbnail-pattern {
+            position: absolute;
+            inset: 0;
+            background-image:
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+        }
+
+        .article-body {
+            padding: 28px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .article-category {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .cat-compliance {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+        }
+
+        .cat-software {
+            background: rgba(20, 184, 166, 0.15);
+            color: #2dd4bf;
+        }
+
+        .cat-integration {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .cat-digitalisierung {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .cat-ki {
+            background: rgba(236, 72, 153, 0.15);
+            color: #f472b6;
+        }
+
+        .article-reading-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .article-title {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.35;
+            margin-bottom: 12px;
+            color: var(--text);
+            letter-spacing: -0.3px;
+        }
+
+        .article-card:hover .article-title {
+            color: var(--accent-hover);
+        }
+
+        .article-excerpt {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 20px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .article-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+            text-decoration: none;
+            transition: gap 0.2s ease, color 0.2s ease;
+        }
+
+        .article-link:hover {
+            color: var(--accent-hover);
+            gap: 10px;
+        }
+
+        .article-link-arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .article-card:hover .article-link-arrow {
+            transform: translateX(3px);
+        }
+
+        /* ---- CTA Section ---- */
+        .blog-cta {
+            max-width: 800px;
+            margin: 0 auto 100px;
+            padding: 0 32px;
+        }
+
+        .cta-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 56px 48px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .cta-box h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.3px;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            font-size: 16px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: white;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-large {
+            padding: 14px 32px;
+            font-size: 16px;
+        }
+
+        /* ---- Footer ---- */
+        .footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 32px;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .footer-links a:hover { color: var(--text); }
+
+        .footer-copy {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .nav { padding: 12px 16px; }
+            .nav-links { display: none; }
+            .blog-hero { padding: 100px 16px 48px; }
+            .blog-hero p { font-size: 16px; }
+            .blog-section { padding: 0 16px 64px; }
+            .blog-grid { grid-template-columns: 1fr; gap: 20px; }
+            .article-card:nth-child(5) {
+                grid-column: auto;
+                max-width: 100%;
+                justify-self: auto;
+            }
+            .article-thumbnail { height: 160px; }
+            .article-body { padding: 20px; }
+            .article-title { font-size: 18px; }
+            .cta-box { padding: 40px 24px; }
+            .blog-cta { margin-bottom: 64px; }
+        }
+
+        @media (max-width: 480px) {
+            .blog-hero h1 { font-size: 24px; }
+            .article-thumbnail { height: 140px; }
+        }
+
+        /* ---- Scroll animations ---- */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Staggered animation */
+        .article-card:nth-child(1) { transition-delay: 0s; }
+        .article-card:nth-child(2) { transition-delay: 0.1s; }
+        .article-card:nth-child(3) { transition-delay: 0.2s; }
+        .article-card:nth-child(4) { transition-delay: 0.3s; }
+        .article-card:nth-child(5) { transition-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <a href="landing.html" class="nav-brand">FreyAI Visions</a>
+        <div class="nav-links">
+            <a href="landing.html#features">Funktionen</a>
+            <a href="landing.html#pricing">Preise</a>
+            <a href="blog.html" class="active">Blog</a>
+            <a href="booking.html" class="btn btn-success">Kostenlose Beratung</a>
+        </div>
+    </nav>
+
+    <!-- Blog Hero -->
+    <section class="blog-hero">
+        <span class="blog-hero-label">Blog</span>
+        <h1>
+            Wissen &amp; Insights f&uuml;r<br>
+            <span class="gradient">Handwerksbetriebe</span>
+        </h1>
+        <p>Praxiswissen zu Digitalisierung, KI und Automatisierung im Handwerk &ndash; direkt anwendbar f&uuml;r Betriebe mit 5&ndash;10 Mitarbeitern.</p>
+    </section>
+
+    <!-- Blog Grid -->
+    <section class="blog-section">
+        <div class="blog-grid">
+
+            <!-- Article 1: E-Rechnung -->
+            <a href="articles/e-rechnung-handwerk-pflicht-2027.html" class="article-card fade-in" style="text-decoration:none;color:inherit;">
+                <div class="article-thumbnail">
+                    <div class="thumbnail-pattern"></div>
+                    <div class="thumbnail-icon">&#x1F4C4;</div>
+                </div>
+                <div class="article-body">
+                    <div class="article-meta">
+                        <span class="article-category cat-compliance">Compliance</span>
+                        <span class="article-reading-time">8 Min. Lesezeit</span>
+                    </div>
+                    <h2 class="article-title">E-Rechnung im Handwerk: Was Sie bis 2027 umsetzen m&uuml;ssen</h2>
+                    <p class="article-excerpt">Die E-Rechnungspflicht betrifft jeden Handwerksbetrieb. Erfahren Sie, welche Fristen gelten, welche Formate vorgeschrieben sind und wie Sie die Umstellung ohne Stress meistern.</p>
+                    <span class="article-link">Weiterlesen <span class="article-link-arrow">&rarr;</span></span>
+                </div>
+            </a>
+
+            <!-- Article 2: Software Vergleich -->
+            <a href="articles/handwerker-software-vergleich-2026.html" class="article-card fade-in" style="text-decoration:none;color:inherit;">
+                <div class="article-thumbnail">
+                    <div class="thumbnail-pattern"></div>
+                    <div class="thumbnail-icon">&#x1F4BB;</div>
+                </div>
+                <div class="article-body">
+                    <div class="article-meta">
+                        <span class="article-category cat-software">Software</span>
+                        <span class="article-reading-time">10 Min. Lesezeit</span>
+                    </div>
+                    <h2 class="article-title">Handwerker Software Vergleich 2026: Warum Einzell&ouml;sungen Sie mehr kosten</h2>
+                    <p class="article-excerpt">Lexware, SHK-Branchensoftware oder doch eine All-in-One-L&ouml;sung? Wir vergleichen die g&auml;ngigen Handwerker-Tools und zeigen, warum viele Betriebe mit Insell&ouml;sungen draufzahlen.</p>
+                    <span class="article-link">Weiterlesen <span class="article-link-arrow">&rarr;</span></span>
+                </div>
+            </a>
+
+            <!-- Article 3: DATEV Schnittstelle -->
+            <a href="articles/datev-schnittstelle-handwerker.html" class="article-card fade-in" style="text-decoration:none;color:inherit;">
+                <div class="article-thumbnail">
+                    <div class="thumbnail-pattern"></div>
+                    <div class="thumbnail-icon">&#x1F4CA;</div>
+                </div>
+                <div class="article-body">
+                    <div class="article-meta">
+                        <span class="article-category cat-integration">Integration</span>
+                        <span class="article-reading-time">7 Min. Lesezeit</span>
+                    </div>
+                    <h2 class="article-title">DATEV-Schnittstelle f&uuml;r Handwerker: Zusammenarbeit mit dem Steuerberater</h2>
+                    <p class="article-excerpt">Schluss mit USB-Sticks und Excel-Listen f&uuml;r den Steuerberater. So funktioniert der digitale DATEV-Export und warum er Ihnen bares Geld spart.</p>
+                    <span class="article-link">Weiterlesen <span class="article-link-arrow">&rarr;</span></span>
+                </div>
+            </a>
+
+            <!-- Article 4: Zettelwirtschaft -->
+            <a href="articles/zettelwirtschaft-handwerk-digital.html" class="article-card fade-in" style="text-decoration:none;color:inherit;">
+                <div class="article-thumbnail">
+                    <div class="thumbnail-pattern"></div>
+                    <div class="thumbnail-icon">&#x1F4F1;</div>
+                </div>
+                <div class="article-body">
+                    <div class="article-meta">
+                        <span class="article-category cat-digitalisierung">Digitalisierung</span>
+                        <span class="article-reading-time">6 Min. Lesezeit</span>
+                    </div>
+                    <h2 class="article-title">Schluss mit Zettelwirtschaft: In 4 Wochen komplett digital</h2>
+                    <p class="article-excerpt">Der praktische Fahrplan f&uuml;r die Digitalisierung Ihres Handwerksbetriebs. Woche f&uuml;r Woche &ndash; ohne Technikstudium, ohne Betriebsunterbrechung.</p>
+                    <span class="article-link">Weiterlesen <span class="article-link-arrow">&rarr;</span></span>
+                </div>
+            </a>
+
+            <!-- Article 5: KI im Handwerk -->
+            <a href="articles/ki-im-handwerk-2026.html" class="article-card fade-in" style="text-decoration:none;color:inherit;">
+                <div class="article-thumbnail">
+                    <div class="thumbnail-pattern"></div>
+                    <div class="thumbnail-icon">&#x1F916;</div>
+                </div>
+                <div class="article-body">
+                    <div class="article-meta">
+                        <span class="article-category cat-ki">KI &amp; Innovation</span>
+                        <span class="article-reading-time">9 Min. Lesezeit</span>
+                    </div>
+                    <h2 class="article-title">KI im Handwerk 2026: 7 Wege, wie KI Ihrem Betrieb 2 Stunden B&uuml;roarbeit spart</h2>
+                    <p class="article-excerpt">K&uuml;nstliche Intelligenz ist kein Zukunftstraum mehr. Diese 7 konkreten Anwendungen sparen Handwerksbetrieben schon heute t&auml;glich Zeit bei Angeboten, Rechnungen und Kundenkommunikation.</p>
+                    <span class="article-link">Weiterlesen <span class="article-link-arrow">&rarr;</span></span>
+                </div>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="blog-cta fade-in">
+        <div class="cta-box">
+            <h2>Bereit f&uuml;r die Digitalisierung?</h2>
+            <p>Lassen Sie sich unverbindlich beraten, wie FreyAI Visions Ihren Betrieb auf das n&auml;chste Level bringt.</p>
+            <a href="booking.html" class="btn btn-primary btn-large">Kostenlose Erstberatung buchen</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="booking.html">Termin buchen</a>
+            <a href="mailto:info@freyaivisions.de">Kontakt</a>
+            <a href="impressum.html">Impressum</a>
+            <a href="datenschutz.html">Datenschutz</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 FreyAI Visions &mdash; Jonas Frey &middot; Premium-Digitalisierung f&uuml;r Handwerksbetriebe &middot; Made in Germany</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
