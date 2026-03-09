@@ -10,7 +10,7 @@ import { dbService } from './db-service.js';
 const PACKAGE_CONFIG = {
     S: {
         name: 'Sichtbar werden',
-        price_cents: 49000,
+        price_cents: 99000,
         posts_per_week: 3,
         total_posts: 36,
         platforms: ['instagram'],
@@ -21,7 +21,7 @@ const PACKAGE_CONFIG = {
     },
     M: {
         name: 'Lokal dominieren',
-        price_cents: 89000,
+        price_cents: 179000,
         posts_per_week: 4,
         total_posts: 48,
         stories: 12,
@@ -33,7 +33,7 @@ const PACKAGE_CONFIG = {
     },
     L: {
         name: 'Premium-Präsenz',
-        price_cents: 149000,
+        price_cents: 299000,
         posts_per_week: 4,
         total_posts: 48,
         stories: 12,
@@ -88,7 +88,7 @@ class MarketingCampaignService {
             posting_times: POSTING_TIMES,
             starts_at: startsAt.toISOString().split('T')[0],
             ends_at: endsAt.toISOString().split('T')[0],
-            price_cents: pkg.price_cents
+            price_cents: data.promo_price_cents || pkg.price_cents
         };
 
         const result = await dbService.supabase
