@@ -44,7 +44,7 @@ Der Kunde liefert einmal seine Daten (Logo, Fotos, Texte, USPs) — der Rest lä
 
 ## Pakete & Preise
 
-### Paket S — "Sichtbar werden" (490 EUR einmalig)
+### Paket S — "Sichtbar werden" (990 EUR = 330 EUR/Monat)
 
 - **36 Posts** (3x/Woche, 12 Wochen)
 - 1 Plattform (Instagram ODER Facebook)
@@ -53,7 +53,7 @@ Der Kunde liefert einmal seine Daten (Logo, Fotos, Texte, USPs) — der Rest lä
 - Monatlicher Performance-Report (automatisch)
 - **Nach 3 Monaten**: Reposting-Modus (Evergreen-Posts wiederholen)
 
-### Paket M — "Lokal dominieren" (890 EUR einmalig)
+### Paket M — "Lokal dominieren" (1.790 EUR = 597 EUR/Monat) — EMPFOHLEN
 
 - **48 Posts** (4x/Woche, 12 Wochen)
 - 2 Plattformen (Instagram + Facebook)
@@ -63,7 +63,7 @@ Der Kunde liefert einmal seine Daten (Logo, Fotos, Texte, USPs) — der Rest lä
 - Monatlicher Performance-Report (automatisch)
 - **Nach 3 Monaten**: Reposting-Modus
 
-### Paket L — "Premium-Präsenz" (1.490 EUR einmalig)
+### Paket L — "Premium-Präsenz" (2.990 EUR = 997 EUR/Monat)
 
 - **48 Posts + 12 Stories + 4 Reel-Cover** (4x/Woche, 12 Wochen)
 - 3 Plattformen (Instagram + Facebook + LinkedIn/Google)
@@ -78,10 +78,10 @@ Der Kunde liefert einmal seine Daten (Logo, Fotos, Texte, USPs) — der Rest lä
 
 | Add-On | Preis | Beschreibung |
 |--------|-------|-------------|
-| Zusätzliche Plattform | +150 EUR | LinkedIn, Pinterest, TikTok |
-| Bezahlte Ads Management | +290 EUR/Monat | Meta Ads, 50-200 EUR Ad-Budget extra |
-| Content-Refresh (nach 3M) | 390 EUR | 24 neue Posts statt Reposting |
-| Reel-Produktion (4 Stück) | 490 EUR | Wir filmen + editieren vor Ort |
+| Zusätzliche Plattform | +290 EUR | LinkedIn, Pinterest, TikTok |
+| Bezahlte Ads Management | +490 EUR/Monat | Meta Ads, 50-200 EUR Ad-Budget extra |
+| Content-Refresh (nach 3M) | 790 EUR | 24 neue Posts statt Reposting |
+| Reel-Produktion (4 Stück) | 890 EUR | Wir filmen + editieren vor Ort |
 
 ---
 
@@ -210,21 +210,29 @@ Onboarding Form (App)
 | Supabase + Service-Code | ~10 Std | 0 |
 | **Pro Kunde Onboarding** | — | **~2 Std** |
 
+### Markt-Kontext (Empirische Daten)
+
+- Agenturpreise DE: 1.200-5.000 EUR/Monat (Agenturfinder, Shapefruit, Dreikon)
+- Freelancer DE: 400-900 EUR/Monat
+- Handwerker Marketing-Budget (GfK): ~500 EUR/Monat (Kleinstunternehmen)
+- 43% der Handwerker nutzen bereits externe Dienstleister (Bitkom)
+- Opportunitätskosten Meister: 60-90 EUR/Std x 15 Std/Mo = 900-1.350 EUR/Mo
+
 ### Einnahmen-Szenario (konservativ)
 
 | Monat | Neue Kunden | Paket-Mix | Umsatz/Monat |
 |-------|-------------|-----------|-------------|
-| 1 | 3 | 1x S + 1x M + 1x L | 2.870 EUR |
-| 2 | 3 | 1x S + 1x M + 1x L | 2.870 EUR |
-| 3 | 5 | 2x S + 2x M + 1x L | 4.260 EUR |
-| 4-6 | 5/Monat | Mix | ~4.500 EUR/Monat |
-| **6 Monate Total** | **24 Kunden** | — | **~22.000 EUR** |
+| 1 | 3 (davon 2 Lockangebote) | 2x Schnupper (490) + 1x M (1.790) | 2.770 EUR |
+| 2 | 3 | 1x S + 1x M + 1x L | 5.770 EUR |
+| 3 | 4 | 2x S + 1x M + 1x L | 6.770 EUR |
+| 4-6 | 4/Monat | Mix | ~7.000 EUR/Monat |
+| **6 Monate Total** | **20 Kunden** | — | **~42.000 EUR** |
 
 ### Stundensatz
 
-- 24 Kunden x 2 Std = 48 Std Arbeit
-- 22.000 EUR / 48 Std = **~458 EUR/Std effektiv**
-- Setup-Invest: ~45 Std (einmalig, amortisiert nach ~5 Kunden)
+- 20 Kunden x 2 Std = 40 Std Arbeit
+- 42.000 EUR / 40 Std = **~1.050 EUR/Std effektiv**
+- Setup-Invest: ~45 Std (einmalig, amortisiert nach ~3 Kunden)
 
 ### Reposting = Passive Income
 
