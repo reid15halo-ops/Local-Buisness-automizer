@@ -1,0 +1,560 @@
+{
+  "name": "Social Media Scheduler — FreyAI Marketing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6,11,16 * * *"
+            }
+          ]
+        }
+      },
+      "id": "node-trigger",
+      "name": "Check 3x Daily (06:00, 11:00, 16:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "status",
+                "condition": "in",
+                "value": "scheduled,approved"
+              }
+            },
+            {
+              "keyValue": {
+                "key": "scheduled_at",
+                "condition": "lte",
+                "value": "={{ $now.toISO() }}"
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "orderByField": "scheduled_at",
+          "orderByDirection": "ASC",
+          "limit": 20
+        }
+      },
+      "id": "node-fetch-due",
+      "name": "SELECT Due Posts",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length || 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "node-has-posts",
+      "name": "Has Due Posts?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 3,
+        "options": {}
+      },
+      "id": "node-batch",
+      "name": "Process 3 at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "id",
+                "condition": "equal",
+                "value": "={{ $json.campaign_id }}"
+              }
+            }
+          ]
+        }
+      },
+      "id": "node-fetch-campaign",
+      "name": "GET Campaign Data",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "post_id",
+              "value": "={{ $('Process 3 at a time').item.json.id }}"
+            },
+            {
+              "name": "platform",
+              "value": "={{ $('Process 3 at a time').item.json.platform }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Process 3 at a time').item.json.caption }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $('Process 3 at a time').item.json.image_url }}"
+            },
+            {
+              "name": "hashtags_text",
+              "value": "={{ ($('Process 3 at a time').item.json.hashtags || []).join(' ') }}"
+            },
+            {
+              "name": "full_caption",
+              "value": "={{ $('Process 3 at a time').item.json.caption }}\\n\\n{{ ($('Process 3 at a time').item.json.hashtags || []).join(' ') }}"
+            },
+            {
+              "name": "ig_user_id",
+              "value": "={{ $json[0].social_handles?.instagram_user_id || '' }}"
+            },
+            {
+              "name": "fb_page_id",
+              "value": "={{ $json[0].social_handles?.facebook_page_id || '' }}"
+            },
+            {
+              "name": "fb_access_token",
+              "value": "={{ $json[0].social_handles?.facebook_access_token || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-prepare",
+      "name": "Prepare Post Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "instagram",
+              "value": "instagram",
+              "value2": "={{ $json.platform }}"
+            },
+            {
+              "outputKey": "facebook",
+              "value": "facebook",
+              "value2": "={{ $json.platform }}"
+            },
+            {
+              "outputKey": "google_business",
+              "value": "google_business",
+              "value2": "={{ $json.platform }}"
+            },
+            {
+              "outputKey": "linkedin",
+              "value": "linkedin",
+              "value2": "={{ $json.platform }}"
+            }
+          ]
+        }
+      },
+      "id": "node-switch-platform",
+      "name": "Route by Platform",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.ig_user_id }}/media",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $json.image_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.full_caption }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fb_access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-ig-create-container",
+      "name": "Instagram: Create Media Container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 60],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $('Prepare Post Data').item.json.ig_user_id }}/media_publish",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Prepare Post Data').item.json.fb_access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-ig-publish",
+      "name": "Instagram: Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2020, 60],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.fb_page_id }}/photos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.image_url }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.full_caption }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fb_access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-fb-post",
+      "name": "Facebook: Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://mybusiness.googleapis.com/v4/accounts/{{ $json.google_account_id }}/locations/{{ $json.google_location_id }}/localPosts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $json.google_access_token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "summary",
+              "value": "={{ $json.full_caption }}"
+            },
+            {
+              "name": "topicType",
+              "value": "STANDARD"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-google-post",
+      "name": "Google Business: Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 340],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/v2/ugcPosts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $json.linkedin_access_token }}"
+            },
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"author\": \"urn:li:organization:{{ $json.linkedin_org_id }}\",\n  \"lifecycleState\": \"PUBLISHED\",\n  \"specificContent\": {\n    \"com.linkedin.ugc.ShareContent\": {\n      \"shareCommentary\": {\n        \"text\": \"{{ $json.full_caption }}\"\n      },\n      \"shareMediaCategory\": \"IMAGE\",\n      \"media\": [{\n        \"status\": \"READY\",\n        \"originalUrl\": \"{{ $json.image_url }}\"\n      }]\n    }\n  },\n  \"visibility\": {\n    \"com.linkedin.ugc.MemberNetworkVisibility\": \"PUBLIC\"\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-linkedin-post",
+      "name": "LinkedIn: Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 480],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "marketing_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "id",
+                "condition": "equal",
+                "value": "={{ $('Prepare Post Data').item.json.post_id }}"
+              }
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "posted",
+            "posted_at": "={{ $now.toISO() }}",
+            "platform_post_id": "={{ $json.id || $json.post_id || '' }}"
+          }
+        }
+      },
+      "id": "node-update-posted",
+      "name": "UPDATE Post: status=posted",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2240, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.posted",
+            "target": "={{ $('Prepare Post Data').item.json.post_id }}",
+            "metadata": "={{ JSON.stringify({ platform: $('Prepare Post Data').item.json.platform, campaign_id: $('Process 3 at a time').item.json.campaign_id, platform_post_id: $json.id || '' }) }}"
+          }
+        }
+      },
+      "id": "node-log-success",
+      "name": "INSERT automation_log (posted)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2460, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.no_due_posts",
+            "target": "scheduler",
+            "metadata": "={{ JSON.stringify({ checked_at: $now.toISO() }) }}"
+          }
+        }
+      },
+      "id": "node-log-empty",
+      "name": "Log: No Due Posts",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.error",
+            "target": "={{ $('Prepare Post Data')?.item?.json?.post_id || 'unknown' }}",
+            "metadata": "={{ JSON.stringify({ error: $json.error || 'Unknown error', platform: $('Prepare Post Data')?.item?.json?.platform || '' }) }}"
+          }
+        }
+      },
+      "id": "node-error-handler",
+      "name": "Error Handler: Log to automation_log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2240, 480],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Check 3x Daily (06:00, 11:00, 16:00)": {
+      "main": [
+        [{ "node": "SELECT Due Posts", "type": "main", "index": 0 }]
+      ]
+    },
+    "SELECT Due Posts": {
+      "main": [
+        [{ "node": "Has Due Posts?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Due Posts?": {
+      "main": [
+        [{ "node": "Process 3 at a time", "type": "main", "index": 0 }],
+        [{ "node": "Log: No Due Posts", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process 3 at a time": {
+      "main": [
+        [{ "node": "GET Campaign Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "GET Campaign Data": {
+      "main": [
+        [{ "node": "Prepare Post Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Post Data": {
+      "main": [
+        [{ "node": "Route by Platform", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route by Platform": {
+      "main": [
+        [{ "node": "Instagram: Create Media Container", "type": "main", "index": 0 }],
+        [{ "node": "Facebook: Create Post", "type": "main", "index": 0 }],
+        [{ "node": "Google Business: Create Post", "type": "main", "index": 0 }],
+        [{ "node": "LinkedIn: Create Post", "type": "main", "index": 0 }]
+      ]
+    },
+    "Instagram: Create Media Container": {
+      "main": [
+        [{ "node": "Instagram: Publish", "type": "main", "index": 0 }]
+      ]
+    },
+    "Instagram: Publish": {
+      "main": [
+        [{ "node": "UPDATE Post: status=posted", "type": "main", "index": 0 }]
+      ]
+    },
+    "Facebook: Create Post": {
+      "main": [
+        [{ "node": "UPDATE Post: status=posted", "type": "main", "index": 0 }]
+      ]
+    },
+    "Google Business: Create Post": {
+      "main": [
+        [{ "node": "UPDATE Post: status=posted", "type": "main", "index": 0 }]
+      ]
+    },
+    "LinkedIn: Create Post": {
+      "main": [
+        [{ "node": "UPDATE Post: status=posted", "type": "main", "index": 0 }]
+      ]
+    },
+    "UPDATE Post: status=posted": {
+      "main": [
+        [{ "node": "INSERT automation_log (posted)", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [
+    { "name": "marketing" },
+    { "name": "social-media" },
+    { "name": "production" }
+  ]
+}
