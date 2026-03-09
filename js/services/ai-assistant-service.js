@@ -5,8 +5,8 @@
 
 class AiAssistantService {
     constructor() {
-        try { this.conversationHistory = JSON.parse(localStorage.getItem('freyai_ai_history') || '[]'); } catch { this.conversationHistory = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_ai_settings') || '{}'); } catch { this.settings = {}; }
+        this.conversationHistory = StorageUtils.getJSON('freyai_ai_history', [], { service: 'aiAssistantService' });
+        this.settings = StorageUtils.getJSON('freyai_ai_settings', {}, { service: 'aiAssistantService' });
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'de';}
@@ -180,7 +180,7 @@ class AiAssistantService {
 
     // Generate AI response using Gemini
     async generateAiResponse(question, data, analysis) {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'aiAssistantService' });
         const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
         const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
         const systemPrompt = `Du bist ein hilfreicher Business-Assistent für einen deutschen ${bizType} (${companyName}).
@@ -220,13 +220,13 @@ Antworte direkt und hilfreich:`;
         switch (analysis.intent) {
             case 'revenue':
                 const einnahmen = data.buchungen?.filter(b => b.typ === 'einnahme') || [];
-                const totalEinnahmen = einnahmen.reduce((sum, b) => sum + b.betrag, 0);
+                const totalEinnahmen = einnahmen.reduce((sum, b) => sum + (b.betrag || 0), 0);
                 answer = `Die Einnahmen betragen ${this.formatCurrency(totalEinnahmen)}.`;
                 break;
 
             case 'expenses':
                 const ausgaben = data.buchungen?.filter(b => b.typ === 'ausgabe') || [];
-                const totalAusgaben = ausgaben.reduce((sum, b) => sum + b.betrag, 0);
+                const totalAusgaben = ausgaben.reduce((sum, b) => sum + (b.betrag || 0), 0);
                 answer = `Die Ausgaben betragen ${this.formatCurrency(totalAusgaben)}.`;
                 break;
 
@@ -271,8 +271,8 @@ Antworte direkt und hilfreich:`;
                 break;
 
             case 'profit':
-                const ein = data.buchungen?.filter(b => b.typ === 'einnahme').reduce((s, b) => s + b.betrag, 0) || 0;
-                const aus = data.buchungen?.filter(b => b.typ === 'ausgabe').reduce((s, b) => s + b.betrag, 0) || 0;
+                const ein = data.buchungen?.filter(b => b.typ === 'einnahme').reduce((s, b) => s + (b.betrag || 0), 0) || 0;
+                const aus = data.buchungen?.filter(b => b.typ === 'ausgabe').reduce((s, b) => s + (b.betrag || 0), 0) || 0;
                 const profit = ein - aus;
                 answer = `Der Gewinn beträgt ${this.formatCurrency(profit)} (Einnahmen: ${this.formatCurrency(ein)}, Ausgaben: ${this.formatCurrency(aus)}).`;
                 break;

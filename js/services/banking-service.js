@@ -5,10 +5,10 @@
 
 class BankingService {
     constructor() {
-        try { this.accounts = JSON.parse(localStorage.getItem('freyai_bank_accounts') || '[]'); } catch { this.accounts = []; }
-        try { this.transactions = JSON.parse(localStorage.getItem('freyai_bank_transactions') || '[]'); } catch { this.transactions = []; }
-        try { this.matchedPayments = JSON.parse(localStorage.getItem('freyai_matched_payments') || '[]'); } catch { this.matchedPayments = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_banking_settings') || '{}'); } catch { this.settings = {}; }
+        this.accounts = StorageUtils.getJSON('freyai_bank_accounts', [], { financial: true, service: 'bankingService' });
+        this.transactions = StorageUtils.getJSON('freyai_bank_transactions', [], { financial: true, service: 'bankingService' });
+        this.matchedPayments = StorageUtils.getJSON('freyai_matched_payments', [], { financial: true, service: 'bankingService' });
+        this.settings = StorageUtils.getJSON('freyai_banking_settings', {}, { financial: true, service: 'bankingService' });
 
         // Demo bank data
         this.demoBanks = [
@@ -347,8 +347,8 @@ class BankingService {
         const accounts = this.accounts;
         const transactions = this.transactions;
 
-        const totalCredits = transactions.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0);
-        const totalDebits = transactions.filter(t => t.type === 'debit').reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        const totalCredits = transactions.filter(t => t.type === 'credit').reduce((sum, t) => sum + (t.amount || 0), 0);
+        const totalDebits = transactions.filter(t => t.type === 'debit').reduce((sum, t) => sum + Math.abs(t.amount || 0), 0);
         const matchedCount = transactions.filter(t => t.matched).length;
         const unmatchedCredits = transactions.filter(t => t.type === 'credit' && !t.matched);
 
@@ -360,7 +360,7 @@ class BankingService {
             totalDebits,
             matchedCount,
             unmatchedCreditsCount: unmatchedCredits.length,
-            unmatchedCreditsAmount: unmatchedCredits.reduce((sum, t) => sum + t.amount, 0),
+            unmatchedCreditsAmount: unmatchedCredits.reduce((sum, t) => sum + (t.amount || 0), 0),
             lastSync: accounts.length > 0 ? accounts.reduce((latest, a) =>
                 a.lastSync > latest ? a.lastSync : latest, accounts[0].lastSync) : null
         };
@@ -370,7 +370,7 @@ class BankingService {
     calculateBalance(accountId) {
         return this.transactions
             .filter(t => t.accountId === accountId)
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + (t.amount || 0), 0);
     }
 
     // Get transactions with filters
@@ -404,7 +404,7 @@ class BankingService {
             );
         }
 
-        return txs.sort((a, b) => new Date(b.date) - new Date(a.date));
+        return txs.sort((a, b) => (StorageUtils.safeDate(b.date) || 0) - (StorageUtils.safeDate(a.date) || 0));
     }
 
     // Get category labels
@@ -435,19 +435,17 @@ class BankingService {
     }
 
     // Persistence
-    saveAccounts() { this._safeSetItem('freyai_bank_accounts', this.accounts); }
-    saveTransactions() { this._safeSetItem('freyai_bank_transactions', this.transactions); }
-    saveMatchedPayments() { this._safeSetItem('freyai_matched_payments', this.matchedPayments); }
-
-    _safeSetItem(key, data) {
-        try {
-            localStorage.setItem(key, JSON.stringify(data));
-        } catch (e) {
-            if (e.name === 'QuotaExceededError' || e.code === 22) {
-                console.warn('localStorage quota exceeded for', key);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
-            }
-        }
+    saveAccounts() {
+        const ok = StorageUtils.setJSON('freyai_bank_accounts', this.accounts, { service: 'BankingService' });
+        if (!ok) { console.error('[BankingService] CRITICAL: Failed to save bank accounts — GoBD write failure'); }
+    }
+    saveTransactions() {
+        const ok = StorageUtils.setJSON('freyai_bank_transactions', this.transactions, { service: 'BankingService' });
+        if (!ok) { console.error('[BankingService] CRITICAL: Failed to save bank transactions — GoBD write failure'); }
+    }
+    saveMatchedPayments() {
+        const ok = StorageUtils.setJSON('freyai_matched_payments', this.matchedPayments, { service: 'BankingService' });
+        if (!ok) { console.error('[BankingService] CRITICAL: Failed to save matched payments — GoBD write failure'); }
     }
 }
 

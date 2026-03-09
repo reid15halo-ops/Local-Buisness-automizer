@@ -412,7 +412,7 @@ class ReorderEngineService {
      * @private
      */
     _logReorderActivity(auditEntry) {
-        let log; try { log = JSON.parse(localStorage.getItem('reorder_activity_log') || '[]'); } catch { log = []; }
+        let log = StorageUtils.getJSON('reorder_activity_log', [], { service: 'reorderEngineService' });
         log.push(auditEntry);
 
         // Keep only last 1000 entries
@@ -428,7 +428,7 @@ class ReorderEngineService {
      * @private
      */
     _logPOCreated(po, materials) {
-        let log; try { log = JSON.parse(localStorage.getItem('reorder_po_log') || '[]'); } catch { log = []; }
+        let log = StorageUtils.getJSON('reorder_po_log', [], { service: 'reorderEngineService' });
         log.push({
             timestamp: new Date().toISOString(),
             poId: po.id,
@@ -453,7 +453,7 @@ class ReorderEngineService {
      * @returns {Array} Activity log entries
      */
     getActivityLog(filters = {}) {
-        let log; try { log = JSON.parse(localStorage.getItem('reorder_activity_log') || '[]'); } catch { log = []; }
+        let log = StorageUtils.getJSON('reorder_activity_log', [], { service: 'reorderEngineService' });
 
         return log.filter(entry => {
             if (filters.startDate && new Date(entry.timestamp) < new Date(filters.startDate)) {return false;}
@@ -467,7 +467,7 @@ class ReorderEngineService {
      * @returns {Array} PO creation log entries
      */
     getPOLog() {
-        try { return JSON.parse(localStorage.getItem('reorder_po_log') || '[]').reverse(); } catch { return []; }
+        return StorageUtils.getJSON('reorder_po_log', [], { service: 'reorderEngineService' }).reverse();
     }
 
     /**

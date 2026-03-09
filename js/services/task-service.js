@@ -4,8 +4,8 @@
 
 class TaskService {
     constructor() {
-        try { this.tasks = JSON.parse(localStorage.getItem('freyai_tasks') || '[]'); } catch { this.tasks = []; }
-        try { this.recurringTasks = JSON.parse(localStorage.getItem('freyai_recurring_tasks') || '[]'); } catch { this.recurringTasks = []; }
+        this.tasks = StorageUtils.getJSON('freyai_tasks', [], { service: 'taskService' });
+        this.recurringTasks = StorageUtils.getJSON('freyai_recurring_tasks', [], { service: 'taskService' });
         // NOTE: processRecurringTasks() removed here — recurring-task-service.js is the single owner
     }
 

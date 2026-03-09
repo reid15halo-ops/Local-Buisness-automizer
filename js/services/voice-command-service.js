@@ -8,8 +8,8 @@ class VoiceCommandService {
         this.isListening = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_voice_settings') || '{}'); } catch { this.settings = {}; }
-        try { this.commandHistory = JSON.parse(localStorage.getItem('freyai_voice_history') || '[]'); } catch { this.commandHistory = []; }
+        this.settings = StorageUtils.getJSON('freyai_voice_settings', {}, { service: 'voiceCommandService' });
+        this.commandHistory = StorageUtils.getJSON('freyai_voice_history', [], { service: 'voiceCommandService' });
 
         // Default settings
         if (!this.settings.language) {this.settings.language = 'de-DE';}

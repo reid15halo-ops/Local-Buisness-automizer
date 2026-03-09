@@ -5,9 +5,9 @@
 
 class PrintDigitalService {
     constructor() {
-        try { this.printQueue = JSON.parse(localStorage.getItem('freyai_print_queue') || '[]'); } catch { this.printQueue = []; }
-        try { this.faxInbox = JSON.parse(localStorage.getItem('freyai_fax_inbox') || '[]'); } catch { this.faxInbox = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_print_settings') || '{}'); } catch { this.settings = {}; }
+        this.printQueue = StorageUtils.getJSON('freyai_print_queue', [], { service: 'printDigitalService' });
+        this.faxInbox = StorageUtils.getJSON('freyai_fax_inbox', [], { service: 'printDigitalService' });
+        this.settings = StorageUtils.getJSON('freyai_print_settings', {}, { service: 'printDigitalService' });
 
         // Default settings
         if (!this.settings.preferDigital) {this.settings.preferDigital = true;}

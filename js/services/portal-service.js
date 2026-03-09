@@ -110,7 +110,7 @@ class PortalService {
         const { url } = await this.generateToken(kundeId);
 
         // Get firma name
-        const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'portalService' });
         const firmaName = ap.company_name || window.storeService?.state?.settings?.companyName || 'Ihr Dienstleister';
 
         // Send via email service (Supabase Edge Function)

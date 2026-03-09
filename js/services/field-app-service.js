@@ -874,17 +874,17 @@ class FieldAppService {
 
     load() {
         try {
-            try { this.timeEntries = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'time_entries') || '[]'); } catch { this.timeEntries = []; }
-            try { this.materialLogs = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'material_logs') || '[]'); } catch { this.materialLogs = []; }
-            try { this.voiceNotes = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'voice_notes') || '[]'); } catch { this.voiceNotes = []; }
-            try { this.signatures = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'signatures') || '[]'); } catch { this.signatures = []; }
-            try { this.gpsCheckins = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'gps_checkins') || '[]'); } catch { this.gpsCheckins = []; }
-            try { this.offlineQueue = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'offline_queue') || '[]'); } catch { this.offlineQueue = []; }
+            this.timeEntries = StorageUtils.getJSON(this.STORAGE_PREFIX + 'time_entries', [], { service: 'fieldAppService' });
+            this.materialLogs = StorageUtils.getJSON(this.STORAGE_PREFIX + 'material_logs', [], { service: 'fieldAppService' });
+            this.voiceNotes = StorageUtils.getJSON(this.STORAGE_PREFIX + 'voice_notes', [], { service: 'fieldAppService' });
+            this.signatures = StorageUtils.getJSON(this.STORAGE_PREFIX + 'signatures', [], { service: 'fieldAppService' });
+            this.gpsCheckins = StorageUtils.getJSON(this.STORAGE_PREFIX + 'gps_checkins', [], { service: 'fieldAppService' });
+            this.offlineQueue = StorageUtils.getJSON(this.STORAGE_PREFIX + 'offline_queue', [], { service: 'fieldAppService' });
 
             this._loadPhotos();
 
             // Restore field mode state
-            try { this.isFieldMode = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'mode') || 'false'); } catch { this.isFieldMode = 'false'; }
+            this.isFieldMode = StorageUtils.getJSON(this.STORAGE_PREFIX + 'mode', false, { service: 'fieldAppService' });
         } catch (error) {
             console.error('Fehler beim Laden der Felddaten:', error);
         }
@@ -914,7 +914,7 @@ class FieldAppService {
 
     _loadPhotos() {
         try {
-            let photoMeta; try { photoMeta = JSON.parse(localStorage.getItem(this.STORAGE_PREFIX + 'photo_meta') || '[]'); } catch { photoMeta = []; }
+            let photoMeta = StorageUtils.getJSON(this.STORAGE_PREFIX + 'photo_meta', [], { service: 'fieldAppService' });
             this.photoCaptures = photoMeta.map(meta => {
                 const dataUrl = localStorage.getItem(this.STORAGE_PREFIX + 'photo_data_' + meta.id);
                 return { ...meta, dataUrl: dataUrl || '' };

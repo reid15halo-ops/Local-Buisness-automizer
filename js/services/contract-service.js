@@ -5,8 +5,8 @@
 
 class ContractService {
     constructor() {
-        try { this.contracts = JSON.parse(localStorage.getItem('freyai_contracts') || '[]'); } catch { this.contracts = []; }
-        try { this.invoiceHistory = JSON.parse(localStorage.getItem('freyai_contract_invoices') || '[]'); } catch { this.invoiceHistory = []; }
+        this.contracts = StorageUtils.getJSON('freyai_contracts', [], { service: 'contractService' });
+        this.invoiceHistory = StorageUtils.getJSON('freyai_contract_invoices', [], { service: 'contractService' });
 
         // Contract templates
         this.templates = [
@@ -109,7 +109,7 @@ class ContractService {
 
     // Calculate next invoice date
     calculateNextInvoiceDate(fromDate, interval) {
-        const date = new Date(fromDate);
+        const date = StorageUtils.safeDate(fromDate) || new Date();
 
         switch (interval) {
             case 'monthly':
@@ -276,9 +276,13 @@ class ContractService {
             contract.endDate = newEndDate;
         } else if (contract.endDate) {
             // Extend by original duration
-            const originalDuration = new Date(contract.endDate) - new Date(contract.startDate);
-            contract.endDate = new Date(new Date(contract.endDate).getTime() + originalDuration)
-                .toISOString().split('T')[0];
+            const endD = StorageUtils.safeDate(contract.endDate);
+            const startD = StorageUtils.safeDate(contract.startDate);
+            if (endD && startD) {
+                const originalDuration = endD - startD;
+                contract.endDate = new Date(endD.getTime() + originalDuration)
+                    .toISOString().split('T')[0];
+            }
         }
 
         contract.status = 'active';
@@ -317,7 +321,7 @@ class ContractService {
             contracts = contracts.filter(c => c.interval === filters.interval);
         }
 
-        return contracts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return contracts.sort((a, b) => (StorageUtils.safeDate(b.createdAt) || 0) - (StorageUtils.safeDate(a.createdAt) || 0));
     }
 
     // Get contract by ID
@@ -356,30 +360,27 @@ class ContractService {
             activeContracts: active.length,
             monthlyRecurringRevenue: monthlyRecurring,
             annualRecurringRevenue: monthlyRecurring * 12,
-            totalContractValue: active.reduce((sum, c) => sum + c.amount, 0),
+            totalContractValue: active.reduce((sum, c) => sum + (c.amount || 0), 0),
             expiringThisMonth: this.getExpiringContracts(30).length
         };
     }
 
     // Helper: Add days to date
     addDays(dateStr, days) {
-        const date = new Date(dateStr);
+        const date = StorageUtils.safeDate(dateStr) || new Date();
         date.setDate(date.getDate() + days);
         return date.toISOString().split('T')[0];
     }
 
     // Persistence
-    save() { this._safeSetItem('freyai_contracts', this.contracts); }
-    saveInvoiceHistory() { this._safeSetItem('freyai_contract_invoices', this.invoiceHistory); }
-
-    _safeSetItem(key, data) {
-        try {
-            localStorage.setItem(key, JSON.stringify(data));
-        } catch (e) {
-            if (e.name === 'QuotaExceededError' || e.code === 22) {
-                console.warn('localStorage quota exceeded for', key);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
-            }
+    save() {
+        if (!StorageUtils.setJSON('freyai_contracts', this.contracts, { service: 'contractService' })) {
+            console.error('[ContractService] CRITICAL: Failed to persist contracts');
+        }
+    }
+    saveInvoiceHistory() {
+        if (!StorageUtils.setJSON('freyai_contract_invoices', this.invoiceHistory, { service: 'contractService' })) {
+            console.error('[ContractService] CRITICAL: Failed to persist invoice history');
         }
     }
 }

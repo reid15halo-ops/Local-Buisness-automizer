@@ -12,9 +12,9 @@ class WhatsAppService {
         this.SETTINGS_KEY = 'freyai_whatsapp_settings';
 
         this.config = this._loadConfig();
-        try { this.conversations = JSON.parse(localStorage.getItem(this.CONVERSATIONS_KEY) || '{}'); } catch { this.conversations = {}; }
-        try { this.messageLog = JSON.parse(localStorage.getItem(this.MESSAGES_KEY) || '[]'); } catch { this.messageLog = []; }
-        try { this.settings = JSON.parse(localStorage.getItem(this.SETTINGS_KEY) || '{}'); } catch { this.settings = {}; }
+        this.conversations = StorageUtils.getJSON(this.CONVERSATIONS_KEY, {}, { service: 'whatsappService' });
+        this.messageLog = StorageUtils.getJSON(this.MESSAGES_KEY, [], { service: 'whatsappService' });
+        this.settings = StorageUtils.getJSON(this.SETTINGS_KEY, {}, { service: 'whatsappService' });
 
         // Rate limiting
         this._rateLimitQueue = [];
@@ -77,7 +77,7 @@ class WhatsAppService {
     // =====================================================
 
     _loadConfig() {
-        let stored; try { stored = JSON.parse(localStorage.getItem('freyai_whatsapp_config') || 'null'); } catch { stored = null; }
+        let stored = StorageUtils.getJSON('freyai_whatsapp_config', null, { service: 'whatsappService' });
         return stored || {
             apiUrl: window.APP_CONFIG?.WHATSAPP_API_URL || 'https://wa.freyaivisions.de',
             apiKey: window.APP_CONFIG?.WHATSAPP_API_KEY || '',
@@ -1180,7 +1180,7 @@ class WhatsAppService {
      */
     _getBusinessName() {
         if (this.config.businessName) { return this.config.businessName; }
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'whatsappService' });
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 
@@ -1188,7 +1188,7 @@ class WhatsAppService {
      * Get business phone from admin settings
      */
     _getBusinessPhone() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'whatsappService' });
         return ap.company_phone || window.storeService?.state?.settings?.phone || '';
     }
 

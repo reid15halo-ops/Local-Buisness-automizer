@@ -5,9 +5,9 @@
 
 class SecurityBackupService {
     constructor() {
-        try { this.backups = JSON.parse(localStorage.getItem('freyai_backup_log') || '[]'); } catch { this.backups = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_security_settings') || '{}'); } catch { this.settings = {}; }
-        try { this.activityLog = JSON.parse(localStorage.getItem('freyai_activity_log') || '[]'); } catch { this.activityLog = []; }
+        this.backups = StorageUtils.getJSON('freyai_backup_log', [], { service: 'securityBackupService' });
+        this.settings = StorageUtils.getJSON('freyai_security_settings', {}, { service: 'securityBackupService' });
+        this.activityLog = StorageUtils.getJSON('freyai_activity_log', [], { service: 'securityBackupService' });
 
         // Default settings
         if (!this.settings.autoBackup) {this.settings.autoBackup = true;}
@@ -302,8 +302,8 @@ class SecurityBackupService {
             data: JSON.stringify(data)
         };
 
-        let existingAutoBackups;
-        try { existingAutoBackups = JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { existingAutoBackups = []; }
+        // Store in IndexedDB if available, otherwise localStorage
+        let existingAutoBackups = StorageUtils.getJSON('freyai_auto_backups', [], { service: 'securityBackupService' });
         existingAutoBackups.push(backup);
 
         // Keep only last auto-backup to prevent quota exhaustion
@@ -324,7 +324,7 @@ class SecurityBackupService {
 
     // Get auto backups
     getAutoBackups() {
-        try { return JSON.parse(localStorage.getItem('freyai_auto_backups') || '[]'); } catch { return []; }
+        return StorageUtils.getJSON('freyai_auto_backups', [], { service: 'securityBackupService' });
     }
 
     // =====================================================
@@ -401,7 +401,7 @@ class SecurityBackupService {
 
         // 1. Delete from localStorage
         keysToCheck.forEach(key => {
-            let data; try { data = JSON.parse(localStorage.getItem(key) || '[]'); } catch { data = []; }
+            let data = StorageUtils.getJSON(key, [], { service: 'securityBackupService' });
             if (Array.isArray(data)) {
                 const filtered = data.filter(item =>
                     item.id !== customerId &&

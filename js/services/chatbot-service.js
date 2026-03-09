@@ -5,9 +5,9 @@
 
 class ChatbotService {
     constructor() {
-        try { this.conversations = JSON.parse(localStorage.getItem('freyai_chatbot_conversations') || '[]'); } catch { this.conversations = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_chatbot_settings') || '{}'); } catch { this.settings = {}; }
-        try { this.messageQueue = JSON.parse(localStorage.getItem('freyai_chatbot_queue') || '[]'); } catch { this.messageQueue = []; }
+        this.conversations = StorageUtils.getJSON('freyai_chatbot_conversations', [], { service: 'chatbotService' });
+        this.settings = StorageUtils.getJSON('freyai_chatbot_settings', {}, { service: 'chatbotService' });
+        this.messageQueue = StorageUtils.getJSON('freyai_chatbot_queue', [], { service: 'chatbotService' });
         this.kb = this.initKnowledgeBase();
 
         // Default settings
@@ -186,7 +186,7 @@ class ChatbotService {
     }
 
     _loadCompanyInfo() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'chatbotService' });
         const bd = window.eInvoiceService?.settings?.businessData || {};
         const name = ap.company_name || bd.name || 'FreyAI Visions';
         const street = ap.address_street || bd.street || '';

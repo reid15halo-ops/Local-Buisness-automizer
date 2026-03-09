@@ -10,7 +10,8 @@
 class GeminiService {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
+        this.isConfigured = !!apiKey;
         this.useProxy = false;
         this.proxyUrl = null;
 
@@ -339,12 +340,12 @@ ${companyName}`
     }
 
     _getBusinessType() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'geminiService' });
         return ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
     }
 
     _getCompanyName() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'geminiService' });
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 }

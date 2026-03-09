@@ -5,7 +5,7 @@
 
 class DocumentService {
     constructor() {
-        try { this.documents = JSON.parse(localStorage.getItem('freyai_documents') || '[]'); } catch { this.documents = []; }
+        this.documents = StorageUtils.getJSON('freyai_documents', [], { service: 'documentService' });
         this.categories = ['rechnung', 'quittung', 'vertrag', 'angebot', 'lieferschein', 'sonstiges'];
         this.ocrLibLoaded = false;
     }

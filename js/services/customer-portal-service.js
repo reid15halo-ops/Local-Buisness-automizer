@@ -586,6 +586,7 @@ class CustomerPortalService {
      * @private
      */
     _getCompanyInfo() {
+        let adminSettings = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'customerPortalService' });
         const storeSettings = window.storeService?.state?.settings || {};
 
         return {

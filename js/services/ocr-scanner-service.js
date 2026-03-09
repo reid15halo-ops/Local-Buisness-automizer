@@ -5,8 +5,8 @@
 
 class OcrScannerService {
     constructor() {
-        try { this.scannedDocuments = JSON.parse(localStorage.getItem('freyai_scanned_docs') || '[]'); } catch { this.scannedDocuments = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_ocr_settings') || '{}'); } catch { this.settings = {}; }
+        this.scannedDocuments = StorageUtils.getJSON('freyai_scanned_docs', [], { service: 'ocrScannerService' });
+        this.settings = StorageUtils.getJSON('freyai_ocr_settings', {}, { service: 'ocrScannerService' });
         try { this._offlineQueue = JSON.parse(localStorage.getItem('freyai_scanned_docs_offline_queue') || '[]'); } catch { this._offlineQueue = []; }
 
         this._tenantId = 'a0000000-0000-0000-0000-000000000001';

@@ -282,7 +282,7 @@ Mit freundlichen Grüßen
             return 'Überdachung / Carport';
         }
 
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'emailAutomationService' });
         return (ap.business_type || 'Handwerks') + '-Projekt';
     }
 
@@ -343,7 +343,7 @@ Mit freundlichen Grüßen
      * Render template placeholders with actual data
      */
     renderTemplate(template, data = {}) {
-        const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'emailAutomationService' });
         const defaults = {
             'kunde.name': data.customerName || 'Kunde',
             'firma.name': ap.company_name || localStorage.getItem('freyai_company_name') || 'FreyAI Visions',

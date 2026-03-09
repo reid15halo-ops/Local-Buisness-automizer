@@ -15,7 +15,7 @@ class TrashService {
         this.UNDO_TIMEOUT = 10000; // 10 seconds to undo
         this.PURGE_DAYS = 30; // auto-purge after 30 days
         this.undoTimers = new Map();
-        try { this.trash = JSON.parse(localStorage.getItem(this.TRASH_KEY) || '[]'); } catch { this.trash = []; }
+        this.trash = StorageUtils.getJSON(this.TRASH_KEY, [], { service: 'trashService' });
     }
 
     /* ──────────────────────────────────────────
@@ -400,7 +400,7 @@ class TrashService {
 
     getCurrentUser() {
         try {
-            let profile; try { profile = JSON.parse(localStorage.getItem('freyai_company_profile') || '{}'); } catch { profile = {}; }
+            let profile = StorageUtils.getJSON('freyai_company_profile', {}, { service: 'trashService' });
             return profile.name || 'Unbekannt';
         } catch {
             return 'Unbekannt';

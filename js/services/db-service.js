@@ -896,7 +896,9 @@ class DBService {
 
         // Save locally
         await this._putLocalEntity('jobs_queue', job);
-        const localJob = { ...job, payload: JSON.parse(job.payload) };
+        let parsedPayload;
+        try { parsedPayload = JSON.parse(job.payload); } catch { parsedPayload = job.payload; }
+        const localJob = { ...job, payload: parsedPayload };
         return localJob;
     }
 

@@ -5,7 +5,7 @@
 
 class I18nService {
     constructor() {
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_i18n_settings') || '{}'); } catch { this.settings = {}; }
+        this.settings = StorageUtils.getJSON('freyai_i18n_settings', {}, { service: 'i18nService' });
         this.currentLocale = this.settings.locale || 'de';
 
         // Translations - Load from nested key structure

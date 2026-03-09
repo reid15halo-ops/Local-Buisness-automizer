@@ -25,9 +25,9 @@ class PhotoService {
     };
 
     constructor() {
-        try { this.photos = JSON.parse(localStorage.getItem('freyai_photos') || '[]'); } catch { this.photos = []; }
-        try { this.folders = JSON.parse(localStorage.getItem('freyai_photo_folders') || '{}'); } catch { this.folders = {}; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_photo_settings') || '{}'); } catch { this.settings = {}; }
+        this.photos = StorageUtils.getJSON('freyai_photos', [], { service: 'photoService' });
+        this.folders = StorageUtils.getJSON('freyai_photo_folders', {}, { service: 'photoService' });
+        this.settings = StorageUtils.getJSON('freyai_photo_settings', {}, { service: 'photoService' });
 
         // Default settings
         if (!this.settings.maxPhotoSize) { this.settings.maxPhotoSize = 1024 * 1024; } // 1MB

@@ -5,12 +5,12 @@
 
 class UnifiedCommService {
     constructor() {
-        try { this.conversations = JSON.parse(localStorage.getItem('freyai_conversations') || '[]'); } catch { this.conversations = []; }
-        try { this.messages = JSON.parse(localStorage.getItem('freyai_conversation_messages') || '[]'); } catch { this.messages = []; }
-        try { this.unreadCounts = JSON.parse(localStorage.getItem('freyai_unread_counts') || '{}'); } catch { this.unreadCounts = {}; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_unified_comm_settings') || '{}'); } catch { this.settings = {}; }
+        this.conversations = StorageUtils.getJSON('freyai_conversations', [], { service: 'unifiedCommService' });
+        this.messages = StorageUtils.getJSON('freyai_conversation_messages', [], { service: 'unifiedCommService' });
+        this.unreadCounts = StorageUtils.getJSON('freyai_unread_counts', {}, { service: 'unifiedCommService' });
+        this.settings = StorageUtils.getJSON('freyai_unified_comm_settings', {}, { service: 'unifiedCommService' });
         this.templates = this.initTemplates();
-        try { this.communicationLog = JSON.parse(localStorage.getItem('freyai_communication_log') || '[]'); } catch { this.communicationLog = []; }
+        this.communicationLog = StorageUtils.getJSON('freyai_communication_log', [], { service: 'unifiedCommService' });
 
         // Default settings
         if (!this.settings.smsMaxChars) {this.settings.smsMaxChars = 160;}

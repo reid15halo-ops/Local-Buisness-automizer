@@ -167,11 +167,17 @@ class BookkeepingService {
     }
 
     // Automatisch aus Rechnung erstellen
-    async addFromRechnung(rechnung) {
+async addFromRechnung(rechnung) {
+        const kundenName = StorageUtils.getCustomerName(rechnung, 'financial');
+        if (!kundenName) {
+            console.error('[Bookkeeping] Skipping entry: missing customer for Rechnung', rechnung.id);
+            return null;
+        }
+
         const buchung = {
             typ: 'einnahme',
             kategorie: 'Umsatzerlöse',
-            beschreibung: `Rechnung ${rechnung.id} - ${rechnung.kunde?.name || 'Unbekannt'}`,
+            beschreibung: `Rechnung ${rechnung.id} - ${kundenName}`,
             rechnungId: rechnung.id,
             datum: rechnung.paidAt || rechnung.createdAt,
             brutto: rechnung.brutto,
@@ -204,10 +210,16 @@ class BookkeepingService {
 
         const materialKosten = rechnung.materialKosten || 0;
 
+        const kundenName = StorageUtils.getCustomerName(rechnung, 'financial');
+        if (!kundenName) {
+            console.error('[Bookkeeping] Skipping material cost entry: missing customer for Rechnung', rechnung.id);
+            return null;
+        }
+
         const buchung = {
             typ: 'ausgabe',
             kategorie: 'Materialaufwendungen',
-            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${rechnung.kunde?.name || 'Unbekannt'}`,
+            beschreibung: `Materialeinsatz Rechnung ${rechnung.nummer} - ${kundenName}`,
             rechnungId: rechnung.id,
             datum: rechnung.paidAt || rechnung.createdAt,
             brutto: materialKosten,
@@ -332,8 +344,8 @@ class BookkeepingService {
     // USt-Voranmeldung für Quartal/Monat
     berechneUStVA(jahr, monat = null, quartal = null) {
         let buchungen = this.buchungen.filter(b => {
-            const datum = new Date(b.datum);
-            if (datum.getFullYear() !== jahr) {return false;}
+            const datum = StorageUtils.safeDate(b.datum);
+            if (!datum || datum.getFullYear() !== jahr) {return false;}
 
             if (monat !== null) {
                 return datum.getMonth() + 1 === monat;
@@ -402,7 +414,7 @@ class BookkeepingService {
         ].join(';');
 
         const rows = buchungen.map(b => {
-            const datum = new Date(b.datum);
+            const datum = StorageUtils.safeDate(b.datum) || new Date();
             const datevDatum = `${datum.getDate().toString().padStart(2, '0')}${(datum.getMonth() + 1).toString().padStart(2, '0')}`;
 
             return [
@@ -429,7 +441,7 @@ class BookkeepingService {
         const header = ['Datum', 'Typ', 'Kategorie', 'Beschreibung', 'Belegnr.', 'Netto', 'USt/VSt', 'Brutto'].join(';');
 
         const rows = buchungen.map(b => [
-            new Date(b.datum).toLocaleDateString('de-DE'),
+            (StorageUtils.safeDate(b.datum) || new Date()).toLocaleDateString('de-DE'),
             b.typ === 'einnahme' ? 'Einnahme' : 'Ausgabe',
             b.kategorie,
             `"${b.beschreibung}"`,
@@ -567,24 +579,25 @@ class BookkeepingService {
     // ============================================
     getBuchungenForJahr(jahr) {
         return this.buchungen.filter(b => {
-            const datum = new Date(b.datum);
-            return datum.getFullYear() === jahr;
+            const datum = StorageUtils.safeDate(b.datum);
+            return datum && datum.getFullYear() === jahr;
         });
     }
 
     getBuchungenForMonat(jahr, monat) {
         return this.buchungen.filter(b => {
-            const datum = new Date(b.datum);
-            return datum.getFullYear() === jahr && datum.getMonth() + 1 === monat;
+            const datum = StorageUtils.safeDate(b.datum);
+            return datum && datum.getFullYear() === jahr && datum.getMonth() + 1 === monat;
         });
     }
 
     getBuchungenByPeriod(typ, startDate, endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        const start = StorageUtils.safeDate(startDate);
+        const end = StorageUtils.safeDate(endDate);
+        if (!start || !end) {return [];}
         return this.buchungen.filter(b => {
-            const datum = new Date(b.datum);
-            return b.typ === typ && datum >= start && datum <= end;
+            const datum = StorageUtils.safeDate(b.datum);
+            return datum && b.typ === typ && datum >= start && datum <= end;
         });
     }
 
@@ -592,11 +605,12 @@ class BookkeepingService {
         let filtered = this.buchungen.filter(b => b.kategorie === kategorie);
 
         if (startDate && endDate) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
+            const start = StorageUtils.safeDate(startDate);
+            const end = StorageUtils.safeDate(endDate);
+            if (!start || !end) {return filtered;}
             filtered = filtered.filter(b => {
-                const datum = new Date(b.datum);
-                return datum >= start && datum <= end;
+                const datum = StorageUtils.safeDate(b.datum);
+                return datum && datum >= start && datum <= end;
             });
         }
 

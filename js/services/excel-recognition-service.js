@@ -668,7 +668,7 @@ class ExcelRecognitionService {
         } else {
             // Absolute fallback if storeService is not yet initialised
             console.warn('[ExcelImport] storeService not available, writing to localStorage');
-            let anfragen; try { anfragen = JSON.parse(localStorage.getItem('anfragen') || '[]'); } catch { anfragen = []; }
+            let anfragen = StorageUtils.getJSON('anfragen', [], { service: 'excelRecognitionService' });
             anfragen.push(anfrage);
             localStorage.setItem('anfragen', JSON.stringify(anfragen));
         }
@@ -704,12 +704,7 @@ class ExcelRecognitionService {
     }
 
     loadSavedMappings() {
-        try {
-            const saved = localStorage.getItem('excel_import_mappings');
-            return saved ? JSON.parse(saved) : {};
-        } catch {
-            return {};
-        }
+        return StorageUtils.getJSON('excel_import_mappings', {}, { service: 'excelRecognitionService' });
     }
 
     getSavedMapping(dataType, name = 'default') {

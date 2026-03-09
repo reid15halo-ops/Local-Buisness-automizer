@@ -4,8 +4,8 @@
 
 class CalendarService {
     constructor() {
-        try { this.appointments = JSON.parse(localStorage.getItem('freyai_appointments') || '[]'); } catch { this.appointments = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_calendar_settings') || '{}'); } catch { this.settings = {}; }
+        this.appointments = StorageUtils.getJSON('freyai_appointments', [], { service: 'calendarService' });
+        this.settings = StorageUtils.getJSON('freyai_calendar_settings', {}, { service: 'calendarService' });
 
         // Default working hours
         if (!this.settings.workingHours) {
@@ -94,7 +94,8 @@ class CalendarService {
         end.setDate(end.getDate() + 7);
 
         return this.appointments.filter(a => {
-            const aptDate = new Date(a.date);
+            const aptDate = StorageUtils.safeDate(a.date);
+            if (!aptDate) {return false;}
             return aptDate >= start && aptDate < end && a.status !== 'abgesagt';
         }).sort((a, b) => {
             const dateCompare = a.date.localeCompare(b.date);
@@ -206,7 +207,8 @@ class CalendarService {
         this.appointments.forEach(apt => {
             if (!apt.reminder || apt.status === 'abgesagt') {return;}
 
-            const aptDateTime = new Date(`${apt.date}T${apt.startTime}`);
+            const aptDateTime = StorageUtils.safeDate(`${apt.date}T${apt.startTime}`);
+            if (!aptDateTime) {return;}
             const reminderTime = new Date(aptDateTime.getTime() - apt.reminderMinutes * 60000);
 
             if (reminderTime <= now && aptDateTime > now) {

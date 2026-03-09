@@ -5,7 +5,7 @@
 
 class WorkEstimationService {
     constructor() {
-        try { this.historischeArbeiten = JSON.parse(localStorage.getItem('freyai_historische_arbeiten') || '[]'); } catch { this.historischeArbeiten = []; }
+        this.historischeArbeiten = StorageUtils.getJSON('freyai_historische_arbeiten', [], { service: 'workEstimationService' });
 
         // Basis-Richtwerte pro Leistungsart (Stunden)
         this.basisRichtwerte = {
@@ -134,7 +134,7 @@ class WorkEstimationService {
             return this.schaetzeArbeitsstunden(anfrage);
         }
 
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'workEstimationService' });
         const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerks-Meister';
         const prompt = `Du bist ein erfahrener ${bizType}. Schätze die benötigten Arbeitsstunden für folgendes Projekt:
 

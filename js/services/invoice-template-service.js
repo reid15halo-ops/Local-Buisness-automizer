@@ -191,7 +191,7 @@ class InvoiceTemplateService {
         }
 
         // Fallback: try admin panel settings
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'invoiceTemplateService' });
         return {
             name: ap.company_name || 'FreyAI Visions',
             strasse: ap.address_street || '',

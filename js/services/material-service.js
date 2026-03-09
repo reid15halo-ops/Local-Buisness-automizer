@@ -5,10 +5,10 @@
 
 class MaterialService {
     constructor() {
-        try { this.bestand = JSON.parse(localStorage.getItem('material_bestand') || '[]'); } catch { this.bestand = []; }
+        this.bestand = StorageUtils.getJSON('material_bestand', [], { service: 'materialService' });
         this.stundensatz = window.companySettings?.getStundensatz?.() ?? parseFloat(localStorage.getItem('stundensatz') || '65');
-        try { this.reservierungen = JSON.parse(localStorage.getItem('material_reservations') || '[]'); } catch { this.reservierungen = []; }
-        try { this.lagerbewegungen = JSON.parse(localStorage.getItem('stock_movements') || '[]'); } catch { this.lagerbewegungen = []; }
+        this.reservierungen = StorageUtils.getJSON('material_reservations', [], { service: 'materialService' });
+        this.lagerbewegungen = StorageUtils.getJSON('stock_movements', [], { service: 'materialService' });
     }
 
     // ============================================

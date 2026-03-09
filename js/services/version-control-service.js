@@ -5,7 +5,7 @@
 
 class VersionControlService {
     constructor() {
-        try { this.versions = JSON.parse(localStorage.getItem('freyai_document_versions') || '{}'); } catch { this.versions = {}; }
+        this.versions = StorageUtils.getJSON('freyai_document_versions', {}, { service: 'versionControlService' });
     }
 
     // Create a new version of a document

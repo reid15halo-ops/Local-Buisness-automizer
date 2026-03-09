@@ -264,7 +264,7 @@ class DunningService {
     getGesamtMahngebuehren(rechnungId) {
         return this.mahnungen
             .filter(m => m.rechnungId === rechnungId)
-            .reduce((sum, m) => sum + m.mahngebuehr, 0);
+            .reduce((sum, m) => sum + (m.mahngebuehr || 0), 0);
     }
 
     getMahnungenForRechnung(rechnungId) {
@@ -276,8 +276,14 @@ class DunningService {
     // ============================================
     generateMahnText(rechnung, stufe) {
         const firma = this._getCompanyName();
+        const empfaenger = StorageUtils.getCustomerName(rechnung, 'dunning');
+        if (!empfaenger) {
+            console.error('[Dunning] Cannot send Mahnung: missing customer for Rechnung', rechnung.id);
+            return null;
+        }
+
         const templates = {
-            'erinnerung': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
+            'erinnerung': `Sehr geehrte(r) ${empfaenger},
 
 bei Durchsicht unserer Buchhaltung haben wir festgestellt, dass die unten genannte Rechnung noch nicht beglichen wurde.
 
@@ -295,7 +301,7 @@ Verwendungszweck: ${rechnung.id}
 Mit freundlichen Grüßen
 ${firma}`,
 
-            'mahnung1': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
+            'mahnung1': `Sehr geehrte(r) ${empfaenger},
 
 leider konnten wir trotz unserer Zahlungserinnerung keinen Zahlungseingang verzeichnen.
 
@@ -313,7 +319,7 @@ Verwendungszweck: ${rechnung.id}
 Mit freundlichen Grüßen
 ${firma}`,
 
-            'mahnung2': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
+            'mahnung2': `Sehr geehrte(r) ${empfaenger},
 
 trotz wiederholter Aufforderung ist die nachstehende Forderung immer noch offen.
 
@@ -332,7 +338,7 @@ Verwendungszweck: ${rechnung.id}
 Mit freundlichen Grüßen
 ${firma}`,
 
-            'mahnung3': `Sehr geehrte(r) ${rechnung.kunde?.name || 'Kunde'},
+            'mahnung3': `Sehr geehrte(r) ${empfaenger},
 
 LETZTE MAHNUNG VOR GERICHTLICHEM MAHNVERFAHREN
 
@@ -359,7 +365,7 @@ ${firma}`,
             'inkasso': `ÜBERGABE AN INKASSO
 
 Rechnung: ${rechnung.id}
-Kunde: ${rechnung.kunde?.name || 'Kunde'}
+Kunde: ${empfaenger}
 Offener Betrag inkl. Mahngebühren: ${this.formatCurrency((parseFloat(rechnung.brutto) || 0) + this.getGesamtMahngebuehren(rechnung.id))}
 
 Status: Zur manuellen Prüfung vor Inkasso-Übergabe markiert.
@@ -487,7 +493,7 @@ Nächste Schritte:
 
     _getBankDetails() {
         const settings = window.storeService?.state?.settings || {};
-        let admin; try { admin = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { admin = {}; }
+        let admin = StorageUtils.getJSON('admin_panel_data', {}, { financial: true, service: 'dunningService' });
         const bank = admin.bank_name || settings.bank_name || '';
         const iban = admin.bank_iban || settings.iban || '';
         const bic = admin.bank_bic || settings.bic || '';
@@ -546,10 +552,9 @@ Nächste Schritte:
     }
 
     formatDate(dateStr) {
-        if (!dateStr) {return '–';}
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) {return '–';}
-        return d.toLocaleDateString('de-DE', {
+        const date = StorageUtils.safeDate(dateStr);
+        if (!date) { return '—'; }
+        return date.toLocaleDateString('de-DE', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
