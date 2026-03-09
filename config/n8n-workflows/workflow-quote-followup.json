@@ -1,0 +1,848 @@
+{
+  "name": "Angebots-Nachverfolgung (Quote Follow-Up Pipeline)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        },
+        "timezone": "Europe/Berlin"
+      },
+      "id": "node-schedule-trigger",
+      "name": "Daily 09:00 Berlin",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Runs every day at 09:00 Europe/Berlin. CRON: 0 9 * * *"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/rest/v1/angebote",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "select",
+              "value": "id,kunde_name,kunde_email,netto,brutto,leistungsart,created_at,gueltig_bis"
+            },
+            {
+              "name": "status",
+              "value": "eq.offen"
+            },
+            {
+              "name": "gueltig_bis",
+              "value": "=gte.{{ new Date().toISOString().split('T')[0] }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-fetch-open-quotes",
+      "name": "GET Open Angebote",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "continueOnFail": true,
+      "notes": "Fetches all open quotes (status=offen) where gueltig_bis >= today from Supabase angebote table. Selects: id, kunde_name, kunde_email, netto, brutto, leistungsart, created_at, gueltig_bis."
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = Date.now();\nconst results = [];\n\nfor (const item of $input.all()) {\n  const data = item.json;\n  const createdAt = new Date(data.created_at).getTime();\n  const gueltigBis = new Date(data.gueltig_bis).getTime();\n\n  const daysSinceCreated = Math.floor((now - createdAt) / 86400000);\n  const daysUntilExpiry = Math.floor((gueltigBis - now) / 86400000);\n\n  let followUpStage = 'skip';\n\n  if (daysSinceCreated >= 28) {\n    followUpStage = 'expired';\n  } else if (daysSinceCreated >= 14) {\n    followUpStage = 'reminder_3';\n  } else if (daysSinceCreated >= 7) {\n    followUpStage = 'reminder_2';\n  } else if (daysSinceCreated >= 3) {\n    followUpStage = 'reminder_1';\n  }\n\n  results.push({\n    json: {\n      ...data,\n      daysSinceCreated,\n      daysUntilExpiry,\n      followUpStage\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "node-calc-days",
+      "name": "Calculate Days & Follow-Up Stage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300],
+      "notes": "For each quote: calculates daysSinceCreated and daysUntilExpiry. Assigns followUpStage: 3d=reminder_1, 7d=reminder_2, 14d=reminder_3, 28d+=expired, otherwise=skip."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "filter-actionable",
+              "leftValue": "={{ $json[\"followUpStage\"] }}",
+              "rightValue": "skip",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-filter-actionable",
+      "name": "Only Actionable Quotes",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [960, 300],
+      "notes": "Filters out quotes where followUpStage='skip' (no action needed). Only passes quotes that are due for a follow-up email."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/rest/v1/email_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "reference_id",
+              "value": "=eq.{{ $json[\"id\"] }}"
+            },
+            {
+              "name": "action",
+              "value": "like.quote_followup_%"
+            },
+            {
+              "name": "created_at",
+              "value": "=gte.{{ new Date(Date.now() - 2 * 86400000).toISOString() }}"
+            },
+            {
+              "name": "select",
+              "value": "id"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-check-duplicate",
+      "name": "Check Duplicate Follow-Up",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1200, 300],
+      "continueOnFail": true,
+      "notes": "Checks email_log for existing follow-up emails sent in the last 2 days for this quote. Prevents sending duplicate follow-ups."
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  // The HTTP response is an array. If empty, no duplicate exists.\n  const responseData = item.json;\n  const isArray = Array.isArray(responseData);\n  const hasDuplicate = isArray ? responseData.length > 0 : false;\n\n  if (!hasDuplicate) {\n    // Pass through the original quote data from the previous node\n    // The quote data is carried forward in the item\n    results.push(item);\n  }\n}\n\nreturn results.length > 0 ? results : [{ json: { _empty: true } }];"
+      },
+      "id": "node-filter-duplicates",
+      "name": "Filter Already Sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 300],
+      "notes": "Filters out quotes that already received a follow-up in the last 2 days. Passes through only quotes needing a new follow-up."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "not-empty",
+              "leftValue": "={{ $json[\"_empty\"] }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-skip-empty",
+      "name": "Skip Empty Results",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1660, 300],
+      "notes": "Guards against empty result set from duplicate filter. Only continues if there are actual quotes to process."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"followUpStage\"] }}",
+                    "rightValue": "reminder_1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reminder_1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"followUpStage\"] }}",
+                    "rightValue": "reminder_2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reminder_2"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"followUpStage\"] }}",
+                    "rightValue": "reminder_3",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reminder_3"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json[\"followUpStage\"] }}",
+                    "rightValue": "expired",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "expired"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-stage-switch",
+      "name": "Switch by Follow-Up Stage",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1900, 300],
+      "notes": "Routes quotes to different email templates based on followUpStage. Output 0: reminder_1 (Day 3), Output 1: reminder_2 (Day 7), Output 2: reminder_3 (Day 14), Output 3: expired (Day 28+)."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "subject-r1",
+              "name": "email_subject",
+              "value": "Haben Sie noch Fragen zu unserem Angebot?",
+              "type": "string"
+            },
+            {
+              "id": "body-r1",
+              "name": "email_body",
+              "value": "=<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"margin:0;padding:0;background-color:#09090b;font-family:'Helvetica Neue',Arial,sans-serif;\"><table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#09090b;padding:40px 0;\"><tr><td align=\"center\"><table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#18181b;border-radius:16px;overflow:hidden;\"><tr><td style=\"background-color:#6366f1;padding:24px 32px;\"><h1 style=\"color:#fafafa;margin:0;font-size:22px;font-weight:700;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</h1></td></tr><tr><td style=\"padding:32px;\"><h2 style=\"color:#fafafa;margin:0 0 16px;font-size:20px;\">Guten Tag {{ $json[\"kunde_name\"] }},</h2><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">vielen Dank f&uuml;r Ihr Interesse an unseren Leistungen. Wir haben Ihnen vor kurzem ein Angebot f&uuml;r <strong style=\"color:#fafafa;\">{{ $json[\"leistungsart\"] }}</strong> zugesendet und m&ouml;chten uns erkundigen, ob Sie noch Fragen dazu haben.</p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 24px;\">Unser Angebotsbetrag: <strong style=\"color:#fafafa;\">{{ $json[\"brutto\"] }} EUR (brutto)</strong></p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 24px;\">Gerne stehen wir Ihnen f&uuml;r R&uuml;ckfragen zur Verf&uuml;gung. Sie k&ouml;nnen Ihr Angebot auch jederzeit in unserem Kundenportal einsehen.</p><table cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 24px;\"><tr><td style=\"background-color:#6366f1;border-radius:8px;padding:12px 24px;\"><a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}\" style=\"color:#fafafa;text-decoration:none;font-weight:600;font-size:15px;\">Angebot im Portal ansehen</a></td></tr></table><p style=\"color:#71717a;font-size:13px;margin:0;\">Mit freundlichen Gr&uuml;&szlig;en<br><strong style=\"color:#a1a1aa;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</strong></p><p style=\"color:#52525b;font-size:11px;margin:24px 0 0;padding-top:16px;border-top:1px solid #27272a;\">Sie erhalten diese E-Mail, weil wir Ihnen ein Angebot erstellt haben. <a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}/abmelden?ref={{ $json[\"id\"] }}\" style=\"color:#6366f1;text-decoration:underline;\">Keine weiteren Erinnerungen erhalten</a></p></td></tr></table></td></tr></table></body></html>",
+              "type": "string"
+            },
+            {
+              "id": "stage-r1",
+              "name": "followup_action",
+              "value": "quote_followup_reminder_1",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-template-r1",
+      "name": "Template: Reminder 1 (Day 3)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2160, 100],
+      "notes": "Day 3 — Friendly check-in: asks if they have questions, mentions portal access, references the leistungsart and brutto amount."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "subject-r2",
+              "name": "email_subject",
+              "value": "Wir halten Ihren Termin gerne frei",
+              "type": "string"
+            },
+            {
+              "id": "body-r2",
+              "name": "email_body",
+              "value": "=<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"margin:0;padding:0;background-color:#09090b;font-family:'Helvetica Neue',Arial,sans-serif;\"><table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#09090b;padding:40px 0;\"><tr><td align=\"center\"><table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#18181b;border-radius:16px;overflow:hidden;\"><tr><td style=\"background-color:#6366f1;padding:24px 32px;\"><h1 style=\"color:#fafafa;margin:0;font-size:22px;font-weight:700;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</h1></td></tr><tr><td style=\"padding:32px;\"><h2 style=\"color:#fafafa;margin:0 0 16px;font-size:20px;\">Guten Tag {{ $json[\"kunde_name\"] }},</h2><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">wir m&ouml;chten Sie darauf aufmerksam machen, dass unser Angebot f&uuml;r <strong style=\"color:#fafafa;\">{{ $json[\"leistungsart\"] }}</strong> auf gro&szlig;es Interesse st&ouml;&szlig;t und Terminkapazit&auml;ten in diesem Bereich begrenzt sind.</p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">Um Ihnen den bestm&ouml;glichen Service bieten zu k&ouml;nnen, empfehlen wir eine zeitnahe R&uuml;ckmeldung.</p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 24px;\">Angebotssumme: <strong style=\"color:#fafafa;\">{{ $json[\"brutto\"] }} EUR (brutto)</strong><br>G&uuml;ltig bis: <strong style=\"color:#f59e0b;\">{{ $json[\"gueltig_bis\"] }}</strong></p><table cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 24px;\"><tr><td style=\"background-color:#6366f1;border-radius:8px;padding:12px 24px;\"><a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}\" style=\"color:#fafafa;text-decoration:none;font-weight:600;font-size:15px;\">Jetzt Termin sichern</a></td></tr></table><p style=\"color:#71717a;font-size:13px;margin:0;\">Mit freundlichen Gr&uuml;&szlig;en<br><strong style=\"color:#a1a1aa;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</strong></p><p style=\"color:#52525b;font-size:11px;margin:24px 0 0;padding-top:16px;border-top:1px solid #27272a;\">Sie erhalten diese E-Mail, weil wir Ihnen ein Angebot erstellt haben. <a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}/abmelden?ref={{ $json[\"id\"] }}\" style=\"color:#6366f1;text-decoration:underline;\">Keine weiteren Erinnerungen erhalten</a></p></td></tr></table></td></tr></table></body></html>",
+              "type": "string"
+            },
+            {
+              "id": "stage-r2",
+              "name": "followup_action",
+              "value": "quote_followup_reminder_2",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-template-r2",
+      "name": "Template: Reminder 2 (Day 7)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2160, 300],
+      "notes": "Day 7 — Urgency: popular time slot, limited capacity, recommends scheduling soon. References leistungsart and gueltig_bis date."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "subject-r3",
+              "name": "email_subject",
+              "value": "=Ihr Angebot l\u00e4uft in {{ $json[\"daysUntilExpiry\"] }} Tagen ab",
+              "type": "string"
+            },
+            {
+              "id": "body-r3",
+              "name": "email_body",
+              "value": "=<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"margin:0;padding:0;background-color:#09090b;font-family:'Helvetica Neue',Arial,sans-serif;\"><table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#09090b;padding:40px 0;\"><tr><td align=\"center\"><table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#18181b;border-radius:16px;overflow:hidden;\"><tr><td style=\"background-color:#6366f1;padding:24px 32px;\"><h1 style=\"color:#fafafa;margin:0;font-size:22px;font-weight:700;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</h1></td></tr><tr><td style=\"padding:32px;\"><h2 style=\"color:#fafafa;margin:0 0 16px;font-size:20px;\">Guten Tag {{ $json[\"kunde_name\"] }},</h2><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">wir m&ouml;chten Sie daran erinnern, dass Ihr Angebot f&uuml;r <strong style=\"color:#fafafa;\">{{ $json[\"leistungsart\"] }}</strong> in <strong style=\"color:#f59e0b;\">{{ $json[\"daysUntilExpiry\"] }} Tagen</strong> abl&auml;uft.</p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">Angebotssumme: <strong style=\"color:#fafafa;\">{{ $json[\"brutto\"] }} EUR (brutto)</strong><br>G&uuml;ltig bis: <strong style=\"color:#f59e0b;\">{{ $json[\"gueltig_bis\"] }}</strong></p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 24px;\">Sollten sich Ihre Anforderungen ge&auml;ndert haben, erstellen wir Ihnen gerne ein aktualisiertes Angebot. Kontaktieren Sie uns einfach &uuml;ber das Portal oder antworten Sie direkt auf diese E-Mail.</p><table cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 24px;\"><tr><td style=\"background-color:#6366f1;border-radius:8px;padding:12px 24px;\"><a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}\" style=\"color:#fafafa;text-decoration:none;font-weight:600;font-size:15px;\">Angebot im Portal ansehen</a></td></tr></table><p style=\"color:#71717a;font-size:13px;margin:0;\">Mit freundlichen Gr&uuml;&szlig;en<br><strong style=\"color:#a1a1aa;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</strong></p><p style=\"color:#52525b;font-size:11px;margin:24px 0 0;padding-top:16px;border-top:1px solid #27272a;\">Sie erhalten diese E-Mail, weil wir Ihnen ein Angebot erstellt haben. <a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}/abmelden?ref={{ $json[\"id\"] }}\" style=\"color:#6366f1;text-decoration:underline;\">Keine weiteren Erinnerungen erhalten</a></p></td></tr></table></td></tr></table></body></html>",
+              "type": "string"
+            },
+            {
+              "id": "stage-r3",
+              "name": "followup_action",
+              "value": "quote_followup_reminder_3",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-template-r3",
+      "name": "Template: Reminder 3 (Day 14)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2160, 500],
+      "notes": "Day 14 — Final reminder: mentions exact days until expiry, validity date, offers updated quote if needs changed."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "subject-expired",
+              "name": "email_subject",
+              "value": "D\u00fcrfen wir Ihnen ein aktualisiertes Angebot erstellen?",
+              "type": "string"
+            },
+            {
+              "id": "body-expired",
+              "name": "email_body",
+              "value": "=<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body style=\"margin:0;padding:0;background-color:#09090b;font-family:'Helvetica Neue',Arial,sans-serif;\"><table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#09090b;padding:40px 0;\"><tr><td align=\"center\"><table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#18181b;border-radius:16px;overflow:hidden;\"><tr><td style=\"background-color:#6366f1;padding:24px 32px;\"><h1 style=\"color:#fafafa;margin:0;font-size:22px;font-weight:700;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</h1></td></tr><tr><td style=\"padding:32px;\"><h2 style=\"color:#fafafa;margin:0 0 16px;font-size:20px;\">Guten Tag {{ $json[\"kunde_name\"] }},</h2><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">Ihr Angebot f&uuml;r <strong style=\"color:#fafafa;\">{{ $json[\"leistungsart\"] }}</strong> ist leider abgelaufen. Wir verstehen, dass Projekte manchmal eine andere Priorit&auml;t bekommen.</p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 16px;\">Sollten Sie weiterhin Interesse haben, erstellen wir Ihnen gerne ein aktualisiertes Angebot. Haben sich Ihre Anforderungen ge&auml;ndert? Teilen Sie uns einfach Ihre aktuellen W&uuml;nsche mit.</p><p style=\"color:#a1a1aa;font-size:15px;line-height:1.6;margin:0 0 24px;\">Urspr&uuml;ngliche Angebotssumme: <strong style=\"color:#fafafa;\">{{ $json[\"brutto\"] }} EUR (brutto)</strong></p><table cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0 0 24px;\"><tr><td style=\"background-color:#6366f1;border-radius:8px;padding:12px 24px;\"><a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}\" style=\"color:#fafafa;text-decoration:none;font-weight:600;font-size:15px;\">Neues Angebot anfragen</a></td></tr></table><p style=\"color:#71717a;font-size:13px;margin:0;\">Mit freundlichen Gr&uuml;&szlig;en<br><strong style=\"color:#a1a1aa;\">{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}</strong></p><p style=\"color:#52525b;font-size:11px;margin:24px 0 0;padding-top:16px;border-top:1px solid #27272a;\">Sie erhalten diese E-Mail, weil wir Ihnen ein Angebot erstellt haben. <a href=\"{{ $env[\"PORTAL_URL\"] || 'https://portal.freyai.de' }}/abmelden?ref={{ $json[\"id\"] }}\" style=\"color:#6366f1;text-decoration:underline;\">Keine weiteren Erinnerungen erhalten</a></p></td></tr></table></td></tr></table></body></html>",
+              "type": "string"
+            },
+            {
+              "id": "stage-expired",
+              "name": "followup_action",
+              "value": "quote_followup_expired",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-template-expired",
+      "name": "Template: Expired (Day 28+)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2160, 700],
+      "notes": "Day 28+ — Expired quote: informs the quote has expired, offers to create a new one, asks if requirements changed."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/functions/v1/send-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json[\"kunde_email\"] }}\",\n  \"subject\": \"{{ $json[\"email_subject\"] }}\",\n  \"html\": {{ JSON.stringify($json[\"email_body\"]) }},\n  \"from_name\": \"{{ $env[\"COMPANY_NAME\"] || 'FreyAI Visions' }}\",\n  \"reference_id\": \"{{ $json[\"id\"] }}\",\n  \"reference_type\": \"angebot\"\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-send-email",
+      "name": "Send Follow-Up Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2420, 400],
+      "continueOnFail": true,
+      "notes": "Sends the follow-up email via Supabase Edge Function (send-email). Passes recipient, subject, HTML body with brand styling, and reference data."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/rest/v1/email_log",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"reference_id\": \"{{ $json[\"id\"] }}\",\n  \"action\": \"{{ $json[\"followup_action\"] }}\",\n  \"recipient\": \"{{ $json[\"kunde_email\"] }}\",\n  \"sent_at\": \"{{ new Date().toISOString() }}\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-log-followup",
+      "name": "Log Follow-Up to email_log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2660, 400],
+      "continueOnFail": true,
+      "notes": "Inserts a record into email_log with reference_id (angebot ID), action (quote_followup_{stage}), recipient email, and timestamp. Used for deduplication on subsequent runs."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-expired",
+              "leftValue": "={{ $json[\"followup_action\"] }}",
+              "rightValue": "quote_followup_expired",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-is-expired",
+      "name": "Is Expired Quote?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2900, 400],
+      "notes": "Checks if the follow-up action was for an expired quote. If yes, updates the quote status to 'abgelaufen'."
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/rest/v1/angebote",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_SERVICE_ROLE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "=eq.{{ $json[\"id\"] }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"status\": \"abgelaufen\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-update-expired",
+      "name": "PATCH angebote: status=abgelaufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3140, 300],
+      "continueOnFail": true,
+      "notes": "Updates the expired quote's status to 'abgelaufen' in the angebote table. Only triggered for quotes that have been open for 28+ days."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "action",
+              "fieldValue": "quote_followup.error"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "={{ $json[\"id\"] || 'unknown' }}"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ error: $json[\"error\"] || 'Unknown error', stage: $json[\"followUpStage\"] || 'unknown', timestamp: new Date().toISOString() }) }}"
+            }
+          ]
+        }
+      },
+      "id": "node-error-handler",
+      "name": "Error Handler: Log to automation_log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2420, 700],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Error handler logs failures to automation_log table with action, target quote ID, and error metadata."
+    }
+  ],
+  "connections": {
+    "Daily 09:00 Berlin": {
+      "main": [
+        [
+          {
+            "node": "GET Open Angebote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Open Angebote": {
+      "main": [
+        [
+          {
+            "node": "Calculate Days & Follow-Up Stage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Days & Follow-Up Stage": {
+      "main": [
+        [
+          {
+            "node": "Only Actionable Quotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only Actionable Quotes": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Check Duplicate Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Filter Already Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Already Sent": {
+      "main": [
+        [
+          {
+            "node": "Skip Empty Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Empty Results": {
+      "main": [
+        [
+          {
+            "node": "Switch by Follow-Up Stage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Switch by Follow-Up Stage": {
+      "main": [
+        [
+          {
+            "node": "Template: Reminder 1 (Day 3)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Template: Reminder 2 (Day 7)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Template: Reminder 3 (Day 14)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Template: Expired (Day 28+)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Template: Reminder 1 (Day 3)": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Template: Reminder 2 (Day 7)": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Template: Reminder 3 (Day 14)": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Template: Expired (Day 28+)": {
+      "main": [
+        [
+          {
+            "node": "Send Follow-Up Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Follow-Up Email": {
+      "main": [
+        [
+          {
+            "node": "Log Follow-Up to email_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Follow-Up to email_log": {
+      "main": [
+        [
+          {
+            "node": "Is Expired Quote?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Expired Quote?": {
+      "main": [
+        [
+          {
+            "node": "PATCH angebote: status=abgelaufen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["quotes", "angebote", "followup", "email", "zone2"],
+  "triggerCount": 1,
+  "updatedAt": "2026-03-09T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Angebots-Nachverfolgung (Quote Follow-Up Pipeline) v1\n\n### Overview\nAutomated follow-up email pipeline for unresponded quotes (angebote).\nRuns daily at 09:00 Europe/Berlin.\n\n### Pipeline Steps\n1. **Schedule Trigger**: Daily 09:00 Berlin timezone\n2. **Fetch Open Quotes**: GET from Supabase angebote (status=offen, gueltig_bis >= today)\n3. **Calculate Days**: Computes daysSinceCreated, daysUntilExpiry, followUpStage\n4. **Filter Actionable**: Only process quotes needing follow-up (skip stage != 'skip')\n5. **Deduplication**: Check email_log for recent follow-ups (last 2 days)\n6. **Switch by Stage**: Route to correct email template\n7. **Send Email**: Via Supabase Edge Function (send-email)\n8. **Log**: Insert into email_log for deduplication\n9. **Update Expired**: PATCH angebote status='abgelaufen' for 28+ day quotes\n\n### Follow-Up Stages\n- Day 3 (reminder_1): Friendly check-in, answer questions\n- Day 7 (reminder_2): Urgency, limited capacity, schedule soon\n- Day 14 (reminder_3): Final reminder, days until expiry, offer updated quote\n- Day 28+ (expired): Quote expired, offer new quote\n\n### Setup Required\n1. **Env Vars**: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, COMPANY_NAME, PORTAL_URL\n2. **Supabase**: angebote and email_log tables must exist (see supabase-schema.sql)\n3. **Edge Function**: send-email function deployed to Supabase\n4. **Credentials**: Supabase API credential configured in n8n\n\n### Email Branding\n- Dark theme (#09090b bg, #18181b card, #6366f1 accent, #fafafa text)\n- Inline CSS for email client compatibility\n- All text in German, professional tone\n- Portal link for self-service"
+}
