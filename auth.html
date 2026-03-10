@@ -390,9 +390,12 @@
                 await window.authService.login(email, password);
                 window.location.href = 'index.html';
             } catch (err) {
-                showMessage(err.message === 'Invalid login credentials'
-                    ? 'E-Mail oder Passwort falsch.'
-                    : err.message);
+                const msg = err.message;
+                const translated =
+                    msg === 'Invalid login credentials' ? 'E-Mail oder Passwort falsch.' :
+                    msg.includes('Failed to fetch') || msg.includes('NetworkError') ? 'Verbindung zum Server fehlgeschlagen. Bitte versuche es erneut.' :
+                    msg;
+                showMessage(translated);
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Anmelden';
@@ -424,7 +427,14 @@
                 });
                 showMessage('Registrierung erfolgreich! Bitte bestätige deine E-Mail.', 'success');
             } catch (err) {
-                showMessage(err.message);
+                const msg = err.message;
+                const translated =
+                    msg === 'User already registered' ? 'Diese E-Mail ist bereits registriert.' :
+                    msg === 'Password should be at least 6 characters' ? 'Passwort muss mindestens 6 Zeichen lang sein.' :
+                    msg === 'Unable to validate email address: invalid format' ? 'Ungültiges E-Mail-Format.' :
+                    msg.includes('Failed to fetch') || msg.includes('NetworkError') ? 'Verbindung zum Server fehlgeschlagen. Bitte versuche es erneut.' :
+                    msg;
+                showMessage(translated);
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Kostenlos registrieren';

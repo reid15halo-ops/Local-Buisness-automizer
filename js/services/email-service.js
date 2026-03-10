@@ -470,6 +470,12 @@ FreyAI Visions`
      * @returns {Promise<{success:boolean, messageId?:string, error?:string}>}
      */
     async sendEmail(to, subject, html, opts = {}) {
+        // Demo Guard: Block real email sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('E-Mail senden')) {
+            console.warn(`[EmailService] Demo-Modus: E-Mail an ${to} blockiert (${subject})`);
+            return { success: true, messageId: 'demo-blocked-' + Date.now(), demo: true };
+        }
+
         const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
             || localStorage.getItem('freyai_email_relay_url')
             || (window.location.origin + '/api');
@@ -561,6 +567,12 @@ FreyAI Visions`
      * @returns {Promise<{sent:number, failed:number}>}
      */
     async sendBulkEmails(messages, opts = {}) {
+        // Demo Guard: Block bulk email sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('Massen-E-Mail senden')) {
+            console.warn(`[EmailService] Demo-Modus: ${messages.length} E-Mails blockiert`);
+            return { sent: 0, failed: 0, demo: true };
+        }
+
         const relayUrl = window.APP_CONFIG?.EMAIL_RELAY_URL
             || localStorage.getItem('freyai_email_relay_url')
             || (window.location.origin + '/api');

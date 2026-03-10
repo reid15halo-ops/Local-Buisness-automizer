@@ -567,49 +567,62 @@ class SetupWizardUI {
      * Handle next button
      */
     async handleNext() {
-        const step = this.service.getCurrentStep();
+        const nextBtn = document.getElementById('wizard-next-btn');
+        const prevBtn = document.getElementById('wizard-prev-btn');
+        const originalText = nextBtn ? nextBtn.textContent : '';
 
-        // If complete step, sync to Supabase (if configured) and start app
-        if (step.id === 'complete') {
-            // Sync wizard data to Supabase tenants table (non-blocking, offline-safe)
-            if (window.tenantService) {
-                try {
-                    await window.tenantService.syncFromSetupWizard();
-                } catch (e) {
-                    console.warn('[SetupWizard] Supabase-Sync fehlgeschlagen (offline?):', e.message);
+        // Double-Submit-Schutz
+        if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Bitte warten...'; }
+        if (prevBtn) { prevBtn.disabled = true; }
+
+        try {
+            const step = this.service.getCurrentStep();
+
+            // If complete step, sync to Supabase (if configured) and start app
+            if (step.id === 'complete') {
+                // Sync wizard data to Supabase tenants table (non-blocking, offline-safe)
+                if (window.tenantService) {
+                    try {
+                        await window.tenantService.syncFromSetupWizard();
+                    } catch (e) {
+                        console.warn('[SetupWizard] Supabase-Sync fehlgeschlagen (offline?):', e.message);
+                    }
                 }
+                this.hide();
+                if (window.app && window.app.init) {
+                    window.app.init();
+                }
+                return;
             }
-            this.hide();
-            if (window.app && window.app.init) {
-                window.app.init();
-            }
-            return;
-        }
 
-        // Integrations step is fully optional — skip validation
-        if (step.id === 'integrations') {
+            // Integrations step is fully optional — skip validation
+            if (step.id === 'integrations') {
+                this.service.nextStep();
+                this.updateStepContent();
+                return;
+            }
+
+            // Validate current step
+            const validation = this.service.validateCurrentStep();
+            if (!validation.valid) {
+                this.showErrors(validation.errors);
+                return;
+            }
+
+            // Clear errors before moving on
+            const errorsDiv = document.getElementById('wizard-errors');
+            if (errorsDiv) {
+                errorsDiv.style.display = 'none';
+                errorsDiv.innerHTML = '';
+            }
+
+            // Move to next step
             this.service.nextStep();
             this.updateStepContent();
-            return;
+        } finally {
+            if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = originalText; }
+            if (prevBtn) { prevBtn.disabled = false; }
         }
-
-        // Validate current step
-        const validation = this.service.validateCurrentStep();
-        if (!validation.valid) {
-            this.showErrors(validation.errors);
-            return;
-        }
-
-        // Clear errors before moving on
-        const errorsDiv = document.getElementById('wizard-errors');
-        if (errorsDiv) {
-            errorsDiv.style.display = 'none';
-            errorsDiv.innerHTML = '';
-        }
-
-        // Move to next step
-        this.service.nextStep();
-        this.updateStepContent();
     }
 
     /**

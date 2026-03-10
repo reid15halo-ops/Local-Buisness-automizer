@@ -65,10 +65,18 @@ class AutomationAPI {
     // ============================================
 
     async sendEmail(to, subject, body, replyTo) {
+        // Demo Guard: Block email sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('E-Mail senden')) {
+            return { success: true, demo: true };
+        }
         return this.callFunction('send-email', { to, subject, body, replyTo });
     }
 
     async sendSMS(to, message) {
+        // Demo Guard: Block SMS sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('SMS senden')) {
+            return { success: true, demo: true };
+        }
         return this.callFunction('send-sms', { to, message });
     }
 

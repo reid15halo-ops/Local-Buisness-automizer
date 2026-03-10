@@ -19,6 +19,19 @@ class PaymentService {
 
     // Create a payment link for invoice/deposit
     async createPaymentLink(options) {
+        // Demo Guard: Block real payment link creation in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('Zahlungslink erstellen')) {
+            console.warn('[PaymentService] Demo-Modus: Zahlungslink blockiert');
+            return {
+                id: 'pay-demo-' + Date.now(),
+                type: options?.type || 'invoice',
+                amount: options?.amount || 0,
+                status: 'demo',
+                url: '#demo-payment-blocked',
+                demo: true
+            };
+        }
+
         try {
             if (!options || typeof options !== 'object') {
                 throw new Error('Invalid payment link options');

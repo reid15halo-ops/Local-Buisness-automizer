@@ -387,6 +387,11 @@ self.addEventListener('message', (event) => {
             if (event.ports && event.ports[0]) {
                 event.ports[0].postMessage({ success: true });
             }
+        }).catch((err) => {
+            console.warn('[SW] Cache delete failed:', err);
+            if (event.ports && event.ports[0]) {
+                event.ports[0].postMessage({ success: false, error: err.message });
+            }
         });
     }
 });

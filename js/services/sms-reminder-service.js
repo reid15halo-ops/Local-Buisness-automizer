@@ -177,6 +177,12 @@ class SmsReminderService {
      * Falls back to console-only logging when no provider is configured.
      */
     async sendSms(phoneNumber, message) {
+        // Demo Guard: Block real SMS sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('SMS senden')) {
+            console.warn(`[SMS] Demo-Modus: SMS an ${phoneNumber} blockiert`);
+            return { success: true, messageId: 'demo-blocked-' + Date.now(), demo: true, method: 'demo-guard' };
+        }
+
         const cleanNumber = phoneNumber.replace(/[\s\-\/\(\)]/g, '');
         const provider    = window.APP_CONFIG?.SMS_PROVIDER
             || localStorage.getItem('freyai_sms_provider')

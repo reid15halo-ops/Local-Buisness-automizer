@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
 
     function initWorkflowsView() {
+        const container = document.getElementById('workflows-list');
+        if (container && container._initialized) return;
+        if (container) container._initialized = true;
         updateWorkflowStats();
         renderWorkflowTemplates();
         renderWorkflows();
@@ -43,6 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const templates = window.workflowService.getTemplates();
 
         const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
+        if (!container) return;
         container.innerHTML = templates.map((t, i) => `
             <div class="template-card" data-template="${i}">
                 <h4>⚡ ${san(t.name)}</h4>
@@ -65,7 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderWorkflows() {
         if (!window.workflowService) {return;}
         const container = document.getElementById('workflows-list');
-        const workflows = window.workflowService.getWorkflows();
+        if (!container) {return;}
+        const workflows = window.workflowService.getWorkflows() || [];
 
         if (workflows.length === 0) {
             container.innerHTML = '<p class="empty-state">Noch keine Workflows erstellt.</p>';
@@ -103,9 +108,13 @@ document.addEventListener('DOMContentLoaded', function () {
         container.querySelectorAll('.workflow-run').forEach(btn => {
             btn.addEventListener('click', async function () {
                 const id = this.closest('.workflow-item').dataset.id;
-                const result = await window.workflowService.executeWorkflow(id, { manual: true });
-                showNotification(result.success ? 'Workflow ausgeführt!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
-                initWorkflowsView();
+                try {
+                    const result = await window.workflowService.executeWorkflow(id, { manual: true });
+                    showNotification(result.success ? 'Workflow ausgeführt!' : 'Fehler: ' + result.error, result.success ? 'success' : 'error');
+                    initWorkflowsView();
+                } catch (err) {
+                    window.showToast?.('Workflow konnte nicht ausgeführt werden', 'error');
+                }
             });
         });
 
@@ -244,6 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderWorkflowLog() {
         if (!window.workflowService) {return;}
         const container = document.getElementById('workflow-log');
+        if (!container) return;
         const log = window.workflowService.getExecutionLog(null, 20);
 
         if (log.length === 0) {
@@ -266,6 +276,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
 
     function initScannerView() {
+        const container = document.getElementById('scanned-docs-list');
+        if (container && container._initialized) return;
+        if (container) container._initialized = true;
         updateScannerStats();
         renderScannedDocs();
         setupScannerControls();
@@ -401,6 +414,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // =====================================================
 
     function initBackupView() {
+        const container = document.getElementById('auto-backups-list');
+        if (container && container._initialized) return;
+        if (container) container._initialized = true;
         updateBackupStats();
         renderAutoBackups();
         renderActivityLog();
@@ -414,9 +430,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const backups = window.securityBackupService.getBackupHistory();
         const log = window.securityBackupService.getActivityLog(100);
 
-        document.getElementById('storage-used').textContent = usage.freyaiMB + ' MB';
-        document.getElementById('backup-count').textContent = backups.length;
-        document.getElementById('activity-count').textContent = log.length;
+        const storageUsedEl = document.getElementById('storage-used');
+        if (storageUsedEl) storageUsedEl.textContent = usage.freyaiMB + ' MB';
+        const backupCountEl = document.getElementById('backup-count');
+        if (backupCountEl) backupCountEl.textContent = backups.length;
+        const activityCountEl = document.getElementById('activity-count');
+        if (activityCountEl) activityCountEl.textContent = log.length;
     }
 
     function renderAutoBackups() {

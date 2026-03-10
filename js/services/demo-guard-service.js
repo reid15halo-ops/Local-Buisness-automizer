@@ -1,7 +1,8 @@
 /* ============================================
    Demo Guard Service
-   Prevents accidental demo data loading in production
-   Manages developer mode settings
+   Prevents accidental demo data in production.
+   Blocks: Supabase writes, Email, SMS, Payments.
+   Manages developer mode settings.
    ============================================ */
 
 class DemoGuardService {
@@ -9,9 +10,11 @@ class DemoGuardService {
         this.isDeveloperMode = this.getDevMode();
         this.listeners = [];
         this._intercepted = false;
+        this._supabaseDBIntercepted = false;
 
         if (this.isDemo()) {
             this.interceptSupabaseWrites();
+            this.interceptSupabaseDBService();
         }
     }
 
@@ -43,6 +46,37 @@ class DemoGuardService {
         localStorage.removeItem('demo_data_loaded');
     }
 
+    // ============================================
+    // External Service Guards
+    // Called by email-service, sms-service, payment-service etc.
+    // ============================================
+
+    /**
+     * Check if an outbound action (email, SMS, payment) should be blocked.
+     * Returns true if the action is allowed, false if blocked.
+     * Shows a user-visible info toast when blocking.
+     * @param {string} actionName - e.g. 'E-Mail senden', 'SMS senden'
+     * @returns {boolean}
+     */
+    allowExternalAction(actionName) {
+        if (!this.isDemo()) {return true;}
+        console.warn(`[DemoGuard] Blocked: ${actionName} (Demo-Modus aktiv)`);
+        if (window.errorHandler) {
+            window.errorHandler.info(`${actionName} ist im Demo-Modus deaktiviert.`);
+        }
+        return false;
+    }
+
+    /**
+     * Check if a record ID looks like demo data.
+     * Demo IDs contain 'DEMO' (e.g. ANF-DEMO-001, RE-DEMO-301).
+     * @param {string} id
+     * @returns {boolean}
+     */
+    isDemoId(id) {
+        return typeof id === 'string' && id.includes('DEMO');
+    }
+
     // Show confirmation dialog before loading demo data
     async confirmDemoLoad(title = 'Demo-Daten laden') {
         if (window.confirmDialogService) {
@@ -70,10 +104,10 @@ class DemoGuardService {
         banner.className = 'demo-mode-banner';
         banner.innerHTML = `
             <div class="demo-banner-content">
-                <span class="demo-banner-icon">🔧</span>
-                <span class="demo-banner-text">Demo-Daten aktiv — Nicht für Produktivbetrieb</span>
+                <span class="demo-banner-icon">\ud83d\udd27</span>
+                <span class="demo-banner-text">Demo-Modus aktiv \u2014 E-Mails, SMS und Zahlungen sind deaktiviert</span>
                 <button class="demo-banner-exit" onclick="window.demoGuardService?.exitDemoMode()">Demo beenden</button>
-                <button class="demo-banner-close" onclick="document.getElementById('demo-mode-banner')?.remove()">✕</button>
+                <button class="demo-banner-close" onclick="document.getElementById('demo-mode-banner')?.remove()">\u2715</button>
             </div>
         `;
 
@@ -109,7 +143,7 @@ class DemoGuardService {
         const devModeSection = document.createElement('div');
         devModeSection.className = 'settings-card';
         devModeSection.innerHTML = `
-            <h3>🚀 Entwicklermodus</h3>
+            <h3>\ud83d\ude80 Entwicklermodus</h3>
             <p>Demo-Funktionen und Test-Tools aktivieren</p>
             <div class="form-group">
                 <label style="display: flex; align-items: center; cursor: pointer;">
@@ -117,7 +151,7 @@ class DemoGuardService {
                     <span>Entwicklermodus aktivieren</span>
                 </label>
                 <small style="display: block; margin-top: 8px; color: var(--text-muted);">
-                    Zeigt Demo-Daten Buttons und Test-Tools. Nur für Entwicklung verwenden.
+                    Zeigt Demo-Daten Buttons und Test-Tools. Nur f\u00fcr Entwicklung verwenden.
                 </small>
             </div>
         `;
@@ -152,24 +186,53 @@ class DemoGuardService {
         };
     }
 
+    // ============================================
+    // Supabase Raw Client Interceptor
+    // Blocks insert/update/delete/upsert on the raw Supabase client
+    // ============================================
     interceptSupabaseWrites() {
         if (!this.isDemo()) {return;}
-        const client = window.supabaseClient?.client;
-        if (!client) {
-            // Supabase not ready yet — retry once after delay
-            setTimeout(() => this.interceptSupabaseWrites(), 2000);
-            return;
-        }
 
+        // Try both access paths: supabaseClient.client AND supabaseConfig.get()
+        const tryIntercept = () => {
+            const clients = [];
+
+            // Path 1: window.supabaseClient?.client (legacy)
+            if (window.supabaseClient?.client) {
+                clients.push(window.supabaseClient.client);
+            }
+
+            // Path 2: window.supabaseConfig?.get() (current, used by supabase-db-service)
+            try {
+                const configClient = window.supabaseConfig?.get();
+                if (configClient && !clients.includes(configClient)) {
+                    clients.push(configClient);
+                }
+            } catch (e) { /* not ready yet */ }
+
+            if (clients.length === 0) {
+                // Supabase not ready yet -- retry once after delay
+                setTimeout(() => this.interceptSupabaseWrites(), 2000);
+                return;
+            }
+
+            clients.forEach(client => this._patchClient(client));
+            this._intercepted = true;
+        };
+
+        tryIntercept();
+    }
+
+    _patchClient(client) {
+        if (client._demoGuardPatched) {return;}
         const originalFrom = client.from.bind(client);
         const blockedResult = { data: null, error: null, count: 0 };
-        // Make blocked result thenable so await works, and chainable for .select()/.eq() etc.
+
         const makeChainable = () => {
             const handler = {
                 get(target, prop) {
                     if (prop === 'then') {return (resolve) => resolve(blockedResult);}
                     if (prop === 'data' || prop === 'error' || prop === 'count') {return target[prop];}
-                    // Any chained method (.select(), .eq(), .single(), etc.) returns the same proxy
                     return () => new Proxy({ ...blockedResult }, handler);
                 }
             };
@@ -182,7 +245,7 @@ class DemoGuardService {
                 builder[method] = (...args) => {
                     console.warn(`[DemoGuard] Blocked ${method} on ${table} in demo mode`);
                     if (window.errorHandler) {
-                        window.errorHandler.info('Im Demo-Modus können keine Daten gespeichert werden.');
+                        window.errorHandler.info('Im Demo-Modus k\u00f6nnen keine Daten gespeichert werden.');
                     }
                     return makeChainable();
                 };
@@ -190,11 +253,67 @@ class DemoGuardService {
             ['insert', 'update', 'delete', 'upsert'].forEach(blockWrite);
             return builder;
         };
-        this._intercepted = true;
+
+        client._demoGuardPatched = true;
     }
 
+    // ============================================
+    // SupabaseDB Service Interceptor
+    // Also blocks the higher-level create/update/delete methods
+    // in supabase-db-service.js which save locally + sync to cloud
+    // ============================================
+    interceptSupabaseDBService() {
+        if (!this.isDemo()) {return;}
+
+        const tryPatch = () => {
+            const dbService = window.supabaseDB;
+            if (!dbService || dbService._demoGuardPatched) {return;}
+
+            const origCreate = dbService.create.bind(dbService);
+            const origUpdate = dbService.update.bind(dbService);
+            const origDelete = dbService.delete.bind(dbService);
+
+            dbService.create = async (table, record) => {
+                console.warn(`[DemoGuard] Blocked supabaseDB.create(${table}) in demo mode`);
+                // Still save locally so demo UX works, but never sync to cloud
+                dbService._saveLocal(table, record);
+                return record;
+            };
+
+            dbService.update = async (table, id, updates) => {
+                console.warn(`[DemoGuard] Blocked supabaseDB.update(${table}, ${id}) in demo mode`);
+                dbService._updateLocal(table, id, updates);
+                return updates;
+            };
+
+            dbService.delete = async (table, id) => {
+                console.warn(`[DemoGuard] Blocked supabaseDB.delete(${table}, ${id}) in demo mode`);
+                dbService._deleteLocal(table, id);
+            };
+
+            // Block sync queue processing too
+            dbService.syncAll = async () => {
+                console.warn('[DemoGuard] Blocked supabaseDB.syncAll() in demo mode');
+                return { synced: 0, errors: 0 };
+            };
+
+            dbService._demoGuardPatched = true;
+            this._supabaseDBIntercepted = true;
+        };
+
+        // supabaseDB may not be ready yet
+        if (window.supabaseDB) {
+            tryPatch();
+        } else {
+            setTimeout(tryPatch, 2000);
+        }
+    }
+
+    // ============================================
+    // Exit Demo Mode
+    // ============================================
     async exitDemoMode() {
-        // Lösche Demo-Daten aus localStorage
+        // 1. L\u00f6sche Demo-Daten aus localStorage
         const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -204,7 +323,7 @@ class DemoGuardService {
         }
         keysToRemove.forEach(k => localStorage.removeItem(k));
 
-        // Lösche gecachte Store-Daten die Demo-IDs haben
+        // 2. L\u00f6sche gecachte Store-Daten die Demo-IDs haben
         ['anfragen', 'angebote', 'auftraege', 'rechnungen'].forEach(key => {
             const data = localStorage.getItem(key);
             if (data) {
@@ -218,11 +337,51 @@ class DemoGuardService {
             }
         });
 
+        // 3. L\u00f6sche Demo-Daten aus IndexedDB (Store-Service nutzt user-spezifische Keys)
+        try {
+            if (window.dbService) {
+                const userId = window.storeService?.currentUserId || 'default';
+                const storeKey = 'freyai-workflow-store';
+                const storeData = await window.dbService.getUserData(userId, storeKey);
+                if (storeData) {
+                    const COLLECTIONS = ['anfragen', 'angebote', 'auftraege', 'rechnungen', 'activities'];
+                    let changed = false;
+                    for (const col of COLLECTIONS) {
+                        if (Array.isArray(storeData[col])) {
+                            const before = storeData[col].length;
+                            storeData[col] = storeData[col].filter(
+                                item => !String(item.id || '').includes('DEMO')
+                            );
+                            if (storeData[col].length !== before) {changed = true;}
+                        }
+                    }
+                    // Remove demo activities (title contains 'DEMO')
+                    if (Array.isArray(storeData.activities)) {
+                        const before = storeData.activities.length;
+                        storeData.activities = storeData.activities.filter(
+                            a => !String(a.title || '').includes('DEMO')
+                        );
+                        if (storeData.activities.length !== before) {changed = true;}
+                    }
+                    if (changed) {
+                        await window.dbService.setUserData(userId, storeKey, storeData);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('[DemoGuard] IndexedDB cleanup error:', e);
+        }
+
+        // 4. L\u00f6sche Sync-Queue (verhindert verz\u00f6gerten Upload von Demo-Daten)
+        try {
+            localStorage.removeItem('supabase_sync_queue');
+        } catch (e) {}
+
         this.clearDemoFlag();
         document.getElementById('demo-mode-banner')?.remove();
 
         if (window.errorHandler) {
-            window.errorHandler.success('Demo-Modus beendet. Daten wurden zurückgesetzt.');
+            window.errorHandler.success('Demo-Modus beendet. Daten wurden zur\u00fcckgesetzt.');
         }
 
         setTimeout(() => location.reload(), 1500);

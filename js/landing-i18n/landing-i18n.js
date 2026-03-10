@@ -125,10 +125,12 @@ class LandingI18n {
     // Deep merge: base object with override values (max 5 levels deep)
     _deepMerge(base, override, depth = 0) {
         if (depth > 5) {return override || base;}
-        const result = {};
-        const UNSAFE = ['__proto__', 'constructor', 'prototype'];
+        if (!override || typeof override !== 'object') {return base;}
+        if (!base || typeof base !== 'object') {return override;}
+        const result = Object.create(null);
+        const UNSAFE = new Set(['__proto__', 'constructor', 'prototype']);
         for (const key of Object.keys(base)) {
-            if (UNSAFE.includes(key)) {continue;}
+            if (UNSAFE.has(key)) {continue;}
             if (
                 override[key] !== undefined &&
                 typeof base[key] === 'object' && base[key] !== null &&
@@ -144,7 +146,7 @@ class LandingI18n {
         }
         // Include keys only in override
         for (const key of Object.keys(override)) {
-            if (UNSAFE.includes(key)) {continue;}
+            if (UNSAFE.has(key)) {continue;}
             if (result[key] === undefined) {
                 result[key] = override[key];
             }
@@ -152,9 +154,13 @@ class LandingI18n {
         return result;
     }
 
-    // Get nested value from object by dot-notation key
+    // Get nested value from object by dot-notation key (prototype-safe)
     _getNestedValue(obj, key) {
-        return key.split('.').reduce((o, k) => (o && o[k] !== undefined) ? o[k] : null, obj);
+        const UNSAFE = new Set(['__proto__', 'constructor', 'prototype']);
+        return key.split('.').reduce((o, k) => {
+            if (UNSAFE.has(k)) {return null;}
+            return (o && Object.prototype.hasOwnProperty.call(o, k)) ? o[k] : null;
+        }, obj);
     }
 
     // Apply translations to the DOM
@@ -168,7 +174,7 @@ class LandingI18n {
             if (el.hasAttribute('data-i18n-attr')) {return;} // handled below
             const key = el.getAttribute('data-i18n');
             const value = this._getNestedValue(translations, key);
-            if (value === null) {return;}
+            if (value === null || typeof value !== 'string') {return;}
 
             if (el.hasAttribute('data-i18n-html') && el.getAttribute('data-i18n-html') !== 'false') {
                 if (typeof DOMPurify !== 'undefined') {
@@ -190,7 +196,7 @@ class LandingI18n {
             if (!safeAttrs.includes(attr)) {return;}
             const key = el.getAttribute('data-i18n');
             const value = this._getNestedValue(translations, key);
-            if (value !== null) {
+            if (value !== null && typeof value === 'string') {
                 el.setAttribute(attr, value);
             }
         });
@@ -199,7 +205,7 @@ class LandingI18n {
         document.querySelectorAll('[data-i18n-meta]').forEach(el => {
             const key = el.getAttribute('data-i18n-meta');
             const value = this._getNestedValue(translations, key);
-            if (value === null) {return;}
+            if (value === null || typeof value !== 'string') {return;}
 
             if (el.tagName === 'TITLE') {
                 el.textContent = value;
@@ -263,6 +269,28 @@ class LandingI18n {
         } finally {
             this._switchingLang = false;
         }
+    }
+
+    // Store bound event handlers for cleanup
+    _boundHandlers = [];
+
+    _addListener(target, event, handler, options) {
+        target.addEventListener(event, handler, options);
+        this._boundHandlers.push({ target, event, handler, options });
+    }
+
+    // Clean up all event listeners and DOM elements
+    destroy() {
+        for (const { target, event, handler, options } of this._boundHandlers) {
+            target.removeEventListener(event, handler, options);
+        }
+        this._boundHandlers = [];
+        const modal = document.getElementById('lang-modal');
+        if (modal) {modal.remove();}
+        const container = document.getElementById('lang-switcher');
+        if (container) {container.textContent = '';}
+        document.body.classList.remove('modal-open');
+        this._triggerButton = null;
     }
 
     // Build language switcher UI into existing #lang-switcher container
@@ -368,27 +396,28 @@ class LandingI18n {
             if (firstOption) {firstOption.focus();}
         };
 
-        // Events
-        this._triggerButton.addEventListener('click', () => {
+        // Events (tracked for cleanup)
+        const toggleHandler = () => {
             if (modal.classList.contains('visible')) {
                 closeModal();
             } else {
                 openModal();
             }
-        });
+        };
+        this._addListener(this._triggerButton, 'click', toggleHandler);
 
-        modal.querySelector('.lang-modal-close').addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) {closeModal();} });
+        this._addListener(modal.querySelector('.lang-modal-close'), 'click', closeModal);
+        this._addListener(modal, 'click', (e) => { if (e.target === modal) {closeModal();} });
 
         modal.querySelectorAll('.lang-option').forEach(opt => {
-            opt.addEventListener('click', () => {
+            this._addListener(opt, 'click', () => {
                 this.switchLanguage(opt.dataset.lang);
                 closeModal();
             });
         });
 
         // Keyboard: Escape to close + focus trap
-        document.addEventListener('keydown', (e) => {
+        const keydownHandler = (e) => {
             if (!modal.classList.contains('visible')) {return;}
 
             if (e.key === 'Escape') {
@@ -415,22 +444,32 @@ class LandingI18n {
                     }
                 }
             }
-        });
+        };
+        this._addListener(document, 'keydown', keydownHandler);
     }
 
     // Initialize
     async init() {
-        this.currentLang = this.detectLanguage();
-        this.buildSwitcher();
+        try {
+            this.currentLang = this.detectLanguage();
+            this.buildSwitcher();
 
-        if (this.currentLang !== this.fallbackLang) {
-            await this.switchLanguage(this.currentLang);
+            if (this.currentLang !== this.fallbackLang) {
+                await this.switchLanguage(this.currentLang);
+            }
+        } catch (e) {
+            console.warn('[i18n] Init error:', e.message);
+            // Graceful degradation: page stays in German (default HTML content)
         }
     }
 }
 
 // Auto-init when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Clean up previous instance if hot-reloaded
+    if (window.landingI18n && typeof window.landingI18n.destroy === 'function') {
+        window.landingI18n.destroy();
+    }
     window.landingI18n = new LandingI18n();
     window.landingI18n.init().catch(e => console.warn('[i18n] Init failed:', e.message));
 });

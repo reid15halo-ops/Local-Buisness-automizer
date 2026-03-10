@@ -1140,6 +1140,11 @@ class AgenticExecutorService {
      * Send an email via the job queue or email service.
      */
     async _sendEmail(emailData) {
+        // Demo Guard: Block agent email sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('Agent-E-Mail senden')) {
+            return;
+        }
+
         const emailId = `email-${Date.now().toString(36)}`;
 
         try {

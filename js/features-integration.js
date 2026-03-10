@@ -3,6 +3,8 @@
    Render functions and event handlers for new services
    ============================================ */
 
+const _esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'));
+
 // ============================================
 // Email View
 // ============================================
@@ -26,22 +28,21 @@ function renderEmails() {
         return;
     }
 
-    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     container.innerHTML = emails.map(email => `
-        <div class="email-item ${email.read ? '' : 'unread'}" data-id="${sanitize(email.id)}">
-            <div class="email-category-icon">${sanitize(window.emailService.getCategoryIcon(email.category))}</div>
+        <div class="email-item ${email.read ? '' : 'unread'}" data-id="${_esc(email.id)}">
+            <div class="email-category-icon">${_esc(window.emailService.getCategoryIcon(email.category))}</div>
             <div class="email-content">
-                <div class="email-sender">${sanitize(email.fromName)}</div>
-                <div class="email-subject">${sanitize(email.subject)}</div>
-                <div class="email-preview">${sanitize(email.body.substring(0, 100))}...</div>
+                <div class="email-sender">${_esc(email.fromName)}</div>
+                <div class="email-subject">${_esc(email.subject)}</div>
+                <div class="email-preview">${_esc(email.body.substring(0, 100))}...</div>
                 <div class="email-actions">
-                    <button class="btn btn-small btn-primary" onclick="createTaskFromEmail('${sanitize(email.id)}')">📋 Aufgabe erstellen</button>
-                    <button class="btn btn-small btn-secondary" onclick="createAnfrageFromEmail('${sanitize(email.id)}')">📥 Als Anfrage</button>
+                    <button class="btn btn-small btn-primary" onclick="createTaskFromEmail('${_esc(email.id)}')">📋 Aufgabe erstellen</button>
+                    <button class="btn btn-small btn-secondary" onclick="createAnfrageFromEmail('${_esc(email.id)}')">📥 Als Anfrage</button>
                 </div>
             </div>
             <div class="email-meta">
-                <div>${sanitize(window.emailService.getRelativeTime(email.date))}</div>
-                <div class="status-badge">${sanitize(window.emailService.getCategoryLabel(email.category))}</div>
+                <div>${_esc(window.emailService.getRelativeTime(email.date))}</div>
+                <div class="status-badge">${_esc(window.emailService.getCategoryLabel(email.category))}</div>
             </div>
         </div>
     `).join('');
@@ -114,14 +115,14 @@ function initEmails() {
 function renderTasks() {
     if (!window.taskService) {return;}
 
-    const stats = window.taskService.getStatistics();
-    const kanban = window.taskService.getKanbanData();
+    const stats = window.taskService.getStatistics() || { open: 0, overdue: 0, dueToday: 0, completed: 0 };
+    const kanban = window.taskService.getKanbanData() || {};
 
     // Update stats
-    document.getElementById('tasks-open')?.textContent && (document.getElementById('tasks-open').textContent = stats.open);
-    document.getElementById('tasks-overdue')?.textContent && (document.getElementById('tasks-overdue').textContent = stats.overdue);
-    document.getElementById('tasks-today')?.textContent && (document.getElementById('tasks-today').textContent = stats.dueToday);
-    document.getElementById('tasks-done')?.textContent && (document.getElementById('tasks-done').textContent = stats.completed);
+    const tasksOpenEl = document.getElementById('tasks-open'); if (tasksOpenEl) tasksOpenEl.textContent = stats.open;
+    const tasksOverdueEl = document.getElementById('tasks-overdue'); if (tasksOverdueEl) tasksOverdueEl.textContent = stats.overdue;
+    const tasksTodayEl = document.getElementById('tasks-today'); if (tasksTodayEl) tasksTodayEl.textContent = stats.dueToday;
+    const tasksDoneEl = document.getElementById('tasks-done'); if (tasksDoneEl) tasksDoneEl.textContent = stats.completed;
 
     const badge = document.getElementById('aufgaben-badge');
     if (badge) {badge.textContent = stats.open + stats.overdue;}
@@ -132,14 +133,17 @@ function renderTasks() {
         if (!container) {return;}
 
         const tasks = kanban[status] || [];
-        const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
+        if (tasks.length === 0) {
+            container.innerHTML = '<p class="empty-state" style="font-size:13px;color:var(--text-secondary);text-align:center;padding:16px;">Keine Aufgaben</p>';
+            return;
+        }
         container.innerHTML = tasks.map(task => `
-            <div class="kanban-task" data-id="${san(task.id)}">
+            <div class="kanban-task" data-id="${_esc(task.id)}">
                 <div class="kanban-task-priority">${window.taskService.getPriorityIcon(task.priority)}</div>
-                <div class="kanban-task-title">${san(task.title)}</div>
+                <div class="kanban-task-title">${_esc(task.title)}</div>
                 <div class="kanban-task-meta">
                     <span>${task.dueDate ? window.taskService.formatDate(task.dueDate) : ''}</span>
-                    ${task.customer?.name ? `<span>👤 ${san(task.customer.name)}</span>` : ''}
+                    ${task.customer?.name ? `<span>👤 ${_esc(task.customer.name)}</span>` : ''}
                 </div>
             </div>
         `).join('');
@@ -187,18 +191,27 @@ function renderCustomers() {
     const customers = window.customerService.getAllCustomers();
 
     // Update stats
-    document.getElementById('customers-total')?.textContent && (document.getElementById('customers-total').textContent = customers.length);
-    document.getElementById('customers-active')?.textContent && (document.getElementById('customers-active').textContent = window.customerService.getActiveCustomers().length);
+    const customersTotalEl = document.getElementById('customers-total'); if (customersTotalEl) customersTotalEl.textContent = customers.length;
+    const customersActiveEl = document.getElementById('customers-active'); if (customersActiveEl) customersActiveEl.textContent = window.customerService.getActiveCustomers().length;
 
     const badge = document.getElementById('kunden-badge');
     if (badge) {badge.textContent = customers.length;}
 
     if (customers.length === 0) {
-        container.innerHTML = '<p class="empty-state">Keine Kunden vorhanden</p>';
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 60px 20px; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 16px;">👥</div>
+                <h3 style="margin-bottom: 8px;">Keine Kunden vorhanden</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                    Kunden werden automatisch aus Anfragen und Angeboten erstellt.
+                </p>
+                <button class="btn btn-primary" onclick="document.getElementById('btn-neuer-kunde')?.click()">
+                    ➕ Neuen Kunden anlegen
+                </button>
+            </div>`;
         return;
     }
 
-    const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
     // Use Supabase portal if available, fall back to localStorage-based portal
     const useSupabasePortal = !!window.portalService && window.supabaseConfig?.isConfigured?.();
     const portalPage = useSupabasePortal ? 'portal.html' : 'customer-portal.html';
@@ -217,13 +230,13 @@ function renderCustomers() {
             : '';
 
         return `
-        <div class="customer-card" data-id="${esc(c.id)}">
-            <div class="customer-avatar">${esc((c.name || '?').charAt(0).toUpperCase())}</div>
-            <div class="customer-name">${esc(c.name || 'Unbekannt')}${portalBadge}</div>
-            <div class="customer-company">${esc(c.firma || '')}</div>
+        <div class="customer-card" data-id="${_esc(c.id)}">
+            <div class="customer-avatar">${_esc((c.name || '?').charAt(0).toUpperCase())}</div>
+            <div class="customer-name">${_esc(c.name || 'Unbekannt')}${portalBadge}</div>
+            <div class="customer-company">${_esc(c.firma || '')}</div>
             <div class="customer-contact">
-                ${c.email ? `<a href="mailto:${esc(c.email)}">📧 ${esc(c.email)}</a>` : ''}
-                ${c.telefon ? `<a href="tel:${esc(c.telefon)}" data-phone="${esc(c.telefon)}" data-customer-id="${esc(c.id)}" data-customer-name="${esc(c.name)}" class="phone-call-link">📞 ${esc(c.telefon)}</a>` : ''}
+                ${c.email ? `<a href="mailto:${_esc(c.email)}">📧 ${_esc(c.email)}</a>` : ''}
+                ${c.telefon ? `<a href="tel:${_esc(c.telefon)}" data-phone="${_esc(c.telefon)}" data-customer-id="${_esc(c.id)}" data-customer-name="${_esc(c.name)}" class="phone-call-link">📞 ${_esc(c.telefon)}</a>` : ''}
             </div>
             <div class="customer-stats-inline">
                 <span>💰 ${formatCurrency(c.umsatzGesamt || 0)}</span>
@@ -231,13 +244,13 @@ function renderCustomers() {
             </div>
             <div class="customer-portal-actions" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
                 <button class="btn btn-sm btn-secondary customer-portal-btn"
-                    data-customer-id="${esc(c.id)}"
-                    data-customer-name="${esc(c.name || '')}"
+                    data-customer-id="${_esc(c.id)}"
+                    data-customer-name="${_esc(c.name || '')}"
                     title="Kundenportal öffnen">
                     🔗 Portal
                 </button>
                 <button class="btn btn-sm btn-secondary customer-portal-copy-btn"
-                    data-customer-id="${esc(c.id)}"
+                    data-customer-id="${_esc(c.id)}"
                     title="Portal-Link kopieren">
                     📋 Link
                 </button>
@@ -445,13 +458,12 @@ function initCustomers() {
             return;
         }
         const results = window.customerService.searchCustomers(query);
-        const s = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         // Re-render with filtered results
         container.innerHTML = results.map(c => `
             <div class="customer-card">
-                <div class="customer-avatar">${s((c.name || '?').charAt(0).toUpperCase())}</div>
-                <div class="customer-name">${s(c.name)}</div>
-                <div class="customer-company">${s(c.firma || '')}</div>
+                <div class="customer-avatar">${_esc((c.name || '?').charAt(0).toUpperCase())}</div>
+                <div class="customer-name">${_esc(c.name)}</div>
+                <div class="customer-company">${_esc(c.firma || '')}</div>
             </div>
         `).join('');
     });
@@ -512,10 +524,9 @@ function renderCalendar() {
     container.innerHTML = weekData.map(day => {
         const dayKey = day.date;
         const dayAuftraege = auftragEvents[dayKey] || [];
-        const calSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         const auftraegeHtml = dayAuftraege.map(a => `
-            <div class="calendar-event" style="border-color: #f59e0b; cursor:pointer;" onclick="window.openAuftragDetail && window.openAuftragDetail('${calSan(a.id)}')">
-                <strong>🔧</strong> ${calSan(a.kunde?.name || 'Auftrag')}
+            <div class="calendar-event" style="border-color: #f59e0b; cursor:pointer;" onclick="window.openAuftragDetail && window.openAuftragDetail('${_esc(a.id)}')">
+                <strong>🔧</strong> ${_esc(a.kunde?.name || 'Auftrag')}
             </div>
         `).join('');
 
@@ -527,10 +538,9 @@ function renderCalendar() {
                 </div>
                 <div class="calendar-events">
                     ${day.appointments.map(apt => {
-                        const aptSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
                         const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(apt.color) ? apt.color : '#6366f1';
                         return `<div class="calendar-event" style="border-color: ${safeColor}">
-                            <strong>${aptSan(apt.startTime)}</strong> ${aptSan(apt.title)}
+                            <strong>${_esc(apt.startTime)}</strong> ${_esc(apt.title)}
                         </div>`;
                     }).join('')}
                     ${auftraegeHtml}
@@ -648,29 +658,31 @@ function renderTimeTracking() {
         if (entries.length === 0) {
             entriesList.innerHTML = `<p class="empty-state">Keine Zeiteintr\u00e4ge f\u00fcr ${new Date(filterDate).toLocaleDateString('de-DE')}</p>`;
         } else {
-            const tSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => String(v));
             const typeLabels = { arbeit: 'Arbeit', fahrt: 'Fahrt', pause: 'Pause' };
             entriesList.innerHTML = entries.map(e => {
                 const auftrag = e.auftragId ? window.storeService?.state?.auftraege?.find(a => a.id === e.auftragId) : null;
-                const auftragLabel = auftrag ? `<span style="font-size:12px;color:var(--text-muted);"> | ${tSan(auftrag.leistungsart || auftrag.id)}</span>` : '';
+                const auftragLabel = auftrag ? `<span style="font-size:12px;color:var(--text-muted);"> | ${_esc(auftrag.leistungsart || auftrag.id)}</span>` : '';
                 return `
                 <div class="item-card" style="position:relative;">
                     <div class="item-header">
-                        <span class="item-title">${tSan(e.startTime)} - ${tSan(e.endTime)}${auftragLabel}</span>
+                        <span class="item-title">${_esc(e.startTime)} - ${_esc(e.endTime)}${auftragLabel}</span>
                         <span class="status-badge ${e.billable ? '' : 'status-badge--muted'}">${e.durationHours}h ${e.billable ? '' : '(n.a.)'}</span>
                     </div>
                     <div class="item-description">
                         <span style="font-size:11px;padding:2px 6px;background:var(--bg);border-radius:4px;margin-right:6px;">${typeLabels[e.type] || 'Arbeit'}</span>
-                        ${tSan(e.description || 'Keine Beschreibung')}
+                        ${_esc(e.description || 'Keine Beschreibung')}
                     </div>
-                    <button class="btn btn-sm btn-danger time-entry-delete-btn" data-id="${tSan(e.id)}" style="position:absolute;top:8px;right:8px;padding:2px 8px;font-size:11px;" title="L\u00f6schen">&times;</button>
+                    <button class="btn btn-sm btn-danger time-entry-delete-btn" data-id="${_esc(e.id)}" style="position:absolute;top:8px;right:8px;padding:2px 8px;font-size:11px;" title="L\u00f6schen">&times;</button>
                 </div>`;
             }).join('');
 
             // Bind delete buttons
             entriesList.querySelectorAll('.time-entry-delete-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (confirm('Zeiteintrag l\u00f6schen?')) {
+                btn.addEventListener('click', async () => {
+                    const confirmed = window.confirmDialogService
+                        ? await window.confirmDialogService.confirm('Zeiteintrag l\u00f6schen?')
+                        : confirm('Zeiteintrag l\u00f6schen?');
+                    if (confirmed) {
                         window.timeTrackingService.deleteEntry(btn.dataset.id);
                         renderTimeTracking();
                         showToast('Eintrag gel\u00f6scht', 'success');
@@ -686,9 +698,8 @@ function _populateAuftragSelect() {
     if (!sel) { return; }
     const auftraege = window.storeService?.state?.auftraege || [];
     const currentVal = sel.value;
-    const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => String(v));
     sel.innerHTML = '<option value="">\u2014 Kein Auftrag \u2014</option>' +
-        auftraege.map(a => `<option value="${esc(a.id)}">${esc(a.leistungsart || a.id)} — ${esc(a.kunde?.name || '')}</option>`).join('');
+        auftraege.map(a => `<option value="${_esc(a.id)}">${_esc(a.leistungsart || a.id)} — ${_esc(a.kunde?.name || '')}</option>`).join('');
     if (currentVal) { sel.value = currentVal; }
 }
 
@@ -829,16 +840,15 @@ function initNotificationBell() {
             list.innerHTML = '<p style="padding:16px;text-align:center;color:var(--text-muted);font-size:13px;">Keine Benachrichtigungen</p>';
             return;
         }
-        const esc = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => String(v));
         list.innerHTML = notifications.map(n => {
             const timeAgo = window.notificationService.getRelativeTime?.(n.timestamp) || '';
             return `
-            <div class="notification-item ${n.read ? 'read' : 'unread'}" data-id="${esc(n.id)}" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;${n.read ? 'opacity:0.6;' : ''}">
+            <div class="notification-item ${n.read ? 'read' : 'unread'}" data-id="${_esc(n.id)}" style="padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;${n.read ? 'opacity:0.6;' : ''}">
                 <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-weight:${n.read ? '400' : '600'};font-size:13px;">${esc(n.icon || '')} ${esc(n.title)}</span>
-                    <span style="font-size:11px;color:var(--text-muted);">${esc(timeAgo)}</span>
+                    <span style="font-weight:${n.read ? '400' : '600'};font-size:13px;">${_esc(n.icon || '')} ${_esc(n.title)}</span>
+                    <span style="font-size:11px;color:var(--text-muted);">${_esc(timeAgo)}</span>
                 </div>
-                ${n.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${esc(n.description)}</div>` : ''}
+                ${n.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${_esc(n.description)}</div>` : ''}
             </div>`;
         }).join('');
 
@@ -920,19 +930,18 @@ function renderDocuments() {
 
     const docs = window.documentService.getAllDocuments();
 
-    document.getElementById('docs-total')?.textContent && (document.getElementById('docs-total').textContent = docs.length);
-    document.getElementById('docs-receipts')?.textContent && (document.getElementById('docs-receipts').textContent = docs.filter(d => d.category === 'quittung').length);
+    const docsTotalEl = document.getElementById('docs-total'); if (docsTotalEl) docsTotalEl.textContent = docs.length;
+    const docsReceiptsEl = document.getElementById('docs-receipts'); if (docsReceiptsEl) docsReceiptsEl.textContent = docs.filter(d => d.category === 'quittung').length;
 
     if (docs.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine Dokumente. Scanne oder lade ein Dokument hoch.</p>';
         return;
     }
 
-    const docSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
     container.innerHTML = docs.map(doc => `
-        <div class="document-card" data-id="${docSan(doc.id)}">
+        <div class="document-card" data-id="${_esc(doc.id)}">
             <div class="document-icon">${window.documentService.getCategoryIcon(doc.category)}</div>
-            <div class="document-name">${docSan(doc.name)}</div>
+            <div class="document-name">${_esc(doc.name)}</div>
             <div class="document-meta">
                 ${window.documentService.getCategoryLabel(doc.category)} •
                 ${new Date(doc.createdAt).toLocaleDateString('de-DE')}
@@ -979,11 +988,10 @@ function initDocuments() {
         }
         const results = window.documentService.searchDocuments(query);
         const container = document.getElementById('documents-list');
-        const dsSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (v => v);
         container.innerHTML = results.map(doc => `
             <div class="document-card">
                 <div class="document-icon">${window.documentService.getCategoryIcon(doc.category)}</div>
-                <div class="document-name">${dsSan(doc.name)}</div>
+                <div class="document-name">${_esc(doc.name)}</div>
             </div>
         `).join('');
     });
@@ -1136,9 +1144,8 @@ async function generateReport() {
     if (report.topCustomers?.length > 0) {
         html += '<h4 style="margin-top:20px;">Top-Kunden nach Umsatz</h4>';
         html += '<table class="report-table"><thead><tr><th>Kunde</th><th>Rechnungen</th><th class="text-right">Umsatz</th></tr></thead><tbody>';
-        const reportSan = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
         report.topCustomers.forEach(c => {
-            html += `<tr><td>${reportSan(c.name)}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
+            html += `<tr><td>${_esc(c.name)}</td><td>${c.count}</td><td class="text-right">${formatCurrency(c.revenue)}</td></tr>`;
         });
         html += '</tbody></table>';
     }
@@ -1346,13 +1353,17 @@ function renderChatbot() {
 }
 
 async function initAIModelSelector() {
-    const select = document.getElementById('ai-model-select');
-    if (!select) {return;}
+    try {
+        const select = document.getElementById('ai-model-select');
+        if (!select) {return;}
 
-    if (!window.llmService) {return;}
-    const models = await window.llmService.getAvailableModels();
-    if (models.length > 0) {
-        select.innerHTML = models.map(m => `<option value="${window.UI.sanitize(m.name)}" ${m.name === window.llmService.config.ollamaModel ? 'selected' : ''}>${window.UI.sanitize(m.name)}</option>`).join('');
+        if (!window.llmService) {return;}
+        const models = await window.llmService.getAvailableModels();
+        if (models.length > 0) {
+            select.innerHTML = models.map(m => `<option value="${_esc(m.name)}" ${m.name === window.llmService.config.ollamaModel ? 'selected' : ''}>${_esc(m.name)}</option>`).join('');
+        }
+    } catch (err) {
+        console.warn('[AI Model Selector] Error:', err);
     }
 }
 
@@ -1397,11 +1408,12 @@ function appendAiMessage(role, content) {
     if (!container) {return;}
     const msgDiv = document.createElement('div');
     msgDiv.className = `ai-message ${role}`;
-    const sanitize = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
-    msgDiv.innerHTML = sanitize(content).replace(/\n/g, '<br>');
+    msgDiv.innerHTML = _esc(content).replace(/\n/g, '<br>');
     container.appendChild(msgDiv);
     container.scrollTop = container.scrollHeight;
 }
+
+let _aiModelInterval = null;
 
 function initChatbot() {
     const btnSend = document.getElementById('btn-send-ai');
@@ -1413,7 +1425,8 @@ function initChatbot() {
     });
 
     // Auto-refresh model list occasionally
-    setInterval(initAIModelSelector, 30000);
+    if (_aiModelInterval) clearInterval(_aiModelInterval);
+    _aiModelInterval = setInterval(initAIModelSelector, 30000);
 }
 
 // ============================================
@@ -1450,16 +1463,15 @@ async function renderEmailAutomation() {
         return;
     }
 
-    const h = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const statusIcons = { success: '✅', failed: '❌', pending: '⏳', test: '🧪' };
 
     container.innerHTML = filtered.map(e => `<div class="item-card" style="margin-bottom:8px;">
         <div class="item-header">
-            <span>${statusIcons[e.status] || '📧'} <strong>${h(e.sender || e.from || 'Unbekannt')}</strong></span>
+            <span>${statusIcons[e.status] || '📧'} <strong>${_esc(e.sender || e.from || 'Unbekannt')}</strong></span>
             <small>${e.timestamp ? new Date(e.timestamp).toLocaleString('de-DE') : '-'}</small>
         </div>
         <div class="item-meta">
-            <span>${h(e.subject || 'Kein Betreff')}</span>
+            <span>${_esc(e.subject || 'Kein Betreff')}</span>
             ${e.quote ? `<span>→ Angebot erstellt</span>` : ''}
         </div>
     </div>`).join('');

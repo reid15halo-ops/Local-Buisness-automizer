@@ -229,6 +229,11 @@ class UnifiedCommService {
     }
 
     async sendSms(phoneNumber, message, conversationId = null, customerId = null) {
+        // Demo Guard: Block real SMS sends in demo mode
+        if (window.demoGuardService && !window.demoGuardService.allowExternalAction('SMS senden')) {
+            return { success: true, messageId: 'demo-blocked-' + Date.now(), demo: true };
+        }
+
         // Validate message length
         const smsInfo = this.calculateSmsLength(message);
         if (smsInfo.segments > 6) {

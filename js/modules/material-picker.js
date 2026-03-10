@@ -63,8 +63,10 @@ class MaterialPickerUI {
                 font-size: 24px;
                 cursor: pointer;
                 padding: 0;
-                width: 32px;
-                height: 32px;
+                width: 44px;
+                height: 44px;
+                min-width: 44px;
+                min-height: 44px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -94,7 +96,8 @@ class MaterialPickerUI {
             }
 
             .material-picker-search input:focus {
-                outline: none;
+                outline: 2px solid var(--primary, #6366f1);
+                outline-offset: 2px;
                 border-color: #2dd4a8;
                 background: #333;
             }
@@ -264,7 +267,7 @@ class MaterialPickerUI {
         content.innerHTML = `
             <div class="material-picker-header">
                 <h3>Material aus Bestand wählen</h3>
-                <button class="material-picker-close">&times;</button>
+                <button class="material-picker-close" aria-label="Schließen">&times;</button>
             </div>
             <div class="material-picker-search">
                 <input type="text" class="material-picker-search-input" placeholder="Materialiën durchsuchen...">
@@ -289,6 +292,12 @@ class MaterialPickerUI {
             }
         });
 
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+            }
+        });
+
         // Render all materials initially
         this.renderMaterialList(materials, list, modal);
 
@@ -299,9 +308,9 @@ class MaterialPickerUI {
                 this.renderMaterialList(materials, list, modal);
             } else {
                 const filtered = materials.filter(m =>
-                    m.bezeichnung.toLowerCase().includes(query) ||
-                    m.artikelnummer.toLowerCase().includes(query) ||
-                    m.kategorie.toLowerCase().includes(query)
+                    (m.bezeichnung || '').toLowerCase().includes(query) ||
+                    (m.artikelnummer || '').toLowerCase().includes(query) ||
+                    (m.kategorie || '').toLowerCase().includes(query)
                 );
                 this.renderMaterialList(filtered, list, modal);
             }
@@ -316,18 +325,20 @@ class MaterialPickerUI {
             return;
         }
 
+        const _esc = window.UI?.sanitize || (s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'));
+
         container.innerHTML = materials.map(material => {
             const stockStatus = this.getStockStatus(material);
             const stockColor = stockStatus.color;
 
             return `
-                <div class="material-picker-item" data-material-id="${material.id}">
-                    <div class="material-picker-item-name">${window.UI?.sanitize?.(material.bezeichnung) || material.bezeichnung}</div>
-                    <div class="material-picker-item-artikelnr">Art.Nr.: ${window.UI?.sanitize?.(material.artikelnummer) || material.artikelnummer}</div>
+                <div class="material-picker-item" data-material-id="${_esc(material.id)}" tabindex="0" role="button">
+                    <div class="material-picker-item-name">${_esc(material.bezeichnung)}</div>
+                    <div class="material-picker-item-artikelnr">Art.Nr.: ${_esc(material.artikelnummer)}</div>
                     <div class="material-picker-item-info">
                         <span>
                             <span class="material-picker-stock-indicator ${stockColor}"></span>
-                            Verfügbar: ${material.bestand} ${window.UI?.sanitize?.(material.einheit) || material.einheit}
+                            Verfügbar: ${material.bestand} ${_esc(material.einheit)}
                         </span>
                         <span>${this.formatCurrency(material.vkPreis || material.preis)}</span>
                     </div>
@@ -339,15 +350,23 @@ class MaterialPickerUI {
             `;
         }).join('');
 
-        // Add click handlers
+        // Add click and keyboard handlers
         container.querySelectorAll('.material-picker-item').forEach(item => {
-            item.addEventListener('click', () => {
+            const selectItem = () => {
                 const materialId = item.dataset.materialId;
                 const material = materials.find(m => m.id === materialId);
                 if (material && this.onSelectCallback) {
                     this.onSelectCallback(material);
                 }
                 modal.remove();
+            };
+
+            item.addEventListener('click', selectItem);
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectItem();
+                }
             });
         });
     }
@@ -373,7 +392,7 @@ class MaterialPickerUI {
     }
 
     formatCurrency(value) {
-        return window.formatCurrency(value);
+        return (window.formatCurrency || window.AppUtils?.formatCurrency || ((v) => (v || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })))(value || 0);
     }
 }
 
