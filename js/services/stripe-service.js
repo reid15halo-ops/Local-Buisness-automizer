@@ -241,39 +241,48 @@ class StripeService {
 
     /**
      * Create payment link for an invoice (Rechnung)
-     * @param {Object} invoice - Invoice object with id, betrag/amount, kunde
+     * Generates a Stripe Checkout Session with:
+     * - Amount in cents (EUR)
+     * - Invoice number as reference/metadata
+     * - Success/Cancel URLs
+     * - Customer email pre-filled
+     * - German locale (de)
+     *
+     * @param {Object} invoice - Invoice object with id, betrag/amount, kunde, nummer
      * @returns {Promise<Object>} Payment link object with url
      */
     async createPaymentLink(invoice) {
         if (!this.publishableKey) {
-            throw new Error('Stripe not configured. Please add your publishable key in setup wizard.');
+            throw new Error('Stripe nicht konfiguriert. Bitte Publishable Key im Setup-Wizard hinterlegen.');
         }
 
         const supabase = window.supabaseConfig?.get();
         if (!supabase) {
-            throw new Error('Supabase not configured');
+            throw new Error('Supabase nicht konfiguriert');
         }
 
         const user = window.authService?.getUser();
         if (!user) {
-            throw new Error('User not authenticated');
+            throw new Error('Bitte zuerst anmelden');
         }
 
         try {
             // Get customer email
-            const customerEmail = invoice.kunde?.email || invoice.customerEmail || user.email;
+            const customerEmail = invoice.kunde?.email || invoice.customerEmail || null;
             if (!customerEmail) {
-                throw new Error('Customer email not found in invoice');
+                throw new Error('Keine Kunden-E-Mail in der Rechnung hinterlegt');
             }
 
             // Calculate amount in cents (EUR)
             const amount = Math.round((invoice.brutto || invoice.betrag || invoice.amount || 0) * 100);
             if (amount < 50) {
-                throw new Error('Invoice amount must be at least €0.50');
+                throw new Error('Rechnungsbetrag muss mindestens 0,50 EUR betragen');
             }
 
-            // Build description
-            const description = `Invoice ${invoice.nummer || invoice.id}`;
+            // Build description with invoice number
+            const invoiceNumber = invoice.nummer || invoice.rechnung_id || invoice.id;
+            const customerName = invoice.kunde?.name || invoice.kunde_name || '';
+            const description = `Rechnung ${invoiceNumber}${customerName ? ` - ${customerName}` : ''}`;
 
             // Build redirect URLs
             const baseUrl = window.location.origin;
@@ -284,8 +293,10 @@ class StripeService {
             const { data, error } = await supabase.functions.invoke('create-checkout', {
                 body: {
                     invoice_id: invoice.id,
+                    invoice_number: invoiceNumber,
                     amount: amount,
                     customer_email: customerEmail,
+                    customer_name: customerName,
                     description: description,
                     success_url: successUrl,
                     cancel_url: cancelUrl
@@ -293,26 +304,173 @@ class StripeService {
             });
 
             if (error) {
-                throw new Error(`Stripe error: ${error.message}`);
+                throw new Error(`Stripe-Fehler: ${error.message}`);
             }
 
             if (!data || !data.url) {
-                throw new Error('No checkout URL returned from Stripe');
+                throw new Error('Keine Checkout-URL von Stripe erhalten');
             }
 
             return {
                 success: true,
                 url: data.url,
                 sessionId: data.sessionId,
-                invoiceId: invoice.id
+                invoiceId: invoice.id,
+                invoiceNumber: invoiceNumber
             };
         } catch (err) {
-            console.error('Payment link creation failed:', err);
+            console.error('Zahlungslink-Erstellung fehlgeschlagen:', err);
             return {
                 success: false,
                 error: err.message
             };
         }
+    }
+
+    /**
+     * Generate an HTML payment button for embedding in invoice emails.
+     * Returns a styled "Jetzt bezahlen" link that opens Stripe Checkout.
+     *
+     * @param {Object} invoice - Invoice object (must have id, betrag/brutto, kunde)
+     * @param {Object} [options] - Optional overrides
+     * @param {string} [options.checkoutUrl] - Pre-generated checkout URL (skips createPaymentLink)
+     * @param {string} [options.buttonText] - Button label (default: "Jetzt bezahlen")
+     * @param {string} [options.accentColor] - Button background color (default: #6366f1)
+     * @returns {Promise<string>} HTML string with styled payment button
+     */
+    async generatePaymentButton(invoice, options = {}) {
+        const {
+            checkoutUrl = null,
+            buttonText = 'Jetzt bezahlen',
+            accentColor = '#6366f1'
+        } = options;
+
+        let url = checkoutUrl;
+
+        // Generate checkout URL if not provided
+        if (!url) {
+            const result = await this.createPaymentLink(invoice);
+            if (!result.success) {
+                throw new Error(result.error || 'Zahlungslink konnte nicht generiert werden');
+            }
+            url = result.url;
+        }
+
+        // Format amount for display
+        const amount = invoice.brutto || invoice.betrag || invoice.amount || 0;
+        const formattedAmount = new Intl.NumberFormat('de-DE', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(amount);
+
+        const invoiceNumber = invoice.nummer || invoice.rechnung_id || invoice.id;
+
+        // Return email-safe HTML button (inline styles for maximum email client compatibility)
+        return `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 24px auto;">
+  <tr>
+    <td align="center" style="border-radius: 8px; background-color: ${accentColor};">
+      <a href="${url}"
+         target="_blank"
+         rel="noopener noreferrer"
+         style="display: inline-block;
+                padding: 16px 40px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 16px;
+                font-weight: 600;
+                color: #ffffff;
+                text-decoration: none;
+                border-radius: 8px;
+                background-color: ${accentColor};
+                line-height: 1.4;">
+        ${buttonText} &mdash; ${formattedAmount}
+      </a>
+    </td>
+  </tr>
+</table>
+<p style="text-align: center;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-size: 12px;
+          color: #71717a;
+          margin-top: 8px;">
+  Rechnung ${invoiceNumber} &middot; Sichere Zahlung via Stripe
+</p>`.trim();
+    }
+
+    /**
+     * Generate a complete invoice payment email body with the payment button.
+     *
+     * @param {Object} invoice - Invoice object
+     * @param {Object} [options] - Optional overrides
+     * @param {string} [options.companyName] - Sender company name
+     * @param {string} [options.checkoutUrl] - Pre-generated checkout URL
+     * @returns {Promise<string>} Full HTML email body
+     */
+    async generatePaymentEmailHTML(invoice, options = {}) {
+        const companyName = options.companyName
+            || window.storeService?.state?.settings?.companyName
+            || 'FreyAI Visions';
+
+        const invoiceNumber = invoice.nummer || invoice.rechnung_id || invoice.id;
+        const customerName = invoice.kunde?.name || invoice.kunde_name || 'Kunde';
+        const amount = invoice.brutto || invoice.betrag || invoice.amount || 0;
+        const formattedAmount = new Intl.NumberFormat('de-DE', {
+            style: 'currency',
+            currency: 'EUR'
+        }).format(amount);
+
+        const paymentButton = await this.generatePaymentButton(invoice, options);
+
+        return `
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="utf-8"></head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 20px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <!-- Header -->
+        <tr>
+          <td style="background-color: #09090b; padding: 32px 40px; text-align: center;">
+            <h1 style="margin: 0; color: #fafafa; font-size: 22px; font-weight: 700;">${companyName}</h1>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding: 40px;">
+            <p style="font-size: 16px; color: #18181b; margin-top: 0;">Sehr geehrte/r ${customerName},</p>
+            <p style="font-size: 15px; color: #3f3f46; line-height: 1.6;">
+              vielen Dank f&uuml;r Ihren Auftrag. Anbei erhalten Sie die Rechnung
+              <strong>${invoiceNumber}</strong> &uuml;ber <strong>${formattedAmount}</strong>.
+            </p>
+            <p style="font-size: 15px; color: #3f3f46; line-height: 1.6;">
+              Sie k&ouml;nnen den Betrag bequem und sicher online bezahlen:
+            </p>
+
+            ${paymentButton}
+
+            <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 32px 0;">
+            <p style="font-size: 13px; color: #71717a; line-height: 1.5;">
+              Alternativ k&ouml;nnen Sie den Betrag auch per &Uuml;berweisung begleichen.
+              Die Bankverbindung finden Sie auf der beigef&uuml;gten Rechnung.
+            </p>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="background-color: #f4f4f5; padding: 24px 40px; text-align: center;">
+            <p style="font-size: 12px; color: #a1a1aa; margin: 0;">
+              &copy; ${new Date().getFullYear()} ${companyName} &middot; Alle Rechte vorbehalten
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>`.trim();
     }
 
     /**
@@ -323,30 +481,29 @@ class StripeService {
     async getPaymentStatus(invoiceId) {
         const supabase = window.supabaseConfig?.get();
         if (!supabase) {
-            return { status: 'unknown', error: 'Supabase not configured' };
+            return { status: 'unknown', error: 'Supabase nicht konfiguriert' };
         }
 
         try {
-            // Try to query payment records (optional - depends on database setup)
             const { data } = await supabase
                 .from('stripe_payments')
-                .select('payment_status, created_at, amount')
+                .select('payment_status, created_at, amount, payment_method')
                 .eq('invoice_id', invoiceId)
                 .order('created_at', { ascending: false })
-                .limit(1)
-                .catch(() => ({ data: null, error: null })); // Handle if table doesn't exist
+                .limit(1);
 
             if (data && data.length > 0) {
                 return {
                     status: data[0].payment_status,
                     paidAt: data[0].created_at,
-                    amount: data[0].amount / 100 // Convert cents to EUR
+                    amount: data[0].amount / 100, // Convert cents to EUR
+                    method: data[0].payment_method
                 };
             }
 
             return { status: 'pending' };
         } catch (err) {
-            console.warn('Payment status check failed:', err);
+            console.warn('Zahlungsstatus-Abfrage fehlgeschlagen:', err);
             return { status: 'unknown', error: err.message };
         }
     }
@@ -362,10 +519,10 @@ class StripeService {
                 window.open(result.url, '_blank');
                 return result;
             } else {
-                throw new Error(result.error || 'Failed to create payment link');
+                throw new Error(result.error || 'Zahlungsseite konnte nicht geöffnet werden');
             }
         } catch (err) {
-            console.error('Checkout error:', err);
+            console.error('Checkout-Fehler:', err);
             throw err;
         }
     }

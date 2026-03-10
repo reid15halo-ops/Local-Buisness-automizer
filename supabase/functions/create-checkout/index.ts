@@ -36,11 +36,15 @@ serve(async (req) => {
             )
         }
 
-        const { invoice_id, amount, customer_email, description, success_url, cancel_url } = await req.json()
+        const {
+            invoice_id, invoice_number, amount,
+            customer_email, customer_name,
+            description, success_url, cancel_url
+        } = await req.json()
 
         if (!invoice_id || !amount || !customer_email) {
             return new Response(
-                JSON.stringify({ error: 'Missing required fields: invoice_id, amount, customer_email' }),
+                JSON.stringify({ error: 'Pflichtfelder fehlen: invoice_id, amount, customer_email' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
@@ -53,7 +57,7 @@ serve(async (req) => {
             )
         }
 
-        // Check if customer already exists
+        // Check if customer already exists in Stripe
         const existingCustomers = await stripe.customers.list({
             email: customer_email,
             limit: 1,
@@ -62,52 +66,77 @@ serve(async (req) => {
         let customerId: string
         if (existingCustomers.data.length > 0) {
             customerId = existingCustomers.data[0].id
+            // Update name if provided and not already set
+            if (customer_name && !existingCustomers.data[0].name) {
+                await stripe.customers.update(customerId, { name: customer_name })
+            }
         } else {
             const customer = await stripe.customers.create({
                 email: customer_email,
+                name: customer_name || undefined,
                 metadata: {
                     supabase_user_id: user.id,
-                    invoice_id: invoice_id
+                    source: 'freyai_invoice'
                 },
             })
             customerId = customer.id
         }
 
+        const invoiceRef = invoice_number || invoice_id
+        const appOrigin = Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de'
+
         // Create checkout session for one-time payment
+        // Note: giropay/sofort are deprecated by Stripe -- use card, sepa_debit, eps, bancontact
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
+            customer_email: undefined, // already set via customer object
             mode: 'payment',
-            payment_method_types: ['card', 'sepa_debit', 'giropay', 'sofort', 'eps'],
+            payment_method_types: ['card', 'sepa_debit', 'eps', 'bancontact', 'klarna'],
             line_items: [
                 {
                     price_data: {
                         currency: 'eur',
                         product_data: {
-                            name: description || `Rechnung ${invoice_id}`,
-                            metadata: { invoice_id: invoice_id },
+                            name: description || `Rechnung ${invoiceRef}`,
+                            description: `Rechnungsnummer: ${invoiceRef}`,
+                            metadata: {
+                                invoice_id: invoice_id,
+                                invoice_number: invoiceRef,
+                            },
                         },
                         unit_amount: amount, // amount in cents
                     },
                     quantity: 1,
                 }
             ],
-            success_url: success_url || `${Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: cancel_url || `${Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de'}/payment-cancelled`,
+            payment_intent_data: {
+                description: `Rechnung ${invoiceRef}`,
+                metadata: {
+                    invoice_id: invoice_id,
+                    invoice_number: invoiceRef,
+                },
+                statement_descriptor_suffix: `RE ${invoiceRef}`.substring(0, 22),
+            },
+            success_url: success_url || `${appOrigin}/index.html?payment=success&invoice=${invoice_id}`,
+            cancel_url: cancel_url || `${appOrigin}/index.html?payment=cancelled&invoice=${invoice_id}`,
             metadata: {
                 invoice_id: invoice_id,
+                invoice_number: invoiceRef,
                 supabase_user_id: user.id,
+                customer_name: customer_name || '',
             },
             locale: 'de',
             tax_id_collection: { enabled: false },
             allow_promotion_codes: false,
-            expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // Session expires in 24 hours
+            expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24h expiry
         })
 
         return new Response(
             JSON.stringify({
                 sessionId: session.id,
                 url: session.url,
-                invoice_id: invoice_id
+                invoice_id: invoice_id,
+                invoice_number: invoiceRef,
             }),
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )

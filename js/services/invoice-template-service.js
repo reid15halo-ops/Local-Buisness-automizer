@@ -154,7 +154,13 @@ class InvoiceTemplateService {
                 mwst: this.formatCurrency(data.mwst || 0),
                 brutto: this.formatCurrency(data.brutto || 0),
                 mwstSatz: data.mwstSatz || '19%',
-                kleinunternehmer: data.kleinunternehmer || localStorage.getItem('kleinunternehmer') === 'true'
+                kleinunternehmer: data.kleinunternehmer || localStorage.getItem('kleinunternehmer') === 'true',
+                // Skonto fields
+                skontoPercent: data.skontoPercent || 0,
+                skontoBetrag: data.skontoBetrag ? this.formatCurrency(data.skontoBetrag) : null,
+                betragNachSkonto: data.betragNachSkonto ? this.formatCurrency(data.betragNachSkonto) : null,
+                skontoZielDatum: data.skontoZielDatum ? this.formatDate(data.skontoZielDatum) : null,
+                skontoTage: data.skontoTage || 0
             }
         };
 
