@@ -5,12 +5,38 @@
 -- ============================================================
 
 -- ============================================================
+-- FUNCTION: update_updated_at_column (create if not exists)
+-- ============================================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================
 -- ENUM: campaign package tiers
 -- ============================================================
-CREATE TYPE marketing_package AS ENUM ('S', 'M', 'L');
-CREATE TYPE campaign_status AS ENUM ('draft', 'onboarding', 'generating', 'scheduled', 'active', 'paused', 'completed', 'reposting');
-CREATE TYPE post_status AS ENUM ('draft', 'approved', 'scheduled', 'posted', 'failed', 'reposted');
-CREATE TYPE post_platform AS ENUM ('instagram', 'facebook', 'google_business', 'linkedin');
+DO $$ BEGIN
+    CREATE TYPE marketing_package AS ENUM ('S', 'M', 'L');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE campaign_status AS ENUM ('draft', 'onboarding', 'generating', 'scheduled', 'active', 'paused', 'completed', 'reposting');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE post_status AS ENUM ('draft', 'approved', 'scheduled', 'posted', 'failed', 'reposted');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE post_platform AS ENUM ('instagram', 'facebook', 'google_business', 'linkedin');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- ============================================================
 -- TABLE: marketing_campaigns
@@ -19,7 +45,7 @@ CREATE TYPE post_platform AS ENUM ('instagram', 'facebook', 'google_business', '
 CREATE TABLE IF NOT EXISTS marketing_campaigns (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id         UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    customer_id     UUID REFERENCES customers(id) ON DELETE SET NULL,
+    customer_id     UUID,  -- optional FK to kunden(id), added separately if table exists
     package         marketing_package NOT NULL DEFAULT 'S',
     status          campaign_status NOT NULL DEFAULT 'draft',
 
@@ -65,10 +91,11 @@ CREATE TABLE IF NOT EXISTS marketing_campaigns (
 
 ALTER TABLE marketing_campaigns ENABLE ROW LEVEL SECURITY;
 
-CREATE INDEX idx_marketing_campaigns_user ON marketing_campaigns(user_id);
-CREATE INDEX idx_marketing_campaigns_status ON marketing_campaigns(status);
-CREATE INDEX idx_marketing_campaigns_customer ON marketing_campaigns(customer_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_user ON marketing_campaigns(user_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_status ON marketing_campaigns(status);
+CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_customer ON marketing_campaigns(customer_id);
 
+DROP TRIGGER IF EXISTS trg_marketing_campaigns_updated ON marketing_campaigns;
 CREATE TRIGGER trg_marketing_campaigns_updated
     BEFORE UPDATE ON marketing_campaigns
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -105,10 +132,11 @@ CREATE TABLE IF NOT EXISTS marketing_templates (
 
 ALTER TABLE marketing_templates ENABLE ROW LEVEL SECURITY;
 
-CREATE INDEX idx_marketing_templates_category ON marketing_templates(category);
-CREATE INDEX idx_marketing_templates_platform ON marketing_templates(platform);
-CREATE INDEX idx_marketing_templates_package ON marketing_templates(min_package);
+CREATE INDEX IF NOT EXISTS idx_marketing_templates_category ON marketing_templates(category);
+CREATE INDEX IF NOT EXISTS idx_marketing_templates_platform ON marketing_templates(platform);
+CREATE INDEX IF NOT EXISTS idx_marketing_templates_package ON marketing_templates(min_package);
 
+DROP TRIGGER IF EXISTS trg_marketing_templates_updated ON marketing_templates;
 CREATE TRIGGER trg_marketing_templates_updated
     BEFORE UPDATE ON marketing_templates
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -116,12 +144,9 @@ CREATE TRIGGER trg_marketing_templates_updated
 -- RLS: Templates are readable by all authenticated users (they're shared assets)
 CREATE POLICY "Authenticated users can read templates"
     ON marketing_templates FOR SELECT
-    USING (auth.role() = 'authenticated');
+    USING (auth.uid() IS NOT NULL);
 
--- Only service role can modify templates
-CREATE POLICY "Service role manages templates"
-    ON marketing_templates FOR ALL
-    USING (auth.role() = 'service_role');
+-- Note: service_role bypasses RLS automatically, no explicit policy needed
 
 -- ============================================================
 -- TABLE: marketing_posts
@@ -166,12 +191,13 @@ CREATE TABLE IF NOT EXISTS marketing_posts (
 
 ALTER TABLE marketing_posts ENABLE ROW LEVEL SECURITY;
 
-CREATE INDEX idx_marketing_posts_campaign ON marketing_posts(campaign_id);
-CREATE INDEX idx_marketing_posts_scheduled ON marketing_posts(scheduled_at);
-CREATE INDEX idx_marketing_posts_status ON marketing_posts(status);
-CREATE INDEX idx_marketing_posts_user ON marketing_posts(user_id);
-CREATE INDEX idx_marketing_posts_platform ON marketing_posts(platform);
+CREATE INDEX IF NOT EXISTS idx_marketing_posts_campaign ON marketing_posts(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_posts_scheduled ON marketing_posts(scheduled_at);
+CREATE INDEX IF NOT EXISTS idx_marketing_posts_status ON marketing_posts(status);
+CREATE INDEX IF NOT EXISTS idx_marketing_posts_user ON marketing_posts(user_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_posts_platform ON marketing_posts(platform);
 
+DROP TRIGGER IF EXISTS trg_marketing_posts_updated ON marketing_posts;
 CREATE TRIGGER trg_marketing_posts_updated
     BEFORE UPDATE ON marketing_posts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -210,10 +236,10 @@ CREATE TABLE IF NOT EXISTS marketing_analytics (
 
 ALTER TABLE marketing_analytics ENABLE ROW LEVEL SECURITY;
 
-CREATE INDEX idx_marketing_analytics_post ON marketing_analytics(post_id);
-CREATE INDEX idx_marketing_analytics_campaign ON marketing_analytics(campaign_id);
-CREATE INDEX idx_marketing_analytics_user ON marketing_analytics(user_id);
-CREATE INDEX idx_marketing_analytics_collected ON marketing_analytics(collected_at);
+CREATE INDEX IF NOT EXISTS idx_marketing_analytics_post ON marketing_analytics(post_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_analytics_campaign ON marketing_analytics(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_analytics_user ON marketing_analytics(user_id);
+CREATE INDEX IF NOT EXISTS idx_marketing_analytics_collected ON marketing_analytics(collected_at);
 
 -- RLS: Users see their own analytics
 CREATE POLICY "Users read own analytics"
@@ -221,9 +247,10 @@ CREATE POLICY "Users read own analytics"
     USING (auth.uid() = user_id);
 
 -- Service role writes analytics (from n8n workflow)
-CREATE POLICY "Service role writes analytics"
+-- Note: service_role bypasses RLS, but we scope INSERT to own user_id for anon/authenticated
+CREATE POLICY "Users insert own analytics"
     ON marketing_analytics FOR INSERT
-    USING (auth.role() = 'service_role');
+    WITH CHECK (auth.uid() = user_id);
 
 -- ============================================================
 -- VIEW: campaign_summary
@@ -243,19 +270,25 @@ SELECT
     COUNT(DISTINCT mp.id) FILTER (WHERE mp.status = 'posted') AS posted_count,
     COUNT(DISTINCT mp.id) FILTER (WHERE mp.status = 'scheduled') AS scheduled_count,
     COUNT(DISTINCT mp.id) FILTER (WHERE mp.status = 'failed') AS failed_count,
-    COALESCE(SUM(ma.impressions), 0) AS total_impressions,
-    COALESCE(SUM(ma.reach), 0) AS total_reach,
-    COALESCE(SUM(ma.likes), 0) AS total_likes,
-    COALESCE(SUM(ma.comments), 0) AS total_comments,
-    COALESCE(SUM(ma.clicks), 0) AS total_clicks,
+    COALESCE(SUM(latest.impressions), 0) AS total_impressions,
+    COALESCE(SUM(latest.reach), 0) AS total_reach,
+    COALESCE(SUM(latest.likes), 0) AS total_likes,
+    COALESCE(SUM(latest.comments), 0) AS total_comments,
+    COALESCE(SUM(latest.clicks), 0) AS total_clicks,
     CASE
-        WHEN SUM(ma.impressions) > 0
-        THEN ROUND((SUM(ma.likes + ma.comments + ma.shares + ma.saves)::NUMERIC / SUM(ma.impressions)) * 100, 2)
+        WHEN SUM(latest.impressions) > 0
+        THEN ROUND((SUM(latest.likes + latest.comments + latest.shares + latest.saves)::NUMERIC / SUM(latest.impressions)) * 100, 2)
         ELSE 0
     END AS avg_engagement_rate
 FROM marketing_campaigns mc
 LEFT JOIN marketing_posts mp ON mp.campaign_id = mc.id
-LEFT JOIN marketing_analytics ma ON ma.post_id = mp.id
+LEFT JOIN LATERAL (
+    SELECT ma.impressions, ma.reach, ma.likes, ma.comments, ma.shares, ma.saves, ma.clicks
+    FROM marketing_analytics ma
+    WHERE ma.post_id = mp.id
+    ORDER BY ma.collected_at DESC
+    LIMIT 1
+) latest ON TRUE
 GROUP BY mc.id, mc.user_id, mc.company_name, mc.package, mc.status,
          mc.starts_at, mc.ends_at, mc.platforms;
 
@@ -270,6 +303,15 @@ DECLARE
     v_top_posts RECORD;
 BEGIN
     SELECT * INTO v_campaign FROM marketing_campaigns WHERE id = p_campaign_id;
+
+    IF v_campaign.id IS NULL THEN
+        RAISE EXCEPTION 'Campaign not found';
+    END IF;
+
+    -- Ownership check: only the campaign owner can activate reposting
+    IF v_campaign.user_id != auth.uid() THEN
+        RAISE EXCEPTION 'Not authorized to modify this campaign';
+    END IF;
 
     IF v_campaign.status != 'completed' THEN
         RAISE EXCEPTION 'Campaign must be completed before reposting';
@@ -305,3 +347,13 @@ BEGIN
     LIMIT 12;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================
+-- OPTIONAL FK: Link customer_id to kunden if table exists
+-- ============================================================
+DO $$ BEGIN
+    ALTER TABLE marketing_campaigns
+        ADD CONSTRAINT fk_marketing_campaigns_kunden
+        FOREIGN KEY (customer_id) REFERENCES kunden(id) ON DELETE SET NULL;
+EXCEPTION WHEN undefined_table OR duplicate_object THEN NULL;
+END $$;
