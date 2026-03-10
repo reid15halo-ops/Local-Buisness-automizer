@@ -262,14 +262,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.openai.com/v1/chat/completions",
+        "url": "http://172.19.0.1:11434/api/chat",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $env[\"OPENAI_API_KEY\"] }}"
-            },
             {
               "name": "Content-Type",
               "value": "application/json"
@@ -278,18 +274,18 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"max_tokens\": 1500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Buchhalter. Verfasse ein hoefliches, aber bestimmtes Mahnschreiben auf Deutsch. Stufe: {{ $json[\\\"dunning_level\\\"] }}.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Erstelle ein Mahnschreiben:\\n- Mahnstufe: {{ $json[\\\"dunning_level\\\"] }}\\n- Rechnungs-ID: {{ $json[\\\"id\\\"] }}\\n- Rechnungsdatum: {{ $json[\\\"created_at\\\"] }}\\n- Faelligkeitsdatum: {{ $json[\\\"due_date_iso\\\"] }}\\n- Tage ueberfaellig: {{ $json[\\\"days_overdue\\\"] }}\\n- Betrag: {{ $json[\\\"brutto\\\"] }} EUR\\n- Kundenname: {{ $json[\\\"kunde_name\\\"] }}\"\n    }\n  ]\n}",
+        "jsonBody": "={\n  \"model\": \"mistral:latest\",\n  \"stream\": false,\n  \"options\": {\n    \"temperature\": 0.3\n  },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein professioneller Buchhalter. Erstelle formelle deutsche Mahnschreiben. Tone: hoeflich aber bestimmt. Verwende Sie-Form.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Erstelle ein Mahnschreiben mit folgenden Angaben:\\n- Rechnungsnummer: {{ $json[\\\"id\\\"] }}\\n- Betrag: {{ $json[\\\"brutto\\\"] }} EUR\\n- Tage ueberfaellig: {{ $json[\\\"days_overdue\\\"] }}\\n- Mahnstufe: {{ $json[\\\"dunning_level\\\"] }}\\n- Kundenname: {{ $json[\\\"kunde_name\\\"] }}\\n- Rechnungsdatum: {{ $json[\\\"created_at\\\"] }}\\n- Faelligkeitsdatum: {{ $json[\\\"due_date_iso\\\"] }}\"\n    }\n  ]\n}",
         "options": {
-          "timeout": 30000
+          "timeout": 60000
         }
       },
       "id": "node-generate-dunning-letter",
-      "name": "Generate Dunning Letter (GPT)",
+      "name": "Generate Dunning Letter (Ollama)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [1740, 160],
       "continueOnFail": true,
-      "notes": "FIXED: Replaced $credentials.openAiApi.apiKey inline expression with $env[\"OPENAI_API_KEY\"]. Fields reference rechnungen columns (brutto, not total; id not invoice_number; created_at not invoice_date)."
+      "notes": "Calls local Ollama (Mistral) on VPS via Docker bridge network. Model: mistral:latest, temperature: 0.3, stream: false. Timeout increased to 60s for local LLM inference. Response format: response.message.content"
     },
     {
       "parameters": {
@@ -306,7 +302,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"template\": \"dunning_letter\",\n  \"content\": \"{{ $json[\"choices\"] ? $json[\"choices\"][0][\"message\"][\"content\"] : 'Mahnschreiben konnte nicht generiert werden.' }}\",\n  \"rechnung_id\": \"{{ $node[\"Calculate Days Overdue\"].json[\"id\"] }}\",\n  \"dunning_level\": \"{{ $node[\"Set Dunning Level Label\"].json[\"dunning_level\"] }}\",\n  \"date\": \"{{ new Date().toLocaleDateString('de-DE') }}\"\n}",
+        "jsonBody": "={\n  \"template\": \"dunning_letter\",\n  \"content\": \"{{ $json[\"message\"] ? $json[\"message\"][\"content\"] : 'Mahnschreiben konnte nicht generiert werden.' }}\",\n  \"rechnung_id\": \"{{ $node[\"Calculate Days Overdue\"].json[\"id\"] }}\",\n  \"dunning_level\": \"{{ $node[\"Set Dunning Level Label\"].json[\"dunning_level\"] }}\",\n  \"date\": \"{{ new Date().toLocaleDateString('de-DE') }}\"\n}",
         "options": {
           "timeout": 30000
         }
@@ -512,14 +508,14 @@
       "main": [
         [
           {
-            "node": "Generate Dunning Letter (GPT)",
+            "node": "Generate Dunning Letter (Ollama)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Generate Dunning Letter (GPT)": {
+    "Generate Dunning Letter (Ollama)": {
       "main": [
         [
           {
@@ -582,11 +578,11 @@
   "tags": ["dunning", "mahnwesen", "finance", "zone2"],
   "triggerCount": 1,
   "updatedAt": "2026-02-24T00:00:00.000Z",
-  "versionId": "2",
+  "versionId": "3",
   "meta": {
     "templateCredsSetupCompleted": false,
     "instanceId": "freyai-hetzner-vps"
   },
   "pinData": {},
-  "notes": "## Mahnwesen (Dunning) - FIXED v2\n\n### Audit Changes (v1 -> v2)\n- FIXED: Table changed from non-existent 'invoices' to 'rechnungen' (correct Supabase schema table)\n- FIXED: $credentials.openAiApi.apiKey inline expression replaced with $env[\"OPENAI_API_KEY\"] env var\n- FIXED: days_overdue now computed from created_at + zahlungsziel_tage (rechnungen columns); was using non-existent due_date\n- FIXED: UPDATE now sets mahnstufe (INTEGER) and letzte_mahnung (TIMESTAMPTZ); removed non-existent columns dunning_level, dunning_pdf_url, dunning_sent_at, days_overdue\n- FIXED: 'jobs_queue' table does not exist; replaced with automation_log (exists in schema)\n- ADDED: Is Overdue? IF node to skip invoices still within payment terms\n- ADDED: Error Handler node to log failures to automation_log\n- ADDED: continueOnFail on GPT and PDF nodes\n- REMOVED: Entire GoCardless bank transaction section (this belongs in workflow-payment-matching.json)\n\n### Setup Required\n1. **Credentials**: Set up 'Supabase API' in n8n (Settings > Credentials > New > Supabase API)\n2. **Env Vars**: OPENAI_API_KEY, PDF_GENERATION_WEBHOOK_URL\n3. **Schema**: rechnungen.mahnstufe and rechnungen.letzte_mahnung must exist (added in supabase-schema.sql)\n\n### Dunning Levels\n- < 14 days overdue: Zahlungserinnerung -> mahnstufe=1\n- 14-30 days: 1. Mahnung -> mahnstufe=2\n- 30-60 days: 2. Mahnung -> mahnstufe=3\n- > 60 days: Letzte Mahnung vor Inkasso -> mahnstufe=4"
+  "notes": "## Mahnwesen (Dunning) - FIXED v2\n\n### Audit Changes (v1 -> v2)\n- FIXED: Table changed from non-existent 'invoices' to 'rechnungen' (correct Supabase schema table)\n- CHANGED: Replaced OpenAI GPT-4o-mini with local Ollama (mistral:latest) on VPS at http://172.19.0.1:11434\n- FIXED: days_overdue now computed from created_at + zahlungsziel_tage (rechnungen columns); was using non-existent due_date\n- FIXED: UPDATE now sets mahnstufe (INTEGER) and letzte_mahnung (TIMESTAMPTZ); removed non-existent columns dunning_level, dunning_pdf_url, dunning_sent_at, days_overdue\n- FIXED: 'jobs_queue' table does not exist; replaced with automation_log (exists in schema)\n- ADDED: Is Overdue? IF node to skip invoices still within payment terms\n- ADDED: Error Handler node to log failures to automation_log\n- ADDED: continueOnFail on GPT and PDF nodes\n- REMOVED: Entire GoCardless bank transaction section (this belongs in workflow-payment-matching.json)\n\n### Setup Required\n1. **Credentials**: Set up 'Supabase API' in n8n (Settings > Credentials > New > Supabase API)\n2. **Env Vars**: PDF_GENERATION_WEBHOOK_URL (OPENAI_API_KEY no longer needed)\n3. **Ollama**: Ensure Ollama is running on VPS with mistral:latest model pulled (ollama pull mistral:latest)\n3. **Schema**: rechnungen.mahnstufe and rechnungen.letzte_mahnung must exist (added in supabase-schema.sql)\n\n### Dunning Levels\n- < 14 days overdue: Zahlungserinnerung -> mahnstufe=1\n- 14-30 days: 1. Mahnung -> mahnstufe=2\n- 30-60 days: 2. Mahnung -> mahnstufe=3\n- > 60 days: Letzte Mahnung vor Inkasso -> mahnstufe=4"
 }

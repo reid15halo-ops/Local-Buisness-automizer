@@ -56,6 +56,14 @@
         WHATSAPP_API_KEY:      ls('freyai_whatsapp_api_key',      ''),
         WHATSAPP_INSTANCE:     ls('freyai_whatsapp_instance',     'freyai-whatsapp'),
 
+        // ── GoCardless Open Banking ──────────────────────────────────────
+        // Register at https://bankaccountdata.gocardless.com (free, 100 req/day)
+        // Set via Setup Wizard or localStorage keys.
+        // IMPORTANT: These are API credentials -- stored in localStorage, never in code.
+        GOCARDLESS_SECRET_ID:  ls('freyai_gocardless_secret_id',  ''),
+        GOCARDLESS_SECRET_KEY: ls('freyai_gocardless_secret_key', ''),
+        GOCARDLESS_ACCOUNT_ID: ls('freyai_gocardless_account_id', ''),
+
         // ── Environment ────────────────────────────────────────────────────
         APP_ENV: ls('freyai_app_env', 'production'),
         STAGING: ls('freyai_staging', 'false') === 'true',
