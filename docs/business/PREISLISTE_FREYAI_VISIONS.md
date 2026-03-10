@@ -91,15 +91,77 @@ Für wachsende Betriebe, 5+ Nutzer.
 
 ---
 
-## 5. Monatliche Retainer-Pakete (Mindestlaufzeit 12 Monate)
+## 5. Social-Media Marketing-Pakete (3-Monats-Kampagne)
 
-### 5.1 Basis-Retainer — 149 €/Monat (1. Monat gratis für Beta-Kunden)
+> **NEU** — Vollautomatisierte Social-Media-Kampagnen für Handwerker. Einmal einrichten, 3 Monate automatisch posten.
+> Eine vergleichbare Agentur-Leistung kostet 1.200–5.000 €/Monat. Sie zahlen einen Bruchteil davon.
+
+### 5.1 Paket S — "Sichtbar werden" · **990 €** (= 330 €/Monat)
+- 36 Posts (3x/Woche, 12 Wochen)
+- 1 Plattform (Instagram ODER Facebook)
+- 6 Content-Kategorien im Wechsel
+- Automatisches Posting + Monatlicher Performance-Report
+- Nach 3 Monaten: Reposting-Modus (Top-Posts wiederholen)
+
+### 5.2 Paket M — "Lokal dominieren" · **1.790 €** (= 597 €/Monat) ⭐ *Empfohlen*
+- 48 Posts + 12 Stories (4x/Woche, 12 Wochen)
+- 2 Plattformen (Instagram + Facebook)
+- 8 Content-Kategorien + Google Business Posts
+- Lokalisierte Hashtag-Strategie
+- Monatlicher Performance-Report
+- Nach 3 Monaten: Reposting-Modus
+
+### 5.3 Paket L — "Premium-Präsenz" · **2.990 €** (= 997 €/Monat)
+- 48 Posts + 12 Stories + 4 Reel-Cover (4x/Woche, 12 Wochen)
+- 3 Plattformen (Instagram + Facebook + LinkedIn/Google)
+- 10 Content-Kategorien + saisonale Specials
+- 4 Reel-Storyboard-Vorlagen
+- Lead-Capture Landing Page (1x)
+- Wöchentlicher Performance-Report + Priority-Support
+- Nach 3 Monaten: Reposting-Modus
+
+### Marketing Add-Ons
+
+| Add-On | Preis | Beschreibung |
+|---|---|---|
+| Zusätzliche Plattform | **+290 €** | LinkedIn, Pinterest, TikTok |
+| Bezahlte Ads Management | **+490 €/Monat** | Meta Ads Setup + Optimierung (Ad-Budget extra) |
+| Content-Refresh (nach 3 Monaten) | **790 €** | 24 neue Posts statt Reposting |
+| Reel-Produktion (4 Stück) | **890 €** | Vor-Ort-Dreh + Schnitt |
+
+### Lockangebote (limitiert auf die ersten 5 Kunden)
+
+> **Einstiegsangebote** — Nur für kurze Zeit. Ideal zum Testen.
+
+**Lockangebot 1: "Schnupperkampagne"** — **490 €** (statt 990 €)
+- Paket S zum halben Preis
+- 36 Posts, 1 Plattform, 12 Wochen
+- Bedingung: Öffentliches Testimonial/Google-Bewertung nach Kampagne-Ende
+- *Limitiert auf 2 Plätze*
+
+**Lockangebot 2: "Doppelpack-Deal"** — **2.490 €** (statt 2.780 €)
+- Paket S (990 €) + Paket M (1.790 €) zusammen für 2 Betriebe
+- Ideal: Sie empfehlen einen befreundeten Betrieb, beide sparen
+- Beide Kampagnen starten gleichzeitig
+- *Limitiert auf 2 Deals (= 4 Betriebe)*
+
+**Lockangebot 3: "Full-Service Starter"** — **3.990 €** (statt 4.780 €)
+- Paket M (1.790 €) + Professional-Setup (2.990 €) als Kombi
+- Spart 790 €: Bürosoftware + Social Media in einem Schlag
+- Inkl. 1. Monat Retainer gratis
+- *Limitiert auf 3 Plätze*
+
+---
+
+## 6. Monatliche Retainer-Pakete (Mindestlaufzeit 12 Monate)
+
+### 6.1 Basis-Retainer — 149 €/Monat (1. Monat gratis für Beta-Kunden)
 - Software-Updates & Sicherheits-Patches
 - E-Mail-Support (Reaktionszeit < 24h, Werktage)
 - Monatliches Status-Update
 - Datensicherung auf EU-Server (Hetzner/Supabase)
 
-### 5.2 Professional-Retainer — 299 €/Monat ⭐ *Empfohlen* (1. Monat gratis für Beta-Kunden)
+### 6.2 Professional-Retainer — 299 €/Monat ⭐ *Empfohlen* (1. Monat gratis für Beta-Kunden)
 - **Alles aus Basis** +
 - Telefon-Support (Reaktionszeit < 4h, Werktage)
 - Monatliches Optimierungsgespräch (30 Min. Video-Call)
@@ -108,7 +170,7 @@ Für wachsende Betriebe, 5+ Nutzer.
 - Monitoring der Automatisierungen mit Fehler-Alarm
 - Proaktive Prozessoptimierungsempfehlungen
 
-### 5.3 Premium-Retainer (Full-Service) — 499 €/Monat (1. Monat gratis für Beta-Kunden)
+### 6.3 Premium-Retainer (Full-Service) — 499 €/Monat (1. Monat gratis für Beta-Kunden)
 - **Alles aus Professional** +
 - Priority-Hotline Mo–Sa (Reaktionszeit < 2h)
 - Bis zu 3 Stunden Custom-Entwicklung/Monat rollierend
@@ -118,7 +180,7 @@ Für wachsende Betriebe, 5+ Nutzer.
 
 ---
 
-## 6. Typische Pakete / Beispiel-Angebote
+## 7. Typische Pakete / Beispiel-Angebote
 
 ### Beispiel A: Solo-Handwerker, schnell starten (Beta-Preis)
 ```
@@ -157,7 +219,30 @@ Einmalig (netto)                   6.610 €
 
 ---
 
-## 7. Zahlungs- & Vertragsbedingungen
+### Beispiel D: Handwerker + Marketing-Kampagne (Beta-Preis)
+```
+Professional-Setup                 2.990 €  (statt 4.500 €)
+Digital-Audit                          0 €  (Beta: kostenlos)
+Marketing Paket M "Lokal dominieren"  1.790 €
+Schulung vor Ort (2 Std.)            240 €
+───────────────────────────────────────────
+Einmalig (netto)                   5.020 €
++ Professional-Retainer              299 €/Monat (1. Monat gratis)
+```
+
+### Beispiel E: Full-Service Starter Lockangebot
+```
+Full-Service Starter Kombi          3.990 €  (statt 4.780 €, spart 790 €)
+  enthält: Professional-Setup + Paket M
+Digital-Audit                          0 €  (Beta: kostenlos)
+───────────────────────────────────────────
+Einmalig (netto)                   3.990 €
++ Professional-Retainer              299 €/Monat (1. Monat gratis)
+```
+
+---
+
+## 8. Zahlungs- & Vertragsbedingungen
 
 | Punkt | Regelung |
 |---|---|
@@ -173,7 +258,7 @@ Einmalig (netto)                   6.610 €
 
 ---
 
-## 8. Richtwerte für Richtpreisangebote (Richtpreise)
+## 9. Richtwerte für Richtpreisangebote (Richtpreise)
 
 > Richtpreisangebote sind unverbindliche Kostenschätzungen und werden nach Detailanalyse durch ein bindendes Festpreisangebot ersetzt.
 

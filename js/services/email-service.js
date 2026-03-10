@@ -5,8 +5,8 @@
 
 class EmailService {
     constructor() {
-        try { this.emails = JSON.parse(localStorage.getItem('freyai_emails') || '[]'); } catch { this.emails = []; }
-        try { this.emailConfig = JSON.parse(localStorage.getItem('freyai_email_config') || '{}'); } catch { this.emailConfig = {}; }
+        this.emails = StorageUtils.getJSON('freyai_emails', [], { service: 'emailService' });
+        this.emailConfig = StorageUtils.getJSON('freyai_email_config', {}, { service: 'emailService' });
         this.templates = this.loadDefaultTemplates();
 
         // Throttle: minimum 5 minutes between emails to the same address.

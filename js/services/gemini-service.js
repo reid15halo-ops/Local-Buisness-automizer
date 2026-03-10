@@ -10,7 +10,8 @@
 class GeminiService {
     constructor(apiKey) {
         this.apiKey = apiKey;
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent';
+        this.isConfigured = !!apiKey;
         this.useProxy = false;
         this.proxyUrl = null;
 
@@ -32,10 +33,23 @@ class GeminiService {
         this.isConfigured = !!apiKey || this.useProxy;
     }
 
+    // Prompt response cache (reduces API calls for repeated queries)
+    static _cache = new Map();
+    static CACHE_TTL = 24 * 60 * 60 * 1000; // 24h
+    static CACHE_MAX_SIZE = 200;
+
     /**
      * Helper method to call Gemini API through proxy or direct
      */
     async _callGeminiAPI(payload) {
+        // Check cache before making API call
+        const payloadStr = JSON.stringify(payload);
+        const cacheKey = GeminiService._hashPrompt(payloadStr);
+        const cached = GeminiService._cache.get(cacheKey);
+        if (cached && !payload._skipCache && cached.key === payloadStr && (Date.now() - cached.ts < (payload._cacheTTL || GeminiService.CACHE_TTL))) {
+            return cached.data;
+        }
+
         // Check rate limit before making API call
         if (window.securityService) {
             const rateLimitCheck = window.securityService.checkRateLimit(
@@ -90,7 +104,14 @@ class GeminiService {
             throw new Error(`Gemini API error ${response.status}: ${errorData.error || 'Unknown error'}`);
         }
 
-        return response.json();
+        const result = await response.json();
+        // Evict oldest entries if cache exceeds max size
+        if (GeminiService._cache.size >= GeminiService.CACHE_MAX_SIZE) {
+            const oldest = GeminiService._cache.keys().next().value;
+            GeminiService._cache.delete(oldest);
+        }
+        GeminiService._cache.set(cacheKey, { data: result, ts: Date.now(), key: payloadStr });
+        return result;
     }
 
     async generateAngebotText(anfrage) {
@@ -128,7 +149,8 @@ Antworte NUR mit dem Angebots-Text, ohne zusätzliche Erklärungen.`;
                 generationConfig: {
                     temperature: 0.7,
                     maxOutputTokens: 500,
-                }
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -183,7 +205,8 @@ Antworte im JSON-Format:
                 generationConfig: {
                     temperature: 0.3,
                     maxOutputTokens: 500,
-                }
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -229,7 +252,8 @@ Antwort:`;
         try {
             const data = await this._callGeminiAPI({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.4, maxOutputTokens: 300 }
+                generationConfig: { temperature: 0.4, maxOutputTokens: 300 },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
@@ -333,18 +357,28 @@ ${companyName}`
         };
     }
 
+    static _hashPrompt(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash |= 0;
+        }
+        return 'gc_' + hash;
+    }
+
     _sanitizeForPrompt(str) {
         if (!str) {return '';}
         return String(str).replace(/[<>{}]/g, '').substring(0, 2000);
     }
 
     _getBusinessType() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'geminiService' });
         return ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerksbetrieb';
     }
 
     _getCompanyName() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'geminiService' });
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 }

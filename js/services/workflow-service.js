@@ -6,8 +6,8 @@
 
 class WorkflowService {
     constructor() {
-        try { this.workflows = JSON.parse(localStorage.getItem('freyai_workflows') || '[]'); } catch { this.workflows = []; }
-        try { this.executionLog = JSON.parse(localStorage.getItem('freyai_workflow_log') || '[]'); } catch { this.executionLog = []; }
+        this.workflows = StorageUtils.getJSON('freyai_workflows', [], { service: 'workflowService' });
+        this.executionLog = StorageUtils.getJSON('freyai_workflow_log', [], { service: 'workflowService' });
         this.isRunning = true;
 
         // Available trigger types

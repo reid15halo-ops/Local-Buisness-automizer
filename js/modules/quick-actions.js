@@ -437,6 +437,10 @@
             alerts.push(`${staleAnfragen.length} Anfrage${staleAnfragen.length > 1 ? 'n' : ''} wartet seit \u00fcber 24h`);
         }
 
+        // Get user name from admin settings or store
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'quickActions' });
+        const userName = ap.owner_name || store.settings?.owner || store.settings?.companyName || 'Chef';
+
         // Tasks overdue today
         const overdueTasks = (store.aufgaben || []).filter(t => {
             if (t.status === 'erledigt' || t.status === 'done') {return false;}

@@ -311,14 +311,16 @@ class ActivityIndicatorService {
 
             // Check zahlungsziel if it exists
             if (r.zahlungsziel) {
-                const deadline = new Date(r.zahlungsziel);
+                const deadline = StorageUtils.safeDate(r.zahlungsziel);
+                if (!deadline) {return false;}
                 deadline.setHours(0, 0, 0, 0);
                 return deadline < today;
             }
 
             // Check createdAt + 30 days default payment term
             if (r.createdAt) {
-                const created = new Date(r.createdAt);
+                const created = StorageUtils.safeDate(r.createdAt);
+                if (!created) {return false;}
                 const dueDate = new Date(created);
                 dueDate.setDate(dueDate.getDate() + 30);
                 dueDate.setHours(0, 0, 0, 0);
@@ -341,7 +343,8 @@ class ActivityIndicatorService {
             // Approximate urgent tasks from order deadlines
             return (state.auftraege || []).filter(a => {
                 if (!a.deadline) {return false;}
-                const deadline = new Date(a.deadline);
+                const deadline = StorageUtils.safeDate(a.deadline);
+                if (!deadline) {return false;}
                 deadline.setHours(0, 0, 0, 0);
                 return deadline <= today;
             }).length;
@@ -351,7 +354,8 @@ class ActivityIndicatorService {
             if (task.completed) {return false;}
             if (!task.dueDate) {return false;}
 
-            const dueDate = new Date(task.dueDate);
+            const dueDate = StorageUtils.safeDate(task.dueDate);
+            if (!dueDate) {return false;}
             dueDate.setHours(0, 0, 0, 0);
             return dueDate <= today;
         }).length;
@@ -444,13 +448,15 @@ class ActivityIndicatorService {
             if (r.status === 'überfällig') {return true;}
 
             if (r.zahlungsziel) {
-                const deadline = new Date(r.zahlungsziel);
+                const deadline = StorageUtils.safeDate(r.zahlungsziel);
+                if (!deadline) {return false;}
                 deadline.setHours(0, 0, 0, 0);
                 return deadline < today;
             }
 
             if (r.createdAt) {
-                const created = new Date(r.createdAt);
+                const created = StorageUtils.safeDate(r.createdAt);
+                if (!created) {return false;}
                 const dueDate = new Date(created);
                 dueDate.setDate(dueDate.getDate() + 30);
                 dueDate.setHours(0, 0, 0, 0);
@@ -478,7 +484,8 @@ class ActivityIndicatorService {
         const oldNewInquiries = (state.anfragen || []).filter(a => {
             if (a.status !== 'neu') {return false;}
             if (!a.createdAt) {return false;}
-            const created = new Date(a.createdAt);
+            const created = StorageUtils.safeDate(a.createdAt);
+            if (!created) {return false;}
             const hoursAgo = (today - created) / (1000 * 60 * 60);
             return hoursAgo > 24;
         });
@@ -499,7 +506,8 @@ class ActivityIndicatorService {
         const newInquiries = (state.anfragen || []).filter(a => {
             if (a.status !== 'neu') {return false;}
             if (!a.createdAt) {return false;}
-            const created = new Date(a.createdAt);
+            const created = StorageUtils.safeDate(a.createdAt);
+            if (!created) {return false;}
             const hoursAgo = (today - created) / (1000 * 60 * 60);
             return hoursAgo <= 24;
         });
@@ -519,7 +527,8 @@ class ActivityIndicatorService {
         // 4. Orders near deadline (blue - info)
         const nearDeadline = (state.auftraege || []).filter(a => {
             if (!a.deadline) {return false;}
-            const deadline = new Date(a.deadline);
+            const deadline = StorageUtils.safeDate(a.deadline);
+            if (!deadline) {return false;}
             const daysUntil = (deadline - today) / (1000 * 60 * 60 * 24);
             return daysUntil > 0 && daysUntil <= 1;
         });
@@ -561,11 +570,13 @@ class ActivityIndicatorService {
         let dueDate;
 
         if (invoice.zahlungsziel) {
-            dueDate = new Date(invoice.zahlungsziel);
+            dueDate = StorageUtils.safeDate(invoice.zahlungsziel);
         } else if (invoice.createdAt) {
-            dueDate = new Date(invoice.createdAt);
-            dueDate.setDate(dueDate.getDate() + 30);
-        } else {
+            dueDate = StorageUtils.safeDate(invoice.createdAt);
+            if (dueDate) { dueDate.setDate(dueDate.getDate() + 30); }
+        }
+
+        if (!dueDate) {
             return 0;
         }
 
@@ -580,7 +591,8 @@ class ActivityIndicatorService {
     getRelativeTime(dateString) {
         if (!dateString) {return '';}
 
-        const date = new Date(dateString);
+        const date = StorageUtils.safeDate(dateString);
+        if (!date) {return '';}
         const now = new Date();
         const seconds = Math.floor((now - date) / 1000);
         const minutes = Math.floor(seconds / 60);
@@ -599,7 +611,8 @@ class ActivityIndicatorService {
      */
     formatDate(dateString) {
         if (!dateString) {return '';}
-        const date = new Date(dateString);
+        const date = StorageUtils.safeDate(dateString);
+        if (!date) {return '';}
         return date.toLocaleDateString('de-DE', {
             month: 'short',
             day: 'numeric',

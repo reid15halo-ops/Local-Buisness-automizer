@@ -1161,7 +1161,7 @@ class AgenticExecutorService {
 
             // Store in communications log
             try {
-                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
+                let comms = StorageUtils.getJSON('freyai_communications', [], { service: 'agenticExecutorService' });
                 comms.push({
                     id: emailId,
                     to: emailData.to,

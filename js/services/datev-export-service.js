@@ -5,8 +5,8 @@
 
 class DatevExportService {
     constructor() {
-        try { this.exports = JSON.parse(localStorage.getItem('freyai_datev_exports') || '[]'); } catch { this.exports = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_datev_settings') || '{}'); } catch { this.settings = {}; }
+        this.exports = StorageUtils.getJSON('freyai_datev_exports', [], { financial: true, service: 'datevExportService' });
+        this.settings = StorageUtils.getJSON('freyai_datev_settings', {}, { financial: true, service: 'datevExportService' });
 
         // Default DATEV settings
         if (!this.settings.beraterNummer) {this.settings.beraterNummer = '12345';}
@@ -324,12 +324,14 @@ class DatevExportService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('freyai_datev_settings', JSON.stringify(this.settings));
+        const ok = StorageUtils.setJSON('freyai_datev_settings', this.settings, { service: 'DatevExportService' });
+        if (!ok) { console.error('[DatevExportService] CRITICAL: Failed to save datev settings — GoBD write failure'); }
     }
 
     // Persistence
     save() {
-        localStorage.setItem('freyai_datev_exports', JSON.stringify(this.exports));
+        const ok = StorageUtils.setJSON('freyai_datev_exports', this.exports, { service: 'DatevExportService' });
+        if (!ok) { console.error('[DatevExportService] CRITICAL: Failed to save datev exports — GoBD write failure'); }
     }
 }
 

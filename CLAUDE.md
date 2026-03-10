@@ -15,7 +15,7 @@
 - **VPS**: Hostinger KVM 4 (Ubuntu 24.04, Docker, 16 GB RAM)
 - **Local LLMs**: Ollama on VPS (Mistral Small, Qwen3.5:9b)
 - **Cloud LLMs**: Claude (Anthropic), Codex (OpenAI)
-- **AI**: Google Gemini 2.0 Flash via server-side proxy (95/5 human-in-the-loop)
+- **AI**: Google Gemini 3.1 Flash-Lite via server-side proxy (95/5 human-in-the-loop)
 
 ## Directory Layout
 

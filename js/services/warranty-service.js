@@ -5,8 +5,8 @@
 
 class WarrantyService {
     constructor() {
-        try { this.warranties = JSON.parse(localStorage.getItem('freyai_warranties') || '[]'); } catch { this.warranties = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_warranty_settings') || '{}'); } catch { this.settings = {}; }
+        this.warranties = StorageUtils.getJSON('freyai_warranties', [], { service: 'warrantyService' });
+        this.settings = StorageUtils.getJSON('freyai_warranty_settings', {}, { service: 'warrantyService' });
 
         // Default settings
         if (!this.settings.defaultWarrantyMonths) {this.settings.defaultWarrantyMonths = 24;}

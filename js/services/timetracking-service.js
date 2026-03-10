@@ -5,10 +5,10 @@
 
 class TimeTrackingService {
     constructor() {
-        try { this.entries = JSON.parse(localStorage.getItem('freyai_time_entries') || '[]'); } catch { this.entries = []; }
-        try { this.employees = JSON.parse(localStorage.getItem('freyai_employees') || '[]'); } catch { this.employees = []; }
-        try { this.activeTimers = JSON.parse(localStorage.getItem('freyai_active_timers') || '{}'); } catch { this.activeTimers = {}; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_time_settings') || '{}'); } catch { this.settings = {}; }
+        this.entries = StorageUtils.getJSON('freyai_time_entries', [], { service: 'timetrackingService' });
+        this.employees = StorageUtils.getJSON('freyai_employees', [], { service: 'timetrackingService' });
+        this.activeTimers = StorageUtils.getJSON('freyai_active_timers', {}, { service: 'timetrackingService' });
+        this.settings = StorageUtils.getJSON('freyai_time_settings', {}, { service: 'timetrackingService' });
 
         // Default settings
         if (!this.settings.dailyHours) {this.settings.dailyHours = 8;}
@@ -109,7 +109,8 @@ class TimeTrackingService {
         const timer = this.activeTimers[employeeId];
         if (!timer) {return null;}
 
-        const started = new Date(timer.startedAt);
+        const started = StorageUtils.safeDate(timer.startedAt);
+        if (!started) {return { ...timer, elapsedMinutes: 0, elapsedFormatted: '0:00', isStale: false };}
         const now = new Date();
         const elapsedMinutes = Math.floor((now - started) / 60000);
         const isStale = elapsedMinutes > 24 * 60; // >24h without clock-out
@@ -127,7 +128,8 @@ class TimeTrackingService {
         const stale = [];
         const now = new Date();
         for (const [empId, timer] of Object.entries(this.activeTimers)) {
-            const started = new Date(timer.startedAt);
+            const started = StorageUtils.safeDate(timer.startedAt);
+            if (!started) {continue;}
             const elapsedMinutes = Math.floor((now - started) / 60000);
             if (elapsedMinutes > 24 * 60) {
                 stale.push({ employeeId: empId, ...timer, elapsedMinutes });
@@ -169,7 +171,8 @@ class TimeTrackingService {
         end.setDate(end.getDate() + 7);
 
         return this.entries.filter(e => {
-            const entryDate = new Date(e.date);
+            const entryDate = StorageUtils.safeDate(e.date);
+            if (!entryDate) {return false;}
             return entryDate >= start && entryDate < end &&
                 (!employeeId || e.employeeId === employeeId);
         });

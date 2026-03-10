@@ -73,7 +73,7 @@ class EmailTemplateService {
 
         // Fallback: admin panel settings in localStorage
         let ap = {};
-        try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { /* corrupted */ }
+        ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'emailTemplateService' });
         return {
             name: ap.company_name || '',
             street: ap.address_street || '',

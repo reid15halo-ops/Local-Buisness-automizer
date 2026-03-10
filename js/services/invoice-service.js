@@ -11,6 +11,11 @@ class InvoiceService {
         this.eInvoiceService = null;
         this.storeService = null;
         this.bookkeepingService = null;
+
+        // Skonto defaults (configurable)
+        this.skontoPercent = 2;   // 2% early payment discount
+        this.skontoTage = 7;     // within 7 days
+        this.skontoMinBetrag = 50; // Auto-disable Skonto below this brutto amount (EUR)
     }
 
     _round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
@@ -82,7 +87,16 @@ class InvoiceService {
             const mwst = this._round2(netto * taxRate);
             const brutto = this._round2(netto + mwst);
 
-            // 4. Create invoice object
+            // 4. Calculate Skonto (early payment discount)
+            const skontoMinBetrag = opts.skontoMinBetrag ?? this.skontoMinBetrag;
+            const skontoEnabled = opts.skontoEnabled ?? (brutto >= skontoMinBetrag);
+            const skontoPercent = skontoEnabled ? (opts.skontoPercent ?? this.skontoPercent) : 0;
+            const skontoTage = skontoEnabled ? (opts.skontoTage ?? this.skontoTage) : 0;
+            const skontoBetrag = skontoEnabled ? this._round2(brutto * (skontoPercent / 100)) : 0;
+            const betragNachSkonto = this._round2(brutto - skontoBetrag);
+            const skontoZielDatum = skontoEnabled ? this.addDays(new Date(), skontoTage).toISOString() : null;
+
+            // 5. Create invoice object
             const invoice = {
                 id: this.storeService.generateId('RE'),
                 nummer: invoiceNumber,
@@ -97,6 +111,15 @@ class InvoiceService {
                 netto: netto,
                 mwst: mwst,
                 brutto: brutto,
+                // Skonto fields
+                skontoEnabled: skontoEnabled,
+                skontoPercent: skontoPercent,
+                skontoTage: skontoTage,
+                skontoBetrag: skontoBetrag,
+                betragNachSkonto: betragNachSkonto,
+                skontoZielDatum: skontoZielDatum,
+                skontoGenutzt: false,
+                skontoAbzug: 0,
                 status: 'offen',
                 datum: invoiceDate,
                 faelligkeitsdatum: dueDate,
@@ -105,7 +128,7 @@ class InvoiceService {
                 eInvoiceGenerated: false
             };
 
-            // 5. Save to store
+            // 6. Save to store
             if (!this.storeService?.state?.rechnungen) {
                 throw new Error('Store service not initialized');
             }
@@ -178,14 +201,38 @@ class InvoiceService {
             throw new Error('Invoice not found');
         }
 
+        // Check if payment is within Skonto period
+        const paidAt = new Date();
+        const skontoDisabled = invoice.skontoEnabled === false;
+        const skontoDeadline = invoice.skontoZielDatum ? new Date(invoice.skontoZielDatum) : null;
+        const withinSkontoPeriod = !skontoDisabled && skontoDeadline && paidAt <= skontoDeadline && invoice.skontoPercent > 0;
+
+        // Allow explicit override via paymentData.skontoGenutzt (but not if Skonto is disabled)
+        const skontoGenutzt = skontoDisabled ? false : (paymentData.skontoGenutzt ?? withinSkontoPeriod);
+
         // Update invoice
         invoice.status = 'bezahlt';
-        invoice.paidAt = new Date().toISOString();
+        invoice.paidAt = paidAt.toISOString();
         invoice.paymentMethod = paymentData.method || 'Überweisung';
         invoice.paymentNote = paymentData.note || '';
 
+        // Skonto tracking
+        if (skontoGenutzt && invoice.skontoBetrag > 0) {
+            invoice.skontoGenutzt = true;
+            invoice.skontoAbzug = invoice.skontoBetrag;
+            invoice.bezahltBetrag = invoice.betragNachSkonto;
+        } else {
+            invoice.skontoGenutzt = false;
+            invoice.skontoAbzug = 0;
+            invoice.bezahltBetrag = invoice.brutto;
+        }
+
         await this.storeService.save();
-        this.storeService.addActivity('✅', `Rechnung ${invoice.nummer} als bezahlt markiert`);
+
+        const skontoHinweis = invoice.skontoGenutzt
+            ? ` (Skonto ${invoice.skontoPercent}% genutzt, Abzug ${this._round2(invoice.skontoAbzug)} €)`
+            : '';
+        this.storeService.addActivity('✅', `Rechnung ${invoice.nummer} als bezahlt markiert${skontoHinweis}`);
 
         // n8n Webhook Event
         window.webhookEventService?.invoicePaid?.(invoice);
@@ -193,13 +240,14 @@ class InvoiceService {
         // Integrate with bookkeeping if available
         if (this.bookkeepingService) {
             try {
-                // 1. Record payment (Umsatzerlöse / Revenue)
+                // 1. Record payment (Umsatzerlöse / Revenue) — use actual paid amount
                 await this.bookkeepingService.recordPayment({
                     invoiceId: invoice.id,
-                    amount: invoice.brutto,
+                    amount: invoice.bezahltBetrag,
                     date: invoice.paidAt,
                     method: invoice.paymentMethod,
-                    reference: invoice.nummer
+                    reference: invoice.nummer,
+                    skontoAbzug: invoice.skontoAbzug
                 });
 
                 // 2. Record material costs (COGS / Materialaufwendungen) if applicable
@@ -383,6 +431,18 @@ class InvoiceService {
     }
 
     /**
+     * Check if an invoice is still eligible for Skonto
+     * @param {Object} invoice - Invoice object
+     * @returns {boolean} True if Skonto can still be claimed
+     */
+    isSkontoEligible(invoice) {
+        if (invoice.skontoEnabled === false) return false;
+        if (invoice.status !== 'offen') return false;
+        if (!invoice.skontoZielDatum || !invoice.skontoPercent) return false;
+        return new Date() <= new Date(invoice.skontoZielDatum);
+    }
+
+    /**
      * Get invoice statistics
      * @returns {Object} Statistics
      */
@@ -402,7 +462,13 @@ class InvoiceService {
                 .reduce((sum, r) => sum + (r.brutto || 0), 0),
             summeBezahlt: invoices
                 .filter(r => r.status === 'bezahlt')
-                .reduce((sum, r) => sum + (r.brutto || 0), 0)
+                .reduce((sum, r) => sum + (r.bezahltBetrag || r.brutto || 0), 0),
+            skontoGenutzt: invoices
+                .filter(r => r.skontoGenutzt === true)
+                .length,
+            skontoErsparnis: invoices
+                .filter(r => r.skontoGenutzt === true)
+                .reduce((sum, r) => sum + (r.skontoAbzug || 0), 0)
         };
     }
 }

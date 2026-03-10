@@ -154,7 +154,7 @@ class ApprovalQueueService {
 
         // Fallback: localStorage (communicationService)
         try {
-            let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
+            let comms = StorageUtils.getJSON('freyai_communications', [], { service: 'approvalQueueService' });
             return comms.filter(c => c.status === 'draft' && c.aiGenerated);
         } catch (e) {
             console.error('[ApprovalQueueService] Error:', e);
@@ -492,7 +492,7 @@ class ApprovalQueueService {
         } else {
             // Update localStorage
             try {
-                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
+                let comms = StorageUtils.getJSON('freyai_communications', [], { service: 'approvalQueueService' });
                 const idx = comms.findIndex(c => c.id === comm.id);
                 if (idx !== -1) {
                     comms[idx].status = 'sent';
@@ -546,7 +546,7 @@ class ApprovalQueueService {
 
         // Activity
         if (window.storeService) {
-            window.storeService.addActivity('📨', `Mahnung gesendet an ${invoice.kunde?.name || 'Kunde'}`);
+            window.storeService.addActivity('📨', `Mahnung gesendet an ${invoice.kunde?.name || 'Unbekannt'}`);
         }
 
         this._showToast('Mahnung wird gesendet', 'success');
@@ -563,7 +563,7 @@ class ApprovalQueueService {
                     .update({ status: 'rejected', rejected_at: new Date().toISOString() })
                     .eq('id', comm.id);
             } else {
-                let comms; try { comms = JSON.parse(localStorage.getItem('freyai_communications') || '[]'); } catch { comms = []; }
+                let comms = StorageUtils.getJSON('freyai_communications', [], { service: 'approvalQueueService' });
                 const idx = comms.findIndex(c => c.id === comm.id);
                 if (idx !== -1) {
                     comms[idx].status = 'rejected';

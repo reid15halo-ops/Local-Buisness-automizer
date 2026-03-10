@@ -12,8 +12,8 @@
 
 class EInvoiceService {
     constructor() {
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_einvoice_settings') || '{}'); } catch { this.settings = {}; }
-        try { this.generatedInvoices = JSON.parse(localStorage.getItem('freyai_einvoice_generated') || '[]'); } catch { this.generatedInvoices = []; }
+        this.settings = StorageUtils.getJSON('freyai_einvoice_settings', {}, { financial: true, service: 'eInvoiceService' });
+        this.generatedInvoices = StorageUtils.getJSON('freyai_einvoice_generated', [], { financial: true, service: 'eInvoiceService' });
 
         // Default business data
         if (!this.settings.businessData) {
@@ -50,7 +50,7 @@ class EInvoiceService {
 
     // Sync business data from admin panel settings and store settings
     syncFromSettings() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { financial: true, service: 'eInvoiceService' });
         const storeSettings = window.storeService?.state?.settings || {};
 
         const name = ap.company_name || storeSettings.companyName || storeSettings.firmenname || '';
@@ -77,7 +77,8 @@ class EInvoiceService {
         if (bic) {bd.bic = bic;}
         if (bankName) {bd.bankName = bankName;}
 
-        localStorage.setItem('freyai_einvoice_settings', JSON.stringify(this.settings));
+        const ok = StorageUtils.setJSON('freyai_einvoice_settings', this.settings, { service: 'EInvoiceService' });
+        if (!ok) { console.error('[EInvoiceService] CRITICAL: Failed to save einvoice settings — GoBD write failure'); }
     }
 
     // Update business data
@@ -238,7 +239,13 @@ class EInvoiceService {
             };
         }
 
-        const xml = this.buildXRechnungXml(invoice);
+        const kundenName = StorageUtils.getCustomerName(invoice, 'financial');
+        if (!kundenName) {
+            console.error('[EInvoice] Cannot generate XRechnung: missing customer data for invoice', invoice.id || invoice.nummer);
+            return { success: false, error: 'Kundendaten fehlen – XRechnung kann nicht erstellt werden' };
+        }
+
+        const xml = this.buildXRechnungXml(invoice, kundenName);
         const validation = this.validateXRechnung(xml);
 
         const record = {
@@ -421,9 +428,10 @@ class EInvoiceService {
      * @param {Object} invoice - Invoice data
      * @returns {string} UBL 2.1 XML string
      */
-    buildXRechnungXml(invoice) {
+    buildXRechnungXml(invoice, validatedKundenName = null) {
         const bd = this.settings.businessData;
         const kunde = invoice.kunde || {};
+        const buyerName = validatedKundenName || kunde.firma || kunde.name || '';
         const positionen = invoice.positionen || [];
 
         // Resolve Leitweg-ID: explicit > customer-specific > default
@@ -521,7 +529,7 @@ ${noteXml}    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
         <cac:Party>
             <cac:EndpointID schemeID="EM">${this._escXml(kunde.email || '')}</cac:EndpointID>
             <cac:PartyName>
-                <cbc:Name>${this._escXml(kunde.firma || kunde.name || '')}</cbc:Name>
+                <cbc:Name>${this._escXml(buyerName)}</cbc:Name>
             </cac:PartyName>
             <cac:PostalAddress>
                 <cbc:StreetName>${this._escXml(kunde.strasse || kunde.street || '')}</cbc:StreetName>
@@ -538,7 +546,7 @@ ${noteXml}    <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>
                 </cac:TaxScheme>
             </cac:PartyTaxScheme>` : ''}
             <cac:PartyLegalEntity>
-                <cbc:RegistrationName>${this._escXml(kunde.firma || kunde.name || '')}</cbc:RegistrationName>
+                <cbc:RegistrationName>${this._escXml(buyerName)}</cbc:RegistrationName>
             </cac:PartyLegalEntity>
             <cac:Contact>
                 <cbc:ElectronicMail>${this._escXml(kunde.email || '')}</cbc:ElectronicMail>
@@ -665,7 +673,13 @@ ${positionen.map((pos, i) => {
             };
         }
 
-        const xml = this.buildZugferdXml(invoice);
+        const kundenName = StorageUtils.getCustomerName(invoice, 'financial');
+        if (!kundenName) {
+            console.error('[EInvoice] Cannot generate ZUGFeRD: missing customer data for invoice', invoice.id || invoice.nummer);
+            return { success: false, error: 'Kundendaten fehlen – ZUGFeRD kann nicht erstellt werden' };
+        }
+
+        const xml = this.buildZugferdXml(invoice, kundenName);
         const validation = this.validateZugferd(xml);
 
         // Try to create a real ZUGFeRD PDF with embedded XML
@@ -752,9 +766,10 @@ ${positionen.map((pos, i) => {
      * @param {Object} invoice - Invoice data
      * @returns {string} CII XML string
      */
-    buildZugferdXml(invoice) {
+    buildZugferdXml(invoice, validatedKundenName = null) {
         const bd = this.settings.businessData;
         const kunde = invoice.kunde || {};
+        const buyerName = validatedKundenName || kunde.firma || kunde.name || '';
         const positionen = invoice.positionen || [];
         const isKU = this._isKleinunternehmer();
 
@@ -838,7 +853,7 @@ ${positionen.map((pos, i) => {
             </ram:SellerTradeParty>
 
             <ram:BuyerTradeParty>
-                <ram:Name>${this._escXml(kunde.firma || kunde.name || '')}</ram:Name>
+                <ram:Name>${this._escXml(buyerName)}</ram:Name>
                 <ram:PostalTradeAddress>
                     <ram:PostcodeCode>${this._escXml(kunde.plz || kunde.postalCode || '')}</ram:PostcodeCode>
                     <ram:LineOne>${this._escXml(kunde.strasse || kunde.street || '')}</ram:LineOne>
@@ -1372,7 +1387,7 @@ ${positionen.map((pos, i) => {
                 hasPdf: !!(r.pdfBytes && r.pdfBytes.length > 0),
                 validation: r.validation || null
             }))
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            .sort((a, b) => (StorageUtils.safeDate(b.createdAt) || 0) - (StorageUtils.safeDate(a.createdAt) || 0));
     }
 
     /**
@@ -1381,7 +1396,7 @@ ${positionen.map((pos, i) => {
      */
     getGeneratedInvoices() {
         return this.generatedInvoices.sort((a, b) =>
-            new Date(b.createdAt) - new Date(a.createdAt)
+            (StorageUtils.safeDate(b.createdAt) || 0) - (StorageUtils.safeDate(a.createdAt) || 0)
         );
     }
 
@@ -1507,7 +1522,7 @@ ${positionen.map((pos, i) => {
      * @returns {string} ISO date string
      */
     addDays(dateStr, days) {
-        const date = new Date(dateStr);
+        const date = StorageUtils.safeDate(dateStr) || new Date();
         date.setDate(date.getDate() + days);
         return date.toISOString().split('T')[0];
     }
@@ -1519,8 +1534,9 @@ ${positionen.map((pos, i) => {
      * @returns {number}
      */
     _daysBetween(from, to) {
-        const d1 = new Date(from);
-        const d2 = new Date(to);
+        const d1 = StorageUtils.safeDate(from);
+        const d2 = StorageUtils.safeDate(to);
+        if (!d1 || !d2) {return 14;} // Default to 14 days payment term
         const diff = d2 - d1;
         return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
     }
@@ -1532,8 +1548,8 @@ ${positionen.map((pos, i) => {
      */
     formatDate(dateStr) {
         if (!dateStr) {return '';}
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) {return dateStr;}
+        const d = StorageUtils.safeDate(dateStr);
+        if (!d) {return dateStr;}
         return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
@@ -1551,12 +1567,13 @@ ${positionen.map((pos, i) => {
     // ============================================
 
     _saveSettings() {
-        localStorage.setItem('freyai_einvoice_settings', JSON.stringify(this.settings));
+        const ok = StorageUtils.setJSON('freyai_einvoice_settings', this.settings, { service: 'EInvoiceService' });
+        if (!ok) { console.error('[EInvoiceService] CRITICAL: Failed to save einvoice settings — GoBD write failure'); }
     }
 
     _saveGenerated() {
         try {
-            // Strip pdfBytes before saving to prevent localStorage quota exhaustion
+            // Strip pdfBytes before saving to prevent storage quota exhaustion
             const stripped = this.generatedInvoices.map(r => {
                 if (r.pdfBytes) {
                     const { pdfBytes, ...rest } = r;
@@ -1564,7 +1581,8 @@ ${positionen.map((pos, i) => {
                 }
                 return r;
             });
-            localStorage.setItem('freyai_einvoice_generated', JSON.stringify(stripped));
+            const ok = StorageUtils.setJSON('freyai_einvoice_generated', stripped, { service: 'EInvoiceService' });
+            if (!ok) { console.error('[EInvoiceService] CRITICAL: Failed to save generated einvoices — GoBD write failure'); }
         } catch (e) {
             console.error('E-Invoice Speicherung fehlgeschlagen:', e.message);
         }

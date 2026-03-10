@@ -420,7 +420,8 @@ Antworte NUR mit dem Briefing-Text auf Deutsch.`;
                 generationConfig: {
                     temperature: 0.7,
                     maxOutputTokens: 500
-                }
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -574,7 +575,7 @@ Antworte NUR mit dem Briefing-Text auf Deutsch.`;
         // Sort by urgency (most overdue first)
         mahnungen.sort((a, b) => b.tageUeberfaellig - a.tageUeberfaellig);
 
-        const totalOverdue = mahnungen.reduce((sum, m) => sum + m.betrag, 0);
+        const totalOverdue = mahnungen.reduce((sum, m) => sum + (m.betrag || 0), 0);
 
         return {
             mahnungen,
@@ -625,7 +626,8 @@ Antworte NUR mit dem Mahntext.`;
                 generationConfig: {
                     temperature: 0.5,
                     maxOutputTokens: 400
-                }
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -802,7 +804,8 @@ Antworte NUR mit dem Nachfass-Text.`;
                 generationConfig: {
                     temperature: 0.7,
                     maxOutputTokens: 300
-                }
+                },
+                thinkingConfig: { thinkingBudget: 0 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -931,8 +934,9 @@ Antworte NUR mit dem JSON.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.4,
-                    maxOutputTokens: 800
-                }
+                    maxOutputTokens: 600
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -973,7 +977,7 @@ Antworte NUR mit dem JSON.`;
                 brutto,
                 arbeitsstunden: Math.ceil(netto / 65) // ~65 EUR/h
             },
-            angebotstext: `Sehr geehrte(r) ${anfrage.kunde?.name || 'Kunde'},\n\n` +
+            angebotstext: `Sehr geehrte(r) ${anfrage.kunde?.name || 'Unbekannt'},\n\n` +
                 `vielen Dank fuer Ihre Anfrage${anfrage.leistungsart ? ` zum Thema "${anfrage.leistungsart}"` : ''}. ` +
                 `Gerne unterbreiten wir Ihnen folgendes Angebot:\n\n` +
                 `Gesamtbetrag: ${this._formatCurrency(brutto)} (inkl. MwSt.)\n\n` +
@@ -1165,8 +1169,9 @@ Antworte NUR mit dem JSON-Array.`;
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.5,
-                    maxOutputTokens: 600
-                }
+                    maxOutputTokens: 400
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             });
 
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -1442,7 +1447,7 @@ Antworte NUR mit dem JSON-Array.`;
     _getBusinessType() {
         let ap = {};
         try {
-            try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+            ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'agentWorkflowService' });
             if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
                 console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
                 ap = {};
@@ -1458,7 +1463,7 @@ Antworte NUR mit dem JSON-Array.`;
     _getCompanyName() {
         let ap = {};
         try {
-            try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+            ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'agentWorkflowService' });
             if (typeof ap !== 'object' || ap === null || Array.isArray(ap)) {
                 console.warn('[AgentWorkflow] admin_settings is not a valid object, using defaults');
                 ap = {};

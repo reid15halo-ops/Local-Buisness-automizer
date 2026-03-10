@@ -252,7 +252,7 @@ class CustomerService {
             }
             // trashService already removed from this.customers and saved
             // Reload from localStorage to stay in sync
-            try { this.customers = JSON.parse(localStorage.getItem('freyai_customers') || '[]'); } catch { this.customers = []; }
+            this.customers = StorageUtils.getJSON('freyai_customers', [], { service: 'customerService' });
             this._deleteFromSupabase(id);
             return;
         }

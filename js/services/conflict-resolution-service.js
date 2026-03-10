@@ -436,12 +436,7 @@ class ConflictResolutionService {
         try {
             // Update local storage
             const storageKey = `hwf_${table}`;
-            let items = [];
-            try {
-                try { items = JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch { items = []; }
-            } catch {
-                items = [];
-            }
+            let items = StorageUtils.getJSON(storageKey, [], { service: 'conflictResolutionService' });
 
             const idx = items.findIndex(i => i.id === resolvedRecord.id);
             if (idx >= 0) {
@@ -515,11 +510,7 @@ class ConflictResolutionService {
      * Load settings from localStorage.
      */
     _loadSettings() {
-        try {
-            return JSON.parse(localStorage.getItem(this.SETTINGS_KEY) || '{}');
-        } catch {
-            return {};
-        }
+        return StorageUtils.getJSON(this.SETTINGS_KEY, {}, { service: 'conflictResolutionService' });
     }
 
     /**

@@ -5,8 +5,8 @@
 
 class QrCodeService {
     constructor() {
-        try { this.generatedCodes = JSON.parse(localStorage.getItem('freyai_qrcodes') || '[]'); } catch { this.generatedCodes = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_qr_settings') || '{}'); } catch { this.settings = {}; }
+        this.generatedCodes = StorageUtils.getJSON('freyai_qrcodes', [], { service: 'qrcodeService' });
+        this.settings = StorageUtils.getJSON('freyai_qr_settings', {}, { service: 'qrcodeService' });
 
         // Default settings
         if (!this.settings.size) {this.settings.size = 200;}
@@ -60,7 +60,7 @@ class QrCodeService {
         // EPC QR Code format for SEPA Credit Transfer
         const amount = invoice.betrag || 0;
         const bd = window.eInvoiceService?.settings?.businessData || {};
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'qrcodeService' });
         const iban = (bd.iban || ap.bank_iban || this.settings.iban || '').replace(/\s/g, '');
         const bic = bd.bic || ap.bank_bic || this.settings.bic || '';
         const recipient = bd.name || ap.company_name || this.settings.recipientName || 'FreyAI Visions';

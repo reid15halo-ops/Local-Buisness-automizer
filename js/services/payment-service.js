@@ -5,9 +5,9 @@
 
 class PaymentService {
     constructor() {
-        try { this.payments = JSON.parse(localStorage.getItem('freyai_payments') || '[]'); } catch { this.payments = []; }
-        try { this.paymentLinks = JSON.parse(localStorage.getItem('freyai_payment_links') || '[]'); } catch { this.paymentLinks = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_payment_settings') || '{}'); } catch { this.settings = {}; }
+        this.payments = StorageUtils.getJSON('freyai_payments', [], { financial: true, service: 'paymentService' });
+        this.paymentLinks = StorageUtils.getJSON('freyai_payment_links', [], { financial: true, service: 'paymentService' });
+        this.settings = StorageUtils.getJSON('freyai_payment_settings', {}, { financial: true, service: 'paymentService' });
 
         // Default settings
         if (!this.settings.depositPercentage) {this.settings.depositPercentage = 30;}
@@ -361,7 +361,8 @@ class PaymentService {
         let expiredCount = 0;
 
         this.paymentLinks.forEach(link => {
-            if (link.status === 'pending' && new Date(link.expiresAt) < now) {
+            const expires = StorageUtils.safeDate(link.expiresAt);
+            if (link.status === 'pending' && expires && expires < now) {
                 link.status = 'expired';
                 expiredCount++;
             }
@@ -393,13 +394,13 @@ class PaymentService {
             links = links.filter(l => l.referenceId === filters.referenceId);
         }
 
-        return links.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return links.sort((a, b) => (StorageUtils.safeDate(b.createdAt) || 0) - (StorageUtils.safeDate(a.createdAt) || 0));
     }
 
     // Get all payments
     getPayments(limit = 50) {
         return this.payments
-            .sort((a, b) => new Date(b.paidAt) - new Date(a.paidAt))
+            .sort((a, b) => (StorageUtils.safeDate(b.paidAt) || 0) - (StorageUtils.safeDate(a.paidAt) || 0))
             .slice(0, limit);
     }
 
@@ -408,22 +409,23 @@ class PaymentService {
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-        const monthlyPayments = this.payments.filter(p =>
-            new Date(p.paidAt) >= monthStart
-        );
+        const monthlyPayments = this.payments.filter(p => {
+            const paidDate = StorageUtils.safeDate(p.paidAt);
+            return paidDate && paidDate >= monthStart;
+        });
 
         const pendingLinks = this.paymentLinks.filter(l => l.status === 'pending');
-        const pendingAmount = pendingLinks.reduce((sum, l) => sum + l.amount, 0);
+        const pendingAmount = pendingLinks.reduce((sum, l) => sum + (l.amount || 0), 0);
 
         return {
             totalPayments: this.payments.length,
-            totalAmount: this.payments.reduce((sum, p) => sum + p.amount, 0),
+            totalAmount: this.payments.reduce((sum, p) => sum + (p.amount || 0), 0),
             monthlyPayments: monthlyPayments.length,
-            monthlyAmount: monthlyPayments.reduce((sum, p) => sum + p.amount, 0),
+            monthlyAmount: monthlyPayments.reduce((sum, p) => sum + (p.amount || 0), 0),
             pendingLinks: pendingLinks.length,
             pendingAmount: pendingAmount,
             averagePayment: this.payments.length > 0
-                ? this.payments.reduce((sum, p) => sum + p.amount, 0) / this.payments.length
+                ? this.payments.reduce((sum, p) => sum + (p.amount || 0), 0) / this.payments.length
                 : 0
         };
     }
@@ -448,12 +450,19 @@ class PaymentService {
     // Update settings
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
-        localStorage.setItem('freyai_payment_settings', JSON.stringify(this.settings));
+        const ok = StorageUtils.setJSON('freyai_payment_settings', this.settings, { service: 'PaymentService' });
+        if (!ok) { console.error('[PaymentService] CRITICAL: Failed to save payment settings — GoBD write failure'); }
     }
 
     // Persistence
-    saveLinks() { localStorage.setItem('freyai_payment_links', JSON.stringify(this.paymentLinks)); }
-    savePayments() { localStorage.setItem('freyai_payments', JSON.stringify(this.payments)); }
+    saveLinks() {
+        const ok = StorageUtils.setJSON('freyai_payment_links', this.paymentLinks, { service: 'PaymentService' });
+        if (!ok) { console.error('[PaymentService] CRITICAL: Failed to save payment links — GoBD write failure'); }
+    }
+    savePayments() {
+        const ok = StorageUtils.setJSON('freyai_payments', this.payments, { service: 'PaymentService' });
+        if (!ok) { console.error('[PaymentService] CRITICAL: Failed to save payments — GoBD write failure'); }
+    }
 }
 
 window.paymentService = new PaymentService();

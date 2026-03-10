@@ -4,8 +4,8 @@
 
 class CashFlowService {
     constructor() {
-        try { this.forecasts = JSON.parse(localStorage.getItem('freyai_cashflow_forecasts') || '[]'); } catch { this.forecasts = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_cashflow_settings') || '{}'); } catch { this.settings = {}; }
+        this.forecasts = StorageUtils.getJSON('freyai_cashflow_forecasts', [], { financial: true, service: 'cashFlowService' });
+        this.settings = StorageUtils.getJSON('freyai_cashflow_settings', {}, { financial: true, service: 'cashFlowService' });
 
         // Default settings
         if (!this.settings.monthsToForecast) {this.settings.monthsToForecast = 6;}
@@ -65,7 +65,8 @@ class CashFlowService {
         last6Months.setMonth(last6Months.getMonth() - 6);
 
         const relevantBuchungen = buchungen.filter(b => {
-            const bDate = new Date(b.datum);
+            const bDate = StorageUtils.safeDate(b.datum);
+            if (!bDate) {return false;}
             const isRecent = bDate >= last6Months;
             const isType = type === 'income' ? b.typ === 'einnahme' : b.typ === 'ausgabe';
             return isRecent && isType;
@@ -202,7 +203,7 @@ class CashFlowService {
         // Check for overdue invoices we owe
         // (Would integrate with supplier invoice tracking)
 
-        return upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+        return upcoming.sort((a, b) => (StorageUtils.safeDate(a.date) || new Date(0)) - (StorageUtils.safeDate(b.date) || new Date(0)));
     }
 
     // Get next tax payment dates
@@ -341,8 +342,10 @@ class CashFlowService {
 
     // Persistence
     save() {
-        localStorage.setItem('freyai_cashflow_forecasts', JSON.stringify(this.forecasts));
-        localStorage.setItem('freyai_cashflow_settings', JSON.stringify(this.settings));
+        const ok1 = StorageUtils.setJSON('freyai_cashflow_forecasts', this.forecasts, { service: 'CashFlowService' });
+        if (!ok1) { console.error('[CashFlowService] CRITICAL: Failed to save cashflow forecasts — GoBD write failure'); }
+        const ok2 = StorageUtils.setJSON('freyai_cashflow_settings', this.settings, { service: 'CashFlowService' });
+        if (!ok2) { console.error('[CashFlowService] CRITICAL: Failed to save cashflow settings — GoBD write failure'); }
     }
 }
 

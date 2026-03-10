@@ -4,7 +4,7 @@
 
 class LeadService {
     constructor() {
-        try { this.leads = JSON.parse(localStorage.getItem('freyai_leads') || '[]'); } catch { this.leads = []; }
+        this.leads = StorageUtils.getJSON('freyai_leads', [], { service: 'leadService' });
         this.pipelineStages = [
             { id: 'neu', name: 'Neu', color: '#3b82f6' },
             { id: 'kontaktiert', name: 'Kontaktiert', color: '#8b5cf6' },

@@ -88,11 +88,7 @@ class CompanySettingsService {
     }
 
     _loadFromLocalStorage() {
-        const stored = (() => {
-            try {
-                return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}');
-            } catch { return {}; }
-        })();
+        const stored = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'companySettingsService' });
 
         return {
             ...this._defaults,
@@ -119,7 +115,7 @@ class CompanySettingsService {
 
     _persistToLocalStorage(settings) {
         try {
-            let existing; try { existing = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { existing = {}; }
+            let existing = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'companySettingsService' });
             localStorage.setItem('freyai_admin_settings', JSON.stringify({ ...existing, ...settings }));
             // Also keep flat keys used by legacy code
             if (settings.stundensatz)        {localStorage.setItem('stundensatz', String(settings.stundensatz));}

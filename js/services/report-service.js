@@ -5,7 +5,7 @@
 
 class ReportService {
     constructor() {
-        try { this.savedReports = JSON.parse(localStorage.getItem('freyai_saved_reports') || '[]'); } catch { this.savedReports = []; }
+        this.savedReports = StorageUtils.getJSON('freyai_saved_reports', [], { service: 'reportService' });
         this.reportTypes = [
             { id: 'sales', name: 'Umsatzbericht', icon: '💰' },
             { id: 'customer', name: 'Kundenbericht', icon: '👥' },

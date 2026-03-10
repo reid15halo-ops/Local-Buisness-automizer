@@ -5,9 +5,9 @@
 
 class BarcodeService {
     constructor() {
-        try { this.scanHistory = JSON.parse(localStorage.getItem('freyai_scan_history') || '[]'); } catch { this.scanHistory = []; }
-        try { this.productDatabase = JSON.parse(localStorage.getItem('freyai_barcode_products') || '{}'); } catch { this.productDatabase = {}; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_barcode_settings') || '{}'); } catch { this.settings = {}; }
+        this.scanHistory = StorageUtils.getJSON('freyai_scan_history', [], { service: 'barcodeService' });
+        this.productDatabase = StorageUtils.getJSON('freyai_barcode_products', {}, { service: 'barcodeService' });
+        this.settings = StorageUtils.getJSON('freyai_barcode_settings', {}, { service: 'barcodeService' });
 
         // Default settings
         if (!this.settings.soundEnabled) {this.settings.soundEnabled = true;}

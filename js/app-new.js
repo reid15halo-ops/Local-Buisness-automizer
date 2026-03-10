@@ -825,7 +825,7 @@ async function runDemoWorkflow() {
         window.materialService.loadDemoMaterials();
     }
 
-    const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+    const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'appNew' });
     const bizType = ap.business_type || window.storeService?.state?.settings?.businessType || 'Handwerk';
 
     const demoAnfrage = {

@@ -88,7 +88,7 @@ serve(async (req) => {
         let keywords: string[] = []
 
         if (GEMINI_API_KEY) {
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${GEMINI_API_KEY}`
 
             const prompt = `Du bist ein Assistent fuer Gespraechszusammenfassungen.
 Analysiere das folgende Transkript eines Telefonats.
@@ -109,7 +109,8 @@ ${transcript}`
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.3, maxOutputTokens: 500 },
+                    generationConfig: { temperature: 0.3, maxOutputTokens: 300 },
+                    thinkingConfig: { thinkingBudget: 0 },
                 }),
             })
 

@@ -5,8 +5,8 @@
 
 class BookingService {
     constructor() {
-        try { this.bookings = JSON.parse(localStorage.getItem('freyai_bookings') || '[]'); } catch { this.bookings = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_booking_settings') || '{}'); } catch { this.settings = {}; }
+        this.bookings = StorageUtils.getJSON('freyai_bookings', [], { service: 'bookingService' });
+        this.settings = StorageUtils.getJSON('freyai_booking_settings', {}, { service: 'bookingService' });
 
         // Default settings
         if (!this.settings.serviceTypes) {
@@ -197,7 +197,7 @@ class BookingService {
 
     // Email Templates
     _companyInfo() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'bookingService' });
         const store = window.storeService?.state?.settings || {};
         return {
             name: ap.company_name || store.companyName || 'FreyAI Visions',

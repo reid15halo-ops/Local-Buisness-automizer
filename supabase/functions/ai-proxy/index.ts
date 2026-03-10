@@ -51,6 +51,11 @@ serve(async (req) => {
         // Get request body
         const body = await req.json()
 
+        // Default to no-thinking if client doesn't specify (saves tokens)
+        if (!body.thinkingConfig) {
+            body.thinkingConfig = { thinkingBudget: 0 }
+        }
+
         // Validate required fields
         if (!body.contents) {
             return new Response(
@@ -70,7 +75,7 @@ serve(async (req) => {
         }
 
         // Proxy request to Google's Gemini API
-        const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+        const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent'
         const geminiResponse = await fetch(`${geminiUrl}?key=${geminiApiKey}`, {
             method: 'POST',
             headers: {
@@ -95,7 +100,7 @@ serve(async (req) => {
         await supabase.from('automation_log').insert({
             user_id: user.id,
             action: 'ai.gemini_request',
-            target: 'gemini-2.0-flash',
+            target: 'gemini-3.1-flash-lite',
             metadata: { tokens_estimated: body.generationConfig?.maxOutputTokens || 0 },
         }).catch(() => {}) // Don't fail if logging fails
 

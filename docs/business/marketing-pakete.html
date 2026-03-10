@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FreyAI Visions — Social-Media Marketing-Pakete</title>
+    <style>
+        /* ── Reset & Base ─────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @font-face {
+            font-family: 'Inter';
+            src: url('../../fonts/inter-latin.woff2') format('woff2');
+            font-weight: 100 900;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Instrument Serif';
+            src: url('../../fonts/instrument-serif-latin.woff2') format('woff2');
+            font-weight: 400;
+            font-display: swap;
+        }
+
+        :root {
+            --bg-dark: #0c1a1a;
+            --bg-card: #0f2327;
+            --bg-hover: #173030;
+            --accent: #2dd4a8;
+            --accent-hover: #5eecc6;
+            --accent-glow: rgba(45, 212, 168, 0.15);
+            --text: #e0eeee;
+            --text-muted: #8aacac;
+            --border: #1a3535;
+            --gold: #f59e0b;
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ── Background Pattern ───────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(45, 212, 168, 0.06), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(245, 158, 11, 0.04), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Layout ───────────────────────────────── */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header / Hero ────────────────────────── */
+        .hero {
+            text-align: center;
+            padding: 80px 0 60px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--accent-glow);
+            border: 1px solid rgba(45, 212, 168, 0.25);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 18px;
+            border-radius: 100px;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: clamp(2.5rem, 6vw, 4.2rem);
+            font-weight: 400;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .hero h1 span {
+            color: var(--accent);
+        }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 680px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .number {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 2.5rem;
+            color: #fff;
+            display: block;
+        }
+
+        .hero-stat .label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── Section Headers ──────────────────────── */
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .section-header h2 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ── Package Cards ────────────────────────── */
+        .packages {
+            padding: 40px 0 80px;
+        }
+
+        .package-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .package-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px 28px;
+            position: relative;
+            transition: transform 0.25s ease, border-color 0.25s ease;
+        }
+
+        .package-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(45, 212, 168, 0.3);
+        }
+
+        .package-card.featured {
+            border-color: var(--accent);
+            background: linear-gradient(180deg, rgba(45, 212, 168, 0.06) 0%, var(--bg-card) 40%);
+        }
+
+        .package-card.featured::before {
+            content: 'BESTSELLER';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: var(--bg-dark);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            padding: 4px 16px;
+            border-radius: 100px;
+        }
+
+        .package-tier {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .package-name {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .package-price {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .package-price .amount {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 2.8rem;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .package-price .currency {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-left: 4px;
+        }
+
+        .package-price .period {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .package-features {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .package-features li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 12px;
+            font-size: 0.92rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .package-features li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-glow);
+            border-radius: 50%;
+        }
+
+        .package-features li::after {
+            content: '\2713';
+            position: absolute;
+            left: 3px;
+            top: 4px;
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .package-features li.highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .package-cta {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .package-cta.primary {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .package-cta.primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 24px rgba(45, 212, 168, 0.3);
+        }
+
+        .package-cta.secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .package-cta.secondary:hover {
+            background: var(--accent-glow);
+        }
+
+        /* ── How It Works ─────────────────────────── */
+        .how-it-works {
+            padding: 80px 0;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 32px;
+            right: -16px;
+            width: 32px;
+            height: 2px;
+            background: var(--border);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            border: 1px solid rgba(45, 212, 168, 0.2);
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .step h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .step p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ── Content Categories ───────────────────── */
+        .categories {
+            padding: 80px 0;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+
+        .category-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 24px 16px;
+            text-align: center;
+            transition: border-color 0.2s ease;
+        }
+
+        .category-card:hover {
+            border-color: rgba(45, 212, 168, 0.3);
+        }
+
+        .category-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .category-card h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .category-card p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ── Add-Ons ──────────────────────────────── */
+        .addons {
+            padding: 80px 0;
+        }
+
+        .addon-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .addon-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .addon-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .addon-info p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .addon-price {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 1.3rem;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        /* ── Reposting Section ────────────────────── */
+        .reposting {
+            padding: 80px 0;
+        }
+
+        .repost-banner {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(45, 212, 168, 0.08) 100%);
+            border: 1px solid rgba(45, 212, 168, 0.2);
+            border-radius: var(--radius);
+            padding: 48px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .repost-banner h2 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .repost-banner p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .repost-timeline {
+            list-style: none;
+        }
+
+        .repost-timeline li {
+            position: relative;
+            padding-left: 32px;
+            padding-bottom: 20px;
+            border-left: 2px solid var(--border);
+            margin-left: 8px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .repost-timeline li:last-child {
+            border-left-color: transparent;
+            padding-bottom: 0;
+        }
+
+        .repost-timeline li::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 2px solid var(--bg-dark);
+        }
+
+        .repost-timeline li strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* ── ROI Section ──────────────────────────── */
+        .roi {
+            padding: 80px 0;
+        }
+
+        .roi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .roi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 32px 24px;
+            text-align: center;
+        }
+
+        .roi-card .roi-number {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 2.5rem;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .roi-card .roi-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* ── CTA Footer ──────────────────────────── */
+        .cta-section {
+            padding: 80px 0 100px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-family: 'Instrument Serif', Georgia, serif;
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 32px;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 0 32px rgba(45, 212, 168, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Footer ──────────────────────────────── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 32px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* ── Responsive ──────────────────────────── */
+        @media (max-width: 1024px) {
+            .package-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+            .package-card.featured { order: -1; }
+            .steps { grid-template-columns: repeat(2, 1fr); }
+            .step:not(:last-child)::after { display: none; }
+            .category-grid { grid-template-columns: repeat(3, 1fr); }
+            .repost-banner { grid-template-columns: 1fr; }
+            .roi-grid { grid-template-columns: 1fr; }
+            .addon-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .hero { padding: 48px 0 40px; }
+            .hero-stats { gap: 24px; }
+            .steps { grid-template-columns: 1fr; }
+            .category-grid { grid-template-columns: repeat(2, 1fr); }
+            .repost-banner { padding: 28px; }
+        }
+
+        /* ── Print Styles ────────────────────────── */
+        @media print {
+            body { background: #fff; color: #111; }
+            body::before { display: none; }
+            .package-card { border: 2px solid #ddd; break-inside: avoid; }
+            .package-card.featured { border-color: #2dd4a8; }
+            .package-cta { display: none; }
+            .btn { display: none; }
+            .hero-badge { border: 1px solid #2dd4a8; }
+            :root {
+                --bg-card: #f8f8f8;
+                --text: #111;
+                --text-muted: #666;
+                --border: #ddd;
+                --accent: #0f8a6e;
+                --accent-glow: rgba(15, 138, 110, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════ HERO ════════ -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge">Neu: Social-Media Automation</div>
+        <h1>Ihr Handwerksbetrieb.<br><span>Automatisch sichtbar.</span></h1>
+        <p>
+            Einmal einrichten, 3 Monate automatisch posten. Professionelle Social-Media-Inhalte
+            fuer Handwerker — ohne Aufwand, mit maximalem Ergebnis.
+            Ab 330 EUR/Monat statt 1.200+ EUR bei einer Agentur.
+        </p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="number">3</span>
+                <span class="label">Monate Laufzeit</span>
+            </div>
+            <div class="hero-stat">
+                <span class="number">48</span>
+                <span class="label">Posts automatisch</span>
+            </div>
+            <div class="hero-stat">
+                <span class="number">~2h</span>
+                <span class="label">Ihr Zeitaufwand</span>
+            </div>
+            <div class="hero-stat">
+                <span class="number">0</span>
+                <span class="label">Aufwand danach</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ PACKAGES ════════ -->
+<section class="packages">
+    <div class="container">
+        <div class="section-header">
+            <h2>Waehlen Sie Ihr Paket</h2>
+            <p>Drei Stufen — ein Ziel: Ihre lokale Sichtbarkeit maximieren, ohne eigenen Aufwand.</p>
+        </div>
+
+        <div class="package-grid">
+            <!-- Paket S -->
+            <div class="package-card">
+                <div class="package-tier">Paket S</div>
+                <div class="package-name">Sichtbar werden</div>
+                <div class="package-price">
+                    <span class="amount">990</span><span class="currency">EUR</span>
+                    <span class="period">3-Monats-Kampagne &middot; nur 330 EUR/Monat &middot; zzgl. MwSt.</span>
+                </div>
+                <ul class="package-features">
+                    <li>36 Posts (3x/Woche, 12 Wochen)</li>
+                    <li>1 Plattform (Instagram oder Facebook)</li>
+                    <li>6 Content-Kategorien im Wechsel</li>
+                    <li>Automatisches Posting via API</li>
+                    <li>Monatlicher Performance-Report</li>
+                    <li class="highlight">Nach 3 Monaten: Reposting-Modus</li>
+                </ul>
+                <button class="package-cta secondary">Paket waehlen</button>
+            </div>
+
+            <!-- Paket M (Featured) -->
+            <div class="package-card featured">
+                <div class="package-tier">Paket M</div>
+                <div class="package-name">Lokal dominieren</div>
+                <div class="package-price">
+                    <span class="amount">1.790</span><span class="currency">EUR</span>
+                    <span class="period">3-Monats-Kampagne &middot; nur 597 EUR/Monat &middot; zzgl. MwSt.</span>
+                </div>
+                <ul class="package-features">
+                    <li>48 Posts + 12 Stories (4x/Woche)</li>
+                    <li>2 Plattformen (Instagram + Facebook)</li>
+                    <li>8 Content-Kategorien + Stories</li>
+                    <li>Google Business Profil-Posts</li>
+                    <li>Lokalisierte Hashtag-Strategie</li>
+                    <li>Monatlicher Performance-Report</li>
+                    <li class="highlight">Nach 3 Monaten: Reposting-Modus</li>
+                </ul>
+                <button class="package-cta primary">Paket waehlen</button>
+            </div>
+
+            <!-- Paket L -->
+            <div class="package-card">
+                <div class="package-tier">Paket L</div>
+                <div class="package-name">Premium-Praesenz</div>
+                <div class="package-price">
+                    <span class="amount">2.990</span><span class="currency">EUR</span>
+                    <span class="period">3-Monats-Kampagne &middot; nur 997 EUR/Monat &middot; zzgl. MwSt.</span>
+                </div>
+                <ul class="package-features">
+                    <li>48 Posts + 12 Stories + 4 Reel-Cover</li>
+                    <li>3 Plattformen (IG + FB + LinkedIn/Google)</li>
+                    <li>10 Content-Kategorien + saisonale Specials</li>
+                    <li>4 Reel-Storyboard-Vorlagen</li>
+                    <li>Lead-Capture Landing Page (1x)</li>
+                    <li>Woechentlicher Performance-Report</li>
+                    <li>Priority-Support waehrend Kampagne</li>
+                    <li class="highlight">Nach 3 Monaten: Reposting-Modus</li>
+                </ul>
+                <button class="package-cta secondary">Paket waehlen</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ HOW IT WORKS ════════ -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <h2>So funktioniert es</h2>
+            <p>Von der Beratung bis zum ersten Post — in 4 einfachen Schritten.</p>
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Onboarding-Call</h3>
+                <p>30 Min. Video-Call: Wir sammeln Logo, Fotos, Farben und Ihre USPs.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Templates erstellen</h3>
+                <p>Wir personalisieren professionelle Vorlagen mit Ihrem Branding.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Freigabe</h3>
+                <p>Sie pruefen alle Posts in 30 Min. — ein Klick und es geht los.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Automatisch posten</h3>
+                <p>3 Monate lang posten wir automatisch — Sie muessen nichts tun.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ CONTENT CATEGORIES ════════ -->
+<section class="categories">
+    <div class="container">
+        <div class="section-header">
+            <h2>10 Content-Kategorien</h2>
+            <p>Professionelle Inhalte, die Vertrauen aufbauen und Kunden gewinnen.</p>
+        </div>
+
+        <div class="category-grid">
+            <div class="category-card">
+                <span class="category-icon">&#x1F3D7;</span>
+                <h4>Vorher / Nachher</h4>
+                <p>Wow-Effekt durch Projekt-Transformationen</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F465;</span>
+                <h4>Team & Werkstatt</h4>
+                <p>Nahbarkeit durch Mitarbeiter-Einblicke</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F4A1;</span>
+                <h4>Tipps & Tricks</h4>
+                <p>Expertise zeigen mit Profi-Ratschlaegen</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x2B50;</span>
+                <h4>Kundenstimmen</h4>
+                <p>Social Proof durch echte Bewertungen</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F321;</span>
+                <h4>Saisonale Posts</h4>
+                <p>Relevante Inhalte zur richtigen Jahreszeit</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F3AC;</span>
+                <h4>Behind the Scenes</h4>
+                <p>Authentische Einblicke in den Arbeitsalltag</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F4B0;</span>
+                <h4>Angebote & Aktionen</h4>
+                <p>Direkte Conversion durch Sonderangebote</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F4CD;</span>
+                <h4>Lokaler Bezug</h4>
+                <p>Local SEO durch regionale Inhalte</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F3C6;</span>
+                <h4>Meilensteine</h4>
+                <p>Brand Building durch Erfolgsgeschichten</p>
+            </div>
+            <div class="category-card">
+                <span class="category-icon">&#x1F4CA;</span>
+                <h4>Wissen & Infografik</h4>
+                <p>Reichweite durch Mehrwert-Content</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ ADD-ONS ════════ -->
+<section class="addons">
+    <div class="container">
+        <div class="section-header">
+            <h2>Optionale Add-Ons</h2>
+            <p>Erweitern Sie Ihr Paket nach Bedarf.</p>
+        </div>
+
+        <div class="addon-grid">
+            <div class="addon-card">
+                <div class="addon-info">
+                    <h4>Zusaetzliche Plattform</h4>
+                    <p>LinkedIn, Pinterest oder TikTok hinzufuegen</p>
+                </div>
+                <div class="addon-price">+290 EUR</div>
+            </div>
+            <div class="addon-card">
+                <div class="addon-info">
+                    <h4>Bezahlte Ads Management</h4>
+                    <p>Meta Ads Setup + Optimierung (Ad-Budget separat)</p>
+                </div>
+                <div class="addon-price">+490 EUR/Mo</div>
+            </div>
+            <div class="addon-card">
+                <div class="addon-info">
+                    <h4>Content-Refresh</h4>
+                    <p>24 neue Posts nach 3 Monaten statt Reposting</p>
+                </div>
+                <div class="addon-price">790 EUR</div>
+            </div>
+            <div class="addon-card">
+                <div class="addon-info">
+                    <h4>Reel-Produktion (4 Stueck)</h4>
+                    <p>Vor-Ort-Dreh + professioneller Schnitt</p>
+                </div>
+                <div class="addon-price">890 EUR</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ LOCKANGEBOTE ════════ -->
+<section class="addons" style="padding-top: 0;">
+    <div class="container">
+        <div class="section-header">
+            <div class="hero-badge" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #f59e0b; margin-bottom: 16px;">Limitiert: Nur 5 Plaetze</div>
+            <h2>Einstiegsangebote</h2>
+            <p>Jetzt starten — zu unschlagbaren Konditionen. Nur fuer kurze Zeit.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <div class="package-card" style="padding: 28px 24px;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #f59e0b; margin-bottom: 8px;">Lockangebot 1</div>
+                <div class="package-name" style="font-size: 1.3rem;">Schnupperkampagne</div>
+                <div class="package-price" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <span style="text-decoration: line-through; color: var(--text-muted); font-size: 1.2rem;">990 EUR</span>
+                    <span class="amount" style="font-size: 2.2rem; margin-left: 8px;">490</span><span class="currency">EUR</span>
+                    <span class="period">50% Rabatt &middot; Nur 2 Plaetze</span>
+                </div>
+                <ul class="package-features" style="margin-bottom: 20px;">
+                    <li>Paket S: 36 Posts, 1 Plattform</li>
+                    <li>12 Wochen automatisch posten</li>
+                    <li>Monatlicher Performance-Report</li>
+                    <li style="color: #f59e0b;">Bedingung: Google-Bewertung nach Kampagne</li>
+                </ul>
+                <button class="package-cta secondary" style="border-color: #f59e0b; color: #f59e0b;">Platz sichern</button>
+            </div>
+
+            <div class="package-card" style="padding: 28px 24px;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #f59e0b; margin-bottom: 8px;">Lockangebot 2</div>
+                <div class="package-name" style="font-size: 1.3rem;">Doppelpack-Deal</div>
+                <div class="package-price" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <span style="text-decoration: line-through; color: var(--text-muted); font-size: 1.2rem;">2.780 EUR</span>
+                    <span class="amount" style="font-size: 2.2rem; margin-left: 8px;">2.490</span><span class="currency">EUR</span>
+                    <span class="period">Fuer 2 Betriebe &middot; Nur 2 Deals</span>
+                </div>
+                <ul class="package-features" style="margin-bottom: 20px;">
+                    <li>Paket S + Paket M zusammen</li>
+                    <li>Sie + ein befreundeter Betrieb</li>
+                    <li>Beide Kampagnen starten gleichzeitig</li>
+                    <li style="color: #f59e0b;">Sie sparen 290 EUR, Ihr Partner auch</li>
+                </ul>
+                <button class="package-cta secondary" style="border-color: #f59e0b; color: #f59e0b;">Deal anfragen</button>
+            </div>
+
+            <div class="package-card" style="padding: 28px 24px;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #f59e0b; margin-bottom: 8px;">Lockangebot 3</div>
+                <div class="package-name" style="font-size: 1.3rem;">Full-Service Starter</div>
+                <div class="package-price" style="padding-bottom: 16px; margin-bottom: 16px;">
+                    <span style="text-decoration: line-through; color: var(--text-muted); font-size: 1.2rem;">4.780 EUR</span>
+                    <span class="amount" style="font-size: 2.2rem; margin-left: 8px;">3.990</span><span class="currency">EUR</span>
+                    <span class="period">Spart 790 EUR &middot; Nur 3 Plaetze</span>
+                </div>
+                <ul class="package-features" style="margin-bottom: 20px;">
+                    <li>Paket M: 48 Posts + Stories</li>
+                    <li>Professional-Setup: Buero-Software</li>
+                    <li>Social Media + Digitalisierung</li>
+                    <li>1. Monat Retainer gratis</li>
+                    <li style="color: #f59e0b;">Alles in einem: Buero + Marketing</li>
+                </ul>
+                <button class="package-cta secondary" style="border-color: #f59e0b; color: #f59e0b;">Kombi sichern</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ REPOSTING ════════ -->
+<section class="reposting">
+    <div class="container">
+        <div class="repost-banner">
+            <div>
+                <h2>Nach 3 Monaten: Reposting-Modus</h2>
+                <p>
+                    Wenn Ihre Kampagne endet, schalten wir automatisch die besten 12 Posts
+                    in den Reposting-Modus. Ihr Profil bleibt aktiv — ohne zusaetzliche Kosten.
+                </p>
+                <p>
+                    Moechten Sie frische Inhalte? Buchen Sie einfach eine neue Kampagne
+                    oder einen Content-Refresh.
+                </p>
+            </div>
+            <div>
+                <ul class="repost-timeline">
+                    <li>
+                        <strong>Woche 10</strong>
+                        Performance-Report mit Kampagnen-Ergebnissen
+                    </li>
+                    <li>
+                        <strong>Woche 11</strong>
+                        Erinnerung: Verlaengerung mit 20% Rabatt
+                    </li>
+                    <li>
+                        <strong>Woche 12</strong>
+                        Kampagne endet &rarr; Reposting startet automatisch
+                    </li>
+                    <li>
+                        <strong>Monat 6</strong>
+                        Info: Frische Inhalte = 3x mehr Reichweite
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ ROI ════════ -->
+<section class="roi">
+    <div class="container">
+        <div class="section-header">
+            <h2>Ihr Invest im Vergleich</h2>
+            <p>Was Sie bekommen vs. was es sonst kosten wuerde.</p>
+        </div>
+
+        <div class="roi-grid">
+            <div class="roi-card">
+                <span class="roi-number">~2 Std</span>
+                <span class="roi-label">Ihr gesamter Zeitaufwand<br>fuer 3 Monate Content</span>
+            </div>
+            <div class="roi-card">
+                <span class="roi-number">48+</span>
+                <span class="roi-label">Professionelle Posts<br>in Ihrem Branding</span>
+            </div>
+            <div class="roi-card">
+                <span class="roi-number">3.600+</span>
+                <span class="roi-label">EUR Vergleichswert bei<br>einer Social-Media-Agentur</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ CTA ════════ -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Bereit fuer automatische Sichtbarkeit?</h2>
+        <p>Kostenloses Erstgespraech — wir zeigen Ihnen, wie Ihr Betrieb online durchstartet.</p>
+        <div class="cta-buttons">
+            <a href="tel:+4960299922964" class="btn btn-primary">
+                Jetzt anrufen: +49 6029 9922964
+            </a>
+            <a href="mailto:info@freyai-visions.de?subject=Marketing-Paket%20Anfrage" class="btn btn-secondary">
+                E-Mail schreiben
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ════════ FOOTER ════════ -->
+<footer>
+    <div class="container">
+        <p>
+            FreyAI Visions &middot; Jonas Frey &middot;
+            <a href="mailto:info@freyai-visions.de">info@freyai-visions.de</a> &middot;
+            +49 6029 9922964
+        </p>
+        <p style="margin-top: 8px;">Alle Preise verstehen sich als Nettopreise zzgl. 19% MwSt.</p>
+    </div>
+</footer>
+
+</body>
+</html>

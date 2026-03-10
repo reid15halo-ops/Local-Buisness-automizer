@@ -1,0 +1,288 @@
+{
+  "name": "Social Media Repost Engine — FreyAI Marketing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "node-trigger",
+      "name": "Every Monday 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "status",
+                "condition": "equal",
+                "value": "active"
+              }
+            },
+            {
+              "keyValue": {
+                "key": "ends_at",
+                "condition": "lte",
+                "value": "={{ $now.toISO().split('T')[0] }}"
+              }
+            }
+          ]
+        }
+      },
+      "id": "node-fetch-expired",
+      "name": "SELECT Expired Active Campaigns",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length || 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "node-has-expired",
+      "name": "Any Expired?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "node-batch",
+      "name": "Process One at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "id",
+                "condition": "equal",
+                "value": "={{ $json.id }}"
+              }
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "completed"
+          }
+        }
+      },
+      "id": "node-mark-completed",
+      "name": "UPDATE Campaign: status=completed",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/activate_reposting",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"p_campaign_id\": \"{{ $('Process One at a Time').item.json.id }}\" }",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-activate-repost",
+      "name": "RPC: activate_reposting",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/send-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Process One at a Time').item.json.social_handles?.email || '' }}\",\n  \"subject\": \"Ihre Social-Media-Kampagne ist abgeschlossen — So geht es weiter\",\n  \"html\": \"<h2>Hallo {{ $('Process One at a Time').item.json.company_name }},</h2><p>Ihre 3-monatige Kampagne ist abgeschlossen! Wir haben Ihre besten Posts automatisch in den <strong>Reposting-Modus</strong> geschaltet.</p><p>Möchten Sie mit frischen Inhalten weitermachen? <strong>Jetzt 20% Rabatt</strong> auf Ihre nächste Kampagne.</p><p>Antworten Sie einfach auf diese E-Mail oder rufen Sie an.</p><p>Beste Grüße,<br/>Jonas Frey<br/>FreyAI Visions</p>\"\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-upsell-email",
+      "name": "Send Upsell Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.repost_activated",
+            "target": "={{ $('Process One at a Time').item.json.id }}",
+            "metadata": "={{ JSON.stringify({ company: $('Process One at a Time').item.json.company_name, package: $('Process One at a Time').item.json.package }) }}"
+          }
+        }
+      },
+      "id": "node-log-repost",
+      "name": "INSERT automation_log (repost)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1780, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.repost_check_empty",
+            "target": "repost_engine",
+            "metadata": "={{ JSON.stringify({ checked_at: $now.toISO() }) }}"
+          }
+        }
+      },
+      "id": "node-log-empty",
+      "name": "Log: No Expired Campaigns",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Every Monday 08:00": {
+      "main": [
+        [{ "node": "SELECT Expired Active Campaigns", "type": "main", "index": 0 }]
+      ]
+    },
+    "SELECT Expired Active Campaigns": {
+      "main": [
+        [{ "node": "Any Expired?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Any Expired?": {
+      "main": [
+        [{ "node": "Process One at a Time", "type": "main", "index": 0 }],
+        [{ "node": "Log: No Expired Campaigns", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process One at a Time": {
+      "main": [
+        [{ "node": "UPDATE Campaign: status=completed", "type": "main", "index": 0 }]
+      ]
+    },
+    "UPDATE Campaign: status=completed": {
+      "main": [
+        [{ "node": "RPC: activate_reposting", "type": "main", "index": 0 }]
+      ]
+    },
+    "RPC: activate_reposting": {
+      "main": [
+        [{ "node": "Send Upsell Email", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Upsell Email": {
+      "main": [
+        [{ "node": "INSERT automation_log (repost)", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [
+    { "name": "marketing" },
+    { "name": "social-media" },
+    { "name": "reposting" }
+  ]
+}

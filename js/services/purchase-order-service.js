@@ -466,6 +466,24 @@ class PurchaseOrderService {
         }
     }
 
+    save() {
+        localStorage.setItem('purchase_orders', JSON.stringify(this.bestellungen));
+        localStorage.setItem('suppliers', JSON.stringify(this.lieferanten));
+    }
+
+    load() {
+        this.bestellungen = StorageUtils.getJSON('purchase_orders', [], { service: 'purchaseOrderService' });
+        this.lieferanten = StorageUtils.getJSON('suppliers', [], { service: 'purchaseOrderService' });
+        this.poCounter = parseInt(localStorage.getItem('po_counter') || '0');
+    }
+
+    clear() {
+        this.bestellungen = [];
+        this.lieferanten = [];
+        this.poCounter = 0;
+        this.save();
+    }
+
     // ============================================
     // Private Helpers
     // ============================================

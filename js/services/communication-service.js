@@ -5,13 +5,13 @@
 
 class CommunicationService {
     constructor() {
-        try { this.messages = JSON.parse(localStorage.getItem('freyai_messages') || '[]'); } catch { this.messages = []; }
-        try { this.callLogs = JSON.parse(localStorage.getItem('freyai_call_logs') || '[]'); } catch { this.callLogs = []; }
-        try { this.settings = JSON.parse(localStorage.getItem('freyai_comm_settings') || '{}'); } catch { this.settings = {}; }
+        this.messages = StorageUtils.getJSON('freyai_messages', [], { service: 'communicationService' });
+        this.callLogs = StorageUtils.getJSON('freyai_call_logs', [], { service: 'communicationService' });
+        this.settings = StorageUtils.getJSON('freyai_comm_settings', {}, { service: 'communicationService' });
     }
 
     _companyName() {
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'communicationService' });
         return ap.company_name || window.storeService?.state?.settings?.companyName || 'FreyAI Visions';
     }
 
@@ -163,7 +163,7 @@ class CommunicationService {
     // Communication Templates
     getTemplates() {
         const cn = this._companyName();
-        let ap; try { ap = JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { ap = {}; }
+        let ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'communicationService' });
         const phone = ap.company_phone || window.storeService?.state?.settings?.phone || '';
         return {
             termin_bestaetigung: {

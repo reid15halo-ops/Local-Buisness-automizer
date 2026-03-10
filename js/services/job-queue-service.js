@@ -376,7 +376,10 @@ class JobQueueService {
             throw new Error(`Job ${jobId} is not in a retryable state (status: ${job.status})`);
         }
 
-        const payload = typeof job.payload === 'string' ? JSON.parse(job.payload) : job.payload;
+        let payload = job.payload;
+        if (typeof payload === 'string') {
+            try { payload = JSON.parse(payload); } catch (e) { console.error('[JobQueue] Failed to parse job payload:', e.message); throw e; }
+        }
         return this.submitJob(job.job_type, payload, job.priority || 5);
     }
 

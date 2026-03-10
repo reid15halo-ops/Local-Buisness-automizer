@@ -548,7 +548,7 @@ function initAngebotForm() {
                 existing.updatedAt = new Date().toISOString();
 
                 saveStore();
-                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde?.name || 'Kunde'} aktualisiert`);
+                addActivity('✏️', `Angebot ${existing.id} für ${existing.kunde?.name || 'Unbekannt'} aktualisiert`);
                 showToast('Angebot erfolgreich aktualisiert', 'success');
             }
 
@@ -576,7 +576,7 @@ function initAngebotForm() {
             anfrage.status = 'angebot-erstellt';
 
             saveStore();
-            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde?.name || 'Kunde'} erstellt`);
+            addActivity('📝', `Angebot ${angebot.id} für ${anfrage.kunde?.name || 'Unbekannt'} erstellt`);
             showToast('Angebot erfolgreich erstellt — vorläufige Version wird versendet…', 'success');
 
             // Auto-send preliminary quote in background (non-blocking)
@@ -842,7 +842,7 @@ function addPosition(prefill = null) {
     suggestBox.addEventListener('click', (e) => {
         const item = e.target.closest('.material-suggest-item');
         if (!item) {return;}
-        let material; try { material = JSON.parse(decodeURIComponent(item.dataset.material)); } catch { return; }
+        let material; try { material = JSON.parse(decodeURIComponent(item.dataset.material)); } catch { console.error('[Angebote] Failed to parse material data'); return; }
         row.querySelector('.pos-beschreibung').value = material.bezeichnung;
         row.querySelector('.pos-preis').value = material.vkPreis || material.preis;
         row.querySelector('.pos-einheit').value = material.einheit;
@@ -906,7 +906,7 @@ function generateAIText() {
 
     setTimeout(() => {
         clearTimeout(aiTimeout);
-        const ap = (() => { try { return JSON.parse(localStorage.getItem('freyai_admin_settings') || '{}'); } catch { return {}; } })();
+        const ap = StorageUtils.getJSON('freyai_admin_settings', {}, { service: 'angebote' });
         const companyName = ap.company_name || window.storeService?.state?.settings?.companyName || '';
         const signoff = companyName ? `\nMit freundlichen Grüßen\n${companyName}` : '\nMit freundlichen Grüßen';
 
@@ -1172,7 +1172,7 @@ function editAngebot(id) {
     const kundeInfoEl = document.getElementById('angebot-kunde-info');
     if (kundeInfoEl && angebot.kunde) {
         kundeInfoEl.innerHTML = `
-            <strong>${window.UI.sanitize(angebot.kunde?.name || 'Kunde')}</strong><br>
+            <strong>${window.UI.sanitize(angebot.kunde?.name || 'Unbekannt')}</strong><br>
             ${getLeistungsartLabel(angebot.leistungsart)}<br>
             <small>Angebot ${window.UI.sanitize(angebot.id)} bearbeiten</small>
         `;
@@ -1234,7 +1234,7 @@ function deleteAngebot(id) {
         // trashService already removed from store and saved
         // Reload angebote from store to stay in sync
         showToast('Angebot gelöscht', 'info');
-        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
+        addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Unbekannt'} gelöscht`);
         renderAngebote();
         return;
     }
@@ -1243,12 +1243,12 @@ function deleteAngebot(id) {
     if (window.confirmDialogService) {
         window.confirmDialogService.confirmDelete(
             'Angebot',
-            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde?.name || 'Kunde')} (${formatCurrency(angebot.brutto)})`,
+            `Angebot ${window.UI.sanitize(angebot.id)} für ${window.UI.sanitize(angebot.kunde?.name || 'Unbekannt')} (${formatCurrency(angebot.brutto)})`,
             () => {
                 store.angebote = store.angebote.filter(a => a.id !== id);
                 saveStore();
                 showToast('Angebot gelöscht', 'info');
-                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
+                addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Unbekannt'} gelöscht`);
                 renderAngebote();
             }
         );
@@ -1258,7 +1258,7 @@ function deleteAngebot(id) {
             store.angebote = store.angebote.filter(a => a.id !== id);
             saveStore();
             showToast('Angebot gelöscht', 'info');
-            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} gelöscht`);
+            addActivity('🗑️', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Unbekannt'} gelöscht`);
             renderAngebote();
         }
     }
@@ -1714,7 +1714,7 @@ function freigebenAngebot(id) {
     // Close the preview modal
     closeAngebotPreview();
 
-    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Kunde'} freigegeben und gesendet`);
+    addActivity('✅', `Angebot ${angebot.id} für ${angebot.kunde?.name || 'Unbekannt'} freigegeben und gesendet`);
     showToast('Angebot wurde freigegeben und ist jetzt offen.', 'success');
 
     // Re-render
@@ -1975,7 +1975,7 @@ function exportAngebotPDF(id) {
  */
 async function sendVorlaeufigAngebot(angebot, anfrage) {
     const kundeEmail = angebot.kunde?.email || anfrage?.kunde?.email;
-    const kundeName  = angebot.kunde?.name  || anfrage?.kunde?.name || 'Kunde';
+    const kundeName  = angebot.kunde?.name  || anfrage?.kunde?.name || 'Unbekannt';
 
     let emailSent = false;
 

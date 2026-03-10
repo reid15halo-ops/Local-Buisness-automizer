@@ -377,7 +377,7 @@ Beispiel 2 - UNVOLLSTÄNDIG:
 }`
 
     const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiKey}`,
         {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -385,8 +385,9 @@ Beispiel 2 - UNVOLLSTÄNDIG:
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     temperature: 0.3,
-                    maxOutputTokens: 1000
-                }
+                    maxOutputTokens: 800
+                },
+                thinkingConfig: { thinkingBudget: 1024 }
             })
         }
     )

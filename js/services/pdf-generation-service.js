@@ -161,8 +161,23 @@ class PDFGenerationService {
      * @returns {Object} pdfmake document definition
      */
     buildPdfDefinition(rendered) {
-        const { template, variables, positions, companyData } = rendered;
+        const { template, variables, positions, companyData, invoiceData } = rendered;
         const layout = template.layout;
+
+        // Generate EPC QR code data URL if possible
+        let epcQrDataUrl = null;
+        try {
+            if (window.epcQrService && companyData.iban && invoiceData && invoiceData.brutto > 0) {
+                epcQrDataUrl = window.epcQrService.generateEpcQrCode(invoiceData, {
+                    iban: companyData.iban,
+                    bic: companyData.bic,
+                    recipientName: companyData.name,
+                    bank: companyData.bank
+                });
+            }
+        } catch (e) {
+            console.warn('EPC QR Code konnte nicht generiert werden:', e.message);
+        }
 
         return {
             pageSize: layout.pageSize,
@@ -201,8 +216,8 @@ class PDFGenerationService {
                 // Spacing
                 { text: '', margin: [0, 30] },
 
-                // Payment terms
-                this.buildPaymentTerms(companyData, variables.rechnung, layout),
+                // Payment terms with EPC QR code and Skonto info
+                this.buildPaymentTermsWithQr(companyData, variables.rechnung, layout, epcQrDataUrl, variables.summe),
 
                 // Spacing
                 { text: '', margin: [0, 20] },
@@ -403,10 +418,30 @@ class PDFGenerationService {
             margin: [0, 10, 0, 0]
         });
 
+        // Skonto line (if available)
+        if (summe.skontoPercent && summe.skontoBetrag && summe.betragNachSkonto) {
+            totalsStack.push({
+                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 220, y2: 0, lineWidth: 0.5, lineColor: '#ccc' }],
+                margin: [0, 8, 0, 4]
+            });
+            totalsStack.push({
+                text: `Bei Zahlung bis ${summe.skontoZielDatum || '—'}:`,
+                alignment: 'right', fontSize: 9, color: '#16a34a',
+                margin: [0, 2, 0, 0]
+            });
+            totalsStack.push({
+                columns: [
+                    { width: '*', text: `${summe.skontoPercent}% Skonto (\u2212${summe.skontoBetrag}):`, alignment: 'right', fontSize: 9, color: '#16a34a' },
+                    { width: 80, text: summe.betragNachSkonto, alignment: 'right', bold: true, fontSize: 10, color: '#16a34a' }
+                ],
+                margin: [0, 2, 0, 0]
+            });
+        }
+
         return {
             columns: [
                 { width: '*', text: '' },
-                { width: 200, stack: totalsStack }
+                { width: 220, stack: totalsStack }
             ]
         };
     }
@@ -414,33 +449,80 @@ class PDFGenerationService {
     /**
      * Build payment terms section
      */
-    buildPaymentTerms(company, rechnung, _layout) {
-        return {
-            stack: [
-                { text: 'Zahlungsbedingungen', bold: true, margin: [0, 0, 0, 5] },
-                { text: `Bitte überweisen Sie den Betrag bis zum ${rechnung.faelligkeitsdatum} auf folgendes Konto:`, style: 'small' },
-                { text: '', margin: [0, 5] },
-                {
-                    columns: [
-                        { width: 80, text: 'IBAN:', style: 'small', bold: true },
-                        { width: '*', text: company.iban, style: 'small' }
-                    ]
-                },
-                {
-                    columns: [
-                        { width: 80, text: 'BIC:', style: 'small', bold: true },
-                        { width: '*', text: company.bic, style: 'small' }
-                    ]
-                },
-                {
-                    columns: [
-                        { width: 80, text: 'Bank:', style: 'small', bold: true },
-                        { width: '*', text: company.bank, style: 'small' }
-                    ]
-                },
-                { text: `Verwendungszweck: ${rechnung.nummer}`, style: 'small', margin: [0, 5, 0, 0] }
-            ]
-        };
+    buildPaymentTerms(company, rechnung, _layout, summe) {
+        return this.buildPaymentTermsWithQr(company, rechnung, _layout, null, summe);
+    }
+
+    /**
+     * Build payment terms section with optional EPC QR code
+     */
+    buildPaymentTermsWithQr(company, rechnung, _layout, epcQrDataUrl, summe) {
+        const bankInfoStack = [
+            { text: 'Zahlungsbedingungen', bold: true, margin: [0, 0, 0, 5] },
+            { text: `Bitte überweisen Sie den Betrag bis zum ${rechnung.faelligkeitsdatum} auf folgendes Konto:`, style: 'small' },
+            { text: '', margin: [0, 5] },
+            {
+                columns: [
+                    { width: 80, text: 'IBAN:', style: 'small', bold: true },
+                    { width: '*', text: company.iban, style: 'small' }
+                ]
+            },
+            {
+                columns: [
+                    { width: 80, text: 'BIC:', style: 'small', bold: true },
+                    { width: '*', text: company.bic, style: 'small' }
+                ]
+            },
+            {
+                columns: [
+                    { width: 80, text: 'Bank:', style: 'small', bold: true },
+                    { width: '*', text: company.bank, style: 'small' }
+                ]
+            },
+            { text: `Verwendungszweck: ${rechnung.nummer}`, style: 'small', margin: [0, 5, 0, 0] }
+        ];
+
+        // Add Skonto notice to payment terms
+        if (summe && summe.skontoPercent && summe.skontoZielDatum && summe.betragNachSkonto) {
+            bankInfoStack.push({
+                text: `Bei Zahlung bis ${summe.skontoZielDatum}: ${summe.skontoPercent}% Skonto \u2014 Zahlbetrag: ${summe.betragNachSkonto}`,
+                style: 'small', bold: true, color: '#16a34a',
+                margin: [0, 8, 0, 0]
+            });
+        }
+
+        // If EPC QR code is available, show side-by-side
+        if (epcQrDataUrl) {
+            return {
+                columns: [
+                    {
+                        width: '*',
+                        stack: bankInfoStack
+                    },
+                    {
+                        width: 'auto',
+                        stack: [
+                            {
+                                image: epcQrDataUrl,
+                                width: 80,
+                                height: 80,
+                                alignment: 'center'
+                            },
+                            {
+                                text: 'GiroCode scannen\nzum Bezahlen',
+                                style: 'small',
+                                alignment: 'center',
+                                fontSize: 7,
+                                margin: [0, 3, 0, 0]
+                            }
+                        ],
+                        margin: [15, 0, 0, 0]
+                    }
+                ]
+            };
+        }
+
+        return { stack: bankInfoStack };
     }
 
     /**

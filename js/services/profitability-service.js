@@ -5,8 +5,8 @@
 
 class ProfitabilityService {
     constructor() {
-        try { this.jobAnalytics = JSON.parse(localStorage.getItem('freyai_job_analytics') || '[]'); } catch { this.jobAnalytics = []; }
-        try { this.overheadSettings = JSON.parse(localStorage.getItem('freyai_overhead_settings') || '{}'); } catch { this.overheadSettings = {}; }
+        this.jobAnalytics = StorageUtils.getJSON('freyai_job_analytics', [], { financial: true, service: 'profitabilityService' });
+        this.overheadSettings = StorageUtils.getJSON('freyai_overhead_settings', {}, { financial: true, service: 'profitabilityService' });
 
         // Default overhead settings
         if (!this.overheadSettings.hourlyOverhead) {this.overheadSettings.hourlyOverhead = 25;} // €/hour

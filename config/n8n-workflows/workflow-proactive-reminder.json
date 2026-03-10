@@ -1,0 +1,324 @@
+{
+  "id": "proactive-reminder-3day",
+  "name": "Proaktive Zahlungserinnerung (3 Tage vor Fälligkeit)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        },
+        "timezone": "Europe/Berlin"
+      },
+      "id": "node-cron-trigger",
+      "name": "Daily 08:00 Berlin",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Runs every day at 08:00 Europe/Berlin"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/rest/v1/rpc/get_invoices_due_in_3_days",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_KEY\"] }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": false,
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-fallback-note",
+      "name": "NOTE: Use Supabase Node or HTTP",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [240, 500],
+      "notes": "This is a no-op reference node. The actual query is done via the Supabase node below."
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env[\"SUPABASE_URL\"] }}/rest/v1/rechnungen?status=eq.offen&select=id,kunde_name,kunde_email,brutto,created_at,zahlungsziel_tage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env[\"SUPABASE_KEY\"] }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"SUPABASE_KEY\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 15000
+        }
+      },
+      "id": "node-fetch-open-invoices",
+      "name": "GET Open Rechnungen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "notes": "Fetches all open invoices from Supabase rechnungen table via REST API. We filter for due-in-3-days in the next node since Supabase REST doesn't support computed column filters."
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "due-date-calc",
+              "name": "due_date",
+              "value": "={{ new Date(new Date($json[\"created_at\"]).getTime() + (($json[\"zahlungsziel_tage\"] || 14) * 86400000)).toISOString().split('T')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "target-date-calc",
+              "name": "target_date",
+              "value": "={{ new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "due-date-formatted",
+              "name": "due_date_formatted",
+              "value": "={{ new Date(new Date($json[\"created_at\"]).getTime() + (($json[\"zahlungsziel_tage\"] || 14) * 86400000)).toLocaleDateString('de-DE') }}",
+              "type": "string"
+            },
+            {
+              "id": "brutto-formatted",
+              "name": "brutto_formatted",
+              "value": "={{ Number($json[\"brutto\"]).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "node-calc-due-date",
+      "name": "Calculate Due Date",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300],
+      "notes": "Computes due_date from created_at + zahlungsziel_tage. Also computes target_date (3 days from now) for comparison."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "due-in-3-days-check",
+              "leftValue": "={{ $json[\"due_date\"] }}",
+              "rightValue": "={{ $json[\"target_date\"] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "has-email-check",
+              "leftValue": "={{ $json[\"kunde_email\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-is-due-in-3-days",
+      "name": "Due in 3 Days & Has Email?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "notes": "Only pass through invoices whose due_date matches exactly 3 days from now AND have a customer email address."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:3100/send-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env[\"EMAIL_RELAY_SECRET\"] }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json[\"kunde_email\"] }}\",\n  \"subject\": \"Freundliche Erinnerung: Rechnung {{ $json[\"id\"] }} - Fällig am {{ $json[\"due_date_formatted\"] }}\",\n  \"html\": \"<div style='font-family: Arial, Helvetica, sans-serif; max-width: 600px; margin: 0 auto; color: #333;'><h2 style='color: #6366f1;'>Freundliche Zahlungserinnerung</h2><p>Sehr geehrte/r {{ $json[\"kunde_name\"] }},</p><p>wir möchten Sie freundlich daran erinnern, dass Ihre Rechnung <strong>{{ $json[\"id\"] }}</strong> über <strong>{{ $json[\"brutto_formatted\"] }} €</strong> in 3 Tagen fällig wird ({{ $json[\"due_date_formatted\"] }}).</p><p>Falls Sie die Zahlung bereits veranlasst haben, betrachten Sie diese Nachricht bitte als gegenstandslos.</p><p>Bei Fragen stehen wir Ihnen gerne zur Verfügung.</p><br><p>Mit freundlichen Grüßen,<br><strong>Ihr FreyAI Visions Team</strong></p><hr style='border: none; border-top: 1px solid #e5e7eb; margin-top: 20px;'><p style='font-size: 12px; color: #9ca3af;'>Dies ist eine automatische Erinnerung. Bitte antworten Sie nicht direkt auf diese E-Mail.</p></div>\"\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-send-reminder-email",
+      "name": "Send Reminder Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 200],
+      "continueOnFail": true,
+      "notes": "Sends friendly payment reminder via FreyAI email relay (freyavision-email container). Uses EMAIL_RELAY_SECRET env var for auth. Gateway IP 172.19.0.1 reaches the host-network email relay from n8n's bridge network."
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "dataToSend": "defineBelow",
+        "fieldsToSend": {
+          "fieldValues": [
+            {
+              "fieldId": "action",
+              "fieldValue": "reminder.pre_due.sent"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "={{ $node[\"Calculate Due Date\"].json[\"id\"] }}"
+            },
+            {
+              "fieldId": "metadata",
+              "fieldValue": "={{ JSON.stringify({ rechnung_id: $node[\"Calculate Due Date\"].json[\"id\"], kunde_name: $node[\"Calculate Due Date\"].json[\"kunde_name\"], kunde_email: $node[\"Calculate Due Date\"].json[\"kunde_email\"], brutto: $node[\"Calculate Due Date\"].json[\"brutto\"], due_date: $node[\"Calculate Due Date\"].json[\"due_date\"], email_sent: $json[\"success\"] || false }) }}"
+            }
+          ]
+        }
+      },
+      "id": "node-log-reminder",
+      "name": "Log to automation_log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1340, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase-api",
+          "name": "Supabase API"
+        }
+      },
+      "notes": "Logs the reminder send action to automation_log for audit trail."
+    }
+  ],
+  "connections": {
+    "Daily 08:00 Berlin": {
+      "main": [
+        [
+          {
+            "node": "GET Open Rechnungen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Open Rechnungen": {
+      "main": [
+        [
+          {
+            "node": "Calculate Due Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Due Date": {
+      "main": [
+        [
+          {
+            "node": "Due in 3 Days & Has Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Due in 3 Days & Has Email?": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send Reminder Email": {
+      "main": [
+        [
+          {
+            "node": "Log to automation_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2026-03-09T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "freyai-hetzner-vps"
+  },
+  "pinData": {},
+  "notes": "## Proaktive Zahlungserinnerung (3 Tage vor Fälligkeit)\n\n### Purpose\nSends a friendly payment reminder email 3 days BEFORE an invoice is due.\nThis is a pre-dunning step to reduce the number of overdue invoices.\n\n### Flow\n1. Cron trigger: Daily at 08:00 Europe/Berlin\n2. Fetch all open invoices from Supabase (status='offen')\n3. Calculate due_date = created_at + zahlungsziel_tage\n4. Filter: only invoices due exactly 3 days from now AND with customer email\n5. Send friendly reminder via FreyAI email relay (freyavision-email container)\n6. Log to automation_log\n\n### Dependencies\n- SUPABASE_URL + SUPABASE_KEY env vars in n8n\n- EMAIL_RELAY_SECRET env var in n8n\n- freyavision-email container running on host network (port 3100)\n- Supabase credential 'Supabase API' configured in n8n\n\n### Email Content\nGerman professional tone: 'Freundliche Erinnerung: Ihre Rechnung [Nr] über [Betrag] EUR wird in 3 Tagen fällig.'"
+}
