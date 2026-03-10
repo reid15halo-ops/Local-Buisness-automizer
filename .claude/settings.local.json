@@ -181,7 +181,9 @@
       "WebFetch(domain:finom.co)",
       "WebFetch(domain:zapier.com)",
       "WebFetch(domain:help.finom.co)",
-      "Bash(ssh -o ConnectTimeout=10 root@72.61.187.24 'curl -s -X POST \"\"http://172.19.0.1:5678/webhook/feedback-loop\"\" -H \"\"Content-Type: application/json\"\" -d \"\"{:*)"
+      "Bash(ssh -o ConnectTimeout=10 root@72.61.187.24 'curl -s -X POST \"\"http://172.19.0.1:5678/webhook/feedback-loop\"\" -H \"\"Content-Type: application/json\"\" -d \"\"{:*)",
+      "Bash(ssh -o ConnectTimeout=10 root@72.61.187.24 'curl -s --max-time 120 http://localhost:11434/api/chat -d \"\"{:*)",
+      "Bash(grep -l \"angebot\\\\|Angebot\" \"c:/Users/122798/OneDrive - Autoneum/Organized_Workspace/Privat/Local-Buisness-automizer\"/*.html)"
     ]
   }
 }
