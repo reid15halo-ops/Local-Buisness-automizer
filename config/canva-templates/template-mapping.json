@@ -1,0 +1,84 @@
+{
+  "_comment": "Maps internal template IDs to Canva design/brand-template IDs. Update canva_id values after creating templates in Canva.",
+  "_usage": "Seeded into marketing_templates.canva_template_id via migration. Used by canva-integration-service for autofill/clone.",
+  "templates": {
+    "vorher_nachher": [
+      { "id": "FREY_MKT_VN_POST_01", "format": "post", "canva_id": null, "description": "Split-Screen mit Pfeil" },
+      { "id": "FREY_MKT_VN_POST_02", "format": "post", "canva_id": null, "description": "Slider-Look mit Daumen" },
+      { "id": "FREY_MKT_VN_POST_03", "format": "post", "canva_id": null, "description": "Minimaler Frame" },
+      { "id": "FREY_MKT_VN_POST_04", "format": "post", "canva_id": null, "description": "Grid 2x2" },
+      { "id": "FREY_MKT_VN_POST_05", "format": "post", "canva_id": null, "description": "Carousel Start-Slide" },
+      { "id": "FREY_MKT_VN_POST_06", "format": "post", "canva_id": null, "description": "Dark Mode Vergleich" }
+    ],
+    "team": [
+      { "id": "FREY_MKT_TEAM_POST_01", "format": "post", "canva_id": null, "description": "Mitarbeiter-Spotlight" },
+      { "id": "FREY_MKT_TEAM_POST_02", "format": "post", "canva_id": null, "description": "Gruppenbild + Quote" },
+      { "id": "FREY_MKT_TEAM_POST_03", "format": "post", "canva_id": null, "description": "Werkstatt-Tour" },
+      { "id": "FREY_MKT_TEAM_POST_04", "format": "post", "canva_id": null, "description": "Wir stellen ein" },
+      { "id": "FREY_MKT_TEAM_POST_05", "format": "post", "canva_id": null, "description": "Jubiläum/Geburtstag" },
+      { "id": "FREY_MKT_TEAM_POST_06", "format": "post", "canva_id": null, "description": "Fun Fact Friday" },
+      { "id": "FREY_MKT_TEAM_STORY_01", "format": "story", "canva_id": null, "description": "Meet the Team Serie" },
+      { "id": "FREY_MKT_TEAM_STORY_02", "format": "story", "canva_id": null, "description": "Behind the Scenes" }
+    ],
+    "tipps": [
+      { "id": "FREY_MKT_TIPPS_POST_01", "format": "post", "canva_id": null, "description": "3 Fehler bei..." },
+      { "id": "FREY_MKT_TIPPS_POST_02", "format": "post", "canva_id": null, "description": "Wussten Sie schon?" },
+      { "id": "FREY_MKT_TIPPS_POST_03", "format": "post", "canva_id": null, "description": "Checkliste" },
+      { "id": "FREY_MKT_TIPPS_POST_04", "format": "post", "canva_id": null, "description": "Schritt-für-Schritt" },
+      { "id": "FREY_MKT_TIPPS_POST_05", "format": "post", "canva_id": null, "description": "Profi vs. DIY" },
+      { "id": "FREY_MKT_TIPPS_POST_06", "format": "post", "canva_id": null, "description": "Saisonaler Tipp" }
+    ],
+    "kundenstimmen": [
+      { "id": "FREY_MKT_KS_POST_01", "format": "post", "canva_id": null, "description": "Zitat + 5 Sterne" },
+      { "id": "FREY_MKT_KS_POST_02", "format": "post", "canva_id": null, "description": "Google Review Screenshot" },
+      { "id": "FREY_MKT_KS_POST_03", "format": "post", "canva_id": null, "description": "Projekt + Kundenfeedback" },
+      { "id": "FREY_MKT_KS_POST_04", "format": "post", "canva_id": null, "description": "Danke für Ihr Vertrauen" },
+      { "id": "FREY_MKT_KS_POST_05", "format": "post", "canva_id": null, "description": "Video-Thumbnail Testimonial" },
+      { "id": "FREY_MKT_KS_POST_06", "format": "post", "canva_id": null, "description": "Vorher/Nachher + Review" }
+    ],
+    "saisonal": [
+      { "id": "FREY_MKT_SAISON_POST_01", "format": "post", "canva_id": null, "description": "Frühling", "months": [3,4,5] },
+      { "id": "FREY_MKT_SAISON_POST_02", "format": "post", "canva_id": null, "description": "Sommer", "months": [6,7,8] },
+      { "id": "FREY_MKT_SAISON_POST_03", "format": "post", "canva_id": null, "description": "Herbst", "months": [9,10,11] },
+      { "id": "FREY_MKT_SAISON_POST_04", "format": "post", "canva_id": null, "description": "Winter", "months": [12,1,2] },
+      { "id": "FREY_MKT_SAISON_POST_05", "format": "post", "canva_id": null, "description": "Weihnachten", "months": [12] },
+      { "id": "FREY_MKT_SAISON_POST_06", "format": "post", "canva_id": null, "description": "Neujahr", "months": [1] }
+    ],
+    "behind_scenes": [
+      { "id": "FREY_MKT_BTS_POST_01", "format": "post", "canva_id": null, "description": "Werkzeug des Tages" },
+      { "id": "FREY_MKT_BTS_POST_02", "format": "post", "canva_id": null, "description": "Baustellen-Update" },
+      { "id": "FREY_MKT_BTS_POST_03", "format": "post", "canva_id": null, "description": "Material-Spotlight" },
+      { "id": "FREY_MKT_BTS_POST_04", "format": "post", "canva_id": null, "description": "Morgenroutine" },
+      { "id": "FREY_MKT_BTS_POST_05", "format": "post", "canva_id": null, "description": "So arbeiten wir" },
+      { "id": "FREY_MKT_BTS_POST_06", "format": "post", "canva_id": null, "description": "Fuhrpark/Equipment" }
+    ],
+    "angebote": [
+      { "id": "FREY_MKT_AKT_POST_01", "format": "post", "canva_id": null, "description": "Prozent-Rabatt", "min_package": "M" },
+      { "id": "FREY_MKT_AKT_POST_02", "format": "post", "canva_id": null, "description": "Festpreis-Angebot", "min_package": "M" },
+      { "id": "FREY_MKT_AKT_POST_03", "format": "post", "canva_id": null, "description": "Bundle-Deal", "min_package": "M" },
+      { "id": "FREY_MKT_AKT_POST_04", "format": "post", "canva_id": null, "description": "Jetzt anfragen CTA", "min_package": "M" },
+      { "id": "FREY_MKT_AKT_POST_05", "format": "post", "canva_id": null, "description": "Gutschein-Code", "min_package": "M" },
+      { "id": "FREY_MKT_AKT_POST_06", "format": "post", "canva_id": null, "description": "Limited Time Offer", "min_package": "M" }
+    ],
+    "lokal": [
+      { "id": "FREY_MKT_LOKAL_POST_01", "format": "post", "canva_id": null, "description": "Ihr Gewerk in Stadt", "min_package": "M" },
+      { "id": "FREY_MKT_LOKAL_POST_02", "format": "post", "canva_id": null, "description": "Lokales Projekt", "min_package": "M" },
+      { "id": "FREY_MKT_LOKAL_POST_03", "format": "post", "canva_id": null, "description": "Karte/Einzugsgebiet", "min_package": "M" },
+      { "id": "FREY_MKT_LOKAL_POST_04", "format": "post", "canva_id": null, "description": "Lokale Partnerschaft", "min_package": "M" },
+      { "id": "FREY_MKT_LOKAL_POST_05", "format": "post", "canva_id": null, "description": "Stadtfest/Event", "min_package": "M" },
+      { "id": "FREY_MKT_LOKAL_POST_06", "format": "post", "canva_id": null, "description": "X Jahre in Stadt", "min_package": "M" }
+    ],
+    "meilensteine": [
+      { "id": "FREY_MKT_MILE_POST_01", "format": "post", "canva_id": null, "description": "Follower-Meilenstein", "min_package": "L" },
+      { "id": "FREY_MKT_MILE_POST_02", "format": "post", "canva_id": null, "description": "Projekt-Meilenstein", "min_package": "L" },
+      { "id": "FREY_MKT_MILE_POST_03", "format": "post", "canva_id": null, "description": "Firmenjubiläum", "min_package": "L" },
+      { "id": "FREY_MKT_MILE_POST_04", "format": "post", "canva_id": null, "description": "Award/Zertifizierung", "min_package": "L" }
+    ],
+    "wissen": [
+      { "id": "FREY_MKT_WISSEN_POST_01", "format": "post", "canva_id": null, "description": "So funktioniert...", "min_package": "L" },
+      { "id": "FREY_MKT_WISSEN_POST_02", "format": "post", "canva_id": null, "description": "Vergleichstabelle", "min_package": "L" },
+      { "id": "FREY_MKT_WISSEN_POST_03", "format": "post", "canva_id": null, "description": "Kosten-Rechner Visual", "min_package": "L" },
+      { "id": "FREY_MKT_WISSEN_POST_04", "format": "post", "canva_id": null, "description": "Normen & Vorschriften", "min_package": "L" }
+    ]
+  }
+}

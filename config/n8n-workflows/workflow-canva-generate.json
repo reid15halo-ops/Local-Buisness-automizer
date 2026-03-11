@@ -1,0 +1,448 @@
+{
+  "name": "Canva Design Generator — FreyAI Marketing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 5 * * *"
+            }
+          ]
+        }
+      },
+      "id": "node-trigger",
+      "name": "Daily 05:00 UTC (07:00 CEST)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "status",
+                "condition": "equal",
+                "value": "generating"
+              }
+            }
+          ]
+        }
+      },
+      "id": "node-fetch-campaigns",
+      "name": "SELECT Campaigns (status=generating)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length || 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "node-has-campaigns",
+      "name": "Has Campaigns?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "node-batch",
+      "name": "Process 1 at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "campaign_id",
+                "condition": "equal",
+                "value": "={{ $json.id }}"
+              }
+            },
+            {
+              "keyValue": {
+                "key": "status",
+                "condition": "equal",
+                "value": "draft"
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "orderByField": "scheduled_at",
+          "orderByDirection": "ASC"
+        }
+      },
+      "id": "node-fetch-posts",
+      "name": "GET Draft Posts",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/canva-proxy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"autofill\",\n  \"brand_template_id\": \"{{ $json.canva_template_id }}\",\n  \"campaign_id\": \"{{ $('Process 1 at a time').item.json.id }}\",\n  \"title\": \"{{ $('Process 1 at a time').item.json.company_name }} — {{ $json.category || 'Post' }}\",\n  \"brand_data\": {\n    \"company_name\": \"{{ $('Process 1 at a time').item.json.company_name }}\",\n    \"trade\": \"{{ $('Process 1 at a time').item.json.trade || '' }}\",\n    \"city\": \"{{ $('Process 1 at a time').item.json.city || '' }}\",\n    \"phone\": \"{{ $('Process 1 at a time').item.json.phone || '' }}\",\n    \"website\": \"{{ $('Process 1 at a time').item.json.website || '' }}\",\n    \"logo_url\": \"{{ $('Process 1 at a time').item.json.logo_url || '' }}\",\n    \"brand_colors\": {{ JSON.stringify($('Process 1 at a time').item.json.brand_colors || []) }},\n    \"usps\": {{ JSON.stringify($('Process 1 at a time').item.json.usps || []) }}\n  }\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-canva-autofill",
+      "name": "Canva: Autofill Brand Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/canva-proxy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"export\",\n  \"design_id\": \"{{ $json.design_id }}\",\n  \"format\": \"png\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-canva-export",
+      "name": "Canva: Export as PNG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "node-wait-export",
+      "name": "Wait 5s for Export",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/canva-proxy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"status\",\n  \"export_id\": \"{{ $('Canva: Export as PNG').item.json.export_id }}\"\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-canva-check-status",
+      "name": "Canva: Check Export Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2000, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/canva-proxy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"persist\",\n  \"export_url\": \"{{ $json.urls[0] }}\",\n  \"campaign_id\": \"{{ $('Process 1 at a time').item.json.id }}\",\n  \"post_id\": \"{{ $('GET Draft Posts').item.json.id }}\",\n  \"format\": \"png\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "node-canva-persist",
+      "name": "Persist to Supabase Storage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [2220, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "marketing_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "id",
+                "condition": "equal",
+                "value": "={{ $('GET Draft Posts').item.json.id }}"
+              }
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "scheduled",
+            "image_url": "={{ $json.public_url }}",
+            "canva_design_id": "={{ $('Canva: Autofill Brand Template').item.json.design_id }}"
+          }
+        }
+      },
+      "id": "node-update-post",
+      "name": "UPDATE Post: image_url + scheduled",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2440, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "id",
+                "condition": "equal",
+                "value": "={{ $('Process 1 at a time').item.json.id }}"
+              }
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "scheduled"
+          }
+        }
+      },
+      "id": "node-update-campaign",
+      "name": "UPDATE Campaign: status=scheduled",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2660, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "canva.batch_generate",
+            "target": "={{ $('Process 1 at a time').item.json.id }}",
+            "metadata": "={{ JSON.stringify({ campaign: $('Process 1 at a time').item.json.company_name, posts_generated: 1 }) }}"
+          }
+        }
+      },
+      "id": "node-log-success",
+      "name": "Log: Design Generated",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2660, 400],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "canva.no_campaigns",
+            "target": "scheduler",
+            "metadata": "={{ JSON.stringify({ checked_at: $now.toISO() }) }}"
+          }
+        }
+      },
+      "id": "node-log-empty",
+      "name": "Log: No Campaigns to Generate",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Daily 05:00 UTC (07:00 CEST)": {
+      "main": [
+        [{ "node": "SELECT Campaigns (status=generating)", "type": "main", "index": 0 }]
+      ]
+    },
+    "SELECT Campaigns (status=generating)": {
+      "main": [
+        [{ "node": "Has Campaigns?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Campaigns?": {
+      "main": [
+        [{ "node": "Process 1 at a time", "type": "main", "index": 0 }],
+        [{ "node": "Log: No Campaigns to Generate", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process 1 at a time": {
+      "main": [
+        [{ "node": "GET Draft Posts", "type": "main", "index": 0 }]
+      ]
+    },
+    "GET Draft Posts": {
+      "main": [
+        [{ "node": "Canva: Autofill Brand Template", "type": "main", "index": 0 }]
+      ]
+    },
+    "Canva: Autofill Brand Template": {
+      "main": [
+        [{ "node": "Canva: Export as PNG", "type": "main", "index": 0 }]
+      ]
+    },
+    "Canva: Export as PNG": {
+      "main": [
+        [{ "node": "Wait 5s for Export", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 5s for Export": {
+      "main": [
+        [{ "node": "Canva: Check Export Status", "type": "main", "index": 0 }]
+      ]
+    },
+    "Canva: Check Export Status": {
+      "main": [
+        [{ "node": "Persist to Supabase Storage", "type": "main", "index": 0 }]
+      ]
+    },
+    "Persist to Supabase Storage": {
+      "main": [
+        [{ "node": "UPDATE Post: image_url + scheduled", "type": "main", "index": 0 }]
+      ]
+    },
+    "UPDATE Post: image_url + scheduled": {
+      "main": [
+        [{ "node": "UPDATE Campaign: status=scheduled", "type": "main", "index": 0 }],
+        [{ "node": "Log: Design Generated", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [
+    { "name": "marketing" },
+    { "name": "canva" },
+    { "name": "production" }
+  ]
+}
