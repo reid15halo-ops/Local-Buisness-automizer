@@ -45,7 +45,8 @@ CONTENT_TYPES = [
             "Thema: {topic}. Stil: {tone}. "
             "Zielgruppe: {audience}. "
             "Inkludiere 3-5 relevante Hashtags auf Deutsch. "
-            "Format: Hook-Zeile, dann 2-3 Absätze, dann Call-to-Action."
+            "Format: Hook-Zeile, dann 2-3 Absätze, dann Call-to-Action. "
+            "WICHTIG: Kein Markdown verwenden. Nur Plaintext mit Zeilenumbrüchen."
         ),
     },
     {
@@ -58,7 +59,8 @@ CONTENT_TYPES = [
             "Erstelle einen authentischen 'Behind the Scenes'-Post für {brand}. "
             "Zeige, wie wir an Digitalisierungslösungen für Handwerker arbeiten. "
             "Thema: {topic}. Stil: persönlich aber professionell. "
-            "Max 150 Wörter. 3-5 Hashtags."
+            "Max 150 Wörter. 3-5 Hashtags. "
+            "WICHTIG: Kein Markdown verwenden. Nur Plaintext mit Zeilenumbrüchen."
         ),
     },
     {
@@ -70,8 +72,9 @@ CONTENT_TYPES = [
         "template": (
             "Erstelle eine kurze Case-Study (max 250 Wörter) über einen fiktiven aber "
             "realistischen Handwerksbetrieb, der durch Digitalisierung Zeit/Geld spart. "
-            "Branche: {topic}. Format: Problem → Lösung → Ergebnis mit konkreten Zahlen. "
-            "Stil: {tone}. 3-5 Hashtags."
+            "Branche: {topic}. Format: Problem, dann Lösung, dann Ergebnis mit konkreten Zahlen. "
+            "Stil: {tone}. 3-5 Hashtags. "
+            "WICHTIG: Kein Markdown verwenden. Nur Plaintext mit Zeilenumbrüchen."
         ),
     },
     {
@@ -83,7 +86,8 @@ CONTENT_TYPES = [
         "template": (
             "Erstelle einen Post über einen aktuellen Trend/Statistik im deutschen Handwerk. "
             "Thema: {topic}. Ordne den Trend ein und erkläre, was das für kleine Betriebe bedeutet. "
-            "Max 200 Wörter. Stil: {tone}. Zielgruppe: {audience}. 3-5 Hashtags."
+            "Max 200 Wörter. Stil: {tone}. Zielgruppe: {audience}. 3-5 Hashtags. "
+            "WICHTIG: Kein Markdown verwenden. Nur Plaintext mit Zeilenumbrüchen."
         ),
     },
 ]
@@ -159,6 +163,25 @@ def _api(method, url, data=None, headers=None):
         return {"error": str(e)}
 
 
+def _strip_markdown(text):
+    """Markdown-Formatierung entfernen für Social-Media-Posts."""
+    import re
+    # Headers (## Header -> Header)
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+    # Bold/Italic (**text** / *text* / __text__ / _text_)
+    text = re.sub(r'\*{1,3}([^*]+)\*{1,3}', r'\1', text)
+    text = re.sub(r'_{1,3}([^_]+)_{1,3}', r'\1', text)
+    # Inline code (`code`)
+    text = re.sub(r'`([^`]+)`', r'\1', text)
+    # Links [text](url) -> text
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    # Bullet points (- item / * item -> item)
+    text = re.sub(r'^[\s]*[-*+]\s+', '• ', text, flags=re.MULTILINE)
+    # Collapse 3+ newlines to 2
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
 def _ollama_generate(prompt, model="gemma2:9b"):
     """Text via lokalem Ollama generieren."""
     resp = _api("POST", f"{OLLAMA_URL}/api/generate", {
@@ -169,7 +192,8 @@ def _ollama_generate(prompt, model="gemma2:9b"):
     })
     if "error" in resp:
         return None, resp["error"]
-    return resp.get("response", ""), None
+    raw = resp.get("response", "")
+    return _strip_markdown(raw), None
 
 
 def _get_next_topic(content_type):

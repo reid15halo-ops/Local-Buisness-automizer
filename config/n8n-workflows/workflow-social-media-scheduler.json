@@ -141,7 +141,7 @@
             },
             {
               "name": "full_caption",
-              "value": "={{ $('Process 3 at a time').item.json.caption }}\\n\\n{{ ($('Process 3 at a time').item.json.hashtags || []).join(' ') }}"
+              "value": "={{ $('Process 3 at a time').item.json.caption + '\n\n' + ($('Process 3 at a time').item.json.hashtags || []).join(' ') }}"
             },
             {
               "name": "ig_user_id",

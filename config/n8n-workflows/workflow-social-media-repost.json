@@ -118,6 +118,30 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Process One at a Time').item.json.repost_enabled ?? true }}",
+              "value2": true
+            }
+          ],
+          "string": [
+            {
+              "value1": "={{ $('Process One at a Time').item.json.content_type || '' }}",
+              "operation": "notEqual",
+              "value2": "personal"
+            }
+          ]
+        }
+      },
+      "id": "node-repost-guard",
+      "name": "Repost Allowed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1230, 200]
+    },
+    {
+      "parameters": {
         "method": "POST",
         "url": "={{ $env.SUPABASE_URL }}/rest/v1/rpc/activate_reposting",
         "sendHeaders": true,
@@ -139,7 +163,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"p_campaign_id\": \"{{ $('Process One at a Time').item.json.id }}\" }",
+        "jsonBody": "={ \"p_campaign_id\": \"{{ $('Process One at a Time').item.json.id }}\", \"p_exclude_personal\": true }",
         "options": {
           "timeout": 30000
         }
@@ -148,7 +172,33 @@
       "name": "RPC: activate_reposting",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [1340, 200],
+      "position": [1450, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.repost_skipped",
+            "target": "={{ $('Process One at a Time').item.json.id }}",
+            "metadata": "={{ JSON.stringify({ reason: 'personal_content_or_repost_disabled', company: $('Process One at a Time').item.json.company_name }) }}"
+          }
+        }
+      },
+      "id": "node-log-skipped",
+      "name": "Log: Repost Skipped (Personal)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1450, 380],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
       "continueOnFail": true
     },
     {
@@ -259,7 +309,13 @@
     },
     "UPDATE Campaign: status=completed": {
       "main": [
-        [{ "node": "RPC: activate_reposting", "type": "main", "index": 0 }]
+        [{ "node": "Repost Allowed?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Repost Allowed?": {
+      "main": [
+        [{ "node": "RPC: activate_reposting", "type": "main", "index": 0 }],
+        [{ "node": "Log: Repost Skipped (Personal)", "type": "main", "index": 0 }]
       ]
     },
     "RPC: activate_reposting": {
