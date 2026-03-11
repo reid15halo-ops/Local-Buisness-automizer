@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "freyai": {
+      "command": "ssh",
+      "args": [
+        "root@72.61.187.24",
+        "/opt/freyai-mcp/venv/bin/python",
+        "/opt/freyai-mcp/freyai_mcp.py"
+      ]
+    }
+  }
+}

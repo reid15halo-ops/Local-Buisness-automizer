@@ -32,7 +32,8 @@ class DashboardWidgetService {
             { id: 'social-media', name: 'Social Media', category: 'social', size: 'medium', icon: '\u{1F4F1}' },
             { id: 'euer-live', name: 'E\u00DCR Live', category: 'finance', size: 'large', icon: '\u00A7' },
             { id: 'paperless-recent', name: 'Letzte Dokumente', category: 'dokumente', size: 'medium', icon: '\u{1F4C4}' },
-            { id: 'calcom-next', name: 'N\u00E4chste Termine', category: 'termine', size: 'small', icon: '\u{1F4C5}' }
+            { id: 'calcom-next', name: 'N\u00E4chste Termine', category: 'termine', size: 'small', icon: '\u{1F4C5}' },
+            { id: 'marketing-campaigns', name: 'Marketing-Kampagnen', category: 'social', size: 'large', icon: '\u{1F4E3}' }
         ];
 
         // Default layout matching the current static dashboard
@@ -312,6 +313,8 @@ class DashboardWidgetService {
                     return this._getPaperlessRecent();
                 case 'calcom-next':
                     return this._getCalcomNext();
+                case 'marketing-campaigns':
+                    return this._getMarketingCampaigns();
                 default:
                     return { error: true, message: 'Unbekannter Widget-Typ' };
             }
@@ -766,6 +769,95 @@ class DashboardWidgetService {
         } catch (err) {
             console.error('DashboardWidgetService: Postiz-Fehler:', err);
             return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Social-Media-Daten.' };
+        }
+    }
+
+    // --- Marketing Campaigns data provider ---
+
+    async _getMarketingCampaigns() {
+        try {
+            const { dbService } = await import('./db-service.js');
+            const supabase = dbService.supabase;
+
+            // Fetch campaign summaries
+            const { data: campaigns, error } = await supabase
+                .from('marketing_campaign_summary')
+                .select('*')
+                .order('starts_at', { ascending: false })
+                .limit(5);
+
+            if (error) {
+                console.warn('DashboardWidgetService: Marketing-Kampagnen Fehler:', error);
+                return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden.' };
+            }
+
+            if (!campaigns || campaigns.length === 0) {
+                return {
+                    type: 'list',
+                    items: [],
+                    emptyMessage: 'Noch keine Kampagnen vorhanden.',
+                    navigateTo: 'marketing-onboarding.html'
+                };
+            }
+
+            const statusIcons = {
+                draft: '\u{270F}\u{FE0F}',
+                onboarding: '\u{1F4CB}',
+                generating: '\u{2699}\u{FE0F}',
+                scheduled: '\u{1F4C5}',
+                active: '\u{1F7E2}',
+                paused: '\u{23F8}\u{FE0F}',
+                completed: '\u{2705}',
+                reposting: '\u{1F504}'
+            };
+            const statusLabels = {
+                draft: 'Entwurf',
+                onboarding: 'Onboarding',
+                generating: 'Generierung',
+                scheduled: 'Geplant',
+                active: 'Aktiv',
+                paused: 'Pausiert',
+                completed: 'Abgeschlossen',
+                reposting: 'Reposting'
+            };
+
+            const items = campaigns.map(c => {
+                const progress = c.total_posts > 0
+                    ? Math.round((c.posted_count / c.total_posts) * 100)
+                    : 0;
+                const statusIcon = statusIcons[c.status] || '\u{1F4CB}';
+                const statusLabel = statusLabels[c.status] || c.status;
+
+                let statsLine = `${c.posted_count}/${c.total_posts} Posts`;
+                if (c.total_impressions > 0) {
+                    statsLine += ` | ${c.total_impressions.toLocaleString('de-DE')} Impressionen`;
+                }
+                if (c.total_likes > 0) {
+                    statsLine += ` | ${c.total_likes} Likes`;
+                }
+                if (c.avg_engagement_rate > 0) {
+                    statsLine += ` | ${c.avg_engagement_rate}% ER`;
+                }
+
+                return {
+                    icon: statusIcon,
+                    title: `${c.company_name} (${c.package})`,
+                    subTitle: `${statusLabel} | ${statsLine}`,
+                    progress: progress,
+                    time: c.starts_at,
+                    timeFormatted: c.starts_at ? this._formatDate(c.starts_at) + (c.ends_at ? ' — ' + this._formatDate(c.ends_at) : '') : ''
+                };
+            });
+
+            return {
+                type: 'list',
+                items,
+                emptyMessage: 'Keine Kampagnen.',
+                navigateTo: 'marketing-onboarding.html'
+            };
+        } catch (err) {
+            console.error('DashboardWidgetService: Marketing-Kampagnen Fehler:', err);
+            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Kampagnen-Daten.' };
         }
     }
 

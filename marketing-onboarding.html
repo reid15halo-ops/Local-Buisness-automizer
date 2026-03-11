@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://incbhhaiiayohrjqevog.supabase.co; img-src 'self' data: blob: https:; font-src 'self';">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <title>Marketing-Paket Onboarding - FreyAI Visions</title>
+    <link rel="stylesheet" href="css/fonts.css">
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: #18181b;
+            --bg-input: #27272a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --border: #3f3f46;
+            --radius: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Header */
+        .header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .header h1 { font-size: 24px; font-weight: 700; }
+        .header p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: var(--text); }
+
+        /* Container */
+        .container { max-width: 680px; width: 100%; padding: 24px 16px; }
+
+        /* Progress */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 16px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+            flex: 1;
+        }
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .progress-step.active .step-circle {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .progress-step.done .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+        .step-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-align: center;
+        }
+        .progress-step.active .step-label { color: var(--text); }
+
+        /* Steps */
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid transparent;
+        }
+        .card h2 { font-size: 18px; margin-bottom: 4px; }
+        .card .subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 20px; }
+
+        /* Package Selection */
+        .package-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        @media (max-width: 600px) { .package-grid { grid-template-columns: 1fr; } }
+        .package-card {
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            position: relative;
+        }
+        .package-card:hover { border-color: var(--accent); }
+        .package-card.selected { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+        .package-card .badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--warning);
+            color: #000;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 99px;
+            text-transform: uppercase;
+        }
+        .package-card .tier { font-size: 32px; font-weight: 800; color: var(--accent); }
+        .package-card .name { font-size: 14px; font-weight: 600; margin: 4px 0 8px; }
+        .package-card .price { font-size: 20px; font-weight: 700; }
+        .package-card .price-sub { font-size: 12px; color: var(--text-muted); }
+        .package-card .features {
+            text-align: left;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        /* Form inputs */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+        .form-group label .required { color: var(--error); }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        textarea { resize: vertical; min-height: 80px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+        /* Color picker */
+        .color-inputs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .color-swatch input[type="color"] {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 50px;
+            height: 50px;
+            border: none;
+            cursor: pointer;
+        }
+        .add-color {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px dashed var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-color:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Photo upload */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-zone:hover { border-color: var(--accent); }
+        .upload-zone .icon { font-size: 32px; margin-bottom: 8px; }
+        .upload-zone p { font-size: 13px; color: var(--text-muted); }
+        .upload-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .upload-preview img {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        /* USP tags */
+        .usp-input-wrapper { display: flex; gap: 8px; }
+        .usp-input-wrapper input { flex: 1; }
+        .usp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .usp-tag {
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--accent-hover);
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .usp-tag button {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Platform checkboxes */
+        .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .platform-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .platform-option:hover { border-color: var(--accent); }
+        .platform-option.checked { border-color: var(--accent); background: rgba(99, 102, 241, 0.08); }
+        .platform-option input { display: none; }
+        .platform-check {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .platform-option.checked .platform-check {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Buttons */
+        .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--text-muted); }
+
+        /* Summary */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row .label { color: var(--text-muted); }
+        .summary-row .value { font-weight: 600; }
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0 0;
+            font-size: 18px;
+            font-weight: 700;
+            border-top: 2px solid var(--border);
+            margin-top: 8px;
+        }
+
+        /* Success */
+        .success-screen { text-align: center; padding: 48px 24px; }
+        .success-screen .checkmark { font-size: 64px; margin-bottom: 16px; }
+        .success-screen h2 { font-size: 24px; margin-bottom: 8px; }
+        .success-screen p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--error);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 999;
+            transition: transform 0.3s;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">&larr; Zurück</a>
+
+    <div class="header">
+        <h1>Marketing-Paket Onboarding</h1>
+        <p>Social-Media-Kampagne in 5 Minuten konfigurieren</p>
+    </div>
+
+    <div class="container">
+        <!-- Progress -->
+        <div class="progress-bar">
+            <div class="progress-step active" data-step="1">
+                <div class="step-circle">1</div>
+                <span class="step-label">Paket</span>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="step-circle">2</div>
+                <span class="step-label">Betrieb</span>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="step-circle">3</div>
+                <span class="step-label">Branding</span>
+            </div>
+            <div class="progress-step" data-step="4">
+                <div class="step-circle">4</div>
+                <span class="step-label">Kanäle</span>
+            </div>
+            <div class="progress-step" data-step="5">
+                <div class="step-circle">5</div>
+                <span class="step-label">Übersicht</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Package Selection -->
+        <div class="step active" data-step="1">
+            <div class="card">
+                <h2>Paket wählen</h2>
+                <p class="subtitle">Wähle das passende Marketing-Paket für deinen Betrieb</p>
+                <div class="package-grid">
+                    <div class="package-card" data-package="S">
+                        <div class="tier">S</div>
+                        <div class="name">Sichtbar werden</div>
+                        <div class="price">990 &euro;</div>
+                        <div class="price-sub">330 &euro;/Monat &middot; 3 Monate</div>
+                        <div class="features">
+                            &bull; 36 Posts (3x/Woche)<br>
+                            &bull; 1 Plattform<br>
+                            &bull; 6 Content-Kategorien<br>
+                            &bull; Monatsreport
+                        </div>
+                    </div>
+                    <div class="package-card" data-package="M">
+                        <div class="badge">Empfohlen</div>
+                        <div class="tier">M</div>
+                        <div class="name">Lokal dominieren</div>
+                        <div class="price">1.790 &euro;</div>
+                        <div class="price-sub">597 &euro;/Monat &middot; 3 Monate</div>
+                        <div class="features">
+                            &bull; 48 Posts + 12 Stories<br>
+                            &bull; 2 Plattformen<br>
+                            &bull; 8 Content-Kategorien<br>
+                            &bull; Google Business inkl.<br>
+                            &bull; Hashtag-Strategie
+                        </div>
+                    </div>
+                    <div class="package-card" data-package="L">
+                        <div class="tier">L</div>
+                        <div class="name">Premium-Präsenz</div>
+                        <div class="price">2.990 &euro;</div>
+                        <div class="price-sub">997 &euro;/Monat &middot; 3 Monate</div>
+                        <div class="features">
+                            &bull; 48 Posts + Stories + Reels<br>
+                            &bull; 3 Plattformen<br>
+                            &bull; 10 Content-Kategorien<br>
+                            &bull; Lead-Capture Seite<br>
+                            &bull; Wochenreport + Priority
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" id="btn-next-1" disabled>Weiter</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Business Info -->
+        <div class="step" data-step="2">
+            <div class="card">
+                <h2>Betriebsdaten</h2>
+                <p class="subtitle">Grundinfos zu deinem Handwerksbetrieb</p>
+                <div class="form-group">
+                    <label>Firmenname <span class="required">*</span></label>
+                    <input type="text" id="company_name" placeholder="z.B. Müller Sanitär GmbH" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Gewerk / Branche <span class="required">*</span></label>
+                        <select id="trade">
+                            <option value="">Bitte wählen...</option>
+                            <option value="Sanitär & Heizung">Sanitär & Heizung</option>
+                            <option value="Elektro">Elektro</option>
+                            <option value="Dachdecker">Dachdecker</option>
+                            <option value="Maler & Lackierer">Maler & Lackierer</option>
+                            <option value="Tischler / Schreiner">Tischler / Schreiner</option>
+                            <option value="Fliesenleger">Fliesenleger</option>
+                            <option value="Metallbau">Metallbau</option>
+                            <option value="Zimmerer">Zimmerer</option>
+                            <option value="Maurer">Maurer</option>
+                            <option value="KFZ">KFZ</option>
+                            <option value="Garten- & Landschaftsbau">Garten- & Landschaftsbau</option>
+                            <option value="Sonstiges">Sonstiges</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Mitarbeiter</label>
+                        <select id="employees">
+                            <option value="1-3">1-3 (Kleinbetrieb)</option>
+                            <option value="4-10" selected>4-10 (Meisterbetrieb)</option>
+                            <option value="11-25">11-25</option>
+                            <option value="25+">25+</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Stadt / Ort <span class="required">*</span></label>
+                        <input type="text" id="city" placeholder="z.B. Stuttgart">
+                    </div>
+                    <div class="form-group">
+                        <label>Region / Landkreis</label>
+                        <input type="text" id="region" placeholder="z.B. Baden-Württemberg">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telefon</label>
+                        <input type="tel" id="phone" placeholder="+49 ...">
+                    </div>
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url" id="website" placeholder="https://...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>E-Mail <span class="required">*</span></label>
+                    <input type="email" id="email" placeholder="info@firma.de">
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goStep(1)">Zurück</button>
+                <button class="btn btn-primary" id="btn-next-2">Weiter</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Branding -->
+        <div class="step" data-step="3">
+            <div class="card">
+                <h2>Branding & Inhalte</h2>
+                <p class="subtitle">Logo, Farben und USPs für deine Posts</p>
+
+                <div class="form-group">
+                    <label>Logo hochladen</label>
+                    <div class="upload-zone" id="logo-upload">
+                        <div class="icon">&#x1f3a8;</div>
+                        <p>Klicken oder Logo hierher ziehen<br><small>PNG, SVG oder JPG (max 5 MB)</small></p>
+                    </div>
+                    <input type="file" id="logo-file" accept="image/*" hidden>
+                    <div class="upload-preview" id="logo-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Markenfarben</label>
+                    <div class="color-inputs" id="color-inputs">
+                        <div class="color-swatch">
+                            <input type="color" value="#6366f1" data-index="0">
+                        </div>
+                        <div class="color-swatch">
+                            <input type="color" value="#ffffff" data-index="1">
+                        </div>
+                        <button class="add-color" id="add-color">+</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>USPs / Alleinstellungsmerkmale</label>
+                    <div class="usp-input-wrapper">
+                        <input type="text" id="usp-input" placeholder="z.B. 24h Notdienst">
+                        <button class="btn btn-secondary" style="flex:0;padding:12px 16px" id="add-usp">+</button>
+                    </div>
+                    <div class="usp-tags" id="usp-tags"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fotos von Projekten / Werkstatt</label>
+                    <div class="upload-zone" id="photos-upload">
+                        <div class="icon">&#x1f4f7;</div>
+                        <p>Klicken oder Fotos hierher ziehen<br><small>Bis zu 20 Bilder (max 10 MB je Bild)</small></p>
+                    </div>
+                    <input type="file" id="photos-file" accept="image/*" multiple hidden>
+                    <div class="upload-preview" id="photos-preview"></div>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goStep(2)">Zurück</button>
+                <button class="btn btn-primary" id="btn-next-3">Weiter</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Social Channels -->
+        <div class="step" data-step="4">
+            <div class="card">
+                <h2>Social-Media-Kanäle</h2>
+                <p class="subtitle">Auf welchen Plattformen soll gepostet werden?</p>
+
+                <div class="platform-grid" id="platform-grid">
+                    <label class="platform-option checked" data-platform="instagram">
+                        <input type="checkbox" value="instagram" checked>
+                        <div class="platform-check"></div>
+                        <div>
+                            <strong>Instagram</strong>
+                            <div style="font-size:12px;color:var(--text-muted)">Business-Account nötig</div>
+                        </div>
+                    </label>
+                    <label class="platform-option checked" data-platform="facebook">
+                        <input type="checkbox" value="facebook" checked>
+                        <div class="platform-check"></div>
+                        <div>
+                            <strong>Facebook</strong>
+                            <div style="font-size:12px;color:var(--text-muted)">Unternehmensseite</div>
+                        </div>
+                    </label>
+                    <label class="platform-option" data-platform="google_business">
+                        <input type="checkbox" value="google_business">
+                        <div class="platform-check"></div>
+                        <div>
+                            <strong>Google Business</strong>
+                            <div style="font-size:12px;color:var(--text-muted)">Lokale Sichtbarkeit</div>
+                        </div>
+                    </label>
+                    <label class="platform-option" data-platform="linkedin">
+                        <input type="checkbox" value="linkedin">
+                        <div class="platform-check"></div>
+                        <div>
+                            <strong>LinkedIn</strong>
+                            <div style="font-size:12px;color:var(--text-muted)">Unternehmensseite</div>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <div class="form-group">
+                        <label>Instagram Handle</label>
+                        <input type="text" id="ig-handle" placeholder="@meinbetrieb">
+                    </div>
+                    <div class="form-group">
+                        <label>Facebook Seiten-URL</label>
+                        <input type="url" id="fb-url" placeholder="https://facebook.com/meinbetrieb">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 16px;">
+                    <label>Bevorzugte Posting-Zeiten</label>
+                    <div class="form-row">
+                        <select id="posting-time-1">
+                            <option value="07:00">07:00 (Frühmorgens)</option>
+                            <option value="10:00" selected>10:00 (Vormittags)</option>
+                            <option value="12:00">12:00 (Mittags)</option>
+                            <option value="17:00">17:00 (Feierabend)</option>
+                            <option value="19:00">19:00 (Abends)</option>
+                        </select>
+                        <select id="posting-time-2">
+                            <option value="07:00">07:00 (Frühmorgens)</option>
+                            <option value="10:00">10:00 (Vormittags)</option>
+                            <option value="12:00">12:00 (Mittags)</option>
+                            <option value="17:00" selected>17:00 (Feierabend)</option>
+                            <option value="19:00">19:00 (Abends)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goStep(3)">Zurück</button>
+                <button class="btn btn-primary" id="btn-next-4">Weiter</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Summary -->
+        <div class="step" data-step="5">
+            <div class="card">
+                <h2>Zusammenfassung</h2>
+                <p class="subtitle">Prüfe deine Angaben vor dem Absenden</p>
+                <div id="summary-content"></div>
+                <div class="summary-total">
+                    <span>Gesamtpreis</span>
+                    <span id="summary-price"></span>
+                </div>
+            </div>
+            <div class="card">
+                <div style="display:flex;align-items:flex-start;gap:12px">
+                    <input type="checkbox" id="consent" style="margin-top:4px;width:auto">
+                    <label for="consent" style="font-size:13px;color:var(--text-muted);cursor:pointer">
+                        Ich beauftrage FreyAI Visions mit der Erstellung und Veröffentlichung der Social-Media-Kampagne gemäß den oben genannten Angaben. Die Inhalte werden vor Veröffentlichung zur Freigabe vorgelegt.
+                    </label>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goStep(4)">Zurück</button>
+                <button class="btn btn-primary" id="btn-submit" disabled>Kampagne starten</button>
+            </div>
+        </div>
+
+        <!-- Success -->
+        <div class="step" data-step="6">
+            <div class="card success-screen">
+                <div class="checkmark">&#x2705;</div>
+                <h2>Kampagne erstellt!</h2>
+                <p>
+                    Deine Social-Media-Kampagne wurde erfolgreich angelegt.<br>
+                    Wir personalisieren jetzt deine Templates und melden uns innerhalb von 24h mit einer Vorschau.
+                </p>
+                <div class="btn-row" style="justify-content:center;margin-top:24px">
+                    <a href="index.html" class="btn btn-primary" style="text-decoration:none;text-align:center;max-width:200px">Zum Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // State
+    const state = {
+        step: 1,
+        package: null,
+        company_name: '',
+        trade: '',
+        city: '',
+        region: '',
+        phone: '',
+        website: '',
+        email: '',
+        brand_colors: ['#6366f1', '#ffffff'],
+        usps: [],
+        photos: [],
+        logo: null,
+        platforms: ['instagram', 'facebook'],
+        social_handles: {},
+        posting_times: ['10:00', '17:00']
+    };
+
+    const PRICES = { S: 990, M: 1790, L: 2990 };
+    const NAMES = { S: 'Sichtbar werden', M: 'Lokal dominieren', L: 'Premium-Präsenz' };
+
+    // Navigation
+    function goStep(n) {
+        state.step = n;
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+
+        document.querySelectorAll('.progress-step').forEach(s => {
+            const sn = parseInt(s.dataset.step);
+            s.classList.remove('active', 'done');
+            if (sn === n) s.classList.add('active');
+            else if (sn < n) s.classList.add('done');
+        });
+
+        if (n === 5) renderSummary();
+    }
+
+    // Step 1: Package selection
+    document.querySelectorAll('.package-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            state.package = card.dataset.package;
+            document.getElementById('btn-next-1').disabled = false;
+        });
+    });
+
+    document.getElementById('btn-next-1').addEventListener('click', () => {
+        if (state.package) goStep(2);
+    });
+
+    // Step 2: Business info
+    document.getElementById('btn-next-2').addEventListener('click', () => {
+        state.company_name = document.getElementById('company_name').value.trim();
+        state.trade = document.getElementById('trade').value;
+        state.city = document.getElementById('city').value.trim();
+        state.region = document.getElementById('region').value.trim();
+        state.phone = document.getElementById('phone').value.trim();
+        state.website = document.getElementById('website').value.trim();
+        state.email = document.getElementById('email').value.trim();
+
+        if (!state.company_name || !state.trade || !state.city || !state.email) {
+            showToast('Bitte fülle alle Pflichtfelder aus');
+            return;
+        }
+        goStep(3);
+    });
+
+    // Step 3: Branding
+    document.getElementById('logo-upload').addEventListener('click', () => {
+        document.getElementById('logo-file').click();
+    });
+    document.getElementById('logo-file').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { showToast('Logo zu groß (max 5 MB)'); return; }
+        state.logo = file;
+        const preview = document.getElementById('logo-preview');
+        preview.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        preview.appendChild(img);
+    });
+
+    document.getElementById('photos-upload').addEventListener('click', () => {
+        document.getElementById('photos-file').click();
+    });
+    document.getElementById('photos-file').addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        const preview = document.getElementById('photos-preview');
+        files.forEach(file => {
+            if (file.size > 10 * 1024 * 1024) return;
+            state.photos.push(file);
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            preview.appendChild(img);
+        });
+    });
+
+    // Color swatches
+    document.getElementById('add-color').addEventListener('click', () => {
+        if (state.brand_colors.length >= 5) { showToast('Maximal 5 Farben'); return; }
+        const idx = state.brand_colors.length;
+        state.brand_colors.push('#000000');
+        const swatch = document.createElement('div');
+        swatch.className = 'color-swatch';
+        swatch.innerHTML = `<input type="color" value="#000000" data-index="${idx}">`;
+        document.getElementById('color-inputs').insertBefore(swatch, document.getElementById('add-color'));
+    });
+    document.getElementById('color-inputs').addEventListener('input', (e) => {
+        if (e.target.type === 'color') {
+            const idx = parseInt(e.target.dataset.index);
+            state.brand_colors[idx] = e.target.value;
+        }
+    });
+
+    // USPs
+    function addUSP() {
+        const input = document.getElementById('usp-input');
+        const val = input.value.trim();
+        if (!val || state.usps.length >= 8) return;
+        state.usps.push(val);
+        input.value = '';
+        renderUSPs();
+    }
+    document.getElementById('add-usp').addEventListener('click', addUSP);
+    document.getElementById('usp-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); addUSP(); }
+    });
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function renderUSPs() {
+        const container = document.getElementById('usp-tags');
+        container.innerHTML = state.usps.map((u, i) =>
+            `<span class="usp-tag">${esc(u)}<button onclick="removeUSP(${i})">&times;</button></span>`
+        ).join('');
+    }
+    function removeUSP(i) {
+        state.usps.splice(i, 1);
+        renderUSPs();
+    }
+
+    document.getElementById('btn-next-3').addEventListener('click', () => goStep(4));
+
+    // Step 4: Platforms
+    document.querySelectorAll('.platform-option').forEach(opt => {
+        const cb = opt.querySelector('input');
+        if (cb.checked) opt.classList.add('checked');
+        opt.addEventListener('click', (e) => {
+            if (e.target.tagName === 'INPUT') return;
+            cb.checked = !cb.checked;
+            opt.classList.toggle('checked', cb.checked);
+            state.platforms = Array.from(document.querySelectorAll('.platform-option input:checked')).map(i => i.value);
+        });
+    });
+
+    document.getElementById('btn-next-4').addEventListener('click', () => {
+        if (state.platforms.length === 0) { showToast('Wähle mindestens eine Plattform'); return; }
+        state.social_handles = {
+            instagram: document.getElementById('ig-handle').value.trim(),
+            facebook: document.getElementById('fb-url').value.trim()
+        };
+        state.posting_times = [
+            document.getElementById('posting-time-1').value,
+            document.getElementById('posting-time-2').value
+        ];
+        goStep(5);
+    });
+
+    // Step 5: Summary
+    function renderSummary() {
+        const container = document.getElementById('summary-content');
+        const rows = [
+            ['Paket', `${esc(state.package)} — ${esc(NAMES[state.package])}`],
+            ['Firma', esc(state.company_name)],
+            ['Gewerk', esc(state.trade)],
+            ['Standort', esc([state.city, state.region].filter(Boolean).join(', '))],
+            ['E-Mail', esc(state.email)],
+            ['Plattformen', esc(state.platforms.join(', '))],
+            ['Posting-Zeiten', state.posting_times.join(' & ')],
+            ['Markenfarben', state.brand_colors.map(c => /^#[0-9a-fA-F]{3,8}$/.test(c) ? `<span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:${c};vertical-align:middle;margin-right:4px"></span>` : '').join('')],
+            ['USPs', state.usps.length ? esc(state.usps.join(', ')) : '—'],
+            ['Fotos', `${state.photos.length} hochgeladen`],
+            ['Logo', state.logo ? esc(state.logo.name) : '—'],
+        ];
+        container.innerHTML = rows.map(([l, v]) =>
+            `<div class="summary-row"><span class="label">${l}</span><span class="value">${v}</span></div>`
+        ).join('');
+        document.getElementById('summary-price').textContent = PRICES[state.package].toLocaleString('de-DE') + ' \u20ac';
+    }
+
+    // Consent checkbox
+    document.getElementById('consent').addEventListener('change', (e) => {
+        document.getElementById('btn-submit').disabled = !e.target.checked;
+    });
+
+    // Submit
+    document.getElementById('btn-submit').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.textContent = 'Wird erstellt...';
+
+        try {
+            // Import Supabase client
+            const { dbService } = await import('./js/services/db-service.js');
+            const supabase = dbService.supabase;
+
+            // Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { showToast('Bitte zuerst einloggen'); btn.disabled = false; btn.textContent = 'Kampagne starten'; return; }
+
+            // Upload logo to Supabase Storage
+            let logoUrl = null;
+            if (state.logo) {
+                const ext = state.logo.name.split('.').pop();
+                const path = `marketing/${user.id}/logo-${Date.now()}.${ext}`;
+                const { error: uploadErr } = await supabase.storage.from('marketing-assets').upload(path, state.logo);
+                if (!uploadErr) {
+                    const { data: urlData } = supabase.storage.from('marketing-assets').getPublicUrl(path);
+                    logoUrl = urlData.publicUrl;
+                }
+            }
+
+            // Upload photos
+            const photoUrls = [];
+            for (const photo of state.photos) {
+                const ext = photo.name.split('.').pop();
+                const path = `marketing/${user.id}/photos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                const { error: uploadErr } = await supabase.storage.from('marketing-assets').upload(path, photo);
+                if (!uploadErr) {
+                    const { data: urlData } = supabase.storage.from('marketing-assets').getPublicUrl(path);
+                    photoUrls.push(urlData.publicUrl);
+                }
+            }
+
+            // Create campaign
+            const { marketingCampaignService } = await import('./js/services/marketing-campaign-service.js');
+            await marketingCampaignService.createCampaign({
+                user_id: user.id,
+                package: state.package,
+                company_name: state.company_name,
+                trade: state.trade,
+                city: state.city,
+                region: state.region,
+                logo_url: logoUrl,
+                brand_colors: state.brand_colors,
+                usps: state.usps,
+                photos: photoUrls,
+                phone: state.phone,
+                website: state.website,
+                social_handles: state.social_handles,
+                posting_times: state.posting_times
+            });
+
+            goStep(6);
+        } catch (err) {
+            console.error('Campaign creation failed:', err);
+            showToast('Fehler beim Erstellen: ' + (err.message || err));
+            btn.disabled = false;
+            btn.textContent = 'Kampagne starten';
+        }
+    });
+
+    // Toast
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    </script>
+</body>
+</html>

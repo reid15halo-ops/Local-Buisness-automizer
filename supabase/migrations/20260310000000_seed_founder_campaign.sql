@@ -16,7 +16,7 @@ INSERT INTO marketing_campaigns (
     price_cents, paid, notes
 ) VALUES (
     'a0000001-0000-0000-0000-000000000001',
-    '83d1bcd4-b317-4ad5-ba5c-1cab4059fcbc',  -- freyai-visions@proton.me
+    '405dea2b-f865-4771-8837-830f43416e77',  -- reid15_halo@proton.me
     'L',
     'scheduled',
     'FreyAI Visions',

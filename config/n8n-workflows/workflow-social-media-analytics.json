@@ -1,0 +1,610 @@
+{
+  "name": "Social Media Analytics Collector — FreyAI Marketing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "node-trigger",
+      "name": "Every Monday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_posts",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "status",
+                "condition": "equal",
+                "value": "posted"
+              }
+            },
+            {
+              "keyValue": {
+                "key": "platform_post_id",
+                "condition": "isNotEmpty"
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "orderByField": "posted_at",
+          "orderByDirection": "DESC",
+          "limit": 100
+        }
+      },
+      "id": "node-fetch-posted",
+      "name": "SELECT Posted Posts with Platform IDs",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length || 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "node-has-posts",
+      "name": "Has Posted Posts?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "id": "node-batch",
+      "name": "Process 5 at a time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "id",
+                "condition": "equal",
+                "value": "={{ $json.campaign_id }}"
+              }
+            }
+          ]
+        }
+      },
+      "id": "node-fetch-campaign",
+      "name": "GET Campaign Data",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1120, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "post_id",
+              "value": "={{ $('Process 5 at a time').item.json.id }}"
+            },
+            {
+              "name": "campaign_id",
+              "value": "={{ $('Process 5 at a time').item.json.campaign_id }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $('Process 5 at a time').item.json.user_id }}"
+            },
+            {
+              "name": "platform",
+              "value": "={{ $('Process 5 at a time').item.json.platform }}"
+            },
+            {
+              "name": "platform_post_id",
+              "value": "={{ $('Process 5 at a time').item.json.platform_post_id }}"
+            },
+            {
+              "name": "fb_access_token",
+              "value": "={{ $json[0].social_handles?.facebook_access_token || '' }}"
+            },
+            {
+              "name": "linkedin_access_token",
+              "value": "={{ $json[0].social_handles?.linkedin_access_token || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-prepare",
+      "name": "Prepare Analytics Query",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "instagram",
+              "value": "instagram",
+              "value2": "={{ $json.platform }}"
+            },
+            {
+              "outputKey": "facebook",
+              "value": "facebook",
+              "value2": "={{ $json.platform }}"
+            },
+            {
+              "outputKey": "linkedin",
+              "value": "linkedin",
+              "value2": "={{ $json.platform }}"
+            },
+            {
+              "outputKey": "google_business",
+              "value": "google_business",
+              "value2": "={{ $json.platform }}"
+            }
+          ]
+        }
+      },
+      "id": "node-switch-platform",
+      "name": "Route by Platform",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.platform_post_id }}/insights",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "metric",
+              "value": "impressions,reach,likes,comments,shares,saved"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fb_access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-ig-insights",
+      "name": "Instagram: GET Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 60],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $json.platform_post_id }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "likes.summary(true),comments.summary(true),shares,insights.metric(post_impressions,post_engaged_users,post_clicks)"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.fb_access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-fb-insights",
+      "name": "Facebook: GET Post Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.linkedin.com/v2/socialActions/{{ $json.platform_post_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.linkedin_access_token }}"
+            },
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-linkedin-insights",
+      "name": "LinkedIn: GET Social Actions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 340],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://mybusiness.googleapis.com/v4/{{ $json.platform_post_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.google_access_token }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-google-insights",
+      "name": "Google Business: GET Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1800, 480],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "impressions",
+              "value": "={{ $json.data?.[0]?.values?.[0]?.value || $json.insights?.data?.[0]?.values?.[0]?.value || 0 }}"
+            },
+            {
+              "name": "reach",
+              "value": "={{ $json.data?.[1]?.values?.[0]?.value || $json.insights?.data?.[1]?.values?.[0]?.value || 0 }}"
+            },
+            {
+              "name": "likes",
+              "value": "={{ $json.likes?.summary?.total_count || $json.likesSummary?.totalLikes || $json.data?.[2]?.values?.[0]?.value || 0 }}"
+            },
+            {
+              "name": "comments",
+              "value": "={{ $json.comments?.summary?.total_count || $json.commentsSummary?.totalComments || $json.data?.[3]?.values?.[0]?.value || 0 }}"
+            },
+            {
+              "name": "shares",
+              "value": "={{ $json.shares?.count || $json.data?.[4]?.values?.[0]?.value || 0 }}"
+            },
+            {
+              "name": "saves",
+              "value": "={{ $json.data?.[5]?.values?.[0]?.value || 0 }}"
+            },
+            {
+              "name": "clicks",
+              "value": "={{ $json.insights?.data?.[2]?.values?.[0]?.value || 0 }}"
+            }
+          ],
+          "string": [
+            {
+              "name": "post_id",
+              "value": "={{ $('Prepare Analytics Query').item.json.post_id }}"
+            },
+            {
+              "name": "campaign_id",
+              "value": "={{ $('Prepare Analytics Query').item.json.campaign_id }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $('Prepare Analytics Query').item.json.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-normalize",
+      "name": "Normalize Metrics",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [2020, 200]
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "engagement_rate",
+              "value": "={{ $json.impressions > 0 ? Math.round(($json.likes + $json.comments + $json.shares + $json.saves) / $json.impressions * 10000) / 100 : 0 }}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "id": "node-calc-engagement",
+      "name": "Calculate Engagement Rate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [2240, 200]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "marketing_analytics",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_id": "={{ $json.post_id }}",
+            "campaign_id": "={{ $json.campaign_id }}",
+            "user_id": "={{ $json.user_id }}",
+            "impressions": "={{ $json.impressions }}",
+            "reach": "={{ $json.reach }}",
+            "likes": "={{ $json.likes }}",
+            "comments": "={{ $json.comments }}",
+            "shares": "={{ $json.shares }}",
+            "saves": "={{ $json.saves }}",
+            "clicks": "={{ $json.clicks }}",
+            "engagement_rate": "={{ $json.engagement_rate }}"
+          }
+        }
+      },
+      "id": "node-insert-analytics",
+      "name": "INSERT marketing_analytics",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2460, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.analytics_collected",
+            "target": "={{ $json.campaign_id }}",
+            "metadata": "={{ JSON.stringify({ posts_collected: $('Process 5 at a time').context.noItemsLeft ? 'all' : 'batch', total_impressions: $json.impressions, total_likes: $json.likes }) }}"
+          }
+        }
+      },
+      "id": "node-log-success",
+      "name": "INSERT automation_log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [2680, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.analytics_empty",
+            "target": "analytics_collector",
+            "metadata": "={{ JSON.stringify({ checked_at: $now.toISO() }) }}"
+          }
+        }
+      },
+      "id": "node-log-empty",
+      "name": "Log: No Posts to Analyze",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Process 5 at a time').context.noItemsLeft }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "node-check-done",
+      "name": "All Batches Done?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [2900, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/send-notification",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\": \"405dea2b-f865-4771-8837-830f43416e77\",\n  \"type\": \"analytics_report\",\n  \"title\": \"Wöchentlicher Social Media Report\",\n  \"message\": \"Engagement-Daten für alle aktiven Kampagnen wurden aktualisiert. Öffne das Dashboard für Details.\",\n  \"action_url\": \"/marketing\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-notify",
+      "name": "Send Weekly Report Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [3120, 100],
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Every Monday 07:00": {
+      "main": [
+        [{ "node": "SELECT Posted Posts with Platform IDs", "type": "main", "index": 0 }]
+      ]
+    },
+    "SELECT Posted Posts with Platform IDs": {
+      "main": [
+        [{ "node": "Has Posted Posts?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Posted Posts?": {
+      "main": [
+        [{ "node": "Process 5 at a time", "type": "main", "index": 0 }],
+        [{ "node": "Log: No Posts to Analyze", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process 5 at a time": {
+      "main": [
+        [{ "node": "GET Campaign Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "GET Campaign Data": {
+      "main": [
+        [{ "node": "Prepare Analytics Query", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Analytics Query": {
+      "main": [
+        [{ "node": "Route by Platform", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route by Platform": {
+      "main": [
+        [{ "node": "Instagram: GET Insights", "type": "main", "index": 0 }],
+        [{ "node": "Facebook: GET Post Insights", "type": "main", "index": 0 }],
+        [{ "node": "LinkedIn: GET Social Actions", "type": "main", "index": 0 }],
+        [{ "node": "Google Business: GET Metrics", "type": "main", "index": 0 }]
+      ]
+    },
+    "Instagram: GET Insights": {
+      "main": [
+        [{ "node": "Normalize Metrics", "type": "main", "index": 0 }]
+      ]
+    },
+    "Facebook: GET Post Insights": {
+      "main": [
+        [{ "node": "Normalize Metrics", "type": "main", "index": 0 }]
+      ]
+    },
+    "LinkedIn: GET Social Actions": {
+      "main": [
+        [{ "node": "Normalize Metrics", "type": "main", "index": 0 }]
+      ]
+    },
+    "Google Business: GET Metrics": {
+      "main": [
+        [{ "node": "Normalize Metrics", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalize Metrics": {
+      "main": [
+        [{ "node": "Calculate Engagement Rate", "type": "main", "index": 0 }]
+      ]
+    },
+    "Calculate Engagement Rate": {
+      "main": [
+        [{ "node": "INSERT marketing_analytics", "type": "main", "index": 0 }]
+      ]
+    },
+    "INSERT marketing_analytics": {
+      "main": [
+        [{ "node": "INSERT automation_log", "type": "main", "index": 0 }]
+      ]
+    },
+    "INSERT automation_log": {
+      "main": [
+        [{ "node": "All Batches Done?", "type": "main", "index": 0 }]
+      ]
+    },
+    "All Batches Done?": {
+      "main": [
+        [{ "node": "Send Weekly Report Notification", "type": "main", "index": 0 }],
+        [{ "node": "Process 5 at a time", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [
+    { "name": "marketing" },
+    { "name": "social-media" },
+    { "name": "analytics" }
+  ]
+}

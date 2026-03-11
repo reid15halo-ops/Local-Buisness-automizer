@@ -232,6 +232,107 @@ class ReportService {
         };
     }
 
+    // Generate Marketing Campaign Report
+    async generateMarketingReport(campaignId) {
+        try {
+            const { dbService } = await import('./db-service.js');
+            const supabase = dbService.supabase;
+
+            // Fetch campaign summary
+            const { data: summary, error: sumErr } = await supabase
+                .from('marketing_campaign_summary')
+                .select('*')
+                .eq('campaign_id', campaignId)
+                .single();
+            if (sumErr) return { error: sumErr.message };
+
+            // Fetch top posts by engagement
+            const { data: posts } = await supabase
+                .from('marketing_posts')
+                .select('id, platform, caption, posted_at, status')
+                .eq('campaign_id', campaignId)
+                .eq('status', 'posted')
+                .order('posted_at', { ascending: false })
+                .limit(50);
+
+            // Fetch latest analytics per post
+            const { data: analytics } = await supabase
+                .from('marketing_analytics')
+                .select('post_id, impressions, reach, likes, comments, shares, saves, clicks, engagement_rate, collected_at')
+                .eq('campaign_id', campaignId)
+                .order('collected_at', { ascending: false });
+
+            // Deduplicate: latest analytics per post
+            const latestByPost = {};
+            (analytics || []).forEach(a => {
+                if (!latestByPost[a.post_id]) latestByPost[a.post_id] = a;
+            });
+
+            // Build top performers
+            const postsWithAnalytics = (posts || []).map(p => ({
+                ...p,
+                analytics: latestByPost[p.id] || null
+            }));
+            const topPerformers = postsWithAnalytics
+                .filter(p => p.analytics)
+                .sort((a, b) => {
+                    const engA = (a.analytics.likes || 0) + (a.analytics.comments || 0) + (a.analytics.shares || 0);
+                    const engB = (b.analytics.likes || 0) + (b.analytics.comments || 0) + (b.analytics.shares || 0);
+                    return engB - engA;
+                })
+                .slice(0, 5);
+
+            // Platform breakdown
+            const platformStats = {};
+            postsWithAnalytics.forEach(p => {
+                if (!platformStats[p.platform]) {
+                    platformStats[p.platform] = { posts: 0, impressions: 0, likes: 0, comments: 0 };
+                }
+                platformStats[p.platform].posts++;
+                if (p.analytics) {
+                    platformStats[p.platform].impressions += p.analytics.impressions || 0;
+                    platformStats[p.platform].likes += p.analytics.likes || 0;
+                    platformStats[p.platform].comments += p.analytics.comments || 0;
+                }
+            });
+
+            return {
+                type: 'marketing',
+                title: `Marketing-Report: ${summary.company_name}`,
+                generatedAt: new Date().toISOString(),
+                summary: {
+                    companyName: summary.company_name,
+                    package: summary.package,
+                    status: summary.status,
+                    period: `${summary.starts_at} — ${summary.ends_at}`,
+                    totalPosts: summary.total_posts,
+                    postedCount: summary.posted_count,
+                    scheduledCount: summary.scheduled_count,
+                    failedCount: summary.failed_count,
+                    totalImpressions: summary.total_impressions,
+                    totalReach: summary.total_reach,
+                    totalLikes: summary.total_likes,
+                    totalComments: summary.total_comments,
+                    totalClicks: summary.total_clicks,
+                    avgEngagementRate: summary.avg_engagement_rate
+                },
+                topPerformers: topPerformers.map(p => ({
+                    platform: p.platform,
+                    caption: (p.caption || '').substring(0, 100),
+                    postedAt: p.posted_at,
+                    likes: p.analytics?.likes || 0,
+                    comments: p.analytics?.comments || 0,
+                    impressions: p.analytics?.impressions || 0,
+                    engagementRate: p.analytics?.engagement_rate || 0
+                })),
+                platformBreakdown: platformStats
+            };
+        } catch (err) {
+            console.error('ReportService: Marketing-Report Fehler:', err);
+            return { error: err.message || 'Unbekannter Fehler' };
+        }
+    }
+
     // Export to CSV
     exportToCSV(report) {
         let csv = '';

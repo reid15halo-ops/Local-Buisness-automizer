@@ -149,7 +149,7 @@ class DashboardWidgetUI {
         const service = window.dashboardWidgetService;
         const dataOrPromise = service.getWidgetData(widget.id);
         const sizeClass = `widget-card-${widget.size || 'small'}`;
-        const asyncWidgets = ['cashflow-forecast', 'social-media'];
+        const asyncWidgets = ['cashflow-forecast', 'social-media', 'marketing-campaigns'];
 
         // Async Widget: Placeholder rendern, dann nachladen
         if (asyncWidgets.includes(widget.id) && dataOrPromise && typeof dataOrPromise.then === 'function') {

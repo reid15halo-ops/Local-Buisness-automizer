@@ -169,33 +169,37 @@ Onboarding Form (App)
 
 ### Phase 1: Foundation (Woche 1-2)
 
-- [ ] Supabase-Migration: Marketing-Tabellen erstellen
-- [ ] `marketing-campaign-service.js` — CRUD + Statusmanagement
-- [ ] Canva Master-Templates erstellen (10 Kategorien x 6 Templates = 60 Stück)
-- [ ] Onboarding-Fragebogen in App integrieren
+- [x] Supabase-Migration: Marketing-Tabellen erstellen (`20260309000000_create_marketing_campaigns.sql`)
+- [x] `marketing-campaign-service.js` — CRUD + Statusmanagement (482 Zeilen)
+- [ ] Canva Master-Templates erstellen (10 Kategorien x 6 Templates = 60 Stück) — manuell
+- [x] Onboarding-Fragebogen in App integrieren (`marketing-onboarding.html`, 5-Step Wizard)
+- [x] Founder-Kampagne geseedet: 51 Posts (20 DE + 20 EN LinkedIn + 11 Plattform-Varianten)
 
 ### Phase 2: Automation (Woche 3-4)
 
-- [ ] n8n Workflow: `workflow-social-media-scheduler.json`
-- [ ] Meta Graph API Integration (Instagram + Facebook)
-- [ ] Google Business Profile API Integration
-- [ ] Canva API Integration (Template-Klonen + Personalisierung)
-- [ ] Post-Queue mit Retry-Logik
+- [x] n8n Workflow: `workflow-social-media-scheduler.json` (3x daily, 4 Platform-Routes)
+- [x] Meta Graph API Integration (Instagram + Facebook) — im Scheduler-Workflow
+- [x] Google Business Profile API Integration — im Scheduler-Workflow
+- [ ] Canva API Integration (Template-Klonen + Personalisierung) — braucht Canva Connect API Key
+- [x] Post-Queue mit Retry-Logik (in `marketing-campaign-service.js`)
+- [x] Content Pipeline (`content_pipeline.py` — Ollama-basierte Post-Generierung + Postiz)
 
 ### Phase 3: Analytics & Reposting (Woche 5-6)
 
-- [ ] n8n Workflow: `workflow-social-media-analytics.json`
-- [ ] Automatischer Monatsreport (PDF per E-Mail)
-- [ ] Reposting-Engine: Top-Performer identifizieren, recyclen
-- [ ] Dashboard-Widget: Kampagnen-Übersicht im App
+- [x] n8n Workflow: `workflow-social-media-analytics.json` (wöchentlich, alle Plattformen)
+- [x] Automatischer Monatsreport: `workflow-social-media-monthly-report.json` (HTML-E-Mail, 1. des Monats)
+- [x] Client-seitiger Report: `report-service.js → generateMarketingReport()` (on-demand)
+- [x] Reposting-Engine: `workflow-social-media-repost.json` + `activate_reposting()` SQL-Funktion
+- [x] Dashboard-Widget: `marketing-campaigns` Widget im Dashboard (async, Supabase View)
+- [x] Upsell-Email automatisch bei Kampagnen-Ende (im Repost-Workflow)
 
 ### Phase 4: Launch & Vertrieb (Woche 7-8)
 
-- [ ] 3 Pilot-Kunden akquirieren (kostenlos/vergünstigt)
-- [ ] Feedback einarbeiten
-- [ ] Preisliste aktualisieren
-- [ ] Landing Page für Marketing-Pakete
-- [ ] Upsell-Automatisierung: E-Mail vor Kampagnen-Ende
+- [ ] 3 Pilot-Kunden akquirieren (kostenlos/vergünstigt) — manuell
+- [ ] Feedback einarbeiten — manuell
+- [ ] Preisliste aktualisieren — manuell
+- [x] Landing Page für Marketing-Pakete (`marketing.html` — Pricing, FAQ, Social Proof, CTA)
+- [x] Upsell-Automatisierung: E-Mail vor Kampagnen-Ende (im Repost-Workflow)
 
 ---
 

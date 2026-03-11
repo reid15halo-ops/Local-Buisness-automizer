@@ -1,0 +1,314 @@
+{
+  "name": "Social Media Monthly Report — FreyAI Marketing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "node-trigger",
+      "name": "1st of Month 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "marketing_campaigns",
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": {
+                "key": "status",
+                "condition": "in",
+                "value": "active,scheduled,reposting"
+              }
+            }
+          ]
+        }
+      },
+      "id": "node-fetch-campaigns",
+      "name": "SELECT Active Campaigns",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [460, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.length || 0 }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "node-has-campaigns",
+      "name": "Has Active Campaigns?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "node-batch",
+      "name": "Process One at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/marketing_campaign_summary?campaign_id=eq.{{ $json.id }}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "node-fetch-summary",
+      "name": "GET Campaign Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1120, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "campaign_id",
+              "value": "={{ $('Process One at a Time').item.json.id }}"
+            },
+            {
+              "name": "company_name",
+              "value": "={{ $('Process One at a Time').item.json.company_name }}"
+            },
+            {
+              "name": "package",
+              "value": "={{ $('Process One at a Time').item.json.package }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $('Process One at a Time').item.json.social_handles?.email || '' }}"
+            },
+            {
+              "name": "total_posts",
+              "value": "={{ $json[0]?.total_posts || 0 }}"
+            },
+            {
+              "name": "posted_count",
+              "value": "={{ $json[0]?.posted_count || 0 }}"
+            },
+            {
+              "name": "total_impressions",
+              "value": "={{ $json[0]?.total_impressions || 0 }}"
+            },
+            {
+              "name": "total_reach",
+              "value": "={{ $json[0]?.total_reach || 0 }}"
+            },
+            {
+              "name": "total_likes",
+              "value": "={{ $json[0]?.total_likes || 0 }}"
+            },
+            {
+              "name": "total_comments",
+              "value": "={{ $json[0]?.total_comments || 0 }}"
+            },
+            {
+              "name": "total_clicks",
+              "value": "={{ $json[0]?.total_clicks || 0 }}"
+            },
+            {
+              "name": "avg_engagement_rate",
+              "value": "={{ $json[0]?.avg_engagement_rate || 0 }}"
+            },
+            {
+              "name": "starts_at",
+              "value": "={{ $('Process One at a Time').item.json.starts_at }}"
+            },
+            {
+              "name": "ends_at",
+              "value": "={{ $('Process One at a Time').item.json.ends_at }}"
+            },
+            {
+              "name": "report_month",
+              "value": "={{ new Date(Date.now() - 86400000).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-prepare",
+      "name": "Prepare Report Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/functions/v1/send-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_ANON_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $json.email }}\",\n  \"subject\": \"Social Media Report {{ $json.report_month }} — {{ $json.company_name }}\",\n  \"html\": \"<div style='font-family:Inter,Arial,sans-serif;max-width:600px;margin:0 auto;background:#09090b;color:#fafafa;padding:32px;border-radius:16px'><div style='text-align:center;margin-bottom:24px'><h1 style='font-size:24px;font-weight:700;color:#6366f1;margin:0'>FreyAI Visions</h1><p style='color:#a1a1aa;font-size:14px;margin:4px 0 0'>Social Media Performance Report</p></div><div style='background:#18181b;border-radius:12px;padding:20px;margin-bottom:16px'><h2 style='font-size:16px;margin:0 0 12px;color:#fafafa'>{{ $json.company_name }} — Paket {{ $json.package }}</h2><p style='color:#a1a1aa;font-size:13px;margin:0'>Zeitraum: {{ $json.starts_at }} bis {{ $json.ends_at }}<br>Report: {{ $json.report_month }}</p></div><div style='display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px'><div style='background:#18181b;border-radius:12px;padding:16px;text-align:center'><div style='font-size:28px;font-weight:800;color:#6366f1'>{{ $json.posted_count }}/{{ $json.total_posts }}</div><div style='font-size:12px;color:#a1a1aa;margin-top:4px'>Posts veröffentlicht</div></div><div style='background:#18181b;border-radius:12px;padding:16px;text-align:center'><div style='font-size:28px;font-weight:800;color:#22c55e'>{{ $json.total_impressions }}</div><div style='font-size:12px;color:#a1a1aa;margin-top:4px'>Impressionen</div></div><div style='background:#18181b;border-radius:12px;padding:16px;text-align:center'><div style='font-size:28px;font-weight:800;color:#f59e0b'>{{ $json.total_likes }}</div><div style='font-size:12px;color:#a1a1aa;margin-top:4px'>Likes</div></div><div style='background:#18181b;border-radius:12px;padding:16px;text-align:center'><div style='font-size:28px;font-weight:800;color:#ec4899'>{{ $json.avg_engagement_rate }}%</div><div style='font-size:12px;color:#a1a1aa;margin-top:4px'>Engagement Rate</div></div></div><div style='background:#18181b;border-radius:12px;padding:20px;margin-bottom:16px'><h3 style='font-size:14px;margin:0 0 12px;color:#fafafa'>Weitere Metriken</h3><table style='width:100%;font-size:13px;border-collapse:collapse'><tr><td style='padding:6px 0;color:#a1a1aa'>Reichweite</td><td style='padding:6px 0;text-align:right;font-weight:600'>{{ $json.total_reach }}</td></tr><tr><td style='padding:6px 0;color:#a1a1aa'>Kommentare</td><td style='padding:6px 0;text-align:right;font-weight:600'>{{ $json.total_comments }}</td></tr><tr><td style='padding:6px 0;color:#a1a1aa'>Klicks</td><td style='padding:6px 0;text-align:right;font-weight:600'>{{ $json.total_clicks }}</td></tr></table></div><div style='text-align:center;padding:16px;color:#a1a1aa;font-size:12px'>Automatisch generiert von FreyAI Visions<br>kontakt@freyaivisions.de</div></div>\"\n}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "node-send-email",
+      "name": "Send Monthly Report Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1560, 200],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.monthly_report_sent",
+            "target": "={{ $json.campaign_id || $('Process One at a Time').item.json.id }}",
+            "metadata": "={{ JSON.stringify({ company: $('Prepare Report Data').item.json.company_name, month: $('Prepare Report Data').item.json.report_month, email: $('Prepare Report Data').item.json.email }) }}"
+          }
+        }
+      },
+      "id": "node-log",
+      "name": "INSERT automation_log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1780, 200],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "tableId": "automation_log",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "social_media.monthly_report_skip",
+            "target": "monthly_report",
+            "metadata": "={{ JSON.stringify({ reason: 'no_active_campaigns', checked_at: $now.toISO() }) }}"
+          }
+        }
+      },
+      "id": "node-log-empty",
+      "name": "Log: No Active Campaigns",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [900, 420],
+      "credentials": {
+        "supabaseApi": {
+          "id": "cred-supabase",
+          "name": "Supabase FreyAI"
+        }
+      },
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "1st of Month 08:00": {
+      "main": [
+        [{ "node": "SELECT Active Campaigns", "type": "main", "index": 0 }]
+      ]
+    },
+    "SELECT Active Campaigns": {
+      "main": [
+        [{ "node": "Has Active Campaigns?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Has Active Campaigns?": {
+      "main": [
+        [{ "node": "Process One at a Time", "type": "main", "index": 0 }],
+        [{ "node": "Log: No Active Campaigns", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process One at a Time": {
+      "main": [
+        [{ "node": "GET Campaign Summary", "type": "main", "index": 0 }]
+      ]
+    },
+    "GET Campaign Summary": {
+      "main": [
+        [{ "node": "Prepare Report Data", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Report Data": {
+      "main": [
+        [{ "node": "Send Monthly Report Email", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Monthly Report Email": {
+      "main": [
+        [{ "node": "INSERT automation_log", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "timezone": "Europe/Berlin"
+  },
+  "tags": [
+    { "name": "marketing" },
+    { "name": "social-media" },
+    { "name": "reporting" }
+  ]
+}

@@ -43,6 +43,7 @@ from image_processor import router as image_router  # noqa: E402
 from math_guardrail import router as math_router  # noqa: E402
 from models import ErrorDetail, ErrorResponse, HealthResponse  # noqa: E402
 from pii_sanitizer import router as pii_router  # noqa: E402
+from vision_analyzer import router as vision_router  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Application version
@@ -330,7 +331,7 @@ async def api_health_check() -> HealthResponse:
     return HealthResponse(
         status="ok",
         version=APP_VERSION,
-        services={"gobd_csv": "ok", "math_guardrail": "ok", "pii_sanitizer": "ok"},
+        services={"gobd_csv": "ok", "math_guardrail": "ok", "pii_sanitizer": "ok", "vision": "ok"},
     )
 
 
@@ -342,6 +343,7 @@ app.include_router(math_router)
 app.include_router(pii_router)
 app.include_router(image_router)
 app.include_router(gobd_router)
+app.include_router(vision_router)
 
 # ---------------------------------------------------------------------------
 # Root redirect to docs
