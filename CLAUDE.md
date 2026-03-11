@@ -133,3 +133,38 @@ See `.env.example` for all required keys:
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
 - `RESEND_API_KEY`
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`
+- `CANVA_API_KEY` (Supabase Edge Function secret, for canva-proxy)
+
+## Behavior Rules (OpenClaw / Cowork)
+
+- **Proaktiv handeln**: Einfach machen, nicht fragen. Keine Anleitungen schreiben wenn du es selbst ausführen kannst.
+- **Ausnahmen** (IMMER vorher fragen): Daten löschen, Einkäufe/Abos abschließen, irreversible Aktionen
+- **Keine Fake Reviews**: Niemals erfundene Testimonials oder Bewertungen verwenden
+- **Keine Abos**: Keine kostenpflichtigen Dienste vorschlagen oder abschließen
+- **Memory-Lookup**: Bei unbekannten Begriffen automatisch in memory/ nachschlagen
+- **Sprache**: Deutsch bevorzugt, direkt und professionell
+
+## Quick Reference (Hot Cache)
+
+### VPS
+- **IP**: 72.61.187.24 | **SSH**: `ssh root@72.61.187.24`
+- **Postiz**: /opt/postiz/.env | https://social.freyaivisions.de
+- **Ollama**: Mistral Small, Qwen3.5:9b
+
+### Postiz Channel IDs
+- IG FreyAI: `cmmhxwgi60001o57d6ata0j5u`
+- IG Lithiumamethyst: `cmmizwowe0003nu45cmd1ynkt`
+- LI Jonas: `cmmizy9xn0007nu4567ua0ioc`
+- LI Page: `cmmhzkn8r0008mp6qjggw723u`
+- FB: `cmmhzgjk10001mp6qu7ztxtgy`
+- Telegram: `cmml2rody0001mi4qfdaq1eec`
+
+### Telegram Bot
+- @FreyAIPostizBot | Token: 8699736997:AAFQOVtdY3gJieIbvMdeKZR92c4pO5SjCxI
+- ENV: `TELEGRAM_TOKEN` (NICHT TELEGRAM_BOT_TOKEN)
+
+### NAS
+- UGREEN | 192.168.178.75:9999 | Nur lokales Netzwerk
+
+### Deep Memory
+Weitere Details: `memory/` Verzeichnis (glossary.md, people/, projects/, context/)
