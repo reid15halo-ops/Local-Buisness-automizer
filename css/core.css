@@ -970,7 +970,7 @@ body:has(.demo-mode-banner) {
 /* Tutorial Tooltip */
 .tutorial-tooltip {
     position: fixed;
-    background: #0f2327;
+    background: #1c1f22;
     border: 2px solid #c8956c;
     border-radius: var(--border-radius);
     padding: 24px;
@@ -1124,7 +1124,7 @@ body:has(.demo-mode-banner) {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: #0f2327;
+    background: #1c1f22;
     color: #9a958e;
     padding: 16px 24px;
     border-radius: 8px;
@@ -2393,7 +2393,7 @@ body:has(.demo-mode-banner) {
 }
 
 .confirm-dialog {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: var(--border-radius);
     padding: 2rem;
     max-width: 440px;

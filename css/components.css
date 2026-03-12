@@ -3629,7 +3629,7 @@ textarea {
 /* Light theme support */
 .light-theme .ai-window {
     background: rgba(255, 255, 255, 0.9);
-    color: #0f2327;
+    color: #1c1f22;
     border-color: #e2e8f0;
 }
 
@@ -3640,7 +3640,7 @@ textarea {
 
 .light-theme .ai-message.bot {
     background: #f1f5f9;
-    color: #0f2327;
+    color: #1c1f22;
     border-color: #cbd5e1;
 }
 
@@ -3650,12 +3650,12 @@ textarea {
 }
 
 .light-theme #ai-chat-input {
-    color: #0f2327;
+    color: #1c1f22;
 }
 
 .light-theme #ai-model-select {
     background: #fff;
-    color: #0f2327;
+    color: #1c1f22;
     border-color: #cbd5e1;
 }
 
@@ -3952,7 +3952,7 @@ textarea {
 .template-select {
     flex: 1;
     padding: 8px 12px;
-    background: var(--input-bg, #0f2327);
+    background: var(--input-bg, #1c1f22);
     border: 1px solid var(--border-color, #252830);
     border-radius: 6px;
     color: var(--text-primary, #f1f5f9);
@@ -6209,7 +6209,7 @@ textarea {
 }
 
 .notification-item[data-type="anfrage_neu"] {
-    border-left-color: #3b82f6;
+    border-left-color: var(--accent-info, #6b8fc4);
 }
 
 .notification-item[data-type="angebot_akzeptiert"] {
@@ -6524,7 +6524,7 @@ textarea {
 
 .we-tab:hover {
     background: var(--bg-primary, #fff);
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
 }
 
 .we-tab.active {
@@ -6572,7 +6572,7 @@ textarea {
 .we-dropzone-text {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
     margin-bottom: 4px;
 }
 
@@ -6698,7 +6698,7 @@ textarea {
     border-radius: 6px;
     font-size: 0.85rem;
     background: var(--bg-primary, #fff);
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
 }
 
 .we-items-table input:focus,
@@ -6772,7 +6772,7 @@ textarea {
 .we-total {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
     margin-right: auto;
     align-self: center;
 }
@@ -6812,7 +6812,7 @@ textarea {
 
 .we-bank-item-supplier {
     font-weight: 600;
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
 }
 
 .we-bank-item-purpose {
@@ -6890,7 +6890,7 @@ textarea {
 
 .we-history-title {
     font-weight: 600;
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
 }
 
 .we-history-meta {
@@ -6900,7 +6900,7 @@ textarea {
 
 .we-history-value {
     font-weight: 700;
-    color: var(--text-primary, #0f2327);
+    color: var(--text-primary, #1c1f22);
     white-space: nowrap;
 }
 
@@ -7201,7 +7201,7 @@ textarea {
 /* Angebote Entwurf Styles (moved from JS injection) */
 .status-badge.status-entwurf {
     background: rgba(161, 161, 170, 0.15);
-    color: #a1a1aa;
+    color: #9a958e;
     border: 1px dashed #52525b;
 }
 .btn-freigabe {
@@ -7232,7 +7232,7 @@ textarea {
     justify-content: center;
 }
 .material-picker-content {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, #333);
     border-radius: var(--border-radius);
     padding: 24px;
@@ -7282,7 +7282,7 @@ textarea {
     border: 1px solid var(--border-color, #333);
     border-radius: 20px;
     font-size: 12px;
-    color: var(--text-secondary, #a1a1aa);
+    color: var(--text-secondary, #9a958e);
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .activity-indicator-dot {
@@ -7304,7 +7304,7 @@ textarea {
     left: 0;
     right: 0;
     height: 4px;
-    background: var(--bg-secondary, #0f2327);
+    background: var(--bg-secondary, #1c1f22);
     z-index: var(--z-top, 10000);
 }
 .onboarding-progress-fill {
@@ -7314,7 +7314,7 @@ textarea {
 }
 .onboarding-tooltip {
     position: absolute;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--accent-primary, #c8956c);
     border-radius: var(--border-radius);
     padding: 20px;
@@ -7330,7 +7330,7 @@ textarea {
 }
 .onboarding-tooltip-text {
     font-size: 13px;
-    color: var(--text-secondary, #a1a1aa);
+    color: var(--text-secondary, #9a958e);
     line-height: 1.5;
 }
 
@@ -7348,7 +7348,7 @@ textarea {
     justify-content: center;
 }
 .fragebogen-dialog {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, #333);
     border-radius: var(--border-radius);
     padding: 24px;
@@ -7446,7 +7446,7 @@ textarea {
 
 /* PO Status Badge */
 .badge-status-offen { background: var(--accent-warning, #f59e0b); }
-.badge-status-bestellt { background: var(--accent-info, #3b82f6); }
+.badge-status-bestellt { background: var(--accent-info, var(--accent-info, #6b8fc4)); }
 .badge-status-geliefert { background: var(--accent-success, #22c55e); }
 .badge-status-storniert { background: var(--accent-danger, #ef4444); }
 .badge-status-teilgeliefert { background: var(--color-purple, #a78bfa); }
