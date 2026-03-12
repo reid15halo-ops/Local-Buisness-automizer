@@ -366,10 +366,19 @@
             el.className = 'auth-message';
         }
 
-        // Check Supabase config
-        if (!window.supabaseConfig.isConfigured()) {
-            document.getElementById('setup-notice').style.display = 'block';
+        // Check Supabase config (wait for async init)
+        async function waitForSupabase() {
+            if (window.supabaseClient && window.supabaseClient.init) {
+                await window.supabaseClient.init();
+            }
+            return window.supabaseConfig.isConfigured();
         }
+
+        waitForSupabase().then(configured => {
+            if (!configured) {
+                document.getElementById('setup-notice').style.display = 'block';
+            }
+        });
 
         // Login
         document.getElementById('form-login').addEventListener('submit', async (e) => {
@@ -378,7 +387,8 @@
             const password = document.getElementById('login-password').value;
             const btn = document.getElementById('btn-login');
 
-            if (!window.supabaseConfig.isConfigured()) {
+            const configured = await waitForSupabase();
+            if (!configured) {
                 showMessage('Supabase nicht konfiguriert. Nutze die Demo oder richte Supabase in den Einstellungen ein.');
                 return;
             }
@@ -412,7 +422,8 @@
             const password = document.getElementById('reg-password').value;
             const btn = document.getElementById('btn-register');
 
-            if (!window.supabaseConfig.isConfigured()) {
+            const regConfigured = await waitForSupabase();
+            if (!regConfigured) {
                 showMessage('Supabase nicht konfiguriert. Richte es zuerst in den Einstellungen ein.');
                 return;
             }
