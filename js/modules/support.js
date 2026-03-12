@@ -331,7 +331,7 @@ function editKBArticle(id) {
             </label>
             <div class="form-actions">
                 <button id="kb-cancel-btn">Abbrechen</button>
-                <button class="btn-primary" id="kb-save-btn" style="background:var(--primary,#2dd4a8);color:white;border:none">Speichern</button>
+                <button class="btn-primary" id="kb-save-btn" style="background:var(--primary,#c8956c);color:white;border:none">Speichern</button>
             </div>
         </div>
     `;

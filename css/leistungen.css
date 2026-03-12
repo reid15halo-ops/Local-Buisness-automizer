@@ -15,7 +15,7 @@
     z-index: 9999;
     padding: 8px 16px;
     background: var(--accent-primary);
-    color: #0c1a1a;
+    color: #131516;
     text-decoration: none;
     font-size: 14px;
 }
@@ -132,14 +132,14 @@
 .ls-package:hover { border-color: rgba(255,255,255,0.15); }
 .ls-package--featured {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 32px rgba(45, 212, 168, 0.08);
+    box-shadow: 0 0 32px rgba(200, 149, 108, 0.08);
 }
 .ls-package-badge {
     position: absolute;
     top: 16px;
     right: 16px;
     background: var(--accent-primary);
-    color: #0c1a1a;
+    color: #131516;
     font-size: 11px;
     font-weight: 700;
     padding: 4px 12px;
@@ -262,7 +262,7 @@
     display: inline-block;
     padding: 14px 32px;
     background: var(--accent-primary);
-    color: #0c1a1a;
+    color: #131516;
     border: none;
     border-radius: 10px;
     font-size: 15px;
@@ -275,7 +275,7 @@
 .ls-cta--primary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
 .ls-package--featured .ls-package-cta {
     background: var(--accent-primary);
-    color: #0c1a1a;
+    color: #131516;
     border-color: var(--accent-primary);
     font-weight: 700;
 }

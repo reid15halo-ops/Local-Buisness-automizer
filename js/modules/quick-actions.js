@@ -190,7 +190,7 @@
                 font-family: inherit;
             }
             .dash-action-btn:hover {
-                background: rgba(45, 212, 168, 0.06);
+                background: rgba(200, 149, 108, 0.06);
                 border-color: var(--accent-primary);
                 transform: translateY(-1px);
             }
@@ -198,7 +198,7 @@
                 transform: translateY(0);
             }
             .dash-action-btn--primary {
-                background: rgba(45, 212, 168, 0.10);
+                background: rgba(200, 149, 108, 0.10);
                 border-color: var(--accent-primary);
                 grid-column: 1 / -1;
                 justify-content: center;
@@ -206,7 +206,7 @@
                 padding: 22px 16px;
             }
             .dash-action-btn--primary:hover {
-                background: rgba(45, 212, 168, 0.18);
+                background: rgba(200, 149, 108, 0.18);
             }
             .dash-action-icon {
                 font-size: 1.5rem;
@@ -249,7 +249,7 @@
             }
             .dash-pipeline-circle.dash-has-items {
                 border-color: var(--accent-primary);
-                background: rgba(45, 212, 168, 0.1);
+                background: rgba(200, 149, 108, 0.1);
             }
             .dash-pipeline-name {
                 font-size: 0.85rem;
@@ -863,7 +863,7 @@
 
                 <div style="display:flex;gap:10px;justify-content:flex-end;">
                     <button id="dash-email-cancel" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border-color,#2a3a4a);background:transparent;color:var(--text-secondary,#94a3b8);cursor:pointer;font-size:0.95rem;">Abbrechen</button>
-                    <button id="dash-email-send" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent-primary,#2dd4a8);color:#0f1923;font-weight:700;cursor:pointer;font-size:0.95rem;">Senden</button>
+                    <button id="dash-email-send" style="padding:10px 24px;border-radius:8px;border:none;background:var(--accent-primary,#c8956c);color:#0f1923;font-weight:700;cursor:pointer;font-size:0.95rem;">Senden</button>
                 </div>
                 <div id="dash-email-status" style="margin-top:10px;font-size:0.88rem;text-align:center;min-height:1.2em;"></div>
             </div>

@@ -122,7 +122,7 @@ class WorkflowBuilderService {
                 name: 'Manuell ausloesen',
                 category: 'trigger',
                 icon: 'M8 5v14l11-7L8 5z',
-                color: '#2dd4a8',
+                color: '#c8956c',
                 description: 'Wird manuell per Knopfdruck gestartet',
                 eventType: 'manual',
                 configFields: []

@@ -32,8 +32,8 @@
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    background: var(--bg-card, #0f2327);
-    border: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: var(--border-radius-sm, 8px);
     color: var(--text-secondary, #a1a1aa);
     font-size: 13px;
@@ -44,19 +44,19 @@
 }
 
 .widget-toolbar-btn:hover {
-    background: var(--bg-hover, #173030);
+    background: var(--bg-hover, #252830);
     color: var(--text-primary, #e0eeee);
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .widget-toolbar-btn.active {
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .widget-toolbar-btn.active:hover {
-    background: var(--accent-primary-hover, #5eecc6);
+    background: var(--accent-primary-hover, var(--accent-primary-hover));
 }
 
 .widget-toolbar-icon {
@@ -111,7 +111,7 @@
 }
 
 .kpi-alert:focus {
-    outline: 2px solid var(--accent-primary, #2dd4a8);
+    outline: 2px solid var(--accent-primary, var(--accent-primary));
     outline-offset: 2px;
 }
 
@@ -240,8 +240,8 @@ body.light-theme .kpi-alert-info {
    ============================================ */
 
 .widget-card {
-    background: var(--bg-card, #0f2327);
-    border: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: var(--border-radius, 12px);
     overflow: hidden;
     transition: transform var(--transition, 0.25s ease),
@@ -263,7 +263,6 @@ body.light-theme .kpi-alert-info {
 
 .widget-card:hover {
     box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
-    transform: translateY(-2px);
 }
 
 /* ============================================
@@ -285,7 +284,7 @@ body.light-theme .kpi-alert-info {
 /* "Add widget" card */
 .widget-card-add {
     grid-column: span 1;
-    border: 2px dashed var(--border-color, #1a3535);
+    border: 2px dashed var(--border-color, #2a2d31);
     background: transparent;
     cursor: pointer;
     min-height: 140px;
@@ -297,12 +296,12 @@ body.light-theme .kpi-alert-info {
 
 .widget-card-add:hover,
 .widget-card-add:focus {
-    border-color: var(--accent-primary, #2dd4a8);
-    background: var(--accent-primary-alpha, rgba(45, 212, 168, 0.1));
+    border-color: var(--accent-primary, var(--accent-primary));
+    background: var(--accent-primary-alpha, rgba(200, 149, 108, 0.1));
 }
 
 .widget-card-add:focus {
-    outline: 2px solid var(--accent-primary, #2dd4a8);
+    outline: 2px solid var(--accent-primary, var(--accent-primary));
     outline-offset: 2px;
 }
 
@@ -318,7 +317,7 @@ body.light-theme .kpi-alert-info {
     font-size: 32px;
     font-weight: 300;
     line-height: 1;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .widget-add-label {
@@ -335,7 +334,7 @@ body.light-theme .kpi-alert-info {
     align-items: center;
     gap: 8px;
     padding: 14px 16px 10px;
-    border-bottom: 1px solid var(--border-color, #1a3535);
+    border-bottom: 1px solid var(--border-color, #2a2d31);
 }
 
 .widget-header-icon {
@@ -390,7 +389,7 @@ body.light-theme .kpi-alert-info {
 .widget-details-link {
     background: none;
     border: none;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -400,7 +399,7 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-details-link:hover {
-    color: var(--accent-primary-hover, #5eecc6);
+    color: var(--accent-primary-hover, var(--accent-primary-hover));
 }
 
 /* ============================================
@@ -428,7 +427,7 @@ body.light-theme .kpi-alert-info {
 
 .widget-kpi-sub {
     font-size: 14px;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     font-weight: 600;
 }
 
@@ -475,7 +474,7 @@ body.light-theme .kpi-alert-info {
     max-height: 300px;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: var(--border-color, #1a3535) transparent;
+    scrollbar-color: var(--border-color, #2a2d31) transparent;
 }
 
 .widget-list-empty {
@@ -491,15 +490,15 @@ body.light-theme .kpi-alert-info {
     align-items: flex-start;
     gap: 10px;
     padding: 10px 12px;
-    background: var(--bg-dark, #0c1a1a);
+    background: var(--bg-dark, #131516);
     border-radius: var(--border-radius-sm, 8px);
     border: 1px solid transparent;
     transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
 }
 
 .widget-list-item:hover {
-    background: var(--bg-hover, #173030);
-    border-color: var(--border-color, #1a3535);
+    background: var(--bg-hover, #252830);
+    border-color: var(--border-color, #2a2d31);
 }
 
 .widget-list-item-danger {
@@ -511,7 +510,7 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-list-item-new {
-    border-left: 3px solid var(--accent-primary, #2dd4a8);
+    border-left: 3px solid var(--accent-primary, var(--accent-primary));
 }
 
 .widget-list-icon {
@@ -555,7 +554,7 @@ body.light-theme .kpi-alert-info {
     padding: 10px 12px 4px;
     font-size: 13px;
     color: var(--text-secondary, #a1a1aa);
-    border-top: 1px solid var(--border-color, #1a3535);
+    border-top: 1px solid var(--border-color, #2a2d31);
     margin-top: 8px;
 }
 
@@ -592,7 +591,7 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-edit-mode .widget-card:hover {
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 /* Drag handle */
@@ -607,7 +606,7 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-drag-handle:hover {
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .widget-drag-handle:active {
@@ -648,9 +647,9 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-drag-over {
-    border-color: var(--accent-primary, #2dd4a8) !important;
-    box-shadow: 0 0 0 2px var(--accent-primary-light, rgba(45, 212, 168, 0.15)),
-                inset 0 0 20px var(--accent-primary-alpha, rgba(45, 212, 168, 0.1)) !important;
+    border-color: var(--accent-primary, var(--accent-primary)) !important;
+    box-shadow: 0 0 0 2px var(--accent-primary-light, rgba(200, 149, 108, 0.15)),
+                inset 0 0 20px var(--accent-primary-alpha, rgba(200, 149, 108, 0.1)) !important;
 }
 
 /* ============================================
@@ -665,8 +664,8 @@ body.light-theme .kpi-alert-info {
     justify-content: center;
     gap: 16px;
     padding: 48px 24px;
-    background: var(--bg-card, #0f2327);
-    border: 2px dashed var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 2px dashed var(--border-color, #2a2d31);
     border-radius: var(--border-radius, 12px);
     text-align: center;
 }
@@ -684,7 +683,7 @@ body.light-theme .kpi-alert-info {
 
 .widget-empty-btn {
     padding: 12px 24px;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
     border: none;
     border-radius: var(--border-radius-sm, 8px);
@@ -696,9 +695,8 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-empty-btn:hover {
-    background: var(--accent-primary-hover, #5eecc6);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(45, 212, 168, 0.3);
+    background: var(--accent-primary-hover, var(--accent-primary-hover));
+    box-shadow: 0 4px 12px rgba(200, 149, 108, 0.3);
 }
 
 /* ============================================
@@ -731,8 +729,8 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-add-dialog {
-    background: var(--bg-card, #0f2327);
-    border: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: var(--border-radius, 12px);
     width: 100%;
     max-width: 560px;
@@ -759,7 +757,7 @@ body.light-theme .kpi-alert-info {
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color, #1a3535);
+    border-bottom: 1px solid var(--border-color, #2a2d31);
 }
 
 .widget-add-dialog-header h3 {
@@ -775,7 +773,7 @@ body.light-theme .kpi-alert-info {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-hover, #173030);
+    background: var(--bg-hover, #252830);
     border: none;
     border-radius: 8px;
     color: var(--text-secondary, #a1a1aa);
@@ -785,7 +783,7 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-add-dialog-close:hover {
-    background: var(--bg-secondary, #173030);
+    background: var(--bg-secondary, #252830);
     color: var(--text-primary, #e0eeee);
 }
 
@@ -832,8 +830,8 @@ body.light-theme .kpi-alert-info {
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    background: var(--bg-dark, #0c1a1a);
-    border: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-dark, #131516);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: var(--border-radius-sm, 8px);
     cursor: pointer;
     transition: opacity var(--transition-fast, 0.15s ease), transform var(--transition-fast, 0.15s ease), background-color var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
@@ -844,13 +842,13 @@ body.light-theme .kpi-alert-info {
 }
 
 .widget-add-item:hover {
-    background: var(--bg-hover, #173030);
-    border-color: var(--accent-primary, #2dd4a8);
+    background: var(--bg-hover, #252830);
+    border-color: var(--accent-primary, var(--accent-primary));
     transform: translateX(4px);
 }
 
 .widget-add-item:focus {
-    outline: 2px solid var(--accent-primary, #2dd4a8);
+    outline: 2px solid var(--accent-primary, var(--accent-primary));
     outline-offset: 2px;
 }
 
@@ -902,8 +900,8 @@ body.light-theme .widget-chart-svg text {
 
 /* [data-theme="dark"] support (if used alongside body class) */
 [data-theme="dark"] .widget-card {
-    background: var(--bg-card, #0f2327);
-    border-color: var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border-color: var(--border-color, #2a2d31);
 }
 
 /* ============================================

@@ -11,7 +11,7 @@ class CalendarUIService {
         this.viewContainer = null;
         this.editingEvent = null;
         this.colors = {
-            termin: '#2dd4a8',
+            termin: '#c8956c',
             auftrag: '#f59e0b',
             deadline: '#ef4444',
             besichtigung: '#22c55e',
@@ -60,13 +60,13 @@ class CalendarUIService {
             }
 
             .calendar-view-switcher button.active {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: white;
-                border-color: #2dd4a8;
+                border-color: #c8956c;
             }
 
             .calendar-view-switcher button:hover:not(.active) {
-                border-color: #2dd4a8;
+                border-color: #c8956c;
                 color: #e4e4e7;
             }
 
@@ -106,7 +106,7 @@ class CalendarUIService {
 
             .calendar-nav-buttons button:hover {
                 background: #1a3030;
-                border-color: #2dd4a8;
+                border-color: #c8956c;
                 color: #e4e4e7;
             }
 
@@ -155,7 +155,7 @@ class CalendarUIService {
             }
 
             .calendar-day-cell.today {
-                border: 2px solid #2dd4a8;
+                border: 2px solid #c8956c;
             }
 
             .calendar-day-cell.other-month {
@@ -270,7 +270,7 @@ class CalendarUIService {
             }
 
             .calendar-week-day-header.today {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: white;
             }
 
@@ -496,7 +496,7 @@ class CalendarUIService {
             .calendar-form-select:focus,
             .calendar-form-textarea:focus {
                 outline: none;
-                border-color: #2dd4a8;
+                border-color: #c8956c;
                 background: #131316;
             }
 
@@ -560,9 +560,9 @@ class CalendarUIService {
             }
 
             .calendar-btn-primary {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: white;
-                border-color: #2dd4a8;
+                border-color: #c8956c;
             }
 
             .calendar-btn-primary:hover {
@@ -622,13 +622,13 @@ class CalendarUIService {
             }
 
             .calendar-mini-day.today {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: white;
                 font-weight: 600;
             }
 
             .calendar-mini-day.selected {
-                border: 1px solid #2dd4a8;
+                border: 1px solid #c8956c;
             }
 
             .calendar-mini-day.other-month {
@@ -714,7 +714,7 @@ class CalendarUIService {
             }
 
             .calendar-status-abgeschlossen {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: white;
             }
 

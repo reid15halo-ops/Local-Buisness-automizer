@@ -99,7 +99,7 @@ class FragebogenImportUI {
                 <a href="fragebogen-beta-v1.html" target="_blank"
                    style="
                        display:inline-block;
-                       background:#2dd4a8;
+                       background:#c8956c;
                        color:#fff;
                        text-decoration:none;
                        padding:9px 20px;
@@ -185,10 +185,10 @@ class FragebogenImportUI {
                         <table style="width:100%; border-collapse:collapse;">
                             <thead>
                                 <tr style="background:#f8f8fc;">
-                                    <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:700; color:#2dd4a8; border-bottom:2px solid #d1d1e0;">
+                                    <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:700; color:#c8956c; border-bottom:2px solid #d1d1e0;">
                                         Feld
                                     </th>
-                                    <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:700; color:#2dd4a8; border-bottom:2px solid #d1d1e0;">
+                                    <th style="padding:8px 10px; text-align:left; font-size:11px; font-weight:700; color:#c8956c; border-bottom:2px solid #d1d1e0;">
                                         Neuer Wert
                                     </th>
                                 </tr>
@@ -221,7 +221,7 @@ class FragebogenImportUI {
                     ${importable.length > 0 ? `
                         <button type="button" class="fragebogen-dialog-confirm"
                                 style="
-                                    background:#2dd4a8;
+                                    background:#c8956c;
                                     color:#fff;
                                     border:none;
                                     border-radius:8px;

@@ -7,7 +7,7 @@ class DashboardChartsService {
     constructor() {
         this.colors = {
             // Theme colors - keep in sync with css/core.css :root vars
-            indigo: '#2dd4a8',
+            indigo: '#c8956c',
             green: '#22c55e',
             amber: '#f59e0b',
             red: '#ef4444',

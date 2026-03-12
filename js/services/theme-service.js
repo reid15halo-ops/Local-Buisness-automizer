@@ -13,7 +13,7 @@ class ThemeService {
             this.settings.theme = this.getSystemTheme();
         }
         if (!this.settings.accentColor) {
-            this.settings.accentColor = '#2dd4a8'; // Indigo
+            this.settings.accentColor = '#c8956c'; // Indigo
         }
 
         // Apply theme on load
@@ -137,7 +137,7 @@ class ThemeService {
     // Preset accent colors
     getAccentPresets() {
         return [
-            { name: 'Indigo', color: '#2dd4a8' },
+            { name: 'Indigo', color: '#c8956c' },
             { name: 'Blue', color: '#3b82f6' },
             { name: 'Green', color: '#22c55e' },
             { name: 'Emerald', color: '#10b981' },

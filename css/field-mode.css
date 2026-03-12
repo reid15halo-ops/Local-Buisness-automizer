@@ -44,8 +44,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(45, 212, 168, 0.15);
-    border: 1px solid rgba(45, 212, 168, 0.3);
+    background: rgba(200, 149, 108, 0.15);
+    border: 1px solid rgba(200, 149, 108, 0.3);
     border-radius: 12px;
     padding: 12px 16px;
     margin-top: 12px;
@@ -58,7 +58,7 @@
 }
 
 .fm-active-timer-banner:active {
-    background: rgba(45, 212, 168, 0.25);
+    background: rgba(200, 149, 108, 0.25);
 }
 
 .fm-pulse {
@@ -83,7 +83,7 @@
 }
 
 .fm-stat {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 12px;
     padding: 12px 8px;
     text-align: center;
@@ -150,7 +150,7 @@
     display: block;
     width: 100%;
     text-align: left;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 2px solid transparent;
     border-radius: 14px;
     padding: 16px;
@@ -164,12 +164,12 @@
 }
 
 .fm-job-card:active {
-    background: var(--bg-hover, #173030);
+    background: var(--bg-hover, #252830);
 }
 
 .fm-job-card--active {
-    border-color: var(--accent-primary, #2dd4a8);
-    background: rgba(45, 212, 168, 0.08);
+    border-color: var(--accent-primary, var(--accent-primary));
+    background: rgba(200, 149, 108, 0.08);
 }
 
 .fm-job-card-top {
@@ -197,7 +197,7 @@
 
 .fm-job-status--offen { background: rgba(96,165,250,0.2); color: #60a5fa; }
 .fm-job-status--in_bearbeitung,
-.fm-job-status--aktiv { background: rgba(45,212,168,0.2); color: #2dd4a8; }
+.fm-job-status--aktiv { background: rgba(45,212,168,0.2); color: var(--accent-primary); }
 .fm-job-status--geplant { background: rgba(251,191,36,0.2); color: #fbbf24; }
 .fm-job-status--abgeschlossen { background: rgba(34,197,94,0.2); color: #22c55e; }
 .fm-job-status--storniert { background: rgba(239,68,68,0.2); color: #ef4444; }
@@ -227,7 +227,7 @@
     padding: 2px 10px;
     border-radius: 20px;
     background: rgba(45,212,168,0.2);
-    color: #2dd4a8;
+    color: var(--accent-primary);
     font-weight: 600;
 }
 
@@ -264,7 +264,7 @@
     gap: 4px;
     background: none;
     border: none;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -304,8 +304,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: var(--bg-dark, #0c1a1a);
-    border-top: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-dark, #131516);
+    border-top: 1px solid var(--border-color, #2a2d31);
     padding: 4px 0;
     padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
     z-index: 100;
@@ -343,15 +343,15 @@
 }
 
 .fm-bottom-nav-item--active {
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .fm-bottom-nav-item--active svg {
-    stroke: var(--accent-primary, #2dd4a8);
+    stroke: var(--accent-primary, var(--accent-primary));
 }
 
 .fm-bottom-nav-item:active {
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 /* Pulse indicator on timer nav item */
@@ -408,7 +408,7 @@
 .fm-timer-section {
     text-align: center;
     padding: 24px 0;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 16px;
 }
 
@@ -456,7 +456,7 @@
 .fm-time-entry-duration {
     font-size: 14px;
     font-weight: 700;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .fm-time-entry-desc {
@@ -467,7 +467,7 @@
 
 /* Today summary */
 .fm-today-summary {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 14px;
     padding: 14px;
 }
@@ -502,8 +502,8 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: var(--bg-card, #0f2327);
-    border: 2px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 2px solid var(--border-color, #2a2d31);
     border-radius: 16px;
     padding: 20px 12px;
     min-height: 120px;
@@ -520,19 +520,19 @@
 }
 
 .fm-action-btn:active {
-    background: var(--bg-hover, #173030);
-    border-color: var(--accent-primary, #2dd4a8);
+    background: var(--bg-hover, #252830);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .fm-action-btn svg {
-    stroke: var(--accent-primary, #2dd4a8);
+    stroke: var(--accent-primary, var(--accent-primary));
 }
 
 .fm-action-badge {
     position: absolute;
     top: 8px;
     right: 8px;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #0f0f13;
     font-size: 12px;
     font-weight: 700;
@@ -605,16 +605,16 @@
 .fm-btn-warning:active { background: #d97706; }
 
 .fm-btn-secondary {
-    background: var(--bg-card, #0f2327);
-    border: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 1px solid var(--border-color, #2a2d31);
     color: var(--text-primary, #e0eeee);
 }
 
-.fm-btn-secondary:active { background: var(--bg-hover, #173030); }
+.fm-btn-secondary:active { background: var(--bg-hover, #252830); }
 
 .fm-btn-voice {
-    background: var(--bg-card, #0f2327);
-    border: 2px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 2px solid var(--border-color, #2a2d31);
     color: var(--text-primary, #e0eeee);
     width: 100%;
 }
@@ -642,7 +642,7 @@
 
 /* GPS button */
 .fm-gps-btn {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 2px solid var(--accent-info, #3b82f6);
     color: var(--text-primary, #e0eeee);
 }
@@ -667,7 +667,7 @@
 }
 
 .fm-section {
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 14px;
     padding: 14px;
 }
@@ -746,7 +746,7 @@
 
 .fm-material-qty {
     font-weight: 600;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     white-space: nowrap;
 }
 
@@ -800,7 +800,7 @@
 .fm-mat-quick-btn {
     padding: 8px 14px;
     background: rgba(255,255,255,0.06);
-    border: 1px solid var(--border-color, #1a3535);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: 20px;
     color: var(--text-primary, #e0eeee);
     font-size: 13px;
@@ -814,7 +814,7 @@
 
 .fm-mat-quick-btn:active {
     background: rgba(45,212,168,0.15);
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 /* Notes */
@@ -863,7 +863,7 @@
     width: 160px;
     height: auto;
     border-radius: 8px;
-    border: 1px solid var(--border-color, #1a3535);
+    border: 1px solid var(--border-color, #2a2d31);
 }
 
 .fm-signature-name {
@@ -905,8 +905,8 @@
 }
 
 .fm-status-btn--active {
-    border-color: var(--accent-primary, #2dd4a8);
-    color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
+    color: var(--accent-primary, var(--accent-primary));
     background: rgba(45,212,168,0.1);
 }
 
@@ -980,8 +980,8 @@
 .fm-textarea {
     width: 100%;
     padding: 12px 14px;
-    background: var(--bg-card, #0f2327);
-    border: 1px solid var(--border-color, #1a3535);
+    background: var(--bg-card, #1c1f22);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: 10px;
     color: var(--text-primary, #e0eeee);
     font-size: 16px;
@@ -999,15 +999,15 @@
 .fm-input:focus,
 .fm-textarea:focus {
     outline: 2px solid transparent;
-    border-color: var(--accent-primary, #2dd4a8);
-    box-shadow: 0 0 0 2px rgba(45, 212, 168, 0.3);
+    border-color: var(--accent-primary, var(--accent-primary));
+    box-shadow: 0 0 0 2px rgba(200, 149, 108, 0.3);
 }
 
 .fm-btn:focus-visible,
 .fm-job-card:focus-visible,
 .fm-status-btn:focus-visible,
 .fm-bottom-nav-item:focus-visible {
-    outline: 2px solid var(--accent-primary, #2dd4a8);
+    outline: 2px solid var(--accent-primary, var(--accent-primary));
     outline-offset: 2px;
 }
 
@@ -1034,7 +1034,7 @@
 
 .fm-modal {
     background: var(--bg-dark, #0f0f13);
-    border: 1px solid var(--border-color, #1a3535);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: 18px;
     width: 100%;
     max-width: 480px;
@@ -1052,7 +1052,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 18px;
-    border-bottom: 1px solid var(--border-color, #1a3535);
+    border-bottom: 1px solid var(--border-color, #2a2d31);
 }
 
 .fm-modal-header h3 {
@@ -1094,7 +1094,7 @@
 .fm-mat-suggestion {
     padding: 8px 14px;
     background: rgba(255,255,255,0.06);
-    border: 1px solid var(--border-color, #1a3535);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: 20px;
     color: var(--text-primary, #e0eeee);
     font-size: 13px;
@@ -1107,12 +1107,12 @@
 
 .fm-mat-suggestion:active {
     background: rgba(45,212,168,0.15);
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 /* Signature canvas */
 .fm-signature-canvas-wrapper {
-    border: 2px solid var(--border-color, #1a3535);
+    border: 2px solid var(--border-color, #2a2d31);
     border-radius: 12px;
     overflow: hidden;
     margin: 12px 0;
@@ -1218,9 +1218,9 @@
     height: 44px;
     min-width: 44px;
     min-height: 44px;
-    border: 1px solid var(--border-color, #1a3535);
+    border: 1px solid var(--border-color, #2a2d31);
     border-radius: 10px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     color: var(--text-secondary, #a1a1aa);
     cursor: pointer;
     flex-shrink: 0;
@@ -1233,8 +1233,8 @@
 }
 
 .voice-mic-btn:hover {
-    border-color: var(--accent-primary, #2dd4a8);
-    color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .voice-mic-btn--recording {
@@ -1276,7 +1276,7 @@ body.field-mode-active #view-field-mode {
     padding: 16px;
     padding-top: calc(16px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    background: var(--bg-dark, #0c1a1a);
+    background: var(--bg-dark, #131516);
 }
 
 /* ============================================
@@ -1315,7 +1315,7 @@ body.field-mode-active #view-field-mode {
         margin-left: auto;
         margin-right: auto;
         border-radius: 16px 16px 0 0;
-        border: 1px solid var(--border-color, #1a3535);
+        border: 1px solid var(--border-color, #2a2d31);
         border-bottom: none;
     }
 

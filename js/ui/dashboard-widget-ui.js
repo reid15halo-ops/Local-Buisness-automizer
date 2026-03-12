@@ -553,7 +553,7 @@ class DashboardWidgetUI {
             const x = padding.left + i * barSpacing + (barSpacing - barWidth) / 2;
             const y = height - padding.bottom - barH;
 
-            svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" fill="var(--accent-primary, #2dd4a8)" rx="3" opacity="0.9">
+            svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" fill="var(--accent-primary, #c8956c)" rx="3" opacity="0.9">
                         <title>${item.label}: ${this._formatCurrencyShort(item.value)}</title>
                     </rect>`;
 

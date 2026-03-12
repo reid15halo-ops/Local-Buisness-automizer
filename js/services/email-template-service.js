@@ -119,7 +119,7 @@ class EmailTemplateService {
         const addressParts = [this.company.street, [this.company.postalCode, this.company.city].filter(Boolean).join(' ')].filter(Boolean);
         const addressLine = addressParts.length > 0 ? addressParts.join(' | ') : '';
         return `
-            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #0c1a1a; color: white; padding: 30px 0; border-bottom: 3px solid #2dd4a8;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #0c1a1a; color: white; padding: 30px 0; border-bottom: 3px solid #c8956c;">
                 <tr>
                     <td style="padding: 20px 40px; text-align: center;">
                         ${logoHtml}
@@ -292,7 +292,7 @@ class EmailTemplateService {
                                             </tr>`}
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
                                                 <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Gesamtbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #c8956c;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             ${isKlein ? `<tr>
                                                 <td colspan="2" style="padding: 8px 0 0 0; font-size: 11px; color: #64748b;">Gem&auml;&szlig; &sect;19 UStG wird keine Umsatzsteuer berechnet.</td>
@@ -466,7 +466,7 @@ class EmailTemplateService {
                                             </tr>`}
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
                                                 <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Rechnungsbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #c8956c;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             ${isKlein ? `<tr>
                                                 <td colspan="2" style="padding: 8px 0 0 0; font-size: 11px; color: #64748b;">Gem&auml;&szlig; &sect;19 UStG wird keine Umsatzsteuer berechnet.</td>
@@ -938,7 +938,7 @@ class EmailTemplateService {
                                             </tr>`}
                                             <tr style="border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;">
                                                 <td style="padding: 15px 0; font-size: 14px; font-weight: bold; color: #0c1a1a;">Gesamtbetrag:</td>
-                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #2dd4a8;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                                <td style="padding: 15px 15px; text-align: right; font-size: 16px; font-weight: bold; color: #c8956c;">&euro;&nbsp;${brutto.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             </tr>
                                             ${isKlein ? `<tr>
                                                 <td colspan="2" style="padding: 8px 0 0 0; font-size: 11px; color: #64748b;">Gem&auml;&szlig; &sect;19 UStG wird keine Umsatzsteuer berechnet.</td>

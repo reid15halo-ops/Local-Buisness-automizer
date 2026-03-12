@@ -557,7 +557,7 @@ class PhotoService {
             line-height: 1.6;
         }
         .baudoku-header {
-            border-bottom: 3px solid var(--accent-primary, #2dd4a8);
+            border-bottom: 3px solid var(--accent-primary, #c8956c);
             padding-bottom: 16px;
             margin-bottom: 24px;
         }
@@ -591,14 +591,14 @@ class PhotoService {
         }
         .baudoku-summary-item strong {
             font-size: 20px;
-            color: var(--accent-primary, #2dd4a8);
+            color: var(--accent-primary, #c8956c);
         }
         .baudoku-category {
             margin-bottom: 32px;
         }
         .baudoku-category-title {
             font-size: 18px;
-            color: var(--accent-primary, #2dd4a8);
+            color: var(--accent-primary, #c8956c);
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 8px;
             margin-bottom: 16px;
@@ -618,7 +618,7 @@ class PhotoService {
             position: absolute;
             top: 8px;
             left: 8px;
-            background: var(--accent-primary, #2dd4a8);
+            background: var(--accent-primary, #c8956c);
             color: #fff;
             width: 28px;
             height: 28px;
@@ -654,7 +654,7 @@ class PhotoService {
         }
         .baudoku-notes {
             font-size: 12px;
-            color: var(--accent-primary, #2dd4a8);
+            color: var(--accent-primary, #c8956c);
             margin-top: 4px;
         }
         .baudoku-footer {
@@ -703,7 +703,7 @@ class PhotoService {
             const btn = document.createElement('button');
             btn.textContent = 'Drucken';
             btn.className = 'no-print';
-            btn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 24px;background:var(--accent-primary, #2dd4a8);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;z-index:9999;';
+            btn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 24px;background:var(--accent-primary, #c8956c);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;z-index:9999;';
             btn.onclick = function() { window.print(); };
             document.body.appendChild(btn);
         });

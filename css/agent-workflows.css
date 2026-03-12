@@ -218,7 +218,6 @@
 .agent-card:hover {
     border-color: var(--accent-primary);
     box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
 }
 
 .agent-card-disabled {

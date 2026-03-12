@@ -894,13 +894,13 @@ class GanttTimelineUI {
             }
             .gantt-nav-btn:hover {
                 background: #1a3030;
-                border-color: #2dd4a8;
+                border-color: #c8956c;
                 color: #e4e4e7;
             }
             .gantt-heute-btn {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: #fff;
-                border-color: #2dd4a8;
+                border-color: #c8956c;
                 font-weight: 600;
             }
             .gantt-heute-btn:hover {
@@ -928,7 +928,7 @@ class GanttTimelineUI {
                 border-right: none;
             }
             .gantt-zoom-btn.active {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: #fff;
             }
             .gantt-zoom-btn:hover:not(.active) {
@@ -946,7 +946,7 @@ class GanttTimelineUI {
                 user-select: none;
             }
             .gantt-filter-toggle input[type="checkbox"] {
-                accent-color: #2dd4a8;
+                accent-color: #c8956c;
                 width: 16px;
                 height: 16px;
                 cursor: pointer;
@@ -1233,9 +1233,9 @@ class GanttTimelineUI {
 
             /* ========== DROP ZONE ========== */
             .gantt-drop-active {
-                outline: 2px dashed #2dd4a8;
+                outline: 2px dashed #c8956c;
                 outline-offset: -2px;
-                background: rgba(45, 212, 168, 0.05) !important;
+                background: rgba(200, 149, 108, 0.05) !important;
             }
 
             /* ========== NO-SCHEDULED MESSAGE ========== */
@@ -1317,7 +1317,7 @@ class GanttTimelineUI {
                 min-width: 180px;
             }
             .gantt-unplanned-card:hover {
-                border-color: #2dd4a8;
+                border-color: #c8956c;
                 background: #1a1a22;
                 transform: translateY(-1px);
                 box-shadow: 0 2px 8px rgba(0,0,0,0.3);

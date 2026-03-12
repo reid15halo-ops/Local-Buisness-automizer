@@ -173,7 +173,7 @@ class DocumentTemplateService {
             /* Notes / payment terms */
             .doc-notes {
                 background: #f8fafc;
-                border-left: 3px solid #2dd4a8;
+                border-left: 3px solid #c8956c;
                 padding: 12px 16px;
                 border-radius: 4px;
                 font-size: 12px;
@@ -745,7 +745,7 @@ ${this._css()}
         const cta = opts.portalUrl ? `
             <div style="text-align:center;margin:28px 0">
                 <a href="${this._esc(opts.portalUrl)}"
-                   style="background:#2dd4a8;color:#fff;padding:13px 30px;border-radius:8px;
+                   style="background:#c8956c;color:#fff;padding:13px 30px;border-radius:8px;
                           font-size:15px;font-weight:600;text-decoration:none;display:inline-block">
                     ${this._esc(opts.portalCtaLabel || 'Im Kundenportal ansehen →')}
                 </a>

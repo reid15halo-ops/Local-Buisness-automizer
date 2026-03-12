@@ -243,7 +243,7 @@ class FieldAppMobileUI {
                         <p class="field-mobile-header-subtitle">${dateStr}</p>
                     </div>
                     <div style="text-align: right;">
-                        <span style="font-size: 24px; font-weight: 700; color: var(--accent-primary, #2dd4a8); font-variant-numeric: tabular-nums;">
+                        <span style="font-size: 24px; font-weight: 700; color: var(--accent-primary, #c8956c); font-variant-numeric: tabular-nums;">
                             ${(stats.totalHours || 0).toFixed(1)}h
                         </span>
                     </div>
@@ -598,7 +598,7 @@ class FieldAppMobileUI {
                     const jobTitle = this._getJobTitleForNote(n.jobId);
                     return `
                         <div class="field-mobile-note-item">
-                            ${jobTitle ? `<span style="font-size: 12px; font-weight: 600; color: var(--accent-primary, #2dd4a8); text-transform: uppercase; letter-spacing: 0.3px;">${this._escape(jobTitle)}</span>` : ''}
+                            ${jobTitle ? `<span style="font-size: 12px; font-weight: 600; color: var(--accent-primary, #c8956c); text-transform: uppercase; letter-spacing: 0.3px;">${this._escape(jobTitle)}</span>` : ''}
                             <p class="field-mobile-note-item-text">${this._escape(n.text)}</p>
                             <span class="field-mobile-note-item-time">${new Date(n.timestamp).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
@@ -1175,10 +1175,10 @@ class FieldAppMobileUI {
         // Online but has pending items
         if (pendingCount > 0) {
             return `
-                <div class="field-mobile-offline-banner" style="background: rgba(45,212,168,0.08); color: var(--accent-primary, #2dd4a8);">
-                    <span class="field-mobile-offline-dot" style="background: var(--accent-primary, #2dd4a8); animation: none;"></span>
+                <div class="field-mobile-offline-banner" style="background: rgba(45,212,168,0.08); color: var(--accent-primary, #c8956c);">
+                    <span class="field-mobile-offline-dot" style="background: var(--accent-primary, #c8956c); animation: none;"></span>
                     <span>${pendingCount} nicht synchronisiert</span>
-                    <button class="field-mobile-offline-sync-btn" data-action="syncQueue" style="background: rgba(45,212,168,0.15); color: var(--accent-primary, #2dd4a8);">
+                    <button class="field-mobile-offline-sync-btn" data-action="syncQueue" style="background: rgba(45,212,168,0.15); color: var(--accent-primary, #c8956c);">
                         Sync
                     </button>
                 </div>

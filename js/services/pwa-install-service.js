@@ -155,7 +155,7 @@ class PWAInstallService {
                 <!-- Right: Buttons -->
                 <div style="display: flex; gap: 8px; flex-shrink: 0;">
                     <button id="freyai-pwa-install-btn" style="
-                        background-color: #2dd4a8;
+                        background-color: #c8956c;
                         color: white;
                         border: none;
                         padding: 8px 16px;
@@ -165,7 +165,7 @@ class PWAInstallService {
                         cursor: pointer;
                         transition: background-color 0.2s, transform 0.1s;
                         white-space: nowrap;
-                    " onmouseover="this.style.backgroundColor='#4f46e5'" onmouseout="this.style.backgroundColor='#2dd4a8'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+                    " onmouseover="this.style.backgroundColor='#4f46e5'" onmouseout="this.style.backgroundColor='#c8956c'" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
                         Installieren
                     </button>
                     <button id="freyai-pwa-dismiss-btn" style="

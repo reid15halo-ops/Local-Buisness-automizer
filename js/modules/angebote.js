@@ -753,8 +753,8 @@ function addPosition(prefill = null) {
         <div class="position-extra-details" style="flex:0 0 100%;width:100%;grid-column:1/-1;padding:10px 4px 6px;margin-top:6px;border-top:1px dashed #d1d5db;display:grid;grid-template-columns:3fr 1fr;gap:10px;align-items:start;">
             <div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-                    <label style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Leistungsbeschreibung <span style="color:#2dd4a8;">(Vorlage nutzen – mehr Details = mehr Vertrauen)</span></label>
-                    <button type="button" class="btn-vorlage" style="font-size:11px;color:#2dd4a8;background:none;border:1px solid #2dd4a8;border-radius:4px;padding:3px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:8px;">📋 Vorlage</button>
+                    <label style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Leistungsbeschreibung <span style="color:#c8956c;">(Vorlage nutzen – mehr Details = mehr Vertrauen)</span></label>
+                    <button type="button" class="btn-vorlage" style="font-size:11px;color:#c8956c;background:none;border:1px solid #c8956c;border-radius:4px;padding:3px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:8px;">📋 Vorlage</button>
                 </div>
                 <textarea class="pos-details" rows="2" placeholder="Was genau wird gemacht? Was ist im Preis enthalten? Nutzen Sie den Button 'Vorlage' für fertige Texte – oder schreiben Sie frei. Z.B.: Vollständige Demontage der alten Anlage, fachgerechte Neuinstallation inkl. Dichtheitsprüfung, Spülung aller Leitungen und Übergabe-Protokoll." style="width:100%;resize:vertical;font-size:12px;padding:7px 9px;border:1px solid #d1d5db;border-radius:6px;font-family:inherit;box-sizing:border-box;color:#374151;line-height:1.5;">${(window.esc || String)(prefill?.details || '')}</textarea>
             </div>
@@ -1555,7 +1555,7 @@ function previewAngebot(id) {
                 <td style="vertical-align:top;">
                     <strong style="font-size:14px;">${window.UI.sanitize(pos.beschreibung)}</strong>
                     ${pos.details ? `<div style="font-size:12px;color:#6b7280;margin-top:5px;line-height:1.5;">${window.UI.sanitize(pos.details)}</div>` : ''}
-                    ${pos.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:4px;font-weight:600;">&#128100; Ausführung: ${window.UI.sanitize(pos.verantwortlich)}</div>` : ''}
+                    ${pos.verantwortlich ? `<div style="font-size:11px;color:#c8956c;margin-top:4px;font-weight:600;">&#128100; Ausführung: ${window.UI.sanitize(pos.verantwortlich)}</div>` : ''}
                 </td>
                 <td class="text-right" style="vertical-align:top;padding-top:12px;">${pos.menge}</td>
                 <td style="vertical-align:top;padding-top:12px;">${window.UI.sanitize(pos.einheit || 'Stk.')}</td>
@@ -1793,7 +1793,7 @@ function showAngebotDetail(angebotId) {
                             <td style="vertical-align:top;">
                                 <strong>${window.UI.sanitize(p.beschreibung)}</strong>
                                 ${p.details ? `<div style="font-size:12px;color:var(--text-muted,#6b7280);margin-top:4px;line-height:1.5;">${window.UI.sanitize(p.details)}</div>` : ''}
-                                ${p.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:3px;font-weight:600;">&#128100; Ausführung: ${window.UI.sanitize(p.verantwortlich)}</div>` : ''}
+                                ${p.verantwortlich ? `<div style="font-size:11px;color:#c8956c;margin-top:3px;font-weight:600;">&#128100; Ausführung: ${window.UI.sanitize(p.verantwortlich)}</div>` : ''}
                             </td>
                             <td style="vertical-align:top;">${p.menge}</td>
                             <td style="vertical-align:top;">${window.UI.sanitize(p.einheit)}</td>
@@ -1927,7 +1927,7 @@ function exportAngebotPDF(id) {
             <td style="vertical-align:top;">
                 <strong>${window.UI.sanitize(p.beschreibung)}</strong>
                 ${p.details ? `<div style="font-size:11px;color:#6b7280;margin-top:5px;line-height:1.5;">${window.UI.sanitize(p.details)}</div>` : ''}
-                ${p.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:4px;font-weight:600;">Ausführung: ${window.UI.sanitize(p.verantwortlich)}</div>` : ''}
+                ${p.verantwortlich ? `<div style="font-size:11px;color:#c8956c;margin-top:4px;font-weight:600;">Ausführung: ${window.UI.sanitize(p.verantwortlich)}</div>` : ''}
             </td>
             <td style="vertical-align:top;padding-top:10px;">${p.menge}</td>
             <td style="vertical-align:top;padding-top:10px;">${window.UI.sanitize(p.einheit)}</td>
@@ -2015,7 +2015,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
                <td style="padding:10px 8px;vertical-align:top;border-bottom:1px solid #e5e7eb;">
                  <strong style="font-size:13px;color:#1f2937;">${escH(p.beschreibung)}</strong>
                  ${p.details ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;line-height:1.6;">${escH(p.details)}</div>` : ''}
-                 ${p.verantwortlich ? `<div style="font-size:11px;color:#2dd4a8;margin-top:5px;font-weight:600;">&#128100; Ausführung: ${escH(p.verantwortlich)}</div>` : ''}
+                 ${p.verantwortlich ? `<div style="font-size:11px;color:#c8956c;margin-top:5px;font-weight:600;">&#128100; Ausführung: ${escH(p.verantwortlich)}</div>` : ''}
                </td>
                <td style="padding:10px 8px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${p.menge} ${escH(p.einheit || '')}</td>
                <td style="padding:10px 8px;text-align:right;vertical-align:top;border-bottom:1px solid #e5e7eb;color:#374151;">${eur(p.preis)}</td>
@@ -2032,7 +2032,7 @@ async function sendVorlaeufigAngebot(angebot, anfrage) {
               mit den zuständigen Fachkräften – damit Sie genau wissen, was wir für Sie tun.<br><br>
               Sobald wir Ihre Rückmeldung erhalten, erstellen wir das verbindliche Angebot für Sie.
             </p>
-            ${angebot.text ? `<div style="margin:0 0 20px;padding:14px 18px;background:#f8fafc;border-left:4px solid #2dd4a8;border-radius:4px;font-size:13px;color:#374151;line-height:1.6;">${escH(angebot.text).replace(/\n/g,'<br>')}</div>` : ''}
+            ${angebot.text ? `<div style="margin:0 0 20px;padding:14px 18px;background:#f8fafc;border-left:4px solid #c8956c;border-radius:4px;font-size:13px;color:#374151;line-height:1.6;">${escH(angebot.text).replace(/\n/g,'<br>')}</div>` : ''}
             <h3 style="margin:0 0 10px;font-size:14px;color:#0c1a1a;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #0c1a1a;padding-bottom:6px;">Leistungsübersicht</h3>
             <table width="100%" cellpadding="0" cellspacing="0"
                    style="border-collapse:collapse;font-size:13px;margin-bottom:20px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">

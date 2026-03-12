@@ -509,7 +509,7 @@ class KeyboardShortcuts {
                     padding: 6px 10px;
                     font-size: 12px;
                     font-weight: 600;
-                    color: var(--text-accent, #2dd4a8);
+                    color: var(--text-accent, #c8956c);
                     white-space: nowrap;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
@@ -542,7 +542,7 @@ class KeyboardShortcuts {
                     padding: 2px 6px;
                     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
                     font-size: 11px;
-                    color: var(--text-accent, #2dd4a8);
+                    color: var(--text-accent, #c8956c);
                 }
 
                 @media (max-width: 768px) {

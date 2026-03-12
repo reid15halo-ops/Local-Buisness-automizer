@@ -255,7 +255,7 @@ class CalendarService {
 
     getTypeColor(type) {
         const colors = {
-            termin: '#2dd4a8',
+            termin: '#c8956c',
             besichtigung: '#22c55e',
             reparatur: '#f59e0b',
             meeting: '#3b82f6',

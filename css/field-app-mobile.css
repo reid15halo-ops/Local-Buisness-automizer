@@ -113,7 +113,7 @@
     gap: 4px;
     background: none;
     border: none;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -247,7 +247,7 @@
 .field-mobile-job-card {
     display: flex;
     align-items: stretch;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 12px;
     margin-bottom: 12px;
@@ -260,8 +260,8 @@
 }
 
 .field-mobile-job-card:active {
-    background: var(--bg-hover, #1a3535);
-    border-color: var(--accent-primary, #2dd4a8);
+    background: var(--bg-hover, #2a2d31);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 /* Colored left border for status */
@@ -465,8 +465,8 @@
     height: var(--field-btn-round);
     border-radius: 50%;
     border: 2px solid var(--border-color, rgba(255, 255, 255, 0.08));
-    background: var(--bg-card, #0f2327);
-    color: var(--accent-primary, #2dd4a8);
+    background: var(--bg-card, #1c1f22);
+    color: var(--accent-primary, var(--accent-primary));
     cursor: pointer;
     position: relative;
     -webkit-tap-highlight-color: transparent;
@@ -475,8 +475,8 @@
 }
 
 .field-mobile-action-btn:active {
-    background: var(--bg-hover, #1a3535);
-    border-color: var(--accent-primary, #2dd4a8);
+    background: var(--bg-hover, #2a2d31);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-action-btn-label {
@@ -492,7 +492,7 @@
     position: absolute;
     top: -4px;
     right: -4px;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
     font-size: 10px;
     font-weight: 700;
@@ -563,7 +563,7 @@
     flex-direction: column;
     gap: 6px;
     padding: 12px 16px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 12px;
     margin-bottom: 12px;
 }
@@ -579,7 +579,7 @@
     align-items: center;
     gap: 8px;
     font-size: 16px;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     text-decoration: none;
     min-height: var(--field-touch-min);
     padding: 4px 0;
@@ -609,7 +609,7 @@
     justify-content: space-between;
     width: 100%;
     padding: 12px 16px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: none;
     border-radius: 12px;
     color: var(--text-secondary, #a1a1aa);
@@ -623,7 +623,7 @@
 }
 
 .field-mobile-description-toggle:active {
-    background: var(--bg-hover, #1a3535);
+    background: var(--bg-hover, #2a2d31);
 }
 
 .field-mobile-description-toggle svg {
@@ -636,7 +636,7 @@
 
 .field-mobile-description-body {
     padding: 0 16px 12px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 0 0 12px 12px;
     margin-top: -12px;
     font-size: 15px;
@@ -796,9 +796,9 @@
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    border: 2px solid var(--accent-primary, #2dd4a8);
-    background: rgba(45, 212, 168, 0.1);
-    color: var(--accent-primary, #2dd4a8);
+    border: 2px solid var(--accent-primary, var(--accent-primary));
+    background: rgba(200, 149, 108, 0.1);
+    color: var(--accent-primary, var(--accent-primary));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -810,7 +810,7 @@
 }
 
 .field-mobile-voice-to-text-btn:active {
-    background: rgba(45, 212, 168, 0.25);
+    background: rgba(200, 149, 108, 0.25);
 }
 
 .field-mobile-voice-to-text-btn--recording {
@@ -825,7 +825,7 @@
     height: 52px;
     border-radius: 12px;
     border: none;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
     font-size: 17px;
     font-weight: 600;
@@ -848,7 +848,7 @@
     min-height: 52px;
     padding: 12px 16px;
     padding-left: 44px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 12px;
     color: var(--text-primary, #f4f4f5);
@@ -860,7 +860,7 @@
 }
 
 .field-mobile-material-search:focus {
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-material-search-wrap {
@@ -881,7 +881,7 @@
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 10px;
     margin-bottom: 8px;
     min-height: 56px;
@@ -919,7 +919,7 @@
     height: var(--field-touch-min);
     border-radius: 50%;
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-    background: var(--bg-hover, #1a3535);
+    background: var(--bg-hover, #2a2d31);
     color: var(--text-primary, #f4f4f5);
     font-size: 22px;
     font-weight: 600;
@@ -932,15 +932,15 @@
 }
 
 .field-mobile-material-qty-btn:active {
-    background: var(--accent-primary, #2dd4a8);
-    border-color: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
+    border-color: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
 }
 
 .field-mobile-material-qty-value {
     font-size: 18px;
     font-weight: 700;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     min-width: 40px;
     text-align: center;
     font-variant-numeric: tabular-nums;
@@ -1018,7 +1018,7 @@
     height: 100%;
     border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.15));
     border-radius: 12px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     cursor: crosshair;
     touch-action: none;
 }
@@ -1042,7 +1042,7 @@
     width: 100%;
     height: 52px;
     padding: 12px 16px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 10px;
     color: var(--text-primary, #f4f4f5);
@@ -1053,7 +1053,7 @@
 }
 
 .field-mobile-signature-name input:focus {
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-signature-footer {
@@ -1070,7 +1070,7 @@
     padding: 0 24px;
     border-radius: 12px;
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     color: var(--text-secondary, #a1a1aa);
     font-size: 16px;
     font-weight: 600;
@@ -1081,7 +1081,7 @@
 }
 
 .field-mobile-signature-clear-btn:active {
-    background: var(--bg-hover, #1a3535);
+    background: var(--bg-hover, #2a2d31);
 }
 
 .field-mobile-signature-save-btn {
@@ -1089,7 +1089,7 @@
     height: 52px;
     border-radius: 12px;
     border: none;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
     font-size: 16px;
     font-weight: 600;
@@ -1111,7 +1111,7 @@
     display: flex;
     justify-content: space-around;
     align-items: stretch;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     flex-shrink: 0;
     height: var(--field-nav-height);
@@ -1145,7 +1145,7 @@
 }
 
 .field-mobile-nav-tab--active {
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-nav-tab--active::before {
@@ -1156,12 +1156,12 @@
     transform: translateX(-50%);
     width: 24px;
     height: 3px;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     border-radius: 0 0 3px 3px;
 }
 
 .field-mobile-nav-tab--active svg {
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-nav-tab-badge {
@@ -1309,7 +1309,7 @@
     aspect-ratio: 1;
     border-radius: 10px;
     overflow: hidden;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1330,7 +1330,7 @@
 
 .field-mobile-note-item {
     padding: 12px 14px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 10px;
     margin-bottom: 8px;
 }
@@ -1359,7 +1359,7 @@
     width: 100%;
     min-height: 60px;
     padding: 14px 16px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: none;
     border-radius: 12px;
     color: var(--text-primary, #f4f4f5);
@@ -1374,11 +1374,11 @@
 }
 
 .field-mobile-more-item:active {
-    background: var(--bg-hover, #1a3535);
+    background: var(--bg-hover, #2a2d31);
 }
 
 .field-mobile-more-item svg:first-child {
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     flex-shrink: 0;
 }
 
@@ -1432,14 +1432,14 @@
     flex-direction: column;
     align-items: center;
     padding: 16px 8px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border-radius: 12px;
 }
 
 .field-mobile-stat-value {
     font-size: 30px;
     font-weight: 700;
-    color: var(--accent-primary, #2dd4a8);
+    color: var(--accent-primary, var(--accent-primary));
     font-variant-numeric: tabular-nums;
 }
 
@@ -1489,7 +1489,7 @@
     width: 100%;
     min-height: 52px;
     padding: 12px 16px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 10px;
     color: var(--text-primary, #f4f4f5);
@@ -1500,7 +1500,7 @@
 }
 
 .field-mobile-form-input:focus {
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-form-input::placeholder {
@@ -1512,7 +1512,7 @@
     min-height: 52px;
     padding: 12px 16px;
     padding-right: 40px;
-    background: var(--bg-card, #0f2327);
+    background: var(--bg-card, #1c1f22);
     border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
     border-radius: 10px;
     color: var(--text-primary, #f4f4f5);
@@ -1528,7 +1528,7 @@
 }
 
 .field-mobile-form-select:focus {
-    border-color: var(--accent-primary, #2dd4a8);
+    border-color: var(--accent-primary, var(--accent-primary));
 }
 
 .field-mobile-form-row {
@@ -1549,7 +1549,7 @@
     height: 56px;
     border-radius: 12px;
     border: none;
-    background: var(--accent-primary, #2dd4a8);
+    background: var(--accent-primary, var(--accent-primary));
     color: #e0eeee;
     font-size: 17px;
     font-weight: 600;

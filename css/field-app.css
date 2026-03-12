@@ -23,7 +23,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(45, 212, 168, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(200, 149, 108, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
@@ -32,7 +32,7 @@
 .field-app-fab:hover {
     transform: scale(1.08);
     background: var(--accent-primary-hover);
-    box-shadow: 0 6px 20px rgba(45, 212, 168, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 20px rgba(200, 149, 108, 0.5), 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .field-app-fab:active {
@@ -657,7 +657,7 @@
     min-height: 64px;
     border-radius: var(--border-radius);
     border: 2px dashed var(--accent-primary);
-    background: rgba(45, 212, 168, 0.05);
+    background: rgba(200, 149, 108, 0.05);
     color: var(--accent-primary);
     font-size: 18px;
     font-weight: 600;
@@ -668,7 +668,7 @@
 }
 
 .field-capture-btn:active {
-    background: rgba(45, 212, 168, 0.15);
+    background: rgba(200, 149, 108, 0.15);
 }
 
 /* ============================================
@@ -753,7 +753,7 @@
     height: 80px;
     border-radius: 50%;
     border: 3px solid var(--accent-primary);
-    background: rgba(45, 212, 168, 0.1);
+    background: rgba(200, 149, 108, 0.1);
     color: var(--accent-primary);
     display: flex;
     align-items: center;

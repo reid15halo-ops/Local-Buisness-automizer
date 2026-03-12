@@ -111,7 +111,7 @@
 .admin-panel-input:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(45, 212, 168, 0.15);
+    box-shadow: 0 0 0 3px rgba(200, 149, 108, 0.15);
 }
 
 .admin-panel-input::placeholder {
@@ -184,9 +184,9 @@
 }
 
 .role-admin {
-    background: rgba(45, 212, 168, 0.15);
+    background: rgba(200, 149, 108, 0.15);
     color: var(--accent-primary);
-    border: 1px solid rgba(45, 212, 168, 0.3);
+    border: 1px solid rgba(200, 149, 108, 0.3);
 }
 
 .role-developer {

@@ -510,12 +510,12 @@ class OnboardingTutorialService {
             .tutorial-tooltip {
                 position: fixed;
                 background: #0f2327;
-                border: 2px solid #2dd4a8;
+                border: 2px solid #c8956c;
                 border-radius: 12px;
                 padding: 24px;
                 max-width: 400px;
                 z-index: 9999;
-                box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 32px rgba(45, 212, 168, 0.15);
+                box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6), 0 0 32px rgba(200, 149, 108, 0.15);
                 opacity: 0;
                 transition: opacity 0.3s ease-out;
                 animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -564,7 +564,7 @@ class OnboardingTutorialService {
                 content: '';
                 display: block;
                 height: 100%;
-                background: linear-gradient(90deg, #2dd4a8, #5eecc6);
+                background: linear-gradient(90deg, #c8956c, #daa882);
                 border-radius: 2px;
                 width: 10%;
                 transition: width 0.4s ease-out;
@@ -613,16 +613,16 @@ class OnboardingTutorialService {
             }
 
             .tutorial-btn-primary {
-                background: #2dd4a8;
+                background: #c8956c;
                 color: #ffffff;
                 flex: 1.5;
                 font-weight: 600;
             }
 
             .tutorial-btn-primary:hover:not(:disabled) {
-                background: #5eecc6;
+                background: #daa882;
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(45, 212, 168, 0.3);
+                box-shadow: 0 4px 12px rgba(200, 149, 108, 0.3);
             }
 
             .tutorial-btn-primary:active:not(:disabled) {
@@ -644,7 +644,7 @@ class OnboardingTutorialService {
             /* Highlight Effect */
             .tutorial-highlight {
                 position: relative;
-                box-shadow: 0 0 0 4px rgba(45, 212, 168, 0.4), 0 0 0 8px rgba(45, 212, 168, 0.2) !important;
+                box-shadow: 0 0 0 4px rgba(200, 149, 108, 0.4), 0 0 0 8px rgba(200, 149, 108, 0.2) !important;
                 border-radius: 8px;
                 animation: pulse 2s ease-in-out infinite;
                 z-index: 9997;
@@ -652,10 +652,10 @@ class OnboardingTutorialService {
 
             @keyframes pulse {
                 0%, 100% {
-                    box-shadow: 0 0 0 4px rgba(45, 212, 168, 0.4), 0 0 0 8px rgba(45, 212, 168, 0.2);
+                    box-shadow: 0 0 0 4px rgba(200, 149, 108, 0.4), 0 0 0 8px rgba(200, 149, 108, 0.2);
                 }
                 50% {
-                    box-shadow: 0 0 0 4px rgba(45, 212, 168, 0.2), 0 0 0 12px rgba(45, 212, 168, 0.1);
+                    box-shadow: 0 0 0 4px rgba(200, 149, 108, 0.2), 0 0 0 12px rgba(200, 149, 108, 0.1);
                 }
             }
 
@@ -668,7 +668,7 @@ class OnboardingTutorialService {
                 color: #a1a1aa;
                 padding: 16px 24px;
                 border-radius: 8px;
-                border-left: 4px solid #2dd4a8;
+                border-left: 4px solid #c8956c;
                 font-size: 14px;
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
                 z-index: 10000;
