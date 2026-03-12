@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://analytics.freyaivisions.de; connect-src 'self' https://analytics.freyaivisions.de https://*.supabase.co wss://*.supabase.co; img-src 'self' data: https:; font-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://analytics.freyaivisions.de; connect-src 'self' https://analytics.freyaivisions.de https://incbhhaiiayohrjqevog.supabase.co wss://incbhhaiiayohrjqevog.supabase.co; img-src 'self' data: https:; font-src 'self'; frame-ancestors 'none'; form-action 'self';">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -49,12 +49,11 @@
         }
 
         .auth-logo .brand {
+            font-family: 'Instrument Serif', Georgia, serif;
             font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent), #3b82f6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-weight: 400;
+            color: var(--text);
+            letter-spacing: -0.02em;
         }
 
         .auth-logo p {
@@ -66,7 +65,7 @@
         .auth-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: var(--radius);
             padding: 32px;
         }
 
@@ -74,7 +73,7 @@
             display: flex;
             gap: 4px;
             background: var(--bg);
-            border-radius: 10px;
+            border-radius: var(--radius);
             padding: 4px;
             margin-bottom: 28px;
         }
@@ -84,7 +83,7 @@
             padding: 10px;
             background: transparent;
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius);
             color: var(--text-secondary);
             font-size: 14px;
             font-weight: 500;
@@ -94,7 +93,7 @@
 
         .auth-tab.active {
             background: var(--accent);
-            color: white;
+            color: #131516;
         }
 
         .auth-form { display: none; }
@@ -136,20 +135,22 @@
         .btn-submit {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, var(--accent), #4f46e5);
-            color: white;
+            background: var(--accent);
+            color: #131516;
             border: none;
             border-radius: var(--radius);
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
             font-family: inherit;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
         }
 
         .btn-submit:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+            background: var(--accent-hover);
+            box-shadow: 0 2px 8px rgba(200, 149, 108, 0.25);
         }
 
         .btn-submit:disabled {

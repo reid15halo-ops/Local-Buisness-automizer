@@ -1075,7 +1075,7 @@ textarea {
     font-size: 12px;
     padding: 4px 10px;
     background: var(--bg-dark);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     color: var(--text-secondary);
 }
 
@@ -1417,7 +1417,7 @@ textarea {
 /* KI Stunden-Schätzung */
 .ai-estimation {
     background: rgba(200, 149, 108, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(200, 149, 108, 0.2);
     border-radius: var(--border-radius-sm);
     padding: 16px;
     margin-top: 16px;
@@ -1471,7 +1471,7 @@ textarea {
     gap: 8px;
     padding: 16px;
     background: rgba(200, 149, 108, 0.1);
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    border: 1px solid rgba(200, 149, 108, 0.2);
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
@@ -1479,7 +1479,7 @@ textarea {
 }
 
 .quick-action:hover {
-    box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 4px 16px rgba(200, 149, 108, 0.2);
     border-color: var(--accent-primary);
 }
 
@@ -1543,7 +1543,6 @@ textarea {
 .ext-link:hover {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
-    transform: translateY(-1px);
 }
 
 .ext-icon {
@@ -1619,7 +1618,7 @@ textarea {
 }
 
 .suggest-item:hover {
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(200, 149, 108, 0.08);
 }
 
 .suggest-item-name {
@@ -1699,7 +1698,7 @@ textarea {
 }
 
 .material-suggest-item:hover {
-    background: rgba(139, 92, 246, 0.15);
+    background: rgba(200, 149, 108, 0.1);
 }
 
 .material-suggest-name {
@@ -1743,12 +1742,12 @@ textarea {
 
 .material-picker-item:hover {
     border-color: var(--accent-primary);
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(200, 149, 108, 0.08);
 }
 
 .material-picker-item.selected {
     border-color: var(--accent-success);
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(90, 158, 111, 0.1);
 }
 
 .material-picker-check {
@@ -3281,7 +3280,7 @@ textarea {
     padding: 4px 10px;
     background: rgba(200, 149, 108, 0.15);
     color: var(--accent-primary);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     font-size: 11px;
     margin-bottom: 8px;
 }
@@ -3553,7 +3552,7 @@ textarea {
     align-items: center;
     background: rgba(30, 41, 59, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 8px 16px;
     gap: 12px;
     transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
@@ -3902,7 +3901,7 @@ textarea {
 .datatype-card {
     background: var(--bg-card);
     border: 2px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 30px 20px;
     text-align: center;
     cursor: pointer;
@@ -3954,7 +3953,7 @@ textarea {
     flex: 1;
     padding: 8px 12px;
     background: var(--input-bg, #0f2327);
-    border: 1px solid var(--border-color, #173030);
+    border: 1px solid var(--border-color, #252830);
     border-radius: 6px;
     color: var(--text-primary, #f1f5f9);
     font-size: 14px;
@@ -4711,7 +4710,7 @@ textarea {
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     font-size: 12px;
     font-weight: 500;
 }
@@ -6201,9 +6200,9 @@ textarea {
 /* Dark theme notification styles */
 :root {
     --notification-bg-anfrage-neu: rgba(59, 130, 246, 0.1);
-    --notification-bg-angebot-akzeptiert: rgba(16, 185, 129, 0.1);
+    --notification-bg-angebot-akzeptiert: rgba(90, 158, 111, 0.1);
     --notification-bg-rechnung-ueberfaellig: rgba(239, 68, 68, 0.1);
-    --notification-bg-rechnung-bezahlt: rgba(16, 185, 129, 0.1);
+    --notification-bg-rechnung-bezahlt: rgba(90, 158, 111, 0.1);
     --notification-bg-termin-erinnerung: rgba(245, 158, 11, 0.1);
     --notification-bg-aufgabe-faellig: rgba(245, 158, 11, 0.1);
     --notification-bg-system: rgba(107, 114, 128, 0.1);
@@ -6500,7 +6499,7 @@ textarea {
     display: flex;
     gap: 4px;
     background: var(--bg-secondary, #f1f5f9);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 4px;
     margin-bottom: 20px;
 }
@@ -6592,7 +6591,7 @@ textarea {
 
 /* Camera Preview */
 .we-camera-preview {
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     overflow: hidden;
     margin-bottom: 16px;
     background: #000;
@@ -6757,7 +6756,7 @@ textarea {
     color: var(--accent-primary, #c8956c);
     padding: 2px 8px;
     background: rgba(37, 99, 235, 0.08);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
 }
 
 /* Action row */
@@ -6924,7 +6923,7 @@ textarea {
 .we-quick-entry {
     background: var(--bg-primary, #fff);
     border: 1px solid var(--border-color, #e2e8f0);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 16px;
     margin-top: 16px;
 }
@@ -7235,7 +7234,7 @@ textarea {
 .material-picker-content {
     background: var(--bg-card, #0f2327);
     border: 1px solid var(--border-color, #333);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 24px;
     max-width: 600px;
     width: 90%;
@@ -7317,7 +7316,7 @@ textarea {
     position: absolute;
     background: var(--bg-card, #0f2327);
     border: 1px solid var(--accent-primary, #c8956c);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 20px;
     max-width: 320px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -7351,7 +7350,7 @@ textarea {
 .fragebogen-dialog {
     background: var(--bg-card, #0f2327);
     border: 1px solid var(--border-color, #333);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 24px;
     max-width: 500px;
     width: 90%;

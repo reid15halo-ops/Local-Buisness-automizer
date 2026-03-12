@@ -15,7 +15,7 @@
     overflow: hidden;
     z-index: 9999;
     padding: 8px 16px;
-    background: var(--accent, #0071e3);
+    background: var(--accent, #c8956c);
     color: #fff;
     text-decoration: none;
     font-size: 14px;
@@ -916,7 +916,7 @@
     width: 48px;
     height: 48px;
     background: var(--accent-primary-light);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1490,7 +1490,7 @@ html.no-js .reveal {
 .trust-card {
     background: var(--glass-bg, rgba(255,255,255,0.03));
     border: 1px solid var(--border-color, rgba(255,255,255,0.08));
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 2rem;
     text-align: center;
 }
@@ -1689,7 +1689,7 @@ body.modal-open {
 
     .lang-modal-content {
         padding: 20px;
-        border-radius: 12px;
+        border-radius: var(--border-radius);
     }
 
     .lang-grid .lang-option {
