@@ -88,6 +88,30 @@ else
     warn "Tailscale nicht installiert"
 fi
 
+# PostgreSQL volume disk usage
+PG_VOLUME_PATH=$(docker volume inspect postgres_data --format '{{.Mountpoint}}' 2>/dev/null || echo "")
+if [[ -n "$PG_VOLUME_PATH" && -d "$PG_VOLUME_PATH" ]]; then
+    PG_SIZE=$(du -sm "$PG_VOLUME_PATH" 2>/dev/null | cut -f1 || echo "0")
+    PG_SIZE_HR=$(du -sh "$PG_VOLUME_PATH" 2>/dev/null | cut -f1 || echo "unknown")
+    if [[ "$PG_SIZE" -lt 5120 ]]; then
+        ok "PostgreSQL Daten: ${PG_SIZE_HR}"
+    elif [[ "$PG_SIZE" -lt 10240 ]]; then
+        warn "PostgreSQL Daten: ${PG_SIZE_HR} — wird groß, Pruning prüfen"
+    else
+        fail "PostgreSQL Daten: ${PG_SIZE_HR} — über 10 GB! Sofortiges Pruning nötig"
+        log "Tipp: EXECUTIONS_DATA_MAX_AGE in n8n reduzieren oder manuelle Bereinigung"
+    fi
+else
+    warn "PostgreSQL Volume nicht gefunden — kann Speicher nicht prüfen"
+fi
+
+# n8n volume disk usage
+N8N_VOLUME_PATH=$(docker volume inspect n8n_data --format '{{.Mountpoint}}' 2>/dev/null || echo "")
+if [[ -n "$N8N_VOLUME_PATH" && -d "$N8N_VOLUME_PATH" ]]; then
+    N8N_SIZE_HR=$(du -sh "$N8N_VOLUME_PATH" 2>/dev/null | cut -f1 || echo "unknown")
+    ok "n8n Daten: ${N8N_SIZE_HR}"
+fi
+
 # Firewall
 UFW_STATUS=$(ufw status 2>/dev/null | head -1 || echo "")
 if echo "$UFW_STATUS" | grep -qi "active"; then
@@ -261,11 +285,26 @@ else
     warn "ACME-Zertifikatsspeicher nicht gefunden — Traefik erstellt neue Zertifikate"
 fi
 
-# Quick TLS check on domain
+# Quick TLS check on domain + expiry warning
 if command -v openssl &>/dev/null; then
     TLS_EXPIRY=$(echo | openssl s_client -servername "${DOMAIN}" -connect "${DOMAIN}:443" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2 || echo "")
     if [[ -n "$TLS_EXPIRY" ]]; then
-        ok "TLS-Zertifikat für ${DOMAIN} gültig bis: $TLS_EXPIRY"
+        # Check days until expiry
+        EXPIRY_EPOCH=$(date -d "$TLS_EXPIRY" +%s 2>/dev/null || echo "0")
+        NOW_EPOCH=$(date +%s)
+        if [[ "$EXPIRY_EPOCH" -gt 0 ]]; then
+            DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+            if [[ "$DAYS_LEFT" -lt 7 ]]; then
+                fail "TLS-Zertifikat läuft in ${DAYS_LEFT} Tagen ab! (${TLS_EXPIRY})"
+                log "Traefik ACME Renewal prüfen: docker logs freyai-traefik | grep -i acme"
+            elif [[ "$DAYS_LEFT" -lt 14 ]]; then
+                warn "TLS-Zertifikat läuft in ${DAYS_LEFT} Tagen ab (${TLS_EXPIRY})"
+            else
+                ok "TLS-Zertifikat für ${DOMAIN} gültig bis: $TLS_EXPIRY (${DAYS_LEFT} Tage)"
+            fi
+        else
+            ok "TLS-Zertifikat für ${DOMAIN} gültig bis: $TLS_EXPIRY"
+        fi
     else
         warn "TLS-Zertifikat konnte nicht geprüft werden"
     fi

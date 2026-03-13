@@ -80,6 +80,25 @@ cleanup() {
 trap cleanup EXIT
 
 # -----------------------------------------------------------------------------
+# Notify via webhook (Slack/Telegram/Discord) – failure alerts
+# Set ALERT_WEBHOOK_URL in .env (optional, non-fatal if unset)
+# -----------------------------------------------------------------------------
+notify_webhook() {
+  local status="$1"
+  local message="$2"
+
+  local webhook_url="${ALERT_WEBHOOK_URL:-}"
+  [[ -z "$webhook_url" ]] && return 0
+
+  # Supports Slack, Discord, and generic JSON webhook format
+  curl -sS --max-time 10 \
+    -X POST "$webhook_url" \
+    -H "Content-Type: application/json" \
+    -d "{\"text\": \"[FreyAI Backup ${status}] ${message}\", \"content\": \"[FreyAI Backup ${status}] ${message}\"}" \
+    2>&1 || log_warn "Webhook notification failed (non-fatal)"
+}
+
+# -----------------------------------------------------------------------------
 # Notify Supabase – insert into notifications table
 # Called on success and failure
 # -----------------------------------------------------------------------------
@@ -253,15 +272,25 @@ run_restic_forget() {
 
 # -----------------------------------------------------------------------------
 # STEP 6 – Verify latest snapshot integrity
+# Daily: 5% subset check | 1st of month: full data integrity check
 # -----------------------------------------------------------------------------
 run_restic_check() {
-  log_info "Verifying latest snapshot integrity..."
+  local day_of_month
+  day_of_month=$(date -u +%d)
 
-  restic check \
-    --read-data-subset=5% \
-    2>&1 | tee -a "${LOG_FILE}"
-
-  log_success "Snapshot integrity verified"
+  if [[ "$day_of_month" == "01" ]]; then
+    log_info "Monthly full integrity check (1st of month)..."
+    restic check \
+      --read-data \
+      2>&1 | tee -a "${LOG_FILE}"
+    log_success "Full snapshot integrity verified (monthly)"
+  else
+    log_info "Verifying latest snapshot integrity (5% subset)..."
+    restic check \
+      --read-data-subset=5% \
+      2>&1 | tee -a "${LOG_FILE}"
+    log_success "Snapshot integrity verified (daily subset)"
+  fi
 }
 
 # -----------------------------------------------------------------------------
@@ -321,6 +350,7 @@ main() {
 DETAILS_EOF
 )
     notify_supabase "success" "Hetzner backup completed successfully" "${details}"
+    notify_webhook "SUCCESS" "Backup completed – n8n: ${n8n_size}, PG dumps: ${postgres_count}"
     log_success "====== Backup SUCCEEDED ======"
     exit 0
   else
@@ -337,6 +367,7 @@ DETAILS_EOF
 DETAILS_EOF
 )
     notify_supabase "failure" "Hetzner backup FAILED – check logs on ${HOSTNAME_SHORT}" "${details}"
+    notify_webhook "FAILURE" "Backup FAILED on ${HOSTNAME_SHORT} – errors: ${BACKUP_ERRORS[*]:-unknown}"
     log_error "====== Backup FAILED – check ${LOG_FILE} ======"
     exit 1
   fi

@@ -135,14 +135,19 @@ services:
       - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
       - "traefik.http.routers.n8n.service=n8n-svc"
       - "traefik.http.services.n8n-svc.loadbalancer.server.port=5678"
-      # Security headers middleware
-      - "traefik.http.routers.n8n.middlewares=n8n-headers"
+      # Security headers + rate limiting middleware
+      - "traefik.http.routers.n8n.middlewares=n8n-headers,n8n-ratelimit"
       - "traefik.http.middlewares.n8n-headers.headers.stsSeconds=31536000"
       - "traefik.http.middlewares.n8n-headers.headers.stsIncludeSubdomains=true"
       - "traefik.http.middlewares.n8n-headers.headers.forceSTSHeader=true"
       - "traefik.http.middlewares.n8n-headers.headers.frameDeny=true"
       - "traefik.http.middlewares.n8n-headers.headers.contentTypeNosniff=true"
       - "traefik.http.middlewares.n8n-headers.headers.browserXssFilter=true"
+      # Rate limiting – per-IP throttle (env: RATE_LIMIT_AVERAGE, RATE_LIMIT_BURST)
+      - "traefik.http.middlewares.n8n-ratelimit.ratelimit.average=${RATE_LIMIT_AVERAGE:-100}"
+      - "traefik.http.middlewares.n8n-ratelimit.ratelimit.burst=${RATE_LIMIT_BURST:-50}"
+      - "traefik.http.middlewares.n8n-ratelimit.ratelimit.period=1m"
+      - "traefik.http.middlewares.n8n-ratelimit.ratelimit.sourcecriterion.ipstrategy.depth=1"
       # Watchtower managed
       - "com.centurylinklabs.watchtower.enable=true"
 
