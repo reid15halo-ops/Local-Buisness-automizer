@@ -551,38 +551,8 @@ function renderCalendar() {
 }
 
 function initCalendar() {
-    document.getElementById('btn-prev-week')?.addEventListener('click', () => {
-        calendarStartDate.setDate(calendarStartDate.getDate() - 7);
-        renderCalendar();
-    });
-
-    document.getElementById('btn-next-week')?.addEventListener('click', () => {
-        calendarStartDate.setDate(calendarStartDate.getDate() + 7);
-        renderCalendar();
-    });
-
-    document.getElementById('btn-today')?.addEventListener('click', () => {
-        calendarStartDate = new Date();
-        renderCalendar();
-    });
-
-    document.getElementById('btn-neuer-termin')?.addEventListener('click', () => {
-        const title = prompt('Termintitel:');
-        if (title) {
-            const dateStr = prompt('Datum (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
-            const timeStr = prompt('Uhrzeit (HH:MM):', '09:00');
-            if (dateStr && timeStr) {
-                window.calendarService.addAppointment({
-                    title: title,
-                    date: dateStr,
-                    startTime: timeStr,
-                    endTime: window.calendarService.minutesToTime(window.calendarService.timeToMinutes(timeStr) + 60)
-                });
-                renderCalendar();
-                showToast('Termin erstellt', 'success');
-            }
-        }
-    });
+    // Calendar buttons (btn-prev-week, btn-next-week, btn-today, btn-neuer-termin)
+    // are now handled by calendarUIService.mount() — legacy handlers removed
 }
 
 // ============================================

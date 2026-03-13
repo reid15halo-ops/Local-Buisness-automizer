@@ -1188,5 +1188,12 @@ window.removeChecklistItem = function(auftragId, itemId) {
         renderChecklisteTab(auftrag);
     }
 };
+window.removeStuecklisteRow = function(itemId) {
+    const rows = document.getElementById('stueckliste-rows');
+    if (!rows) {return;}
+    const row = rows.querySelector(`[data-idx="${itemId}"]`)?.closest('.stueckliste-row')
+        || rows.querySelector(`.btn-remove-sl[data-idx="${itemId}"]`)?.closest('.stueckliste-row');
+    if (row) {row.remove();}
+};
 
 })();

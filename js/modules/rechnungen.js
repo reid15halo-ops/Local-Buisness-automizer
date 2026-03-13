@@ -1275,4 +1275,39 @@ window.sendMahnungClick = sendMahnungClick;
 window.renderAboRechnungen = renderAboRechnungen;
 window.openAboFormular = openAboFormular;
 
+// Global handlers referenced by event-handlers.js
+window.generateEInvoice = function(rechnungId) {
+    const rechnung = store.rechnungen.find(r => r.id === rechnungId);
+    if (rechnung) {handleEInvoiceExport(rechnung, 'xrechnung');}
+};
+window.markInvoiceAsPaid = async function(rechnungId) {
+    const rechnung = store.rechnungen.find(r => r.id === rechnungId);
+    if (!rechnung) {return;}
+    try {
+        if (window.invoiceService?.markAsPaid) {
+            await window.invoiceService.markAsPaid(rechnungId, { method: 'Überweisung' });
+        } else {
+            rechnung.status = 'bezahlt';
+            rechnung.paidAt = new Date().toISOString();
+            rechnung.bezahltBetrag = rechnung.brutto;
+            saveStore();
+            addActivity('✅', `Rechnung ${rechnung.id} als bezahlt markiert`);
+        }
+        renderRechnungen();
+        window.DashboardModule?.updateDashboard?.();
+        showToast('Rechnung als bezahlt markiert ✓', 'success');
+    } catch (err) {
+        showToast('Fehler: ' + (err.message || 'Unbekannt'), 'error');
+    }
+};
+window.viewQuoteFromEmail = function(angebotId) {
+    if (window.AngeboteModule?.showAngebotDetail) {
+        window.AngeboteModule.showAngebotDetail(angebotId);
+    } else if (window.showAngebotDetail) {
+        window.showAngebotDetail(angebotId);
+    } else {
+        window.navigationController?.navigateTo('angebote');
+    }
+};
+
 })();
