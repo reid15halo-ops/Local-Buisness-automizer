@@ -17,6 +17,25 @@ const {
 // Initialization
 // ============================================
 async function init() {
+    // Always initialize event delegation and UI handlers — even if setup is incomplete
+    // so that navigation, modals, and click handlers work while the wizard is open
+    window.AnfragenModule?.initAnfrageForm?.();
+    window.AngeboteModule?.initAngebotForm?.();
+    window.AngeboteModule?.initAngeboteFilters?.();
+    window.AngeboteModule?.initAngeboteEventDelegation?.();
+    window.AuftraegeModule?.initAuftragForm?.();
+    window.AuftraegeModule?.initAuftragDetailHandlers?.();
+    window.RechnungenModule?.initRechnungActions?.();
+    window.RechnungenModule?.initRechnungenFilters?.();
+    initMaterial();
+    initSettings();
+    initAutomationSettings();
+    initMahnwesen();
+    initBuchhaltung();
+    initQuickActions();
+    window.ModalsModule?.initModals?.();
+    window.WareneingangModule?.initWareneingang?.();
+
     // Check if setup wizard needs to run
     if (window.setupWizard && !window.setupWizard.isSetupComplete()) {
         const missing = window.setupWizard.getMissingKeys();
@@ -34,24 +53,6 @@ async function init() {
 
     // Await store service load
     await window.storeService.load();
-
-    // Initialize modules (with null guards for load-order safety)
-    window.AnfragenModule?.initAnfrageForm?.();
-    window.AngeboteModule?.initAngebotForm?.();
-    window.AngeboteModule?.initAngeboteFilters?.();
-    window.AngeboteModule?.initAngeboteEventDelegation?.();
-    window.AuftraegeModule?.initAuftragForm?.();
-    window.AuftraegeModule?.initAuftragDetailHandlers?.();
-    window.RechnungenModule?.initRechnungActions?.();
-    window.RechnungenModule?.initRechnungenFilters?.();
-    initMaterial();
-    initSettings();
-    initAutomationSettings();
-    initMahnwesen();
-    initBuchhaltung();
-    initQuickActions();
-    window.ModalsModule?.initModals?.();
-    window.WareneingangModule?.initWareneingang?.();
 
     // Initialize automation API
     window.automationAPI?.init();
