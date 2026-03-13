@@ -96,7 +96,7 @@ class FragebogenImportUI {
                 <p style="font-size:13.5px; color:#4a4a6a; line-height:1.6; margin:0 0 20px;">
                     ${esc('Bitte fülle zuerst den Betriebs-Aufnahmebogen aus und klicke dort auf "In App importieren".')}
                 </p>
-                <a href="fragebogen-beta-v1.html" target="_blank"
+                <a href="fragebogen.html" target="_blank"
                    style="
                        display:inline-block;
                        background:#c8956c;

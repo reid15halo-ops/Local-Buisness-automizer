@@ -1,0 +1,104 @@
+{
+  "skill_name": "boomer-ux",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a customer creation form for our Handwerker app. The form should let users add a new Kunde with name, address, phone, and email.",
+      "expected_output": "A form with large input fields (44px+), German labels above inputs, 16px+ font, big primary button with German verb label, progressive disclosure for optional fields",
+      "assertions": [
+        {
+          "name": "german-labels-only",
+          "description": "All visible UI text must be in German, no English words",
+          "type": "manual"
+        },
+        {
+          "name": "touch-targets-48px",
+          "description": "All interactive elements must have min 48x48px touch targets",
+          "type": "manual"
+        },
+        {
+          "name": "labels-above-inputs",
+          "description": "Form labels must appear above input fields, not as placeholders only",
+          "type": "manual"
+        },
+        {
+          "name": "font-size-minimum",
+          "description": "Body text and labels must be 16px or larger",
+          "type": "manual"
+        },
+        {
+          "name": "action-verb-button",
+          "description": "Primary button uses a German verb like 'Kunde anlegen' not generic 'OK' or 'Submit'",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Build an invoice status page that shows all invoices with their payment status. Include filters for paid, unpaid, and overdue. Add the ability to mark an invoice as paid.",
+      "expected_output": "Status page with icon+color+text status indicators, confirmation dialog before marking paid, friendly German empty states, no jargon",
+      "assertions": [
+        {
+          "name": "status-triple-indicator",
+          "description": "Status must use icon + color + text together, never color alone",
+          "type": "manual"
+        },
+        {
+          "name": "confirmation-before-paid",
+          "description": "Marking invoice as paid must show a confirmation dialog with amount and customer name",
+          "type": "manual"
+        },
+        {
+          "name": "no-english-no-jargon",
+          "description": "No English words, no technical jargon (Dashboard, Filter, Status -> Übersicht, Anzeigen, Zustand)",
+          "type": "manual"
+        },
+        {
+          "name": "empty-state-friendly",
+          "description": "Empty state shows a friendly German message with a suggested action, not just 'No data'",
+          "type": "manual"
+        },
+        {
+          "name": "confirm-dialog-pattern",
+          "description": "Confirmation dialog has Cancel on left (muted), action verb on right (colored), shows what will happen",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Add an error handling screen for when the network connection drops while the user is creating a quote (Angebot). The user should not lose their data.",
+      "expected_output": "Friendly German error message explaining what happened, no technical jargon, auto-save draft, retry button, back to overview option",
+      "assertions": [
+        {
+          "name": "plain-german-error",
+          "description": "Error message is in plain German, explains what happened AND what to do next",
+          "type": "manual"
+        },
+        {
+          "name": "no-technical-details",
+          "description": "No stack traces, error codes, 'undefined', 'null', or technical terms shown to user",
+          "type": "manual"
+        },
+        {
+          "name": "data-preserved",
+          "description": "User input is preserved/auto-saved, message confirms data is not lost",
+          "type": "manual"
+        },
+        {
+          "name": "recovery-actions",
+          "description": "Provides clear recovery actions: retry button and/or back to overview",
+          "type": "manual"
+        },
+        {
+          "name": "no-user-blame",
+          "description": "Error message does not blame the user for the failure",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

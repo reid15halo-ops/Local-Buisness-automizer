@@ -63,7 +63,9 @@
 │   └── guides/                 Setup guides, UX patterns
 │
 ├── .agent/                     Agent skill definitions
-├── .skills/                    Custom skills (boomer-ux, question)
+├── .skills/                    Custom skills (boomer-ux, question, frontend-design, ui-ux-pro-max, skill-creator, marketing)
+│   └── <skill>/evals/          Eval test cases per skill (Skills 2.0)
+├── .claude/loops.md            Loop & scheduled task recipes
 └── .github/workflows/          CI/CD (ci.yml, security.yml)
 ```
 
@@ -124,6 +126,27 @@ If ANY reviewer flags an issue -> back to Execution Agent. Loop until all 4 appr
 - Feature branches: feature/<name>
 - Commit messages: conventional commits (feat:, fix:, chore:)
 - Never push directly to main without review loop completion
+
+## Skills 2.0 — Eval & Testing Workflow
+
+All skills have eval test cases in `<skill>/evals/evals.json`. To test and improve a skill:
+
+1. **Run evals**: Use the skill-creator skill (`/skill-creator`) to run test cases against any skill
+2. **Review results**: The skill-creator generates an HTML viewer for qualitative + quantitative review
+3. **Iterate**: Provide feedback, skill gets improved, re-run evals until quality is consistent
+4. **A/B test**: Compare with-skill vs without-skill runs to measure actual value added
+5. **Optimize triggers**: Run description optimization to improve when skills auto-trigger
+
+Skills with evals: `boomer-ux`, `frontend-design`, `ui-ux-pro-max`, `question`, `marketing`
+
+### Loops & Automation
+
+See `.claude/loops.md` for ready-to-use `/loop` recipes:
+
+- Development loops (error watching, git monitoring, CSS consistency)
+- Operations loops (VPS health, Supabase monitoring)
+- Business loops (overdue invoices, revenue snapshots)
+- Scheduled task definitions (for Claude Desktop)
 
 ## Environment Variables
 

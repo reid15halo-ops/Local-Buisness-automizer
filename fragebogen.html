@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://analytics.freyaivisions.de; connect-src 'self' https://analytics.freyaivisions.de; img-src 'self' data: blob:; font-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests;">
+    <title>FreyAI Visions — Betriebs-Aufnahmebogen</title>
+    <style>
+        @font-face {
+            font-family: 'Inter';
+            src: local('Inter'), local('Inter-Regular');
+            font-weight: 100 900;
+            font-display: swap;
+        }
+
+        :root {
+            --bg-dark: #131516;
+            --bg-card: #1c1f22;
+            --bg-input: #1a1d20;
+            --bg-input-focus: #282b30;
+            --bg-hover: #252830;
+            --bg-muted: #222528;
+            --accent: #c8956c;
+            --accent-hover: #daa882;
+            --accent-light: rgba(200, 149, 108, 0.12);
+            --accent-alpha: rgba(200, 149, 108, 0.06);
+            --success: #5a9e6f;
+            --success-light: rgba(90, 158, 111, 0.12);
+            --danger: #c45c5c;
+            --danger-light: rgba(196, 92, 92, 0.08);
+            --warning: #c9a04f;
+            --text-primary: #e8e4df;
+            --text-secondary: #9a958e;
+            --text-muted: #706b64;
+            --border: #2a2d31;
+            --border-focus: #c8956c;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.25);
+            --shadow-md: 0 3px 10px rgba(0,0,0,0.3);
+            --shadow-lg: 0 6px 20px rgba(0,0,0,0.4);
+            --transition: 0.25s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 99;
+            opacity: 0.018;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 256px 256px;
+        }
+
+        /* ---- Layout ---- */
+        .fragebogen-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 24px 16px 120px;
+            position: relative;
+        }
+
+        /* ---- Header ---- */
+        .fb-header {
+            text-align: center;
+            padding: 48px 24px 40px;
+            margin-bottom: 32px;
+        }
+        .fb-brand {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+        .fb-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .fb-badge {
+            display: inline-block;
+            background: var(--accent-light);
+            border: 1px solid rgba(200,149,108,0.2);
+            border-radius: 20px;
+            padding: 4px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.04em;
+            margin-bottom: 20px;
+        }
+        .fb-intro {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: 540px;
+            margin: 0 auto;
+        }
+        .fb-intro strong { color: var(--text-primary); }
+
+        /* ---- Progress Bar ---- */
+        .progress-container {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--bg-dark);
+            padding: 16px 0 12px;
+            margin-bottom: 24px;
+        }
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .progress-step-label {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .progress-counter {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+        .progress-dots {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 2px;
+        }
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all var(--transition);
+            cursor: pointer;
+        }
+        .progress-dot.active { background: var(--accent); transform: scale(1.3); }
+        .progress-dot.done { background: var(--success); }
+
+        /* ---- Step Card ---- */
+        .step {
+            display: none;
+            animation: fadeInStep 0.3s ease;
+        }
+        .step.active { display: block; }
+
+        @keyframes fadeInStep {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .step-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+        }
+        .step-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        /* ---- Questions ---- */
+        .question {
+            margin-bottom: 28px;
+        }
+        .question:last-child { margin-bottom: 0; }
+
+        .q-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        .q-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 24px;
+            height: 24px;
+            background: var(--accent);
+            color: #131516;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 800;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .q-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: -4px 0 10px 34px;
+            font-style: italic;
+        }
+        .q-optional {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        /* ---- Inputs ---- */
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        textarea,
+        select {
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            width: 100%;
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-input-focus);
+            box-shadow: 0 0 0 3px rgba(200,149,108,0.1);
+        }
+        input::placeholder, textarea::placeholder { color: var(--text-muted); }
+        textarea { resize: vertical; min-height: 72px; }
+        select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' fill='none' stroke='%239a958e' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+        select option { background: var(--bg-card); color: var(--text-primary); }
+
+        .field-grid { display: grid; gap: 12px; }
+        .field-grid-2 { grid-template-columns: 1fr 1fr; }
+        .field-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .field-row { display: flex; gap: 10px; align-items: center; }
+        .field-label { font-size: 13px; color: var(--text-secondary); white-space: nowrap; min-width: 100px; }
+
+        .inline-input {
+            border: none !important;
+            border-bottom: 1px solid var(--border) !important;
+            border-radius: 0 !important;
+            background: transparent !important;
+            padding: 2px 4px !important;
+            width: auto !important;
+            min-width: 160px;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .inline-input:focus { border-bottom-color: var(--accent) !important; box-shadow: none !important; }
+
+        /* ---- Options (Radio/Checkbox) ---- */
+        .option-list { display: flex; flex-direction: column; gap: 6px; }
+        .option-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid transparent;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .option-item:hover { background: var(--bg-hover); border-color: var(--border); }
+        .option-item.selected { background: var(--accent-light); border-color: rgba(200,149,108,0.25); }
+        .option-item input[type="radio"],
+        .option-item input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+        .option-item span { font-size: 14px; color: var(--text-primary); line-height: 1.5; }
+
+        /* ---- Rate Grid ---- */
+        .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 400px; }
+        .rate-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+        .rate-item input { width: 80px; text-align: right; padding: 8px 10px; }
+        .rate-suffix { font-size: 13px; color: var(--text-muted); }
+
+        /* ---- Table ---- */
+        .ablage-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .ablage-table th {
+            text-align: center; padding: 8px 4px;
+            font-size: 11px; font-weight: 700; color: var(--accent);
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+        }
+        .ablage-table th:first-child { text-align: left; }
+        .ablage-table td { padding: 10px 4px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+        .ablage-table td:first-child { text-align: left; font-weight: 500; color: var(--text-primary); }
+        .ablage-table tr:last-child td { border-bottom: none; }
+        .ablage-table input[type="radio"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+
+        /* ---- Note / Info ---- */
+        .note {
+            background: var(--accent-alpha);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* ---- Separator ---- */
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 28px 0;
+        }
+
+        /* ---- Navigation ---- */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 50;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+        }
+        .nav-bar-inner {
+            max-width: 720px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-primary {
+            background: var(--accent);
+            color: #131516;
+        }
+        .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover:not(:disabled) { background: var(--bg-hover); color: var(--text-primary); border-color: var(--text-muted); }
+        .btn-sm { padding: 7px 16px; font-size: 13px; }
+
+        .nav-autosave {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .save-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ---- Time Calculator ---- */
+        .time-calc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .time-calc-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+        .time-calc-value {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        .time-calc-unit {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .time-calc-detail {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+
+        /* ---- Completion Screen ---- */
+        .completion {
+            text-align: center;
+            padding: 48px 24px;
+        }
+        .completion-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--success-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 28px;
+        }
+        .completion h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        .completion p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+        .completion-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .import-status {
+            display: none;
+            font-size: 13px;
+            margin-top: 16px;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        /* ---- DSGVO ---- */
+        .dsgvo-box {
+            background: var(--bg-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+        .dsgvo-box label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        .dsgvo-box input[type="checkbox"] {
+            width: 16px; height: 16px;
+            accent-color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ---- Print ---- */
+        @media print {
+            body { background: #fff; color: #111; }
+            body::before { display: none; }
+            .fragebogen-container { padding: 0; max-width: 100%; }
+            .progress-container, .nav-bar { display: none !important; }
+            .step { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+            .step-card { background: #fff; border: 1px solid #ddd; box-shadow: none; padding: 24px; }
+            .step-title { color: #111; }
+            .step-subtitle { color: #666; }
+            .q-label { color: #111; }
+            .q-num { background: #333; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            input, textarea, select { background: #f8f8f8 !important; border-color: #ccc !important; color: #111 !important; }
+            .option-item span { color: #111; }
+            .option-item.selected { background: #f0f0f0 !important; border-color: #999 !important; }
+            .fb-header { padding: 24px 0; }
+            .fb-brand { color: #333; }
+            .fb-header h1 { color: #111; }
+            .time-calc { border-color: #ddd; background: #f8f8f8; }
+            .time-calc-value { color: #333; }
+            .note { background: #f8f8f8; border-color: #999; color: #666; }
+            .ablage-table td, .ablage-table th { color: #111; }
+        }
+
+        /* ---- Mobile ---- */
+        @media (max-width: 640px) {
+            .fb-header { padding: 32px 16px; }
+            .fb-header h1 { font-size: 22px; }
+            .step-card { padding: 24px 20px; }
+            .field-grid-2 { grid-template-columns: 1fr; }
+            .field-grid-3 { grid-template-columns: 1fr; }
+            .rate-grid { grid-template-columns: 1fr; }
+            .field-row { flex-direction: column; align-items: flex-start; }
+            .field-label { min-width: auto; }
+            .ablage-table { font-size: 11px; }
+            .ablage-table th, .ablage-table td { padding: 6px 2px; }
+            .time-calc-value { font-size: 32px; }
+            .nav-bar { padding: 12px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="fragebogen-container">
+
+    <!-- HEADER -->
+    <div class="fb-header">
+        <div class="fb-brand">FreyAI Visions</div>
+        <h1>Betriebs-Aufnahmebogen</h1>
+        <div class="fb-badge">Vertraulich</div>
+        <p class="fb-intro">
+            Bevor du loslegst, nehme ich mir ein paar Minuten, um zu verstehen wie dein Betrieb heute tickt.
+            So kann ich FreyAI direkt auf dich einstellen — <strong>du fängst nicht bei Null an</strong>.
+        </p>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-container" id="progressContainer">
+        <div class="progress-info">
+            <span class="progress-step-label" id="progressLabel">Schritt 1: Dein Betrieb</span>
+            <span class="progress-counter" id="progressCounter">1 / 8</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 12.5%"></div>
+        </div>
+        <div class="progress-dots" id="progressDots"></div>
+    </div>
+
+    <!-- ========== STEP 1: BETRIEB ========== -->
+    <div class="step active" data-step="1">
+        <div class="step-card">
+            <div class="step-title">Dein Betrieb</div>
+            <div class="step-subtitle">Diese Angaben werden direkt in die App übernommen — Briefkopf, Rechnungen, Angebote</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">1</span> Firmenname / Betriebsname</label>
+                <input type="text" name="firmenname" placeholder="z.B. Elektro Müller GmbH" data-required>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">2</span> Dein Name (Inhaber / Ansprechpartner)</label>
+                <input type="text" name="inhaber" placeholder="Vor- und Nachname" data-required>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">3</span> Gewerk / Branche</label>
+                <input type="text" name="gewerk" placeholder="z.B. Elektriker, Schreiner, Maler, Sanitär …" data-required>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">4</span> Rechtsform</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="rechtsform" value="einzelunternehmer"><span>Einzelunternehmer / Selbständig</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="gbr"><span>GbR</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="gmbh"><span>GmbH</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="ug"><span>UG</span></label>
+                    <label class="option-item"><input type="radio" name="rechtsform" value="sonstige"><span>Sonstiges: <input class="inline-input" type="text" name="rechtsform_sonstige" placeholder="Rechtsform …"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">5</span> Betriebsadresse</label>
+                <div class="field-grid" style="max-width:520px">
+                    <input type="text" name="strasse" placeholder="Straße & Hausnummer">
+                    <div class="field-grid field-grid-2">
+                        <input type="text" name="plz" placeholder="PLZ">
+                        <input type="text" name="ort" placeholder="Ort">
+                    </div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">6</span> Kontakt</label>
+                <div class="field-grid" style="max-width:480px">
+                    <div class="field-row"><span class="field-label">Telefon</span><input type="tel" name="telefon" placeholder="+49 …"></div>
+                    <div class="field-row"><span class="field-label">E-Mail</span><input type="email" name="email" placeholder="info@betrieb.de"></div>
+                    <div class="field-row"><span class="field-label">Website</span><input type="text" name="website" placeholder="www.betrieb.de (optional)"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">7</span> Steuernummer</label>
+                <input type="text" name="steuernummer" placeholder="123/456/78900" style="max-width:320px">
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">8</span> USt-ID <span class="q-optional">(falls vorhanden)</span></label>
+                <input type="text" name="ust_id" placeholder="DE 123456789" style="max-width:320px">
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">9</span> Kleinunternehmer nach §19 UStG?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="kleinunternehmer" value="ja"><span>Ja — ich weise keine Mehrwertsteuer aus</span></label>
+                    <label class="option-item"><input type="radio" name="kleinunternehmer" value="nein"><span>Nein — ich nutze 19 % / 7 % MwSt.</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">10</span> IBAN für Rechnungen</label>
+                <div class="field-grid" style="max-width:480px">
+                    <input type="text" name="iban" placeholder="DE 00 0000 0000 0000 0000 00">
+                    <div class="field-row"><span class="field-label">BIC / Bank</span><input type="text" name="bic" placeholder="XXXXDEXX / Sparkasse …"></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">11</span> Wie viele Personen arbeiten im Betrieb? <span class="q-optional">(inkl. dir)</span></label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="1"><span>Nur ich</span></label>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="2-5"><span>2–5</span></label>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="6-15"><span>6–15</span></label>
+                    <label class="option-item"><input type="radio" name="mitarbeiter" value="15+"><span>Mehr als 15</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 2: RECHNUNGEN ========== -->
+    <div class="step" data-step="2">
+        <div class="step-card">
+            <div class="step-title">Rechnungen — so läuft es heute</div>
+            <div class="step-subtitle">Damit wir Rechnungsvorlage, Steuersätze und Zahlungsbedingungen richtig einstellen</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">12</span> Womit schreibst du aktuell deine Rechnungen?</label>
+                <div class="q-hint">Mehrfachauswahl möglich</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q12a"><span>Word / LibreOffice (Vorlage)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12b"><span>Excel-Tabelle</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12c"><span>Von Hand / Vordrucke</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12d"><span>DATEV über Steuerberater</span></label>
+                    <label class="option-item"><input type="checkbox" name="q12e"><span>Software: <input class="inline-input" type="text" name="q12e_text" placeholder="Welche?"></span></label>
+                    <label class="option-item"><input type="checkbox" name="q12f"><span>Ich schreibe keine Rechnungen / läuft anders: <input class="inline-input" type="text" name="q12f_text" placeholder="Wie?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">13</span> Wie viele Rechnungen schreibst du pro Monat?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q13" value="<10"><span>Unter 10</span></label>
+                    <label class="option-item"><input type="radio" name="q13" value="10-30"><span>10–30</span></label>
+                    <label class="option-item"><input type="radio" name="q13" value="30-60"><span>30–60</span></label>
+                    <label class="option-item"><input type="radio" name="q13" value=">60"><span>Mehr als 60</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">14</span> Wie lange sitzt du ungefähr für eine Rechnung?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q14" value="<15"><span>Unter 15 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q14" value="15-30"><span>15–30 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q14" value="30-60"><span>30–60 Minuten</span></label>
+                    <label class="option-item"><input type="radio" name="q14" value=">60"><span>Über 1 Stunde</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">15</span> Was steht auf einer typischen Rechnung?</label>
+                <div class="q-hint">Alles ankreuzen, was du verwendest</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q15a"><span>Arbeitszeit (Stunden × Stundenlohn)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15b"><span>Pauschalpreise (Festpreis pro Leistung)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15c"><span>Material (einzeln aufgelistet)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15d"><span>Material (als Pauschale)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15e"><span>Fahrtkosten</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15f"><span>Auslagen / Fremdleistungen</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15g"><span>Aufmaß-Positionen (m², lfm, Stück …)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q15h"><span>Sonstiges: <input class="inline-input" type="text" name="q15h_text" placeholder="Was noch?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">16</span> Welche Stundensätze verwendest du? <span class="q-optional">(falls zutreffend)</span></label>
+                <div class="rate-grid">
+                    <div class="rate-item"><span>Geselle</span><input type="text" name="satz_geselle" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                    <div class="rate-item"><span>Meister / du</span><input type="text" name="satz_meister" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                    <div class="rate-item"><span>Auszubildender</span><input type="text" name="satz_azubi" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                    <div class="rate-item"><span>Notdienst</span><input type="text" name="satz_notdienst" placeholder="0"><span class="rate-suffix">€/h</span></div>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">17</span> Standardzahlungsziel?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q17" value="sofort"><span>Sofort / bei Übergabe</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="7"><span>7 Tage</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="14"><span>14 Tage</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="30"><span>30 Tage</span></label>
+                    <label class="option-item"><input type="radio" name="q17" value="individuell"><span>Individuell: <input class="inline-input" type="text" name="q17_text" placeholder="z.B. 21 Tage" style="min-width:100px"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">18</span> Bietest du Skonto an?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q18" value="nein"><span>Nein</span></label>
+                    <label class="option-item"><input type="radio" name="q18" value="ja"><span>Ja: <input class="inline-input" type="text" name="q18_pct" placeholder="2" style="min-width:40px;width:40px">% bei Zahlung innerhalb von <input class="inline-input" type="text" name="q18_tage" placeholder="10" style="min-width:40px;width:40px"> Tagen</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 3: ANGEBOTE & KUNDEN ========== -->
+    <div class="step" data-step="3">
+        <div class="step-card">
+            <div class="step-title">Angebote & Kundenverwaltung</div>
+            <div class="step-subtitle">Angebots-Workflow und Kundendaten-Import vorbereiten</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">19</span> Schreibst du Angebote, bevor du einen Auftrag annimmst?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q21" value="immer"><span>Ja, immer</span></label>
+                    <label class="option-item"><input type="radio" name="q21" value="manchmal"><span>Manchmal / bei größeren Jobs</span></label>
+                    <label class="option-item"><input type="radio" name="q21" value="selten"><span>Selten / kaum</span></label>
+                    <label class="option-item"><input type="radio" name="q21" value="nein"><span>Nein, wir einigen uns mündlich</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">20</span> Womit erstellst du Angebote? <span class="q-optional">(falls zutreffend)</span></label>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q22a"><span>Word / LibreOffice</span></label>
+                    <label class="option-item"><input type="checkbox" name="q22b"><span>Excel</span></label>
+                    <label class="option-item"><input type="checkbox" name="q22c"><span>Gleiche Software wie Rechnungen: <input class="inline-input" type="text" name="q22c_text" placeholder="Name?" style="min-width:120px"></span></label>
+                    <label class="option-item"><input type="checkbox" name="q22d"><span>Von Hand</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">21</span> Wie verschickst du Rechnungen und Angebote?</label>
+                <div class="q-hint">Mehrfachauswahl möglich</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q19a"><span>Per Post (Papier)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19b"><span>Per E-Mail (PDF)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19c"><span>Per WhatsApp</span></label>
+                    <label class="option-item"><input type="checkbox" name="q19d"><span>Ich übergebe sie persönlich</span></label>
+                </div>
+            </div>
+
+            <hr class="separator">
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">22</span> Wo sind deine Kundendaten gespeichert?</label>
+                <div class="q-hint">Mehrfachauswahl möglich</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q25a"><span>Im Handy (Kontakte-App)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25b"><span>Auf Papier / Karteikarten</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25c"><span>Excel- / Tabellendatei</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25d"><span>In meiner Rechnungssoftware</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25e"><span>Im Kopf / gar nicht strukturiert</span></label>
+                    <label class="option-item"><input type="checkbox" name="q25f"><span>CRM-System: <input class="inline-input" type="text" name="q25f_text" placeholder="Welches?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">23</span> Wie viele aktive Kunden hast du ungefähr?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q26" value="<20"><span>Unter 20</span></label>
+                    <label class="option-item"><input type="radio" name="q26" value="20-100"><span>20–100</span></label>
+                    <label class="option-item"><input type="radio" name="q26" value="100-500"><span>100–500</span></label>
+                    <label class="option-item"><input type="radio" name="q26" value=">500"><span>Über 500</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">24</span> Hast du eine exportierbare Kundenliste? <span class="q-optional">(z.B. Excel, CSV)</span></label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q27" value="ja-digital"><span>Ja, könnte ich bereitstellen</span></label>
+                    <label class="option-item"><input type="radio" name="q27" value="ja-papier"><span>Ja, aber nur als Papierliste</span></label>
+                    <label class="option-item"><input type="radio" name="q27" value="nein"><span>Nein</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">25</span> Trennst du Privat- und Gewerbekunden?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q28" value="ja"><span>Ja</span></label>
+                    <label class="option-item"><input type="radio" name="q28" value="nein"><span>Nein, alles gemischt</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 4: MAHNWESEN & BUCHHALTUNG ========== -->
+    <div class="step" data-step="4">
+        <div class="step-card">
+            <div class="step-title">Mahnwesen & Buchhaltung</div>
+            <div class="step-subtitle">Mahnstufen, Fristen, DATEV-Export und Steuerberater-Schnittstelle</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">26</span> Wie oft zahlen Kunden zu spät?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q29" value="selten"><span>Selten — unter 10 %</span></label>
+                    <label class="option-item"><input type="radio" name="q29" value="manchmal"><span>Manchmal — 10–30 %</span></label>
+                    <label class="option-item"><input type="radio" name="q29" value="oft"><span>Oft — über 30 %</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">27</span> Was machst du, wenn eine Rechnung nicht bezahlt wird?</label>
+                <div class="q-hint">Mehrfachauswahl möglich</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q30a"><span>Ich rufe an</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30b"><span>WhatsApp / E-Mail Erinnerung</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30c"><span>Formelle Mahnung (Brief / PDF)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30d"><span>Ich vergesse es / mache nichts</span></label>
+                    <label class="option-item"><input type="checkbox" name="q30e"><span>Inkasso / Anwalt</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">28</span> Wie viel Geld steckt ungefähr in offenen / überfälligen Rechnungen?</label>
+                <div class="field-row" style="max-width:280px">
+                    <span class="field-label">Ca.</span>
+                    <input type="text" name="q32_offen" placeholder="0">
+                    <span class="field-label" style="min-width:auto">€</span>
+                </div>
+                <div class="note">Vertraulich — hilft, Mahnstufen und Eskalationsfristen richtig einzustellen.</div>
+            </div>
+
+            <hr class="separator">
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">29</span> Wer macht deine Buchhaltung?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q42" value="ich"><span>Ich selbst</span></label>
+                    <label class="option-item"><input type="radio" name="q42" value="familie"><span>Meine Frau / Familie</span></label>
+                    <label class="option-item"><input type="radio" name="q42" value="stb"><span>Steuerberater: <input class="inline-input" type="text" name="q42_stb" placeholder="Name / Kanzlei …"></span></label>
+                    <label class="option-item"><input type="radio" name="q42" value="buchhalter"><span>Externer Buchhalter</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">30</span> Nutzt du DATEV?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q43" value="direkt"><span>Ja, direkt</span></label>
+                    <label class="option-item"><input type="radio" name="q43" value="stb"><span>Mein Steuerberater nutzt DATEV, ich liefere Belege</span></label>
+                    <label class="option-item"><input type="radio" name="q43" value="nein"><span>Nein</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">31</span> Wie übergibst du Belege an deinen Steuerberater?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q44" value="physisch"><span>Physisch (Ordner, Briefumschlag)</span></label>
+                    <label class="option-item"><input type="radio" name="q44" value="email"><span>Per E-Mail / Upload-Portal</span></label>
+                    <label class="option-item"><input type="radio" name="q44" value="datev-online"><span>DATEV Unternehmen Online</span></label>
+                    <label class="option-item"><input type="radio" name="q44" value="unstrukturiert"><span>Gar nicht strukturiert</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">32</span> Welche Steuerform nutzt du?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q45" value="euer"><span>EÜR (Einnahmen-Überschuss-Rechnung)</span></label>
+                    <label class="option-item"><input type="radio" name="q45" value="bilanz"><span>Bilanz / doppelte Buchführung</span></label>
+                    <label class="option-item"><input type="radio" name="q45" value="weiss-nicht"><span>Weiß ich nicht genau</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 5: TERMINE & PLANUNG ========== -->
+    <div class="step" data-step="5">
+        <div class="step-card">
+            <div class="step-title">Terminplanung & Aufträge</div>
+            <div class="step-subtitle">Kalender, Baustellen-Zuordnung und Mitarbeiterplanung</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">33</span> Womit planst du deine Termine und Baustellen?</label>
+                <div class="q-hint">Mehrfachauswahl möglich</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q33a"><span>Papier-Kalender / Wandkalender</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33b"><span>Handy-Kalender (Apple, Google …)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33c"><span>Whiteboard / Tafel im Büro</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33d"><span>Excel / Tabelle</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33e"><span>Im Kopf</span></label>
+                    <label class="option-item"><input type="checkbox" name="q33f"><span>Software: <input class="inline-input" type="text" name="q33f_text" placeholder="Welche?"></span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">34</span> Wie nimmst du neue Terminanfragen an?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q34a"><span>Telefon</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34b"><span>WhatsApp</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34c"><span>E-Mail</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34d"><span>Über meine Website</span></label>
+                    <label class="option-item"><input type="checkbox" name="q34e"><span>Persönlich / vor Ort</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">35</span> Wie viele aktive Baustellen / Aufträge hast du gleichzeitig?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q35" value="1-3"><span>1–3</span></label>
+                    <label class="option-item"><input type="radio" name="q35" value="4-10"><span>4–10</span></label>
+                    <label class="option-item"><input type="radio" name="q35" value=">10"><span>Mehr als 10</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">36</span> Koordinierst du Mitarbeiter-Einsätze über den Kalender?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q36" value="nein"><span>Nein, nur für mich</span></label>
+                    <label class="option-item"><input type="radio" name="q36" value="ja"><span>Ja — wie? <input class="inline-input" type="text" name="q36_text" placeholder="z.B. WhatsApp-Gruppe, Aushang …"></span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 6: DOKUMENTE & MATERIAL ========== -->
+    <div class="step" data-step="6">
+        <div class="step-card">
+            <div class="step-title">Dokumente, Material & Lager</div>
+            <div class="step-subtitle">Ablage-Struktur und Material-Workflows verstehen</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">37</span> Wo bewahrst du folgende Dokumente auf?</label>
+                <div style="overflow-x:auto">
+                    <table class="ablage-table">
+                        <thead>
+                            <tr>
+                                <th>Dokument</th>
+                                <th>Papier</th>
+                                <th>PC</th>
+                                <th>Cloud</th>
+                                <th>E-Mail</th>
+                                <th>Software</th>
+                                <th>Nein</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Rechnungen (ausgestellt)</td><td><input type="radio" name="ablage_rechnungen" value="papier"></td><td><input type="radio" name="ablage_rechnungen" value="pc"></td><td><input type="radio" name="ablage_rechnungen" value="cloud"></td><td><input type="radio" name="ablage_rechnungen" value="email"></td><td><input type="radio" name="ablage_rechnungen" value="software"></td><td><input type="radio" name="ablage_rechnungen" value="nein"></td></tr>
+                            <tr><td>Eingangsrechnungen</td><td><input type="radio" name="ablage_belege" value="papier"></td><td><input type="radio" name="ablage_belege" value="pc"></td><td><input type="radio" name="ablage_belege" value="cloud"></td><td><input type="radio" name="ablage_belege" value="email"></td><td><input type="radio" name="ablage_belege" value="software"></td><td><input type="radio" name="ablage_belege" value="nein"></td></tr>
+                            <tr><td>Angebote</td><td><input type="radio" name="ablage_angebote" value="papier"></td><td><input type="radio" name="ablage_angebote" value="pc"></td><td><input type="radio" name="ablage_angebote" value="cloud"></td><td><input type="radio" name="ablage_angebote" value="email"></td><td><input type="radio" name="ablage_angebote" value="software"></td><td><input type="radio" name="ablage_angebote" value="nein"></td></tr>
+                            <tr><td>Verträge</td><td><input type="radio" name="ablage_vertraege" value="papier"></td><td><input type="radio" name="ablage_vertraege" value="pc"></td><td><input type="radio" name="ablage_vertraege" value="cloud"></td><td><input type="radio" name="ablage_vertraege" value="email"></td><td><input type="radio" name="ablage_vertraege" value="software"></td><td><input type="radio" name="ablage_vertraege" value="nein"></td></tr>
+                            <tr><td>Lieferscheine</td><td><input type="radio" name="ablage_lieferscheine" value="papier"></td><td><input type="radio" name="ablage_lieferscheine" value="pc"></td><td><input type="radio" name="ablage_lieferscheine" value="cloud"></td><td><input type="radio" name="ablage_lieferscheine" value="email"></td><td><input type="radio" name="ablage_lieferscheine" value="software"></td><td><input type="radio" name="ablage_lieferscheine" value="nein"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">38</span> Was machst du mit Kassenquittungen? <span class="q-optional">(Tankquittungen, Baumarkt)</span></label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q38" value="sammeln"><span>Sammle sie für den Steuerberater</span></label>
+                    <label class="option-item"><input type="radio" name="q38" value="foto"><span>Fotografiere und speichere sie</span></label>
+                    <label class="option-item"><input type="radio" name="q38" value="ignore"><span>Schmeiße sie weg</span></label>
+                </div>
+            </div>
+
+            <hr class="separator">
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">39</span> Bestellst du regelmäßig Material?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q46" value="oft"><span>Ja, oft</span></label>
+                    <label class="option-item"><input type="radio" name="q46" value="manchmal"><span>Manchmal</span></label>
+                    <label class="option-item"><input type="radio" name="q46" value="nein"><span>Nein, ich rechne nur Arbeitszeit ab</span></label>
+                </div>
+            </div>
+
+            <div class="question" data-show-if="q46:oft,q46:manchmal">
+                <label class="q-label"><span class="q-num">40</span> Führst du einen Lagerbestand?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q47" value="nein"><span>Nein</span></label>
+                    <label class="option-item"><input type="radio" name="q47" value="kopf"><span>Ja, auf Papier / im Kopf</span></label>
+                    <label class="option-item"><input type="radio" name="q47" value="excel"><span>Ja, in Excel</span></label>
+                    <label class="option-item"><input type="radio" name="q47" value="software"><span>Ja, in einer Software</span></label>
+                </div>
+            </div>
+
+            <div class="question" data-show-if="q46:oft,q46:manchmal">
+                <label class="q-label"><span class="q-num">41</span> Stammlieferanten?</label>
+                <div class="field-grid" style="max-width:420px">
+                    <input type="text" name="lieferant1" placeholder="Lieferant 1 …">
+                    <input type="text" name="lieferant2" placeholder="Lieferant 2 …">
+                    <input type="text" name="lieferant3" placeholder="Lieferant 3 …">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 7: KOMMUNIKATION & TECHNIK ========== -->
+    <div class="step" data-step="7">
+        <div class="step-card">
+            <div class="step-title">Kommunikation & Technik</div>
+            <div class="step-subtitle">Kanäle, Vorlagen und dein Tech-Setup</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">42</span> Hauptkanal für Kundenkommunikation?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q39" value="telefon"><span>Telefon</span></label>
+                    <label class="option-item"><input type="radio" name="q39" value="whatsapp"><span>WhatsApp</span></label>
+                    <label class="option-item"><input type="radio" name="q39" value="email"><span>E-Mail</span></label>
+                    <label class="option-item"><input type="radio" name="q39" value="persoenlich"><span>Persönlich vor Ort</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">43</span> Standard-Texte — wie machst du das?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q40" value="neu"><span>Ich schreibe jeden Text neu</span></label>
+                    <label class="option-item"><input type="radio" name="q40" value="vorlagen"><span>Ich habe Vorlagen in Word / E-Mail</span></label>
+                    <label class="option-item"><input type="radio" name="q40" value="kopieren"><span>Ich kopiere alte Nachrichten und passe sie an</span></label>
+                    <label class="option-item"><input type="radio" name="q40" value="software"><span>Das macht meine Software</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">44</span> Hast du Standardformulierungen, die in die App sollen?</label>
+                <div class="q-hint">z.B. Angebots-Einleitung, Auftragsbestätigung, Terminbestätigung</div>
+                <textarea name="q41" rows="3" placeholder="Einfach reinschreiben oder leer lassen …"></textarea>
+            </div>
+
+            <hr class="separator">
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">45</span> Welche Geräte nutzt du beruflich?</label>
+                <div class="q-hint">Mehrfachauswahl möglich</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="q49a"><span>Smartphone (Android)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49b"><span>Smartphone (iPhone)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49c"><span>Tablet</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49d"><span>Laptop / PC (Windows)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49e"><span>Laptop / PC (Mac)</span></label>
+                    <label class="option-item"><input type="checkbox" name="q49f"><span>Hauptsächlich nur Handy</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">46</span> Umgang mit Apps und Software?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="q50" value="basic"><span>Nicht so mein Ding — lieber einfach</span></label>
+                    <label class="option-item"><input type="radio" name="q50" value="mittel"><span>Ich komme klar, solange es nicht zu kompliziert ist</span></label>
+                    <label class="option-item"><input type="radio" name="q50" value="fit"><span>Kein Problem, ich lerne schnell</span></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== STEP 8: ABSCHLUSS ========== -->
+    <div class="step" data-step="8">
+        <div class="step-card">
+            <div class="step-title">Abschluss</div>
+            <div class="step-subtitle">Fast geschafft — nur noch ein paar letzte Fragen</div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">47</span> Was frisst dir im Büro-Alltag am meisten Zeit oder macht Stress?</label>
+                <textarea name="q51" rows="3" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">48</span> Was wäre für dich das Erste, das FreyAI übernehmen soll?</label>
+                <div class="q-hint">Wähle die Top 3, die dir am wichtigsten sind</div>
+                <div class="option-list">
+                    <label class="option-item"><input type="checkbox" name="prio_rechnungen"><span>Rechnungen schneller schreiben</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_angebote"><span>Angebote erstellen</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_mahnungen"><span>Automatische Mahnungen</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_termine"><span>Terminplanung / Kalender</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_kunden"><span>Kundenverwaltung (CRM)</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_belege"><span>Belege & Dokumente digital</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_buchhaltung"><span>Buchhaltung / DATEV-Export</span></label>
+                    <label class="option-item"><input type="checkbox" name="prio_material"><span>Material & Lager</span></label>
+                </div>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">49</span> Gibt es etwas Spezielles in deinem Betrieb, das ich wissen sollte?</label>
+                <div class="q-hint">Besondere Abrechnungsformen, Gewerks-Spezifika, spezielle Anforderungen</div>
+                <textarea name="q52" rows="4" placeholder="Deine Antwort …"></textarea>
+            </div>
+
+            <div class="question">
+                <label class="q-label"><span class="q-num">50</span> Wann möchtest du starten?</label>
+                <div class="option-list">
+                    <label class="option-item"><input type="radio" name="timeline" value="sofort"><span>So schnell wie möglich</span></label>
+                    <label class="option-item"><input type="radio" name="timeline" value="1-2w"><span>In 1–2 Wochen</span></label>
+                    <label class="option-item"><input type="radio" name="timeline" value="1m"><span>Innerhalb eines Monats</span></label>
+                    <label class="option-item"><input type="radio" name="timeline" value="spaeter"><span>Später / erstmal nur informieren</span></label>
+                </div>
+            </div>
+
+            <hr class="separator">
+
+            <div class="dsgvo-box">
+                <strong>Datenschutzhinweis</strong><br>
+                Alle Angaben werden vertraulich behandelt und ausschließlich zur Einrichtung deiner FreyAI-App verwendet.
+                Deine Daten werden auf Servern in Deutschland gespeichert (DSGVO-konform) und nicht an Dritte weitergegeben.
+                <label>
+                    <input type="checkbox" name="dsgvo_consent" id="dsgvoConsent">
+                    <span>Ich habe den Datenschutzhinweis gelesen und bin mit der Verarbeitung meiner Angaben zur App-Einrichtung einverstanden.</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Time Calculator -->
+        <div class="time-calc" id="timeCalc" style="display:none">
+            <div class="time-calc-title">Deine geschätzte Zeitersparnis mit FreyAI</div>
+            <div class="time-calc-value" id="timeCalcValue">0</div>
+            <div class="time-calc-unit">Stunden pro Monat</div>
+            <div class="time-calc-detail" id="timeCalcDetail"></div>
+        </div>
+
+        <!-- Completion (shown after submit) -->
+        <div class="completion" id="completionScreen" style="display:none">
+            <div class="completion-icon">&#10003;</div>
+            <h2>Vielen Dank!</h2>
+            <p>
+                Mit diesen Angaben richte ich FreyAI so ein, dass du von Tag 1 produktiv arbeitest —
+                ohne Stunden in Einstellungen zu verlieren.
+            </p>
+            <div class="completion-actions">
+                <button class="btn btn-primary" onclick="window.print()">Drucken / PDF</button>
+                <button class="btn btn-primary" id="btnImportToApp">In App importieren</button>
+            </div>
+            <div class="import-status" id="importStatus"></div>
+        </div>
+    </div>
+
+</div><!-- /fragebogen-container -->
+
+<!-- NAVIGATION BAR -->
+<div class="nav-bar" id="navBar">
+    <div class="nav-bar-inner">
+        <button class="btn btn-ghost" id="btnPrev" disabled>Zurück</button>
+        <div class="nav-autosave" id="autosaveIndicator">
+            <span class="save-dot"></span>
+            Automatisch gespeichert
+        </div>
+        <button class="btn btn-primary" id="btnNext">Weiter</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ============================================
+    // Configuration
+    // ============================================
+    var TOTAL_STEPS = 8;
+    var STORAGE_KEY = 'freyai_fragebogen_data';
+    var AUTOSAVE_KEY = 'freyai_fragebogen_autosave';
+
+    var STEP_LABELS = [
+        'Dein Betrieb',
+        'Rechnungen',
+        'Angebote & Kunden',
+        'Mahnwesen & Buchhaltung',
+        'Termine & Planung',
+        'Dokumente & Material',
+        'Kommunikation & Technik',
+        'Abschluss'
+    ];
+
+    var currentStep = 1;
+    var formSubmitted = false;
+
+    // ============================================
+    // DOM Refs
+    // ============================================
+    var steps = document.querySelectorAll('.step');
+    var btnPrev = document.getElementById('btnPrev');
+    var btnNext = document.getElementById('btnNext');
+    var progressFill = document.getElementById('progressFill');
+    var progressLabel = document.getElementById('progressLabel');
+    var progressCounter = document.getElementById('progressCounter');
+    var progressDotsEl = document.getElementById('progressDots');
+    var navBar = document.getElementById('navBar');
+    var timeCalc = document.getElementById('timeCalc');
+    var completionScreen = document.getElementById('completionScreen');
+    var btnImportToApp = document.getElementById('btnImportToApp');
+    var importStatus = document.getElementById('importStatus');
+
+    // ============================================
+    // Progress Dots
+    // ============================================
+    function buildProgressDots() {
+        for (var i = 1; i <= TOTAL_STEPS; i++) {
+            var dot = document.createElement('div');
+            dot.className = 'progress-dot' + (i === 1 ? ' active' : '');
+            dot.dataset.step = i;
+            dot.title = STEP_LABELS[i - 1];
+            dot.addEventListener('click', (function(s) {
+                return function() { if (s <= currentStep || isStepComplete(s - 1)) goToStep(s); };
+            })(i));
+            progressDotsEl.appendChild(dot);
+        }
+    }
+
+    function updateProgressDots() {
+        var dots = progressDotsEl.querySelectorAll('.progress-dot');
+        dots.forEach(function(dot) {
+            var s = parseInt(dot.dataset.step);
+            dot.className = 'progress-dot';
+            if (s === currentStep) dot.classList.add('active');
+            else if (s < currentStep) dot.classList.add('done');
+        });
+    }
+
+    // ============================================
+    // Navigation
+    // ============================================
+    function goToStep(step) {
+        if (step < 1 || step > TOTAL_STEPS) return;
+        currentStep = step;
+
+        steps.forEach(function(el) {
+            el.classList.remove('active');
+            if (parseInt(el.dataset.step) === step) el.classList.add('active');
+        });
+
+        // Update progress
+        var pct = (step / TOTAL_STEPS) * 100;
+        progressFill.style.width = pct + '%';
+        progressLabel.textContent = 'Schritt ' + step + ': ' + STEP_LABELS[step - 1];
+        progressCounter.textContent = step + ' / ' + TOTAL_STEPS;
+        updateProgressDots();
+
+        // Button states
+        btnPrev.disabled = step === 1;
+        if (step === TOTAL_STEPS) {
+            btnNext.textContent = 'Abschließen';
+        } else {
+            btnNext.textContent = 'Weiter';
+        }
+
+        // Hide nav on completion
+        if (formSubmitted) {
+            navBar.style.display = 'none';
+        }
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Auto-save
+        autoSave();
+
+        // Conditional logic
+        applyConditionalLogic();
+    }
+
+    function isStepComplete(step) {
+        // Basic check: at least one question answered in the step
+        var stepEl = document.querySelector('.step[data-step="' + step + '"]');
+        if (!stepEl) return false;
+        var answered = stepEl.querySelectorAll('input:checked, input[type="text"]:not([value=""]), textarea:not(:empty)');
+        return answered.length > 0;
+    }
+
+    btnPrev.addEventListener('click', function() {
+        goToStep(currentStep - 1);
+    });
+
+    btnNext.addEventListener('click', function() {
+        if (currentStep < TOTAL_STEPS) {
+            goToStep(currentStep + 1);
+        } else {
+            handleSubmit();
+        }
+    });
+
+    // ============================================
+    // Conditional Logic
+    // ============================================
+    function applyConditionalLogic() {
+        var conditionals = document.querySelectorAll('[data-show-if]');
+        conditionals.forEach(function(el) {
+            var conditions = el.dataset.showIf.split(',');
+            var visible = conditions.some(function(cond) {
+                var parts = cond.trim().split(':');
+                var name = parts[0];
+                var value = parts[1];
+                var checked = document.querySelector('input[name="' + name + '"][value="' + value + '"]:checked');
+                return !!checked;
+            });
+            el.style.display = visible ? '' : 'none';
+        });
+    }
+
+    // Listen for radio/checkbox changes to re-evaluate conditionals
+    document.addEventListener('change', function(e) {
+        if (e.target.type === 'radio' || e.target.type === 'checkbox') {
+            applyConditionalLogic();
+            autoSave();
+        }
+    });
+
+    // ============================================
+    // Option Selection Highlighting
+    // ============================================
+    document.addEventListener('change', function(e) {
+        var target = e.target;
+        if (target.type === 'radio' || target.type === 'checkbox') {
+            var optionItem = target.closest('.option-item');
+            if (!optionItem) return;
+
+            if (target.type === 'radio') {
+                // Deselect siblings
+                var name = target.name;
+                var siblings = document.querySelectorAll('input[name="' + name + '"]');
+                siblings.forEach(function(s) {
+                    var si = s.closest('.option-item');
+                    if (si) si.classList.remove('selected');
+                });
+            }
+
+            if (target.checked) {
+                optionItem.classList.add('selected');
+            } else {
+                optionItem.classList.remove('selected');
+            }
+        }
+    });
+
+    // ============================================
+    // Auto-Save
+    // ============================================
+    var saveTimeout = null;
+
+    function autoSave() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(function() {
+            try {
+                var data = collectFormData();
+                data._currentStep = currentStep;
+                data._savedAt = new Date().toISOString();
+                localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data));
+            } catch (e) {
+                // Silently fail
+            }
+        }, 500);
+    }
+
+    function loadAutoSave() {
+        try {
+            var raw = localStorage.getItem(AUTOSAVE_KEY);
+            if (!raw) return;
+            var data = JSON.parse(raw);
+            if (!data) return;
+
+            var page = document.querySelector('.fragebogen-container');
+            if (!page) return;
+
+            Object.keys(data).forEach(function(key) {
+                if (key.charAt(0) === '_') return;
+                var val = data[key];
+
+                // Text inputs
+                if (typeof val === 'string') {
+                    var input = page.querySelector('input[name="' + key + '"][type="text"], input[name="' + key + '"][type="email"], input[name="' + key + '"][type="tel"], input[name="' + key + '"][type="number"], textarea[name="' + key + '"]');
+                    if (input) { input.value = val; return; }
+
+                    // Radio
+                    var radio = page.querySelector('input[name="' + key + '"][type="radio"][value="' + CSS.escape(val) + '"]');
+                    if (radio) {
+                        radio.checked = true;
+                        var oi = radio.closest('.option-item');
+                        if (oi) oi.classList.add('selected');
+                        return;
+                    }
+                }
+
+                // Checkbox arrays
+                if (Array.isArray(val)) {
+                    val.forEach(function(v) {
+                        var cb = page.querySelector('input[name="' + key + '"][type="checkbox"]');
+                        if (cb) {
+                            cb.checked = true;
+                            var oi = cb.closest('.option-item');
+                            if (oi) oi.classList.add('selected');
+                        }
+                    });
+                }
+
+                // Single checkbox
+                if (val === 'on' || val === true) {
+                    var cb = page.querySelector('input[name="' + key + '"][type="checkbox"]');
+                    if (cb) {
+                        cb.checked = true;
+                        var oi = cb.closest('.option-item');
+                        if (oi) oi.classList.add('selected');
+                    }
+                }
+            });
+
+            // Restore step
+            if (data._currentStep && data._currentStep > 1) {
+                goToStep(data._currentStep);
+            }
+        } catch (e) {
+            // Silently fail
+        }
+    }
+
+    // Auto-save on text input
+    document.addEventListener('input', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            autoSave();
+        }
+    });
+
+    // ============================================
+    // Time Calculator
+    // ============================================
+    function calculateTimeSaved() {
+        var hours = 0;
+        var details = [];
+
+        // Invoice time
+        var invoiceCount = getRadioValue('q13');
+        var invoiceTime = getRadioValue('q14');
+        var invoiceCountNum = { '<10': 8, '10-30': 20, '30-60': 45, '>60': 70 }[invoiceCount] || 0;
+        var invoiceTimeNum = { '<15': 10, '15-30': 22, '30-60': 45, '>60': 75 }[invoiceTime] || 0;
+        if (invoiceCountNum && invoiceTimeNum) {
+            // FreyAI reduces invoice time by ~70%
+            var savedMins = invoiceCountNum * invoiceTimeNum * 0.7;
+            var savedHrs = Math.round(savedMins / 60);
+            if (savedHrs > 0) {
+                hours += savedHrs;
+                details.push(savedHrs + 'h Rechnungen');
+            }
+        }
+
+        // Quotes time
+        var quotesFreq = getRadioValue('q21');
+        if (quotesFreq === 'immer' || quotesFreq === 'manchmal') {
+            hours += quotesFreq === 'immer' ? 4 : 2;
+            details.push((quotesFreq === 'immer' ? 4 : 2) + 'h Angebote');
+        }
+
+        // Dunning
+        var latePayments = getRadioValue('q29');
+        if (latePayments === 'manchmal' || latePayments === 'oft') {
+            hours += latePayments === 'oft' ? 3 : 1;
+            details.push((latePayments === 'oft' ? 3 : 1) + 'h Mahnwesen');
+        }
+
+        // Scheduling
+        var scheduling = getCheckedValues('q33');
+        if (scheduling.length > 0) {
+            hours += 2;
+            details.push('2h Terminplanung');
+        }
+
+        // Communication
+        var commStyle = getRadioValue('q40');
+        if (commStyle === 'neu' || commStyle === 'kopieren') {
+            hours += 2;
+            details.push('2h Kundenkommunikation');
+        }
+
+        return { hours: hours, details: details };
+    }
+
+    function getRadioValue(name) {
+        var el = document.querySelector('input[name="' + name + '"]:checked');
+        return el ? el.value : '';
+    }
+
+    function getCheckedValues(namePrefix) {
+        var checked = [];
+        document.querySelectorAll('input[name^="' + namePrefix + '"]:checked').forEach(function(el) {
+            checked.push(el.value || el.name);
+        });
+        return checked;
+    }
+
+    function updateTimeCalc() {
+        var result = calculateTimeSaved();
+        if (result.hours > 0) {
+            timeCalc.style.display = '';
+            document.getElementById('timeCalcValue').textContent = result.hours;
+            document.getElementById('timeCalcDetail').textContent = result.details.join(' + ');
+        }
+    }
+
+    // ============================================
+    // Form Data Collection
+    // ============================================
+    function collectFormData() {
+        var data = {};
+        var container = document.querySelector('.fragebogen-container');
+        if (!container) return data;
+
+        // Text, email, tel, number inputs and textareas
+        container.querySelectorAll('input[type="text"][name], input[type="email"][name], input[type="tel"][name], input[type="number"][name], textarea[name]').forEach(function(el) {
+            var name = el.getAttribute('name');
+            var val = (el.value || '').trim();
+            if (name && val) data[name] = val;
+        });
+
+        // Radio buttons
+        container.querySelectorAll('input[type="radio"]:checked').forEach(function(el) {
+            var name = el.getAttribute('name');
+            if (name) data[name] = el.value;
+        });
+
+        // Checkboxes
+        var cbGroups = {};
+        container.querySelectorAll('input[type="checkbox"][name]').forEach(function(el) {
+            var name = el.getAttribute('name');
+            if (!cbGroups[name]) cbGroups[name] = [];
+            if (el.checked) cbGroups[name].push(el.value || 'on');
+        });
+        Object.keys(cbGroups).forEach(function(name) {
+            if (cbGroups[name].length > 0) {
+                data[name] = cbGroups[name].length === 1 ? cbGroups[name][0] : cbGroups[name];
+            }
+        });
+
+        return data;
+    }
+
+    // ============================================
+    // Submit
+    // ============================================
+    function handleSubmit() {
+        // Check DSGVO consent
+        var consent = document.getElementById('dsgvoConsent');
+        if (!consent.checked) {
+            consent.focus();
+            consent.closest('.dsgvo-box').style.borderColor = 'var(--danger)';
+            consent.closest('.dsgvo-box').style.boxShadow = '0 0 0 2px var(--danger-light)';
+            return;
+        }
+
+        formSubmitted = true;
+
+        // Calculate time savings
+        updateTimeCalc();
+
+        // Show completion
+        completionScreen.style.display = '';
+
+        // Hide nav
+        navBar.style.display = 'none';
+
+        // Scroll to completion
+        setTimeout(function() {
+            completionScreen.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+
+    // ============================================
+    // Import to App
+    // ============================================
+    function showImportStatus(message, type) {
+        importStatus.style.display = 'block';
+        importStatus.style.background = type === 'success' ? 'var(--success-light)' : type === 'error' ? 'var(--danger-light)' : 'var(--accent-light)';
+        importStatus.style.color = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--accent)';
+        importStatus.textContent = message;
+    }
+
+    if (btnImportToApp) {
+        btnImportToApp.addEventListener('click', function() {
+            try {
+                var formData = collectFormData();
+                var hasData = !!(formData.firmenname || formData.inhaber || formData.gewerk);
+                if (!hasData) {
+                    showImportStatus('Bitte fülle mindestens Firmenname, Name oder Gewerk aus.', 'error');
+                    return;
+                }
+
+                formData._pendingImport = true;
+                formData._collectedAt = new Date().toISOString();
+                formData._version = 'v2';
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+
+                showImportStatus('Daten gespeichert! Weiterleitung zur App …', 'success');
+                setTimeout(function() {
+                    window.location.href = 'index.html?import=fragebogen';
+                }, 800);
+            } catch (e) {
+                showImportStatus('Fehler beim Speichern. Bitte erneut versuchen.', 'error');
+            }
+        });
+    }
+
+    // ============================================
+    // Keyboard Navigation
+    // ============================================
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            btnNext.click();
+        }
+    });
+
+    // ============================================
+    // Init
+    // ============================================
+    buildProgressDots();
+    loadAutoSave();
+    applyConditionalLogic();
+
+})();
+</script>
+</body>
+</html>

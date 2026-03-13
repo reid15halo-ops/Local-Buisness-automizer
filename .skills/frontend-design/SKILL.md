@@ -1,6 +1,14 @@
 ---
 name: frontend-design
-description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
+description: |
+  Create distinctive, production-grade frontend interfaces with high design quality.
+  Use this skill when the user asks to build web components, pages, artifacts, posters, or applications
+  (websites, landing pages, dashboards, React components, HTML/CSS layouts, styling/beautifying any web UI).
+  Also trigger when the user says "make it look good", "design this", "beautify", "polish the UI",
+  "premium look", "industrial luxury", "not generic", "distinctive", or asks for any visual/aesthetic improvement.
+  Generates creative, polished code and UI design that avoids generic AI slop aesthetics.
+  Make sure to use this skill whenever building or improving any user-facing frontend, even if the user
+  doesn't explicitly mention design quality — great design should be the default, not an afterthought.
 license: Complete terms in LICENSE.txt
 ---
 

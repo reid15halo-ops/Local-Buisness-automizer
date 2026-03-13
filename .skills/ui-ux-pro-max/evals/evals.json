@@ -1,0 +1,114 @@
+{
+  "skill_name": "ui-ux-pro-max",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Build a mobile-first settings page for our PWA. It needs sections for profile, notifications, language, and account deletion. The app uses dark mode with indigo accent (#6366f1).",
+      "expected_output": "Settings page following Material/HIG patterns, proper touch targets, accessible contrast, progressive disclosure, destructive action separated",
+      "assertions": [
+        {
+          "name": "touch-targets-44px",
+          "description": "All interactive elements meet minimum 44x44px touch target size",
+          "type": "manual"
+        },
+        {
+          "name": "contrast-ratio-aa",
+          "description": "Text contrast meets WCAG AA (4.5:1 for normal text, 3:1 for large)",
+          "type": "manual"
+        },
+        {
+          "name": "destructive-separated",
+          "description": "Account deletion is visually separated from other actions, uses danger color",
+          "type": "manual"
+        },
+        {
+          "name": "mobile-first-responsive",
+          "description": "Layout is designed mobile-first with proper breakpoints for tablet/desktop",
+          "type": "manual"
+        },
+        {
+          "name": "no-emoji-icons",
+          "description": "Uses SVG icons, not emojis",
+          "type": "manual"
+        },
+        {
+          "name": "semantic-color-tokens",
+          "description": "Uses CSS custom properties / semantic tokens, not raw hex values in components",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Create a data table component showing customer invoices with columns: Invoice #, Customer, Amount, Status, Date. Include sorting, filtering, and a responsive mobile view.",
+      "expected_output": "Accessible data table with sortable columns, responsive mobile adaptation, proper touch targets, status indicators meeting accessibility rules",
+      "assertions": [
+        {
+          "name": "sortable-aria",
+          "description": "Sortable columns use aria-sort attribute indicating current sort state",
+          "type": "manual"
+        },
+        {
+          "name": "mobile-adaptation",
+          "description": "Table adapts for mobile (card view, horizontal scroll, or simplified layout)",
+          "type": "manual"
+        },
+        {
+          "name": "color-not-only-indicator",
+          "description": "Status indicators use icon + color + text, not color alone",
+          "type": "manual"
+        },
+        {
+          "name": "empty-state-provided",
+          "description": "Shows helpful empty state with guidance when no data exists",
+          "type": "manual"
+        },
+        {
+          "name": "loading-state",
+          "description": "Shows skeleton or shimmer placeholder while data loads",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Design a multi-step form wizard for creating a new quote (Angebot). Steps: 1) Select customer, 2) Add line items, 3) Review & send. Include validation and progress indicator.",
+      "expected_output": "Multi-step form with step indicator, proper validation, back navigation, auto-save, confirmation before send",
+      "assertions": [
+        {
+          "name": "step-indicator-visible",
+          "description": "Step indicator or progress bar is visible showing current position",
+          "type": "manual"
+        },
+        {
+          "name": "back-navigation",
+          "description": "User can navigate back to previous steps without losing data",
+          "type": "manual"
+        },
+        {
+          "name": "inline-validation",
+          "description": "Validation happens on blur, errors shown near the field with recovery guidance",
+          "type": "manual"
+        },
+        {
+          "name": "confirm-before-send",
+          "description": "Final send action has a confirmation dialog showing summary of what will be sent",
+          "type": "manual"
+        },
+        {
+          "name": "form-autosave",
+          "description": "Form auto-saves draft to prevent data loss on accidental navigation",
+          "type": "manual"
+        },
+        {
+          "name": "keyboard-accessible",
+          "description": "Form is fully navigable via keyboard with visible focus indicators",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

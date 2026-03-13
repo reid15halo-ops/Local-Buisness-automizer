@@ -1,0 +1,71 @@
+{
+  "skill_name": "question",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a dunning (Mahnwesen) feature that automatically sends payment reminders for overdue invoices.",
+      "expected_output": "Research summary of existing invoice/payment code, then 5-8 questions covering scope, edge cases, UX, data persistence, and integration",
+      "assertions": [
+        {
+          "name": "research-before-questions",
+          "description": "Shows a 'What I found' research summary before asking questions",
+          "type": "manual"
+        },
+        {
+          "name": "minimum-5-questions",
+          "description": "Asks at least 5 questions",
+          "type": "manual"
+        },
+        {
+          "name": "all-5-categories-covered",
+          "description": "Questions cover all 5 categories: Scope, Behavior & Edge Cases, UX & Boomer Alignment, Data & Persistence, Integration & Script Order",
+          "type": "manual"
+        },
+        {
+          "name": "no-answerable-from-code",
+          "description": "Does NOT ask questions that could be answered by reading the codebase",
+          "type": "manual"
+        },
+        {
+          "name": "maximum-8-questions",
+          "description": "Does not exceed 8 questions",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Integrate a calendar view into the app so Handwerker can see their Termine (appointments) for the week.",
+      "expected_output": "Research summary showing existing Termine data model and UI, then targeted questions about scope, offline behavior, UX labels, data source, and service dependencies",
+      "assertions": [
+        {
+          "name": "researched-existing-code",
+          "description": "Research summary mentions existing Termine-related code, services, or data structures found in the codebase",
+          "type": "manual"
+        },
+        {
+          "name": "scope-question-present",
+          "description": "At least one question about scope (Simple vs Pro mode, standalone vs integrated)",
+          "type": "manual"
+        },
+        {
+          "name": "ux-question-german",
+          "description": "At least one UX question about German labels or Herr Müller test",
+          "type": "manual"
+        },
+        {
+          "name": "offline-edge-case",
+          "description": "At least one question about offline behavior or edge cases",
+          "type": "manual"
+        },
+        {
+          "name": "proper-format",
+          "description": "Questions follow the specified format with category labels and short titles",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

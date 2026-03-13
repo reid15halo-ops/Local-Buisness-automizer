@@ -2,9 +2,12 @@
 name: question
 description: |
   Enforces a requirements clarification protocol before any implementation.
-  Use this skill BEFORE starting any feature, bug fix, or refactor.
-  Trigger with /questions or /question.
+  Use this skill BEFORE starting any feature, bug fix, or refactor — even small ones.
+  Trigger when the user says /questions, /question, "what should I consider", "before I start",
+  "plan this", or any time a task involves adding, modifying, or integrating functionality.
+  Also trigger when a task is ambiguous, touches multiple services, or affects Herr Müller's UX.
   The goal is: never guess. Surface every ambiguity before writing a single line.
+  If in doubt whether to trigger, trigger — asking good questions is never wasted.
 ---
 
 # Question Skill — Requirements Clarification Protocol

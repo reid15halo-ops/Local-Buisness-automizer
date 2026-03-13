@@ -1,6 +1,6 @@
 /* ============================================
    Fragebogen Import Service
-   Bridge between Betriebs-Aufnahmebogen (fragebogen-beta-v1.html)
+   Bridge between Betriebs-Aufnahmebogen (fragebogen.html)
    and the App setup wizard / store settings.
    ============================================ */
 

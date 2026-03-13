@@ -1,0 +1,104 @@
+{
+  "skill_name": "frontend-design",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Build a pricing page for FreyAI Visions. We have two tiers: Setup (3.5k-7.5k EUR one-time) and Retainer (300-500 EUR/month). The brand is 'Industrial Luxury' - think Rolex meets Apple. Dark mode, bold typography, minimalist industrial.",
+      "expected_output": "A visually striking pricing page with dark theme, distinctive typography (not Inter/Roboto), bold layout, industrial luxury aesthetic, memorable design element",
+      "assertions": [
+        {
+          "name": "no-generic-fonts",
+          "description": "Must NOT use Inter, Roboto, Arial, or system fonts. Must use distinctive, characterful font choices.",
+          "type": "manual"
+        },
+        {
+          "name": "dark-theme-executed",
+          "description": "Page uses dark background (#09090b or similar), light text, consistent with industrial luxury",
+          "type": "manual"
+        },
+        {
+          "name": "no-purple-gradient-slop",
+          "description": "Does NOT use the cliched purple-gradient-on-white AI aesthetic",
+          "type": "manual"
+        },
+        {
+          "name": "memorable-design-element",
+          "description": "Has at least one distinctive, memorable design element (unexpected layout, creative background, unique interaction)",
+          "type": "manual"
+        },
+        {
+          "name": "css-variables-used",
+          "description": "Uses CSS custom properties for color/spacing consistency",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Create a hero section for the FreyAI landing page. Target audience: German Handwerker (craftsmen). Message: 'Your business deserves premium digital tools.' Include a CTA for booking a demo.",
+      "expected_output": "Bold hero with industrial luxury aesthetic, creative typography, atmospheric backgrounds, clear CTA, no cookie-cutter layout",
+      "assertions": [
+        {
+          "name": "bold-aesthetic-direction",
+          "description": "Has a clear, intentional aesthetic direction - not a generic template",
+          "type": "manual"
+        },
+        {
+          "name": "atmospheric-background",
+          "description": "Background uses creative treatment (gradient mesh, texture, pattern, noise) not just solid color",
+          "type": "manual"
+        },
+        {
+          "name": "typography-hierarchy",
+          "description": "Clear typographic hierarchy with distinctive display font paired with refined body font",
+          "type": "manual"
+        },
+        {
+          "name": "meaningful-animation",
+          "description": "Includes at least one CSS animation or transition that adds delight",
+          "type": "manual"
+        },
+        {
+          "name": "production-grade-code",
+          "description": "Code is production-ready: responsive, accessible, clean structure",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Design a dashboard overview card component that shows monthly revenue, open invoices count, and pending quotes. Make it look premium and distinctive.",
+      "expected_output": "Dashboard cards with unique visual treatment, not generic bootstrap-style cards. Creative use of shadows, borders, or backgrounds.",
+      "assertions": [
+        {
+          "name": "not-bootstrap-generic",
+          "description": "Cards do NOT look like generic Bootstrap/Tailwind template cards",
+          "type": "manual"
+        },
+        {
+          "name": "creative-visual-treatment",
+          "description": "Uses creative visual treatment: unique shadows, borders, gradients, or textures",
+          "type": "manual"
+        },
+        {
+          "name": "responsive-layout",
+          "description": "Cards are responsive and work on mobile and desktop",
+          "type": "manual"
+        },
+        {
+          "name": "data-formatting",
+          "description": "Numbers use proper EUR formatting with locale-aware display",
+          "type": "manual"
+        },
+        {
+          "name": "cohesive-aesthetic",
+          "description": "All cards share a cohesive aesthetic that feels intentionally designed",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}
