@@ -18,7 +18,7 @@ class DBService {
         // IndexedDB config
         this.dbName = 'freyai_app_db';
         this.storeName = 'app_state';
-        this.version = 3;
+        this.version = 4;
         this.db = null;
         this.userStores = new Set();
 
@@ -137,8 +137,21 @@ class DBService {
             };
 
             request.onerror = (event) => {
-                console.error('[DBService] IndexedDB error:', event.target.error);
-                reject(event.target.error);
+                const err = event.target.error;
+                console.error('[DBService] IndexedDB error:', err);
+                // If version is too low, retry with the existing higher version
+                if (err?.name === 'VersionError') {
+                    console.warn('[DBService] Version conflict — retrying without version constraint');
+                    const retryReq = indexedDB.open(this.dbName);
+                    retryReq.onsuccess = (e) => {
+                        this.db = e.target.result;
+                        this.version = this.db.version;
+                        resolve(this.db);
+                    };
+                    retryReq.onerror = (e) => reject(e.target.error);
+                } else {
+                    reject(err);
+                }
             };
         });
     }
