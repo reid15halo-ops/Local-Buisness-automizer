@@ -253,6 +253,22 @@
                     }
                     break;
 
+                // Actions handled by module-specific delegated handlers
+                // (auftraege.js, angebote.js, aufmass-ui.js, etc.)
+                case 'open-detail':
+                case 'show-angebot-detail':
+                case 'export-pdf':
+                case 'edit-angebot':
+                case 'delete-angebot':
+                case 'copy-portal-link':
+                case 'set-unit':
+                case 'add-polygon-point':
+                case 'remove-polygon-point':
+                case 'open-summary':
+                case 'print-summary':
+                    // Handled by module-level event delegation — no-op here
+                    break;
+
                 default:
                     console.warn(`Unknown action: ${action}`, params);
             }
