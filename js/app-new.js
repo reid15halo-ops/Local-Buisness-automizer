@@ -36,7 +36,13 @@ async function init() {
     window.ModalsModule?.initModals?.();
     window.WareneingangModule?.initWareneingang?.();
 
-    // Check if setup wizard needs to run
+    // Load company settings from Supabase (tax rate, stundensatz, noreply email, etc.)
+    if (window.companySettings) { await window.companySettings.load(); }
+
+    // Await store service load — must happen before wizard check so data is available
+    await window.storeService.load();
+
+    // Check if setup wizard needs to run (after store + handlers are ready)
     if (window.setupWizard && !window.setupWizard.isSetupComplete()) {
         const missing = window.setupWizard.getMissingKeys();
         if (missing.length > 0) {
@@ -47,12 +53,6 @@ async function init() {
             }
         }
     }
-
-    // Load company settings from Supabase (tax rate, stundensatz, noreply email, etc.)
-    if (window.companySettings) { await window.companySettings.load(); }
-
-    // Await store service load
-    await window.storeService.load();
 
     // Initialize automation API
     window.automationAPI?.init();
