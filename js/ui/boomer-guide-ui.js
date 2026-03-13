@@ -30,10 +30,7 @@ class BoomerGuideUI {
             this._applyNavVisuals();
             this._createFAB();
 
-            // Show welcome splash if needed
-            if (this.service.shouldShowSplash()) {
-                setTimeout(() => this._showSplash(), 400);
-            }
+            // Splash is now manual-only (via FAB button) — no auto-show on load
 
             // Re-render home feed
             this._renderHomeFeed();
