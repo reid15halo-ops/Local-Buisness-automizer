@@ -1,0 +1,129 @@
+{
+  "skill_name": "seo-landing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Optimize the landing page meta tags for 'Handwerker Software' on the FreyAI Visions homepage.",
+      "expected_output": "Complete meta tag block with title (keyword-first, under 60 chars), description (140-160 chars with CTA), canonical URL (HTTPS, trailing slash), Open Graph tags (title, description, image 1200x630, locale de_DE), and Twitter Card tags",
+      "assertions": [
+        {
+          "name": "title-keyword-first",
+          "description": "Page title must start with 'Handwerker Software' or 'Handwerkersoftware' and end with brand name 'FreyAI Visions', under 60 characters",
+          "type": "manual"
+        },
+        {
+          "name": "meta-description-with-cta",
+          "description": "Meta description must be 140-160 characters, contain 'Handwerkersoftware' or 'Handwerker Software', and end with a call to action in German",
+          "type": "manual"
+        },
+        {
+          "name": "canonical-url",
+          "description": "Must include a canonical link tag with HTTPS URL and trailing slash pointing to freyaivisions.de",
+          "type": "manual"
+        },
+        {
+          "name": "open-graph-complete",
+          "description": "Must include og:title, og:description, og:image (1200x630), og:url, og:type, og:locale (de_DE), og:site_name",
+          "type": "manual"
+        },
+        {
+          "name": "twitter-card-tags",
+          "description": "Must include twitter:card (summary_large_image), twitter:title, twitter:description, twitter:image",
+          "type": "manual"
+        },
+        {
+          "name": "no-english-in-visible-text",
+          "description": "No English loanwords in user-visible meta content (description, title) except 'Software' as established German search keyword",
+          "type": "manual"
+        },
+        {
+          "name": "self-hosted-assets",
+          "description": "OG image and all referenced assets must point to freyaivisions.de domain, no external CDN or third-party URLs",
+          "type": "manual"
+        }
+      ],
+      "files": ["landing.html"]
+    },
+    {
+      "id": 2,
+      "prompt": "Add structured data to the FreyAI Visions homepage for better Google rich results.",
+      "expected_output": "JSON-LD script blocks for SoftwareApplication (with correct applicationCategory, offers, author), Organization (with address, founder, contactPoint), FAQPage (with at least 2 questions about the product), and BreadcrumbList",
+      "assertions": [
+        {
+          "name": "software-application-schema",
+          "description": "Must include SoftwareApplication with name, description, applicationCategory: BusinessApplication, operatingSystem, and offers with EUR pricing",
+          "type": "manual"
+        },
+        {
+          "name": "organization-schema",
+          "description": "Must include Organization with name 'FreyAI Visions', url, logo, founder (Jonas Glawion), address (Grossostheim), and contactPoint",
+          "type": "manual"
+        },
+        {
+          "name": "faq-schema",
+          "description": "Must include FAQPage with at least 2 Question/Answer pairs relevant to Handwerker software, all in German",
+          "type": "manual"
+        },
+        {
+          "name": "breadcrumb-schema",
+          "description": "Must include BreadcrumbList with proper ListItem hierarchy starting from Startseite",
+          "type": "manual"
+        },
+        {
+          "name": "valid-jsonld-format",
+          "description": "All structured data must be valid JSON-LD in <script type='application/ld+json'> tags with correct @context and @type",
+          "type": "manual"
+        },
+        {
+          "name": "german-content-only",
+          "description": "All user-visible text in structured data (names, descriptions, answers) must be in German with no English loanwords except 'Software'",
+          "type": "manual"
+        }
+      ],
+      "files": ["landing.html"]
+    },
+    {
+      "id": 3,
+      "prompt": "Write SEO-optimized landing page copy for Elektriker in Frankfurt targeting 'Handwerker Software Frankfurt'.",
+      "expected_output": "Complete landing page copy in German with Hero section (H1 with city keyword), Pain Points (3 specific Elektriker problems), Features (4-6 with benefits), Social Proof (founder story), and CTA (booking link). All German, no English words, city-specific references throughout.",
+      "assertions": [
+        {
+          "name": "h1-with-city-keyword",
+          "description": "H1 must contain 'Handwerker Software Frankfurt' or 'Handwerkersoftware Frankfurt' and 'Elektriker'",
+          "type": "manual"
+        },
+        {
+          "name": "pain-points-trade-specific",
+          "description": "Must include at least 3 pain points specific to Elektriker (e.g., Aufmass, Schaltplaene, Materiallisten) — not generic business problems",
+          "type": "manual"
+        },
+        {
+          "name": "no-english-words",
+          "description": "Zero English loanwords in the copy — no 'Features', 'Tool', 'Dashboard', 'Update', 'App', 'Link', 'Download', 'Team' etc. Only 'Software' allowed as search keyword",
+          "type": "manual"
+        },
+        {
+          "name": "city-references",
+          "description": "Must mention Frankfurt and surrounding area at least 3 times naturally in the copy (not keyword-stuffed)",
+          "type": "manual"
+        },
+        {
+          "name": "cta-structure",
+          "description": "Must end with a clear CTA section pointing to buchung.freyaivisions.de with scarcity element (limited beta spots)",
+          "type": "manual"
+        },
+        {
+          "name": "landing-page-structure",
+          "description": "Must follow the 5-section structure: Hero, Schmerzpunkte, Funktionsuebersicht, Vertrauen/Beweise, Handlungsaufforderung",
+          "type": "manual"
+        },
+        {
+          "name": "meta-tags-included",
+          "description": "Must include meta title and description optimized for 'Handwerker Software Frankfurt Elektriker' with proper character limits",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "skill_name": "deployment",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Deploy the latest changes to the production app at app.freyaivisions.de.",
+      "expected_output": "Pre-deploy checklist executed (git status clean, correct branch, pushed to GitHub), current commit SHA captured for rollback, deploy command run via SSH, post-deploy HTTP/SSL/SW verification performed",
+      "assertions": [
+        {
+          "name": "pre-deploy-checklist",
+          "description": "Must verify git status is clean and changes are pushed to GitHub before deploying",
+          "type": "manual"
+        },
+        {
+          "name": "capture-rollback-sha",
+          "description": "Must capture the current commit SHA on VPS before running git reset --hard",
+          "type": "manual"
+        },
+        {
+          "name": "correct-deploy-command",
+          "description": "Must use: ssh root@72.61.187.24 with cd to /home/openclaw/workspace/projects/freyai-app && git fetch github main && git reset --hard github/main",
+          "type": "manual"
+        },
+        {
+          "name": "post-deploy-verification",
+          "description": "Must run HTTP status check and content verification against app.freyaivisions.de after deploy",
+          "type": "manual"
+        },
+        {
+          "name": "user-confirmation",
+          "description": "Must confirm the deploy target (prod) with the user before executing",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Set up SSL for the new subdomain api.freyaivisions.de pointing to our VPS.",
+      "expected_output": "DNS A record reminder, certbot command with --nginx flag for the subdomain, nginx config test and reload, SSL verification via curl",
+      "assertions": [
+        {
+          "name": "dns-prerequisite",
+          "description": "Must mention that a DNS A record for api.freyaivisions.de pointing to 72.61.187.24 is required first",
+          "type": "manual"
+        },
+        {
+          "name": "certbot-command",
+          "description": "Must use: certbot --nginx -d api.freyaivisions.de on the VPS",
+          "type": "manual"
+        },
+        {
+          "name": "nginx-reload",
+          "description": "Must test nginx config (nginx -t) and reload after changes",
+          "type": "manual"
+        },
+        {
+          "name": "ssl-verification",
+          "description": "Must verify SSL is working after setup with a curl or similar check",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "The latest production deploy broke the app. Roll back to the previous version immediately.",
+      "expected_output": "List recent commits on VPS to identify the previous good commit, reset to that commit, run post-deploy verification to confirm the rollback worked",
+      "assertions": [
+        {
+          "name": "identify-previous-commit",
+          "description": "Must list recent commits on the VPS with git log to find the previous good commit SHA",
+          "type": "manual"
+        },
+        {
+          "name": "rollback-command",
+          "description": "Must use git reset --hard <commit-sha> on the correct VPS path",
+          "type": "manual"
+        },
+        {
+          "name": "post-rollback-verification",
+          "description": "Must verify the app is working after rollback with HTTP/content checks",
+          "type": "manual"
+        },
+        {
+          "name": "no-force-push",
+          "description": "Must not attempt any git push or force push on the VPS",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

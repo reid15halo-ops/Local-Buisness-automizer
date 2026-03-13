@@ -1,0 +1,159 @@
+{
+  "skill_name": "marketing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write an Instagram post announcing FreyAI Visions' Testphase launch. We're looking for 10 Handwerksbetriebe to try the system. Make it compelling and use Jonas's founder story.",
+      "expected_output": "Instagram post with scroll-stopping hook, founder story mention, PAS or curiosity gap technique, casual du tone, 2-5 emojis, CTA to DM or link in bio, relevant hashtags",
+      "assertions": [
+        {
+          "name": "scroll-stopping-hook",
+          "description": "First line must be a compelling hook that would stop a thumb-scrolling Handwerker",
+          "type": "manual"
+        },
+        {
+          "name": "founder-story-present",
+          "description": "References Jonas's Steinmetz background or personal journey authentically",
+          "type": "manual"
+        },
+        {
+          "name": "persuasion-technique-used",
+          "description": "Uses at least 2 persuasion techniques from the toolkit (PAS, curiosity gap, scarcity, specificity, future pacing, social proof)",
+          "type": "manual"
+        },
+        {
+          "name": "no-english-words",
+          "description": "Zero English words in the German content (no Features, Tool, Update, Dashboard, App, Startup, Beta, DM, Laptop, Software, Link). Use Testphase, Direktnachricht, Rechner, Programm, Verweis instead.",
+          "type": "manual"
+        },
+        {
+          "name": "no-generic-ai-copy",
+          "description": "No generic AI phrases (revolutionieren, innovative Lösung, skalierbar, Potenzial entfalten, optimieren)",
+          "type": "manual"
+        },
+        {
+          "name": "instagram-emojis",
+          "description": "Must include 2-5 emojis (zero emojis = fail, more than 5 = fail). Instagram platform norm.",
+          "type": "manual"
+        },
+        {
+          "name": "platform-formatting",
+          "description": "Follows Instagram format: 150-300 words, line breaks, hashtags at end, CTA (DM or Link in Bio)",
+          "type": "manual"
+        },
+        {
+          "name": "scarcity-authentic",
+          "description": "Uses legitimate scarcity (10 Beta-Kunden, personal onboarding) not fake urgency",
+          "type": "manual"
+        },
+        {
+          "name": "specificity",
+          "description": "Contains at least one concrete number, trade name, or specific scenario",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Create a LinkedIn thought leadership post about why most Handwerker fail at digitalization. Position FreyAI as the alternative approach. Professional tone.",
+      "expected_output": "LinkedIn post with bold opening hook, industry insight, contrarian take, professional Sie tone, no emojis, 3-5 hashtags, engagement question at end",
+      "assertions": [
+        {
+          "name": "bold-opening-hook",
+          "description": "First 140 characters are a compelling hook that works before LinkedIn's truncation",
+          "type": "manual"
+        },
+        {
+          "name": "thought-leadership-angle",
+          "description": "Provides genuine industry insight, not just product promotion",
+          "type": "manual"
+        },
+        {
+          "name": "professional-sie-tone",
+          "description": "Uses formal Sie, no emojis, professional register throughout",
+          "type": "manual"
+        },
+        {
+          "name": "no-english-words",
+          "description": "Zero English words in the German content (no Features, Tool, Update, Dashboard, App, Startup, Beta, DM, Laptop, Software, Link). Use Testphase, Direktnachricht, Rechner, Programm, Verweis instead.",
+          "type": "manual"
+        },
+        {
+          "name": "no-generic-ai-copy",
+          "description": "No generic AI phrases (revolutionieren, innovative Lösung, skalierbar, Potenzial entfalten, optimieren)",
+          "type": "manual"
+        },
+        {
+          "name": "contrarian-or-insight",
+          "description": "Challenges a common assumption about Handwerk digitalization",
+          "type": "manual"
+        },
+        {
+          "name": "engagement-cta",
+          "description": "Ends with a question or prompt that invites comments",
+          "type": "manual"
+        },
+        {
+          "name": "brand-voice-premium",
+          "description": "Feels premium and confident, not desperate or salesy",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Write a 3-email welcome sequence for new waitlist signups. Each email should build on the previous one. Include subject lines.",
+      "expected_output": "3 emails with compelling subject lines (40-60 chars each), personal Jonas tone, escalating value/urgency, DSGVO-compliant, one clear CTA per email, founder story in email 1",
+      "assertions": [
+        {
+          "name": "three-distinct-emails",
+          "description": "Delivers exactly 3 emails that build on each other with escalating engagement",
+          "type": "manual"
+        },
+        {
+          "name": "subject-lines-40-60-chars",
+          "description": "Each subject line is between 40 and 60 characters (count precisely). Under 40 or over 60 = fail.",
+          "type": "manual"
+        },
+        {
+          "name": "personal-jonas-voice",
+          "description": "Reads like Jonas wrote it personally, not a marketing template",
+          "type": "manual"
+        },
+        {
+          "name": "one-cta-per-email",
+          "description": "Each email has exactly one clear call-to-action, not multiple competing CTAs",
+          "type": "manual"
+        },
+        {
+          "name": "founder-story-email-1",
+          "description": "First email introduces Jonas's background and why FreyAI exists",
+          "type": "manual"
+        },
+        {
+          "name": "no-english-words",
+          "description": "Zero English words in the German content (no Features, Tool, Update, Dashboard, App, Startup, Beta, DM, Laptop, Software, Link). Use Testphase, Direktnachricht, Rechner, Programm, Verweis instead.",
+          "type": "manual"
+        },
+        {
+          "name": "no-generic-ai-copy",
+          "description": "No generic AI phrases (revolutionieren, innovative Lösung, skalierbar, Potenzial entfalten, optimieren)",
+          "type": "manual"
+        },
+        {
+          "name": "no-fabricated-claims",
+          "description": "Testimonials or results must be marked as [Beispiel] if no real beta data exists yet",
+          "type": "manual"
+        },
+        {
+          "name": "dsgvo-elements",
+          "description": "Includes unsubscribe reference, sender identity (Jonas von FreyAI), contact address",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

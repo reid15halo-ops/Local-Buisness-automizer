@@ -1,0 +1,129 @@
+{
+  "skill_name": "offline-sync",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add offline support to the Angebote (quotes) module. Quotes should be creatable, editable, and viewable when the user has no internet connection. When connectivity returns, all changes should sync to the Supabase 'angebote' table automatically.",
+      "expected_output": "Implementation that uses DBService for all quote CRUD operations, leveraging the existing dual-layer pattern (Supabase online, IndexedDB offline). Quotes written offline are stored in the 'quotes' IndexedDB store and added to sync_queue with table='quotes', action='upsert'. IDs are generated client-side via _generateId(). On reconnect, _syncOfflineQueue() pushes to Supabase 'angebote' table (via _supabaseTableMap). UI shows quotes immediately from local cache regardless of connectivity.",
+      "assertions": [
+        {
+          "name": "uses-dbservice",
+          "description": "All quote CRUD goes through DBService methods (not direct IndexedDB or Supabase calls)",
+          "type": "manual"
+        },
+        {
+          "name": "indexeddb-quotes-store",
+          "description": "Uses the existing 'quotes' IndexedDB object store (not a new store or database)",
+          "type": "manual"
+        },
+        {
+          "name": "sync-queue-entry",
+          "description": "Offline writes add entries to sync_queue with table='quotes' and appropriate action (insert/upsert/update/delete)",
+          "type": "manual"
+        },
+        {
+          "name": "client-side-ids",
+          "description": "New quotes get IDs via _generateId() so they have stable IDs before sync",
+          "type": "manual"
+        },
+        {
+          "name": "table-name-mapping",
+          "description": "Sync uses _supabaseTable('quotes') which maps to 'angebote' for Supabase operations",
+          "type": "manual"
+        },
+        {
+          "name": "immediate-ui-update",
+          "description": "User sees the quote in the UI immediately after creation, even when offline",
+          "type": "manual"
+        },
+        {
+          "name": "no-dual-database",
+          "description": "Does not create a second IndexedDB database; uses only 'freyai_app_db'",
+          "type": "manual"
+        }
+      ],
+      "files": ["js/services/db-service.js", "js/modules/quotes.js"]
+    },
+    {
+      "id": 2,
+      "prompt": "Fix: changes made offline are lost when the app comes back online. Users report that Kunden (customers) created or edited while offline disappear after reconnecting. The sync queue seems to have entries but they never get pushed to Supabase.",
+      "expected_output": "Diagnosis and fix for the sync pipeline. Common causes: (1) _syncOfflineQueue() not being triggered on reconnect -- verify supabaseClient.onOnline() callback is registered, (2) sync items silently discarded on failure instead of retried -- verify _incrementRetry() is called and retries < 5 filter is applied, (3) table name mapping missing -- verify _supabaseTable() maps 'customers' to 'kunden', (4) _syncInProgress stuck at true from a previous failed sync -- verify the finally block always resets it. Fix should include retry logic with incrementing counter and proper error logging.",
+      "assertions": [
+        {
+          "name": "identifies-root-cause",
+          "description": "Investigates the sync pipeline: trigger mechanism, queue processing, error handling, table mapping",
+          "type": "manual"
+        },
+        {
+          "name": "checks-retry-logic",
+          "description": "Verifies that failed sync items increment retries counter instead of being silently deleted",
+          "type": "manual"
+        },
+        {
+          "name": "checks-sync-trigger",
+          "description": "Verifies that _syncOfflineQueue() is triggered on online event (supabaseClient.onOnline or window 'online' event)",
+          "type": "manual"
+        },
+        {
+          "name": "checks-table-mapping",
+          "description": "Verifies _supabaseTableMap includes the correct English-to-German mapping for the affected entity",
+          "type": "manual"
+        },
+        {
+          "name": "no-silent-discard",
+          "description": "Ensures failed items remain in sync_queue with synced=false and are retried on next sync cycle",
+          "type": "manual"
+        },
+        {
+          "name": "sync-lock-safety",
+          "description": "Verifies _syncInProgress is reset in a finally block so it cannot get stuck",
+          "type": "manual"
+        }
+      ],
+      "files": ["js/services/db-service.js"]
+    },
+    {
+      "id": 3,
+      "prompt": "Implement conflict resolution for concurrent edits. Two users (or the same user on two devices) edit the same Rechnung (invoice) while one is offline. When both devices sync, the changes should be merged intelligently rather than one blindly overwriting the other.",
+      "expected_output": "A conflict resolution strategy that goes beyond simple last-write-wins. Implementation should: (1) compare updated_at timestamps between local and remote versions, (2) detect which fields actually changed on each side, (3) for non-overlapping field changes, merge both sets of changes, (4) for overlapping field changes, prefer the more recent edit or flag for manual resolution, (5) store conflict metadata for audit. The solution should use the existing sync_queue infrastructure and work within the DBService pattern.",
+      "assertions": [
+        {
+          "name": "timestamp-comparison",
+          "description": "Compares updated_at timestamps between local pending change and current remote version in Supabase",
+          "type": "manual"
+        },
+        {
+          "name": "field-level-detection",
+          "description": "Detects which specific fields changed locally vs remotely (not just whole-object comparison)",
+          "type": "manual"
+        },
+        {
+          "name": "non-overlapping-merge",
+          "description": "When different fields changed on each side, merges both sets of changes into the final object",
+          "type": "manual"
+        },
+        {
+          "name": "overlapping-handling",
+          "description": "When the same field changed on both sides, has a clear resolution strategy (latest wins, or flags for review)",
+          "type": "manual"
+        },
+        {
+          "name": "uses-existing-infrastructure",
+          "description": "Works within DBService and sync_queue pattern, not a separate sync mechanism",
+          "type": "manual"
+        },
+        {
+          "name": "updated-at-maintained",
+          "description": "Sets updated_at on every entity modification (both local writes and merged results)",
+          "type": "manual"
+        },
+        {
+          "name": "no-data-loss",
+          "description": "No user changes are silently dropped -- either merged, latest-wins, or flagged for manual resolution",
+          "type": "manual"
+        }
+      ],
+      "files": ["js/services/db-service.js", "js/services/sync-service.js"]
+    }
+  ]
+}

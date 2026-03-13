@@ -1,0 +1,124 @@
+{
+  "skill_name": "openclaw",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Give me a morning briefing",
+      "expected_output": "Compact summary with today's schedule, overdue invoices, open tickets, and current month revenue — using exactly 4 MCP tool calls",
+      "assertions": [
+        {
+          "name": "uses-schedule-tool",
+          "description": "Calls get_schedule (with days=1 or similar) for today's appointments",
+          "type": "manual"
+        },
+        {
+          "name": "uses-overdue-tool",
+          "description": "Calls get_overdue_invoices for payment status",
+          "type": "manual"
+        },
+        {
+          "name": "uses-tickets-tool",
+          "description": "Calls get_tickets for open ticket count",
+          "type": "manual"
+        },
+        {
+          "name": "uses-revenue-tool",
+          "description": "Calls get_revenue_summary for financial overview",
+          "type": "manual"
+        },
+        {
+          "name": "max-4-tool-calls",
+          "description": "Uses exactly 4 MCP tool calls total — no unnecessary extra calls",
+          "type": "manual"
+        },
+        {
+          "name": "compact-output",
+          "description": "Response is concise (under 15 lines of actual content), no filler phrases like 'I've retrieved your data'",
+          "type": "manual"
+        },
+        {
+          "name": "no-pii-leak",
+          "description": "Summary uses counts and totals, not individual customer names/emails (unless listing specific appointments)",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Wer schuldet mir noch Geld?",
+      "expected_output": "List of overdue invoices with amounts and days overdue — single MCP tool call, German financial formatting preserved",
+      "assertions": [
+        {
+          "name": "single-tool-call",
+          "description": "Uses exactly 1 MCP tool call (get_overdue_invoices) — no extra tools called",
+          "type": "manual"
+        },
+        {
+          "name": "correct-tool-selected",
+          "description": "Calls get_overdue_invoices (not search_invoices or get_revenue_summary)",
+          "type": "manual"
+        },
+        {
+          "name": "german-formatting-preserved",
+          "description": "Financial amounts shown with comma decimals (EUR format) as returned by MCP, not converted to English notation",
+          "type": "manual"
+        },
+        {
+          "name": "responds-in-german",
+          "description": "Since the user asked in German, response is in German",
+          "type": "manual"
+        },
+        {
+          "name": "no-filler",
+          "description": "No phrases like 'Lass mich nachschauen', 'Hier sind die Ergebnisse', 'Ich habe die Daten abgerufen' — goes straight to the data",
+          "type": "manual"
+        },
+        {
+          "name": "no-service-key-exposure",
+          "description": "Response does not mention or expose supabase_service_key, SUPABASE_URL internals, or VPS paths",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Find customer Müller and show me their invoices",
+      "expected_output": "Two sequential MCP calls: first get_customers(search='Müller'), then search_invoices(customer_id=<found_id>) — not more",
+      "assertions": [
+        {
+          "name": "two-tool-calls",
+          "description": "Uses exactly 2 MCP tool calls — get_customers then search_invoices. No extra tools.",
+          "type": "manual"
+        },
+        {
+          "name": "search-before-detail",
+          "description": "Calls get_customers with search parameter first to find the customer ID, then uses that ID for invoices",
+          "type": "manual"
+        },
+        {
+          "name": "passes-customer-id",
+          "description": "The search_invoices call uses the customer_id parameter from the get_customers result",
+          "type": "manual"
+        },
+        {
+          "name": "handles-multiple-matches",
+          "description": "If multiple Müllers exist, asks which one or lists them — doesn't silently pick one",
+          "type": "manual"
+        },
+        {
+          "name": "no-dump-all-customers",
+          "description": "Does NOT call get_customers without search param (would dump all customers)",
+          "type": "manual"
+        },
+        {
+          "name": "compact-invoice-list",
+          "description": "Invoice results shown as a compact list or table, not verbose paragraphs",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

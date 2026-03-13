@@ -1,0 +1,129 @@
+{
+  "skill_name": "security-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audit the auth flow for vulnerabilities. Check how tokens are stored, how sessions are managed, whether password policies are strong enough, and if there are any auth bypass risks. Focus on auth-service.js and its integration with Supabase Auth.",
+      "expected_output": "A comprehensive auth security audit covering token storage (localStorage risks), session refresh via onAuthStateChange, logout cleanup verification, password policy recommendations (minimum 8 chars with complexity), rate limiting on login/reset, CSRF token validation on mutations, and service_role key exposure check. Should reference specific code in auth-service.js and security-service.js.",
+      "assertions": [
+        {
+          "name": "token-storage-analysis",
+          "description": "Identifies that Supabase stores tokens in localStorage by default and explains the XSS theft risk, recommends mitigations (tight CSP, consider httpOnly cookies)",
+          "type": "manual"
+        },
+        {
+          "name": "session-management-review",
+          "description": "Reviews onAuthStateChange subscription, verifies singleton pattern (_authSubscription), checks session refresh behavior",
+          "type": "manual"
+        },
+        {
+          "name": "logout-cleanup-check",
+          "description": "Verifies logout() clears this.user and this.session, checks for leftover localStorage keys, mentions IndexedDB and Service Worker cache cleanup",
+          "type": "manual"
+        },
+        {
+          "name": "password-policy-recommendation",
+          "description": "Identifies Supabase default minimum (6 chars) as insufficient, recommends 8+ with complexity rules, suggests frontend enforcement before API call",
+          "type": "manual"
+        },
+        {
+          "name": "rate-limiting-check",
+          "description": "Checks whether login and password reset operations use securityService.checkRateLimit() to prevent brute force and email bombing",
+          "type": "manual"
+        },
+        {
+          "name": "service-role-exposure",
+          "description": "Verifies service_role key is never present in frontend JS files, HTML, or client-accessible code",
+          "type": "manual"
+        },
+        {
+          "name": "auth-guard-coverage",
+          "description": "Checks that protected pages verify authService.isLoggedIn() on load and redirect to auth.html if unauthenticated",
+          "type": "manual"
+        }
+      ],
+      "files": ["js/services/auth-service.js", "js/services/security-service.js"]
+    },
+    {
+      "id": 2,
+      "prompt": "Review the CSP policy for the FreyAI app and fix any gaps. Check both the HTML meta tags and any server-side headers. Make sure the policy is tight enough for a PWA that uses Supabase, self-hosted fonts, and no external CDNs.",
+      "expected_output": "A CSP audit that finds the current policy (meta tag or Nginx header), evaluates each directive against requirements (script-src self only, no unsafe-eval, font-src self for DSGVO, connect-src with specific Supabase URLs, frame-ancestors none), identifies gaps or overly permissive directives, and provides a corrected CSP string. Should also check for mixed content and upgrade-insecure-requests.",
+      "assertions": [
+        {
+          "name": "current-csp-located",
+          "description": "Finds the current CSP definition by searching HTML files for meta http-equiv and/or checking Nginx config references",
+          "type": "manual"
+        },
+        {
+          "name": "script-src-audit",
+          "description": "Verifies script-src is 'self' only, flags unsafe-eval or unsafe-inline as critical issues, recommends nonce/hash if inline needed",
+          "type": "manual"
+        },
+        {
+          "name": "connect-src-supabase",
+          "description": "Ensures connect-src includes the specific Supabase project URL (incbhhaiiayohrjqevog.supabase.co) and wss:// for Realtime, not a wildcard",
+          "type": "manual"
+        },
+        {
+          "name": "font-src-dsgvo",
+          "description": "Verifies font-src is 'self' only (no Google Fonts CDN), explains DSGVO requirement for self-hosted fonts",
+          "type": "manual"
+        },
+        {
+          "name": "frame-ancestors-clickjacking",
+          "description": "Checks frame-ancestors is 'none' to prevent clickjacking, or X-Frame-Options: DENY as fallback",
+          "type": "manual"
+        },
+        {
+          "name": "corrected-csp-provided",
+          "description": "Provides a complete, corrected CSP string with all required directives for this specific stack",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Check if customer data handling is DSGVO compliant. Review how PII (names, emails, phone numbers, addresses, IBAN) flows through the system -- from frontend input to Supabase storage, including offline IndexedDB cache. Check encryption, deletion rights, data minimization, and consent tracking.",
+      "expected_output": "A DSGVO compliance audit covering: data flow analysis (input -> sanitize -> Supabase with RLS, offline -> IndexedDB), encryption at rest (Supabase AES-256) and in transit (TLS), IndexedDB unencrypted PII risk, right to deletion (CASCADE on user_id, IndexedDB cleanup, Service Worker cache), data minimization review of table schemas, consent tracking mechanism, AVV status with processors (Supabase, Hostinger, Stripe, Resend), and self-hosted fonts/analytics for DSGVO. Should reference specific tables and services.",
+      "assertions": [
+        {
+          "name": "data-flow-mapped",
+          "description": "Traces PII flow from user input through sanitize-service to Supabase storage, including the IndexedDB offline cache layer in db-service",
+          "type": "manual"
+        },
+        {
+          "name": "encryption-assessment",
+          "description": "Evaluates encryption at rest (Supabase default), in transit (TLS/HTTPS), and identifies IndexedDB as unencrypted PII risk",
+          "type": "manual"
+        },
+        {
+          "name": "deletion-rights-cascade",
+          "description": "Reads config/sql/supabase-schema.sql to verify ON DELETE CASCADE on all user_id foreign keys, checks that all tables with user_id have ON DELETE CASCADE, identifies any data that would survive user deletion (IndexedDB, SW cache, logs)",
+          "type": "manual"
+        },
+        {
+          "name": "data-minimization-review",
+          "description": "Reviews table schemas to identify if unnecessary PII is collected, checks log tables (email_log, sms_log) for content vs metadata",
+          "type": "manual"
+        },
+        {
+          "name": "consent-tracking-check",
+          "description": "Reads config/sql/supabase-schema.sql to find concrete consent columns in the profiles table (e.g., consent_given, consent_timestamp, privacy_accepted_at), checks for consent tracking mechanism (timestamp, withdrawal option) and cookie banner/terms acceptance flow",
+          "type": "manual"
+        },
+        {
+          "name": "avv-processor-list",
+          "description": "Lists all data processors (Supabase, Hostinger, Stripe, Resend) and checks AVV status, mentions Kleinunternehmer context",
+          "type": "manual"
+        },
+        {
+          "name": "self-hosted-assets-verified",
+          "description": "Confirms fonts and analytics are self-hosted (no Google Fonts, Umami instead of Google Analytics) for DSGVO compliance",
+          "type": "manual"
+        }
+      ],
+      "files": ["js/services/sanitize-service.js", "js/services/db-service.js", "config/sql/supabase-schema.sql"]
+    }
+  ]
+}

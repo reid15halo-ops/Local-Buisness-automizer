@@ -1,0 +1,50 @@
+[
+  {
+    "name": "2. Mahnung für überfällige Rechnung",
+    "prompt": "Schreib eine 2. Mahnung für Rechnung RE-2026-0047 an Herrn Thomas Becker (Becker Fliesenleger GmbH, becker@fliesenleger-becker.de). Offener Betrag: 5.490,00 EUR. Fällig seit 32 Tagen.",
+    "expected": [
+      "2. Mahnung appears in the subject line",
+      "RE-2026-0047 is referenced in subject and body",
+      "Amount 5.490,00 EUR is mentioned in German format",
+      "5 Werktage deadline is stated",
+      "Gerichtliches Mahnverfahren is mentioned as consequence",
+      "Uses Sie/Ihnen throughout, never du",
+      "Full signature block with Jonas Glawion, FreyAI Visions, kontakt@freyaivisions.de, phone, website",
+      "Legal footer with address, §19 UStG, Datenschutz link, Abmelden option",
+      "Zero English words in the entire email",
+      "Tone is serious and firm but not threatening or unprofessional"
+    ]
+  },
+  {
+    "name": "Angebots-Versand mit Anhang",
+    "prompt": "Erstell eine E-Mail zum Versand von Angebot ANG-2026-0012 an Frau Maria Schneider (schneider@elektro-schneider.de). Angebot über KI-gestützte Betriebsführung, Gesamtsumme 4.900,00 EUR. Das Angebot ist als Anhang beigefügt.",
+    "expected": [
+      "Subject contains Angebot and ANG-2026-0012",
+      "Addresses Frau Schneider with Sehr geehrte Frau Schneider",
+      "References the attached Angebot (Anhang/beigefügt/anbei)",
+      "Mentions the total 4.900,00 EUR in German format",
+      "Includes §19 UStG Kleinunternehmer notice",
+      "States 30-day validity (Gültigkeit)",
+      "Clear call to action (next steps, Rückfragen, Kontakt)",
+      "Full signature and legal footer present",
+      "Premium tone — confident, not salesy or desperate",
+      "Zero English words"
+    ]
+  },
+  {
+    "name": "Willkommens-Mail nach Onboarding",
+    "prompt": "Schreib eine Willkommens-Mail an Herrn Andreas Weber (weber@weber-dach.de), der gerade das Onboarding für das Professional-Paket (Setup 5.500 EUR + 400 EUR/Monat) abgeschlossen hat.",
+    "expected": [
+      "Subject contains Willkommen",
+      "Addresses Herr Weber with Sehr geehrter Herr Weber",
+      "Welcomes him warmly but professionally",
+      "References the Professional-Paket and what he can expect",
+      "Mentions next steps or what happens now",
+      "Provides contact info for questions (kontakt@freyaivisions.de, phone)",
+      "Full signature block present",
+      "Legal footer with address, §19, Datenschutz, Abmelden",
+      "Tone is welcoming and premium, not generic or over-enthusiastic",
+      "Zero English words except product/package names (e.g. Professional-Paket) which are proper nouns, uses Sie throughout"
+    ]
+  }
+]

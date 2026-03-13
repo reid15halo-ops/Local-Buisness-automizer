@@ -1,0 +1,56 @@
+[
+  {
+    "name": "Generate invoice PDF with line items",
+    "prompt": "Erstelle eine Rechnung RE-2026-012 fuer Musterfirma GmbH (Max Mustermann, Kundenstrasse 42, 60311 Frankfurt am Main). 3 Positionen: 8 Std. KI-Beratung a 150 EUR, 1x Digital-Audit Pauschal 490 EUR, 3 Monate Retainer a 300 EUR. Zahlungsziel 14 Tage. Generiere das PDF.",
+    "expected_output": {
+      "assertions": [
+        "Uses document type 'rechnung' with number RE-2026-012",
+        "All amounts in German format (comma decimal): 150,00 / 490,00 / 300,00",
+        "Dates in DD.MM.YYYY format",
+        "Contains ss19 UStG notice (keine Umsatzsteuer)",
+        "MwSt is 0, Netto equals Brutto",
+        "Includes IBAN, BIC, bank details in payment section",
+        "Zahlungsziel set to 14 days from invoice date",
+        "Three positions with correct Pos/Beschreibung/Menge/Einheit/Einzelpreis/Gesamt",
+        "Total is (8*150) + (1*490) + (3*300) = 2.590,00 EUR",
+        "Output filename follows pattern Rechnung_RE-2026-012.pdf"
+      ]
+    }
+  },
+  {
+    "name": "Generate quote PDF with validity date",
+    "prompt": "Erstelle ein Angebot ANG-2026-005 fuer Schreinerei Huber (Thomas Huber, Hauptstrasse 7, 63843 Niedernberg). Setup-Paket Professional: Erstgespraech 0 EUR, Digital-Audit 490 EUR, KI-Automatisierung 2.800 EUR, Dashboard-Setup 1.200 EUR, Schulung 490 EUR. Gueltig 30 Tage. Mit Vertrauensbox.",
+    "expected_output": {
+      "assertions": [
+        "Uses document type 'angebot' with number ANG-2026-005",
+        "Gueltig bis is exactly 30 days from creation date",
+        "Contains trust section (green box) with guarantee items",
+        "Position 1 is Erstgespraech at 0,00 EUR",
+        "All prices in EUR with German formatting",
+        "ss19 UStG Kleinunternehmer notice present",
+        "Customer address follows DIN 5008 (street, then PLZ + city)",
+        "Total is 0 + 490 + 2800 + 1200 + 490 = 4.980,00 EUR",
+        "Includes professional intro text if provided",
+        "Output filename follows pattern Angebot_ANG-2026-005.pdf"
+      ]
+    }
+  },
+  {
+    "name": "Generate credit note PDF",
+    "prompt": "Erstelle eine Gutschrift GS-2026-003 fuer die Rechnung RE-2026-008. Kunde: Metallbau Schmidt GmbH (Peter Schmidt, Industriestrasse 15, 63065 Offenbach). Grund: Teilrueckgabe nicht benoetigter Materialien. 1 Position: Rueckerstattung Dichtungsset, 1 Paket, 320 EUR.",
+    "expected_output": {
+      "assertions": [
+        "Document titled 'Gutschrift' (not 'Rechnung')",
+        "Number is GS-2026-003",
+        "References original invoice RE-2026-008",
+        "Includes reason: Teilrueckgabe nicht benoetigter Materialien",
+        "Amount shown as 320,00 EUR (positive, labeled as credit)",
+        "ss19 UStG notice present",
+        "Contains full sender info (FreyAI Visions, address, Steuernummer, bank)",
+        "Contains full recipient info (Metallbau Schmidt GmbH, address)",
+        "Date in DD.MM.YYYY format",
+        "Output filename follows pattern Gutschrift_GS-2026-003.pdf"
+      ]
+    }
+  }
+]

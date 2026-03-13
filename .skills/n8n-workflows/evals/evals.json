@@ -1,0 +1,149 @@
+{
+  "skill_name": "n8n-workflows",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need an n8n workflow that automatically sends invoice reminders. It should check every morning at 08:00 for overdue rechnungen in Supabase, and for each one that's more than 7 days past the zahlungsziel, send a reminder email to the customer via the send-email edge function. Log everything to automation_log. Export as JSON for config/n8n-workflows/.",
+      "expected_output": "A complete n8n workflow JSON file with: scheduleTrigger at 08:00 Europe/Berlin, Supabase getAll on rechnungen with status=eq.offen filter, a Set or Code node to calculate days overdue from created_at + zahlungsziel_tage, an IF node checking days_overdue > 7, an HTTP Request node calling the send-email edge function with proper Authorization and apikey headers, an INSERT to automation_log with action='reminder.sent', an error handler node logging to automation_log with action='reminder.error', and continueOnFail on the email node. All nodes should have descriptive names and notes.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "a1-1",
+          "text": "Workflow uses scheduleTrigger with cron expression and Europe/Berlin timezone",
+          "type": "contains"
+        },
+        {
+          "id": "a1-2",
+          "text": "Supabase getAll node queries rechnungen table with status filter",
+          "type": "contains"
+        },
+        {
+          "id": "a1-3",
+          "text": "Days overdue calculation uses created_at and zahlungsziel_tage fields",
+          "type": "contains"
+        },
+        {
+          "id": "a1-4",
+          "text": "Email sent via Supabase send-email edge function with Authorization and apikey headers",
+          "type": "contains"
+        },
+        {
+          "id": "a1-5",
+          "text": "automation_log INSERT node present with action field",
+          "type": "contains"
+        },
+        {
+          "id": "a1-6",
+          "text": "continueOnFail set to true on external API call nodes",
+          "type": "contains"
+        },
+        {
+          "id": "a1-7",
+          "text": "Error handler node logs errors to automation_log",
+          "type": "contains"
+        },
+        {
+          "id": "a1-8",
+          "text": "Valid JSON that could be imported into n8n (has nodes, connections, settings keys)",
+          "type": "structure"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Design an n8n workflow that processes inbound emails and creates Anfragen in Supabase. It should receive a webhook POST with sender_email, sender_name, subject, and body fields. Use Ollama (mistral-small on the VPS) to classify the intent and extract the service type (leistungsart). Then create an anfragen record in Supabase and send a confirmation email back to the sender. Return a proper webhook response. Save to config/n8n-workflows/workflow-email-intake.json.",
+      "expected_output": "A complete n8n workflow JSON with: webhook trigger on POST with responseMode responseNode, input validation IF node checking required fields, HTTP Request to Ollama at http://172.19.0.1:11434/api/chat with mistral-small model for intent classification, a Set node extracting the classified fields from Ollama response, Supabase create on anfragen table with kunde_name/kunde_email/leistungsart/beschreibung/status='neu', HTTP Request to send-email edge function for confirmation, automation_log INSERT, respondToWebhook nodes for success (200) and error (400) paths, and an error handler.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "a2-1",
+          "text": "Webhook trigger with POST method and responseMode set to responseNode",
+          "type": "contains"
+        },
+        {
+          "id": "a2-2",
+          "text": "Input validation checks for required fields (sender_email, sender_name)",
+          "type": "contains"
+        },
+        {
+          "id": "a2-3",
+          "text": "Ollama HTTP Request to http://172.19.0.1:11434/api/chat or uses OLLAMA_BASE_URL env var",
+          "type": "contains"
+        },
+        {
+          "id": "a2-4",
+          "text": "Model specified as mistral-small or uses OLLAMA_MODEL env var",
+          "type": "contains"
+        },
+        {
+          "id": "a2-5",
+          "text": "Supabase create on anfragen table with leistungsart and status fields",
+          "type": "contains"
+        },
+        {
+          "id": "a2-6",
+          "text": "respondToWebhook nodes present for both success and error responses",
+          "type": "contains"
+        },
+        {
+          "id": "a2-7",
+          "text": "Confirmation email sent via send-email edge function",
+          "type": "contains"
+        },
+        {
+          "id": "a2-8",
+          "text": "Valid n8n workflow JSON structure with nodes, connections, and settings",
+          "type": "structure"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Create a weekly reporting workflow for FreyAI that runs every Monday at 09:00 and sends a summary via Telegram. It should query Supabase for: count of new anfragen this week, count of rechnungen created this week, total brutto of rechnungen with status='bezahlt' this week, and count of active auftraege. Use a Code node to aggregate the data, then Ollama to generate a natural language summary in German, and send it to Telegram. Log to automation_log.",
+      "expected_output": "A complete n8n workflow JSON with: scheduleTrigger with cron '0 9 * * 1' and Europe/Berlin timezone, multiple Supabase getAll queries (anfragen, rechnungen, auftraege) with date filters for current week, a Code node aggregating counts and totals, HTTP Request to Ollama for German language summary generation, HTTP Request to Telegram Bot API sendMessage with HTML parse_mode, automation_log INSERT, error handler, and continueOnFail on all external calls.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "a3-1",
+          "text": "Schedule trigger with Monday cron expression (day-of-week = 1) and Europe/Berlin timezone",
+          "type": "contains"
+        },
+        {
+          "id": "a3-2",
+          "text": "Multiple Supabase queries for anfragen, rechnungen, and auftraege tables",
+          "type": "contains"
+        },
+        {
+          "id": "a3-3",
+          "text": "Code node that aggregates data (counts, totals) from the Supabase queries",
+          "type": "contains"
+        },
+        {
+          "id": "a3-4",
+          "text": "Ollama call for generating German natural language summary",
+          "type": "contains"
+        },
+        {
+          "id": "a3-5",
+          "text": "Telegram sendMessage via HTTP Request with TELEGRAM_BOT_TOKEN and TELEGRAM_CTO_CHAT_ID",
+          "type": "contains"
+        },
+        {
+          "id": "a3-6",
+          "text": "automation_log INSERT with descriptive action name",
+          "type": "contains"
+        },
+        {
+          "id": "a3-7",
+          "text": "continueOnFail on Ollama and Telegram nodes",
+          "type": "contains"
+        },
+        {
+          "id": "a3-8",
+          "text": "Valid n8n workflow JSON structure",
+          "type": "structure"
+        }
+      ]
+    }
+  ]
+}

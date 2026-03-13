@@ -1,0 +1,134 @@
+{
+  "skill_name": "legal-compliance",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Generate an Impressum for the website.",
+      "expected_output": "Complete Impressum with all TMG §5 required fields for Kleinunternehmer, including §19 UStG Hinweis, OS-Plattform link, and MStV responsible person",
+      "assertions": [
+        {
+          "name": "owner-and-address",
+          "description": "Must include full name (Jonas Glawion), business name (FreyAI Visions), and complete address (Grabenstraße 135, 63762 Großostheim)",
+          "type": "manual"
+        },
+        {
+          "name": "contact-details",
+          "description": "Must include phone (+49 179 4228285) and email (kontakt@freyaivisions.de)",
+          "type": "manual"
+        },
+        {
+          "name": "kleinunternehmer-hinweis",
+          "description": "Must include the §19 UStG statement: 'Gemäß §19 UStG wird keine Umsatzsteuer berechnet' or equivalent",
+          "type": "manual"
+        },
+        {
+          "name": "mstv-responsible",
+          "description": "Must include 'Verantwortlich für den Inhalt nach §18 Abs. 2 MStV' with name and address",
+          "type": "manual"
+        },
+        {
+          "name": "os-streitschlichtung",
+          "description": "Must include EU Online-Streitbeilegung link (https://ec.europa.eu/consumers/odr/) and statement about Verbraucherschlichtungsstelle",
+          "type": "manual"
+        },
+        {
+          "name": "no-ust-idnr",
+          "description": "Must NOT include a USt-IdNr. and must explain why (§19 UStG exempt) or note that none exists",
+          "type": "manual"
+        },
+        {
+          "name": "legal-review-disclaimer",
+          "description": "Must include a disclaimer that the generated Impressum should be reviewed by a legal professional",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What do I need for DSGVO compliance?",
+      "expected_output": "Comprehensive DSGVO checklist covering Datenschutzerklärung, Verarbeitungsverzeichnis, AVV with all processors, TOM, Löschkonzept, and Betroffenenrechte",
+      "assertions": [
+        {
+          "name": "datenschutzerklaerung",
+          "description": "Must mention Datenschutzerklärung with required content (Verantwortlicher, Zweck, Rechtsgrundlage, Betroffenenrechte, Speicherdauer)",
+          "type": "manual"
+        },
+        {
+          "name": "verarbeitungsverzeichnis",
+          "description": "Must mention Verarbeitungsverzeichnis (Art. 30 DSGVO) as a requirement even for Kleinunternehmer with regular processing",
+          "type": "manual"
+        },
+        {
+          "name": "avv-processors",
+          "description": "Must list AVV requirements and name specific processors (at least Supabase, Stripe, Resend, Twilio, Hostinger)",
+          "type": "manual"
+        },
+        {
+          "name": "tom",
+          "description": "Must mention technische und organisatorische Maßnahmen (TOM) including encryption, access control, and backup",
+          "type": "manual"
+        },
+        {
+          "name": "loeschkonzept",
+          "description": "Must mention Löschkonzept with retention periods (10 years for invoices/bookkeeping, shorter for logs)",
+          "type": "manual"
+        },
+        {
+          "name": "drittland-transfer",
+          "description": "Must address US data transfers (Supabase, Stripe, etc.) and required safeguards (DPF, SCCs)",
+          "type": "manual"
+        },
+        {
+          "name": "no-legal-advice-caveat",
+          "description": "Must include caveat that this is not legal advice and recommend consulting a Fachanwalt für IT-Recht",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Draft AGB for my SaaS product.",
+      "expected_output": "German-language AGB with key SaaS clauses including Leistungsbeschreibung, Vergütung with §19 Hinweis, Haftung, Kündigung, Datenschutz-Verweis, and Datenherausgabe",
+      "assertions": [
+        {
+          "name": "leistungsbeschreibung",
+          "description": "Must include a Leistungsbeschreibung clause defining the SaaS service scope and availability",
+          "type": "manual"
+        },
+        {
+          "name": "verguetung-with-19",
+          "description": "Must include Vergütung/Preise clause with §19 UStG Hinweis ('Gemäß §19 UStG wird keine Umsatzsteuer berechnet')",
+          "type": "manual"
+        },
+        {
+          "name": "haftungsbeschraenkung",
+          "description": "Must include proper Haftungsbeschränkung differentiating Vorsatz/grobe Fahrlässigkeit (unlimited) from leichte Fahrlässigkeit (limited to Kardinalpflichten)",
+          "type": "manual"
+        },
+        {
+          "name": "kuendigung",
+          "description": "Must include Kündigungs-Klausel with Mindestlaufzeit, Kündigungsfrist, Textform requirement, and außerordentliche Kündigung",
+          "type": "manual"
+        },
+        {
+          "name": "datenschutz-verweis",
+          "description": "Must include a Datenschutz clause referencing the Datenschutzerklärung and AVV as Anlage",
+          "type": "manual"
+        },
+        {
+          "name": "datenherausgabe",
+          "description": "Must include a clause about Datenherausgabe/Datenexport bei Vertragsende with a defined timeframe",
+          "type": "manual"
+        },
+        {
+          "name": "german-legal-language",
+          "description": "AGB must be written in formal German legal language with proper clause numbering (§ or Ziffer)",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

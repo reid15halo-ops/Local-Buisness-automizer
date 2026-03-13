@@ -1,0 +1,159 @@
+{
+  "skill_name": "supabase",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a new Supabase table called 'wartungsvertraege' (maintenance contracts) for tracking recurring service agreements with customers. Each contract should have a customer reference, start/end dates, monthly price, service description, interval (monthly/quarterly/yearly), and status. Include the migration file.",
+      "expected_output": "SQL migration creating wartungsvertraege table with proper RLS policies, user_id, foreign key to kunden, timestamps, CHECK constraint on status, and idempotent DDL",
+      "assertions": [
+        {
+          "name": "rls-enabled",
+          "description": "Table has ALTER TABLE wartungsvertraege ENABLE ROW LEVEL SECURITY",
+          "type": "manual"
+        },
+        {
+          "name": "user-id-column",
+          "description": "Table has user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL",
+          "type": "manual"
+        },
+        {
+          "name": "user-own-policy",
+          "description": "Has RLS policy with auth.uid() = user_id for user row ownership",
+          "type": "manual"
+        },
+        {
+          "name": "service-role-policy",
+          "description": "Has separate RLS policy with auth.role() = 'service_role' for n8n/Edge Function access",
+          "type": "manual"
+        },
+        {
+          "name": "idempotent-ddl",
+          "description": "Uses CREATE TABLE IF NOT EXISTS and DROP POLICY IF EXISTS for safe re-runs",
+          "type": "manual"
+        },
+        {
+          "name": "german-naming",
+          "description": "Table name is German (wartungsvertraege), domain columns use German names matching project conventions",
+          "type": "manual"
+        },
+        {
+          "name": "timestamps-present",
+          "description": "Has both created_at and updated_at TIMESTAMPTZ DEFAULT NOW() columns",
+          "type": "manual"
+        },
+        {
+          "name": "migration-file-path",
+          "description": "Output references the correct migration path format (supabase/migrations/YYYYMMDDHHMMSS_name.sql) in comments or filename, even if written to workspace for eval purposes",
+          "type": "manual"
+        },
+        {
+          "name": "status-check-constraint",
+          "description": "Status column has a CHECK constraint enumerating valid values",
+          "type": "manual"
+        },
+        {
+          "name": "kunde-foreign-key",
+          "description": "Has a foreign key reference to the kunden table",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Create a Supabase Edge Function called 'generate-report' that takes a date range and generates a revenue summary. It should query rechnungen for paid invoices in the range, sum up netto/brutto, and return the totals grouped by month. This will be called from the frontend by authenticated users.",
+      "expected_output": "TypeScript Edge Function with CORS, JWT auth, date range query on rechnungen, monthly aggregation, proper error handling",
+      "assertions": [
+        {
+          "name": "cors-preflight",
+          "description": "Handles OPTIONS request with CORS headers including ALLOWED_ORIGIN",
+          "type": "manual"
+        },
+        {
+          "name": "jwt-auth",
+          "description": "Extracts user from JWT via Authorization header and validates authentication before proceeding",
+          "type": "manual"
+        },
+        {
+          "name": "user-scoped-query",
+          "description": "Queries rechnungen filtered by user_id from the authenticated user (not just relying on RLS)",
+          "type": "manual"
+        },
+        {
+          "name": "date-range-filter",
+          "description": "Filters rechnungen by the provided date range parameters",
+          "type": "manual"
+        },
+        {
+          "name": "paid-status-filter",
+          "description": "Only includes invoices with status 'bezahlt' (not offen, storniert, etc.)",
+          "type": "manual"
+        },
+        {
+          "name": "error-handling",
+          "description": "Has try/catch with proper error response (status 500, JSON body, CORS headers)",
+          "type": "manual"
+        },
+        {
+          "name": "deno-imports",
+          "description": "Uses correct Deno imports: serve from std, createClient from esm.sh/@supabase/supabase-js",
+          "type": "manual"
+        },
+        {
+          "name": "correct-file-path",
+          "description": "Output references the correct function path (supabase/functions/generate-report/index.ts) in comments or deploy instructions, even if written to workspace for eval purposes",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need to add a pg_cron job that runs every Monday at 06:00 and calls an Edge Function to send weekly summary emails to all users. Write the SQL to set up the cron job and create the Edge Function 'weekly-summary' that queries each user's data for the past week (new kunden, new rechnungen, total revenue) and sends a summary via the email relay.",
+      "expected_output": "SQL for pg_cron schedule + Edge Function with service_role auth, per-user data aggregation, email relay integration, proper error handling",
+      "assertions": [
+        {
+          "name": "cron-schedule-correct",
+          "description": "pg_cron schedule uses correct syntax: '0 6 * * 1' for Monday 06:00 UTC",
+          "type": "manual"
+        },
+        {
+          "name": "cron-uses-pg-net",
+          "description": "Cron job calls Edge Function via net.http_post with service_role key in Authorization header",
+          "type": "manual"
+        },
+        {
+          "name": "service-role-auth",
+          "description": "Edge Function validates caller has service_role key (not JWT auth)",
+          "type": "manual"
+        },
+        {
+          "name": "per-user-iteration",
+          "description": "Queries profiles or auth.users to iterate over all users, then aggregates data per user",
+          "type": "manual"
+        },
+        {
+          "name": "week-date-filter",
+          "description": "Filters data to the past 7 days using date arithmetic",
+          "type": "manual"
+        },
+        {
+          "name": "email-relay-integration",
+          "description": "Sends emails via EMAIL_RELAY_URL with EMAIL_RELAY_SECRET, not directly via SMTP",
+          "type": "manual"
+        },
+        {
+          "name": "cors-and-error-handling",
+          "description": "Has CORS preflight handler and try/catch error handling",
+          "type": "manual"
+        },
+        {
+          "name": "no-hardcoded-secrets",
+          "description": "All secrets accessed via Deno.env.get(), nothing hardcoded",
+          "type": "manual"
+        }
+      ],
+      "files": []
+    }
+  ]
+}

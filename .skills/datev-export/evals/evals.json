@@ -1,0 +1,138 @@
+{
+  "skill_name": "datev-export",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Generate DATEV export for all paid invoices this month.",
+      "expected_output": "Generates DATEV EXTF CSV with correct header row (EXTF;510;21;Buchungsstapel), proper SKR03 account mapping (8400 for Erlöse, 1200 for Bank), BU-Schlüssel 0 for Kleinunternehmer §19, DDMM date format, semicolon delimiter, and CRLF line endings",
+      "assertions": [
+        {
+          "name": "correct-extf-header",
+          "description": "CSV must start with EXTF header row containing format version 510, Datenkategorie 21, BeraterNr, MandantenNr, Wirtschaftsjahr, and period dates",
+          "type": "manual"
+        },
+        {
+          "name": "skr03-erloskonto",
+          "description": "Einnahmen must use Sachkonto 8400 (Erlöse) or 8120 (steuerfreie Umsätze §19) — not a random account number",
+          "type": "manual"
+        },
+        {
+          "name": "gegenkonto-bank",
+          "description": "Gegenkonto must be 1200 (Bank) for paid invoices, not hardcoded to an incorrect value",
+          "type": "manual"
+        },
+        {
+          "name": "kleinunternehmer-bu-schluessel",
+          "description": "BU-Schlüssel must be 0 for all Einnahmen because FreyAI is Kleinunternehmer §19 UStG — must NOT use BU 3 (19% USt)",
+          "type": "manual"
+        },
+        {
+          "name": "datev-date-format",
+          "description": "Datum field must be DDMM format (e.g., 1503 for March 15), not ISO or DD.MM.YYYY",
+          "type": "manual"
+        },
+        {
+          "name": "csv-format-semicolon-crlf",
+          "description": "CSV must use semicolon delimiter and CRLF line endings, text fields quoted with double quotes",
+          "type": "manual"
+        },
+        {
+          "name": "uses-existing-services",
+          "description": "Must use window.datevExportService or window.bookkeepingService — not create a new export mechanism from scratch",
+          "type": "manual"
+        }
+      ],
+      "files": [
+        "js/services/datev-export-service.js",
+        "js/services/bookkeeping-service.js"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add Skonto handling to the DATEV export. When a customer pays with 2% Skonto, the export should generate the correct Buchungssätze.",
+      "expected_output": "Implements two-row Skonto pattern: Row 1 is reduced payment (Bank 1200 an Forderungen 1400), Row 2 is Skonto booking (Gewährte Skonti 8735 an Forderungen 1400). Both rows reference the same Belegfeld1 (invoice number). BU-Schlüssel 0 for §19.",
+      "assertions": [
+        {
+          "name": "two-row-skonto-pattern",
+          "description": "Must generate TWO DATEV rows for a Skonto payment: one for the reduced payment amount and one for the Skonto discount amount",
+          "type": "manual"
+        },
+        {
+          "name": "skonto-konto-8735",
+          "description": "Skonto booking must use Konto 8735 (Gewährte Skonti) — not reduce the Erlös amount on 8400",
+          "type": "manual"
+        },
+        {
+          "name": "forderungen-gegenkonto",
+          "description": "Both Skonto rows must use Gegenkonto 1400 (Forderungen aus L+L) to properly resolve the open receivable",
+          "type": "manual"
+        },
+        {
+          "name": "same-belegfeld",
+          "description": "Both Skonto rows must reference the same invoice number in Belegfeld 1 for traceability",
+          "type": "manual"
+        },
+        {
+          "name": "kleinunternehmer-no-ust",
+          "description": "BU-Schlüssel must remain 0 for both rows since FreyAI is Kleinunternehmer §19 — Skonto does not change the tax treatment",
+          "type": "manual"
+        },
+        {
+          "name": "amounts-add-up",
+          "description": "Reduced payment + Skonto amount must equal the original invoice total — no rounding errors or missing cents",
+          "type": "manual"
+        },
+        {
+          "name": "clean-code-integration",
+          "description": "Must integrate into existing convertToDatevRecord or generateExport flow in datev-export-service.js — not a separate standalone function",
+          "type": "manual"
+        }
+      ],
+      "files": [
+        "js/services/datev-export-service.js",
+        "js/services/bookkeeping-service.js"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My Steuerbüro says the DATEV export is missing the Gegenkonto and the BU-Schlüssel is wrong. Can you fix it?",
+      "expected_output": "Diagnoses that Gegenkonto is present but may be incorrect (hardcoded 1200 instead of using 1400 for Forderungen workflow), identifies the BU-Schlüssel bug (hardcoded 3/2 instead of 0 for §19 Kleinunternehmer), fixes both issues in datev-export-service.js, and verifies the fix against DATEV EXTF specification",
+      "assertions": [
+        {
+          "name": "identifies-bu-bug",
+          "description": "Must identify that datev-export-service.js line 102 hardcodes BU-Schlüssel 3 (19% USt) and 2 (7% VSt) which is wrong for Kleinunternehmer §19",
+          "type": "manual"
+        },
+        {
+          "name": "fixes-bu-to-zero",
+          "description": "Must change BU-Schlüssel to 0 for Kleinunternehmer, checking window.bookkeepingService.einstellungen.kleinunternehmer",
+          "type": "manual"
+        },
+        {
+          "name": "gegenkonto-logic",
+          "description": "Must explain that Gegenkonto depends on payment status: 1400 (Forderungen) for unpaid invoices, 1200 (Bank) for direct payments — not always hardcoded to one value",
+          "type": "manual"
+        },
+        {
+          "name": "preserves-csv-structure",
+          "description": "Fix must not break the existing CSV column order or EXTF header format — Gegenkonto must remain in its correct column position",
+          "type": "manual"
+        },
+        {
+          "name": "gobd-compliance",
+          "description": "Must mention GoBD implications: existing exports with wrong BU-Schlüssel should be flagged or re-exported, since GoBD requires correctness (Richtigkeit)",
+          "type": "manual"
+        },
+        {
+          "name": "encoding-warning",
+          "description": "Should flag that current export uses UTF-8 but DATEV expects Windows-1252 encoding — Umlaute (ä, ö, ü, ß) may break on import",
+          "type": "manual"
+        }
+      ],
+      "files": [
+        "js/services/datev-export-service.js",
+        "js/services/bookkeeping-service.js"
+      ]
+    }
+  ]
+}

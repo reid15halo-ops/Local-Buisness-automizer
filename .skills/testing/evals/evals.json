@@ -1,0 +1,124 @@
+{
+  "skill_name": "testing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write tests for the material-service. It handles CRUD operations for materials (Materialien) with fields like name, einheit (unit), preis (price), kategorie, mindestbestand (minimum stock), and bestand (current stock). It stores data in localStorage under 'freyai_materials' and supports search, low-stock alerts, and stock updates.",
+      "expected_output": "A test file tests/material-service.test.js with localStorage mock, inlined class, describe blocks for CRUD, search, stock alerts (bestand < mindestbestand), stock update, persistence, and edge cases (empty name, negative price).",
+      "assertions": [
+        {
+          "name": "file-location",
+          "description": "Test file is created at tests/material-service.test.js",
+          "type": "manual"
+        },
+        {
+          "name": "vitest-imports",
+          "description": "Imports describe, it, expect, beforeEach, vi from vitest",
+          "type": "manual"
+        },
+        {
+          "name": "localstorage-mock",
+          "description": "Uses the established localStorage mock pattern with getItem/setItem/removeItem/clear",
+          "type": "manual"
+        },
+        {
+          "name": "crud-coverage",
+          "description": "Has tests for add, update, delete, and get operations",
+          "type": "manual"
+        },
+        {
+          "name": "low-stock-alert",
+          "description": "Tests that low-stock detection works when bestand < mindestbestand",
+          "type": "manual"
+        },
+        {
+          "name": "german-field-names",
+          "description": "Uses German field names (einheit, preis, kategorie, mindestbestand, bestand) matching source",
+          "type": "manual"
+        },
+        {
+          "name": "persistence-test",
+          "description": "Verifies data survives a service re-instantiation via localStorage",
+          "type": "manual"
+        }
+      ],
+      "files": ["tests/material-service.test.js"]
+    },
+    {
+      "id": 2,
+      "prompt": "Write tests for auth-service covering login, logout, registration, session management, password reset, and auth state change listeners. The service wraps Supabase Auth and stores user/session state internally.",
+      "expected_output": "A test file tests/auth-service.test.js with Supabase client mock, tests for register (with metadata), login (success + failure), logout (clears state), session retrieval, password reset/update, listener subscribe/unsubscribe, and error handling when Supabase is not configured.",
+      "assertions": [
+        {
+          "name": "supabase-mock",
+          "description": "Mocks supabaseConfig.get() returning a client with auth methods (signUp, signInWithPassword, signOut, getSession, etc.)",
+          "type": "manual"
+        },
+        {
+          "name": "register-with-metadata",
+          "description": "Tests registration passes company_name, full_name, phone, plan to Supabase signUp options",
+          "type": "manual"
+        },
+        {
+          "name": "login-error-handling",
+          "description": "Tests that login throws on invalid credentials (error returned from Supabase)",
+          "type": "manual"
+        },
+        {
+          "name": "logout-clears-state",
+          "description": "Tests that logout sets user and session to null",
+          "type": "manual"
+        },
+        {
+          "name": "listener-pattern",
+          "description": "Tests onAuthChange subscribe returns unsubscribe function, and _notify calls all listeners",
+          "type": "manual"
+        },
+        {
+          "name": "not-configured-error",
+          "description": "Tests that operations throw 'Supabase nicht konfiguriert' when client is null",
+          "type": "manual"
+        }
+      ],
+      "files": ["tests/auth-service.test.js"]
+    },
+    {
+      "id": 3,
+      "prompt": "Write tests for the offline-sync behavior in db-service. The service uses a dual-layer pattern: try Supabase first, fall back to IndexedDB on error/offline, queue offline changes in sync_queue, and sync when connection is restored. Test the fallback logic, queue mechanics, and sync cycle.",
+      "expected_output": "A test file tests/db-service.test.js with mocks for both Supabase client and IndexedDB, tests for: successful Supabase read, fallback to IndexedDB on network error, queuing writes when offline, processing sync queue on reconnect, conflict handling, and clearing the queue after successful sync.",
+      "assertions": [
+        {
+          "name": "dual-layer-fallback",
+          "description": "Tests that when Supabase fails, data is read from IndexedDB cache",
+          "type": "manual"
+        },
+        {
+          "name": "offline-queue-write",
+          "description": "Tests that writes during offline are added to sync_queue with table name and operation type",
+          "type": "manual"
+        },
+        {
+          "name": "sync-on-reconnect",
+          "description": "Tests that queued items are sent to Supabase when connection restores",
+          "type": "manual"
+        },
+        {
+          "name": "queue-cleared-after-sync",
+          "description": "Tests that sync_queue is cleared after all items sync successfully",
+          "type": "manual"
+        },
+        {
+          "name": "table-name-mapping",
+          "description": "Tests or uses the English-to-German table mapping (customers->kunden, invoices->rechnungen)",
+          "type": "manual"
+        },
+        {
+          "name": "indexeddb-mock",
+          "description": "Uses a mock for IndexedDB operations (not real IndexedDB)",
+          "type": "manual"
+        }
+      ],
+      "files": ["tests/db-service.test.js"]
+    }
+  ]
+}
