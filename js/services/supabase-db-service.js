@@ -132,6 +132,62 @@ class SupabaseDBService {
         }
     }
 
+    async upsert(table, record) {
+        if (!record || !record.id) {
+            console.warn(`Supabase upsert(${table}) skipped: record missing or no id`);
+            return null;
+        }
+
+        // Save locally first (offline-first)
+        this._saveLocal(table, record);
+
+        if (!this.isOnline()) {
+            this._addToSyncQueue(table, 'create', record);
+            return record;
+        }
+
+        try {
+            // Transform record for Supabase: flatten nested kunde object
+            const transformed = this._transformForSupabase(record);
+
+            const { data, error } = await this.getClient()
+                .from(table)
+                .upsert([{
+                    ...transformed,
+                    user_id: window.authService.getUser()?.id
+                }], { onConflict: 'id' })
+                .select()
+                .single();
+
+            if (error) {throw error;}
+            return data;
+        } catch (err) {
+            console.warn(`Supabase upsert(${table}) failed, queued for sync:`, err.message);
+            this._addToSyncQueue(table, 'create', record);
+            return record;
+        }
+    }
+
+    /**
+     * Flatten nested objects for Supabase columns.
+     * E.g. { kunde: { name: 'X', email: 'Y' } } → { kunde_name: 'X', kunde_email: 'Y' }
+     */
+    _transformForSupabase(record) {
+        const transformed = {};
+
+        for (const [key, value] of Object.entries(record)) {
+            if (key === 'kunde' && value && typeof value === 'object' && !Array.isArray(value)) {
+                for (const [subKey, subValue] of Object.entries(value)) {
+                    transformed[`kunde_${subKey}`] = subValue;
+                }
+            } else {
+                transformed[key] = value;
+            }
+        }
+
+        return transformed;
+    }
+
     // ---- Sync ----
 
     async syncAll() {

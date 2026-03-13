@@ -17,30 +17,42 @@ const {
 // Initialization
 // ============================================
 async function init() {
+    const safeInit = (name, fn) => {
+        try { fn(); } catch (e) { console.error(`[init] ${name} failed:`, e); }
+    };
+
     // Always initialize event delegation and UI handlers — even if setup is incomplete
     // so that navigation, modals, and click handlers work while the wizard is open
-    window.AnfragenModule?.initAnfrageForm?.();
-    window.AngeboteModule?.initAngebotForm?.();
-    window.AngeboteModule?.initAngeboteFilters?.();
-    window.AngeboteModule?.initAngeboteEventDelegation?.();
-    window.AuftraegeModule?.initAuftragForm?.();
-    window.AuftraegeModule?.initAuftragDetailHandlers?.();
-    window.RechnungenModule?.initRechnungActions?.();
-    window.RechnungenModule?.initRechnungenFilters?.();
-    initMaterial();
-    initSettings();
-    initAutomationSettings();
-    initMahnwesen();
-    initBuchhaltung();
-    initQuickActions();
-    window.ModalsModule?.initModals?.();
-    window.WareneingangModule?.initWareneingang?.();
+    safeInit('AnfragenForm', () => window.AnfragenModule?.initAnfrageForm?.());
+    safeInit('AngebotForm', () => window.AngeboteModule?.initAngebotForm?.());
+    safeInit('AngeboteFilters', () => window.AngeboteModule?.initAngeboteFilters?.());
+    safeInit('AngeboteEvents', () => window.AngeboteModule?.initAngeboteEventDelegation?.());
+    safeInit('AuftragForm', () => window.AuftraegeModule?.initAuftragForm?.());
+    safeInit('AuftragDetail', () => window.AuftraegeModule?.initAuftragDetailHandlers?.());
+    safeInit('RechnungActions', () => window.RechnungenModule?.initRechnungActions?.());
+    safeInit('RechnungenFilters', () => window.RechnungenModule?.initRechnungenFilters?.());
+    safeInit('Material', () => initMaterial());
+    safeInit('Settings', () => initSettings());
+    safeInit('AutomationSettings', () => initAutomationSettings());
+    safeInit('Mahnwesen', () => initMahnwesen());
+    safeInit('Buchhaltung', () => initBuchhaltung());
+    safeInit('QuickActions', () => initQuickActions());
+    safeInit('Modals', () => window.ModalsModule?.initModals?.());
+    safeInit('Wareneingang', () => window.WareneingangModule?.initWareneingang?.());
 
     // Load company settings from Supabase (tax rate, stundensatz, noreply email, etc.)
-    if (window.companySettings) { await window.companySettings.load(); }
+    try {
+        if (window.companySettings) { await window.companySettings.load(); }
+    } catch (e) {
+        console.error('[init] Company settings load failed:', e);
+    }
 
     // Await store service load — must happen before wizard check so data is available
-    await window.storeService.load();
+    try {
+        await window.storeService.load();
+    } catch (e) {
+        console.error('[init] Store load failed:', e);
+    }
 
     // Check if setup wizard needs to run (after store + handlers are ready)
     if (window.setupWizard && !window.setupWizard.isSetupComplete()) {
@@ -1131,8 +1143,16 @@ window.updateDashboard = window.DashboardModule?.updateDashboard;
 document.addEventListener('DOMContentLoaded', async () => {
     if (window._appInitialized) {return;}
     window._appInitialized = true;
-    await init();
-    initAutomations();
+    try {
+        await init();
+    } catch (e) {
+        console.error('[App] Critical init failure:', e);
+    }
+    try {
+        initAutomations();
+    } catch (e) {
+        console.error('[App] Automations init failed:', e);
+    }
 });
 
 })();

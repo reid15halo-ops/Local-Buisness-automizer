@@ -123,8 +123,23 @@ class StoreService {
      * @deprecated Use loadForUser() instead
      */
     async load() {
+        // Try multiple sources for the current user ID
         const currentUser = window.userManager?.getCurrentUser();
-        const userId = currentUser ? currentUser.id : 'default';
+        let userId = currentUser?.id;
+        if (!userId) {
+            userId = window.authService?.user?.id;
+        }
+        if (!userId) {
+            // Try Supabase session directly
+            try {
+                const { data } = await window.supabaseClient?.auth?.getSession?.() || {};
+                userId = data?.session?.user?.id;
+            } catch { /* no session */ }
+        }
+        if (!userId) {
+            userId = 'default';
+            console.warn('[StoreService] No authenticated user found, using default store');
+        }
         return await this.loadForUser(userId);
     }
 
@@ -228,12 +243,16 @@ class StoreService {
         try {
             const userId = this.currentUserId || 'default';
             await window.dbService.setUserData(userId, this.STORAGE_KEY, this.store);
+            // Write-back to Supabase if online
+            this._pushToSupabase();
             this.notify();
         } catch (e) {
             console.error('Save failed:', e);
-            if (window.errorHandler) {
-                window.errorHandler.error('Fehler beim Speichern der Daten.');
-            }
+            try {
+                if (window.errorHandler) {
+                    window.errorHandler.error('Fehler beim Speichern der Daten.');
+                }
+            } catch { /* errorHandler itself must not crash save */ }
         } finally {
             this._saving = false;
             if (this._saveQueued) {
@@ -457,7 +476,12 @@ class StoreService {
             if (window.authService) {
                 window.authService.onAuthChange(async (user) => {
                     if (user && window.supabaseDB?.isOnline()) {
-                        await this.forceSync();
+                        // Only force sync if user changed (not on initial session restore)
+                        if (this.currentUserId && this.currentUserId !== user.id) {
+                            await this.loadForUser(user.id);
+                        } else if (!this.currentUserId) {
+                            await this.forceSync();
+                        }
                     }
                 });
             } else {
@@ -501,6 +525,31 @@ class StoreService {
             }
             return row;
         });
+    }
+
+    /**
+     * Push locally modified records to Supabase (fire-and-forget).
+     * Only pushes records with updated_at newer than _lastPushTime.
+     */
+    _pushToSupabase() {
+        if (!window.supabaseDB || !window.supabaseDB.isOnline()) {return;}
+        const tables = ['anfragen', 'angebote', 'auftraege', 'rechnungen'];
+        const cutoff = this._lastPushTime || 0;
+        this._lastPushTime = Date.now();
+
+        for (const table of tables) {
+            const records = this.store[table] || [];
+            for (const record of records) {
+                if (!record.id || !record.updated_at) {continue;}
+                const updatedTime = new Date(record.updated_at).getTime();
+                if (updatedTime > cutoff) {
+                    // Use supabaseDB's create/update method (fire-and-forget)
+                    window.supabaseDB.upsert?.(table, record)?.catch?.(err => {
+                        console.warn(`[StoreService] Push to Supabase failed for ${table}/${record.id}:`, err.message);
+                    });
+                }
+            }
+        }
     }
 
     /**

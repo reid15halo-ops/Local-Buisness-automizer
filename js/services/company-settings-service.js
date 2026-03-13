@@ -52,6 +52,10 @@ class CompanySettingsService {
         try {
             this._cache = await this._loadPromise;
             this._loaded = true;
+        } catch (err) {
+            console.warn('[CompanySettings] load() failed, using defaults:', err?.message || err);
+            this._cache = this._loadFromLocalStorage();
+            this._loaded = true;
         } finally {
             this._loadPromise = null;
         }
@@ -70,6 +74,22 @@ class CompanySettingsService {
                         .eq('user_id', user.id)
                         .single();
 
+                    // Detect missing table (404 or "relation does not exist")
+                    if (error) {
+                        const msg = (error.message || error.details || '').toLowerCase();
+                        const code = error.code || '';
+                        const status = error.status || error.statusCode || 0;
+
+                        if (status === 404 || code === '42P01' || msg.includes('relation') && msg.includes('does not exist')) {
+                            console.warn('[CompanySettings] Table "company_settings" does not exist in Supabase. Falling back to localStorage. Create the table to enable cloud settings sync.');
+                        } else if (code === 'PGRST116') {
+                            // .single() returns PGRST116 when no rows found — not an error, just no settings yet
+                            console.info('[CompanySettings] No settings row found for user, using localStorage/defaults.');
+                        } else {
+                            console.warn('[CompanySettings] Supabase query error:', error.message || error);
+                        }
+                    }
+
                     if (!error && data) {
                         // Merge with defaults so new columns are covered even on old rows
                         const merged = { ...this._defaults, ...data };
@@ -79,7 +99,7 @@ class CompanySettingsService {
                     }
                 }
             } catch (err) {
-                console.warn('[CompanySettings] Supabase fetch failed, using localStorage cache:', err.message);
+                console.warn('[CompanySettings] Supabase fetch failed, using localStorage cache:', err?.message || err);
             }
         }
 
@@ -189,14 +209,31 @@ class CompanySettingsService {
                 .select()
                 .single();
 
-            if (error) { throw error; }
+            if (error) {
+                const msg = (error.message || error.details || '').toLowerCase();
+                const code = error.code || '';
+                const status = error.status || error.statusCode || 0;
+
+                // Missing table — save to localStorage instead
+                if (status === 404 || code === '42P01' || msg.includes('relation') && msg.includes('does not exist')) {
+                    console.warn('[CompanySettings] Table "company_settings" does not exist. Saving to localStorage only.');
+                    this._cache = { ...(this._cache ?? this._defaults), ...updates };
+                    this._persistToLocalStorage(this._cache);
+                    return { success: true, offline: true };
+                }
+
+                throw error;
+            }
 
             this._cache = { ...this._defaults, ...data };
             this._persistToLocalStorage(this._cache);
             return { success: true };
         } catch (err) {
             console.error('[CompanySettings] save failed:', err);
-            return { success: false, error: err.message };
+            // Last resort: persist to localStorage so data isn't lost
+            this._cache = { ...(this._cache ?? this._defaults), ...updates };
+            this._persistToLocalStorage(this._cache);
+            return { success: false, error: err.message, offline: true };
         }
     }
 
