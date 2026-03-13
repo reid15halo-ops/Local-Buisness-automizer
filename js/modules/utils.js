@@ -34,10 +34,12 @@ function delay(ms) {
 
 // Toast notification
 function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
+    let container = document.getElementById('toast-container');
     if (!container) {
-        console.error('Toast container not found');
-        return;
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10001;display:flex;flex-direction:column;gap:8px;';
+        document.body.appendChild(container);
     }
 
     const toast = document.createElement('div');
