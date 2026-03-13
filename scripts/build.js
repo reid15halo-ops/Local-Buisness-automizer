@@ -142,11 +142,13 @@ function concatenateFiles(paths) {
 }
 
 function minify(code, name) {
+    const isCSS = name.endsWith('.css');
     try {
         const result = transformSync(code, {
             minify: true,
             target: 'es2020',
-            keepNames: true,
+            keepNames: !isCSS,
+            loader: isCSS ? 'css' : 'js',
         });
         const pct = ((1 - result.code.length / code.length) * 100).toFixed(1);
         console.log(`  ${name}: ${(code.length / 1024).toFixed(0)}KB → ${(result.code.length / 1024).toFixed(0)}KB (-${pct}%)`);
@@ -157,12 +159,43 @@ function minify(code, name) {
     }
 }
 
-const distDir = join(ROOT, 'dist', 'js');
-mkdirSync(distDir, { recursive: true });
+// CSS files (in load order from index.html)
+const cssFiles = [
+    'css/core.css',
+    'css/components.css',
+    'css/purchase-orders.css',
+    'css/reorder-engine.css',
+    'css/admin-panel.css',
+    'css/boomer-guide.css',
+    'css/agent-workflows.css',
+    'css/support.css',
+    'css/field-app.css',
+    'css/aufmass.css',
+    'css/customer-portal.css',
+    'css/field-app-mobile.css',
+    'css/field-mode.css',
+    'css/dashboard-widgets.css',
+    'css/timeline.css',
+    'css/kanban.css',
+    'css/conflict-resolution.css',
+    'css/communication.css',
+    'css/fonts.css',
+    'css/responsive.css',
+];
 
-console.log(`Building: ${syncScripts.length} sync + ${deferScripts.length} deferred files`);
+const distJs = join(ROOT, 'dist', 'js');
+const distCss = join(ROOT, 'dist', 'css');
+mkdirSync(distJs, { recursive: true });
+mkdirSync(distCss, { recursive: true });
 
-writeFileSync(join(distDir, 'app-sync.min.js'), minify(concatenateFiles(syncScripts), 'app-sync.min.js'));
-writeFileSync(join(distDir, 'app-bundle.min.js'), minify(concatenateFiles(deferScripts), 'app-bundle.min.js'));
+console.log(`Building: ${syncScripts.length} sync + ${deferScripts.length} deferred JS, ${cssFiles.length} CSS`);
 
-console.log('Build complete → dist/js/');
+writeFileSync(join(distJs, 'app-sync.min.js'), minify(concatenateFiles(syncScripts), 'app-sync.min.js'));
+writeFileSync(join(distJs, 'app-bundle.min.js'), minify(concatenateFiles(deferScripts), 'app-bundle.min.js'));
+
+// CSS bundle
+const cssBundle = concatenateFiles(cssFiles);
+const cssMin = minify(cssBundle, 'app.min.css');
+writeFileSync(join(distCss, 'app.min.css'), cssMin);
+
+console.log('Build complete → dist/');

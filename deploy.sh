@@ -34,7 +34,7 @@ deploy_vps() {
     echo "==> Deploying ${label} on VPS (${target_dir})..."
     ssh "$VPS_HOST" "cd ${target_dir} && git fetch origin main && git reset --hard origin/main"
     # Sync build artifacts (not in git)
-    rsync -az --delete dist/js/ "$VPS_HOST:${target_dir}/dist/js/"
+    rsync -az --delete dist/ "$VPS_HOST:${target_dir}/dist/"
     echo "==> ${label} deployed."
 }
 
