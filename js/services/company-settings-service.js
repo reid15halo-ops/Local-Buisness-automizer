@@ -80,7 +80,7 @@ class CompanySettingsService {
                         const code = error.code || '';
                         const status = error.status || error.statusCode || 0;
 
-                        if (status === 404 || code === '42P01' || msg.includes('relation') && msg.includes('does not exist')) {
+                        if (status === 404 || code === '42P01' || msg.includes('relation') && msg.includes('does not exist') || msg.includes('could not find') && msg.includes('schema cache')) {
                             console.warn('[CompanySettings] Table "company_settings" does not exist in Supabase. Falling back to localStorage. Create the table to enable cloud settings sync.');
                         } else if (code === 'PGRST116') {
                             // .single() returns PGRST116 when no rows found — not an error, just no settings yet
@@ -215,7 +215,7 @@ class CompanySettingsService {
                 const status = error.status || error.statusCode || 0;
 
                 // Missing table — save to localStorage instead
-                if (status === 404 || code === '42P01' || msg.includes('relation') && msg.includes('does not exist')) {
+                if (status === 404 || code === '42P01' || msg.includes('relation') && msg.includes('does not exist') || msg.includes('could not find') && msg.includes('schema cache')) {
                     console.warn('[CompanySettings] Table "company_settings" does not exist. Saving to localStorage only.');
                     this._cache = { ...(this._cache ?? this._defaults), ...updates };
                     this._persistToLocalStorage(this._cache);

@@ -147,8 +147,8 @@ class SupabaseDBService {
         }
 
         try {
-            // Transform record for Supabase: flatten nested kunde object
-            const transformed = this._transformForSupabase(record);
+            // Transform record for Supabase: flatten kunde, map camelCase, strip unknown cols
+            const transformed = this._transformForSupabase(record, table);
 
             const { data, error } = await this.getClient()
                 .from(table)
@@ -169,23 +169,64 @@ class SupabaseDBService {
     }
 
     /**
-     * Flatten nested objects for Supabase columns.
-     * E.g. { kunde: { name: 'X', email: 'Y' } } → { kunde_name: 'X', kunde_email: 'Y' }
+     * Known Supabase columns per table (from supabase-schema.sql + migrations).
+     * Only these fields are sent — everything else is stripped.
      */
-    _transformForSupabase(record) {
-        const transformed = {};
+    static SCHEMA = {
+        anfragen: ['id', 'user_id', 'kunde_name', 'kunde_email', 'kunde_telefon', 'leistungsart', 'beschreibung', 'budget', 'termin', 'status', 'created_at', 'tenant_id'],
+        angebote: ['id', 'user_id', 'anfrage_id', 'kunde_name', 'kunde_email', 'kunde_telefon', 'leistungsart', 'positionen', 'angebots_text', 'netto', 'mwst', 'brutto', 'status', 'gueltig_bis', 'created_at', 'tenant_id'],
+        auftraege: ['id', 'user_id', 'angebot_id', 'kunde_name', 'kunde_email', 'kunde_telefon', 'leistungsart', 'positionen', 'angebots_wert', 'netto', 'mwst', 'arbeitszeit', 'material_kosten', 'notizen', 'status', 'created_at', 'completed_at', 'tenant_id'],
+        rechnungen: ['id', 'user_id', 'auftrag_id', 'kunde_name', 'kunde_email', 'kunde_telefon', 'leistungsart', 'positionen', 'arbeitszeit', 'material_kosten', 'netto', 'mwst', 'brutto', 'status', 'zahlungsziel_tage', 'created_at', 'paid_at', 'tenant_id'],
+    };
+
+    /** Map of frontend camelCase keys → Supabase snake_case columns */
+    static FIELD_MAP = {
+        anfrageId: 'anfrage_id',
+        angebotId: 'angebot_id',
+        auftragId: 'auftrag_id',
+        angebotsWert: 'angebots_wert',
+        angebotsText: 'angebots_text',
+        materialKosten: 'material_kosten',
+        zahlungszielTage: 'zahlungsziel_tage',
+        gueltigBis: 'gueltig_bis',
+        completedAt: 'completed_at',
+        createdAt: 'created_at',
+        paidAt: 'paid_at',
+        tenantId: 'tenant_id',
+    };
+
+    /**
+     * Transform a frontend record for Supabase:
+     * 1. Flatten nested kunde → kunde_name, kunde_email, kunde_telefon
+     * 2. Map camelCase → snake_case
+     * 3. Strip fields not in the table schema
+     */
+    _transformForSupabase(record, table) {
+        const flat = {};
 
         for (const [key, value] of Object.entries(record)) {
             if (key === 'kunde' && value && typeof value === 'object' && !Array.isArray(value)) {
-                for (const [subKey, subValue] of Object.entries(value)) {
-                    transformed[`kunde_${subKey}`] = subValue;
-                }
+                if (value.name) flat.kunde_name = value.name;
+                if (value.email) flat.kunde_email = value.email;
+                if (value.telefon) flat.kunde_telefon = value.telefon;
             } else {
-                transformed[key] = value;
+                // Map camelCase → snake_case if known, otherwise pass through
+                const mapped = SupabaseDBService.FIELD_MAP[key] || key;
+                flat[mapped] = value;
             }
         }
 
-        return transformed;
+        // Whitelist: only keep columns that exist in this table's schema
+        const allowedCols = SupabaseDBService.SCHEMA[table];
+        if (!allowedCols) return flat; // unknown table — send as-is
+
+        const cleaned = {};
+        for (const col of allowedCols) {
+            if (flat[col] !== undefined) {
+                cleaned[col] = flat[col];
+            }
+        }
+        return cleaned;
     }
 
     // ---- Sync ----
