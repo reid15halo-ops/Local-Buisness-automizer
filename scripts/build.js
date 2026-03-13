@@ -150,12 +150,12 @@ function minify(code, name) {
             keepNames: !isCSS,
             loader: isCSS ? 'css' : 'js',
         });
-        const pct = ((1 - result.code.length / code.length) * 100).toFixed(1);
+        const pct = code.length > 0 ? ((1 - result.code.length / code.length) * 100).toFixed(1) : '0.0';
         console.log(`  ${name}: ${(code.length / 1024).toFixed(0)}KB → ${(result.code.length / 1024).toFixed(0)}KB (-${pct}%)`);
         return result.code;
     } catch (e) {
-        console.error(`  ERROR ${name}: ${e.message}`);
-        return code;
+        console.error(`  ERROR minifying ${name}: ${e.message}`);
+        process.exit(1);
     }
 }
 
@@ -183,6 +183,21 @@ const cssFiles = [
     'css/responsive.css',
 ];
 
+// Validate all manifest files exist before building
+let missing = 0;
+for (const list of [syncScripts, deferScripts, cssFiles]) {
+    for (const p of list) {
+        if (!existsSync(join(ROOT, p))) {
+            console.error(`  MISSING: ${p}`);
+            missing++;
+        }
+    }
+}
+if (missing > 0) {
+    console.error(`\nBuild ABORTED: ${missing} file(s) missing from manifest.`);
+    process.exit(1);
+}
+
 const distJs = join(ROOT, 'dist', 'js');
 const distCss = join(ROOT, 'dist', 'css');
 mkdirSync(distJs, { recursive: true });
@@ -190,12 +205,26 @@ mkdirSync(distCss, { recursive: true });
 
 console.log(`Building: ${syncScripts.length} sync + ${deferScripts.length} deferred JS, ${cssFiles.length} CSS`);
 
-writeFileSync(join(distJs, 'app-sync.min.js'), minify(concatenateFiles(syncScripts), 'app-sync.min.js'));
-writeFileSync(join(distJs, 'app-bundle.min.js'), minify(concatenateFiles(deferScripts), 'app-bundle.min.js'));
+const syncMin = minify(concatenateFiles(syncScripts), 'app-sync.min.js');
+const deferMin = minify(concatenateFiles(deferScripts), 'app-bundle.min.js');
+const cssMin = minify(concatenateFiles(cssFiles), 'app.min.css');
 
-// CSS bundle
-const cssBundle = concatenateFiles(cssFiles);
-const cssMin = minify(cssBundle, 'app.min.css');
+// Verify bundles are non-empty
+if (syncMin.length < 100) {
+    console.error('Build ABORTED: app-sync.min.js suspiciously small');
+    process.exit(1);
+}
+if (deferMin.length < 1000) {
+    console.error('Build ABORTED: app-bundle.min.js suspiciously small');
+    process.exit(1);
+}
+if (cssMin.length < 500) {
+    console.error('Build ABORTED: app.min.css suspiciously small');
+    process.exit(1);
+}
+
+writeFileSync(join(distJs, 'app-sync.min.js'), syncMin);
+writeFileSync(join(distJs, 'app-bundle.min.js'), deferMin);
 writeFileSync(join(distCss, 'app.min.css'), cssMin);
 
 console.log('Build complete → dist/');

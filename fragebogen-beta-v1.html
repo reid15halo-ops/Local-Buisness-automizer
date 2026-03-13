@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://analytics.freyaivisions.de; connect-src 'self' https://analytics.freyaivisions.de; img-src 'self' data: blob:; font-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests;">
+    <meta name="robots" content="noindex, nofollow">
     <title>FreyAI Visions — Betriebs-Aufnahmebogen V1</title>
     <style>
         :root {
@@ -1099,18 +1100,21 @@
                         if (key.charAt(0) === '_') return; // Skip internal keys
                         var val = existing[key];
                         if (typeof val !== 'string') return;
+                        // Sanitize key/val to prevent CSS selector injection
+                        if (/["\\\[\]]/.test(key) || /["\\\[\]]/.test(val)) return;
 
                         // Text / email / tel inputs
-                        var input = page.querySelector('input[name="' + key + '"][type="text"], input[name="' + key + '"][type="email"], input[name="' + key + '"][type="tel"], textarea[name="' + key + '"]');
-                        if (input) {
-                            input.value = val;
-                            return;
-                        }
-
-                        // Radio buttons
-                        var radio = page.querySelector('input[name="' + key + '"][type="radio"][value="' + val + '"]');
-                        if (radio) {
-                            radio.checked = true;
+                        var inputs = page.querySelectorAll('input[name="' + key + '"], textarea[name="' + key + '"]');
+                        for (var i = 0; i < inputs.length; i++) {
+                            var t = inputs[i].type;
+                            if (t === 'text' || t === 'email' || t === 'tel' || inputs[i].tagName === 'TEXTAREA') {
+                                inputs[i].value = val;
+                                return;
+                            }
+                            if (t === 'radio' && inputs[i].value === val) {
+                                inputs[i].checked = true;
+                                return;
+                            }
                         }
                     });
                 }
