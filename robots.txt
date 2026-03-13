@@ -4,11 +4,20 @@
 User-agent: *
 Allow: /
 
-# Login-Bereich
+# Login & Portal
 Disallow: /auth.html
+Disallow: /customer-portal.html
+Disallow: /portal.html
+Disallow: /setup-credentials.html
 
-# Interne Services
+# Interne Verzeichnisse
+Disallow: /demo/
+Disallow: /dist/
+Disallow: /config/
 Disallow: /js/services/
+
+# Test-Seiten
+Disallow: /test-*
 
 # Sitemap
 Sitemap: https://freyaivisions.de/sitemap.xml
