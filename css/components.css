@@ -971,6 +971,34 @@ textarea {
         transform: rotate(90deg);
         margin: 8px 0;
     }
+
+    .material-card {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .material-filter {
+        flex-direction: column;
+    }
+
+    .material-filter select {
+        width: 100%;
+    }
+
+    .po-detail-table-wrapper {
+        position: relative;
+    }
+
+    .po-detail-table-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 24px;
+        background: linear-gradient(to right, transparent, rgba(0,0,0,0.15));
+        pointer-events: none;
+    }
 }
 
 /* ============================================
@@ -3884,6 +3912,7 @@ textarea {
 
     .stueckliste-summary {
         width: 100%;
+        min-width: 0;
     }
 }
 
@@ -6005,6 +6034,11 @@ textarea {
     padding: 4px;
     transition: var(--transition);
     color: var(--text-primary);
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .notification-bell:hover,
@@ -7027,6 +7061,29 @@ textarea {
     .we-quick-entry-row select {
         width: 100%;
     }
+
+    .angebot-summary .summary-row {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .we-csv-controls select {
+        min-width: 0;
+    }
+
+    .we-bank-item-info {
+        min-width: 0;
+    }
+
+    .we-auftrag-row select {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .model-selector-wrapper {
+        min-width: 0;
+        width: 100%;
+    }
 }
 
 /* ============================================
@@ -7464,4 +7521,22 @@ textarea {
     z-index: var(--z-top, 10000);
     font-size: 13px;
     font-weight: 500;
+}
+
+@media (max-width: 640px) {
+    .form-row-inline {
+        flex-direction: column;
+    }
+
+    .form-row-inline input[type="date"] {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+@media (pointer: coarse) {
+    .we-quick-entry-row .btn-icon-sm {
+        min-width: 44px;
+        min-height: 44px;
+    }
 }

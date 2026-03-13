@@ -18,17 +18,23 @@ if [[ "$DEPLOY_TARGET" != "staging" && "$DEPLOY_TARGET" != "production" && "$DEP
     exit 1
 fi
 
-# ---- Step 1: Push to GitHub ----
+# ---- Step 1: Build JS bundles ----
+echo "==> Building JS bundles..."
+node scripts/build.js
+
+# ---- Step 2: Push to GitHub ----
 echo "==> Pushing to GitHub..."
 git push origin main
 
-# ---- Step 2: Deploy to VPS ----
+# ---- Step 3: Deploy to VPS ----
 deploy_vps() {
     local target_dir="$1"
     local label="$2"
 
     echo "==> Deploying ${label} on VPS (${target_dir})..."
     ssh "$VPS_HOST" "cd ${target_dir} && git fetch origin main && git reset --hard origin/main"
+    # Sync build artifacts (not in git)
+    rsync -az --delete dist/js/ "$VPS_HOST:${target_dir}/dist/js/"
     echo "==> ${label} deployed."
 }
 
@@ -40,7 +46,7 @@ if [ "$DEPLOY_TARGET" = "production" ] || [ "$DEPLOY_TARGET" = "both" ]; then
     deploy_vps "$PRODUCTION_DIR" "Production"
 fi
 
-# ---- Step 3: Deploy Edge Functions ----
+# ---- Step 4: Deploy Edge Functions ----
 echo "==> Deploying Supabase Edge Functions..."
 
 FUNCTIONS_DIR="supabase/functions"

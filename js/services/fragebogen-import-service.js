@@ -296,6 +296,22 @@ class FragebogenImportService {
     }
 
     /**
+     * DSGVO: Remove all fragebogen-related data from localStorage.
+     * Call after successful import to avoid storing PII (IBAN, Steuernummer, etc.) indefinitely.
+     * Only removes fragebogen-specific keys, not app settings or API tokens.
+     */
+    clearFragebogenData() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);               // freyai_fragebogen_data
+            localStorage.removeItem(this.IMPORT_TIMESTAMP_KEY);      // freyai_fragebogen_imported_at
+            localStorage.removeItem('freyai_detected_business_type');
+            console.warn('[FragebogenImport] DSGVO-Cleanup: Fragebogen-Daten aus localStorage entfernt.');
+        } catch (e) {
+            console.error('[FragebogenImport] Fehler beim DSGVO-Cleanup:', e);
+        }
+    }
+
+    /**
      * Check URL for ?import=fragebogen parameter.
      * @returns {boolean}
      */

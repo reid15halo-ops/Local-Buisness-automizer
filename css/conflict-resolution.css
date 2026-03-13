@@ -626,6 +626,11 @@
     .conflict-diff-th-local { width: 25%; }
     .conflict-diff-th-remote { width: 25%; }
     .conflict-diff-th-select { width: 25%; }
+
+    .conflict-detail-panel {
+        max-width: 100%;
+        overflow: hidden;
+    }
 }
 
 /* ---- Responsive: Mobile (Stack Diff Vertically) ---- */

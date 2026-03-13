@@ -260,6 +260,10 @@ class FragebogenImportUI {
             const result = this.service.importFromFragebogen(formData);
             this.service.clearPendingImport();
 
+            // DSGVO: Remove raw fragebogen data from localStorage after successful import.
+            // The data has been written to wizard keys / store settings and is no longer needed.
+            this.service.clearFragebogenData();
+
             if (result.errors.length > 0) {
                 const errorMessages = result.errors.map(e =>
                     typeof e === 'string' ? e : `${e.field}: ${e.reason}`

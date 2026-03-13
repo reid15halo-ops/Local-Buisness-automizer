@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "dev": "npx serve . -l 3000",
-    "build": "bash deploy/scripts/deploy.sh",
+    "build": "node scripts/build.js",
     "lint": "eslint js/",
     "test": "vitest run",
     "test:watch": "vitest",
