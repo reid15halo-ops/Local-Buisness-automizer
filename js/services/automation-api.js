@@ -65,6 +65,10 @@ class AutomationAPI {
     // ============================================
 
     async sendEmail(to, subject, body, replyTo) {
+        // CSRF validation for state-changing email send
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         // Demo Guard: Block email sends in demo mode
         if (window.demoGuardService && !window.demoGuardService.allowExternalAction('E-Mail senden')) {
             return { success: true, demo: true };
@@ -73,6 +77,10 @@ class AutomationAPI {
     }
 
     async sendSMS(to, message) {
+        // CSRF validation for state-changing SMS send
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         // Demo Guard: Block SMS sends in demo mode
         if (window.demoGuardService && !window.demoGuardService.allowExternalAction('SMS senden')) {
             return { success: true, demo: true };

@@ -269,12 +269,11 @@ class UnifiedCommService {
                 throw new Error('Not authenticated');
             }
 
-            // Call the edge function
-            const { data, error } = await supabase.functions.invoke('send-sms', {
+            // Call the sms-proxy Edge Function (Twilio credentials are server-side)
+            const { data, error } = await supabase.functions.invoke('sms-proxy', {
                 body: {
                     to: cleanPhone,
-                    message: message,
-                    from: 'FreyAI Visions'
+                    body: message,
                 }
             });
 
@@ -297,14 +296,14 @@ class UnifiedCommService {
                     status: 'sent',
                     metadata: {
                         smsSegments: smsInfo.segments,
-                        messageId: data.messageId
+                        messageId: data.messageSid
                     }
                 });
             }
 
             return {
                 success: true,
-                messageId: data.messageId,
+                messageId: data.messageSid,
                 segments: smsInfo.segments
             };
         } catch (error) {

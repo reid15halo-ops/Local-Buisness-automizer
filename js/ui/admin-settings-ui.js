@@ -221,6 +221,16 @@ class AdminSettingsUI {
                             </div>
                         </div>
 
+                        <div class="admin-settings-section" style="border-top: 1px solid var(--border, #333); margin-top: 24px; padding-top: 24px;">
+                            <h3 style="color: #ef4444;">Konto l&ouml;schen</h3>
+                            <p style="font-size: 13px; color: var(--text-muted);">
+                                Alle Ihre Daten werden unwiderruflich gel&ouml;scht. Diese Aktion kann nicht r&uuml;ckg&auml;ngig gemacht werden.
+                            </p>
+                            <button id="btn-delete-account" class="btn btn-danger" style="background:#ef4444;color:white;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;">
+                                Konto endg&uuml;ltig l&ouml;schen
+                            </button>
+                        </div>
+
                         <div class="admin-errors" id="admin-errors" style="display: none;"></div>
                     </form>
                 </div>
@@ -246,6 +256,11 @@ class AdminSettingsUI {
 
         document.getElementById('btn-admin-save').addEventListener('click', () => {
             this.saveSettings(modal);
+        });
+
+        // Account deletion handler (DSGVO Art. 17)
+        document.getElementById('btn-delete-account').addEventListener('click', () => {
+            this.handleDeleteAccount(modal);
         });
 
         // Allow Escape to close
@@ -314,6 +329,79 @@ class AdminSettingsUI {
         } catch (err) {
             errorsDiv.textContent = `⚠️ ${err.message}`;
             errorsDiv.style.display = 'block';
+        }
+    }
+
+    /**
+     * Handle account deletion (DSGVO Art. 17)
+     */
+    async handleDeleteAccount(modal) {
+        // Step 1: Confirmation prompt requiring exact text input
+        const confirmation = prompt(
+            'Sind Sie sicher? Geben Sie "LÖSCHEN" ein, um Ihr Konto zu löschen.'
+        );
+        if (confirmation !== 'LÖSCHEN') {
+            if (confirmation !== null) {
+                alert('Kontolöschung abgebrochen. Sie müssen exakt "LÖSCHEN" eingeben.');
+            }
+            return;
+        }
+
+        // Step 2: Call the delete-account Edge Function
+        try {
+            const btn = document.getElementById('btn-delete-account');
+            btn.disabled = true;
+            btn.textContent = 'Wird gelöscht...';
+
+            const cfg = window.supabaseConfig?.get();
+            if (!cfg?.url || !cfg?.client) {
+                throw new Error('Supabase ist nicht konfiguriert.');
+            }
+
+            const { data: { session } } = await cfg.client.auth.getSession();
+            if (!session?.access_token) {
+                throw new Error('Keine aktive Sitzung. Bitte erneut anmelden.');
+            }
+
+            const response = await fetch(`${cfg.url}/functions/v1/delete-account`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'apikey': cfg.anonKey || '',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ export_data: false }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Kontolöschung fehlgeschlagen.');
+            }
+
+            // Step 3: Clear all local data
+            if (window.dbService) {
+                await window.dbService.clear().catch(() => {});
+            }
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // Step 4: Close modal and redirect
+            this.closeSettings(modal);
+            alert('Ihr Konto und alle Daten wurden erfolgreich gelöscht.');
+            window.location.href = 'landing.html';
+        } catch (err) {
+            const errorsDiv = document.getElementById('admin-errors');
+            if (errorsDiv) {
+                errorsDiv.textContent = `Fehler: ${err.message}`;
+                errorsDiv.style.display = 'block';
+            }
+
+            const btn = document.getElementById('btn-delete-account');
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Konto endgültig löschen';
+            }
         }
     }
 

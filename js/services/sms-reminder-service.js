@@ -166,13 +166,12 @@ class SmsReminderService {
     }
 
     /**
-     * Send an SMS via the configured gateway (Twilio, sipgate, or MessageBird).
-     * Provider and credentials are read from window.APP_CONFIG / localStorage.
+     * Send an SMS via the sms-proxy Supabase Edge Function.
+     * All provider credentials (Twilio, sipgate, MessageBird) are stored
+     * server-side as Supabase env vars — never exposed to the browser.
      *
-     * Supported providers (set SMS_PROVIDER env var):
-     *   twilio      — requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER
-     *   sipgate     — requires SIPGATE_TOKEN_ID, SIPGATE_TOKEN, SIPGATE_SMS_ID
-     *   messagebird — requires MESSAGEBIRD_API_KEY, MESSAGEBIRD_ORIGINATOR
+     * The Edge Function validates input, enforces rate limits (10/user/hour),
+     * and logs to the automation_log table.
      *
      * Falls back to console-only logging when no provider is configured.
      */
@@ -235,22 +234,23 @@ class SmsReminderService {
     }
 
     /**
-     * Send SMS via Supabase Edge Function (send-sms).
-     * API keys are stored server-side in the Edge Function, NOT client-side.
-     * The Edge Function handles provider routing (Twilio/sipgate/MessageBird).
+     * Send SMS via Supabase Edge Function (sms-proxy).
+     * Twilio credentials (ACCOUNT_SID, AUTH_TOKEN) are stored server-side
+     * in the Edge Function env vars, NOT client-side.
+     * The Edge Function validates input, enforces rate limits, and logs to automation_log.
      */
-    async _sendViaEdgeFunction(to, body, provider) {
+    async _sendViaEdgeFunction(to, body, _provider) {
         const supabase = window.supabaseConfig?.get();
         if (!supabase) {throw new Error('Supabase nicht konfiguriert');}
 
-        const { data, error } = await supabase.functions.invoke('send-sms', {
-            body: { to, message: body, provider }
+        const { data, error } = await supabase.functions.invoke('sms-proxy', {
+            body: { to, body }
         });
 
         if (error) {throw new Error(error.message || 'Edge Function Fehler');}
         if (!data?.success) {throw new Error(data?.error || 'SMS konnte nicht gesendet werden');}
 
-        return { success: true, messageId: data.messageId || ('edge-' + Date.now()), method: provider };
+        return { success: true, messageId: data.messageSid || ('edge-' + Date.now()), method: 'twilio' };
     }
 
     async _sendViaTwilio(to, body) {

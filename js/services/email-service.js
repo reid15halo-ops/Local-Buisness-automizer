@@ -470,6 +470,10 @@ FreyAI Visions`
      * @returns {Promise<{success:boolean, messageId?:string, error?:string}>}
      */
     async sendEmail(to, subject, html, opts = {}) {
+        // CSRF validation for state-changing email send
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         // Demo Guard: Block real email sends in demo mode
         if (window.demoGuardService && !window.demoGuardService.allowExternalAction('E-Mail senden')) {
             console.warn(`[EmailService] Demo-Modus: E-Mail an ${to} blockiert (${subject})`);

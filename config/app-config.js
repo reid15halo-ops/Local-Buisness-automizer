@@ -29,18 +29,13 @@
         EMAIL_RELAY_SECRET: ls('freyai_email_relay_secret', ''),
 
         // ── SMS provider ───────────────────────────────────────────────────
-        // C-01: Twilio credentials should be stored server-side as Supabase env vars.
-        // SMS sending should go through a server-side proxy Edge Function.
-        // TODO: Create sms-proxy Edge Function (similar to gocardless-proxy)
+        // Twilio credentials (ACCOUNT_SID, AUTH_TOKEN) are now stored server-side
+        // as Supabase env vars. All SMS sending goes through the sms-proxy Edge Function.
+        // Sipgate/MessageBird credentials are also server-side only.
         SMS_PROVIDER:       ls('freyai_sms_provider',       'none'),
-        TWILIO_ACCOUNT_SID: ls('freyai_twilio_account_sid', ''), // TODO: move to server-side
-        TWILIO_AUTH_TOKEN:  ls('freyai_twilio_auth_token',  ''), // TODO: move to server-side
-        TWILIO_FROM_NUMBER: ls('freyai_twilio_from_number', ''),
-        // C-01: Sipgate/MessageBird credentials should also be server-side only.
-        // TODO: Create sms-proxy Edge Function to handle all SMS providers server-side
-        SIPGATE_TOKEN_ID:   ls('freyai_sipgate_token_id',   ''), // TODO: move to server-side
-        SIPGATE_TOKEN:      ls('freyai_sipgate_token',       ''), // TODO: move to server-side
-        MESSAGEBIRD_KEY:    ls('freyai_messagebird_key',    ''), // TODO: move to server-side
+        // TWILIO_ACCOUNT_SID — server-side only (Supabase env var, used by sms-proxy Edge Function)
+        // TWILIO_AUTH_TOKEN  — server-side only (Supabase env var, used by sms-proxy Edge Function)
+        TWILIO_FROM_NUMBER: ls('freyai_twilio_from_number', ''), // not a secret, kept client-side for UI display
 
         // ── Paperless-ngx DMS ─────────────────────────────────────────────
         PAPERLESS_URL:   ls('freyai_paperless_url',   'https://docs.freyaivisions.de'),

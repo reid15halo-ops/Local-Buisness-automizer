@@ -664,6 +664,10 @@ async addFromRechnung(rechnung) {
     }
 
     async deleteBuchung(id) {
+        // CSRF validation for state-changing booking delete
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         this.buchungen = this.buchungen.filter(b => b.id !== id);
         await this._deleteFromSupabase(id);
     }

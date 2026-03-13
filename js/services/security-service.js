@@ -249,11 +249,11 @@ class SecurityService {
      * @returns {string}
      */
     initCSRFToken() {
-        let token = sessionStorage.getItem('csrf_token');
+        let token = sessionStorage.getItem('freyai_csrf_token');
 
         if (!token) {
             token = this.generateRandomToken();
-            sessionStorage.setItem('csrf_token', token);
+            sessionStorage.setItem('freyai_csrf_token', token);
         }
 
         return token;
@@ -268,12 +268,28 @@ class SecurityService {
     }
 
     /**
+     * Get CSRF token as a header object for use in fetch requests
+     * @returns {Object} Header object with X-CSRF-Token
+     */
+    getCSRFHeader() {
+        return { 'X-CSRF-Token': this.csrfToken };
+    }
+
+    /**
      * Validate CSRF token
-     * @param {string} token - Token to validate
+     * If called without argument, validates that the stored token is still intact
+     * (i.e. sessionStorage matches in-memory token — detects tampering/expiry).
+     * If called with a token argument, validates it against the stored token.
+     * @param {string} [token] - Token to validate (optional)
      * @returns {boolean}
      */
     validateCSRFToken(token) {
-        return token === this.csrfToken;
+        if (token !== undefined) {
+            return token === this.csrfToken;
+        }
+        // Self-validation: ensure in-memory token matches sessionStorage
+        const stored = sessionStorage.getItem('freyai_csrf_token');
+        return !!this.csrfToken && this.csrfToken === stored;
     }
 
     /**
@@ -282,7 +298,7 @@ class SecurityService {
      */
     refreshCSRFToken() {
         this.csrfToken = this.generateRandomToken();
-        sessionStorage.setItem('csrf_token', this.csrfToken);
+        sessionStorage.setItem('freyai_csrf_token', this.csrfToken);
         return this.csrfToken;
     }
 

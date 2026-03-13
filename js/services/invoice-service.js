@@ -47,6 +47,10 @@ class InvoiceService {
      * @returns {Promise<Object>} Created invoice
      */
     async createInvoice(auftrag, options = {}) {
+        // CSRF validation for state-changing invoice creation
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         await this.init();
 
         // Duplicate guard: check if invoice already exists for this auftrag

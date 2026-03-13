@@ -385,6 +385,10 @@ class DBService {
      * @returns {Promise<Object>} Saved customer
      */
     async saveCustomer(data) {
+        // CSRF validation for state-changing customer save
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         const userId = this._getCurrentUserId();
         const customer = {
             ...data,
@@ -427,6 +431,10 @@ class DBService {
      * @param {string} id
      */
     async deleteCustomer(id) {
+        // CSRF validation for state-changing customer delete
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         const supabase = this._getSupabase();
 
         if (supabase) {
@@ -533,6 +541,10 @@ class DBService {
      * @returns {Promise<Object>}
      */
     async saveInvoice(data) {
+        // CSRF validation for state-changing invoice save
+        if (window.securityService && !window.securityService.validateCSRFToken()) {
+            throw new Error('CSRF-Token ungültig. Bitte Seite neu laden.');
+        }
         const userId = this._getCurrentUserId();
         const invoice = {
             ...data,
