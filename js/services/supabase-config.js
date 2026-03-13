@@ -15,8 +15,8 @@ const SUPABASE_CONFIG = {
     // SECURITY NOTE: Der anon key ist by design öffentlich (public).
     // Die Sicherheit wird durch Row Level Security (RLS) Policies in
     // Supabase gewährleistet, NICHT durch Geheimhaltung des anon keys.
-    url: localStorage.getItem('supabase_url') || '',
-    anonKey: localStorage.getItem('supabase_anon_key') || '',
+    url: localStorage.getItem('supabase_url') || 'https://lrmftochnzzypmuoaulr.supabase.co',
+    anonKey: localStorage.getItem('supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxybWZ0b2Nobnp6eXBtdW9hdWxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczODM2NjQsImV4cCI6MjA3Mjk1OTY2NH0.Pwb5qyIRPaT7mtT50_SIOLRsH5eg7SHZs9ZKAsorBVQ',
 };
 
 // Expose for landing page waitlist
