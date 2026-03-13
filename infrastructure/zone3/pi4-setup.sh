@@ -329,9 +329,87 @@ success "Uptime Kuma deployment complete."
 # ── 9. Systemd services & cron ────────────────────────────────────────────────
 info "[9/9] Configuring systemd services..."
 
-# Uptime Kuma auto-start (via Docker, already handled by Docker)
-# Ensure Docker itself starts on boot
+# Ensure Docker starts on boot
 systemctl enable docker
+
+# Systemd unit for Uptime Kuma (ensures proper boot ordering)
+cat > /etc/systemd/system/freyai-kuma.service <<EOF
+[Unit]
+Description=FreyAI Uptime Kuma Monitoring Stack
+After=docker.service network-online.target tailscaled.service
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=${KUMA_DATA_DIR}
+ExecStart=/usr/bin/docker compose -f ${KUMA_DATA_DIR}/docker-compose.yml up -d
+ExecStop=/usr/bin/docker compose -f ${KUMA_DATA_DIR}/docker-compose.yml down
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable freyai-kuma.service
+success "freyai-kuma.service enabled for auto-start."
+
+# Systemd watchdog — restarts critical services if they die
+cat > /etc/systemd/system/freyai-watchdog.service <<'EOF'
+[Unit]
+Description=FreyAI Pi4 Service Watchdog
+After=docker.service tailscaled.service pihole-FTL.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/freyai-watchdog.sh
+EOF
+
+cat > /etc/systemd/system/freyai-watchdog.timer <<'EOF'
+[Unit]
+Description=FreyAI Watchdog Timer (every 5 min)
+
+[Timer]
+OnBootSec=120
+OnUnitActiveSec=300
+AccuracySec=30
+
+[Install]
+WantedBy=timers.target
+EOF
+
+cat > /usr/local/bin/freyai-watchdog.sh <<'WATCHDOG_EOF'
+#!/usr/bin/env bash
+# FreyAI Pi4 Watchdog — auto-recover crashed services
+set -uo pipefail
+
+# Check Tailscale
+if ! tailscale status &>/dev/null 2>&1; then
+    systemctl restart tailscaled
+    sleep 5
+    tailscale up --advertise-routes=192.168.1.0/24 --advertise-exit-node --accept-dns=false --hostname=pi4-guardian 2>/dev/null || true
+    logger -t freyai-watchdog "Tailscale restarted"
+fi
+
+# Check Pi-hole
+if ! systemctl is-active --quiet pihole-FTL; then
+    systemctl restart pihole-FTL
+    logger -t freyai-watchdog "Pi-hole restarted"
+fi
+
+# Check Uptime Kuma container
+if ! docker ps --filter name=uptime-kuma --format '{{.Status}}' 2>/dev/null | grep -qi "up"; then
+    docker compose -f /opt/freyai/uptime-kuma/docker-compose.yml up -d
+    logger -t freyai-watchdog "Uptime Kuma restarted"
+fi
+WATCHDOG_EOF
+chmod +x /usr/local/bin/freyai-watchdog.sh
+
+systemctl daemon-reload
+systemctl enable freyai-watchdog.timer
+systemctl start freyai-watchdog.timer
+success "freyai-watchdog.timer enabled (checks every 5 min)."
 
 # Health watchdog cron — posts Pi status to Supabase every 5 min
 CRON_FILE=/etc/cron.d/freyai-pi-health
