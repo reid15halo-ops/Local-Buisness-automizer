@@ -1,0 +1,374 @@
+{
+  "name": "WhatsApp Lead-Qualifizierung",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "whatsapp-lead-inbound"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {}
+      },
+      "id": "node-respond",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-event",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "MESSAGES_UPSERT",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "check-not-self",
+              "leftValue": "={{ $json.body.data.key.fromMe }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEqual"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-filter",
+      "name": "Filter: Eingehende Msgs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-phone",
+              "name": "phone",
+              "value": "={{ $json.body.data.key.remoteJid.split('@')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "set-message",
+              "name": "message",
+              "value": "={{ $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage?.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "set-name",
+              "name": "pushName",
+              "value": "={{ $json.body.data.pushName || 'Unbekannt' }}",
+              "type": "string"
+            },
+            {
+              "id": "set-jid",
+              "name": "remoteJid",
+              "value": "={{ $json.body.data.key.remoteJid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-extract",
+      "name": "Daten extrahieren",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyBF80s7kShv--23w7PZdtz4_gw0Ry-2S38",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"Du bist Lead-Qualifizierungs-Assistent fuer FreyAI Visions (IT/KI-Beratung). Analysiere diese WhatsApp-Nachricht.\\n\\nVon: {{ $json.pushName }} (+{{ $json.phone }}): \\\"{{ $json.message }}\\\"\\n\\nLead = jemand der IT/KI-Beratung, Automatisierung, Preise oder Leistungen anfraegt oder seinen Betrieb erwaehnt.\\nKein Lead = Spam, Privates ohne Geschaeftsbezug, Tests.\\n\\nAntworte nur mit JSON (kein Markdown):\\n{\\\"is_lead\\\":bool,\\\"confidence\\\":0-100,\\\"category\\\":\\\"Automatisierung|KI-Beratung|IT-Beratung|Website|Sonstiges|Kein-Lead\\\",\\\"priority\\\":\\\"hoch|mittel|niedrig\\\",\\\"summary\\\":\\\"max 60 Zeichen\\\",\\\"reply_de\\\":\\\"freundliche WhatsApp-Antwort max 120 Zeichen\\\"}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0.1,\n    \"maxOutputTokens\": 800,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-gemini",
+      "name": "Gemini 2.5 Flash Analyse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gemini Antwort parsen\nconst responseText = $input.item.json.candidates[0].content.parts[0].text;\n\n// JSON aus der Antwort extrahieren (falls Markdown vorhanden)\nconst cleanText = responseText\n  .replace(/```json\\n?/g, '')\n  .replace(/```\\n?/g, '')\n  .trim();\n\nlet geminiResult;\ntry {\n  geminiResult = JSON.parse(cleanText);\n} catch (e) {\n  // Fallback falls JSON-Parsing fehlschlaegt\n  geminiResult = {\n    is_lead: false,\n    confidence: 0,\n    category: 'Kein-Lead',\n    priority: 'niedrig',\n    summary: 'Parse-Fehler: ' + e.message,\n    reply_de: 'Danke fuer deine Nachricht! Wir melden uns bald bei dir.'\n  };\n}\n\n// Vorherige Daten durchreichen\nconst prevData = $('Daten extrahieren').item.json;\n\nreturn {\n  json: {\n    ...prevData,\n    geminiResult,\n    is_lead: geminiResult.is_lead === true,\n    confidence: geminiResult.confidence || 0\n  }\n};"
+      },
+      "id": "node-parse",
+      "name": "Gemini Antwort parsen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-lead",
+              "leftValue": "={{ $json.is_lead }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            },
+            {
+              "id": "confidence-ok",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-leadcheck",
+      "name": "Ist Lead (>60%)?",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://incbhhaiiayohrjqevog.supabase.co/rest/v1/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY2JoaGFpaWF5b2hyanFldm9nIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE3MTE2MywiZXhwIjoyMDg2NzQ3MTYzfQ.2I8Qkv9HHfHtuIYSs4Re-0F_fOFYx2_3FUVU-sFo2iQ"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY2JoaGFpaWF5b2hyanFldm9nIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE3MTE2MywiZXhwIjoyMDg2NzQ3MTYzfQ.2I8Qkv9HHfHtuIYSs4Re-0F_fOFYx2_3FUVU-sFo2iQ"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from_name\": \"{{ $json.pushName }}\",\n  \"from_email\": \"wa_{{ $json.phone }}@whatsapp.lead\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"message\": \"{{ $json.message.replace(/\"/g, '\\\\\"') }}\",\n  \"source\": \"whatsapp\",\n  \"category\": \"{{ $json.geminiResult.category }}\",\n  \"priority\": \"{{ $json.geminiResult.priority }}\",\n  \"score\": {{ $json.confidence }},\n  \"status\": \"neu\",\n  \"subject\": \"WA-Lead: {{ $json.geminiResult.summary }}\",\n  \"notes\": \"Auto-erfasst via WhatsApp. Gemini Confidence: {{ $json.confidence }}%\",\n  \"tags\": [\"whatsapp\", \"auto-erfasst\"]\n}",
+        "options": {}
+      },
+      "id": "node-supabase",
+      "name": "Lead in Supabase speichern",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:8080/message/sendText/freyai-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "evo_freyai_2026_secret"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Gemini Antwort parsen').item.json.remoteJid }}\",\n  \"text\": \"{{ $('Gemini Antwort parsen').item.json.geminiResult.reply_de }}\\n\\nTermin buchen: https://buchung.freyaivisions.de\"\n}",
+        "options": {}
+      },
+      "id": "node-reply-lead",
+      "name": "WhatsApp: Lead-Antwort",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://172.19.0.1:8080/message/sendText/freyai-whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "evo_freyai_2026_secret"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.remoteJid }}\",\n  \"text\": \"Hallo {{ $json.pushName }}, danke fuer deine Nachricht!\\n\\nFuer Fragen zu IT und KI-Beratung kannst du hier einen Termin vereinbaren:\\nhttps://buchung.freyaivisions.de\\n\\nOder schreib uns: kontakt@freyaivisions.de\"\n}",
+        "options": {}
+      },
+      "id": "node-reply-nolead",
+      "name": "WhatsApp: Allgemeine Antwort",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 420]
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter: Eingehende Msgs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Eingehende Msgs": {
+      "main": [
+        [
+          {
+            "node": "Daten extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daten extrahieren": {
+      "main": [
+        [
+          {
+            "node": "Gemini 2.5 Flash Analyse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Flash Analyse": {
+      "main": [
+        [
+          {
+            "node": "Gemini Antwort parsen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Antwort parsen": {
+      "main": [
+        [
+          {
+            "node": "Ist Lead (>60%)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ist Lead (>60%)?": {
+      "main": [
+        [
+          {
+            "node": "Lead in Supabase speichern",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp: Allgemeine Antwort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead in Supabase speichern": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp: Lead-Antwort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": ["whatsapp", "lead", "automatisierung"],
+  "triggerCount": 0,
+  "active": true
+}
