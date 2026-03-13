@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Mock StorageUtils globally
 global.StorageUtils = {
@@ -437,6 +437,10 @@ describe('PaymentService', () => {
         service = new PaymentService();
     });
 
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     // ─── Constructor & Defaults ─────────────────────────────────────────
 
     describe('constructor', () => {
@@ -603,6 +607,55 @@ describe('PaymentService', () => {
             expect(link.paymentMethod).toBe('paypal');
         });
 
+        it('should fallback to PayPal when Stripe throws an error', async () => {
+            window.stripeService = {
+                isConfigured: vi.fn(() => true),
+                createPaymentLink: vi.fn(async () => { throw new Error('Network timeout'); })
+            };
+
+            const link = await service.createPaymentLink({
+                type: 'invoice',
+                referenceType: 'rechnung',
+                referenceId: 'INV-ERR',
+                amount: 750,
+                description: 'Stripe throw test',
+                invoiceObject: { id: 'INV-ERR' }
+            });
+
+            expect(link.url).toContain('paypal.me');
+            expect(link.paymentMethod).toBe('paypal');
+        });
+
+        it('should set expiresAt to 7 days from now by default', async () => {
+            const before = Date.now();
+            const link = await service.createPaymentLink({
+                amount: 100,
+                referenceId: 'R-EXP',
+                referenceType: 'rechnung',
+                description: 'Expiry test'
+            });
+            const expiresAt = new Date(link.expiresAt).getTime();
+            const sevenDays = 7 * 24 * 60 * 60 * 1000;
+            expect(expiresAt).toBeGreaterThanOrEqual(before + sevenDays - 1000);
+            expect(expiresAt).toBeLessThanOrEqual(Date.now() + sevenDays + 1000);
+        });
+
+        it('should generate unique IDs for multiple links', async () => {
+            const link1 = await service.createPaymentLink({ amount: 10, referenceId: 'A', referenceType: 'rechnung', description: 'A' });
+            const link2 = await service.createPaymentLink({ amount: 20, referenceId: 'B', referenceType: 'rechnung', description: 'B' });
+            expect(link1.id).not.toBe(link2.id);
+        });
+
+        it('should call errorHandler.handle on validation error when errorHandler is set', async () => {
+            window.errorHandler = { handle: vi.fn() };
+            await expect(service.createPaymentLink(null)).rejects.toThrow();
+            expect(window.errorHandler.handle).toHaveBeenCalledWith(
+                expect.any(Error),
+                'PaymentService.createPaymentLink',
+                false
+            );
+        });
+
         it('should set default description when none provided', async () => {
             const link = await service.createPaymentLink({
                 amount: 100,
@@ -664,6 +717,24 @@ describe('PaymentService', () => {
             expect(result.payment.status).toBe('completed');
             expect(link.status).toBe('paid');
             expect(service.payments.length).toBe(1);
+        });
+
+        it('should call updateReference and sendPaymentConfirmation', async () => {
+            const link = await service.createPaymentLink({
+                amount: 400,
+                referenceId: 'R-SPY',
+                referenceType: 'rechnung',
+                description: 'Spy test',
+                customerEmail: 'spy@test.de'
+            });
+
+            const updateSpy = vi.spyOn(service, 'updateReference');
+            const confirmSpy = vi.spyOn(service, 'sendPaymentConfirmation');
+
+            service.processPayment(link.id, { method: 'bank' });
+
+            expect(updateSpy).toHaveBeenCalledWith(expect.objectContaining({ id: link.id, status: 'paid' }));
+            expect(confirmSpy).toHaveBeenCalledWith(expect.objectContaining({ amount: 400, method: 'bank' }));
         });
 
         it('should use default method "card" when no paymentData provided', async () => {
@@ -802,6 +873,12 @@ describe('PaymentService', () => {
             expect(links[0].id).toBe('c');
             expect(links[2].id).toBe('a');
         });
+
+        it('should combine multiple filters', () => {
+            const links = service.getPaymentLinks({ status: 'pending', type: 'deposit' });
+            expect(links.length).toBe(1);
+            expect(links[0].id).toBe('c');
+        });
     });
 
     // ─── getStatistics ──────────────────────────────────────────────────
@@ -860,6 +937,44 @@ describe('PaymentService', () => {
         });
     });
 
+    // ─── sendPaymentConfirmation ───────────────────────────────────────
+
+    describe('sendPaymentConfirmation', () => {
+        it('should do nothing when payment is null', () => {
+            expect(() => service.sendPaymentConfirmation(null)).not.toThrow();
+        });
+
+        it('should call communicationService.logMessage when available', () => {
+            window.communicationService = { logMessage: vi.fn() };
+
+            service.sendPaymentConfirmation({
+                amount: 250,
+                customerEmail: 'kunde@test.de',
+                referenceId: 'INV-CONF',
+                transactionId: 'tx-999'
+            });
+
+            expect(window.communicationService.logMessage).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    type: 'email',
+                    direction: 'outbound',
+                    to: 'kunde@test.de',
+                    status: 'sent'
+                })
+            );
+        });
+
+        it('should not throw when communicationService is null', () => {
+            window.communicationService = null;
+            expect(() => service.sendPaymentConfirmation({
+                amount: 100,
+                customerEmail: 'a@b.de',
+                referenceId: 'X',
+                transactionId: 'tx-1'
+            })).not.toThrow();
+        });
+    });
+
     // ─── handleStripePaymentSuccess ─────────────────────────────────────
 
     describe('handleStripePaymentSuccess', () => {
@@ -888,6 +1003,28 @@ describe('PaymentService', () => {
             expect(result).toEqual({ success: true, message: 'Payment confirmed' });
             expect(link.status).toBe('paid');
             expect(link.paidAt).toBeDefined();
+        });
+
+        it('should call sendPaymentConfirmation with stripe session data', async () => {
+            const link = await service.createPaymentLink({
+                type: 'invoice',
+                referenceType: 'rechnung',
+                referenceId: 'INV-CONF-STRIPE',
+                amount: 800,
+                description: 'Confirm test',
+                customerEmail: 'conf@test.de'
+            });
+            link.stripeSessionId = 'cs_confirm_123';
+
+            const confirmSpy = vi.spyOn(service, 'sendPaymentConfirmation');
+            await service.handleStripePaymentSuccess('INV-CONF-STRIPE');
+
+            expect(confirmSpy).toHaveBeenCalledWith(expect.objectContaining({
+                referenceId: 'INV-CONF-STRIPE',
+                customerEmail: 'conf@test.de',
+                amount: 800,
+                transactionId: 'cs_confirm_123'
+            }));
         });
     });
 

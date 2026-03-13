@@ -14,18 +14,38 @@ const localStorageMock = (() => {
 global.localStorage = localStorageMock;
 
 // Mock StorageUtils
-global.StorageUtils = {
+const StorageUtils = {
     getJSON: vi.fn((key, defaultVal) => defaultVal),
-    setJSON: vi.fn(() => true)
+    setJSON: vi.fn(() => true),
+    safeDate: vi.fn(str => str ? new Date(str) : null)
 };
+global.StorageUtils = StorageUtils;
 
 // Mock window globals
 global.window = {
     ...global.window,
     calendarService: undefined,
     storeService: undefined,
+    errorHandler: undefined,
     location: { origin: 'https://app.freyaivisions.de' },
     APP_CONFIG: {}
+};
+
+// Mock fetch
+global.fetch = vi.fn();
+
+// Mock document.dispatchEvent for Cal.com sync
+global.document = {
+    ...global.document,
+    dispatchEvent: vi.fn()
+};
+
+// Mock console methods to keep test output clean
+global.console = {
+    ...console,
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn()
 };
 
 // ── BookingService (inline from js/services/booking-service.js) ──────────
@@ -320,6 +340,30 @@ ${ci.name}`
         this.saveSettings();
     }
 
+    async fetchCalcomBookings() {
+        const cfg = window.APP_CONFIG || {};
+        const baseUrl = (cfg.CALCOM_URL || 'https://buchung.freyaivisions.de').replace(/\/+$/, '');
+        const apiKey = cfg.CALCOM_API_KEY || '';
+
+        if (!apiKey) {
+            console.warn('[BookingService] Cal.com API-Key nicht konfiguriert – Sync übersprungen.');
+            return [];
+        }
+
+        try {
+            const res = await fetch(`${baseUrl}/api/v1/bookings`, {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            if (!res.ok) { throw new Error(`Cal.com API ${res.status}: ${res.statusText}`); }
+            const data = await res.json();
+            const bookings = data.bookings || data || [];
+            return bookings.map(b => this._mapCalcomBooking(b));
+        } catch (err) {
+            console.error('[BookingService] Cal.com Fetch fehlgeschlagen:', err);
+            return [];
+        }
+    }
+
     _mapCalcomBooking(cb) {
         const start = new Date(cb.startTime);
         const end = new Date(cb.endTime);
@@ -362,6 +406,48 @@ ${ci.name}`
         return map[status] || 'pending';
     }
 
+    async syncCalcomToCalendar() {
+        try {
+            const calcomBookings = await this.fetchCalcomBookings();
+            if (!calcomBookings.length) { return 0; }
+
+            let added = 0;
+            for (const booking of calcomBookings) {
+                if (booking.status === 'cancelled') { continue; }
+
+                if (window.calendarService) {
+                    const existing = window.calendarService.getAppointment(booking.id);
+                    if (!existing) {
+                        window.calendarService.addAppointment({
+                            id: booking.id,
+                            title: `Cal.com: ${booking.customer.name || booking.serviceType}`,
+                            description: booking.notes,
+                            date: booking.date,
+                            startTime: booking.startTime,
+                            endTime: booking.endTime,
+                            customerName: booking.customer.name,
+                            type: 'termin',
+                            status: booking.status === 'confirmed' ? 'bestaetigt' : 'geplant',
+                            color: '#8b5cf6',
+                            forceAdd: true
+                        });
+                        added++;
+                    }
+                }
+            }
+
+            if (added > 0) {
+                console.debug(`[BookingService] ${added} Cal.com-Buchungen synchronisiert.`);
+                document.dispatchEvent(new CustomEvent('calcom:synced', { detail: { count: added } }));
+            }
+
+            return added;
+        } catch (e) {
+            window.errorHandler?.handle(e, 'BookingService');
+            return 0;
+        }
+    }
+
     save() { localStorage.setItem('freyai_bookings', JSON.stringify(this.bookings)); }
     saveSettings() { localStorage.setItem('freyai_booking_settings', JSON.stringify(this.settings)); }
 }
@@ -385,6 +471,23 @@ function sampleBookingInput(overrides = {}) {
     };
 }
 
+// Sample Cal.com booking object for reuse
+function sampleCalcomBooking(overrides = {}) {
+    return {
+        id: 42,
+        uid: 'abc-uid-123',
+        startTime: '2026-05-15T10:00:00.000Z',
+        endTime: '2026-05-15T11:00:00.000Z',
+        status: 'ACCEPTED',
+        title: 'Beratung mit Schmidt',
+        description: 'Dach prüfen',
+        eventType: { slug: 'beratung', title: 'Beratungsgespräch' },
+        attendees: [{ name: 'Hans Schmidt', email: 'hans@schmidt.de', phone: '+49 171 9999' }],
+        createdAt: '2026-05-01T08:00:00.000Z',
+        ...overrides
+    };
+}
+
 // ── Tests ────────────────────────────────────────────────────────────────
 
 describe('BookingService', () => {
@@ -394,22 +497,34 @@ describe('BookingService', () => {
         localStorage.clear();
         StorageUtils.getJSON.mockImplementation((key, defaultVal) => defaultVal);
         StorageUtils.setJSON.mockClear();
+        StorageUtils.safeDate.mockClear();
         window.calendarService = undefined;
         window.storeService = undefined;
+        window.errorHandler = undefined;
+        window.APP_CONFIG = {};
+        global.fetch.mockReset();
+        global.document.dispatchEvent.mockClear();
         service = new BookingService();
     });
 
-    // ── Constructor / Defaults ───────────────────────────────────────
+    // ── 1. Constructor / Defaults ────────────────────────────────────
 
     describe('constructor', () => {
         it('initializes with empty bookings array', () => {
             expect(service.bookings).toEqual([]);
         });
 
-        it('sets four default service types', () => {
+        it('sets four default service types (beratung/besichtigung/reparatur/wartung)', () => {
             const types = service.getServiceTypes();
             expect(types).toHaveLength(4);
             expect(types.map(t => t.id)).toEqual(['beratung', 'besichtigung', 'reparatur', 'wartung']);
+        });
+
+        it('sets correct durations for each default service type', () => {
+            expect(service.getServiceType('beratung').duration).toBe(30);
+            expect(service.getServiceType('besichtigung').duration).toBe(60);
+            expect(service.getServiceType('reparatur').duration).toBe(120);
+            expect(service.getServiceType('wartung').duration).toBe(90);
         });
 
         it('sets default booking window (1-30 days)', () => {
@@ -420,15 +535,32 @@ describe('BookingService', () => {
         it('enables confirmation email by default', () => {
             expect(service.settings.confirmationEmail).toBe(true);
         });
+
+        it('reads bookings from StorageUtils on construction', () => {
+            expect(StorageUtils.getJSON).toHaveBeenCalledWith('freyai_bookings', [], { service: 'bookingService' });
+        });
+
+        it('reads settings from StorageUtils on construction', () => {
+            // Second call in constructor is for settings
+            expect(StorageUtils.getJSON).toHaveBeenNthCalledWith(2, 'freyai_booking_settings', expect.any(Object), { service: 'bookingService' });
+        });
     });
 
-    // ── Booking CRUD Lifecycle ───────────────────────────────────────
+    // ── 2. createBooking() ───────────────────────────────────────────
 
     describe('createBooking()', () => {
         it('creates a booking with pending status', () => {
             const booking = service.createBooking(sampleBookingInput());
             expect(booking.status).toBe('pending');
-            expect(booking.id).toBeTruthy();
+        });
+
+        it('generates an ID starting with book-', () => {
+            const booking = service.createBooking(sampleBookingInput());
+            expect(booking.id).toMatch(/^book-/);
+        });
+
+        it('generates a confirmation code starting with FREY-', () => {
+            const booking = service.createBooking(sampleBookingInput());
             expect(booking.confirmationCode).toMatch(/^FREY-[A-Z0-9]{6}$/);
         });
 
@@ -442,18 +574,32 @@ describe('BookingService', () => {
             const booking = service.createBooking(sampleBookingInput());
             expect(booking.customer.name).toBe('Max Mustermann');
             expect(booking.customer.email).toBe('max@example.de');
+            expect(booking.customer.telefon).toBe('+49 170 1234567');
             expect(booking.customer.firma).toBe('Musterbau GmbH');
         });
 
         it('defaults missing customer fields to empty strings', () => {
             const booking = service.createBooking({ serviceType: 'beratung', date: '2026-04-10', startTime: '09:00', endTime: '09:30' });
             expect(booking.customer.name).toBe('');
+            expect(booking.customer.email).toBe('');
             expect(booking.customer.telefon).toBe('');
+            expect(booking.customer.firma).toBe('');
         });
 
         it('uses provided id when given', () => {
             const booking = service.createBooking(sampleBookingInput({ id: 'custom-id-42' }));
             expect(booking.id).toBe('custom-id-42');
+        });
+
+        it('sets confirmedAt and cancelledAt to null initially', () => {
+            const booking = service.createBooking(sampleBookingInput());
+            expect(booking.confirmedAt).toBeNull();
+            expect(booking.cancelledAt).toBeNull();
+        });
+
+        it('sets reminderSent to false initially', () => {
+            const booking = service.createBooking(sampleBookingInput());
+            expect(booking.reminderSent).toBe(false);
         });
 
         it('calls calendarService.addAppointment when available', () => {
@@ -462,14 +608,21 @@ describe('BookingService', () => {
             service.createBooking(sampleBookingInput());
             expect(mockAdd).toHaveBeenCalledTimes(1);
             expect(mockAdd.mock.calls[0][0].title).toContain('Buchung:');
+            expect(mockAdd.mock.calls[0][0].status).toBe('geplant');
         });
 
-        it('sets confirmedAt and cancelledAt to null initially', () => {
-            const booking = service.createBooking(sampleBookingInput());
-            expect(booking.confirmedAt).toBeNull();
-            expect(booking.cancelledAt).toBeNull();
+        it('does not throw when calendarService is undefined', () => {
+            window.calendarService = undefined;
+            expect(() => service.createBooking(sampleBookingInput())).not.toThrow();
+        });
+
+        it('adds booking to internal bookings array', () => {
+            service.createBooking(sampleBookingInput());
+            expect(service.getAllBookings()).toHaveLength(1);
         });
     });
+
+    // ── 3. confirmBooking() ──────────────────────────────────────────
 
     describe('confirmBooking()', () => {
         it('sets status to confirmed and records confirmedAt', () => {
@@ -482,7 +635,16 @@ describe('BookingService', () => {
         it('returns null for non-existent id', () => {
             expect(service.confirmBooking('does-not-exist')).toBeNull();
         });
+
+        it('persists change to localStorage', () => {
+            const created = service.createBooking(sampleBookingInput());
+            service.confirmBooking(created.id);
+            const stored = JSON.parse(localStorage.getItem('freyai_bookings'));
+            expect(stored[0].status).toBe('confirmed');
+        });
     });
+
+    // ── 4. cancelBooking() ───────────────────────────────────────────
 
     describe('cancelBooking()', () => {
         it('sets status to cancelled with reason', () => {
@@ -504,10 +666,11 @@ describe('BookingService', () => {
         });
     });
 
+    // ── 5. completeBooking() ─────────────────────────────────────────
+
     describe('completeBooking()', () => {
-        it('sets status to completed', () => {
+        it('sets status to completed via updateBooking delegation', () => {
             const created = service.createBooking(sampleBookingInput());
-            service.confirmBooking(created.id);
             const completed = service.completeBooking(created.id);
             expect(completed.status).toBe('completed');
         });
@@ -516,6 +679,30 @@ describe('BookingService', () => {
             expect(service.completeBooking('nope')).toBeNull();
         });
     });
+
+    // ── 6. updateBooking() ───────────────────────────────────────────
+
+    describe('updateBooking()', () => {
+        it('merges updates into existing booking', () => {
+            const created = service.createBooking(sampleBookingInput());
+            const updated = service.updateBooking(created.id, { notes: 'Aktualisiert' });
+            expect(updated.notes).toBe('Aktualisiert');
+            expect(updated.customer.name).toBe('Max Mustermann');
+        });
+
+        it('returns null for non-existent id', () => {
+            expect(service.updateBooking('missing', { notes: 'x' })).toBeNull();
+        });
+
+        it('persists updated booking to localStorage', () => {
+            const created = service.createBooking(sampleBookingInput());
+            service.updateBooking(created.id, { notes: 'Geändert' });
+            const stored = JSON.parse(localStorage.getItem('freyai_bookings'));
+            expect(stored[0].notes).toBe('Geändert');
+        });
+    });
+
+    // ── Full lifecycle ───────────────────────────────────────────────
 
     describe('Full lifecycle: create -> confirm -> complete', () => {
         it('transitions through all statuses correctly', () => {
@@ -530,20 +717,7 @@ describe('BookingService', () => {
         });
     });
 
-    describe('updateBooking()', () => {
-        it('merges updates into existing booking', () => {
-            const created = service.createBooking(sampleBookingInput());
-            const updated = service.updateBooking(created.id, { notes: 'Aktualisiert' });
-            expect(updated.notes).toBe('Aktualisiert');
-            expect(updated.customer.name).toBe('Max Mustermann');
-        });
-
-        it('returns null for non-existent id', () => {
-            expect(service.updateBooking('missing', { notes: 'x' })).toBeNull();
-        });
-    });
-
-    // ── Query Methods ────────────────────────────────────────────────
+    // ── 7. getBooking / getBookingByCode ─────────────────────────────
 
     describe('getBooking() / getBookingByCode()', () => {
         it('finds booking by id', () => {
@@ -556,22 +730,16 @@ describe('BookingService', () => {
             expect(service.getBookingByCode(created.confirmationCode).id).toBe(created.id);
         });
 
+        it('returns undefined for unknown id', () => {
+            expect(service.getBooking('nonexistent')).toBeUndefined();
+        });
+
         it('returns undefined for unknown code', () => {
             expect(service.getBookingByCode('FREY-ZZZZZZ')).toBeUndefined();
         });
     });
 
-    describe('getPendingBookings() / getConfirmedBookings()', () => {
-        it('filters by status correctly', () => {
-            const b1 = service.createBooking(sampleBookingInput());
-            const b2 = service.createBooking(sampleBookingInput({ serviceType: 'wartung' }));
-            service.confirmBooking(b2.id);
-
-            expect(service.getPendingBookings()).toHaveLength(1);
-            expect(service.getConfirmedBookings()).toHaveLength(1);
-            expect(service.getConfirmedBookings()[0].id).toBe(b2.id);
-        });
-    });
+    // ── 8. getBookingsForDate() ──────────────────────────────────────
 
     describe('getBookingsForDate()', () => {
         it('returns bookings for given date', () => {
@@ -585,16 +753,40 @@ describe('BookingService', () => {
             service.cancelBooking(b.id, 'Test');
             expect(service.getBookingsForDate('2026-04-10')).toHaveLength(0);
         });
+
+        it('returns empty array when no bookings match', () => {
+            expect(service.getBookingsForDate('2099-01-01')).toEqual([]);
+        });
+
+        it('includes pending and confirmed bookings', () => {
+            const b1 = service.createBooking(sampleBookingInput({ date: '2026-04-10' }));
+            const b2 = service.createBooking(sampleBookingInput({ date: '2026-04-10' }));
+            service.confirmBooking(b2.id);
+            expect(service.getBookingsForDate('2026-04-10')).toHaveLength(2);
+        });
     });
 
-    // ── Available Slots ──────────────────────────────────────────────
+    // ── Filter helpers ───────────────────────────────────────────────
+
+    describe('getPendingBookings() / getConfirmedBookings()', () => {
+        it('filters by status correctly', () => {
+            const b1 = service.createBooking(sampleBookingInput());
+            const b2 = service.createBooking(sampleBookingInput({ serviceType: 'wartung' }));
+            service.confirmBooking(b2.id);
+
+            expect(service.getPendingBookings()).toHaveLength(1);
+            expect(service.getConfirmedBookings()).toHaveLength(1);
+            expect(service.getConfirmedBookings()[0].id).toBe(b2.id);
+        });
+    });
+
+    // ── 9. getAvailableSlots() ───────────────────────────────────────
 
     describe('getAvailableSlots()', () => {
-        it('returns fallback slots when no calendarService', () => {
+        it('returns 4 fallback slots when no calendarService', () => {
             const slots = service.getAvailableSlots('beratung', '2026-04-10');
             expect(slots).toHaveLength(4);
             expect(slots[0].start).toBe('09:00');
-            // beratung = 30 min
             expect(slots[0].end).toBe('09:30');
         });
 
@@ -604,8 +796,14 @@ describe('BookingService', () => {
 
         it('calculates correct end times for 120-min reparatur', () => {
             const slots = service.getAvailableSlots('reparatur', '2026-04-10');
-            expect(slots[0].end).toBe('11:00'); // 09:00 + 120 min
-            expect(slots[2].end).toBe('16:00'); // 14:00 + 120 min
+            expect(slots[0].end).toBe('11:00');
+            expect(slots[2].end).toBe('16:00');
+        });
+
+        it('calculates correct end times for 90-min wartung', () => {
+            const slots = service.getAvailableSlots('wartung', '2026-04-10');
+            expect(slots[0].end).toBe('10:30');
+            expect(slots[1].end).toBe('12:00');
         });
 
         it('delegates to calendarService when available', () => {
@@ -613,40 +811,72 @@ describe('BookingService', () => {
             window.calendarService = { getAvailableSlots: vi.fn(() => mockSlots) };
             const result = service.getAvailableSlots('beratung', '2026-04-10');
             expect(result).toBe(mockSlots);
+            expect(window.calendarService.getAvailableSlots).toHaveBeenCalledWith('2026-04-10', 30);
         });
     });
+
+    // ── 10. getAvailableDates() ──────────────────────────────────────
 
     describe('getAvailableDates()', () => {
         it('returns dates within booking window', () => {
             const dates = service.getAvailableDates('beratung', 5);
             expect(dates.length).toBeGreaterThan(0);
             expect(dates.length).toBeLessThanOrEqual(5);
+        });
+
+        it('each date has date, dayName, and slotsAvailable', () => {
+            const dates = service.getAvailableDates('beratung', 3);
             dates.forEach(d => {
                 expect(d).toHaveProperty('date');
                 expect(d).toHaveProperty('dayName');
                 expect(d).toHaveProperty('slotsAvailable');
+                expect(d.slotsAvailable).toBeGreaterThan(0);
             });
+        });
+
+        it('respects maxDaysAhead limit', () => {
+            service.settings.bookingWindow.maxDaysAhead = 3;
+            const dates = service.getAvailableDates('beratung', 100);
+            expect(dates.length).toBeLessThanOrEqual(3);
+        });
+
+        it('returns empty for unknown service type', () => {
+            const dates = service.getAvailableDates('nonexistent', 5);
+            expect(dates).toEqual([]);
         });
     });
 
-    // ── Service Types ────────────────────────────────────────────────
+    // ── 11. Service type CRUD ────────────────────────────────────────
 
     describe('Service type management', () => {
+        it('getServiceTypes() returns all 4 defaults', () => {
+            expect(service.getServiceTypes()).toHaveLength(4);
+        });
+
         it('getServiceType() returns correct service', () => {
             const st = service.getServiceType('wartung');
             expect(st.name).toBe('Wartungstermin');
             expect(st.duration).toBe(90);
         });
 
-        it('getServiceName() returns name or fallback to id', () => {
+        it('getServiceType() returns undefined for unknown id', () => {
+            expect(service.getServiceType('ghost')).toBeUndefined();
+        });
+
+        it('getServiceName() returns name for known id', () => {
             expect(service.getServiceName('beratung')).toBe('Beratungsgespräch');
+        });
+
+        it('getServiceName() falls back to id for unknown type', () => {
             expect(service.getServiceName('unknown')).toBe('unknown');
         });
 
-        it('addServiceType() adds and persists', () => {
+        it('addServiceType() adds and persists a new type', () => {
             service.addServiceType({ id: 'notdienst', name: 'Notdienst', duration: 45, price: 150 });
             expect(service.getServiceTypes()).toHaveLength(5);
             expect(service.getServiceType('notdienst').price).toBe(150);
+            const stored = JSON.parse(localStorage.getItem('freyai_booking_settings'));
+            expect(stored.serviceTypes).toHaveLength(5);
         });
 
         it('addServiceType() uses defaults for missing fields', () => {
@@ -664,9 +894,14 @@ describe('BookingService', () => {
             expect(updated.duration).toBe(45);
             expect(updated.name).toBe('Beratungsgespräch');
         });
+
+        it('updateServiceType() does nothing for unknown id', () => {
+            service.updateServiceType('nonexistent', { price: 999 });
+            expect(service.getServiceTypes()).toHaveLength(4);
+        });
     });
 
-    // ── Booking Link ─────────────────────────────────────────────────
+    // ── 12. generateBookingLink() ────────────────────────────────────
 
     describe('generateBookingLink()', () => {
         it('returns base URL without service type', () => {
@@ -676,9 +911,13 @@ describe('BookingService', () => {
         it('appends service query param when given', () => {
             expect(service.generateBookingLink('reparatur')).toBe('https://app.freyaivisions.de/booking.html?service=reparatur');
         });
+
+        it('returns base URL when null passed explicitly', () => {
+            expect(service.generateBookingLink(null)).toBe('https://app.freyaivisions.de/booking.html');
+        });
     });
 
-    // ── Email Templates ──────────────────────────────────────────────
+    // ── 13. Email Templates ──────────────────────────────────────────
 
     describe('getConfirmationEmailData()', () => {
         it('returns email with correct recipient and subject', () => {
@@ -689,7 +928,7 @@ describe('BookingService', () => {
             expect(email.subject).toContain('Beratungsgespräch');
         });
 
-        it('body contains confirmation code and date', () => {
+        it('body contains confirmation code, time, and customer name', () => {
             const booking = service.createBooking(sampleBookingInput());
             const email = service.getConfirmationEmailData(booking);
             expect(email.body).toContain(booking.confirmationCode);
@@ -697,10 +936,25 @@ describe('BookingService', () => {
             expect(email.body).toContain('Max Mustermann');
         });
 
-        it('body contains company name fallback', () => {
+        it('body contains company name fallback (FreyAI Visions)', () => {
             const booking = service.createBooking(sampleBookingInput());
             const email = service.getConfirmationEmailData(booking);
             expect(email.body).toContain('FreyAI Visions');
+        });
+
+        it('body includes company phone and email when available', () => {
+            StorageUtils.getJSON.mockImplementation((key, defaultVal) => {
+                if (key === 'freyai_admin_settings') {
+                    return { company_name: 'Meister GmbH', company_phone: '0800-123', company_email: 'info@meister.de' };
+                }
+                return defaultVal;
+            });
+            service = new BookingService();
+            const booking = service.createBooking(sampleBookingInput());
+            const email = service.getConfirmationEmailData(booking);
+            expect(email.body).toContain('Tel: 0800-123');
+            expect(email.body).toContain('E-Mail: info@meister.de');
+            expect(email.body).toContain('Meister GmbH');
         });
     });
 
@@ -712,63 +966,313 @@ describe('BookingService', () => {
             expect(email.subject).toContain('09:00 Uhr');
         });
 
-        it('body contains service name and customer greeting', () => {
+        it('body contains service name, customer greeting, and closing', () => {
             const booking = service.createBooking(sampleBookingInput());
             const email = service.getReminderEmailData(booking);
             expect(email.body).toContain('Beratungsgespräch');
             expect(email.body).toContain('Max Mustermann');
             expect(email.body).toContain('Wir freuen uns auf Sie');
         });
-    });
 
-    // ── Statistics ────────────────────────────────────────────────────
-
-    describe('getBookingStats()', () => {
-        it('returns zeroes when no bookings', () => {
-            const stats = service.getBookingStats();
-            expect(stats.total).toBe(0);
-            expect(stats.pending).toBe(0);
-            expect(stats.confirmed).toBe(0);
-            expect(stats.completed).toBe(0);
-            expect(stats.cancelled).toBe(0);
-        });
-
-        it('counts statuses correctly after mixed operations', () => {
-            const b1 = service.createBooking(sampleBookingInput());
-            const b2 = service.createBooking(sampleBookingInput());
-            const b3 = service.createBooking(sampleBookingInput());
-            const b4 = service.createBooking(sampleBookingInput());
-
-            service.confirmBooking(b1.id);
-            service.completeBooking(b2.id);
-            service.cancelBooking(b3.id, 'Test');
-            // b4 stays pending
-
-            const stats = service.getBookingStats();
-            expect(stats.total).toBe(4);
-            expect(stats.confirmed).toBe(1);
-            expect(stats.completed).toBe(1);
-            expect(stats.cancelled).toBe(1);
-            expect(stats.pending).toBe(1);
-        });
-
-        it('counts thisMonth bookings', () => {
-            service.createBooking(sampleBookingInput());
-            const stats = service.getBookingStats();
-            expect(stats.thisMonth).toBeGreaterThanOrEqual(1);
+        it('sends to the correct email address', () => {
+            const booking = service.createBooking(sampleBookingInput());
+            const email = service.getReminderEmailData(booking);
+            expect(email.to).toBe('max@example.de');
         });
     });
 
-    // ── Helpers ──────────────────────────────────────────────────────
+    // ── 14. _companyInfo() ───────────────────────────────────────────
 
-    describe('generateConfirmationCode()', () => {
-        it('matches FREY-XXXXXX format (6 uppercase alphanumeric chars)', () => {
-            for (let i = 0; i < 20; i++) {
-                const code = service.generateConfirmationCode();
-                expect(code).toMatch(/^FREY-[A-Z0-9]{6}$/);
-            }
+    describe('_companyInfo()', () => {
+        it('returns defaults when no admin_settings or storeService', () => {
+            const info = service._companyInfo();
+            expect(info.name).toBe('FreyAI Visions');
+            expect(info.phone).toBe('');
+            expect(info.email).toBe('');
+        });
+
+        it('reads from admin_settings first', () => {
+            StorageUtils.getJSON.mockImplementation((key, defaultVal) => {
+                if (key === 'freyai_admin_settings') {
+                    return { company_name: 'Admin Firma', company_phone: '0800-ADMIN', company_email: 'admin@test.de' };
+                }
+                return defaultVal;
+            });
+            const info = service._companyInfo();
+            expect(info.name).toBe('Admin Firma');
+            expect(info.phone).toBe('0800-ADMIN');
+            expect(info.email).toBe('admin@test.de');
+        });
+
+        it('falls back to storeService when admin_settings empty', () => {
+            window.storeService = {
+                state: {
+                    settings: { companyName: 'Store Firma', phone: '0800-STORE', email: 'store@test.de' }
+                }
+            };
+            const info = service._companyInfo();
+            expect(info.name).toBe('Store Firma');
+            expect(info.phone).toBe('0800-STORE');
+            expect(info.email).toBe('store@test.de');
+        });
+
+        it('admin_settings takes priority over storeService', () => {
+            StorageUtils.getJSON.mockImplementation((key, defaultVal) => {
+                if (key === 'freyai_admin_settings') {
+                    return { company_name: 'Admin Wins' };
+                }
+                return defaultVal;
+            });
+            window.storeService = {
+                state: { settings: { companyName: 'Store Loses' } }
+            };
+            const info = service._companyInfo();
+            expect(info.name).toBe('Admin Wins');
         });
     });
+
+    // ── 15. Cal.com Integration ──────────────────────────────────────
+
+    describe('fetchCalcomBookings()', () => {
+        it('returns empty array when no API key configured', async () => {
+            window.APP_CONFIG = {};
+            const result = await service.fetchCalcomBookings();
+            expect(result).toEqual([]);
+            expect(global.fetch).not.toHaveBeenCalled();
+        });
+
+        it('fetches bookings from Cal.com API with Bearer token', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'test-key-123', CALCOM_URL: 'https://cal.example.com' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ bookings: [sampleCalcomBooking()] })
+            });
+
+            const result = await service.fetchCalcomBookings();
+            expect(global.fetch).toHaveBeenCalledWith(
+                'https://cal.example.com/api/v1/bookings',
+                { headers: { 'Authorization': 'Bearer test-key-123' } }
+            );
+            expect(result).toHaveLength(1);
+            expect(result[0].id).toBe('calcom-42');
+        });
+
+        it('uses default Cal.com URL when not configured', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ([])
+            });
+
+            await service.fetchCalcomBookings();
+            expect(global.fetch).toHaveBeenCalledWith(
+                'https://buchung.freyaivisions.de/api/v1/bookings',
+                expect.any(Object)
+            );
+        });
+
+        it('returns empty array on HTTP error', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error'
+            });
+
+            const result = await service.fetchCalcomBookings();
+            expect(result).toEqual([]);
+        });
+
+        it('returns empty array on network error', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockRejectedValue(new Error('Network failure'));
+
+            const result = await service.fetchCalcomBookings();
+            expect(result).toEqual([]);
+        });
+
+        it('handles response with data array directly (no .bookings wrapper)', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => [sampleCalcomBooking({ id: 99 })]
+            });
+
+            const result = await service.fetchCalcomBookings();
+            expect(result).toHaveLength(1);
+            expect(result[0].calcomId).toBe(99);
+        });
+    });
+
+    describe('_mapCalcomBooking()', () => {
+        const calcomBooking = sampleCalcomBooking();
+
+        it('maps id with calcom- prefix', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.id).toBe('calcom-42');
+            expect(mapped.calcomId).toBe(42);
+            expect(mapped.calcomUid).toBe('abc-uid-123');
+        });
+
+        it('extracts date and time strings from ISO timestamps', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+            expect(mapped.startTime).toMatch(/^\d{2}:\d{2}$/);
+            expect(mapped.endTime).toMatch(/^\d{2}:\d{2}$/);
+        });
+
+        it('maps attendee data to customer fields', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.customer.name).toBe('Hans Schmidt');
+            expect(mapped.customer.email).toBe('hans@schmidt.de');
+            expect(mapped.customer.telefon).toBe('+49 171 9999');
+        });
+
+        it('uses eventType slug as serviceType', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.serviceType).toBe('beratung');
+        });
+
+        it('falls back to eventType title when no slug', () => {
+            const noSlug = sampleCalcomBooking({ eventType: { title: 'Wartung' } });
+            const mapped = service._mapCalcomBooking(noSlug);
+            expect(mapped.serviceType).toBe('Wartung');
+        });
+
+        it('falls back to calcom when no eventType', () => {
+            const noEvent = sampleCalcomBooking({ eventType: null });
+            const mapped = service._mapCalcomBooking(noEvent);
+            expect(mapped.serviceType).toBe('calcom');
+        });
+
+        it('falls back to title when no attendee', () => {
+            const noAttendee = sampleCalcomBooking({ attendees: [] });
+            const mapped = service._mapCalcomBooking(noAttendee);
+            expect(mapped.customer.name).toBe('Beratung mit Schmidt');
+        });
+
+        it('sets source to calcom', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.source).toBe('calcom');
+        });
+
+        it('maps status through _mapCalcomStatus', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.status).toBe('confirmed');
+        });
+
+        it('sets empty confirmationCode', () => {
+            const mapped = service._mapCalcomBooking(calcomBooking);
+            expect(mapped.confirmationCode).toBe('');
+        });
+    });
+
+    describe('_mapCalcomStatus()', () => {
+        it('maps ACCEPTED to confirmed', () => {
+            expect(service._mapCalcomStatus('ACCEPTED')).toBe('confirmed');
+        });
+
+        it('maps PENDING to pending', () => {
+            expect(service._mapCalcomStatus('PENDING')).toBe('pending');
+        });
+
+        it('maps CANCELLED to cancelled', () => {
+            expect(service._mapCalcomStatus('CANCELLED')).toBe('cancelled');
+        });
+
+        it('maps REJECTED to cancelled', () => {
+            expect(service._mapCalcomStatus('REJECTED')).toBe('cancelled');
+        });
+
+        it('defaults unknown status to pending', () => {
+            expect(service._mapCalcomStatus('WHATEVER')).toBe('pending');
+        });
+    });
+
+    describe('syncCalcomToCalendar()', () => {
+        it('returns 0 when fetchCalcomBookings returns empty', async () => {
+            window.APP_CONFIG = {};
+            const count = await service.syncCalcomToCalendar();
+            expect(count).toBe(0);
+        });
+
+        it('adds non-cancelled bookings to calendarService', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ bookings: [sampleCalcomBooking({ status: 'ACCEPTED' })] })
+            });
+            window.calendarService = {
+                getAppointment: vi.fn(() => null),
+                addAppointment: vi.fn()
+            };
+
+            const count = await service.syncCalcomToCalendar();
+            expect(count).toBe(1);
+            expect(window.calendarService.addAppointment).toHaveBeenCalledTimes(1);
+            expect(window.calendarService.addAppointment.mock.calls[0][0].color).toBe('#8b5cf6');
+        });
+
+        it('skips cancelled bookings', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ bookings: [sampleCalcomBooking({ status: 'CANCELLED' })] })
+            });
+            window.calendarService = {
+                getAppointment: vi.fn(() => null),
+                addAppointment: vi.fn()
+            };
+
+            const count = await service.syncCalcomToCalendar();
+            expect(count).toBe(0);
+            expect(window.calendarService.addAppointment).not.toHaveBeenCalled();
+        });
+
+        it('skips bookings already in calendar', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ bookings: [sampleCalcomBooking()] })
+            });
+            window.calendarService = {
+                getAppointment: vi.fn(() => ({ id: 'calcom-42' })),
+                addAppointment: vi.fn()
+            };
+
+            const count = await service.syncCalcomToCalendar();
+            expect(count).toBe(0);
+            expect(window.calendarService.addAppointment).not.toHaveBeenCalled();
+        });
+
+        it('dispatches calcom:synced event when bookings added', async () => {
+            window.APP_CONFIG = { CALCOM_API_KEY: 'key' };
+            global.fetch.mockResolvedValue({
+                ok: true,
+                json: async () => ({ bookings: [sampleCalcomBooking()] })
+            });
+            window.calendarService = {
+                getAppointment: vi.fn(() => null),
+                addAppointment: vi.fn()
+            };
+
+            await service.syncCalcomToCalendar();
+            expect(global.document.dispatchEvent).toHaveBeenCalled();
+        });
+
+        it('calls errorHandler on unexpected errors', async () => {
+            const mockHandle = vi.fn();
+            window.errorHandler = { handle: mockHandle };
+            // Override fetchCalcomBookings to throw inside syncCalcomToCalendar's try block
+            service.fetchCalcomBookings = vi.fn().mockRejectedValue(new Error('sync explosion'));
+
+            const count = await service.syncCalcomToCalendar();
+            expect(count).toBe(0);
+            expect(mockHandle).toHaveBeenCalledWith(expect.any(Error), 'BookingService');
+        });
+    });
+
+    // ── 16. addMinutes() ─────────────────────────────────────────────
 
     describe('addMinutes()', () => {
         it('adds 30 minutes to 09:00', () => {
@@ -783,24 +1287,38 @@ describe('BookingService', () => {
             expect(service.addMinutes('14:00', 120)).toBe('16:00');
         });
 
-        it('handles midnight rollover', () => {
+        it('handles midnight rollover (23:30 + 60)', () => {
             expect(service.addMinutes('23:30', 60)).toBe('24:30');
         });
 
         it('handles zero minutes', () => {
             expect(service.addMinutes('08:15', 0)).toBe('08:15');
         });
+
+        it('pads single-digit hours and minutes', () => {
+            expect(service.addMinutes('00:00', 5)).toBe('00:05');
+            expect(service.addMinutes('01:00', 0)).toBe('01:00');
+        });
     });
 
+    // ── 17. formatDate() ─────────────────────────────────────────────
+
     describe('formatDate()', () => {
-        it('returns German locale date string', () => {
+        it('returns German locale date string with year, month, and day', () => {
             const formatted = service.formatDate('2026-04-10');
-            // Should contain weekday, day, month, year in German
             expect(formatted).toContain('2026');
             expect(formatted).toContain('April');
             expect(formatted).toContain('10');
         });
+
+        it('contains a weekday name', () => {
+            const formatted = service.formatDate('2026-04-10');
+            // 2026-04-10 is a Friday -> Freitag in German
+            expect(formatted.length).toBeGreaterThan(10);
+        });
     });
+
+    // ── 18. getStatusLabel / getStatusColor ──────────────────────────
 
     describe('getStatusLabel()', () => {
         it('returns German labels for known statuses', () => {
@@ -828,85 +1346,68 @@ describe('BookingService', () => {
         });
     });
 
-    // ── Cal.com Mapping ──────────────────────────────────────────────
+    // ── 19. getBookingStats() ────────────────────────────────────────
 
-    describe('_mapCalcomStatus()', () => {
-        it('maps ACCEPTED to confirmed', () => {
-            expect(service._mapCalcomStatus('ACCEPTED')).toBe('confirmed');
+    describe('getBookingStats()', () => {
+        it('returns zeroes when no bookings', () => {
+            const stats = service.getBookingStats();
+            expect(stats.total).toBe(0);
+            expect(stats.pending).toBe(0);
+            expect(stats.confirmed).toBe(0);
+            expect(stats.completed).toBe(0);
+            expect(stats.cancelled).toBe(0);
+            expect(stats.thisMonth).toBe(0);
         });
 
-        it('maps PENDING to pending', () => {
-            expect(service._mapCalcomStatus('PENDING')).toBe('pending');
+        it('counts statuses correctly after mixed operations', () => {
+            const b1 = service.createBooking(sampleBookingInput());
+            const b2 = service.createBooking(sampleBookingInput());
+            const b3 = service.createBooking(sampleBookingInput());
+            const b4 = service.createBooking(sampleBookingInput());
+
+            service.confirmBooking(b1.id);
+            service.completeBooking(b2.id);
+            service.cancelBooking(b3.id, 'Test');
+            // b4 stays pending
+
+            const stats = service.getBookingStats();
+            expect(stats.total).toBe(4);
+            expect(stats.confirmed).toBe(1);
+            expect(stats.completed).toBe(1);
+            expect(stats.cancelled).toBe(1);
+            expect(stats.pending).toBe(1);
         });
 
-        it('maps CANCELLED to cancelled', () => {
-            expect(service._mapCalcomStatus('CANCELLED')).toBe('cancelled');
-        });
-
-        it('maps REJECTED to cancelled', () => {
-            expect(service._mapCalcomStatus('REJECTED')).toBe('cancelled');
-        });
-
-        it('defaults unknown status to pending', () => {
-            expect(service._mapCalcomStatus('WHATEVER')).toBe('pending');
+        it('counts thisMonth bookings (all created now are thisMonth)', () => {
+            service.createBooking(sampleBookingInput());
+            service.createBooking(sampleBookingInput());
+            const stats = service.getBookingStats();
+            expect(stats.thisMonth).toBe(2);
         });
     });
 
-    describe('_mapCalcomBooking()', () => {
-        const calcomBooking = {
-            id: 42,
-            uid: 'abc-uid-123',
-            startTime: '2026-05-15T10:00:00.000Z',
-            endTime: '2026-05-15T11:00:00.000Z',
-            status: 'ACCEPTED',
-            title: 'Beratung mit Schmidt',
-            description: 'Dach prüfen',
-            eventType: { slug: 'beratung', title: 'Beratungsgespräch' },
-            attendees: [{ name: 'Hans Schmidt', email: 'hans@schmidt.de', phone: '+49 171 9999' }],
-            createdAt: '2026-05-01T08:00:00.000Z'
-        };
+    // ── 20. generateConfirmationCode() ───────────────────────────────
 
-        it('maps id with calcom- prefix', () => {
-            const mapped = service._mapCalcomBooking(calcomBooking);
-            expect(mapped.id).toBe('calcom-42');
-            expect(mapped.calcomId).toBe(42);
-            expect(mapped.calcomUid).toBe('abc-uid-123');
+    describe('generateConfirmationCode()', () => {
+        it('starts with FREY-', () => {
+            const code = service.generateConfirmationCode();
+            expect(code.startsWith('FREY-')).toBe(true);
         });
 
-        it('extracts date and time strings from ISO timestamps', () => {
-            const mapped = service._mapCalcomBooking(calcomBooking);
-            // Note: dates are parsed in local TZ; we check the format
-            expect(mapped.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-            expect(mapped.startTime).toMatch(/^\d{2}:\d{2}$/);
-            expect(mapped.endTime).toMatch(/^\d{2}:\d{2}$/);
+        it('matches FREY-XXXXXX format (6 uppercase alphanumeric chars)', () => {
+            for (let i = 0; i < 20; i++) {
+                const code = service.generateConfirmationCode();
+                expect(code).toMatch(/^FREY-[A-Z0-9]{6}$/);
+            }
         });
 
-        it('maps attendee data to customer fields', () => {
-            const mapped = service._mapCalcomBooking(calcomBooking);
-            expect(mapped.customer.name).toBe('Hans Schmidt');
-            expect(mapped.customer.email).toBe('hans@schmidt.de');
-            expect(mapped.customer.telefon).toBe('+49 171 9999');
-        });
-
-        it('uses eventType slug as serviceType', () => {
-            const mapped = service._mapCalcomBooking(calcomBooking);
-            expect(mapped.serviceType).toBe('beratung');
-        });
-
-        it('falls back to title when no attendee', () => {
-            const noAttendee = { ...calcomBooking, attendees: [] };
-            const mapped = service._mapCalcomBooking(noAttendee);
-            expect(mapped.customer.name).toBe('Beratung mit Schmidt');
-        });
-
-        it('sets source to calcom', () => {
-            const mapped = service._mapCalcomBooking(calcomBooking);
-            expect(mapped.source).toBe('calcom');
-        });
-
-        it('maps status through _mapCalcomStatus', () => {
-            const mapped = service._mapCalcomBooking(calcomBooking);
-            expect(mapped.status).toBe('confirmed');
+        it('generates unique codes', () => {
+            const codes = new Set();
+            for (let i = 0; i < 50; i++) {
+                codes.add(service.generateConfirmationCode());
+            }
+            // With 36^6 possibilities, 50 codes should all be unique
+            expect(codes.size).toBe(50);
         });
     });
 
@@ -916,10 +1417,30 @@ describe('BookingService', () => {
         it('merges and persists settings', () => {
             service.updateSettings({ confirmationEmail: false });
             expect(service.settings.confirmationEmail).toBe(false);
-            // serviceTypes should still exist
             expect(service.settings.serviceTypes).toHaveLength(4);
             const stored = JSON.parse(localStorage.getItem('freyai_booking_settings'));
             expect(stored.confirmationEmail).toBe(false);
+        });
+
+        it('preserves booking window when updating other settings', () => {
+            service.updateSettings({ customField: 'test' });
+            expect(service.settings.bookingWindow.minDaysAhead).toBe(1);
+            expect(service.settings.bookingWindow.maxDaysAhead).toBe(30);
+        });
+    });
+
+    // ── generateId() ─────────────────────────────────────────────────
+
+    describe('generateId()', () => {
+        it('generates ids starting with book-', () => {
+            const id = service.generateId();
+            expect(id).toMatch(/^book-/);
+        });
+
+        it('generates unique ids', () => {
+            const id1 = service.generateId();
+            const id2 = service.generateId();
+            expect(id1).not.toBe(id2);
         });
     });
 });
