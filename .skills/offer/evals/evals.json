@@ -1,0 +1,59 @@
+{
+  "skill_name": "offer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Erstelle ein Angebot für Müller Heizungsbau GmbH (Stefan Müller, s.mueller@mueller-heizung.de, +49 171 5551234). Die haben 5 Mitarbeiter und brauchen eine komplette Digitalisierung: Kundenverwaltung, automatische Angebotserstellung, E-Mail-Automatisierung und Mahnwesen. Professional Tier.",
+      "expected_output": "Complete Angebot object with all required fields, Professional tier pricing, correct positionen, Kleinunternehmer notice, 30-day validity.",
+      "assertions": [
+        {"name": "has-angebot-id", "description": "Output contains an Angebot ID starting with ANG-", "type": "grep"},
+        {"name": "customer-name-correct", "description": "Contains 'Müller' or 'Mueller' as kunde_name", "type": "grep"},
+        {"name": "customer-email-correct", "description": "Contains 's.mueller@mueller-heizung.de'", "type": "grep"},
+        {"name": "has-erstgespraech-free", "description": "First position is Erstgespräch/Betriebsanalyse at €0 or 0 EUR", "type": "grep"},
+        {"name": "has-professional-setup", "description": "Contains a Professional-Setup or vollständige Geschäftssuite position", "type": "grep"},
+        {"name": "has-email-automation", "description": "Contains E-Mail-Automatisierung position", "type": "grep"},
+        {"name": "has-mahnwesen", "description": "Contains Mahnwesen position", "type": "grep"},
+        {"name": "has-retainer", "description": "Contains monthly retainer position (Monat unit, €400 range)", "type": "grep"},
+        {"name": "kleinunternehmer-notice", "description": "Contains §19 UStG Kleinunternehmer reference", "type": "grep"},
+        {"name": "mwst-zero", "description": "MwSt/VAT is 0 or explicitly stated as not charged", "type": "grep"},
+        {"name": "validity-30-days", "description": "Contains 30 Tage or gueltig_bis date ~30 days out", "type": "grep"},
+        {"name": "professional-price-range", "description": "Total netto is between 4500 and 7000 EUR (Professional range)", "type": "grep"},
+        {"name": "german-language", "description": "All position descriptions and text are in German", "type": "grep"},
+        {"name": "status-entwurf", "description": "Status is 'entwurf' (draft, not yet sent)", "type": "grep"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Florian Buchert ist mein Pilotprojekt-Kunde (Freund, €0). Erstelle ein vollständiges Angebot mit allen Professional-Positionen aber alles auf 0€. Er soll trotzdem den ganzen Prozess durchlaufen.",
+      "expected_output": "Complete Angebot with all positions listed but priced at €0, pilot/friend template text, full workflow preserved.",
+      "assertions": [
+        {"name": "customer-buchert", "description": "Contains 'Florian Buchert' or 'Buchert' as customer", "type": "grep"},
+        {"name": "all-prices-zero", "description": "All einzelpreis values are 0 or total is 0 EUR", "type": "grep"},
+        {"name": "positions-listed", "description": "Contains at least 5 position descriptions (full scope, not empty)", "type": "grep"},
+        {"name": "has-erstgespraech", "description": "Contains Erstgespräch position", "type": "grep"},
+        {"name": "pilot-acknowledged", "description": "Text acknowledges pilot/Pilotprojekt or kostenlos or friend", "type": "grep"},
+        {"name": "kleinunternehmer-notice", "description": "Contains §19 UStG reference even at €0", "type": "grep"},
+        {"name": "retainer-included", "description": "Contains retainer/Support position even at €0", "type": "grep"},
+        {"name": "total-zero", "description": "Netto and brutto total is 0 or 0,00", "type": "grep"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Ich brauche 3 Angebotsvarianten für Weber Elektrotechnik (Thomas Weber, weber@weber-elektro.de). 3 Mitarbeiter, will erstmal klein anfangen. Erstelle Budget, Standard und Premium Varianten.",
+      "expected_output": "Three quote variants (Budget/Standard/Premium) with different scope and pricing, comparison format.",
+      "assertions": [
+        {"name": "three-variants", "description": "Contains 3 distinct variants: Budget/Sparpaket AND Standard/Empfohlen AND Premium/Komplettpaket", "type": "grep"},
+        {"name": "budget-cheapest", "description": "Budget variant total is lower than Standard and Premium", "type": "grep"},
+        {"name": "premium-most-expensive", "description": "Premium variant has highest total", "type": "grep"},
+        {"name": "standard-recommended", "description": "Standard variant is marked as recommended/empfohlen", "type": "grep"},
+        {"name": "customer-weber", "description": "Contains 'Weber' as customer name", "type": "grep"},
+        {"name": "kleinunternehmer-all", "description": "All variants mention §19 UStG or zero MwSt", "type": "grep"},
+        {"name": "starter-range", "description": "At least one variant is in Starter range (€3,000-4,500)", "type": "grep"},
+        {"name": "each-has-positions", "description": "Each variant has its own list of positions/Positionen", "type": "grep"}
+      ],
+      "files": []
+    }
+  ]
+}

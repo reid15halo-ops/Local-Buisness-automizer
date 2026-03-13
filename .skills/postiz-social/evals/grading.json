@@ -1,0 +1,12 @@
+{
+  "skill": "postiz-social",
+  "graded_at": "2026-03-13",
+  "evals": [
+    { "id": 1, "name": "Troubleshooting Checklist", "passed": 10, "total": 10 },
+    { "id": 2, "name": "API Post Scheduling", "passed": 10, "total": 10 },
+    { "id": 3, "name": "Subscription Fix Post-Update", "passed": 9, "total": 9 }
+  ],
+  "total_passed": 29,
+  "total_assertions": 29,
+  "pass_rate": 1.0
+}

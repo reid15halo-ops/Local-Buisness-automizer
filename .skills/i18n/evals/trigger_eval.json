@@ -1,0 +1,25 @@
+{
+  "skill_name": "i18n",
+  "trigger_evals": [
+    {"query": "Add translation keys for the new Lagerverwaltung feature", "should_trigger": true},
+    {"query": "Some keys are missing from en.js but exist in de.js", "should_trigger": true},
+    {"query": "How does the landing page translation work?", "should_trigger": true},
+    {"query": "I need to add a new language to the app", "should_trigger": true},
+    {"query": "Übersetzung für den neuen Settings-Bereich fehlt", "should_trigger": true},
+    {"query": "How do plural forms work in our i18n system?", "should_trigger": true},
+    {"query": "The translation shows the raw key instead of text", "should_trigger": true},
+    {"query": "Add parameter interpolation to a translation string", "should_trigger": true},
+    {"query": "How do I switch languages in the app?", "should_trigger": true},
+    {"query": "Check consistency between de.js and en.js", "should_trigger": true},
+    {"query": "Fix the Stripe webhook VAT calculation", "should_trigger": false},
+    {"query": "Create an Angebot for a new customer", "should_trigger": false},
+    {"query": "Deploy to production VPS", "should_trigger": false},
+    {"query": "How does the setup wizard work?", "should_trigger": false},
+    {"query": "Schedule a LinkedIn post via Postiz", "should_trigger": false},
+    {"query": "Review the latest PR for security issues", "should_trigger": false},
+    {"query": "Add a new Supabase migration for payments", "should_trigger": false},
+    {"query": "Fix the customer import from Excel", "should_trigger": false},
+    {"query": "How does the approval queue work?", "should_trigger": false},
+    {"query": "Update the service worker cache", "should_trigger": false}
+  ]
+}

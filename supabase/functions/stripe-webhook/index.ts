@@ -163,13 +163,21 @@ async function handleCheckoutSessionCompleted(session: any, supabase: any) {
         }
 
         // 3. Create buchung (bookkeeping entry) for EÜR
+        // Kleinunternehmer §19 UStG: no VAT — netto = brutto
         const bruttoEur = amountEur
-        const ustSatz = 19
-        const nettoEur = Math.round((bruttoEur / (1 + ustSatz / 100)) * 100) / 100
-        const ustEur = Math.round((bruttoEur - nettoEur) * 100) / 100
+        const nettoEur = bruttoEur
+        const ustEur = 0
+
+        // Resolve tenant_id from invoice owner
+        const { data: rechnung } = await supabase
+            .from('rechnungen')
+            .select('user_id')
+            .eq('id', invoice_id)
+            .maybeSingle()
+        const tenantId = rechnung?.user_id || null
 
         await supabase.from('buchungen').insert({
-            tenant_id: 'a0000000-0000-0000-0000-000000000001', // default tenant
+            tenant_id: tenantId,
             typ: 'einnahme',
             kategorie: 'Umsatzerlöse',
             beschreibung: `Stripe-Zahlung Rechnung ${invoice_number} - ${customerName}`,
@@ -445,13 +453,21 @@ async function handleChargeRefunded(charge: any, supabase: any) {
         }
 
         // 2. Record Storno (reversal) as negative einnahme in buchungen
+        // Kleinunternehmer §19 UStG: no VAT — netto = brutto
         const bruttoEur = -amountRefundedEur // negative for reversal
-        const ustSatz = 19
-        const nettoEur = Math.round((bruttoEur / (1 + ustSatz / 100)) * 100) / 100
-        const ustEur = Math.round((bruttoEur - nettoEur) * 100) / 100
+        const nettoEur = bruttoEur
+        const ustEur = 0
+
+        // Resolve tenant_id from invoice owner
+        const { data: rechnung } = await supabase
+            .from('rechnungen')
+            .select('user_id')
+            .eq('id', invoice_id)
+            .maybeSingle()
+        const tenantId = rechnung?.user_id || null
 
         await supabase.from('buchungen').insert({
-            tenant_id: 'a0000000-0000-0000-0000-000000000001', // default tenant
+            tenant_id: tenantId,
             typ: 'einnahme',
             kategorie: 'Storno',
             beschreibung: `Stripe-Erstattung Rechnung ${invoice_number} (${isFullRefund ? 'Voll' : 'Teil'}) — ${refundReason}`,

@@ -1,0 +1,55 @@
+{
+  "skill_name": "review",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review the last commit (9506322) which changes customer-timeline-service.js and customer-portal-service.js to use kunde_name instead of kunde_id for Supabase queries.",
+      "expected_output": "Structured review of the commit diff identifying the getLifecycleSummary bug, validating schema correctness, and noting name-based query fragility.",
+      "assertions": [
+        {"name": "has-critical-section", "description": "Output contains '### Critical Issues' heading", "type": "grep"},
+        {"name": "has-bugs-section", "description": "Output contains '### Bugs & Logic Errors' heading", "type": "grep"},
+        {"name": "has-suggestions-section", "description": "Output contains '### Suggestions' heading", "type": "grep"},
+        {"name": "has-positive-notes", "description": "Output contains '### Positive Notes' with at least one positive finding", "type": "grep"},
+        {"name": "has-verdict", "description": "Output contains exactly one of APPROVE, REQUEST CHANGES, or NEEDS DISCUSSION as verdict", "type": "grep"},
+        {"name": "schema-verified", "description": "References config/sql/supabase-schema.sql or confirms kunde_name exists (not kunde_id)", "type": "grep"},
+        {"name": "lifecycle-bug-found", "description": "Identifies that getLifecycleSummary() does not pass customer to getTimeline()", "type": "grep"},
+        {"name": "line-numbers-present", "description": "At least 3 findings reference specific line numbers (e.g., 'line 42', ':42', 'L42')", "type": "grep"},
+        {"name": "fix-suggestions-present", "description": "At least 2 findings include a concrete fix suggestion (contains 'Fix:' or 'fix' with code)", "type": "grep"},
+        {"name": "no-formatting-nitpicks", "description": "Does NOT contain words like 'indentation', 'whitespace', 'JSDoc', 'docstring', 'type annotation'", "type": "grep-negative"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Security audit of auth-service.js and security-service.js before opening beta access to real users.",
+      "expected_output": "Security-focused review identifying rate limiting gap, password validation gap, CSRF dead code, and session validation issue.",
+      "assertions": [
+        {"name": "reads-auth-service", "description": "References auth-service.js with specific line numbers or method names (login, register, resetPassword)", "type": "grep"},
+        {"name": "reads-security-service", "description": "References security-service.js with specific line numbers or method names (checkRateLimit, sanitizeInput, validateCSRFToken)", "type": "grep"},
+        {"name": "rate-limiting-gap", "description": "Identifies that checkRateLimit exists but is never called from auth flows", "type": "grep"},
+        {"name": "password-validation-gap", "description": "Identifies missing or weak password strength validation on registration", "type": "grep"},
+        {"name": "session-validation-issue", "description": "Identifies getSession() vs getUser() issue (reads from storage without server verification)", "type": "grep"},
+        {"name": "positive-notes-present", "description": "Acknowledges at least 2 good security patterns (e.g., crypto.getRandomValues, escapeHtml, Supabase auth delegation)", "type": "grep"},
+        {"name": "verdict-present", "description": "Contains exactly one of APPROVE, REQUEST CHANGES, NEEDS DISCUSSION", "type": "grep"},
+        {"name": "actionable-fixes", "description": "At least 3 findings include concrete fix suggestions with code snippets or specific method calls", "type": "grep"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Review store-service.js and db-service.js focusing on offline sync correctness, race conditions, and data loss risks.",
+      "expected_output": "Architecture-level review identifying dual sync paths, data overwrite risk, missing conflict resolution, and sync queue issues.",
+      "assertions": [
+        {"name": "dual-sync-identified", "description": "Identifies that store-service and db-service have independent sync mechanisms that don't coordinate", "type": "grep"},
+        {"name": "data-overwrite-risk", "description": "Identifies that _syncFromSupabase overwrites local data (this.store[table] = ...) potentially losing offline changes", "type": "grep"},
+        {"name": "sync-queue-issue", "description": "Identifies at least one sync queue issue (no cleanup, no backoff, retry problems)", "type": "grep"},
+        {"name": "template-followed", "description": "Uses all 5 required sections: Critical Issues, Bugs & Logic Errors, Suggestions, Positive Notes, Verdict", "type": "grep"},
+        {"name": "verdict-present", "description": "Contains exactly one of APPROVE, REQUEST CHANGES, NEEDS DISCUSSION", "type": "grep"},
+        {"name": "no-framework-suggestions", "description": "Does NOT suggest React, Vue, Angular, or other framework migration", "type": "grep-negative"},
+        {"name": "line-numbers-present", "description": "At least 3 findings reference specific line numbers", "type": "grep"},
+        {"name": "positive-notes-non-empty", "description": "Positive Notes section contains at least 2 positive observations about the code", "type": "grep"}
+      ],
+      "files": []
+    }
+  ]
+}

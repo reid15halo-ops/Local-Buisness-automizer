@@ -1,0 +1,12 @@
+{
+  "skill": "stripe-billing",
+  "graded_at": "2026-03-13",
+  "evals": [
+    { "id": 1, "name": "Upgrade Flow", "passed": 11, "total": 11 },
+    { "id": 2, "name": "VAT Bug Audit", "passed": 9, "total": 9 },
+    { "id": 3, "name": "Payment Failure", "passed": 10, "total": 10 }
+  ],
+  "total_passed": 30,
+  "total_assertions": 30,
+  "pass_rate": 1.0
+}

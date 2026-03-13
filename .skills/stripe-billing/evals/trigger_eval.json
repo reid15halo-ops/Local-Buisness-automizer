@@ -1,0 +1,25 @@
+{
+  "skill_name": "stripe-billing",
+  "trigger_evals": [
+    {"query": "How do I set up Stripe Checkout for subscriptions?", "should_trigger": true},
+    {"query": "Customer can't pay their invoice, card keeps getting declined", "should_trigger": true},
+    {"query": "I need to add the billing portal link to settings", "should_trigger": true},
+    {"query": "Our webhook is calculating VAT wrong", "should_trigger": true},
+    {"query": "How do I handle subscription cancellation?", "should_trigger": true},
+    {"query": "Zahlungen werden nicht korrekt verarbeitet", "should_trigger": true},
+    {"query": "Set up payment failure notifications for customers", "should_trigger": true},
+    {"query": "Where do we store Stripe payment records in Supabase?", "should_trigger": true},
+    {"query": "Abonnement upgraden von Starter auf Professional", "should_trigger": true},
+    {"query": "How does the checkout session Edge Function work?", "should_trigger": true},
+    {"query": "Add a new customer to the kunden table", "should_trigger": false},
+    {"query": "Fix the CSS on the dashboard cards", "should_trigger": false},
+    {"query": "How do I add a German translation key?", "should_trigger": false},
+    {"query": "Create an Angebot for Weber Elektrotechnik", "should_trigger": false},
+    {"query": "Deploy the app to staging", "should_trigger": false},
+    {"query": "Fix the Postiz orchestrator not running", "should_trigger": false},
+    {"query": "Review my latest commit for security issues", "should_trigger": false},
+    {"query": "How does the Fragebogen import work?", "should_trigger": false},
+    {"query": "Schedule a social media post on Instagram", "should_trigger": false},
+    {"query": "Add DATEV export to the bookkeeping module", "should_trigger": false}
+  ]
+}

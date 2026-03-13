@@ -1,0 +1,12 @@
+{
+  "skill": "customer-onboarding",
+  "graded_at": "2026-03-13",
+  "evals": [
+    { "id": 1, "name": "Full Onboarding Journey", "passed": 10, "total": 10 },
+    { "id": 2, "name": "Excel Import Wizard", "passed": 9, "total": 9 },
+    { "id": 3, "name": "Fragebogen Field Mapping", "passed": 10, "total": 10 }
+  ],
+  "total_passed": 29,
+  "total_assertions": 29,
+  "pass_rate": 1.0
+}

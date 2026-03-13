@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS stripe_payments (
     tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
     stripe_session_id TEXT UNIQUE NOT NULL,
     stripe_customer_id TEXT,
-    invoice_id UUID,
+    invoice_id TEXT,
     amount INTEGER NOT NULL,
     currency TEXT DEFAULT 'eur',
     payment_status TEXT NOT NULL DEFAULT 'pending',
@@ -34,6 +34,9 @@ CREATE POLICY "Users view own tenant payments" ON stripe_payments
 ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
 ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS stripe_payment_id TEXT;
 ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS payment_method TEXT;
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS payment_failed_at TIMESTAMPTZ;
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS payment_error TEXT;
+ALTER TABLE rechnungen ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMPTZ;
 
 -- 3. Create a view alias for backwards compatibility with stripe-webhook
 -- The webhook references "invoices" but the table is "rechnungen"

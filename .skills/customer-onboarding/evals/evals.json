@@ -1,0 +1,58 @@
+{
+  "skill_name": "customer-onboarding",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Walk me through the complete customer onboarding journey from when they first visit freyaivisions.de to when they're ready for a quote. Include all steps, fields, and data flows.",
+      "expected_output": "Complete 3-layer journey: Auth → Setup Wizard (3 steps, 13 fields) → Fragebogen (52 questions) → Tier recommendation → Angebot.",
+      "assertions": [
+        {"name": "auth-layer", "description": "Describes authentication as first layer (email, OAuth, or magic link)", "type": "grep"},
+        {"name": "setup-wizard-3-steps", "description": "Mentions setup wizard with 3 steps", "type": "grep"},
+        {"name": "wizard-fields-count", "description": "Mentions 13 fields or lists fields from all 3 steps", "type": "grep"},
+        {"name": "fragebogen-mentioned", "description": "Mentions Fragebogen or questionnaire as a layer", "type": "grep"},
+        {"name": "fragebogen-52-questions", "description": "Mentions 52 questions or 11 sections", "type": "grep"},
+        {"name": "tier-recommendation", "description": "Mentions tier recommendation (Starter/Professional/Enterprise)", "type": "grep"},
+        {"name": "angebot-creation", "description": "Mentions Angebot or quote creation as outcome", "type": "grep"},
+        {"name": "data-persisted", "description": "Mentions data saving to profiles or Supabase", "type": "grep"},
+        {"name": "dsgvo-consent", "description": "Mentions DSGVO or Datenschutz consent", "type": "grep"},
+        {"name": "sequential-flow", "description": "Presents steps in correct sequential order", "type": "grep"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have a new customer who wants to import their existing customer list from Excel. How does the import work and what fields can they map?",
+      "expected_output": "4-step Excel import wizard with column mapping, validation, and supported field list.",
+      "assertions": [
+        {"name": "four-step-wizard", "description": "Describes 4 steps (upload, map, preview/validate, import)", "type": "grep"},
+        {"name": "xlsx-csv-supported", "description": "Mentions .xlsx or .csv file formats", "type": "grep"},
+        {"name": "column-mapping", "description": "Describes column mapping step (matching source to target fields)", "type": "grep"},
+        {"name": "validation-preview", "description": "Mentions validation or preview of data before import", "type": "grep"},
+        {"name": "supported-fields", "description": "Lists supported fields (firmenname, email, telefon, etc.)", "type": "grep"},
+        {"name": "email-dedup", "description": "Mentions deduplication on email or duplicate handling", "type": "grep"},
+        {"name": "umlaut-handling", "description": "Mentions UTF-8 encoding or German umlauts (ä, ö, ü)", "type": "grep"},
+        {"name": "kunden-table", "description": "Mentions kunden table as import target", "type": "grep"},
+        {"name": "error-handling", "description": "Mentions error rows or failed import handling", "type": "grep"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "How does the Fragebogen import service map questionnaire responses to system configuration? I want to understand how answers determine the recommended tier and which features get enabled.",
+      "expected_output": "Field mapping from fragebogen responses to profiles, settings, and tier recommendation logic.",
+      "assertions": [
+        {"name": "import-service-referenced", "description": "References fragebogen-import-service.js", "type": "grep"},
+        {"name": "field-mappings", "description": "Describes specific field mappings (questionnaire field → system field)", "type": "grep"},
+        {"name": "tier-recommendation-logic", "description": "Explains tier recommendation based on employees, features, or budget", "type": "grep"},
+        {"name": "starter-criteria", "description": "Mentions Starter tier criteria (1-3 employees or basic needs)", "type": "grep"},
+        {"name": "professional-criteria", "description": "Mentions Professional tier criteria (4-7 employees or full automation)", "type": "grep"},
+        {"name": "enterprise-criteria", "description": "Mentions Enterprise criteria (8+ employees or custom)", "type": "grep"},
+        {"name": "feature-toggles", "description": "Mentions feature toggles or settings being set from responses", "type": "grep"},
+        {"name": "datev-mapping", "description": "Mentions DATEV integration toggle from buchhaltung section", "type": "grep"},
+        {"name": "profiles-target", "description": "Mentions profiles table as data target", "type": "grep"},
+        {"name": "angebot-positions", "description": "Mentions matched positions or Angebot generation from responses", "type": "grep"}
+      ],
+      "files": []
+    }
+  ]
+}

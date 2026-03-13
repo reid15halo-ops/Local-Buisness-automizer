@@ -1,0 +1,58 @@
+{
+  "skill_name": "postiz-social",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Posts aren't publishing on our Postiz instance. Walk me through a complete troubleshooting checklist — what are the most common causes and how do I fix each one?",
+      "expected_output": "Comprehensive troubleshooting covering orchestrator, Temporal, subscription, image format, and container health.",
+      "assertions": [
+        {"name": "orchestrator-check", "description": "Mentions checking if orchestrator is running in docker compose command", "type": "grep"},
+        {"name": "temporal-check", "description": "Mentions checking Temporal container health", "type": "grep"},
+        {"name": "subscription-check", "description": "Mentions checking Subscription row in database", "type": "grep"},
+        {"name": "post-status-check", "description": "Mentions checking post status is QUEUE not DRAFT", "type": "grep"},
+        {"name": "container-health", "description": "Mentions checking all 4 containers are running", "type": "grep"},
+        {"name": "docker-logs-command", "description": "Provides docker logs command for inspection", "type": "grep"},
+        {"name": "restart-procedure", "description": "Shows restart procedure (docker compose down/up)", "type": "grep"},
+        {"name": "image-format-gotcha", "description": "Mentions image format issue ([{\"id\":\"uuid\"}] vs [\"uuid\"])", "type": "grep"},
+        {"name": "missing-post-recovery", "description": "Mentions missing-post-workflow or changing status back to QUEUE for recovery", "type": "grep"},
+        {"name": "no-temporal-db-direct", "description": "Warns against directly modifying Temporal database", "type": "grep"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want to create and schedule a new social media post programmatically via the Postiz API. Show me the complete flow including image upload and scheduling across Instagram, Facebook, and LinkedIn.",
+      "expected_output": "Complete API flow: upload media, create post with correct image format, schedule across channels.",
+      "assertions": [
+        {"name": "api-endpoint", "description": "References Postiz API endpoint (/api/posts or social.freyaivisions.de)", "type": "grep"},
+        {"name": "media-upload", "description": "Shows media upload step before post creation", "type": "grep"},
+        {"name": "image-format-correct", "description": "Uses correct image format: [{\"id\": ...}] object array", "type": "grep"},
+        {"name": "publish-date", "description": "Includes publishDate or schedule time in post creation", "type": "grep"},
+        {"name": "channels-array", "description": "Includes channels array for multi-platform posting", "type": "grep"},
+        {"name": "organization-id", "description": "Includes organizationId in the request", "type": "grep"},
+        {"name": "auth-header", "description": "Includes Authorization header or API key", "type": "grep"},
+        {"name": "three-platforms", "description": "Mentions all 3 platforms (Instagram, Facebook, LinkedIn)", "type": "grep"},
+        {"name": "queue-status", "description": "Mentions post will be in QUEUE status awaiting Temporal", "type": "grep"},
+        {"name": "no-wrong-image-format", "description": "Does NOT use the wrong string array image format", "type": "grep-negative", "pattern": "image.*:\\s*\\[\"uuid\"\\]|image.*:\\s*\\[\"[a-f0-9-]+\"\\]"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "After updating Postiz containers, the app shows 'Subscription required'. What happened and how do I fix it? Also, what other things should I check after a container update?",
+      "expected_output": "Explains subscription row loss, provides fix SQL, and post-update checklist.",
+      "assertions": [
+        {"name": "subscription-row-lost", "description": "Explains that updates can wipe the Subscription row", "type": "grep"},
+        {"name": "insert-sql", "description": "Provides INSERT SQL for Subscription table", "type": "grep"},
+        {"name": "org-id-correct", "description": "Uses correct organization ID (c740c0dd-...)", "type": "grep"},
+        {"name": "docker-exec-command", "description": "Shows docker exec command to run SQL", "type": "grep"},
+        {"name": "orchestrator-verify", "description": "Mentions verifying orchestrator is still in docker compose command after update", "type": "grep"},
+        {"name": "channel-reauth", "description": "Mentions checking if channels need re-authentication", "type": "grep"},
+        {"name": "all-containers-check", "description": "Mentions verifying all 4 containers are running", "type": "grep"},
+        {"name": "temporal-health", "description": "Mentions checking Temporal health after update", "type": "grep"},
+        {"name": "no-temporal-db-hack", "description": "Does NOT suggest modifying Temporal database directly", "type": "grep-negative", "pattern": "UPDATE.*temporal|DELETE.*temporal|INSERT.*temporal"}
+      ],
+      "files": []
+    }
+  ]
+}

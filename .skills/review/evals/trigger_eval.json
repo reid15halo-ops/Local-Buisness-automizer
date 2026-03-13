@@ -1,0 +1,22 @@
+[
+  {"query": "review the last commit — I just pushed a fix for the customer timeline queries and want to make sure I didn't break anything", "should_trigger": true},
+  {"query": "can you check my PR #47 before I merge it? it touches the payment flow and I'm nervous", "should_trigger": true},
+  {"query": "look over the changes in store-service.js and tell me if anything looks off", "should_trigger": true},
+  {"query": "ich hab gerade die auth logik umgebaut, kannst du mal drüberschauen ob das sicher ist?", "should_trigger": true},
+  {"query": "audit the uncommitted changes in db-service.js for potential data loss issues before I commit", "should_trigger": true},
+  {"query": "is this safe to merge? I refactored the invoice generation to use a single code path instead of three", "should_trigger": true},
+  {"query": "code review on the last 3 commits please, we're deploying tonight", "should_trigger": true},
+  {"query": "what do you think of the changes I made to the security-service? anything I missed?", "should_trigger": true},
+  {"query": "review this diff and tell me if the supabase queries are correct", "should_trigger": true},
+  {"query": "check the nginx config changes I made for staging — anything that could break prod?", "should_trigger": true},
+  {"query": "add a password visibility toggle to the login form", "should_trigger": false},
+  {"query": "fix the bug where customer data doesn't show up in the Aufträge tab", "should_trigger": false},
+  {"query": "deploy the latest changes to app.freyaivisions.de", "should_trigger": false},
+  {"query": "create a new supabase migration to add a kunde_id column to the rechnungen table", "should_trigger": false},
+  {"query": "write unit tests for the datev export service", "should_trigger": false},
+  {"query": "refactor the booking page to use the new design tokens from core.css", "should_trigger": false},
+  {"query": "read the store-service.js file and explain how _transformSupabaseRows works", "should_trigger": false},
+  {"query": "generate a new n8n workflow for sending invoice reminders via email", "should_trigger": false},
+  {"query": "build a dashboard card that shows monthly revenue with a sparkline chart", "should_trigger": false},
+  {"query": "set up the staging environment on the VPS with nginx and SSL", "should_trigger": false}
+]

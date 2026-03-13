@@ -1,0 +1,55 @@
+{
+  "skill_name": "i18n",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to add a new feature section for 'Lagerverwaltung' (Inventory Management) to the app. What translation keys do I need to add and where? Show me the exact entries for both de.js and en.js.",
+      "expected_output": "Complete set of translation keys for inventory section in both DE and EN, following naming conventions.",
+      "assertions": [
+        {"name": "de-js-referenced", "description": "References js/i18n/de.js as target file", "type": "grep"},
+        {"name": "en-js-referenced", "description": "References js/i18n/en.js as target file", "type": "grep"},
+        {"name": "dot-notation-keys", "description": "Uses dot notation like inventory.* or lager.*", "type": "grep"},
+        {"name": "german-translations", "description": "German text includes Lagerverwaltung or Lager", "type": "grep"},
+        {"name": "english-translations", "description": "English text includes Inventory or Stock", "type": "grep"},
+        {"name": "both-languages-shown", "description": "Shows entries for BOTH de and en files", "type": "grep"},
+        {"name": "data-i18n-usage", "description": "Mentions using data-i18n attribute in HTML", "type": "grep"},
+        {"name": "window-t-usage", "description": "Mentions window.t() for JS usage", "type": "grep"},
+        {"name": "apply-translations", "description": "Mentions calling applyTranslations() after dynamic rendering", "type": "grep"},
+        {"name": "no-html-in-values", "description": "Translation values are plain text, no HTML tags", "type": "grep-negative", "pattern": "<b>|<strong>|<span>|<div>"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I think we have some translation keys in de.js that are missing from en.js. How do I find and fix these gaps? Also check if there are any parameter mismatches between the two files.",
+      "expected_output": "Method to find missing keys between DE/EN, parameter mismatch detection, and fix approach.",
+      "assertions": [
+        {"name": "key-comparison-method", "description": "Shows how to compare keys between de.js and en.js (Object.keys, diff, or similar)", "type": "grep"},
+        {"name": "flatten-approach", "description": "Mentions flattening nested objects for comparison", "type": "grep"},
+        {"name": "parameter-check", "description": "Mentions checking {{param}} consistency between languages", "type": "grep"},
+        {"name": "plural-form-check", "description": "Mentions checking plural forms (one/other) consistency", "type": "grep"},
+        {"name": "fallback-behavior", "description": "Explains what happens when key is missing (shows raw key string)", "type": "grep"},
+        {"name": "both-files-referenced", "description": "References both de.js and en.js file paths", "type": "grep"},
+        {"name": "fix-approach", "description": "Provides approach to fix gaps (add missing keys)", "type": "grep"},
+        {"name": "no-auto-translate", "description": "Does NOT suggest using Google Translate or auto-translation for production", "type": "grep-negative", "pattern": "Google Translate|auto.?translat|machine translat"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "How does the landing page translation system work differently from the app's i18n? I want to add a new section to the landing page in all supported languages.",
+      "expected_output": "Explains the dual translation system: data-lang (landing) vs data-i18n (app), with correct count of landing languages.",
+      "assertions": [
+        {"name": "data-lang-explained", "description": "Explains data-lang attribute system for landing page", "type": "grep"},
+        {"name": "data-i18n-explained", "description": "Explains data-i18n attribute system for app", "type": "grep"},
+        {"name": "two-systems", "description": "Clearly states these are two separate/different systems", "type": "grep"},
+        {"name": "language-count", "description": "Mentions 31 languages for landing page", "type": "grep"},
+        {"name": "inline-blocks", "description": "Mentions inline language blocks or spans per language", "type": "grep"},
+        {"name": "app-only-de-en", "description": "States app translations are only DE and EN", "type": "grep"},
+        {"name": "landing-html-file", "description": "References landing.html as the file", "type": "grep"},
+        {"name": "shows-html-example", "description": "Shows HTML example with data-lang spans", "type": "grep"}
+      ],
+      "files": []
+    }
+  ]
+}

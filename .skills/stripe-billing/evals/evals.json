@@ -1,0 +1,59 @@
+{
+  "skill_name": "stripe-billing",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "A customer wants to upgrade from Starter to Professional plan. Walk me through the complete flow — what happens in the frontend, Edge Functions, Stripe, and our database. Include the exact webhook events we need to handle.",
+      "expected_output": "Complete upgrade flow from frontend through Stripe Checkout to webhook processing, with correct event handling and database updates.",
+      "assertions": [
+        {"name": "mentions-checkout-session", "description": "References createCheckoutSession or Stripe Checkout as the upgrade mechanism", "type": "grep"},
+        {"name": "mentions-portal-alternative", "description": "Mentions Customer Portal as an alternative for plan changes", "type": "grep"},
+        {"name": "edge-function-referenced", "description": "References create-checkout-session Edge Function", "type": "grep"},
+        {"name": "subscription-updated-event", "description": "Mentions customer.subscription.updated webhook event", "type": "grep"},
+        {"name": "invoice-paid-event", "description": "Mentions invoice.paid webhook event", "type": "grep"},
+        {"name": "profiles-table-updated", "description": "Mentions updating profiles table with new tier/status", "type": "grep"},
+        {"name": "stripe-payments-record", "description": "Mentions recording payment in stripe_payments table", "type": "grep"},
+        {"name": "kleinunternehmer-noted", "description": "Mentions Kleinunternehmer §19 UStG or no VAT", "type": "grep"},
+        {"name": "metadata-user-id", "description": "Mentions metadata.user_id for linking payment to user", "type": "grep"},
+        {"name": "price-correct", "description": "Professional plan price is €99/month", "type": "grep"},
+        {"name": "no-tax-rates", "description": "Does NOT suggest adding Stripe Tax rates", "type": "grep-negative", "pattern": "tax_rate"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Our stripe-webhook Edge Function might have a Kleinunternehmer bug — it could be calculating 19% VAT on payments. Audit the webhook handler and tell me exactly what needs to be fixed. Show me the corrected code.",
+      "expected_output": "Identifies the VAT calculation bug, explains why it's wrong for Kleinunternehmer, and provides corrected code with mwst=0.",
+      "assertions": [
+        {"name": "identifies-vat-bug", "description": "Identifies the 19% VAT calculation as a bug", "type": "grep"},
+        {"name": "kleinunternehmer-explanation", "description": "Explains Kleinunternehmer §19 UStG means no VAT", "type": "grep"},
+        {"name": "mwst-zero", "description": "Sets mwst or tax to 0 in the fix", "type": "grep"},
+        {"name": "netto-equals-brutto", "description": "States netto equals brutto or total equals net", "type": "grep"},
+        {"name": "shows-wrong-code", "description": "Shows the problematic code pattern (0.19 or 19%)", "type": "grep"},
+        {"name": "shows-fixed-code", "description": "Provides corrected code block", "type": "grep"},
+        {"name": "webhook-file-referenced", "description": "References stripe-webhook Edge Function path", "type": "grep"},
+        {"name": "signature-verification", "description": "Mentions webhook signature verification should remain", "type": "grep"},
+        {"name": "no-tax-configuration", "description": "Does NOT suggest adding tax configuration to Stripe", "type": "grep-negative", "pattern": "automatic_tax.*enabled.*true"}
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need to implement payment failure handling. When a customer's card is declined, what should happen? Give me the complete flow from Stripe event to user notification.",
+      "expected_output": "Complete payment failure flow: webhook event, database update, retry logic, user notification, and eventual cancellation.",
+      "assertions": [
+        {"name": "invoice-payment-failed", "description": "References invoice.payment_failed webhook event", "type": "grep"},
+        {"name": "past-due-status", "description": "Sets subscription_status to past_due", "type": "grep"},
+        {"name": "profiles-update", "description": "Mentions updating profiles table", "type": "grep"},
+        {"name": "user-notification", "description": "Mentions sending notification or email to the user", "type": "grep"},
+        {"name": "stripe-retry", "description": "Mentions Stripe's automatic retry logic (3 attempts or similar)", "type": "grep"},
+        {"name": "subscription-deleted", "description": "References customer.subscription.deleted as final state after all retries fail", "type": "grep"},
+        {"name": "canceled-status", "description": "Mentions setting status to canceled after deletion", "type": "grep"},
+        {"name": "idempotency", "description": "Mentions idempotency check or duplicate prevention", "type": "grep"},
+        {"name": "german-context", "description": "Content is aware this is for German Handwerker customers", "type": "grep"},
+        {"name": "no-manual-charging", "description": "Does NOT suggest manually charging the customer outside Stripe", "type": "grep-negative", "pattern": "manual.*charge|direct.*debit.*outside"}
+      ],
+      "files": []
+    }
+  ]
+}

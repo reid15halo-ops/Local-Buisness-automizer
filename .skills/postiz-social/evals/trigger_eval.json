@@ -1,0 +1,25 @@
+{
+  "skill_name": "postiz-social",
+  "trigger_evals": [
+    {"query": "Posts aren't publishing on Postiz, what's wrong?", "should_trigger": true},
+    {"query": "Schedule a social media post via the API", "should_trigger": true},
+    {"query": "After updating containers, Postiz shows subscription required", "should_trigger": true},
+    {"query": "How do I add a new social media channel?", "should_trigger": true},
+    {"query": "The Temporal workflow seems stuck", "should_trigger": true},
+    {"query": "Fix the Postiz Docker orchestrator", "should_trigger": true},
+    {"query": "Instagram post images aren't showing up", "should_trigger": true},
+    {"query": "How does the content pipeline script work?", "should_trigger": true},
+    {"query": "Restart the Postiz stack on VPS", "should_trigger": true},
+    {"query": "Social Media Posts werden nicht veröffentlicht", "should_trigger": true},
+    {"query": "Fix the Stripe webhook for payment failures", "should_trigger": false},
+    {"query": "Add a new i18n key for the settings page", "should_trigger": false},
+    {"query": "Create an Angebot for a new customer", "should_trigger": false},
+    {"query": "How does the setup wizard onboarding work?", "should_trigger": false},
+    {"query": "Review my latest commit for bugs", "should_trigger": false},
+    {"query": "Deploy to production", "should_trigger": false},
+    {"query": "Fix the Excel customer import", "should_trigger": false},
+    {"query": "Add a new Supabase Edge Function", "should_trigger": false},
+    {"query": "How does the approval queue service work?", "should_trigger": false},
+    {"query": "Update the landing page design", "should_trigger": false}
+  ]
+}
