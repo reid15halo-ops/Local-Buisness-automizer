@@ -898,7 +898,7 @@ function initAuftragDetailHandlers() {
 
 // Helper: render checklist tab content
 function renderChecklisteTab(auftrag) {
-    const container = document.getElementById('ad-checkliste-list');
+    const container = document.getElementById('ad-checkliste-items');
     if (!container) {return;}
     const items = auftrag.checkliste || [];
     if (items.length === 0) {
@@ -916,7 +916,7 @@ function renderChecklisteTab(auftrag) {
 
 // Helper: render comments tab content
 function renderKommentareTab(auftrag) {
-    const container = document.getElementById('ad-kommentare-list');
+    const container = document.getElementById('ad-kommentar-list');
     if (!container) {return;}
     const items = auftrag.kommentare || [];
     if (items.length === 0) {
@@ -950,7 +950,7 @@ function renderMitarbeiterList(auftrag) {
 
 // Helper: render Fotos tab content
 function renderFotosTab(auftrag) {
-    const container = document.getElementById('ad-fotos-grid');
+    const container = document.getElementById('ad-foto-gallery');
     if (!container) {return;}
     const items = auftrag.fotos || [];
     if (items.length === 0) {
@@ -961,6 +961,26 @@ function renderFotosTab(auftrag) {
         <div style="position:relative;border-radius:8px;overflow:hidden;">
             <img src="${foto.data}" style="width:100%;height:120px;object-fit:cover;" alt="Foto">
             <div style="font-size:11px;color:var(--text-secondary,#666);padding:4px;">${formatDate(foto.datum)}</div>
+        </div>
+    `).join('');
+}
+
+// Helper: render Historie tab content
+function renderHistorieTab(auftrag) {
+    const container = document.getElementById('ad-historie-timeline');
+    if (!container) {return;}
+    const items = auftrag.historie || [];
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state empty-state-centered">Keine Einträge</p>';
+        return;
+    }
+    container.innerHTML = items.slice().reverse().map(entry => `
+        <div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-color,#eee);">
+            <div style="font-size:12px;color:var(--text-secondary,#666);white-space:nowrap;">${formatDate(entry.datum)}</div>
+            <div>
+                <div>${h(entry.details || entry.aktion || '')}</div>
+                ${entry.grund ? `<div style="font-size:12px;color:var(--text-muted);font-style:italic;margin-top:2px;">Grund: ${h(entry.grund)}</div>` : ''}
+            </div>
         </div>
     `).join('');
 }
@@ -1063,6 +1083,31 @@ function openAuftragDetail(auftragId) {
                 ? `<span style="font-size:12px;color:var(--accent-success, #22c55e);margin-left:8px;">✅ Rechnung ${h(existingRechnung.nummer || existingRechnung.id)}</span>`
                 : ''));
     }
+
+    // Populate Fortschritt slider
+    const fortschrittEl = document.getElementById('ad-fortschritt');
+    if (fortschrittEl) {
+        fortschrittEl.value = auftrag.fortschritt || 0;
+        const label = document.getElementById('ad-fortschritt-label');
+        if (label) {label.textContent = (auftrag.fortschritt || 0) + '%';}
+        fortschrittEl.oninput = () => {
+            const lbl = document.getElementById('ad-fortschritt-label');
+            if (lbl) {lbl.textContent = fortschrittEl.value + '%';}
+        };
+    }
+
+    // Populate date fields
+    const startEl = document.getElementById('ad-start-datum');
+    if (startEl) {startEl.value = auftrag.startDatum || '';}
+    const endEl = document.getElementById('ad-end-datum');
+    if (endEl) {endEl.value = auftrag.endDatum || '';}
+
+    // Populate tab contents
+    renderMitarbeiterList(auftrag);
+    renderChecklisteTab(auftrag);
+    renderKommentareTab(auftrag);
+    renderFotosTab(auftrag);
+    renderHistorieTab(auftrag);
 
     // Reset to first tab
     const tabs = document.querySelectorAll('#auftrag-detail-tabs .auftrag-tab');
