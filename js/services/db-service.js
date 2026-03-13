@@ -1112,7 +1112,7 @@ class DBService {
     async clear() {
         if (!this.db) { await this.init(); }
         const storeNames = Array.from(this.db.objectStoreNames);
-        if (storeNames.length === 0) return;
+        if (storeNames.length === 0) {return;}
         const tx = this.db.transaction(storeNames, 'readwrite');
         const promises = storeNames.map(name => {
             return new Promise((resolve, reject) => {

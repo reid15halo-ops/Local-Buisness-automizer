@@ -395,7 +395,7 @@ class EpcQrService {
         // Byte mode capacities for EC level M (versions 1-10)
         const capacities = [0, 14, 26, 42, 62, 84, 106, 122, 152, 180, 213];
         for (let v = 1; v <= 10; v++) {
-            if (dataLen <= capacities[v]) return v;
+            if (dataLen <= capacities[v]) {return v;}
         }
         return -1;
     }
@@ -472,7 +472,7 @@ class EpcQrService {
         pushBits(0, terminatorLen);
 
         // Pad to byte boundary
-        while (bits.length % 8 !== 0) bits.push(0);
+        while (bits.length % 8 !== 0) {bits.push(0);}
 
         // Pad codewords (0xEC, 0x11 alternating)
         const padBytes = [0xEC, 0x11];
@@ -486,7 +486,7 @@ class EpcQrService {
         const dataCodewords = [];
         for (let i = 0; i < bits.length; i += 8) {
             let byte = 0;
-            for (let j = 0; j < 8; j++) byte = (byte << 1) | (bits[i + j] || 0);
+            for (let j = 0; j < 8; j++) {byte = (byte << 1) | (bits[i + j] || 0);}
             dataCodewords.push(byte);
         }
 
@@ -510,14 +510,14 @@ class EpcQrService {
         const maxDataLen = Math.max(...blocks.map(b => b.length));
         for (let i = 0; i < maxDataLen; i++) {
             for (const block of blocks) {
-                if (i < block.length) result.push(block[i]);
+                if (i < block.length) {result.push(block[i]);}
             }
         }
 
         // Interleave EC blocks
         for (let i = 0; i < ecInfo.ecPerBlock; i++) {
             for (const ecBlock of ecBlocks) {
-                if (i < ecBlock.length) result.push(ecBlock[i]);
+                if (i < ecBlock.length) {result.push(ecBlock[i]);}
             }
         }
 
@@ -548,17 +548,17 @@ class EpcQrService {
 
     // GF(256) multiplication
     _gfMul(a, b) {
-        if (a === 0 || b === 0) return 0;
+        if (a === 0 || b === 0) {return 0;}
         return this._gfExp[(this._gfLog[a] + this._gfLog[b]) % 255];
     }
 
     // Initialize GF(256) tables (lazy)
     get _gfExp() {
-        if (!this.__gfExp) this._initGf();
+        if (!this.__gfExp) {this._initGf();}
         return this.__gfExp;
     }
     get _gfLog() {
-        if (!this.__gfLog) this._initGf();
+        if (!this.__gfLog) {this._initGf();}
         return this.__gfLog;
     }
 
@@ -570,7 +570,7 @@ class EpcQrService {
             this.__gfExp[i] = val;
             this.__gfLog[val] = i;
             val <<= 1;
-            if (val >= 256) val ^= 0x11d; // primitive polynomial
+            if (val >= 256) {val ^= 0x11d;} // primitive polynomial
         }
         this.__gfExp[255] = this.__gfExp[0];
     }
@@ -596,7 +596,7 @@ class EpcQrService {
             for (let r = -1; r <= 7; r++) {
                 for (let c = -1; c <= 7; c++) {
                     const mr = row + r, mc = col + c;
-                    if (mr < 0 || mr >= size || mc < 0 || mc >= size) continue;
+                    if (mr < 0 || mr >= size || mc < 0 || mc >= size) {continue;}
                     const inOuter = (r >= 0 && r <= 6 && c >= 0 && c <= 6);
                     const inInner = (r >= 2 && r <= 4 && c >= 2 && c <= 4);
                     const onBorder = (r === 0 || r === 6 || c === 0 || c === 6);
@@ -611,14 +611,14 @@ class EpcQrService {
     }
 
     _drawAlignmentPatterns(modules, isFunc, version, size) {
-        if (version < 2) return;
+        if (version < 2) {return;}
         const positions = this._alignmentPositions(version, size);
         for (const row of positions) {
             for (const col of positions) {
                 // Skip if overlaps with finder
                 if ((row <= 8 && col <= 8) ||
                     (row <= 8 && col >= size - 8) ||
-                    (row >= size - 8 && col <= 8)) continue;
+                    (row >= size - 8 && col <= 8)) {continue;}
                 for (let dr = -2; dr <= 2; dr++) {
                     for (let dc = -2; dc <= 2; dc++) {
                         const dark = (Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0));
@@ -631,7 +631,7 @@ class EpcQrService {
     }
 
     _alignmentPositions(version, size) {
-        if (version === 1) return [];
+        if (version === 1) {return [];}
         const intervals = [
             0, 0, 18, 22, 26, 30, 34, 22, 24, 26, 28
         ];
@@ -660,7 +660,7 @@ class EpcQrService {
         const ecBits = [0, 1, 3, 2]; // M, L, Q, H
         const data = (ecBits[ecLevel] << 3) | mask;
         let rem = data;
-        for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+        for (let i = 0; i < 10; i++) {rem = (rem << 1) ^ ((rem >>> 9) * 0x537);}
         const bits = ((data << 10) | rem) ^ 0x5412;
 
         // Place format bits
@@ -679,18 +679,18 @@ class EpcQrService {
             const bit = (bits >>> i) & 1;
             const [r1, c1] = coords1[i];
             modules[r1][c1] = bit;
-            if (isFunc) isFunc[r1][c1] = 1;
+            if (isFunc) {isFunc[r1][c1] = 1;}
 
             const [r2, c2] = coords2[i];
             modules[r2][c2] = bit;
-            if (isFunc) isFunc[r2][c2] = 1;
+            if (isFunc) {isFunc[r2][c2] = 1;}
         }
     }
 
     _drawVersionBits(modules, isFunc, size, version) {
-        if (version < 7) return;
+        if (version < 7) {return;}
         let rem = version;
-        for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+        for (let i = 0; i < 12; i++) {rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);}
         const bits = (version << 12) | rem;
 
         for (let i = 0; i < 18; i++) {
@@ -712,14 +712,14 @@ class EpcQrService {
 
         // Traverse right-to-left in 2-column stripes
         for (let right = size - 1; right >= 1; right -= 2) {
-            if (right === 6) right = 5; // Skip timing column
+            if (right === 6) {right = 5;} // Skip timing column
             for (let vert = 0; vert < size; vert++) {
                 for (let j = 0; j < 2; j++) {
                     const col = right - j;
                     const upward = ((right + 1) & 2) === 0;
                     const row = upward ? size - 1 - vert : vert;
 
-                    if (isFunction[row][col]) continue;
+                    if (isFunction[row][col]) {continue;}
                     if (bitIdx < totalBits) {
                         const byteIdx = bitIdx >>> 3;
                         const bitPos = 7 - (bitIdx & 7);
@@ -734,7 +734,7 @@ class EpcQrService {
     _applyMask(modules, isFunction, size, mask) {
         for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
-                if (isFunction[r][c]) continue;
+                if (isFunction[r][c]) {continue;}
                 let invert = false;
                 switch (mask) {
                     case 0: invert = (r + c) % 2 === 0; break;
@@ -746,7 +746,7 @@ class EpcQrService {
                     case 6: invert = ((r * c) % 2 + (r * c) % 3) % 2 === 0; break;
                     case 7: invert = ((r + c) % 2 + (r * c) % 3) % 2 === 0; break;
                 }
-                if (invert) modules[r][c] ^= 1;
+                if (invert) {modules[r][c] ^= 1;}
             }
         }
     }
@@ -762,12 +762,12 @@ class EpcQrService {
                 if (modules[r][c] === runColor) {
                     runLen++;
                 } else {
-                    if (runLen >= 5) penalty += runLen - 2;
+                    if (runLen >= 5) {penalty += runLen - 2;}
                     runColor = modules[r][c];
                     runLen = 1;
                 }
             }
-            if (runLen >= 5) penalty += runLen - 2;
+            if (runLen >= 5) {penalty += runLen - 2;}
         }
         for (let c = 0; c < size; c++) {
             let runColor = modules[0][c];
@@ -776,12 +776,12 @@ class EpcQrService {
                 if (modules[r][c] === runColor) {
                     runLen++;
                 } else {
-                    if (runLen >= 5) penalty += runLen - 2;
+                    if (runLen >= 5) {penalty += runLen - 2;}
                     runColor = modules[r][c];
                     runLen = 1;
                 }
             }
-            if (runLen >= 5) penalty += runLen - 2;
+            if (runLen >= 5) {penalty += runLen - 2;}
         }
 
         // Rule 2: 2x2 blocks
@@ -822,7 +822,7 @@ class EpcQrService {
         let dark = 0;
         for (let r = 0; r < size; r++) {
             for (let c = 0; c < size; c++) {
-                if (modules[r][c]) dark++;
+                if (modules[r][c]) {dark++;}
             }
         }
         const total = size * size;

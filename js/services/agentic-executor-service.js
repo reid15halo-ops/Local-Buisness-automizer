@@ -1176,7 +1176,7 @@ class AgenticExecutorService {
             } catch (e) {
                 if (e.name === 'QuotaExceededError' || e.code === 22) {
                     console.warn('localStorage quota exceeded for freyai_communications');
-                    if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                    if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
                 }
             }
 
@@ -1560,7 +1560,7 @@ class AgenticExecutorService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.warn('[AgenticExecutor] Konfiguration speichern fehlgeschlagen:', e);
             }
@@ -1585,7 +1585,7 @@ class AgenticExecutorService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.HISTORY_KEY);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.warn('[AgenticExecutor] Historie speichern fehlgeschlagen:', e);
             }
@@ -1610,7 +1610,7 @@ class AgenticExecutorService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.UNDO_KEY);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.warn('[AgenticExecutor] Undo-Daten speichern fehlgeschlagen:', e);
             }

@@ -1296,7 +1296,7 @@ Antworte NUR mit dem JSON-Array.`;
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.logKey);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.warn('[AgentWorkflow] Log speichern fehlgeschlagen:', e);
             }
@@ -1405,7 +1405,7 @@ Antworte NUR mit dem JSON-Array.`;
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.configKey);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.warn('[AgentWorkflow] Konfiguration speichern fehlgeschlagen:', e);
             }

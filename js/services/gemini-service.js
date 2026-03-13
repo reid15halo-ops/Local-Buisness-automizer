@@ -77,7 +77,7 @@ class GeminiService {
             url = this.proxyUrl;
             // Get auth token from Supabase
             const client = window.supabaseClient?.client || window.supabase;
-            if (!client?.auth) throw new Error('Supabase client not available');
+            if (!client?.auth) {throw new Error('Supabase client not available');}
             const { data: { session }, error } = await client.auth.getSession();
             if (error || !session) {
                 // Do not fall back to direct API key when proxy is configured —

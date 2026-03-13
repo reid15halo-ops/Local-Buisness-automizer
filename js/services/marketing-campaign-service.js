@@ -97,7 +97,7 @@ class MarketingCampaignService {
             .select()
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -111,7 +111,7 @@ class MarketingCampaignService {
             .eq('id', campaignId)
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -124,11 +124,11 @@ class MarketingCampaignService {
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (filters.status) query = query.eq('status', filters.status);
-        if (filters.customer_id) query = query.eq('customer_id', filters.customer_id);
+        if (filters.status) {query = query.eq('status', filters.status);}
+        if (filters.customer_id) {query = query.eq('customer_id', filters.customer_id);}
 
         const result = await query;
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -142,7 +142,7 @@ class MarketingCampaignService {
             .eq('campaign_id', campaignId)
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -236,7 +236,7 @@ class MarketingCampaignService {
             .insert(posts)
             .select();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
 
         // Update campaign status
         await this.updateCampaignStatus(campaignId, 'scheduled');
@@ -255,7 +255,7 @@ class MarketingCampaignService {
             .select()
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -275,7 +275,7 @@ class MarketingCampaignService {
             .order('scheduled_at', { ascending: true })
             .limit(20);
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -295,7 +295,7 @@ class MarketingCampaignService {
             .select()
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -323,7 +323,7 @@ class MarketingCampaignService {
             .select()
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -335,7 +335,7 @@ class MarketingCampaignService {
             p_campaign_id: campaignId
         });
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return { success: true, campaign_id: campaignId };
     }
 
@@ -351,7 +351,7 @@ class MarketingCampaignService {
             .eq('repost_started', false)
             .lte('ends_at', today);
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -377,7 +377,7 @@ class MarketingCampaignService {
             .select()
             .single();
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data;
     }
 
@@ -451,13 +451,13 @@ class MarketingCampaignService {
         const tags = [...(campaignHashtags || []).slice(0, 15)];
         const catTags = categoryTags[category] || [];
         for (const tag of catTags) {
-            if (tags.length < 25) tags.push(tag);
+            if (tags.length < 25) {tags.push(tag);}
         }
         return tags;
     }
 
     _generateCaption(template, campaign) {
-        if (!template?.caption_template) return '';
+        if (!template?.caption_template) {return '';}
 
         return template.caption_template
             .replace(/\{\{company_name\}\}/g, campaign.company_name || '')
@@ -476,7 +476,7 @@ class MarketingCampaignService {
             .in('platform', platforms)
             .order('sort_order', { ascending: true });
 
-        if (result.error) throw result.error;
+        if (result.error) {throw result.error;}
         return result.data || [];
     }
 }

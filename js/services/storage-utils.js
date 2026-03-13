@@ -30,7 +30,7 @@ const StorageUtils = (() => {
      * some iframe sandboxes, and when storage quota is exceeded).
      */
     function isStorageAvailable() {
-        if (_storageAvailable !== null) return _storageAvailable;
+        if (_storageAvailable !== null) {return _storageAvailable;}
         try {
             const testKey = '__freyai_storage_test__';
             localStorage.setItem(testKey, '1');
@@ -137,7 +137,7 @@ const StorageUtils = (() => {
      * Safe string read from localStorage (non-JSON).
      */
     function getString(key, fallback = '') {
-        if (!isStorageAvailable()) return fallback;
+        if (!isStorageAvailable()) {return fallback;}
         try {
             return localStorage.getItem(key) || fallback;
         } catch {
@@ -152,7 +152,7 @@ const StorageUtils = (() => {
      * @returns {Date|null}
      */
     function safeDate(value) {
-        if (!value) return null;
+        if (!value) {return null;}
         const d = new Date(value);
         return isNaN(d.getTime()) ? null : d;
     }
@@ -191,7 +191,7 @@ const StorageUtils = (() => {
      */
     function getCustomerName(entity, context = 'display') {
         const name = entity?.kunde?.name || entity?.kunde?.firma || null;
-        if (name) return name;
+        if (name) {return name;}
 
         switch (context) {
             case 'financial':

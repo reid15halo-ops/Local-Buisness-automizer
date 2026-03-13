@@ -206,9 +206,9 @@ class SupabaseDBService {
 
         for (const [key, value] of Object.entries(record)) {
             if (key === 'kunde' && value && typeof value === 'object' && !Array.isArray(value)) {
-                if (value.name) flat.kunde_name = value.name;
-                if (value.email) flat.kunde_email = value.email;
-                if (value.telefon) flat.kunde_telefon = value.telefon;
+                if (value.name) {flat.kunde_name = value.name;}
+                if (value.email) {flat.kunde_email = value.email;}
+                if (value.telefon) {flat.kunde_telefon = value.telefon;}
             } else {
                 // Map camelCase → snake_case if known, otherwise pass through
                 const mapped = SupabaseDBService.FIELD_MAP[key] || key;
@@ -218,7 +218,7 @@ class SupabaseDBService {
 
         // Whitelist: only keep columns that exist in this table's schema
         const allowedCols = SupabaseDBService.SCHEMA[table];
-        if (!allowedCols) return flat; // unknown table — send as-is
+        if (!allowedCols) {return flat;} // unknown table — send as-is
 
         const cleaned = {};
         for (const col of allowedCols) {

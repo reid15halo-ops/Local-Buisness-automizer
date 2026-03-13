@@ -224,7 +224,7 @@
          * Calculate netto / mwst / brutto for a variant (mutates in place & returns).
          */
         calculateVariantTotals(variant) {
-            if (!variant || !Array.isArray(variant.positionen)) return variant;
+            if (!variant || !Array.isArray(variant.positionen)) {return variant;}
 
             const netto = variant.positionen.reduce((sum, p) => {
                 const menge = Number(p.menge) || 1;
@@ -317,10 +317,10 @@ Antworte NUR im folgenden JSON-Format (kein Markdown, kein Fließtext):
                 });
 
                 const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!raw) return [null, null, null];
+                if (!raw) {return [null, null, null];}
 
                 const jsonMatch = raw.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) return [null, null, null];
+                if (!jsonMatch) {return [null, null, null];}
 
                 try {
                     const parsed = JSON.parse(jsonMatch[0]);
@@ -342,7 +342,7 @@ Antworte NUR im folgenden JSON-Format (kein Markdown, kein Fließtext):
 
         _isOptionalPosition(pos) {
             const desc = (pos.beschreibung || '').toLowerCase();
-            if (pos.optional === true) return true;
+            if (pos.optional === true) {return true;}
             return OPTIONAL_KEYWORDS.some(kw => desc.includes(kw));
         }
 
@@ -363,10 +363,10 @@ Antworte NUR im folgenden JSON-Format (kein Markdown, kein Fließtext):
         _getPremiumExtras(leistungsart) {
             const la = (leistungsart || '').toLowerCase();
             // Try exact match first, then keyword match
-            if (PREMIUM_EXTRAS[la]) return PREMIUM_EXTRAS[la];
+            if (PREMIUM_EXTRAS[la]) {return PREMIUM_EXTRAS[la];}
 
             for (const [key, extras] of Object.entries(PREMIUM_EXTRAS)) {
-                if (la.includes(key)) return extras;
+                if (la.includes(key)) {return extras;}
             }
             return DEFAULT_PREMIUM_EXTRAS;
         }
@@ -388,7 +388,7 @@ Antworte NUR im folgenden JSON-Format (kein Markdown, kein Fließtext):
         }
 
         _pctDiff(value, reference) {
-            if (!reference) return 0;
+            if (!reference) {return 0;}
             return Math.round(((value - reference) / reference) * 100);
         }
 
@@ -398,7 +398,7 @@ Antworte NUR im folgenden JSON-Format (kein Markdown, kein Fließtext):
         }
 
         _sanitize(str) {
-            if (!str) return '';
+            if (!str) {return '';}
             return String(str).replace(/[<>{}]/g, '').substring(0, 2000);
         }
     }

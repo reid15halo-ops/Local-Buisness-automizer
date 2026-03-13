@@ -25,7 +25,7 @@ class CanvaIntegrationService {
      * @private
      */
     async _ensureInit() {
-        if (this._initialized) return;
+        if (this._initialized) {return;}
 
         const { dbService } = await import('./db-service.js');
         this._dbService = dbService;
@@ -188,7 +188,7 @@ class CanvaIntegrationService {
                 .eq('id', campaignId)
                 .single();
 
-            if (campErr) throw campErr;
+            if (campErr) {throw campErr;}
 
             const brandData = {
                 logo_url: campaign.logo_url,
@@ -213,7 +213,7 @@ class CanvaIntegrationService {
                 .eq('status', 'draft')
                 .not('template_id', 'is', null);
 
-            if (postsErr) throw postsErr;
+            if (postsErr) {throw postsErr;}
 
             // Deduplicate templates (many posts may share the same template)
             const templateMap = new Map();

@@ -2370,7 +2370,7 @@ function initAngeboteEventDelegation() {
     if (positionenList) {
         positionenList.addEventListener('click', (e) => {
             const actionEl = e.target.closest('[data-action]');
-            if (!actionEl) return;
+            if (!actionEl) {return;}
 
             if (actionEl.dataset.action === 'remove-position') {
                 actionEl.closest('.position-row')?.remove();
@@ -2391,7 +2391,7 @@ function initAngeboteEventDelegation() {
     if (detailContent) {
         detailContent.addEventListener('click', (e) => {
             const actionEl = e.target.closest('[data-action]');
-            if (!actionEl) return;
+            if (!actionEl) {return;}
 
             const action = actionEl.dataset.action;
             e.stopPropagation();

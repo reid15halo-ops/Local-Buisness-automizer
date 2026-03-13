@@ -440,9 +440,9 @@ class InvoiceService {
      * @returns {boolean} True if Skonto can still be claimed
      */
     isSkontoEligible(invoice) {
-        if (invoice.skontoEnabled === false) return false;
-        if (invoice.status !== 'offen') return false;
-        if (!invoice.skontoZielDatum || !invoice.skontoPercent) return false;
+        if (invoice.skontoEnabled === false) {return false;}
+        if (invoice.status !== 'offen') {return false;}
+        if (!invoice.skontoZielDatum || !invoice.skontoPercent) {return false;}
         return new Date() <= new Date(invoice.skontoZielDatum);
     }
 

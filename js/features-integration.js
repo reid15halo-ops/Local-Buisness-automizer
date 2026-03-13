@@ -119,10 +119,10 @@ function renderTasks() {
     const kanban = window.taskService.getKanbanData() || {};
 
     // Update stats
-    const tasksOpenEl = document.getElementById('tasks-open'); if (tasksOpenEl) tasksOpenEl.textContent = stats.open;
-    const tasksOverdueEl = document.getElementById('tasks-overdue'); if (tasksOverdueEl) tasksOverdueEl.textContent = stats.overdue;
-    const tasksTodayEl = document.getElementById('tasks-today'); if (tasksTodayEl) tasksTodayEl.textContent = stats.dueToday;
-    const tasksDoneEl = document.getElementById('tasks-done'); if (tasksDoneEl) tasksDoneEl.textContent = stats.completed;
+    const tasksOpenEl = document.getElementById('tasks-open'); if (tasksOpenEl) {tasksOpenEl.textContent = stats.open;}
+    const tasksOverdueEl = document.getElementById('tasks-overdue'); if (tasksOverdueEl) {tasksOverdueEl.textContent = stats.overdue;}
+    const tasksTodayEl = document.getElementById('tasks-today'); if (tasksTodayEl) {tasksTodayEl.textContent = stats.dueToday;}
+    const tasksDoneEl = document.getElementById('tasks-done'); if (tasksDoneEl) {tasksDoneEl.textContent = stats.completed;}
 
     const badge = document.getElementById('aufgaben-badge');
     if (badge) {badge.textContent = stats.open + stats.overdue;}
@@ -191,8 +191,8 @@ function renderCustomers() {
     const customers = window.customerService.getAllCustomers();
 
     // Update stats
-    const customersTotalEl = document.getElementById('customers-total'); if (customersTotalEl) customersTotalEl.textContent = customers.length;
-    const customersActiveEl = document.getElementById('customers-active'); if (customersActiveEl) customersActiveEl.textContent = window.customerService.getActiveCustomers().length;
+    const customersTotalEl = document.getElementById('customers-total'); if (customersTotalEl) {customersTotalEl.textContent = customers.length;}
+    const customersActiveEl = document.getElementById('customers-active'); if (customersActiveEl) {customersActiveEl.textContent = window.customerService.getActiveCustomers().length;}
 
     const badge = document.getElementById('kunden-badge');
     if (badge) {badge.textContent = customers.length;}
@@ -900,8 +900,8 @@ function renderDocuments() {
 
     const docs = window.documentService.getAllDocuments();
 
-    const docsTotalEl = document.getElementById('docs-total'); if (docsTotalEl) docsTotalEl.textContent = docs.length;
-    const docsReceiptsEl = document.getElementById('docs-receipts'); if (docsReceiptsEl) docsReceiptsEl.textContent = docs.filter(d => d.category === 'quittung').length;
+    const docsTotalEl = document.getElementById('docs-total'); if (docsTotalEl) {docsTotalEl.textContent = docs.length;}
+    const docsReceiptsEl = document.getElementById('docs-receipts'); if (docsReceiptsEl) {docsReceiptsEl.textContent = docs.filter(d => d.category === 'quittung').length;}
 
     if (docs.length === 0) {
         container.innerHTML = '<p class="empty-state">Keine Dokumente. Scanne oder lade ein Dokument hoch.</p>';
@@ -1395,7 +1395,7 @@ function initChatbot() {
     });
 
     // Auto-refresh model list occasionally
-    if (_aiModelInterval) clearInterval(_aiModelInterval);
+    if (_aiModelInterval) {clearInterval(_aiModelInterval);}
     _aiModelInterval = setInterval(initAIModelSelector, 30000);
 }
 

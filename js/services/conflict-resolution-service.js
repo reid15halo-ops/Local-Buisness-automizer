@@ -450,7 +450,7 @@ class ConflictResolutionService {
             } catch (e) {
                 if (e.name === 'QuotaExceededError' || e.code === 22) {
                     console.warn('localStorage quota exceeded for', storageKey);
-                    if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                    if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
                 }
             }
 
@@ -499,7 +499,7 @@ class ConflictResolutionService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.STORAGE_KEY);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.error('ConflictResolutionService: Error saving conflicts:', e);
             }
@@ -522,7 +522,7 @@ class ConflictResolutionService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for', this.SETTINGS_KEY);
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.error('ConflictResolutionService: Error saving settings:', e);
             }

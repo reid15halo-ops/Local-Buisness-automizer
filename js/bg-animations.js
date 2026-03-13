@@ -36,7 +36,7 @@
     var canvas = document.createElement('canvas');
     canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;';
     var pos = getComputedStyle(container).position;
-    if (pos === 'static' || pos === '') container.style.position = 'relative';
+    if (pos === 'static' || pos === '') {container.style.position = 'relative';}
     container.insertBefore(canvas, container.firstChild);
     return canvas;
   }
@@ -120,10 +120,10 @@
         p.y += p.vy;
 
         // Wrap edges
-        if (p.x < -10) p.x = w + 10;
-        if (p.x > w + 10) p.x = -10;
-        if (p.y < -10) p.y = h + 10;
-        if (p.y > h + 10) p.y = -10;
+        if (p.x < -10) {p.x = w + 10;}
+        if (p.x > w + 10) {p.x = -10;}
+        if (p.y < -10) {p.y = h + 10;}
+        if (p.y > h + 10) {p.y = -10;}
 
         // Draw particle
         ctx.beginPath();
@@ -273,11 +273,11 @@
 
     function stepPulse(p) {
       p.progress++;
-      if (p.progress % 3 !== 0) return; // slow down movement
+      if (p.progress % 3 !== 0) {return;} // slow down movement
 
       // Record position
       p.segments.push({ col: p.col, row: p.row });
-      if (p.segments.length > p.length) p.segments.shift();
+      if (p.segments.length > p.length) {p.segments.shift();}
 
       // Move
       var dx = [1, 0, -1, 0];
@@ -313,9 +313,9 @@
           for (var dr = -2; dr <= 2; dr++) {
             for (var dc = -2; dc <= 2; dc++) {
               var nr = s.row + dr, nc = s.col + dc;
-              if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+              if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) {continue;}
               var md = Math.abs(dr) + Math.abs(dc);
-              if (md > 2) continue;
+              if (md > 2) {continue;}
               var falloff = brightness * (1 - md / 3) * 0.7;
               var key = nr * cols + nc;
               var prev = illum[key];
@@ -351,7 +351,7 @@
       for (var pi = 0; pi < pulses.length; pi++) {
         var p = pulses[pi];
         var segs = p.segments;
-        if (segs.length < 2) continue;
+        if (segs.length < 2) {continue;}
         for (var si = 1; si < segs.length; si++) {
           var a = segs[si - 1], b = segs[si];
           var brightness = (si / segs.length) * 0.6;
@@ -386,7 +386,7 @@
       // Step and prune pulses
       for (var pi = pulses.length - 1; pi >= 0; pi--) {
         stepPulse(pulses[pi]);
-        if (pulses[pi].dead) pulses.splice(pi, 1);
+        if (pulses[pi].dead) {pulses.splice(pi, 1);}
       }
 
       requestAnimationFrame(frame);

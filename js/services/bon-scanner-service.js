@@ -1707,7 +1707,7 @@ class BonScannerService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for freyai_wareneingaenge');
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             } else {
                 console.error('Fehler beim Speichern der Wareneingänge:', e);
             }

@@ -149,7 +149,7 @@ class CompanySettingsService {
 
     /** German VAT rate as decimal (e.g. 0.19 for 19%). Returns 0 for Kleinunternehmer. */
     getTaxRate() {
-        if (this.isKleinunternehmer()) return 0;
+        if (this.isKleinunternehmer()) {return 0;}
         return this._cache?.default_tax_rate ?? this._defaults.default_tax_rate;
     }
 

@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function initWorkflowsView() {
         const container = document.getElementById('workflows-list');
-        if (container && container._initialized) return;
-        if (container) container._initialized = true;
+        if (container && container._initialized) {return;}
+        if (container) {container._initialized = true;}
         updateWorkflowStats();
         renderWorkflowTemplates();
         renderWorkflows();
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const templates = window.workflowService.getTemplates();
 
         const san = window.UI?.sanitize || window.sanitize?.escapeHtml || (s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]));
-        if (!container) return;
+        if (!container) {return;}
         container.innerHTML = templates.map((t, i) => `
             <div class="template-card" data-template="${i}">
                 <h4>⚡ ${san(t.name)}</h4>
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function renderWorkflowLog() {
         if (!window.workflowService) {return;}
         const container = document.getElementById('workflow-log');
-        if (!container) return;
+        if (!container) {return;}
         const log = window.workflowService.getExecutionLog(null, 20);
 
         if (log.length === 0) {
@@ -277,8 +277,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function initScannerView() {
         const container = document.getElementById('scanned-docs-list');
-        if (container && container._initialized) return;
-        if (container) container._initialized = true;
+        if (container && container._initialized) {return;}
+        if (container) {container._initialized = true;}
         updateScannerStats();
         renderScannedDocs();
         setupScannerControls();
@@ -415,8 +415,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function initBackupView() {
         const container = document.getElementById('auto-backups-list');
-        if (container && container._initialized) return;
-        if (container) container._initialized = true;
+        if (container && container._initialized) {return;}
+        if (container) {container._initialized = true;}
         updateBackupStats();
         renderAutoBackups();
         renderActivityLog();
@@ -431,11 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const log = window.securityBackupService.getActivityLog(100);
 
         const storageUsedEl = document.getElementById('storage-used');
-        if (storageUsedEl) storageUsedEl.textContent = usage.freyaiMB + ' MB';
+        if (storageUsedEl) {storageUsedEl.textContent = usage.freyaiMB + ' MB';}
         const backupCountEl = document.getElementById('backup-count');
-        if (backupCountEl) backupCountEl.textContent = backups.length;
+        if (backupCountEl) {backupCountEl.textContent = backups.length;}
         const activityCountEl = document.getElementById('activity-count');
-        if (activityCountEl) activityCountEl.textContent = log.length;
+        if (activityCountEl) {activityCountEl.textContent = log.length;}
     }
 
     function renderAutoBackups() {

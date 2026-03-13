@@ -469,7 +469,7 @@ class DocumentService {
         } catch (e) {
             if (e.name === 'QuotaExceededError' || e.code === 22) {
                 console.warn('localStorage quota exceeded for freyai_documents');
-                if (window.showToast) window.showToast('Speicher voll — bitte Daten exportieren', 'warning');
+                if (window.showToast) {window.showToast('Speicher voll — bitte Daten exportieren', 'warning');}
             }
         }
     }

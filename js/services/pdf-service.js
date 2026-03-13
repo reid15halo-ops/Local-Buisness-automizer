@@ -696,7 +696,7 @@ class PDFService {
     }
 
     _angebotDrawTextSection(doc, y, text) {
-        if (!text) return y;
+        if (!text) {return y;}
         const m = this.margin;
 
         y = this._angebotCheckPageBreak(doc, y, 20);

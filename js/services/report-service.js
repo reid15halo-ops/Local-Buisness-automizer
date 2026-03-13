@@ -244,7 +244,7 @@ class ReportService {
                 .select('*')
                 .eq('campaign_id', campaignId)
                 .single();
-            if (sumErr) return { error: sumErr.message };
+            if (sumErr) {return { error: sumErr.message };}
 
             // Fetch top posts by engagement
             const { data: posts } = await supabase
@@ -265,7 +265,7 @@ class ReportService {
             // Deduplicate: latest analytics per post
             const latestByPost = {};
             (analytics || []).forEach(a => {
-                if (!latestByPost[a.post_id]) latestByPost[a.post_id] = a;
+                if (!latestByPost[a.post_id]) {latestByPost[a.post_id] = a;}
             });
 
             // Build top performers
