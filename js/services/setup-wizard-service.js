@@ -324,7 +324,7 @@ class SetupWizardService {
             supabase_url: localStorage.getItem('supabase_url') || '',
             supabase_anon_key: localStorage.getItem('supabase_anon_key') || '',
             // gemini_api_key is server-side only (Supabase env var GEMINI_API_KEY, ai-proxy edge function).
-            resend_api_key: localStorage.getItem('resend_api_key') || '',
+            // resend_api_key is server-side only (Supabase env var RESEND_API_KEY, send-email edge function).
             stripe_publishable_key: localStorage.getItem('stripe_publishable_key') || '',
             n8n_webhook_url: localStorage.getItem('n8n_webhook_url') || '',
             kleinunternehmer: localStorage.getItem('kleinunternehmer') === 'true'

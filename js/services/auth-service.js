@@ -74,6 +74,16 @@ class AuthService {
         await client.auth.signOut();
         this.user = null;
         this.session = null;
+
+        // M2 fix: Clear IndexedDB on logout to prevent data leakage
+        if (window.dbService && typeof window.dbService.clear === 'function') {
+            try {
+                await window.dbService.clear();
+            } catch (e) {
+                console.warn('[Auth] Failed to clear local data on logout:', e);
+            }
+        }
+
         this._notify();
     }
 

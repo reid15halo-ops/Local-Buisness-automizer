@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://analytics.freyaivisions.de; connect-src 'self' https://analytics.freyaivisions.de https://incbhhaiiayohrjqevog.supabase.co wss://incbhhaiiayohrjqevog.supabase.co; img-src 'self' data: https:; font-src 'self'; frame-ancestors 'none'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://analytics.freyaivisions.de; connect-src 'self' https://analytics.freyaivisions.de https://incbhhaiiayohrjqevog.supabase.co wss://incbhhaiiayohrjqevog.supabase.co; img-src 'self' data: blob:; font-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests;">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -354,6 +354,7 @@
     <script src="js/services/supabase-config.js"></script>
     <script src="js/services/supabase-client.js"></script>
     <script src="js/services/auth-service.js"></script>
+    <script src="js/services/security-service.js"></script>
 
     <script>
         // Tab switching
@@ -422,6 +423,16 @@
                 return;
             }
 
+            // C2: Rate limit login attempts (5 per 60s)
+            if (window.securityService) {
+                const rl = window.securityService.checkRateLimit('login', 5, 60000);
+                if (!rl.allowed) {
+                    window.securityService.logSecurityEvent('rate_limit', { action: 'login', email });
+                    showMessage('Zu viele Versuche. Bitte warten Sie einen Moment.');
+                    return;
+                }
+            }
+
             btn.disabled = true;
             btn.textContent = 'Wird angemeldet...';
             hideMessage();
@@ -436,6 +447,10 @@
                     msg.includes('Failed to fetch') || msg.includes('NetworkError') ? 'Verbindung zum Server fehlgeschlagen. Bitte versuche es erneut.' :
                     msg;
                 showMessage(translated);
+                // H5: Log failed login attempt
+                if (window.securityService) {
+                    window.securityService.logSecurityEvent('auth_failure', { action: 'login', email });
+                }
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Anmelden';
@@ -457,6 +472,16 @@
                 return;
             }
 
+            // C2: Rate limit registration attempts (3 per 5min)
+            if (window.securityService) {
+                const rl = window.securityService.checkRateLimit('register', 3, 300000);
+                if (!rl.allowed) {
+                    window.securityService.logSecurityEvent('rate_limit', { action: 'register', email });
+                    showMessage('Zu viele Versuche. Bitte warten Sie einen Moment.');
+                    return;
+                }
+            }
+
             btn.disabled = true;
             btn.textContent = 'Wird registriert...';
             hideMessage();
@@ -476,6 +501,10 @@
                     msg.includes('Failed to fetch') || msg.includes('NetworkError') ? 'Verbindung zum Server fehlgeschlagen. Bitte versuche es erneut.' :
                     msg;
                 showMessage(translated);
+                // H5: Log failed registration attempt
+                if (window.securityService) {
+                    window.securityService.logSecurityEvent('auth_failure', { action: 'register', email });
+                }
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Kostenlos registrieren';
@@ -492,11 +521,25 @@
                 return;
             }
 
+            // C2: Rate limit password reset attempts (3 per 5min)
+            if (window.securityService) {
+                const rl = window.securityService.checkRateLimit('password_reset', 3, 300000);
+                if (!rl.allowed) {
+                    window.securityService.logSecurityEvent('rate_limit', { action: 'password_reset', email });
+                    showMessage('Zu viele Versuche. Bitte warten Sie einen Moment.');
+                    return;
+                }
+            }
+
             try {
                 await window.authService.resetPassword(email);
                 showMessage('Reset-Link wurde gesendet! Prüfe deine E-Mails.', 'success');
             } catch (err) {
                 showMessage(err.message);
+                // H5: Log failed password reset attempt
+                if (window.securityService) {
+                    window.securityService.logSecurityEvent('auth_failure', { action: 'password_reset', email });
+                }
             }
         });
 

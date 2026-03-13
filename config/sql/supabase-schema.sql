@@ -122,6 +122,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     plan TEXT DEFAULT 'starter' CHECK (plan IN ('starter', 'professional', 'enterprise')),
     stripe_customer_id TEXT,
     stripe_subscription_id TEXT,
+    privacy_accepted_at TIMESTAMPTZ,
+    terms_accepted_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

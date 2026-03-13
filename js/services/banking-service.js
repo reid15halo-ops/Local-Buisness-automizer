@@ -6,9 +6,6 @@
    ============================================ */
 
 class BankingService {
-    // GoCardless Bank Account Data API base URL
-    static GOCARDLESS_BASE_URL = 'https://bankaccountdata.gocardless.com/api/v2';
-
     // Match confidence tiers
     static CONFIDENCE = {
         REFERENCE_MATCH: 0.95,   // Verwendungszweck contains invoice number
@@ -21,10 +18,6 @@ class BankingService {
         this.transactions = StorageUtils.getJSON('freyai_bank_transactions', [], { financial: true, service: 'bankingService' });
         this.matchedPayments = StorageUtils.getJSON('freyai_matched_payments', [], { financial: true, service: 'bankingService' });
         this.settings = StorageUtils.getJSON('freyai_banking_settings', {}, { financial: true, service: 'bankingService' });
-
-        // GoCardless auth state (token cached in memory, refreshed as needed)
-        this._gcAccessToken = null;
-        this._gcTokenExpiry = null;
 
         // Demo bank data (fallback)
         this.demoBanks = [
@@ -41,87 +34,45 @@ class BankingService {
     // ============================================
 
     /**
-     * Check if GoCardless API credentials are configured
-     * Reads from APP_CONFIG (localStorage-backed, set via Setup Wizard)
+     * Check if GoCardless is available (Supabase configured = Edge Function reachable)
+     * Credentials are now stored server-side as Supabase env vars, never in the browser.
      */
     isLiveMode() {
-        const config = window.APP_CONFIG || {};
-        return !!(config.GOCARDLESS_SECRET_ID && config.GOCARDLESS_SECRET_KEY);
-    }
-
-    /**
-     * Get GoCardless credentials from app config
-     * NEVER hardcoded -- always from localStorage via APP_CONFIG
-     */
-    _getCredentials() {
-        const config = window.APP_CONFIG || {};
-        return {
-            secretId: config.GOCARDLESS_SECRET_ID || '',
-            secretKey: config.GOCARDLESS_SECRET_KEY || ''
-        };
+        // Live mode requires Supabase to be configured (Edge Function proxy handles credentials)
+        const config = window.supabaseConfig;
+        return !!(config?.isConfigured?.());
     }
 
     // ============================================
-    // GoCardless Authentication
+    // GoCardless Server-Side Proxy
     // ============================================
 
     /**
-     * Obtain or refresh GoCardless access token
-     * POST /api/v2/token/new/ with secret_id + secret_key
-     * Token is valid for 24 hours (cached in memory)
-     */
-    async _getAccessToken() {
-        // Return cached token if still valid (5 min buffer)
-        if (this._gcAccessToken && this._gcTokenExpiry && Date.now() < this._gcTokenExpiry - 300000) {
-            return this._gcAccessToken;
-        }
-
-        const { secretId, secretKey } = this._getCredentials();
-        if (!secretId || !secretKey) {
-            throw new Error('[BankingService] GoCardless credentials not configured');
-        }
-
-        try {
-            const response = await fetch(`${BankingService.GOCARDLESS_BASE_URL}/token/new/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ secret_id: secretId, secret_key: secretKey })
-            });
-
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`GoCardless auth failed (${response.status}): ${errorBody}`);
-            }
-
-            const data = await response.json();
-            this._gcAccessToken = data.access;
-            // access token expires in 24h, refresh token in 30 days
-            this._gcTokenExpiry = Date.now() + (data.access_expires || 86400) * 1000;
-
-            console.log('[BankingService] GoCardless token obtained, expires:', new Date(this._gcTokenExpiry).toISOString());
-            return this._gcAccessToken;
-        } catch (err) {
-            console.error('[BankingService] GoCardless auth error:', err.message);
-            throw err;
-        }
-    }
-
-    /**
-     * Make authenticated request to GoCardless API
+     * Make request to GoCardless via the gocardless-proxy Edge Function.
+     * All credentials (secret_id, secret_key) stay server-side.
+     * Auth + token refresh handled by the Edge Function.
      */
     async _gcRequest(method, path, body = null) {
-        const token = await this._getAccessToken();
-        const options = {
-            method,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        };
-        if (body) { options.body = JSON.stringify(body); }
+        const config = window.supabaseConfig;
+        if (!config?.isConfigured?.()) {
+            throw new Error('[BankingService] Supabase nicht konfiguriert -- GoCardless-Proxy nicht erreichbar');
+        }
 
-        const response = await fetch(`${BankingService.GOCARDLESS_BASE_URL}${path}`, options);
+        const cfg = config.get();
+        const session = await window.authService?.getSession();
+        if (!session?.access_token) {
+            throw new Error('[BankingService] Nicht authentifiziert');
+        }
+
+        const response = await fetch(`${cfg.url}/functions/v1/gocardless-proxy`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': cfg.anonKey,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ method, path, body }),
+        });
 
         if (!response.ok) {
             const errorBody = await response.text();

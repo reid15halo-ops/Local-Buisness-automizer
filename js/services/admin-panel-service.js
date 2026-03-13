@@ -391,7 +391,8 @@ class AdminPanelService {
             supabase_anon_key: localStorage.getItem('supabase_anon_key') || '',
             // gemini_api_key is stored server-side as Supabase env var GEMINI_API_KEY.
             // It is proxied through the ai-proxy edge function and never exposed to the client.
-            resend_api_key: localStorage.getItem('resend_api_key') || '',
+            // resend_api_key is stored server-side as Supabase env var RESEND_API_KEY.
+            // Email sending is handled by the send-email edge function.
             stripe_publishable_key: localStorage.getItem('stripe_publishable_key') || '',
             n8n_webhook_url: localStorage.getItem('n8n_webhook_url') || '',
             email_relay_url: localStorage.getItem('email_relay_url') || '',

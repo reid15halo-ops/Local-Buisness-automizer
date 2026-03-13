@@ -147,15 +147,10 @@ class AdminSettingsUI {
 
                         <div class="admin-settings-section">
                             <h3>Email-Versand</h3>
-                            <div class="admin-field">
-                                <label for="setting-resend_api_key">Resend API Key</label>
-                                <input
-                                    type="password"
-                                    id="setting-resend_api_key"
-                                    class="admin-input"
-                                    placeholder="re_..."
-                                />
-                            </div>
+                            <p style="margin:0;font-size:13px;color:var(--text-muted);">
+                                Resend API Key ist serverseitig als Supabase-Umgebungsvariable <code>RESEND_API_KEY</code> konfiguriert.
+                                E-Mail-Versand l&auml;uft &uuml;ber die <code>send-email</code> Edge Function.
+                            </p>
                         </div>
 
                         <div class="admin-settings-section">
@@ -295,7 +290,7 @@ class AdminSettingsUI {
             }
 
             // Save settings
-            ['supabase_url', 'supabase_anon_key', 'gemini_api_key', 'resend_api_key', 'stripe_publishable_key', 'n8n_webhook_url'].forEach(key => {
+            ['supabase_url', 'supabase_anon_key', 'gemini_api_key', 'stripe_publishable_key', 'n8n_webhook_url'].forEach(key => {
                 const input = document.getElementById(`setting-${key}`);
                 if (input?.value) {
                     this.service.saveAdminSetting(key, input.value);

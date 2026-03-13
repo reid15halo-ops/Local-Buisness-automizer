@@ -717,8 +717,8 @@ class AdminPanelUI {
                 <h3>📧 E-Mail-Konfiguration</h3>
                 <div class="admin-panel-form-grid">
                     <div class="admin-panel-field">
-                        <label for="ap-resend-key">Resend API Key</label>
-                        <input type="password" id="ap-resend-key" class="admin-panel-input" value="${this._esc(settings.resend_api_key)}" placeholder="re_..." />
+                        <label>Resend API Key</label>
+                        <p class="admin-panel-hint" style="margin:0;font-size:13px;color:var(--text-muted);">Serverseitig konfiguriert als Supabase-Umgebungsvariable <code>RESEND_API_KEY</code>.</p>
                     </div>
                     <div class="admin-panel-field">
                         <label for="ap-email-relay-url">E-Mail Relay URL</label>
@@ -768,7 +768,6 @@ class AdminPanelUI {
 
     _saveTechnicalSettings() {
         const fields = {
-            resend_api_key: 'ap-resend-key',
             email_relay_url: 'ap-email-relay-url',
             email_relay_secret: 'ap-email-relay-secret',
             n8n_webhook_url: 'ap-n8n-url',
@@ -884,7 +883,7 @@ class AdminPanelUI {
                     </div>
                     <div class="admin-panel-info-row">
                         <span>E-Mail (Resend)</span>
-                        <span class="admin-panel-status-indicator ${settings.resend_api_key ? 'status-ok' : 'status-off'}">${settings.resend_api_key ? '● Konfiguriert' : '○ Nicht konfiguriert'}</span>
+                        <span class="admin-panel-status-indicator status-ok">● Serverseitig konfiguriert</span>
                     </div>
                     <div class="admin-panel-info-row">
                         <span>KI (Gemini)</span>

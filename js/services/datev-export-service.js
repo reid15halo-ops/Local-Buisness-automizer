@@ -90,7 +90,23 @@ class DatevExportService {
 
         // Map category to DATEV Sachkonto (SKR03)
         const sachkonto = this.getSachkonto(buchung.kategorie, buchung.typ);
-        const gegenkonto = '1200'; // Gegenkonto: Bank
+
+        // Gegenkonto: 1400 (Forderungen) for unpaid invoices, 1200 (Bank) for paid ones
+        const isPaid = buchung.zahlungsart === 'bar' || buchung.zahlungsart === 'Barzahlung' ||
+                       buchung.bezahlt === true || buchung.status === 'bezahlt';
+        const gegenkonto = isEinnahme && !isPaid ? '1400' : '1200';
+
+        // §19 UStG Kleinunternehmer: BU-Schlüssel = '0' (keine USt).
+        // Kleinunternehmer erheben keine Umsatzsteuer auf Einnahmen und können
+        // keine Vorsteuer geltend machen. Daher ist der BU-Schlüssel immer '0'.
+        // Bei Regelbesteuerung: '3' = 19% USt (Einnahmen), '9' = 19% VSt (Ausgaben).
+        const isKleinunternehmer = window.bookkeepingService?.einstellungen?.kleinunternehmer === true;
+        let buchungsSchluessel;
+        if (isKleinunternehmer) {
+            buchungsSchluessel = '0';
+        } else {
+            buchungsSchluessel = isEinnahme ? '3' : '9';
+        }
 
         return {
             satzNr: recordNumber,
@@ -99,7 +115,7 @@ class DatevExportService {
             waehrung: 'EUR',
             konto: sachkonto,
             gegenKonto: gegenkonto,
-            buchungsSchluessel: isEinnahme ? '3' : '2', // 19% USt
+            buchungsSchluessel: buchungsSchluessel,
             datum: this.formatDatevDate(buchung.datum),
             belegfeld1: buchung.belegnummer || buchung.belegNummer || '',
             belegfeld2: '',

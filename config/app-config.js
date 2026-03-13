@@ -57,11 +57,9 @@
         WHATSAPP_INSTANCE:     ls('freyai_whatsapp_instance',     'freyai-whatsapp'),
 
         // ── GoCardless Open Banking ──────────────────────────────────────
-        // Register at https://bankaccountdata.gocardless.com (free, 100 req/day)
-        // Set via Setup Wizard or localStorage keys.
-        // IMPORTANT: These are API credentials -- stored in localStorage, never in code.
-        GOCARDLESS_SECRET_ID:  ls('freyai_gocardless_secret_id',  ''),
-        GOCARDLESS_SECRET_KEY: ls('freyai_gocardless_secret_key', ''),
+        // GoCardless credentials (SECRET_ID, SECRET_KEY) are now stored server-side
+        // as Supabase env vars. All API calls go through the gocardless-proxy Edge Function.
+        // Only the account ID is kept client-side for UI reference.
         GOCARDLESS_ACCOUNT_ID: ls('freyai_gocardless_account_id', ''),
 
         // ── Environment ────────────────────────────────────────────────────
