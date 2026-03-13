@@ -33,9 +33,9 @@ class CustomerTimelineService {
         // Paralleles Laden aus allen Quellen (Rechnungen zuerst, da Mahnungen sie brauchen)
         const results = await Promise.allSettled([
             this._getLeads(kundeId, customer),
-            this._getAngebote(kundeId),
-            this._getAuftraege(kundeId),
-            this._getRechnungen(kundeId)
+            this._getAngebote(kundeId, customer),
+            this._getAuftraege(kundeId, customer),
+            this._getRechnungen(kundeId, customer)
         ]);
         const [leads, angebote, auftraege, rechnungen] = results.map(r => r.status === 'fulfilled' ? r.value : []);
         // Mahnungen brauchen Rechnungs-IDs — Cache uebergeben um Doppel-Query zu vermeiden
@@ -180,20 +180,22 @@ class CustomerTimelineService {
         return leads;
     }
 
-    async _getAngebote(kundeId) {
+    async _getAngebote(kundeId, customer) {
         const store = this._getStore();
+        const kundeName = customer?.name || '';
         const local = (store?.store?.angebote || []).filter(a =>
             a.kundeId === kundeId || a.kunde_id === kundeId ||
-            a.kunde?.id === kundeId
+            a.kunde?.id === kundeId || a.kunde?.name === kundeName ||
+            a.kunde_name === kundeName
         );
 
         const db = this._getDB();
-        if (db && db.isOnline()) {
+        if (db && db.isOnline() && kundeName) {
             try {
                 const { data } = await db.getClient()
                     .from('angebote')
                     .select('*')
-                    .eq('kunde_id', kundeId)
+                    .eq('kunde_name', kundeName)
                     .order('created_at', { ascending: true });
                 if (data) {
                     const existingIds = new Set(local.map(a => a.id));
@@ -207,20 +209,22 @@ class CustomerTimelineService {
         return local;
     }
 
-    async _getAuftraege(kundeId) {
+    async _getAuftraege(kundeId, customer) {
         const store = this._getStore();
+        const kundeName = customer?.name || '';
         const local = (store?.store?.auftraege || []).filter(a =>
             a.kundeId === kundeId || a.kunde_id === kundeId ||
-            a.kunde?.id === kundeId
+            a.kunde?.id === kundeId || a.kunde?.name === kundeName ||
+            a.kunde_name === kundeName
         );
 
         const db = this._getDB();
-        if (db && db.isOnline()) {
+        if (db && db.isOnline() && kundeName) {
             try {
                 const { data } = await db.getClient()
                     .from('auftraege')
                     .select('*')
-                    .eq('kunde_id', kundeId)
+                    .eq('kunde_name', kundeName)
                     .order('created_at', { ascending: true });
                 if (data) {
                     const existingIds = new Set(local.map(a => a.id));
@@ -234,20 +238,22 @@ class CustomerTimelineService {
         return local;
     }
 
-    async _getRechnungen(kundeId) {
+    async _getRechnungen(kundeId, customer) {
         const store = this._getStore();
+        const kundeName = customer?.name || '';
         const local = (store?.store?.rechnungen || []).filter(r =>
             r.kundeId === kundeId || r.kunde_id === kundeId ||
-            r.kunde?.id === kundeId
+            r.kunde?.id === kundeId || r.kunde?.name === kundeName ||
+            r.kunde_name === kundeName
         );
 
         const db = this._getDB();
-        if (db && db.isOnline()) {
+        if (db && db.isOnline() && kundeName) {
             try {
                 const { data } = await db.getClient()
                     .from('rechnungen')
                     .select('*')
-                    .eq('kunde_id', kundeId)
+                    .eq('kunde_name', kundeName)
                     .order('created_at', { ascending: true });
                 if (data) {
                     const existingIds = new Set(local.map(r => r.id));

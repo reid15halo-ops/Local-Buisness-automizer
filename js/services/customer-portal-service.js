@@ -50,7 +50,7 @@ class CustomerPortalService {
             await Promise.all([
                 this._loadTokens(),
                 this._loadMessages(),
-                this._loadSharedPhotos()
+                this._loadSharedPhotos().catch(() => {})
             ]);
         } catch (err) {
             console.warn('CustomerPortalService: Supabase load error', err);
@@ -102,8 +102,7 @@ class CustomerPortalService {
                     sharedAt: r.shared_at
                 };
             });
-        } catch (err) {
-            console.warn('CustomerPortalService: shared photos load error', err);
+        } catch {
             this.sharedPhotos = {};
         }
     }
