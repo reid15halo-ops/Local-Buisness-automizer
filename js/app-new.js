@@ -680,6 +680,106 @@ function initAutomationSettings() {
         if (window.UI?.openModal) {window.UI.openModal('modal-test-email');}
     });
 
+    // Run email processing test
+    document.getElementById('btn-run-test')?.addEventListener('click', async () => {
+        const body = document.getElementById('test-email-body')?.value?.trim();
+        if (!body) {
+            showToast('Bitte E-Mail-Inhalt eingeben', 'warning');
+            return;
+        }
+        const resultDiv = document.getElementById('test-result');
+        if (resultDiv) {resultDiv.innerHTML = '<p style="color:var(--text-muted);">Verarbeitung läuft...</p>';}
+
+        try {
+            let result = null;
+            if (window.emailAutomationService?.processTestEmail) {
+                result = await window.emailAutomationService.processTestEmail(body);
+            } else if (window.automationAPI?.isAvailable()) {
+                result = await window.automationAPI.invoke('process-email', { body, test: true });
+            }
+
+            if (resultDiv) {
+                if (result && result.success !== false) {
+                    const parsed = result.parsed || result;
+                    resultDiv.innerHTML = `
+                        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:16px;">
+                            <h4 style="margin:0 0 8px;color:#22c55e;">Ergebnis</h4>
+                            ${parsed.kunde ? `<p><strong>Kunde:</strong> ${parsed.kunde.name || 'Unbekannt'}</p>` : ''}
+                            ${parsed.email ? `<p><strong>E-Mail:</strong> ${parsed.email}</p>` : ''}
+                            ${parsed.telefon ? `<p><strong>Telefon:</strong> ${parsed.telefon}</p>` : ''}
+                            ${parsed.leistungsart ? `<p><strong>Leistungsart:</strong> ${parsed.leistungsart}</p>` : ''}
+                            ${parsed.beschreibung ? `<p><strong>Beschreibung:</strong> ${parsed.beschreibung}</p>` : ''}
+                            <pre style="font-size:12px;margin-top:8px;white-space:pre-wrap;color:var(--text-muted);">${JSON.stringify(result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:16px;color:#ef4444;">
+                        <strong>Fehler:</strong> ${result?.error || 'E-Mail konnte nicht verarbeitet werden. Ist der Automation-Service konfiguriert?'}
+                    </div>`;
+                }
+            }
+        } catch (err) {
+            if (resultDiv) {
+                resultDiv.innerHTML = `<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:16px;color:#ef4444;">
+                    <strong>Fehler:</strong> ${err.message || 'Unbekannter Fehler'}
+                </div>`;
+            }
+        }
+    });
+
+    // Load example email into test textarea
+    document.getElementById('btn-load-example-email')?.addEventListener('click', () => {
+        const examples = [
+            `Sehr geehrte Damen und Herren,
+
+wir benötigen für unsere Lagerhalle ein neues Rolltor.
+Maße: Breite 5m, Höhe 4m
+Material: Stahl verzinkt
+Zeitraum: möglichst innerhalb der nächsten 4 Wochen
+
+Bitte senden Sie uns ein Angebot.
+
+Mit freundlichen Grüßen
+Thomas Schmidt
+Schmidt GmbH
+Industriestraße 45
+63739 Aschaffenburg
+Tel: 06021-123456
+Email: schmidt@schmidt-gmbh.de`,
+            `Hallo,
+
+ich suche einen Schlosser für die Reparatur unserer Hofeinfahrt.
+Das Tor klemmt und lässt sich nicht mehr richtig öffnen.
+Doppelflügeltor, ca. 3m breit.
+
+Können Sie sich das mal anschauen? Am besten diese Woche noch.
+
+Gruß
+Maria Weber
+Hauptstraße 12, 64807 Dieburg
+0151-98765432`,
+            `Guten Tag,
+
+für unser Treppengeländer im Außenbereich benötigen wir eine Erneuerung.
+Aktuell Holz, soll durch Edelstahl ersetzt werden.
+Länge ca. 8 Meter, 3 Etagen.
+
+Bitte um Terminvorschlag für eine Besichtigung.
+
+Freundliche Grüße
+Peter Müller
+Waldweg 7
+63762 Großostheim
+peter.mueller@gmx.de`
+        ];
+        const textarea = document.getElementById('test-email-body');
+        if (textarea) {
+            const randomExample = examples[Math.floor(Math.random() * examples.length)];
+            textarea.value = randomExample;
+            showToast('Beispiel-E-Mail geladen', 'success');
+        }
+    });
+
     // View Email Automation History
     document.getElementById('btn-view-email-automation')?.addEventListener('click', () => {
         if (window.UI?.switchView) {window.UI.switchView('email-automation');}

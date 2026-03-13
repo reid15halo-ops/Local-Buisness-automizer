@@ -484,6 +484,160 @@ function initAngebotForm() {
     if (addBtn) {addBtn.addEventListener('click', addPosition);}
     if (aiBtn) {aiBtn.addEventListener('click', generateAIText);}
 
+    // Preset: Load saved template
+    const loadPresetBtn = document.getElementById('btn-load-preset');
+    if (loadPresetBtn) {
+        loadPresetBtn.addEventListener('click', () => {
+            const select = document.getElementById('customer-preset');
+            const presetId = select?.value;
+            if (!presetId) {
+                showToast('Bitte zuerst eine Vorlage auswählen', 'warning');
+                return;
+            }
+            const presets = JSON.parse(localStorage.getItem('angebot_presets') || '[]');
+            const preset = presets.find(p => p.id === presetId);
+            if (!preset) {
+                showToast('Vorlage nicht gefunden', 'error');
+                return;
+            }
+            // Clear existing positions
+            const positionenList = document.getElementById('positionen-list');
+            if (positionenList) {positionenList.innerHTML = '';}
+            // Re-add positions from preset
+            (preset.positionen || []).forEach(pos => {
+                addPosition();
+                const rows = document.querySelectorAll('.position-row');
+                const lastRow = rows[rows.length - 1];
+                if (!lastRow) {return;}
+                const desc = lastRow.querySelector('.pos-beschreibung');
+                if (desc) {desc.value = pos.beschreibung || '';}
+                const menge = lastRow.querySelector('.pos-menge');
+                if (menge) {menge.value = pos.menge || 1;}
+                const einheit = lastRow.querySelector('.pos-einheit');
+                if (einheit) {einheit.value = pos.einheit || 'Stk';}
+                const preis = lastRow.querySelector('.pos-preis');
+                if (preis) {preis.value = pos.preis || 0;}
+                const details = lastRow.querySelector('.pos-details');
+                if (details) {details.value = pos.details || '';}
+            });
+            updateAngebotSummary();
+            showToast(`Vorlage "${preset.name}" geladen`, 'success');
+        });
+    }
+
+    // Preset: Save current positions as template
+    const savePresetBtn = document.getElementById('btn-save-preset');
+    if (savePresetBtn) {
+        savePresetBtn.addEventListener('click', () => {
+            const positionen = [];
+            document.querySelectorAll('.position-row').forEach(row => {
+                const beschreibung = row.querySelector('.pos-beschreibung')?.value || '';
+                const menge = parseFloat(row.querySelector('.pos-menge')?.value) || 1;
+                const einheit = row.querySelector('.pos-einheit')?.value || 'Stk';
+                const preis = parseFloat(row.querySelector('.pos-preis')?.value) || 0;
+                const details = row.querySelector('.pos-details')?.value || '';
+                if (beschreibung) {positionen.push({ beschreibung, menge, einheit, preis, details });}
+            });
+            if (positionen.length === 0) {
+                showToast('Keine Positionen zum Speichern vorhanden', 'warning');
+                return;
+            }
+            const name = prompt('Name der Vorlage:');
+            if (!name || !name.trim()) {return;}
+            const presets = JSON.parse(localStorage.getItem('angebot_presets') || '[]');
+            const preset = { id: 'preset-' + Date.now(), name: name.trim(), positionen, createdAt: new Date().toISOString() };
+            presets.push(preset);
+            localStorage.setItem('angebot_presets', JSON.stringify(presets));
+            // Update select dropdown
+            const select = document.getElementById('customer-preset');
+            if (select) {
+                const opt = document.createElement('option');
+                opt.value = preset.id;
+                opt.textContent = preset.name;
+                select.appendChild(opt);
+                select.value = preset.id;
+            }
+            showToast(`Vorlage "${preset.name}" gespeichert`, 'success');
+        });
+    }
+
+    // Add position from material inventory
+    const addFromMaterialBtn = document.getElementById('btn-add-from-material');
+    if (addFromMaterialBtn) {
+        addFromMaterialBtn.addEventListener('click', () => {
+            if (!window.materialService) {
+                showToast('Material-Service nicht verfügbar', 'warning');
+                return;
+            }
+            const materials = window.materialService.getAllMaterials();
+            if (!materials || materials.length === 0) {
+                showToast('Kein Material im Bestand vorhanden', 'info');
+                return;
+            }
+            // Build a simple picker overlay
+            const existing = document.getElementById('material-picker-overlay');
+            if (existing) {existing.remove();}
+            const overlay = document.createElement('div');
+            overlay.id = 'material-picker-overlay';
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);';
+            overlay.innerHTML = `
+                <div style="background:var(--bg-card,#18181b);border-radius:16px;padding:24px;max-width:520px;width:90%;max-height:70vh;overflow-y:auto;color:var(--text,#fafafa);">
+                    <h3 style="margin:0 0 16px;">Material aus Bestand wählen</h3>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        ${materials.map(m => `
+                            <button type="button" class="btn btn-secondary" data-mat-id="${h(m.id)}" style="text-align:left;padding:10px 14px;">
+                                <strong>${h(m.bezeichnung || m.name)}</strong>
+                                <span style="color:#9ca3af;margin-left:8px;">${h(m.artikelnummer || '')} — ${m.bestand || 0} ${h(m.einheit || 'Stk')} — ${formatCurrency(m.preis || 0)}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <button type="button" class="btn btn-secondary" style="margin-top:16px;width:100%;" id="material-picker-close">Abbrechen</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#material-picker-close').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-mat-id]');
+                if (!btn) {return;}
+                const mat = materials.find(m => m.id === btn.dataset.matId);
+                if (!mat) {return;}
+                addPosition();
+                const rows = document.querySelectorAll('.position-row');
+                const lastRow = rows[rows.length - 1];
+                if (lastRow) {
+                    const desc = lastRow.querySelector('.pos-beschreibung');
+                    if (desc) {
+                        desc.value = mat.bezeichnung || mat.name || '';
+                        desc.dataset.materialId = mat.id;
+                    }
+                    const einheit = lastRow.querySelector('.pos-einheit');
+                    if (einheit) {einheit.value = mat.einheit || 'Stk';}
+                    const preis = lastRow.querySelector('.pos-preis');
+                    if (preis) {preis.value = mat.preis || 0;}
+                    const menge = lastRow.querySelector('.pos-menge');
+                    if (menge) {menge.value = 1;}
+                }
+                updateAngebotSummary();
+                overlay.remove();
+                showToast(`"${mat.bezeichnung || mat.name}" hinzugefügt`, 'success');
+            });
+        });
+    }
+
+    // Load saved presets into dropdown on init
+    try {
+        const presets = JSON.parse(localStorage.getItem('angebot_presets') || '[]');
+        const select = document.getElementById('customer-preset');
+        if (select && presets.length > 0) {
+            presets.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                select.appendChild(opt);
+            });
+        }
+    } catch (_e) { /* ignore parse errors */ }
+
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 

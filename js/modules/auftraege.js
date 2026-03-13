@@ -425,6 +425,124 @@ function initAuftragForm() {
         `;
         rows.appendChild(row);
     });
+
+    // Stückliste: Add from material inventory
+    document.getElementById('btn-add-stueckliste-bestand')?.addEventListener('click', () => {
+        if (!window.materialService) {
+            window.AppUtils.showToast('Material-Service nicht verfügbar', 'warning');
+            return;
+        }
+        const materials = window.materialService.getAllMaterials();
+        if (!materials || materials.length === 0) {
+            window.AppUtils.showToast('Kein Material im Bestand vorhanden', 'info');
+            return;
+        }
+        const existing = document.getElementById('stueckliste-material-picker');
+        if (existing) {existing.remove();}
+        const overlay = document.createElement('div');
+        overlay.id = 'stueckliste-material-picker';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);';
+        overlay.innerHTML = `
+            <div style="background:var(--bg-card,#18181b);border-radius:16px;padding:24px;max-width:520px;width:90%;max-height:70vh;overflow-y:auto;color:var(--text,#fafafa);">
+                <h3 style="margin:0 0 16px;">Material aus Bestand wählen</h3>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    ${materials.map(m => `
+                        <button type="button" class="btn btn-secondary" data-mat-id="${h(m.id)}" style="text-align:left;padding:10px 14px;">
+                            <strong>${h(m.bezeichnung || m.name)}</strong>
+                            <span style="color:#9ca3af;margin-left:8px;">${h(m.artikelnummer || '')} — ${m.bestand || 0} ${h(m.einheit || 'Stk')} — ${formatCurrency(m.preis || 0)}</span>
+                        </button>
+                    `).join('')}
+                </div>
+                <button type="button" class="btn btn-secondary" style="margin-top:16px;width:100%;" id="sl-picker-close">Abbrechen</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#sl-picker-close').addEventListener('click', () => overlay.remove());
+        overlay.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-mat-id]');
+            if (!btn) {return;}
+            const mat = materials.find(m => m.id === btn.dataset.matId);
+            if (!mat) {return;}
+            const rows = document.getElementById('stueckliste-rows');
+            if (!rows) {return;}
+            const idx = rows.children.length;
+            const row = document.createElement('div');
+            row.className = 'stueckliste-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Bezeichnung" class="sl-name" data-idx="${idx}" value="${h(mat.bezeichnung || mat.name || '')}">
+                <input type="number" placeholder="1" value="1" min="0.1" step="0.1" class="sl-menge" data-idx="${idx}">
+                <input type="text" placeholder="Stk" value="${h(mat.einheit || 'Stk')}" class="sl-einheit" data-idx="${idx}">
+                <input type="number" placeholder="0.00" step="0.01" class="sl-ek" data-idx="${idx}" value="${mat.preis || 0}">
+                <input type="number" placeholder="0.00" step="0.01" class="sl-vk" data-idx="${idx}" value="${mat.vkPreis || mat.preis || 0}">
+                <span class="sl-gesamt" data-idx="${idx}">0,00 €</span>
+                <button type="button" class="btn-remove-sl" data-idx="${idx}">&times;</button>
+            `;
+            rows.appendChild(row);
+            overlay.remove();
+            window.AppUtils.showToast(`"${mat.bezeichnung || mat.name}" hinzugefügt`, 'success');
+        });
+    });
+
+    // Stückliste: AI suggestion
+    document.getElementById('btn-suggest-stueckliste')?.addEventListener('click', async () => {
+        const auftragId = document.getElementById('auftrag-id')?.value;
+        const auftrag = store.auftraege.find(a => a.id === auftragId);
+        if (!auftrag) {
+            window.AppUtils.showToast('Auftrag nicht gefunden', 'error');
+            return;
+        }
+        const leistungsart = auftrag.leistungsart || 'allgemein';
+        const beschreibung = auftrag.beschreibung || auftrag.kunde?.name || '';
+
+        // Try AI service or fall back to a sensible default set
+        window.AppUtils.showToast('KI-Vorschlag wird generiert...', 'info');
+
+        try {
+            let suggestions = [];
+            if (window.aiService?.suggestMaterials) {
+                suggestions = await window.aiService.suggestMaterials(leistungsart, beschreibung);
+            } else if (window.geminiService?.generateContent) {
+                const prompt = `Schlage eine Stückliste (max 5 Positionen) für folgenden Handwerker-Auftrag vor: Leistungsart: ${leistungsart}, Beschreibung: ${beschreibung}. Antworte als JSON-Array mit Objekten: [{name, menge, einheit, ekPreis}]`;
+                const raw = await window.geminiService.generateContent(prompt);
+                try {
+                    const match = raw.match(/\[[\s\S]*?\]/);
+                    if (match) {suggestions = JSON.parse(match[0]);}
+                } catch (_e) { /* parse error */ }
+            }
+
+            if (!suggestions || suggestions.length === 0) {
+                // Fallback: generic suggestions based on Leistungsart
+                const defaults = {
+                    metallbau: [{ name: 'Stahlprofil', menge: 2, einheit: 'm', ekPreis: 25 }, { name: 'Schweißdraht', menge: 1, einheit: 'Rolle', ekPreis: 15 }],
+                    schlosserei: [{ name: 'Schließzylinder', menge: 1, einheit: 'Stk', ekPreis: 45 }, { name: 'Beschlag-Set', menge: 1, einheit: 'Set', ekPreis: 30 }],
+                    allgemein: [{ name: 'Material', menge: 1, einheit: 'Stk', ekPreis: 0 }]
+                };
+                suggestions = defaults[leistungsart] || defaults.allgemein;
+            }
+
+            const rows = document.getElementById('stueckliste-rows');
+            if (!rows) {return;}
+            suggestions.forEach(s => {
+                const idx = rows.children.length;
+                const row = document.createElement('div');
+                row.className = 'stueckliste-row';
+                row.innerHTML = `
+                    <input type="text" placeholder="Bezeichnung" class="sl-name" data-idx="${idx}" value="${h(s.name || s.bezeichnung || '')}">
+                    <input type="number" placeholder="1" value="${s.menge || 1}" min="0.1" step="0.1" class="sl-menge" data-idx="${idx}">
+                    <input type="text" placeholder="Stk" value="${h(s.einheit || 'Stk')}" class="sl-einheit" data-idx="${idx}">
+                    <input type="number" placeholder="0.00" step="0.01" class="sl-ek" data-idx="${idx}" value="${s.ekPreis || 0}">
+                    <input type="number" placeholder="0.00" step="0.01" class="sl-vk" data-idx="${idx}" value="${s.vkPreis || s.ekPreis || 0}">
+                    <span class="sl-gesamt" data-idx="${idx}">0,00 €</span>
+                    <button type="button" class="btn-remove-sl" data-idx="${idx}">&times;</button>
+                `;
+                rows.appendChild(row);
+            });
+            window.AppUtils.showToast(`${suggestions.length} Vorschläge hinzugefügt — bitte Preise prüfen`, 'success');
+        } catch (err) {
+            console.error('KI-Vorschlag Fehler:', err);
+            window.AppUtils.showToast('KI-Vorschlag fehlgeschlagen: ' + (err.message || 'Unbekannter Fehler'), 'error');
+        }
+    });
 }
 
 // Create Rechnung from Auftrag
