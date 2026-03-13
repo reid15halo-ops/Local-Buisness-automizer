@@ -50,6 +50,7 @@ class KeyboardShortcuts {
             }
 
             // Build key combination string
+            if (!e.key) {return;}
             const parts = [];
             if (e.ctrlKey || e.metaKey) {parts.push('Ctrl');}
             if (e.altKey) {parts.push('Alt');}
