@@ -468,9 +468,17 @@ class StoreService {
     }
 
     /**
-     * Force re-sync from Supabase, replacing cached data.
+     * Force re-sync from Supabase, merging with local data.
+     * Debounced to avoid double-sync from auth callback + init.
      */
     async forceSync() {
+        // Debounce: skip if we synced in the last 5 seconds
+        const now = Date.now();
+        if (this._lastSyncTime && (now - this._lastSyncTime) < 5000) {
+            return false;
+        }
+        this._lastSyncTime = now;
+
         const synced = await this._syncFromSupabase();
         if (synced) {
             this.notify();
@@ -497,6 +505,7 @@ class StoreService {
 
     /**
      * Sync data from Supabase cloud tables into local store.
+     * Merges by ID — keeps the version with the newer updated_at timestamp.
      * @returns {boolean} true if data was loaded from Supabase
      */
     async _syncFromSupabase() {
@@ -508,14 +517,15 @@ class StoreService {
             for (const table of tables) {
                 const data = await window.supabaseDB.getAll(table);
                 if (data && data.length > 0) {
-                    this.store[table] = this._transformSupabaseRows(data);
+                    const remoteRows = this._transformSupabaseRows(data);
+                    this.store[table] = this._mergeById(this.store[table] || [], remoteRows);
                     totalRecords += data.length;
                 }
             }
             try {
                 const kunden = await window.supabaseDB.getAll("kunden");
                 if (kunden && kunden.length > 0) {
-                    this.store.kunden = kunden;
+                    this.store.kunden = this._mergeById(this.store.kunden || [], kunden);
                     totalRecords += kunden.length;
                 }
             } catch { /* kunden table may not exist */ }
@@ -530,6 +540,32 @@ class StoreService {
             console.warn("[StoreService] Supabase sync failed:", err.message);
             return false;
         }
+    }
+
+    /**
+     * Merge two arrays by ID, keeping the record with the newer updated_at.
+     * Records only in local or only in remote are kept.
+     */
+    _mergeById(localArr, remoteArr) {
+        const map = new Map();
+        for (const item of localArr) {
+            if (item.id) {map.set(item.id, item);}
+        }
+        for (const remote of remoteArr) {
+            if (!remote.id) {continue;}
+            const local = map.get(remote.id);
+            if (!local) {
+                map.set(remote.id, remote);
+            } else {
+                // Keep whichever has the newer updated_at (or remote if no timestamps)
+                const localTime = local.updated_at ? new Date(local.updated_at).getTime() : 0;
+                const remoteTime = remote.updated_at ? new Date(remote.updated_at).getTime() : 0;
+                if (remoteTime >= localTime) {
+                    map.set(remote.id, remote);
+                }
+            }
+        }
+        return [...map.values()];
     }
 }
 
