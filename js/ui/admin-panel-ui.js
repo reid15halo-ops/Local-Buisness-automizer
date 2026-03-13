@@ -624,7 +624,7 @@ class AdminPanelUI {
                     </div>
                     <div class="admin-panel-field">
                         <label for="ap-admin-new-pass">Neues Admin-Passwort</label>
-                        <input type="password" id="ap-admin-new-pass" class="admin-panel-input" placeholder="Mindestens 6 Zeichen" />
+                        <input type="password" id="ap-admin-new-pass" class="admin-panel-input" placeholder="Mindestens 8 Zeichen" />
                     </div>
                 </div>
                 <div class="admin-panel-actions">
@@ -651,7 +651,7 @@ class AdminPanelUI {
                     </div>
                     <div class="admin-panel-field">
                         <label for="ap-dev-new-pass">Neues Developer-Passwort</label>
-                        <input type="password" id="ap-dev-new-pass" class="admin-panel-input" placeholder="Mindestens 6 Zeichen" />
+                        <input type="password" id="ap-dev-new-pass" class="admin-panel-input" placeholder="Mindestens 8 Zeichen" />
                     </div>
                 </div>
                 <div class="admin-panel-actions">

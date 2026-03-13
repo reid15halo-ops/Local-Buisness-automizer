@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS waitlist (
 
 -- Allow anonymous inserts for waitlist
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
+-- TODO: Add rate limiting via Edge Function (current policy allows unlimited anonymous inserts)
 CREATE POLICY "Anyone can join waitlist" ON waitlist
     FOR INSERT WITH CHECK (true);
 CREATE POLICY "Only admins can read waitlist" ON waitlist

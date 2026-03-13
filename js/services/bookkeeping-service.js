@@ -396,42 +396,12 @@ async addFromRechnung(rechnung) {
     // ============================================
     // DATEV Export
     // ============================================
-    exportDATEV(jahr) {
-        const buchungen = this.getBuchungenForJahr(jahr);
-
-        // DATEV header row (fiscal year, company info)
-        const fiscal = [
-            `"EXTF"`, `700`, `21`, `"Buchungsstapel"`, `7`,
-            `${jahr}0101`, `4`,
-            `"${(this.einstellungen.firmenName || '').replace(/"/g, '""')}"`,
-            `""`, `""`, `${jahr}0101`, `${jahr}1231`
-        ].join(';');
-
-        // DATEV CSV Format (vereinfacht)
-        const header = [
-            'Umsatz', 'Soll/Haben', 'WKZ', 'Belegdatum', 'Belegfeld 1',
-            'Buchungstext', 'Gegenkonto', 'Konto', 'USt-ID', 'USt-Schlüssel'
-        ].join(';');
-
-        const rows = buchungen.map(b => {
-            const datum = StorageUtils.safeDate(b.datum) || new Date();
-            const datevDatum = `${datum.getDate().toString().padStart(2, '0')}${(datum.getMonth() + 1).toString().padStart(2, '0')}`;
-
-            return [
-                b.brutto.toFixed(2).replace('.', ','),          // Umsatz
-                b.typ === 'einnahme' ? 'H' : 'S',               // Soll/Haben
-                'EUR',                                           // Währungskennzeichen
-                datevDatum,                                      // Belegdatum (DDMM)
-                (b.belegnummer || b.id).toString().replace(/;/g, ''),  // Belegfeld 1
-                (b.beschreibung || '').substring(0, 60).replace(/;/g, ''),  // Buchungstext (max 60)
-                b.typ === 'einnahme' ? '1200' : '1000',         // Gegenkonto (Bank/Kasse)
-                b.typ === 'einnahme' ? '8400' : '4400',         // Konto (Erlöse/Aufwand)
-                '',                                              // USt-ID
-                this.einstellungen.kleinunternehmer ? '0' : '9' // USt-Schlüssel (9 = 19%)
-            ].join(';');
-        });
-
-        return `${fiscal}\n${header}\n${rows.join('\n')}`;
+    async exportDATEV(options = {}) {
+        // Delegate to the canonical DatevExportService implementation
+        if (window.datevExportService) {
+            return window.datevExportService.exportAndDownload(options);
+        }
+        throw new Error('DatevExportService nicht verfügbar. Bitte Seite neu laden.');
     }
 
     // CSV Export (einfacheres Format)

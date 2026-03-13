@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <title>FreyAI Visions | Login</title>
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
+    <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="css/fonts.css">
     <style>
         :root {
@@ -319,6 +320,10 @@
                         <button type="button" class="password-toggle" aria-label="Passwort anzeigen" tabindex="-1">&#x1F441;</button>
                     </div>
                 </div>
+                <label style="font-size: 13px; color: var(--text-muted, #a1a1aa); margin: 8px 0; display: block; cursor: pointer;">
+                    <input type="checkbox" id="register-agb-checkbox" required style="margin-right: 6px; vertical-align: middle;">
+                    Ich akzeptiere die <a href="agb.html" target="_blank" style="color: var(--accent, #6366f1);">AGB</a> und <a href="datenschutz.html" target="_blank" style="color: var(--accent, #6366f1);">Datenschutzerkl&auml;rung</a>.
+                </label>
                 <button type="submit" class="btn-submit" id="btn-register">Kostenlos registrieren</button>
             </form>
 
@@ -347,6 +352,12 @@
             <a href="index.html#einstellungen">Einstellungen &ouml;ffnen</a>
         </div>
     </div>
+
+    <footer style="text-align:center;padding:16px;font-size:13px;color:#71717a;">
+        <a href="impressum.html" style="color:#71717a;text-decoration:none;">Impressum</a> &middot;
+        <a href="datenschutz.html" style="color:#71717a;text-decoration:none;">Datenschutz</a> &middot;
+        <a href="agb.html" style="color:#71717a;text-decoration:none;">AGB</a>
+    </footer>
 
     <!-- Supabase CDN (with SRI verification) -->
     <!-- See COMPUTE_SRI_HASHES.md for hash computation instructions -->
@@ -469,6 +480,23 @@
             const regConfigured = await waitForSupabase();
             if (!regConfigured) {
                 showMessage('Supabase nicht konfiguriert. Richte es zuerst in den Einstellungen ein.');
+                return;
+            }
+
+            // H-06: Password strength validation
+            if (password.length < 8) {
+                showMessage('Passwort muss mindestens 8 Zeichen lang sein.');
+                return;
+            }
+            if (!/[0-9]/.test(password) || !/[^a-zA-Z0-9]/.test(password)) {
+                showMessage('Passwort muss mindestens eine Zahl und ein Sonderzeichen enthalten.');
+                return;
+            }
+
+            // Check AGB/Datenschutz checkbox
+            const agbCheckbox = document.getElementById('register-agb-checkbox');
+            if (!agbCheckbox.checked) {
+                showMessage('Bitte akzeptieren Sie die AGB und Datenschutzerkl\u00e4rung.');
                 return;
             }
 

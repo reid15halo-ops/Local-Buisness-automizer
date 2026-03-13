@@ -24,25 +24,35 @@ serve(async (req) => {
         return new Response('Method not allowed', { status: 405, headers: corsHeaders })
     }
 
+    // H-07: Separate signature verification from processing.
+    // Signature failures → 400 (Stripe should retry).
+    // Processing failures → 200 (prevent Stripe retry floods).
+    const signature = req.headers.get('stripe-signature')
+    if (!signature) {
+        console.warn('Missing stripe-signature header')
+        return new Response(
+            JSON.stringify({ error: 'Missing signature' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+    }
+
+    let event: any
     try {
-        const signature = req.headers.get('stripe-signature')
-        if (!signature) {
-            console.warn('Missing stripe-signature header')
-            return new Response(
-                JSON.stringify({ error: 'Missing signature' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            )
-        }
-
         const body = await req.text()
-
-        // Verify Stripe signature
-        const event = stripe.webhooks.constructEvent(
+        event = stripe.webhooks.constructEvent(
             body,
             signature,
             Deno.env.get('STRIPE_WEBHOOK_SECRET')!
         )
+    } catch (err) {
+        console.error('Stripe signature verification failed:', err)
+        return new Response(
+            JSON.stringify({ error: 'Invalid signature' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+    }
 
+    try {
         // Initialize Supabase client with service_role for full access
         const supabase = createClient(
             Deno.env.get('SUPABASE_URL')!,
@@ -86,11 +96,9 @@ serve(async (req) => {
             { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     } catch (err) {
-        // Always return 200 for webhook processing errors to prevent Stripe retry floods.
-        // Signature verification failures (thrown before event parsing) are the exception —
-        // but constructEvent throws before we reach the switch, so those are caught here too.
-        // We still log everything for debugging.
-        console.error('Webhook error:', err)
+        // Return 200 for processing errors to prevent Stripe retry floods.
+        // Signature is already verified above, so this is a processing-only failure.
+        console.error('Webhook processing error:', err)
         return new Response(
             JSON.stringify({ received: true, error: 'Processing failed but acknowledged' }),
             { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -84,6 +84,18 @@ class AuthService {
             }
         }
 
+        // Clear SyncService localStorage data (DSGVO compliance)
+        const syncKeys = [
+            'hwf_purchase_orders', 'hwf_stock_movements', 'hwf_material_reservations',
+            'hwf_suppliers', 'hwf_communication_log', 'hwf_sync_queue', 'hwf_last_sync_times'
+        ];
+        syncKeys.forEach(key => localStorage.removeItem(key));
+
+        // Clear storeService cached state
+        if (window.storeService && typeof window.storeService.clear === 'function') {
+            try { window.storeService.clear(); } catch(e) { console.warn('[Auth] storeService clear failed:', e); }
+        }
+
         this._notify();
     }
 

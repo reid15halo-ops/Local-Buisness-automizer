@@ -254,6 +254,12 @@ class DBService {
             let failed = 0;
 
             for (const item of pending) {
+                // Exponential backoff: skip items whose retry delay hasn't elapsed
+                const retryDelay = Math.min(1000 * Math.pow(2, item.retries || 0), 300000); // max 5 min
+                if (item.lastRetryAt && (Date.now() - item.lastRetryAt) < retryDelay) {
+                    continue; // skip, not ready for retry yet
+                }
+
                 try {
                     let error = null;
 
@@ -286,6 +292,7 @@ class DBService {
                     }
                 } catch (err) {
                     console.warn(`[DBService] Sync error for queue item ${item.id}:`, err);
+                    await this._incrementRetry(item.id);
                     failed++;
                 }
             }
@@ -308,6 +315,7 @@ class DBService {
                 const item = req.result;
                 if (item) {
                     item.retries = (item.retries || 0) + 1;
+                    item.lastRetryAt = Date.now();
                     store.put(item);
                 }
                 resolve();
@@ -1078,17 +1086,18 @@ class DBService {
 
     async clear() {
         if (!this.db) { await this.init(); }
-        return new Promise((resolve, reject) => {
-            if (!this.db.objectStoreNames.contains(this.storeName)) {
-                resolve();
-                return;
-            }
-            const transaction = this.db.transaction([this.storeName], 'readwrite');
-            const store = transaction.objectStore(this.storeName);
-            const request = store.clear();
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
+        const storeNames = Array.from(this.db.objectStoreNames);
+        if (storeNames.length === 0) return;
+        const tx = this.db.transaction(storeNames, 'readwrite');
+        const promises = storeNames.map(name => {
+            return new Promise((resolve, reject) => {
+                const req = tx.objectStore(name).clear();
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
         });
+        await Promise.all(promises);
+        console.log('[DB] All stores cleared:', storeNames.join(', '));
     }
 
     // ========================================

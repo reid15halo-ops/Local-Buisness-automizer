@@ -342,11 +342,11 @@ class SecurityService {
      * @param {string} event - Event type
      * @param {object} details - Event details
      */
-    logSecurityEvent(event, details = {}) {
+    logSecurityEvent(eventType, details = {}) {
         const timestamp = new Date().toISOString();
         const logEntry = {
             timestamp,
-            event,
+            event: eventType,
             userAgent: navigator.userAgent,
             ...details
         };
@@ -356,8 +356,14 @@ class SecurityService {
             console.warn('[Security Event]', logEntry);
         }
 
-        // In production, you might send to a logging service
-        // e.g., this.sendToLoggingService(logEntry);
+        // M-09: Send to Supabase for production monitoring
+        if (window.supabaseClient?.client) {
+            window.supabaseClient.client.from('automation_log').insert({
+                action: `security.${eventType}`,
+                target: JSON.stringify(details).substring(0, 500),
+                metadata: { severity: details.severity || 'info', timestamp: new Date().toISOString() }
+            }).then(() => {}).catch(() => {}); // fire-and-forget
+        }
     }
 }
 

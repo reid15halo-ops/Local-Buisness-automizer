@@ -91,10 +91,16 @@ class DatevExportService {
         // Map category to DATEV Sachkonto (SKR03)
         const sachkonto = this.getSachkonto(buchung.kategorie, buchung.typ);
 
-        // Gegenkonto: 1400 (Forderungen) for unpaid invoices, 1200 (Bank) for paid ones
-        const isPaid = buchung.zahlungsart === 'bar' || buchung.zahlungsart === 'Barzahlung' ||
-                       buchung.bezahlt === true || buchung.status === 'bezahlt';
-        const gegenkonto = isEinnahme && !isPaid ? '1400' : '1200';
+        // Gegenkonto: 1400 (Forderungen) for unpaid invoices, 1200 (Bank) for paid, 1000 (Kasse) for cash
+        const isPaid = buchung.bezahlt === true || buchung.status === 'bezahlt' ||
+                       buchung.zahlungsart === 'bar' || buchung.zahlungsart === 'Barzahlung';
+        const isCash = buchung.zahlungsart === 'bar' || buchung.zahlungsart === 'Barzahlung';
+        let gegenkonto;
+        if (isEinnahme) {
+            gegenkonto = !isPaid ? '1400' : (isCash ? '1000' : '1200');
+        } else {
+            gegenkonto = isCash ? '1000' : '1200';
+        }
 
         // §19 UStG Kleinunternehmer: BU-Schlüssel = '0' (keine USt).
         // Kleinunternehmer erheben keine Umsatzsteuer auf Einnahmen und können
@@ -227,7 +233,7 @@ class DatevExportService {
         const exp = this.exports.find(e => e.id === exportId);
         if (!exp) {return { success: false, error: 'Export nicht gefunden' };}
 
-        const blob = new Blob([exp.csvContent], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([this._encodeCP1252(exp.csvContent)], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -238,6 +244,20 @@ class DatevExportService {
         URL.revokeObjectURL(url);
 
         return { success: true };
+    }
+
+    // Encode string to CP1252 (Windows-1252) byte array for DATEV compatibility
+    _encodeCP1252(str) {
+        const cp1252Map = {
+            'ä': 0xE4, 'ö': 0xF6, 'ü': 0xFC, 'Ä': 0xC4, 'Ö': 0xD6, 'Ü': 0xDC, 'ß': 0xDF,
+            '€': 0x80, '§': 0xA7, '°': 0xB0, '²': 0xB2, '³': 0xB3, 'µ': 0xB5,
+        };
+        const bytes = new Uint8Array(str.length);
+        for (let i = 0; i < str.length; i++) {
+            const ch = str[i];
+            bytes[i] = cp1252Map[ch] || (ch.charCodeAt(0) <= 0xFF ? ch.charCodeAt(0) : 0x3F); // '?' for unmappable
+        }
+        return bytes;
     }
 
     // Generate EÜR (Einnahmen-Überschuss-Rechnung) report
@@ -330,6 +350,19 @@ class DatevExportService {
     // Format currency for display
     formatCurrency(amount) {
         return window.formatCurrency(amount);
+    }
+
+    // Combined generate + download convenience method
+    exportAndDownload(options = {}) {
+        const jahr = options.jahr || options.year || new Date().getFullYear();
+        const fromDate = options.fromDate || `${jahr}-01-01`;
+        const toDate = options.toDate || `${jahr}-12-31`;
+
+        const result = this.generateExport(fromDate, toDate, options);
+        if (!result.success) {
+            return result;
+        }
+        return this.downloadExport(result.export.id);
     }
 
     // Get previous exports

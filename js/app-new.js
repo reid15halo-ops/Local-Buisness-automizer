@@ -526,19 +526,19 @@ function initBuchhaltung() {
         showToast('CSV exportiert', 'success');
     });
 
-    // DATEV Export
-    document.getElementById('btn-export-datev')?.addEventListener('click', () => {
-        const bs = window.bookkeepingService;
-        if (!bs) {return;}
+    // DATEV Export — delegates to DatevExportService (canonical, CP1252-encoded)
+    document.getElementById('btn-export-datev')?.addEventListener('click', async () => {
         const jahr = parseInt(document.getElementById('buchhaltung-jahr')?.value) || new Date().getFullYear();
-        const datev = bs.exportDATEV(jahr);
-        const blob = new Blob([datev], {type: 'text/csv;charset=utf-8;'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `DATEV-${jahr}.csv`;
-        a.click();
-        URL.revokeObjectURL(a.href);
-        showToast('DATEV exportiert', 'success');
+        if (window.datevExportService) {
+            const result = window.datevExportService.exportAndDownload({ jahr });
+            if (result.success) {
+                showToast('DATEV exportiert', 'success');
+            } else {
+                showToast(result.error || 'DATEV Export fehlgeschlagen', 'error');
+            }
+        } else {
+            showToast('DatevExportService nicht verfügbar', 'error');
+        }
     });
 
     // CSV Import

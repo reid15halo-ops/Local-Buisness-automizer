@@ -30,6 +30,7 @@
     <!-- sidebar-groups.css removed: styles injected by sidebar-navigation.js -->
     <!-- dashboard-new.css removed: styles injected by quick-actions.js -->
     <!-- Self-hosted fonts (GDPR/DSGVO compliant - no Google Fonts CDN) -->
+    <link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="css/fonts.css">
     <!-- Responsive overrides (must be last CSS file) -->
     <link rel="stylesheet" href="css/responsive.css">
@@ -80,6 +81,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js" integrity="sha384-2zrRDgDHSYB/GN3nFW3fsZXoxEhKIr3N2h63Tc6DEOB9JJdFIu8xMJT2Cph/gBil" crossorigin="anonymous"></script>
     <script src="js/services/supabase-config.js"></script>
     <script src="js/services/supabase-client.js"></script>
+    <!-- C-05: Auth gate — fast redirect before any app JS loads -->
+    <script>
+    (function() {
+        var sb = localStorage.getItem('sb-incbhhaiiayohrjqevog-auth-token');
+        if (!sb) { window.location.replace('/auth.html'); }
+    })();
+    </script>
     <!-- Auth Gate & Offline Mode Check -->
     <script>
         (async function checkAuth() {
