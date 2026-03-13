@@ -610,6 +610,241 @@ function initAuftragDetailHandlers() {
             renderAuftragZeit(currentDetailAuftragId);
         }
     });
+
+    // Save button
+    document.getElementById('ad-btn-save')?.addEventListener('click', () => {
+        if (!currentDetailAuftragId) {return;}
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) {return;}
+
+        const fortschritt = document.getElementById('ad-fortschritt');
+        if (fortschritt) {auftrag.fortschritt = parseInt(fortschritt.value) || 0;}
+        const startDatum = document.getElementById('ad-start-datum');
+        if (startDatum?.value) {auftrag.startDatum = startDatum.value;}
+        const endDatum = document.getElementById('ad-end-datum');
+        if (endDatum?.value) {auftrag.endDatum = endDatum.value;}
+
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        window.AppUtils.showToast('Änderungen gespeichert', 'success');
+        renderAuftraege();
+    });
+
+    // Complete & create invoice button
+    document.getElementById('ad-btn-complete')?.addEventListener('click', () => {
+        if (!currentDetailAuftragId) {return;}
+        if (!confirm('Auftrag abschließen und Rechnung erstellen?')) {return;}
+        changeAuftragStatus(currentDetailAuftragId, 'abgeschlossen');
+        createRechnungFromAuftrag(currentDetailAuftragId);
+        window.AppUtils.closeModal('modal-auftrag-detail');
+    });
+
+    // Add checklist item
+    document.getElementById('ad-btn-add-checkliste')?.addEventListener('click', () => {
+        if (!currentDetailAuftragId) {return;}
+        const input = document.getElementById('ad-checkliste-input');
+        const text = input?.value?.trim();
+        if (!text) {return;}
+
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) {return;}
+        if (!auftrag.checkliste) {auftrag.checkliste = [];}
+        auftrag.checkliste.push({ id: Date.now().toString(), text, done: false });
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        input.value = '';
+        renderChecklisteTab(auftrag);
+        window.AppUtils.showToast('Punkt hinzugefügt', 'success');
+    });
+
+    // Add comment
+    document.getElementById('ad-btn-add-kommentar')?.addEventListener('click', () => {
+        if (!currentDetailAuftragId) {return;}
+        const input = document.getElementById('ad-kommentar-input');
+        const text = input?.value?.trim();
+        if (!text) {return;}
+
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) {return;}
+        if (!auftrag.kommentare) {auftrag.kommentare = [];}
+        auftrag.kommentare.push({
+            id: Date.now().toString(),
+            text,
+            autor: window.authService?.currentUser?.email || 'Benutzer',
+            datum: new Date().toISOString()
+        });
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        input.value = '';
+        renderKommentareTab(auftrag);
+        window.AppUtils.showToast('Kommentar hinzugefügt', 'success');
+    });
+
+    // Add Mitarbeiter
+    document.getElementById('ad-btn-add-mitarbeiter')?.addEventListener('click', () => {
+        if (!currentDetailAuftragId) {return;}
+        const input = document.getElementById('ad-mitarbeiter-input');
+        const name = input?.value?.trim();
+        if (!name) {return;}
+
+        const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+        if (!auftrag) {return;}
+        if (!auftrag.mitarbeiter) {auftrag.mitarbeiter = [];}
+        if (auftrag.mitarbeiter.includes(name)) {
+            window.AppUtils.showToast('Mitarbeiter bereits zugewiesen', 'warning');
+            return;
+        }
+        auftrag.mitarbeiter.push(name);
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        input.value = '';
+        renderMitarbeiterList(auftrag);
+        window.AppUtils.showToast(`${name} hinzugefügt`, 'success');
+    });
+
+    // Photo capture
+    document.getElementById('ad-btn-foto-capture')?.addEventListener('click', () => {
+        if (!currentDetailAuftragId) {return;}
+        if (window.photoGalleryUI) {
+            window.photoGalleryUI.openCapture(currentDetailAuftragId);
+        } else {
+            // Fallback: file input
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.capture = 'environment';
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) {return;}
+                const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+                if (!auftrag) {return;}
+                if (!auftrag.fotos) {auftrag.fotos = [];}
+                const reader = new FileReader();
+                reader.onload = () => {
+                    auftrag.fotos.push({ id: Date.now().toString(), data: reader.result, datum: new Date().toISOString() });
+                    auftrag.updated_at = new Date().toISOString();
+                    saveStore();
+                    renderFotosTab(auftrag);
+                    window.AppUtils.showToast('Foto gespeichert', 'success');
+                };
+                reader.readAsDataURL(file);
+            });
+            fileInput.click();
+        }
+    });
+
+    // Delegated handlers for dynamic elements in tabs
+    document.getElementById('modal-auftrag-detail')?.addEventListener('click', (e) => {
+        // Toggle checklist item
+        const checkItem = e.target.closest('[data-action="toggle-check"]');
+        if (checkItem) {
+            const itemId = checkItem.dataset.id;
+            const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+            if (auftrag?.checkliste) {
+                const item = auftrag.checkliste.find(c => c.id === itemId);
+                if (item) {item.done = !item.done;}
+                auftrag.updated_at = new Date().toISOString();
+                saveStore();
+                renderChecklisteTab(auftrag);
+            }
+            return;
+        }
+        // Remove checklist item
+        const removeCheck = e.target.closest('[data-action="remove-check"]');
+        if (removeCheck) {
+            const itemId = removeCheck.dataset.id;
+            const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+            if (auftrag?.checkliste) {
+                auftrag.checkliste = auftrag.checkliste.filter(c => c.id !== itemId);
+                auftrag.updated_at = new Date().toISOString();
+                saveStore();
+                renderChecklisteTab(auftrag);
+            }
+            return;
+        }
+        // Remove Mitarbeiter
+        const removeMa = e.target.closest('[data-action="remove-mitarbeiter"]');
+        if (removeMa) {
+            const name = removeMa.dataset.name;
+            const auftrag = store.auftraege.find(a => a.id === currentDetailAuftragId);
+            if (auftrag?.mitarbeiter) {
+                auftrag.mitarbeiter = auftrag.mitarbeiter.filter(m => m !== name);
+                auftrag.updated_at = new Date().toISOString();
+                saveStore();
+                renderMitarbeiterList(auftrag);
+            }
+            return;
+        }
+    });
+}
+
+// Helper: render checklist tab content
+function renderChecklisteTab(auftrag) {
+    const container = document.getElementById('ad-checkliste-list');
+    if (!container) {return;}
+    const items = auftrag.checkliste || [];
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state empty-state-centered">Keine Einträge</p>';
+        return;
+    }
+    container.innerHTML = items.map(item => `
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-color,#eee);">
+            <input type="checkbox" ${item.done ? 'checked' : ''} data-action="toggle-check" data-id="${h(item.id)}" style="cursor:pointer;">
+            <span style="${item.done ? 'text-decoration:line-through;opacity:0.6;' : ''}flex:1;">${h(item.text)}</span>
+            <button data-action="remove-check" data-id="${h(item.id)}" style="background:none;border:none;cursor:pointer;color:var(--danger,#e53935);">✕</button>
+        </div>
+    `).join('');
+}
+
+// Helper: render comments tab content
+function renderKommentareTab(auftrag) {
+    const container = document.getElementById('ad-kommentare-list');
+    if (!container) {return;}
+    const items = auftrag.kommentare || [];
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state empty-state-centered">Keine Kommentare</p>';
+        return;
+    }
+    container.innerHTML = items.map(item => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border-color,#eee);">
+            <div style="font-size:12px;color:var(--text-secondary,#666);">${h(item.autor)} · ${formatDate(item.datum)}</div>
+            <div style="margin-top:4px;">${h(item.text)}</div>
+        </div>
+    `).join('');
+}
+
+// Helper: render Mitarbeiter list
+function renderMitarbeiterList(auftrag) {
+    const container = document.getElementById('ad-mitarbeiter-list');
+    if (!container) {return;}
+    const items = auftrag.mitarbeiter || [];
+    if (items.length === 0) {
+        container.innerHTML = '<span style="color:var(--text-secondary,#666);">Keine zugewiesen</span>';
+        return;
+    }
+    container.innerHTML = items.map(name => `
+        <span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg-secondary,#f0f0f0);padding:4px 8px;border-radius:6px;font-size:13px;margin:2px;">
+            ${h(name)}
+            <button data-action="remove-mitarbeiter" data-name="${h(name)}" style="background:none;border:none;cursor:pointer;color:var(--danger,#e53935);font-size:11px;">✕</button>
+        </span>
+    `).join('');
+}
+
+// Helper: render Fotos tab content
+function renderFotosTab(auftrag) {
+    const container = document.getElementById('ad-fotos-grid');
+    if (!container) {return;}
+    const items = auftrag.fotos || [];
+    if (items.length === 0) {
+        container.innerHTML = '<p class="empty-state empty-state-centered">Keine Fotos</p>';
+        return;
+    }
+    container.innerHTML = items.map(foto => `
+        <div style="position:relative;border-radius:8px;overflow:hidden;">
+            <img src="${foto.data}" style="width:100%;height:120px;object-fit:cover;" alt="Foto">
+            <div style="font-size:11px;color:var(--text-secondary,#666);padding:4px;">${formatDate(foto.datum)}</div>
+        </div>
+    `).join('');
 }
 
 // Render Zeiterfassung entries for a specific Auftrag
@@ -790,5 +1025,50 @@ window.renderAuftraege = renderAuftraege;
 window.changeAuftragStatus = changeAuftragStatus;
 window.openAuftragDetail = openAuftragDetail;
 window.createRechnungFromAuftrag = createRechnungFromAuftrag;
+
+// Global handlers referenced by event-handlers.js
+window.handleStatusChange = function(auftragId, newStatus) {
+    changeAuftragStatus(auftragId, newStatus);
+    openAuftragDetail(auftragId);
+};
+window.confirmStatusChange = function(auftragId, newStatus) {
+    const cfg = AUFTRAG_STATUS_CONFIG[newStatus];
+    if (cfg?.brauchtGrund) {
+        const grund = prompt('Bitte Grund angeben:');
+        if (!grund) {return;}
+        changeAuftragStatus(auftragId, newStatus, grund);
+    } else {
+        changeAuftragStatus(auftragId, newStatus);
+    }
+    openAuftragDetail(auftragId);
+};
+window.removeAuftragMitarbeiter = function(auftragId, name) {
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (auftrag?.mitarbeiter) {
+        auftrag.mitarbeiter = auftrag.mitarbeiter.filter(m => m !== name);
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        renderMitarbeiterList(auftrag);
+    }
+};
+window.toggleChecklistItem = function(auftragId, itemId) {
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (auftrag?.checkliste) {
+        const item = auftrag.checkliste.find(c => c.id === itemId);
+        if (item) {item.done = !item.done;}
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        renderChecklisteTab(auftrag);
+    }
+};
+window.removeChecklistItem = function(auftragId, itemId) {
+    const auftrag = store.auftraege.find(a => a.id === auftragId);
+    if (auftrag?.checkliste) {
+        auftrag.checkliste = auftrag.checkliste.filter(c => c.id !== itemId);
+        auftrag.updated_at = new Date().toISOString();
+        saveStore();
+        renderChecklisteTab(auftrag);
+    }
+};
 
 })();
