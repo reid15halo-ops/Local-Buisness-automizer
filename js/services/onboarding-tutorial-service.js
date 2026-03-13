@@ -404,10 +404,7 @@ class OnboardingTutorialService {
      * Show skip confirmation dialog
      */
     showSkipConfirm() {
-        const message = 'Möchtest du das Tutorial wirklich beenden? Du kannst es später in den Einstellungen erneut starten.';
-        if (confirm(message)) {
-            this.stop();
-        }
+        this.stop();
     }
 
     /**
