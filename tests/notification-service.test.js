@@ -11,20 +11,18 @@ global.localStorage = {
 
 // Mock document.hidden (default: not hidden so push notifications are suppressed)
 Object.defineProperty(global, 'document', {
-    value: { hidden: false },
+    value: { hidden: false, dispatchEvent: vi.fn() },
     writable: true
 });
 
 // Mock window.Notification
-global.Notification = class Notification {
-    constructor(title, options) {
-        this.title = title;
-        this.options = options;
-    }
-    static permission = 'granted';
-    static requestPermission = vi.fn(() => Promise.resolve('granted'));
-};
-global.window = { notificationService: null };
+global.Notification = vi.fn(function (title, options) {
+    this.title = title;
+    this.options = options;
+});
+global.Notification.permission = 'granted';
+global.Notification.requestPermission = vi.fn(() => Promise.resolve('granted'));
+global.window = { Notification: global.Notification, notificationService: null };
 
 // ============================================
 // NotificationService — inline for testing
@@ -35,14 +33,14 @@ class NotificationService {
         this.notificationHistory = [];
         this.maxNotifications = 20;
         this.notificationTypes = {
-            anfrage_neu: { icon: '📥', color: '#3b82f6', label: 'Neue Anfrage eingegangen' },
-            angebot_akzeptiert: { icon: '✅', color: '#10b981', label: 'Angebot wurde akzeptiert' },
-            angebot_vorlaeufig: { icon: '📨', color: '#c8956c', label: 'Vorläufiges Angebot gesendet — bitte prüfen' },
-            rechnung_ueberfaellig: { icon: '⚠️', color: '#ef4444', label: 'Rechnung ist überfällig' },
-            rechnung_bezahlt: { icon: '💰', color: '#10b981', label: 'Zahlung eingegangen' },
-            termin_erinnerung: { icon: '⏰', color: '#f59e0b', label: 'Termin in 30 Minuten' },
-            aufgabe_faellig: { icon: '✏️', color: '#f59e0b', label: 'Aufgabe fällig' },
-            system: { icon: '⚙️', color: '#6b7280', label: 'System-Mitteilung' }
+            anfrage_neu: { icon: '\u{1F4E5}', color: '#3b82f6', label: 'Neue Anfrage eingegangen' },
+            angebot_akzeptiert: { icon: '\u2705', color: '#10b981', label: 'Angebot wurde akzeptiert' },
+            angebot_vorlaeufig: { icon: '\u{1F4E8}', color: '#c8956c', label: 'Vorl\u00e4ufiges Angebot gesendet \u2014 bitte pr\u00fcfen' },
+            rechnung_ueberfaellig: { icon: '\u26A0\uFE0F', color: '#ef4444', label: 'Rechnung ist \u00fcberf\u00e4llig' },
+            rechnung_bezahlt: { icon: '\u{1F4B0}', color: '#10b981', label: 'Zahlung eingegangen' },
+            termin_erinnerung: { icon: '\u23F0', color: '#f59e0b', label: 'Termin in 30 Minuten' },
+            aufgabe_faellig: { icon: '\u270F\uFE0F', color: '#f59e0b', label: 'Aufgabe f\u00e4llig' },
+            system: { icon: '\u2699\uFE0F', color: '#6b7280', label: 'System-Mitteilung' }
         };
         this.storageKey = 'freyai-notifications';
         this.unreadCount = 0;
@@ -178,14 +176,14 @@ class NotificationService {
     }
 
     notifyRechnungOverdue(rechnung) {
-        this.addNotification('rechnung_ueberfaellig', 'Rechnung ist überfällig',
-            `Betrag: ${rechnung.brutto}€ | Kunde: ${rechnung.kunde?.name || 'Unbekannt'}`,
+        this.addNotification('rechnung_ueberfaellig', 'Rechnung ist \u00fcberf\u00e4llig',
+            `Betrag: ${rechnung.brutto}\u20AC | Kunde: ${rechnung.kunde?.name || 'Unbekannt'}`,
             { entityType: 'rechnung', entityId: rechnung.id, link: `#rechnungen/${rechnung.id}` });
     }
 
     notifyRechnungPaid(rechnung) {
         this.addNotification('rechnung_bezahlt', 'Zahlung eingegangen',
-            `Betrag: ${rechnung.brutto}€ | Kunde: ${rechnung.kunde?.name || 'Unbekannt'}`,
+            `Betrag: ${rechnung.brutto}\u20AC | Kunde: ${rechnung.kunde?.name || 'Unbekannt'}`,
             { entityType: 'rechnung', entityId: rechnung.id, link: `#rechnungen/${rechnung.id}` });
     }
 
@@ -196,7 +194,7 @@ class NotificationService {
     }
 
     notifyAufgabeDue(aufgabe) {
-        this.addNotification('aufgabe_faellig', 'Aufgabe fällig',
+        this.addNotification('aufgabe_faellig', 'Aufgabe f\u00e4llig',
             aufgabe.titel || 'Bitte bearbeite die Aufgabe',
             { entityType: 'aufgabe', entityId: aufgabe.id, link: `#aufgaben/${aufgabe.id}` });
     }
@@ -251,7 +249,141 @@ describe('NotificationService', () => {
         Object.keys(store).forEach(k => delete store[k]);
         vi.clearAllMocks();
         document.hidden = false;
+        global.Notification.permission = 'granted';
+        global.Notification.requestPermission = vi.fn(() => Promise.resolve('granted'));
+        // Re-expose Notification on window for 'Notification' in window checks
+        global.window.Notification = global.Notification;
         service = new NotificationService();
+    });
+
+    // ---- Constructor ----
+
+    describe('constructor', () => {
+        it('initializes with empty notificationHistory', () => {
+            expect(service.notificationHistory).toEqual([]);
+        });
+
+        it('sets maxNotifications to 20', () => {
+            expect(service.maxNotifications).toBe(20);
+        });
+
+        it('defines exactly 8 notification types', () => {
+            expect(Object.keys(service.notificationTypes)).toHaveLength(8);
+        });
+
+        it('has the expected type keys', () => {
+            const keys = Object.keys(service.notificationTypes);
+            expect(keys).toContain('anfrage_neu');
+            expect(keys).toContain('angebot_akzeptiert');
+            expect(keys).toContain('angebot_vorlaeufig');
+            expect(keys).toContain('rechnung_ueberfaellig');
+            expect(keys).toContain('rechnung_bezahlt');
+            expect(keys).toContain('termin_erinnerung');
+            expect(keys).toContain('aufgabe_faellig');
+            expect(keys).toContain('system');
+        });
+
+        it('sets storageKey to freyai-notifications', () => {
+            expect(service.storageKey).toBe('freyai-notifications');
+        });
+
+        it('initializes unreadCount to 0', () => {
+            expect(service.unreadCount).toBe(0);
+        });
+
+        it('initializes empty listeners array', () => {
+            expect(service.listeners).toEqual([]);
+        });
+
+        it('loads existing notifications from localStorage on construction', () => {
+            const preloaded = [{
+                id: 'notif-pre-1', type: 'system', icon: '\u2699\uFE0F', color: '#6b7280',
+                title: 'Preloaded', description: 'From storage',
+                timestamp: new Date().toISOString(), read: false
+            }];
+            store['freyai-notifications'] = JSON.stringify(preloaded);
+            const fresh = new NotificationService();
+            expect(fresh.getNotifications()).toHaveLength(1);
+            expect(fresh.getNotifications()[0].title).toBe('Preloaded');
+            expect(fresh.getUnreadCount()).toBe(1);
+        });
+    });
+
+    // ---- requestPermission ----
+
+    describe('requestPermission()', () => {
+        it('returns "denied" when Notification is not in window', async () => {
+            delete global.window.Notification;
+            const result = await service.requestPermission();
+            expect(result).toBe('denied');
+            // Restore for other tests
+            global.window.Notification = global.Notification;
+        });
+
+        it('returns "granted" when Notification.permission is already granted', async () => {
+            global.Notification.permission = 'granted';
+            const result = await service.requestPermission();
+            expect(result).toBe('granted');
+            expect(global.Notification.requestPermission).not.toHaveBeenCalled();
+        });
+
+        it('calls Notification.requestPermission when permission is "default"', async () => {
+            global.Notification.permission = 'default';
+            global.Notification.requestPermission = vi.fn(() => Promise.resolve('granted'));
+            const result = await service.requestPermission();
+            expect(global.Notification.requestPermission).toHaveBeenCalled();
+            expect(result).toBe('granted');
+        });
+
+        it('returns "denied" when permission is already "denied"', async () => {
+            global.Notification.permission = 'denied';
+            const result = await service.requestPermission();
+            expect(result).toBe('denied');
+        });
+
+        it('returns "denied" when requestPermission throws', async () => {
+            global.Notification.permission = 'default';
+            global.Notification.requestPermission = vi.fn(() => Promise.reject(new Error('blocked')));
+            const result = await service.requestPermission();
+            expect(result).toBe('denied');
+        });
+    });
+
+    // ---- sendNotification ----
+
+    describe('sendNotification()', () => {
+        it('does nothing when document is not hidden', () => {
+            document.hidden = false;
+            service.sendNotification('Test', { body: 'Hello' });
+            expect(global.Notification).not.toHaveBeenCalled();
+        });
+
+        it('does nothing when Notification is not in window', () => {
+            document.hidden = true;
+            delete global.window.Notification;
+            service.sendNotification('Test', { body: 'Hello' });
+            expect(global.Notification).not.toHaveBeenCalled();
+            global.window.Notification = global.Notification;
+        });
+
+        it('does nothing when permission is not granted', () => {
+            document.hidden = true;
+            global.Notification.permission = 'denied';
+            service.sendNotification('Test', { body: 'Hello' });
+            // Notification constructor should not be called as a constructor
+            expect(global.Notification).not.toHaveBeenCalled();
+        });
+
+        it('creates a Notification when document is hidden and permission is granted', () => {
+            document.hidden = true;
+            global.Notification.permission = 'granted';
+            service.sendNotification('Alert!', { body: 'Something happened' });
+            expect(global.Notification).toHaveBeenCalledWith('Alert!', expect.objectContaining({
+                icon: '/img/icon-192.png',
+                badge: '/img/icon-96.png',
+                body: 'Something happened'
+            }));
+        });
     });
 
     // ---- addNotification ----
@@ -265,7 +397,7 @@ describe('NotificationService', () => {
             expect(n.title).toBe('Test Title');
             expect(n.description).toBe('Test body');
             expect(n.read).toBe(false);
-            expect(n.icon).toBe('📥');
+            expect(n.icon).toBe('\u{1F4E5}');
             expect(n.color).toBe('#3b82f6');
             expect(n.timestamp).toBeDefined();
         });
@@ -277,13 +409,13 @@ describe('NotificationService', () => {
 
         it('falls back to system type for unknown types', () => {
             const n = service.addNotification('unknown_type', 'Unknown');
-            expect(n.icon).toBe('⚙️');
+            expect(n.icon).toBe('\u2699\uFE0F');
             expect(n.color).toBe('#6b7280');
         });
 
         it('adds notifications to the beginning of the history', () => {
             service.addNotification('system', 'First');
-            service.addNotification('system', 'Second');
+            service.addNotification('anfrage_neu', 'Second');
             const all = service.getNotifications();
             expect(all[0].title).toBe('Second');
             expect(all[1].title).toBe('First');
@@ -298,6 +430,36 @@ describe('NotificationService', () => {
             expect(n.entityType).toBe('rechnung');
             expect(n.entityId).toBe('abc-123');
             expect(n.link).toBe('#rechnungen/abc-123');
+        });
+
+        it('sends browser notification when document.hidden is true', () => {
+            document.hidden = true;
+            global.Notification.permission = 'granted';
+            service.addNotification('system', 'Background alert', 'Check this');
+            expect(global.Notification).toHaveBeenCalledWith('Background alert', expect.objectContaining({
+                body: 'Check this',
+                tag: 'system'
+            }));
+        });
+
+        it('does not send browser notification when document is visible', () => {
+            document.hidden = false;
+            service.addNotification('system', 'Foreground alert', 'No push');
+            expect(global.Notification).not.toHaveBeenCalled();
+        });
+
+        it('notifies listeners when notification is added', () => {
+            const cb = vi.fn();
+            service.subscribe(cb);
+            service.addNotification('system', 'Listener test');
+            const addedEvent = cb.mock.calls.find(c => c[0].event === 'notification-added');
+            expect(addedEvent).toBeDefined();
+            expect(addedEvent[0].notification.title).toBe('Listener test');
+        });
+
+        it('saves to storage after adding', () => {
+            service.addNotification('system', 'Storage test');
+            expect(localStorage.setItem).toHaveBeenCalledWith('freyai-notifications', expect.any(String));
         });
     });
 
@@ -332,19 +494,16 @@ describe('NotificationService', () => {
     describe('max notifications limit', () => {
         it('keeps only 20 notifications, removing oldest', () => {
             for (let i = 0; i < 25; i++) {
-                // Use unique titles to avoid dedup
                 service.addNotification('system', `Notification ${i}`);
             }
             const all = service.getNotifications();
             expect(all).toHaveLength(20);
-            // Most recent should be first
             expect(all[0].title).toBe('Notification 24');
-            // Oldest kept should be #5 (0-4 were removed)
             expect(all[19].title).toBe('Notification 5');
         });
     });
 
-    // ---- markAsRead / markAllAsRead ----
+    // ---- markAsRead ----
 
     describe('markAsRead()', () => {
         it('marks a specific notification as read', () => {
@@ -368,7 +527,26 @@ describe('NotificationService', () => {
             service.markAsRead(n1.id);
             expect(service.getUnreadCount()).toBe(1);
         });
+
+        it('saves to storage after marking as read', () => {
+            const n = service.addNotification('system', 'Save on read');
+            vi.clearAllMocks();
+            service.markAsRead(n.id);
+            expect(localStorage.setItem).toHaveBeenCalled();
+        });
+
+        it('notifies listeners with notification-read event', () => {
+            const n = service.addNotification('system', 'Sub read');
+            const cb = vi.fn();
+            service.subscribe(cb);
+            service.markAsRead(n.id);
+            const readEvent = cb.mock.calls.find(c => c[0].event === 'notification-read');
+            expect(readEvent).toBeDefined();
+            expect(readEvent[0].notificationId).toBe(n.id);
+        });
     });
+
+    // ---- markAllAsRead ----
 
     describe('markAllAsRead()', () => {
         it('marks all notifications as read', () => {
@@ -380,9 +558,18 @@ describe('NotificationService', () => {
             expect(service.getUnreadCount()).toBe(0);
             service.getNotifications().forEach(n => expect(n.read).toBe(true));
         });
+
+        it('notifies listeners with all-marked-read event', () => {
+            service.addNotification('system', 'All read');
+            const cb = vi.fn();
+            service.subscribe(cb);
+            service.markAllAsRead();
+            const event = cb.mock.calls.find(c => c[0].event === 'all-marked-read');
+            expect(event).toBeDefined();
+        });
     });
 
-    // ---- deleteNotification / clearAll ----
+    // ---- deleteNotification ----
 
     describe('deleteNotification()', () => {
         it('removes a notification by ID', () => {
@@ -404,7 +591,19 @@ describe('NotificationService', () => {
             service.deleteNotification(n.id);
             expect(service.getUnreadCount()).toBe(0);
         });
+
+        it('notifies listeners with notification-deleted event', () => {
+            const n = service.addNotification('system', 'Del event');
+            const cb = vi.fn();
+            service.subscribe(cb);
+            service.deleteNotification(n.id);
+            const event = cb.mock.calls.find(c => c[0].event === 'notification-deleted');
+            expect(event).toBeDefined();
+            expect(event[0].notificationId).toBe(n.id);
+        });
     });
+
+    // ---- clearAll ----
 
     describe('clearAll()', () => {
         it('removes all notifications', () => {
@@ -413,6 +612,41 @@ describe('NotificationService', () => {
             service.clearAll();
             expect(service.getNotifications()).toHaveLength(0);
             expect(service.getUnreadCount()).toBe(0);
+        });
+
+        it('saves empty array to storage', () => {
+            service.addNotification('system', 'Before clear');
+            vi.clearAllMocks();
+            service.clearAll();
+            expect(localStorage.setItem).toHaveBeenCalled();
+            const saved = JSON.parse(store['freyai-notifications']);
+            expect(saved).toHaveLength(0);
+        });
+
+        it('notifies listeners with all-cleared event', () => {
+            service.addNotification('system', 'Clear event');
+            const cb = vi.fn();
+            service.subscribe(cb);
+            service.clearAll();
+            const event = cb.mock.calls.find(c => c[0].event === 'all-cleared');
+            expect(event).toBeDefined();
+        });
+    });
+
+    // ---- getNotifications ----
+
+    describe('getNotifications()', () => {
+        it('returns the full notification array', () => {
+            service.addNotification('system', 'Alpha');
+            service.addNotification('anfrage_neu', 'Beta');
+            const all = service.getNotifications();
+            expect(all).toHaveLength(2);
+            expect(all[0].title).toBe('Beta');
+            expect(all[1].title).toBe('Alpha');
+        });
+
+        it('returns empty array when no notifications exist', () => {
+            expect(service.getNotifications()).toEqual([]);
         });
     });
 
@@ -425,7 +659,7 @@ describe('NotificationService', () => {
 
         it('counts only unread notifications', () => {
             const n1 = service.addNotification('system', 'Unread 1');
-            service.addNotification('system', 'Unread 2');
+            service.addNotification('anfrage_neu', 'Unread 2');
             service.markAsRead(n1.id);
             expect(service.getUnreadCount()).toBe(1);
         });
@@ -434,51 +668,11 @@ describe('NotificationService', () => {
     // ---- subscribe / unsubscribe ----
 
     describe('subscribe()', () => {
-        it('calls listener when notification is added', () => {
+        it('adds listener and calls it on events', () => {
             const cb = vi.fn();
             service.subscribe(cb);
             service.addNotification('system', 'Event test');
-            // addNotification triggers: updateUnreadCount -> notifyListeners, then notifyListeners again
-            const addedEvent = cb.mock.calls.find(c => c[0].event === 'notification-added');
-            expect(addedEvent).toBeDefined();
-            expect(addedEvent[0].notification.title).toBe('Event test');
-        });
-
-        it('calls listener on markAsRead', () => {
-            const n = service.addNotification('system', 'Sub read');
-            const cb = vi.fn();
-            service.subscribe(cb);
-            service.markAsRead(n.id);
-            const readEvent = cb.mock.calls.find(c => c[0].event === 'notification-read');
-            expect(readEvent).toBeDefined();
-            expect(readEvent[0].notificationId).toBe(n.id);
-        });
-
-        it('calls listener on markAllAsRead', () => {
-            service.addNotification('system', 'All read');
-            const cb = vi.fn();
-            service.subscribe(cb);
-            service.markAllAsRead();
-            const event = cb.mock.calls.find(c => c[0].event === 'all-marked-read');
-            expect(event).toBeDefined();
-        });
-
-        it('calls listener on deleteNotification', () => {
-            const n = service.addNotification('system', 'Del event');
-            const cb = vi.fn();
-            service.subscribe(cb);
-            service.deleteNotification(n.id);
-            const event = cb.mock.calls.find(c => c[0].event === 'notification-deleted');
-            expect(event).toBeDefined();
-        });
-
-        it('calls listener on clearAll', () => {
-            service.addNotification('system', 'Clear event');
-            const cb = vi.fn();
-            service.subscribe(cb);
-            service.clearAll();
-            const event = cb.mock.calls.find(c => c[0].event === 'all-cleared');
-            expect(event).toBeDefined();
+            expect(cb).toHaveBeenCalled();
         });
 
         it('returns an unsubscribe function that removes the listener', () => {
@@ -486,9 +680,16 @@ describe('NotificationService', () => {
             const unsub = service.subscribe(cb);
             unsub();
             service.addNotification('system', 'After unsub');
-            // cb should not have been called for the added notification
             const addedEvent = cb.mock.calls.find(c => c[0]?.event === 'notification-added');
             expect(addedEvent).toBeUndefined();
+        });
+
+        it('unsubscribe is idempotent (calling twice does not break)', () => {
+            const cb = vi.fn();
+            const unsub = service.subscribe(cb);
+            unsub();
+            unsub(); // second call should not throw
+            expect(service.listeners).toHaveLength(0);
         });
 
         it('handles listener errors gracefully without breaking other listeners', () => {
@@ -532,12 +733,11 @@ describe('NotificationService', () => {
         it('returns a formatted date for timestamps older than 7 days', () => {
             const ts = new Date(Date.now() - 10 * 86400000).toISOString();
             const result = service.getRelativeTime(ts);
-            // Should be a de-DE formatted date string like "3.3.2026"
             expect(result).toMatch(/\d{1,2}\.\d{1,2}\.\d{4}/);
         });
     });
 
-    // ---- Specific notify methods ----
+    // ---- Named notification helpers ----
 
     describe('notifyNewAnfrage()', () => {
         it('creates an anfrage_neu notification with entity metadata', () => {
@@ -628,10 +828,40 @@ describe('NotificationService', () => {
         });
     });
 
-    // ---- localStorage persistence ----
+    // ---- loadFromStorage ----
 
-    describe('localStorage persistence', () => {
-        it('saves notifications to localStorage on add', () => {
+    describe('loadFromStorage()', () => {
+        it('parses valid JSON array from localStorage', () => {
+            const data = [{ id: 'notif-1', type: 'system', title: 'Stored', read: false, timestamp: new Date().toISOString() }];
+            store['freyai-notifications'] = JSON.stringify(data);
+            const fresh = new NotificationService();
+            expect(fresh.getNotifications()).toHaveLength(1);
+            expect(fresh.getNotifications()[0].title).toBe('Stored');
+        });
+
+        it('handles invalid JSON gracefully', () => {
+            store['freyai-notifications'] = 'not-json!!!';
+            const fresh = new NotificationService();
+            expect(fresh.getNotifications()).toHaveLength(0);
+        });
+
+        it('handles non-array data gracefully', () => {
+            store['freyai-notifications'] = JSON.stringify({ not: 'an array' });
+            const fresh = new NotificationService();
+            expect(fresh.getNotifications()).toHaveLength(0);
+        });
+
+        it('handles null/missing localStorage data', () => {
+            // store has no key, getItem returns null
+            const fresh = new NotificationService();
+            expect(fresh.getNotifications()).toHaveLength(0);
+        });
+    });
+
+    // ---- saveToStorage ----
+
+    describe('saveToStorage()', () => {
+        it('stringifies notifications to localStorage', () => {
             service.addNotification('system', 'Persist test');
             expect(localStorage.setItem).toHaveBeenCalledWith(
                 'freyai-notifications',
@@ -642,70 +872,28 @@ describe('NotificationService', () => {
             expect(saved[0].title).toBe('Persist test');
         });
 
-        it('loads notifications from localStorage on construction', () => {
-            const preloaded = [{
-                id: 'notif-pre-1',
-                type: 'system',
-                icon: '⚙️',
-                color: '#6b7280',
-                title: 'Preloaded',
-                description: 'From storage',
-                timestamp: new Date().toISOString(),
-                read: false
-            }];
-            store['freyai-notifications'] = JSON.stringify(preloaded);
-            const fresh = new NotificationService();
-            expect(fresh.getNotifications()).toHaveLength(1);
-            expect(fresh.getNotifications()[0].title).toBe('Preloaded');
-            expect(fresh.getUnreadCount()).toBe(1);
-        });
-
-        it('handles corrupted localStorage data gracefully', () => {
-            store['freyai-notifications'] = 'not-json!!!';
-            const fresh = new NotificationService();
-            expect(fresh.getNotifications()).toHaveLength(0);
-        });
-
-        it('handles non-array localStorage data gracefully', () => {
-            store['freyai-notifications'] = JSON.stringify({ not: 'an array' });
-            const fresh = new NotificationService();
-            expect(fresh.getNotifications()).toHaveLength(0);
-        });
-
-        it('saves updated state after markAsRead', () => {
-            const n = service.addNotification('system', 'Save on read');
+        it('saves updated state after deleteNotification', () => {
+            const n = service.addNotification('system', 'Will delete');
             vi.clearAllMocks();
-            service.markAsRead(n.id);
+            service.deleteNotification(n.id);
             expect(localStorage.setItem).toHaveBeenCalled();
-        });
-
-        it('saves updated state after clearAll', () => {
-            service.addNotification('system', 'Before clear');
-            vi.clearAllMocks();
-            service.clearAll();
-            expect(localStorage.setItem).toHaveBeenCalled();
-            const saved = JSON.parse(store['freyai-notifications']);
-            expect(saved).toHaveLength(0);
         });
     });
 
-    // ---- Notification types ----
+    // ---- generateId ----
 
-    describe('notification types', () => {
-        it('defines exactly 8 notification types', () => {
-            expect(Object.keys(service.notificationTypes)).toHaveLength(8);
+    describe('generateId()', () => {
+        it('starts with "notif-"', () => {
+            const id = service.generateId();
+            expect(id).toMatch(/^notif-/);
         });
 
-        it('has the expected type keys', () => {
-            const keys = Object.keys(service.notificationTypes);
-            expect(keys).toContain('anfrage_neu');
-            expect(keys).toContain('angebot_akzeptiert');
-            expect(keys).toContain('angebot_vorlaeufig');
-            expect(keys).toContain('rechnung_ueberfaellig');
-            expect(keys).toContain('rechnung_bezahlt');
-            expect(keys).toContain('termin_erinnerung');
-            expect(keys).toContain('aufgabe_faellig');
-            expect(keys).toContain('system');
+        it('generates unique IDs', () => {
+            const ids = new Set();
+            for (let i = 0; i < 50; i++) {
+                ids.add(service.generateId());
+            }
+            expect(ids.size).toBe(50);
         });
     });
 });
