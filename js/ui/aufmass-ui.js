@@ -1300,6 +1300,67 @@ class AufmassUI {
             case 'refresh-positions':
                 // Handled by change event
                 break;
+
+            case 'set-unit': {
+                const unit = btn.dataset.unit;
+                if (unit === 'm' || unit === 'cm') {
+                    this.unitMode = unit;
+                    this.render();
+                }
+                break;
+            }
+
+            case 'add-polygon-point': {
+                const service = window.aufmassService;
+                if (!service) {break;}
+                const project = service.getProject(projectId);
+                const room = project?.rooms?.find(r => r.id === roomId);
+                if (!room) {break;}
+                if (!room.points) {room.points = [];}
+                room.points.push({ x: 0, y: 0 });
+                service.updateRoom(projectId, roomId, { points: room.points });
+                this.render();
+                break;
+            }
+
+            case 'remove-polygon-point': {
+                const ptIdx = parseInt(btn.dataset.pointIndex, 10);
+                const service = window.aufmassService;
+                if (!service || isNaN(ptIdx)) {break;}
+                const project = service.getProject(projectId);
+                const room = project?.rooms?.find(r => r.id === roomId);
+                if (!room?.points) {break;}
+                room.points.splice(ptIdx, 1);
+                service.updateRoom(projectId, roomId, { points: room.points });
+                this.render();
+                break;
+            }
+
+            case 'open-summary':
+                this.currentProjectId = projectId;
+                this.currentScreen = 'summary';
+                this.render();
+                break;
+
+            case 'print-summary': {
+                const summaryEl = document.getElementById('aufmass-summary-content');
+                if (summaryEl) {
+                    const printWin = window.open('', '_blank');
+                    if (printWin) {
+                        printWin.document.write(`<!DOCTYPE html><html><head><title>Aufmaß Zusammenfassung</title>
+                            <style>body{font-family:Inter,sans-serif;padding:24px;color:#1a1a1a;}
+                            h2,h3,h4{margin:0 0 8px;}table{width:100%;border-collapse:collapse;margin:12px 0;}
+                            td,th{padding:6px 10px;border:1px solid #ddd;text-align:left;font-size:13px;}
+                            th{background:#f5f5f5;font-weight:600;}</style>
+                            </head><body>${summaryEl.innerHTML}</body></html>`);
+                        printWin.document.close();
+                        printWin.print();
+                    }
+                } else {
+                    window.print();
+                }
+                break;
+            }
         }
     }
 

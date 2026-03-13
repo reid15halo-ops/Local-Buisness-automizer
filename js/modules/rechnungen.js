@@ -107,15 +107,15 @@ function buildRechnungTrail(rechnung, isCurrent) {
     const parts = [];
 
     if (anfrage) {
-        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('anfragen');">📥 ${h(anfrage.id)}</span>`);
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); window.navigationController?.navigateTo('anfragen') || window.AppUtils?.switchView?.('anfragen');">📥 ${h(anfrage.id)}</span>`);
     }
     if (angebot) {
         if (parts.length > 0) {parts.push('<span class="trail-arrow">&rarr;</span>');}
-        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('angebote');">📝 ${h(angebot.id)}</span>`);
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); window.navigationController?.navigateTo('angebote') || window.AppUtils?.switchView?.('angebote');">📝 ${h(angebot.id)}</span>`);
     }
     if (auftrag) {
         if (parts.length > 0) {parts.push('<span class="trail-arrow">&rarr;</span>');}
-        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); switchView('auftraege');">🔧 ${h(auftrag.id)}</span>`);
+        parts.push(`<span class="trail-item" onclick="event.stopPropagation(); window.navigationController?.navigateTo('auftraege') || window.AppUtils?.switchView?.('auftraege');">🔧 ${h(auftrag.id)}</span>`);
     }
 
     // The Rechnung itself
