@@ -63,7 +63,9 @@
     <script>
     (function() {
         var sb = localStorage.getItem('sb-incbhhaiiayohrjqevog-auth-token');
-        if (!sb) { window.location.replace('/auth.html'); }
+        if (!sb) { window.location.replace('/auth.html'); return; }
+        // Hide body until async auth confirms session (prevents content flash)
+        document.documentElement.style.visibility = 'hidden';
     })();
     </script>
     <!-- Auth Gate & Offline Mode Check -->
@@ -73,6 +75,8 @@
             const isConfigured = window.supabaseConfig?.isConfigured?.() || false;
 
             if (!isConfigured) {
+                // Offline/demo mode — show body immediately
+                document.documentElement.style.visibility = '';
                 // Offline/demo mode - show a notice and allow access
                 document.addEventListener('DOMContentLoaded', () => {
                     const offlineBanner = document.createElement('div');
@@ -99,9 +103,10 @@
 
                 if (!window.authService) {
                     console.warn('Auth service not available after 5s');
-                    // Only allow access if offline — otherwise redirect
                     if (navigator.onLine) {
                         window.location.replace('/auth.html');
+                    } else {
+                        document.documentElement.style.visibility = '';
                     }
                     return;
                 }
@@ -111,11 +116,15 @@
                     window.location.replace('/auth.html');
                     return;
                 }
+                // Auth confirmed — show app
+                document.documentElement.style.visibility = '';
             } catch (error) {
                 console.error('Auth check failed:', error);
-                // Only redirect on auth errors when online — user may be offline
-                if (navigator.onLine && error?.status === 401) {
+                // Redirect on any auth error when online — user may be offline
+                if (navigator.onLine) {
                     window.location.replace('/auth.html');
+                } else {
+                    document.documentElement.style.visibility = '';
                 }
             }
         })();

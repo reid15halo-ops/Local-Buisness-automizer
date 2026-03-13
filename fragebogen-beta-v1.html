@@ -1100,8 +1100,8 @@
                         if (key.charAt(0) === '_') return; // Skip internal keys
                         var val = existing[key];
                         if (typeof val !== 'string') return;
-                        // Sanitize key/val to prevent CSS selector injection
-                        if (/["\\\[\]]/.test(key) || /["\\\[\]]/.test(val)) return;
+                        // Whitelist key/val to prevent CSS selector injection
+                        if (!/^[a-zA-Z0-9_-]+$/.test(key) || !/^[a-zA-Z0-9äöüÄÖÜß _.@,;:+\-\/()]+$/.test(val)) return;
 
                         // Text / email / tel inputs
                         var inputs = page.querySelectorAll('input[name="' + key + '"], textarea[name="' + key + '"]');

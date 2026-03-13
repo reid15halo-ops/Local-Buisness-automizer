@@ -47,7 +47,7 @@ deploy_vps() {
     local label="$2"
 
     echo "==> Deploying ${label} on VPS (${target_dir})..."
-    ssh "$VPS_HOST" "cd ${target_dir} && git stash --include-untracked -q 2>/dev/null; git fetch origin main && git reset --hard origin/main"
+    ssh "$VPS_HOST" "cd ${target_dir} && git stash --include-untracked -q || echo 'WARN: git stash failed (empty or disk issue)'; git fetch origin main && git reset --hard origin/main"
     # Sync build artifacts (not in git)
     ssh "$VPS_HOST" "mkdir -p ${target_dir}/dist/js ${target_dir}/dist/css"
     if command -v rsync &> /dev/null; then
