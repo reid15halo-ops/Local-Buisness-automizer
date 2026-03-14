@@ -63,8 +63,9 @@
         GOCARDLESS_ACCOUNT_ID: ls('freyai_gocardless_account_id', ''),
 
         // ── Environment ────────────────────────────────────────────────────
-        APP_ENV: ls('freyai_app_env', 'production'),
-        STAGING: ls('freyai_staging', 'false') === 'true',
+        // Auto-detect from hostname; localStorage override still possible
+        APP_ENV: ls('freyai_app_env', '') || (window.location.hostname.includes('staging') ? 'staging' : 'production'),
+        STAGING: ls('freyai_staging', '') === 'true' || window.location.hostname.includes('staging'),
     };
 
     const cfg = window.APP_CONFIG;

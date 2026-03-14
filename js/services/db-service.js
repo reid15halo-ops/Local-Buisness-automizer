@@ -138,10 +138,8 @@ class DBService {
 
             request.onerror = (event) => {
                 const err = event.target.error;
-                console.error('[DBService] IndexedDB error:', err);
-                // If version is too low, retry with the existing higher version
+                // If version is too low, silently retry with the existing higher version
                 if (err?.name === 'VersionError') {
-                    console.warn('[DBService] Version conflict — retrying without version constraint');
                     const retryReq = indexedDB.open(this.dbName);
                     retryReq.onsuccess = (e) => {
                         this.db = e.target.result;
