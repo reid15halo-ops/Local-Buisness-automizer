@@ -50,7 +50,16 @@
             if (CHAT_CONFIG.privacyNotice) {
                 const notice = document.createElement('div');
                 notice.className = 'freyai-chat-privacy';
-                notice.innerHTML = CHAT_CONFIG.privacyNotice;
+                // Build privacy notice safely via DOM instead of innerHTML
+                const noticeText1 = document.createTextNode('Dieser Chat wird zur Verbesserung unserer Beratung anonymisiert ausgewertet. Details in unserer ');
+                const noticeLink = document.createElement('a');
+                noticeLink.href = '/datenschutz.html';
+                noticeLink.target = '_blank';
+                noticeLink.textContent = 'Datenschutzerklärung';
+                const noticeText2 = document.createTextNode('.');
+                notice.appendChild(noticeText1);
+                notice.appendChild(noticeLink);
+                notice.appendChild(noticeText2);
                 messagesEl.appendChild(notice);
             }
             addBotMessage(CHAT_CONFIG.initialMessage);
@@ -214,8 +223,9 @@
 
         const bubble = document.createElement('div');
         bubble.className = 'chat-bubble';
-        // Sanitize: use textContent for plain text, allow line breaks
+        // Sanitize: use textContent for plain text, white-space:pre-wrap handles line breaks
         bubble.textContent = text;
+        bubble.style.whiteSpace = 'pre-wrap';
 
         const time = document.createElement('div');
         time.className = 'chat-msg-time';
@@ -314,14 +324,20 @@
         typingTimeout = setTimeout(showTyping, CHAT_CONFIG.typingDelay);
 
         try {
+            const controller = new AbortController();
+            const fetchTimeout = setTimeout(() => controller.abort(), 30000);
+
             const response = await fetch(CHAT_CONFIG.webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: text,
                     session_id: sessionId
-                })
+                }),
+                signal: controller.signal
             });
+
+            clearTimeout(fetchTimeout);
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
