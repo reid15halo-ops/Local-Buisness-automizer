@@ -5,6 +5,9 @@
    comprehensive morning briefing.
    ============================================ */
 
+// Guard against redeclaration when already bundled in app-bundle.min.js
+if (typeof MorningBriefingService === 'undefined') {
+
 class MorningBriefingService {
     constructor() {
         this.STORAGE_KEY = 'freyai_morning_briefing';
@@ -586,3 +589,5 @@ Antwort-Format: { "narrative": "...", "recommendations": ["...", "..."] }`;
 
 // Register globally
 window.morningBriefingService = new MorningBriefingService();
+
+} // end guard: typeof MorningBriefingService === 'undefined'
