@@ -1,14 +1,9 @@
 ---
 name: supabase
 description: |
-  Create and modify Supabase database tables, RLS policies, Edge Functions, migrations, and client-side
-  Supabase queries for the FreyAI Visions project. Use this skill whenever the user wants to add a new
-  database table, write a migration, create or edit an Edge Function, set up RLS policies, write Supabase
-  queries, configure pg_cron jobs, work with Supabase Auth, manage Storage buckets, or debug any
-  Supabase-related issue. Also trigger when the user says "add a table", "new migration", "edge function",
-  "RLS", "row level security", "database", "schema", "policy", "Deno function", "cron job", "pg_cron",
-  "realtime", "Supabase Storage", "auth trigger", "service_role", or mentions any FreyAI table name
-  (kunden, rechnungen, angebote, auftraege, anfragen, termine, etc.).
+  Supabase database, RLS policies, Edge Functions, migrations, and queries for FreyAI Visions.
+  Trigger on: "add a table", "migration", "edge function", "RLS", "database", "schema", "policy",
+  "pg_cron", "realtime", "service_role", or any FreyAI table name (kunden, rechnungen, angebote, etc.).
 ---
 
 # Supabase — Database, Auth, Edge Functions & Migrations
@@ -30,171 +25,74 @@ Before writing anything, understand the architecture:
 
 Read `references/schema-guide.md` for the complete table catalog and naming conventions.
 
+## Task Router
+
+Determine what the user needs and jump to the right section:
+
+| User wants | Go to |
+|-----------|-------|
+| New table | "Creating New Tables" below |
+| Schema change on existing table | "Writing Migrations" below |
+| Edge Function (new or edit) | "Edge Functions" below |
+| Client-side query | "Client-Side Queries" below |
+| Scheduled job | "pg_cron Jobs" below |
+| RLS policy work | `references/rls-patterns.md` |
+
 ## Database Work
 
 ### Creating New Tables
 
-Every new table follows this template:
+Every new table MUST include these 5 elements (no exceptions):
+1. `user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL`
+2. `created_at TIMESTAMPTZ DEFAULT NOW()` and `updated_at TIMESTAMPTZ DEFAULT NOW()`
+3. `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`
+4. User-own policy: `auth.uid() = user_id`
+5. Service role bypass policy: `auth.role() = 'service_role'`
 
-```sql
--- ============================================
--- [Table Name] ([English description])
--- ============================================
-CREATE TABLE IF NOT EXISTS [table_name] (
-    id TEXT PRIMARY KEY,                    -- or UUID DEFAULT uuid_generate_v4()
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-    -- ... domain columns ...
-    status TEXT DEFAULT '[default]',
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE [table_name] ENABLE ROW LEVEL SECURITY;
-
--- User owns their rows
-CREATE POLICY "[table]_user_own" ON [table_name]
-    FOR ALL USING (auth.uid() = user_id);
-
--- Service role bypass (n8n, Edge Functions)
-CREATE POLICY "[table]_service_role" ON [table_name]
-    FOR ALL USING (auth.role() = 'service_role')
-    WITH CHECK (auth.role() = 'service_role');
-```
-
-Key decisions for every table:
-1. **Primary key**: TEXT (client-generated UUIDs for offline-first) or UUID (server-generated)
-2. **Foreign keys**: Always include `ON DELETE CASCADE` for user_id, consider for other FKs
-3. **JSONB columns**: Use for flexible structures (positionen, metadata) but not for queryable fields
-4. **Indexes**: Add for columns used in WHERE/ORDER BY after the table is created
-5. **Status values**: Use CHECK constraints to enumerate valid statuses
+See `references/schema-guide.md` for the full table template with SQL. Key decisions:
+- **Primary key**: TEXT (offline-first, client-generated UUID) vs UUID (server-generated)
+- **JSONB**: Use for flexible structures (positionen, metadata), not for queryable fields
+- **Indexes**: Add for columns in WHERE/ORDER BY clauses
+- **Status values**: Constrain with CHECK
 
 Read `references/rls-patterns.md` for the complete RLS policy catalog with granular per-operation patterns.
 
 ### Writing Migrations
 
-Migrations go in `supabase/migrations/` with timestamp prefix:
+File: `supabase/migrations/YYYYMMDDHHMMSS_descriptive_name.sql` + copy to `config/sql/migration-[name].sql`
 
-```
-supabase/migrations/YYYYMMDDHHMMSS_descriptive_name.sql
-```
-
-Migration rules:
-1. **Idempotent**: Use `IF NOT EXISTS`, `DROP ... IF EXISTS` before CREATE
-2. **Rollback-safe**: Include comments for manual rollback steps
-3. **One concern per file**: Don't mix table creation with data seeding
-4. **RLS in same file**: Always include RLS policies alongside table creation
-5. **Test locally first**: Run against a test database before production
-
-Also place a copy in `config/sql/migration-[name].sql` for the migration archive.
-
-```sql
--- Migration: YYYYMMDDHHMMSS_create_[table_name]
--- Purpose: [one-line description]
--- Rollback: DROP TABLE IF EXISTS [table_name];
-
-BEGIN;
-
--- Table creation + RLS policies here
-
-COMMIT;
-```
+Rules:
+1. **Idempotent**: `IF NOT EXISTS` / `DROP ... IF EXISTS`
+2. **Rollback comment**: Every migration starts with `-- Rollback: [SQL]`
+3. **One concern per file**: No mixing table creation with data seeding
+4. **RLS in same file**: Include RLS policies alongside table creation
+5. **Wrap in transaction**: `BEGIN; ... COMMIT;`
 
 ### Client-Side Queries
 
-The frontend uses `window.supabaseConfig.get()` to access the Supabase client. Queries follow this pattern:
-
-```javascript
-const client = window.supabaseConfig.get();
-
-// SELECT with RLS (auto-filtered to user's data)
-const { data, error } = await client
-    .from('kunden')
-    .select('*')
-    .eq('status', 'aktiv')
-    .order('created_at', { ascending: false });
-
-// INSERT
-const { data, error } = await client
-    .from('kunden')
-    .insert({ id: crypto.randomUUID(), name, email, user_id: authService.user.id })
-    .select()
-    .single();
-
-// UPDATE
-const { error } = await client
-    .from('kunden')
-    .update({ name: newName, updated_at: new Date().toISOString() })
-    .eq('id', kundeId);
-
-// DELETE
-const { error } = await client
-    .from('kunden')
-    .delete()
-    .eq('id', kundeId);
-```
-
-Important patterns:
-- Always include `user_id` on INSERT (RLS requires it)
+Client: `window.supabaseConfig.get()`. Critical rules:
+- Always include `user_id: authService.user.id` on INSERT (RLS requires it)
 - Use `.select().single()` after INSERT to get the created row back
-- The offline-first layer in `db-service.js` handles IndexedDB fallback — don't duplicate that logic
+- Always check `{ error }` in response -- never ignore it
+- The offline-first layer in `db-service.js` handles IndexedDB fallback -- do not duplicate
 - Table name mapping: IndexedDB uses English (customers), Supabase uses German (kunden)
+
+See `references/schema-guide.md` for query examples (SELECT, INSERT, UPDATE, DELETE).
 
 ## Edge Functions
 
-### Creating Edge Functions
+Location: `supabase/functions/[name]/index.ts` (Deno/TypeScript). Read `references/edge-functions-guide.md` for full boilerplate.
 
-Edge Functions live in `supabase/functions/[name]/index.ts` and use Deno.
+Every Edge Function MUST have: CORS preflight handler, proper auth pattern, error response with status code, no hardcoded secrets.
 
-Read `references/edge-functions-guide.md` for the complete boilerplate, CORS setup, auth patterns, and deployment checklist.
+| Category | Auth Pattern | Example |
+|----------|-------------|---------|
+| **User-facing** | JWT from client (anon key) | ai-proxy, portal-api |
+| **Webhook** | `--no-verify-jwt`, validate webhook secret | stripe-webhook |
+| **Internal/Cron** | service_role key validation | check-overdue |
+| **Billing** | JWT + Stripe SDK | create-checkout |
 
-Standard structure:
-
-```typescript
-import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
-
-const corsHeaders = {
-    'Access-Control-Allow-Origin': Deno.env.get('ALLOWED_ORIGIN') || 'https://app.freyaivisions.de',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-serve(async (req) => {
-    // CORS preflight
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
-    }
-
-    try {
-        // Auth: extract user from JWT or validate service_role
-        const authHeader = req.headers.get('Authorization') ?? ''
-        const supabase = createClient(
-            Deno.env.get('SUPABASE_URL')!,
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-        )
-
-        // ... function logic ...
-
-        return new Response(
-            JSON.stringify({ success: true }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-    } catch (err) {
-        return new Response(
-            JSON.stringify({ error: err.message }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        )
-    }
-})
-```
-
-### Edge Function Categories
-
-| Category | Functions | Auth Pattern |
-|----------|-----------|-------------|
-| **User-facing** | ai-proxy, portal-api | JWT from client (anon key) |
-| **Webhook receivers** | stripe-webhook, process-inbound-email | `--no-verify-jwt`, validate via webhook secret |
-| **Internal/Cron** | check-overdue, run-automation | service_role key validation |
-| **Billing** | create-checkout, create-portal-session | JWT + Stripe SDK |
+Deploy: `supabase functions deploy <name> --project-ref incbhhaiiayohrjqevog`
 
 ## pg_cron Jobs
 

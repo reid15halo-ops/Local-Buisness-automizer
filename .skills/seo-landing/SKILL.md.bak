@@ -72,17 +72,6 @@ Regeln: Maximal 60 Zeichen sichtbar. Primaeres Schluesselwort zuerst. Marke am E
 
 Regeln: 140–160 Zeichen. Handlungsaufforderung am Ende. Kein Ausrufezeichen-Spam.
 
-### Viewport & Basisauszeichnung (Mobile-First)
-
-```html
-<!-- Pflicht auf jeder Seite -- Mobile-First Basis -->
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-```
-
-Ohne `viewport`-Tag erscheint die Seite auf Mobilgeraeten mit Desktop-Breite -- Google wertet dies als nicht mobilfreundlich und bestraft das Ranking.
-
 ### Kanonische URL
 
 ```html

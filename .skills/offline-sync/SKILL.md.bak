@@ -8,9 +8,7 @@ description: |
   data loss prevention, queue processing, or says things like "offline", "sync", "IndexedDB",
   "service worker", "cache", "background sync", "retry", "conflict", "merge", "online/offline",
   "connectivity", "pending changes", "sync queue", "data integrity", "offline-first".
-  Be pushy -- activate on ANY mention of offline, sync, caching, storage quota, IndexedDB migration,
-  version upgrade, or data persistence topics. Also trigger when discussing PWA install, app update,
-  or service worker lifecycle.
+  Be pushy -- activate on ANY mention of offline, sync, or caching topics.
 ---
 
 # Offline Sync Skill
@@ -207,30 +205,14 @@ The Service Worker listens for these tags and posts `PROCESS_OFFLINE_QUEUE` mess
 // In supabaseClient or app initialization
 window.addEventListener('online', () => {
     console.log('[App] Back online -- triggering sync');
-    // Update UI indicator immediately, then sync
-    document.dispatchEvent(new CustomEvent('connectivity-change', { detail: { online: true } }));
     window.dbService.syncNow();
 });
 
 window.addEventListener('offline', () => {
     console.log('[App] Gone offline -- writes will queue locally');
-    // Update offline indicator in UI
-    document.dispatchEvent(new CustomEvent('connectivity-change', { detail: { online: false } }));
+    // Show offline indicator in UI
 });
 ```
-
-### Edge Cases in Connectivity Detection
-
-- **Captive portals**: `navigator.onLine` can be `true` even when behind a captive portal (hotel/airport Wi-Fi). The health check catches this.
-- **Rapid toggling**: If the device bounces between online/offline within seconds, debounce the sync trigger to avoid duplicate sync cycles:
-  ```js
-  let syncDebounceTimer;
-  window.addEventListener('online', () => {
-      clearTimeout(syncDebounceTimer);
-      syncDebounceTimer = setTimeout(() => window.dbService.syncNow(), 2000);
-  });
-  ```
-- **Service Worker offline detection**: The SW can detect connectivity independently. Messages from SW (`PROCESS_OFFLINE_QUEUE`) are the authoritative trigger for background sync; window events are a secondary signal.
 
 ### Checking Connectivity
 
@@ -302,37 +284,6 @@ const cache = await caches.open('freyai-visions-v34');
 const keys = await cache.keys();
 console.log('Cached URLs:', keys.map(r => r.url));
 ```
-
-## 9. Storage Quota Management
-
-IndexedDB has browser-imposed storage limits (typically 50-80% of available disk on mobile). Handle quota exceeded errors gracefully:
-
-```js
-try {
-    await store.put(data);
-} catch (e) {
-    if (e.name === 'QuotaExceededError') {
-        // 1. Try cleanup: remove synced queue items older than 24h (not 7 days)
-        await this.cleanupSyncedQueue(1);
-        // 2. Retry the write
-        // 3. If still failing: show user-friendly message (boomer-ux compliant)
-        //    "Ihr Gerät hat nicht genug Speicherplatz. Bitte verbinden Sie sich mit dem Internet,
-        //     damit Ihre Daten synchronisiert werden können."
-    }
-}
-```
-
-**Never silently drop data on quota errors.** Prefer aggressive cleanup of already-synced cache over losing unsynced changes.
-
-## 10. Schema Version Migration Testing
-
-When incrementing `this.version` in DBService:
-
-1. Test upgrade path from every previous version (not just current-1)
-2. The `onupgradeneeded` handler must use `if (oldVersion < N)` guards -- never assume sequential upgrades
-3. Test with populated stores (not empty DB) -- migration bugs only surface with real data
-4. After migration, verify all indices exist and data is intact
-5. Keep a migration log in code comments documenting what each version changed
 
 ## References
 

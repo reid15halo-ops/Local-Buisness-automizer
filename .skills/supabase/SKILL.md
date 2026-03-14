@@ -94,6 +94,90 @@ Every Edge Function MUST have: CORS preflight handler, proper auth pattern, erro
 
 Deploy: `supabase functions deploy <name> --project-ref incbhhaiiayohrjqevog`
 
+### TypeScript Types & Runtime Validation
+
+Every Edge Function must define TypeScript interfaces for its request and response payloads. Never use `any`.
+
+```typescript
+// Define strict interfaces for all data shapes
+interface AngebotPayload {
+  angebot_id: string;
+  kunde_email: string;
+  positionen: Position[];
+  netto: number;
+  gueltig_bis: string; // ISO 8601 date string
+}
+
+interface Position {
+  beschreibung: string;
+  menge: number;
+  einheit: 'Pauschal' | 'Std.' | 'Stk.' | 'Monat' | 'm' | 'm2';
+  einzelpreis: number;
+  rabatt?: number;
+}
+
+// Runtime validation -- reject malformed payloads early
+function validateAngebotPayload(body: unknown): body is AngebotPayload {
+  if (!body || typeof body !== 'object') return false;
+  const b = body as Record<string, unknown>;
+  return (
+    typeof b.angebot_id === 'string' &&
+    typeof b.kunde_email === 'string' &&
+    Array.isArray(b.positionen) &&
+    typeof b.netto === 'number' &&
+    typeof b.gueltig_bis === 'string'
+  );
+}
+
+// Use in handler
+Deno.serve(async (req) => {
+  const body = await req.json().catch(() => null);
+  if (!validateAngebotPayload(body)) {
+    return new Response(JSON.stringify({ error: 'Invalid payload' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+  // body is now typed as AngebotPayload
+});
+```
+
+### Type-Safe Supabase Client in Edge Functions
+
+```typescript
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Always type the client with Database generic if available
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+);
+
+// Type the response explicitly
+const { data, error }: { data: Kunde[] | null; error: Error | null } =
+  await supabase.from('kunden').select('*').eq('user_id', userId);
+
+if (error) {
+  console.error('[Edge] Supabase query failed:', error.message);
+  return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+}
+```
+
+### Environment Variables
+
+Never hardcode secrets. All secrets via `Deno.env.get()`:
+
+```typescript
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET');
+
+// Fail fast if required env vars are missing
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  throw new Error('Missing required environment variables');
+}
+```
+
 ## pg_cron Jobs
 
 Set up scheduled jobs using pg_cron + pg_net to call Edge Functions:
@@ -129,6 +213,9 @@ Before delivering any Supabase work, verify:
 - [ ] **No secrets in code**: Environment variables via `Deno.env.get()`, never hardcoded
 - [ ] **Timestamps**: `created_at` and `updated_at` columns with TIMESTAMPTZ
 - [ ] **CASCADE**: Foreign keys to auth.users use ON DELETE CASCADE
+- [ ] **TypeScript types**: Edge Functions define interfaces for all request/response payloads, no `any`
+- [ ] **Runtime validation**: Edge Functions validate incoming payload shape before processing
+- [ ] **Env var guard**: Edge Function fails fast if required env vars are missing
 
 ## Reference Files
 

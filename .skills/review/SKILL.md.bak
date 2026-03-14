@@ -1,12 +1,9 @@
 ---
 name: review
 description: |
-  Perform thorough code reviews on diffs, commits, PRs, or changed files with security, quality, and architecture focus.
-  Use this skill whenever the user asks to review code, check a PR, audit changes, inspect a diff, look over recent commits,
-  or says things like "review this", "check my code", "what do you think of these changes", "audit this PR",
-  "is this safe to merge", "code review", "review the last commit", or any request to evaluate code quality.
-  Also trigger when the user wants a pre-merge check, wants to find bugs in recent changes, or asks for feedback
-  on code they've written. This skill applies the Morpheus Feedback Loop evaluation standards.
+  Structured code review for diffs, commits, PRs, or changed files. Evaluates security, correctness,
+  architecture, and quality. Trigger on: "review", "check my code", "audit this PR", "is this safe to merge",
+  "code review", "review the last commit", "pre-merge check", or any request to evaluate code changes.
 ---
 
 # Code Review Skill
@@ -32,42 +29,31 @@ Always gather the actual diff before reviewing. Never review from memory or assu
 
 ## 2. Analyze Changes
 
-For each changed file, evaluate against 5 categories. Read `references/security-checklist.md` for security-specific guidance.
+Evaluate each changed file against 5 categories in strict priority order. Stop-ship issues first. Read `references/security-checklist.md` for security-specific guidance.
 
-### Security (Critical — blocks merge)
-- OWASP Top 10: SQL injection, XSS, command injection
+### P0: Security (blocks merge)
+- OWASP Top 10: injection (SQL, XSS, command), broken auth/authz
 - Exposed secrets, API keys, credentials in code
 - Missing input sanitization at system boundaries
-- Broken auth/authz patterns
 - RLS policy gaps on new Supabase tables
-- CSP violations or weakened security headers
 - DSGVO violations (external CDN, unencrypted PII)
 
-### Correctness (Bug — fix before merge)
-- Logic errors, off-by-one, null/undefined access
-- Race conditions in async code
+### P1: Correctness (fix before merge)
+- Logic errors, null/undefined access, off-by-one
+- Race conditions in async code, unhandled promise rejections
 - Error handling gaps (silent failures, swallowed errors)
-- Edge cases: empty arrays, missing fields, undefined params
-- Schema mismatches (querying columns that don't exist)
+- Schema mismatches (querying non-existent columns -- verify against `config/sql/supabase-schema.sql`)
 
-### Architecture & Design (Suggestion)
-- Does it fit the 95/5 pattern (async n8n / sync FastAPI)?
-- Unnecessary complexity or over-engineering
-- Code duplication that should be consolidated
+### P2: Architecture & Design (suggestion, with rationale)
+- Fit with 95/5 pattern (async n8n / sync client)
+- Over-engineering or unnecessary complexity
 - Breaking existing APIs or contracts
 - Missing offline-first considerations for PWA
 
-### Code Quality (Suggestion)
-- Naming clarity and consistency
-- Dead code or unused imports
-- Inconsistent patterns vs. rest of codebase
-- Missing error boundaries in UI code
-
-### Performance (Suggestion)
-- N+1 queries or unnecessary DB round-trips
-- Memory leaks (event listeners not cleaned up)
-- Blocking operations on the main thread
-- Large DOM operations without batching
+### P3: Code Quality & Performance (suggestion)
+- Dead code, unused imports, naming inconsistencies
+- N+1 queries, memory leaks (event listeners not cleaned up)
+- Blocking main thread, large unbatched DOM operations
 
 ## 3. Produce the Review
 
@@ -104,22 +90,15 @@ One-line summary of overall assessment.
 - **Don't invent issues**: If changes are clean and correct, say APPROVE with brief positive notes
 - **Verify schema**: When reviewing Supabase queries, cross-reference `config/sql/supabase-schema.sql` to confirm column names exist
 
-## 5. Quality Checklist
+## 5. Quality Gate (all must pass)
 
-Before submitting the review, verify all 12 items:
-
-1. [ ] Actual diff/file was read (not reviewing from memory)
-2. [ ] Every finding references a specific file and line number
-3. [ ] Every finding includes a concrete fix suggestion
-4. [ ] Security issues checked against OWASP Top 10
-5. [ ] Supabase queries verified against actual schema
-6. [ ] No nitpicking on formatting, comments, or types
-7. [ ] Positive Notes section is present and non-empty
-8. [ ] Verdict is exactly one of: APPROVE / REQUEST CHANGES / NEEDS DISCUSSION
-9. [ ] Critical Issues section exists (even if "None found.")
-10. [ ] Bugs section exists (even if "None found.")
-11. [ ] Review follows the exact output template structure
-12. [ ] No generic boilerplate advice — all findings are specific to the actual code
+1. [ ] Actual diff/file was read -- never review from memory
+2. [ ] Every finding has `file_path:line_number` + concrete fix
+3. [ ] Security checked against OWASP Top 10, Supabase queries verified against `config/sql/supabase-schema.sql`
+4. [ ] No nitpicking (formatting, comments, type annotations)
+5. [ ] Output follows exact template: Critical Issues, Bugs, Suggestions, Positive Notes, Verdict
+6. [ ] All findings are specific to the actual code -- no generic boilerplate
+7. [ ] Verdict is exactly one of: APPROVE / REQUEST CHANGES / NEEDS DISCUSSION
 
 ## References
 

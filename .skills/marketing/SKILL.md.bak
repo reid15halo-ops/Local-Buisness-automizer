@@ -7,12 +7,8 @@ description: |
   Also trigger when the user says "write copy", "marketing", "social post", "newsletter", "campaign",
   "Werbung", "content for Instagram/LinkedIn/Facebook", "email sequence", "launch announcement",
   "testimonial", or asks to repurpose content across platforms.
-  Also trigger for "Blogartikel", "Kundenreferenz", "Video-Script", "Elevator Pitch",
-  "Slogan", "Tagline", "Willkommens-E-Mail", "Onboarding-Mail", or any content that represents
-  FreyAI Visions to the outside world.
   This skill enforces the FreyAI brand voice, persuasion techniques, and platform-specific formatting
   for every piece of marketing content. Use it even for quick one-off posts — consistency matters.
-  When in doubt whether content is "marketing", trigger this skill — brand consistency is non-negotiable.
 ---
 
 # Marketing — Content Creation for FreyAI Visions

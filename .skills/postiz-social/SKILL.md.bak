@@ -3,18 +3,16 @@ name: postiz-social
 description: |
   Manage the Postiz social media integration for FreyAI Visions.
   Use this skill when the user asks about Postiz setup, social media posting,
-  content scheduling, Docker configuration, n8n social automations,
-  social media channel management, or hashtag strategy.
+  content scheduling, Docker configuration, Temporal workflows, n8n social automations,
+  or social media channel management.
   Also trigger when the user says "Postiz", "social media", "post erstellen",
   "content pipeline", "Instagram", "Facebook", "LinkedIn", "social scheduling",
-  "Hashtags", "Content-Kalender", "Posting-Zeit", or any request involving
-  social media automation infrastructure. Trigger even for casual mentions of
-  social platforms -- if it involves posting or scheduling, this skill applies.
+  "Temporal", or any request involving social media automation infrastructure.
 ---
 
 # Postiz Social Skill — FreyAI Social Media Infrastructure
 
-Manage the self-hosted Postiz social media platform: Docker setup, content pipeline, n8n automations, and critical operational gotchas.
+Manage the self-hosted Postiz social media platform: Docker setup, Temporal workflows, content pipeline, n8n automations, and critical operational gotchas.
 
 Read `references/postiz-setup.md` for the full infrastructure map before making changes.
 
