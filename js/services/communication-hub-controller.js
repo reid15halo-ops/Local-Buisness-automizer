@@ -467,7 +467,7 @@ class CommunicationHubController {
 
         } catch (error) {
             console.error('Send error:', error);
-            (window.showToast || window.errorHandler?.handle)?.(new Error('Fehler beim Versenden'), 'CommHub');
+            (window.showToast || window.errorHandler?.handle)?.('Nachricht konnte nicht gesendet werden: ' + (error.message || error), 'error');
         }
     }
 

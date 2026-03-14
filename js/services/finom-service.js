@@ -112,7 +112,7 @@
         if (window.errorHandler?.handle) {
             window.errorHandler.handle(error, `FinomService.${context}`, true);
         } else {
-            showToast('Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.', 'error');
+            showToast('Finom-Fehler: ' + (error.message || error), 'error');
         }
     }
 

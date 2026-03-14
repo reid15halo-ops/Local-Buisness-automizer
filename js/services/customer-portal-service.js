@@ -309,7 +309,7 @@ class CustomerPortalService {
             };
         } catch (error) {
             console.warn('Token validation error:', error);
-            return { valid: false, error: 'Technischer Fehler bei der Validierung' };
+            return { valid: false, error: 'Token-Validierung fehlgeschlagen: ' + (error.message || error) };
         }
     }
 
@@ -674,7 +674,7 @@ class CustomerPortalService {
             return { success: true, message: 'Angebot erfolgreich angenommen. Vielen Dank!' };
         } catch (error) {
             console.warn('Quote approval error:', error);
-            return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
+            return { success: false, message: 'Angebot konnte nicht angenommen werden: ' + (error.message || error) };
         }
     }
 
@@ -733,7 +733,7 @@ class CustomerPortalService {
             return { success: true, message: 'Angebot wurde abgelehnt. Wir melden uns bei Ihnen.' };
         } catch (error) {
             console.warn('Quote rejection error:', error);
-            return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
+            return { success: false, message: 'Angebot konnte nicht abgelehnt werden: ' + (error.message || error) };
         }
     }
 
@@ -809,7 +809,7 @@ class CustomerPortalService {
             return { success: true, message: 'Ihre Aenderungswuensche wurden uebermittelt. Wir melden uns bei Ihnen.' };
         } catch (error) {
             console.warn('Quote change request error:', error);
-            return { success: false, message: 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.' };
+            return { success: false, message: 'Aenderungswuensche konnten nicht gesendet werden: ' + (error.message || error) };
         }
     }
 
@@ -936,7 +936,7 @@ class CustomerPortalService {
             return { success: true, messageId: entry.id };
         } catch (error) {
             console.warn('Business message error:', error);
-            return { success: false, message: 'Fehler beim Senden' };
+            return { success: false, message: 'Nachricht konnte nicht gesendet werden: ' + (error.message || error) };
         }
     }
 
@@ -1182,7 +1182,7 @@ class CustomerPortalService {
             return { success: true, sharedCount: allPhotoIds.length };
         } catch (error) {
             console.warn('Photo sharing error:', error);
-            return { success: false, message: 'Fehler beim Teilen der Fotos' };
+            return { success: false, message: 'Fotos konnten nicht geteilt werden: ' + (error.message || error) };
         }
     }
 
@@ -1379,7 +1379,7 @@ class CustomerPortalService {
             return { success: true, message: 'Portal-Link wurde per E-Mail gesendet', link };
         } catch (error) {
             console.warn('Send portal link error:', error);
-            return { success: false, message: 'Fehler beim Senden des Portal-Links' };
+            return { success: false, message: 'Portal-Link konnte nicht gesendet werden: ' + (error.message || error) };
         }
     }
 

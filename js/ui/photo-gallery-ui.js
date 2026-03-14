@@ -677,7 +677,7 @@ class PhotoGalleryUI {
 
         } catch (error) {
             console.error('File upload error:', error);
-            this._showToast('Fehler beim Hochladen', 'error');
+            this._showToast('Fehler beim Hochladen: ' + (error.message || error), 'error');
         }
     }
 
@@ -708,7 +708,7 @@ class PhotoGalleryUI {
             }
         } catch (error) {
             console.error('File drop error:', error);
-            this._showToast('Fehler beim Hochladen', 'error');
+            this._showToast('Fehler beim Hochladen: ' + (error.message || error), 'error');
         }
     }
 
@@ -883,7 +883,7 @@ class PhotoGalleryUI {
 
         } catch (error) {
             console.error('Baudokumentation generation error:', error);
-            this._showToast('Fehler beim Erstellen der Baudokumentation', 'error');
+            this._showToast('Baudokumentation fehlgeschlagen: ' + (error.message || error), 'error');
         }
     }
 

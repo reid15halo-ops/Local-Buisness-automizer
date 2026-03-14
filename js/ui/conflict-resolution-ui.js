@@ -480,7 +480,7 @@ class ConflictResolutionUI {
             this._showToast('Konflikt manuell aufgeloest', 'success');
         } catch (err) {
             console.error('ConflictResolutionUI: Manual merge error:', err);
-            this._showToast('Fehler beim Zusammenfuehren', 'error');
+            this._showToast('Zusammenfuehren fehlgeschlagen: ' + (err.message || err), 'error');
         }
     }
 

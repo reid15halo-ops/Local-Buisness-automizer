@@ -320,7 +320,7 @@ class DashboardWidgetService {
             }
         } catch (error) {
             console.error(`DashboardWidgetService: Fehler bei Widget-Daten f\u00FCr "${widgetId}":`, error);
-            return { error: true, message: 'Fehler beim Laden der Daten' };
+            return { error: true, message: 'Widget-Daten konnten nicht geladen werden: ' + (error.message || error) };
         }
     }
 
@@ -768,7 +768,7 @@ class DashboardWidgetService {
             };
         } catch (err) {
             console.error('DashboardWidgetService: Postiz-Fehler:', err);
-            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Social-Media-Daten.' };
+            return { type: 'list', items: [], emptyMessage: 'Social-Media-Daten konnten nicht geladen werden.' };
         }
     }
 
@@ -788,7 +788,7 @@ class DashboardWidgetService {
 
             if (error) {
                 console.warn('DashboardWidgetService: Marketing-Kampagnen Fehler:', error);
-                return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden.' };
+                return { type: 'list', items: [], emptyMessage: 'Posteingang konnte nicht geladen werden.' };
             }
 
             if (!campaigns || campaigns.length === 0) {
@@ -857,7 +857,7 @@ class DashboardWidgetService {
             };
         } catch (err) {
             console.error('DashboardWidgetService: Marketing-Kampagnen Fehler:', err);
-            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Kampagnen-Daten.' };
+            return { type: 'list', items: [], emptyMessage: 'Kampagnen-Daten konnten nicht geladen werden.' };
         }
     }
 
@@ -988,7 +988,7 @@ class DashboardWidgetService {
             };
         } catch (err) {
             console.error('DashboardWidgetService: Paperless-Fehler:', err);
-            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Dokumente.' };
+            return { type: 'list', items: [], emptyMessage: 'Dokumente konnten nicht geladen werden.' };
         }
     }
 
@@ -1030,7 +1030,7 @@ class DashboardWidgetService {
             };
         } catch (err) {
             console.error('DashboardWidgetService: Cal.com-Fehler:', err);
-            return { type: 'list', items: [], emptyMessage: 'Fehler beim Laden der Termine.' };
+            return { type: 'list', items: [], emptyMessage: 'Termine konnten nicht geladen werden.' };
         }
     }
 

@@ -1052,7 +1052,7 @@ function initAboActions() {
                     renderAboRechnungen();
                     renderRechnungen();
                 } else {
-                    showToast('Fehler bei Rechnungserstellung', 'error');
+                    showToast('Rechnungserstellung fehlgeschlagen — pruefen Sie die Auftragsdaten', 'error');
                 }
                 break;
             case 'delete':

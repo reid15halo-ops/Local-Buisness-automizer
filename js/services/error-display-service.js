@@ -35,54 +35,57 @@ class ErrorDisplayService {
        ============================================ */
 
     getErrorMessage(type, context = {}) {
+        const detail = context.originalError || context.message || '';
+        const detailSuffix = detail ? ` (${detail})` : '';
+
         const messages = {
             network: {
                 icon: '⚠️',
                 title: 'Keine Verbindung',
-                message: 'Keine Internetverbindung. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.',
+                message: 'Keine Internetverbindung. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.' + detailSuffix,
                 retryable: true
             },
             save: {
                 icon: '⚠️',
                 title: 'Speichern fehlgeschlagen',
-                message: 'Ihre Änderungen konnten nicht gespeichert werden. Keine Sorge — Ihre Eingaben sind noch da. Bitte versuchen Sie es erneut.',
+                message: 'Ihre Änderungen konnten nicht gespeichert werden.' + detailSuffix,
                 retryable: true
             },
             load: {
                 icon: '⚠️',
                 title: 'Laden fehlgeschlagen',
-                message: 'Die Daten konnten nicht geladen werden. Bitte laden Sie die Seite neu.',
+                message: 'Die Daten konnten nicht geladen werden.' + detailSuffix,
                 retryable: false
             },
             notfound: {
                 icon: '⚠️',
                 title: 'Nicht gefunden',
-                message: 'Dieser Eintrag wurde nicht gefunden. Möglicherweise wurde er gelöscht.',
+                message: 'Dieser Eintrag wurde nicht gefunden.' + detailSuffix,
                 retryable: false
             },
             permission: {
                 icon: '⚠️',
                 title: 'Berechtigung erforderlich',
-                message: 'Sie haben keine Berechtigung für diese Aktion. Bitte wenden Sie sich an Ihren Administrator.',
+                message: 'Sie haben keine Berechtigung für diese Aktion.' + detailSuffix,
                 retryable: false
             },
             validation: {
                 icon: '⚠️',
                 title: 'Eingabe ungültig',
-                message: 'Bitte prüfen Sie Ihre Eingaben.',
+                message: detail || 'Bitte prüfen Sie Ihre Eingaben.',
                 fieldError: context.field || null,
                 retryable: true
             },
             timeout: {
                 icon: '⏱️',
                 title: 'Anfrage zu lang',
-                message: 'Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut.',
+                message: 'Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut.' + detailSuffix,
                 retryable: true
             },
             unknown: {
                 icon: '⚠️',
-                title: 'Ein Fehler ist aufgetreten',
-                message: 'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut oder laden Sie die Seite neu.',
+                title: 'Fehler',
+                message: detail || 'Ein unbekannter Fehler ist aufgetreten. Bitte laden Sie die Seite neu.',
                 retryable: true
             }
         };

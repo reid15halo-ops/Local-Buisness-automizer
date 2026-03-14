@@ -503,7 +503,7 @@ class AdminPanelUI {
 
         const status = document.getElementById('ap-business-status');
         if (status) {
-            status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Fehler beim Speichern';
+            status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Einige Einstellungen konnten nicht gespeichert werden';
             status.className = `admin-panel-save-status ${allSaved ? 'success' : 'error'}`;
             setTimeout(() => { status.textContent = ''; }, 3000);
         }
@@ -602,7 +602,7 @@ class AdminPanelUI {
 
         const status = document.getElementById('ap-financial-status');
         if (status) {
-            status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Fehler beim Speichern';
+            status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Einige Einstellungen konnten nicht gespeichert werden';
             status.className = `admin-panel-save-status ${allSaved ? 'success' : 'error'}`;
             setTimeout(() => { status.textContent = ''; }, 3000);
         }
@@ -786,7 +786,7 @@ class AdminPanelUI {
 
         const status = document.getElementById('ap-technical-status');
         if (status) {
-            status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Fehler beim Speichern';
+            status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Einige Einstellungen konnten nicht gespeichert werden';
             status.className = `admin-panel-save-status ${allSaved ? 'success' : 'error'}`;
             setTimeout(() => { status.textContent = ''; }, 3000);
         }
@@ -936,7 +936,7 @@ class AdminPanelUI {
 
             const status = document.getElementById('ap-database-status');
             if (status) {
-                status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Fehler beim Speichern';
+                status.textContent = allSaved ? '✅ Gespeichert!' : '❌ Einige Einstellungen konnten nicht gespeichert werden';
                 status.className = `admin-panel-save-status ${allSaved ? 'success' : 'error'}`;
                 setTimeout(() => { status.textContent = ''; }, 3000);
             }

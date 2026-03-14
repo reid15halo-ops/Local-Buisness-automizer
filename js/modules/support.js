@@ -41,7 +41,7 @@ async function fetchTickets() {
     } catch (e) {
         console.error('Support: Failed to fetch tickets', e);
         tickets = [];
-        if (window.showToast) {window.showToast('Tickets konnten nicht geladen werden', 'error');}
+        if (window.showToast) {window.showToast('Tickets konnten nicht geladen werden: ' + (e.message || e), 'error');}
     }
 }
 
@@ -236,8 +236,8 @@ async function openTicketDetail(ticketId) {
             });
             if (window.showToast) {window.showToast('Ticket aktualisiert', 'success');}
             await refresh();
-        } catch {
-            if (window.showToast) {window.showToast('Fehler beim Speichern', 'error');}
+        } catch (e) {
+            if (window.showToast) {window.showToast('Fehler beim Speichern: ' + (e.message || e), 'error');}
         }
     });
 
@@ -258,8 +258,8 @@ async function openTicketDetail(ticketId) {
             });
             if (window.showToast) {window.showToast('Antwort gesendet', 'success');}
             openTicketDetail(ticketId);
-        } catch {
-            if (window.showToast) {window.showToast('Fehler beim Senden', 'error');}
+        } catch (e) {
+            if (window.showToast) {window.showToast('Fehler beim Senden: ' + (e.message || e), 'error');}
         }
     });
 
@@ -370,8 +370,8 @@ function editKBArticle(id) {
             await fetchKB();
             renderKBList();
             if (window.showToast) {window.showToast('KB-Artikel gespeichert', 'success');}
-        } catch {
-            if (window.showToast) {window.showToast('Fehler beim Speichern', 'error');}
+        } catch (e) {
+            if (window.showToast) {window.showToast('KB-Artikel speichern fehlgeschlagen: ' + (e.message || e), 'error');}
         }
     });
 }
