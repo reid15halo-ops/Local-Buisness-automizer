@@ -1,9 +1,7 @@
 ---
 name: deployment
 description: |
-  Deploy FreyAI Visions app, website, Edge Functions, or services. Handles staging, production,
-  rollback, SSL, and Nginx. Trigger on: "deploy", "push to prod", "staging", "rollback",
-  "go live", "ship it", "release", "edge functions deploy", "SSL cert", "Postiz restart".
+  Deployment procedures for the FreyAI Visions infrastructure. Use this skill ANY time the user mentions: deploy, push to prod, staging, VPS, nginx, SSL, certbot, rollback, go live, ship it, release, production, edge functions, Postiz restart, or server. Handles app deploy, website deploy, staging, Supabase Edge Functions, Postiz, SSL certs, and rollback.
 ---
 
 # Deployment — FreyAI Visions Infrastructure
@@ -19,14 +17,14 @@ description: |
 
 VPS: `root@72.61.187.24` | GitHub: `reid15halo-ops/Local-Buisness-automizer`
 
-## Pre-Deploy Gate (all must pass before ANY deploy)
+## Pre-Deploy Checklist
 
-1. [ ] `git status` -- working tree clean, no uncommitted changes
-2. [ ] Correct branch (`main` for prod, feature branch for staging)
-3. [ ] `git log --oneline -3` -- expected commits are present
-4. [ ] Pushed to GitHub: `git push origin main`
-5. [ ] User confirmed target (prod vs staging) -- NEVER assume
-6. [ ] Rollback SHA captured: `ssh root@72.61.187.24 "cd <target-path> && git rev-parse HEAD"`
+Before ANY deploy, verify ALL of these:
+1. `git status` — working tree clean, no uncommitted changes
+2. On correct branch (`main` for prod, feature branch for staging)
+3. `git log --oneline -3` — confirm the commits you expect are there
+4. Push to GitHub first: `git push origin main`
+5. Ask the user to confirm the target (prod vs staging)
 
 ## Deploy Commands
 
@@ -51,16 +49,13 @@ supabase functions deploy <function-name> --project-ref incbhhaiiayohrjqevog
 ssh root@72.61.187.24 "cd /opt/postiz && docker compose down && docker compose up -d"
 ```
 
-## Post-Deploy Verification (run ALL, report pass/fail)
+## Post-Deploy Verification
 
-| # | Check | Expected | Command |
-|---|-------|----------|---------|
-| 1 | HTTP status | 200 | `curl -s -o /dev/null -w "%{http_code}" https://<domain>/` |
-| 2 | Content correct | HTML with app title | `curl -s https://<domain>/ \| head -20` |
-| 3 | HSTS header | present | `curl -sI https://<domain>/ \| grep -i strict` |
-| 4 | Service Worker | 200 | `curl -s -o /dev/null -w "%{http_code}" https://<domain>/service-worker.js` |
-
-If ANY check fails, immediately report to user and offer rollback.
+After every deploy, run these checks:
+1. `curl -s -o /dev/null -w "%{http_code}" https://<domain>/` — expect 200
+2. `curl -s https://<domain>/ | head -20` — verify correct content
+3. `curl -sI https://<domain>/ | grep -i strict` — verify HSTS
+4. `curl -s -o /dev/null -w "%{http_code}" https://<domain>/service-worker.js` — expect 200
 
 ## SSL / Certbot
 
@@ -72,13 +67,15 @@ Nginx config: `/etc/nginx/sites-available/` — after edits: `nginx -t && system
 
 ## Rollback
 
-Rollback SHA was captured in pre-deploy gate (step 6). To rollback:
-
+Capture current SHA before deploy, then rollback = reset to previous commit:
 ```bash
-ssh root@72.61.187.24 "cd <target-path> && git reset --hard <rollback-sha>"
+# Before deploy — save rollback point
+ssh root@72.61.187.24 "cd <target-path> && git rev-parse HEAD"
+# Find previous good commit
+ssh root@72.61.187.24 "cd <target-path> && git log --oneline -5"
+# Reset to it
+ssh root@72.61.187.24 "cd <target-path> && git reset --hard <commit-sha>"
 ```
-
-After rollback, re-run post-deploy verification to confirm recovery.
 
 ## Safety Rules
 

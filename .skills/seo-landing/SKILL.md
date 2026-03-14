@@ -151,7 +151,7 @@ Jede Seite braucht genau eine kanonische URL. Immer mit abschliessendem Schraegs
   },
   "contactPoint": {
     "@type": "ContactPoint",
-    "telephone": "+49-179-4228285",
+    "telephone": "+49-163-6727787",
     "email": "kontakt@freyaivisions.de",
     "contactType": "Vertrieb"
   }

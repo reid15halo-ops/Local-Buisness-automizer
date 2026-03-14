@@ -1,9 +1,11 @@
 ---
 name: testing
 description: |
-  Write and maintain Vitest unit tests for FreyAI Visions services and modules.
-  Trigger on: "write tests", "test coverage", "unit test", "vitest", "TDD", "test this",
-  "add tests for", "cover edge cases", or any request involving automated testing.
+  Write and maintain Vitest unit tests for FreyAI Visions services, modules, and UI components.
+  Use this skill when the user asks to write tests, add test coverage, create unit tests, run vitest,
+  do TDD, write specs, test a service, test a module, cover edge cases, increase coverage,
+  or says things like "test this", "add tests for", "write a spec", "unit test", "test coverage",
+  "TDD", "vitest", "test the happy path", "test error handling", or any request involving automated testing.
 ---
 
 # Testing Skill
@@ -66,30 +68,46 @@ See existing tests in `tests/` for examples (e.g., `customer-service.test.js`, `
 
 ## 4. What to Test
 
-For every public method, write tests for these 4 scenarios (minimum):
+**Always test:**
+- Happy path for every public method
+- Error handling (Supabase errors return `{ data: null, error }`)
+- Edge cases: null/undefined inputs, empty arrays, missing fields
+- State changes (user login sets `this.user`, logout clears it)
+- Data persistence (localStorage save/restore cycle)
+- Subscriber/listener notification after state changes
+- German business logic (Zahlungsziel defaults, Kleinunternehmer rules)
 
-1. **Happy path** -- expected input produces expected output
-2. **Error path** -- Supabase returns `{ data: null, error }`, fetch fails, invalid input
-3. **Edge cases** -- null/undefined, empty arrays, missing fields, boundary values
-4. **State side effects** -- localStorage changes, subscriber notifications, internal state mutations
-
-Also cover German business logic where applicable (Zahlungsziel defaults, Kleinunternehmer tax rules, MwSt calculations).
-
-**Never test:**
+**Skip:**
 - Private methods (test through public API)
-- CSS/DOM rendering
+- CSS/DOM rendering (no JSDOM rendering tests)
 - n8n workflow integration
-- Actual network calls (always mock)
-- Third-party library internals
+- Actual network calls (always mock Supabase/fetch)
+- Third-party library internals (Supabase SDK, Stripe.js)
 
 ## 5. Async Testing Patterns
 
-Key patterns (see `references/mock-patterns.md` for full examples):
+```js
+// Supabase call that succeeds
+it('should fetch data', async () => {
+  mockSupabaseClient.from.mockReturnValue({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ data: [{ id: '1' }], error: null })
+    })
+  });
+  const result = await service.getData('1');
+  expect(result).toHaveLength(1);
+});
 
-- **Success**: Mock chain returns `{ data: [...], error: null }`, assert on returned data
-- **Failure**: Mock chain returns `{ data: null, error: new Error('msg') }`, use `await expect(...).rejects.toThrow()`
-- **Chain mocking**: Supabase uses fluent API -- mock each method in the chain to return the next: `from().select().eq().order()` etc.
-- **Void operations**: UPDATE/DELETE return only `{ error }` -- test that no error means success, and that errors propagate
+// Supabase call that fails
+it('should handle Supabase error', async () => {
+  mockSupabaseClient.from.mockReturnValue({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ data: null, error: new Error('DB error') })
+    })
+  });
+  await expect(service.getData('1')).rejects.toThrow('DB error');
+});
+```
 
 ## 6. Test Organization by Service Type
 
@@ -102,15 +120,20 @@ Key patterns (see `references/mock-patterns.md` for full examples):
 | Sync (db-service, store-service) | Offline queue, sync cycle, conflict resolution, IndexedDB fallback |
 | Queue (approval-queue) | Queue/dequeue, approval/rejection, timeout handling |
 
-## 7. Quality Gate (all must pass)
+## 7. Quality Checklist
 
-1. [ ] Source file read completely before writing tests
-2. [ ] Every public method has happy path + error path test (minimum)
-3. [ ] Mocks match actual API shape (verified against `references/mock-patterns.md`)
-4. [ ] Tests are independent -- no execution order dependency, `beforeEach` resets all state
-5. [ ] German field names match source (`kunde`, `rechnung`, `angebot`)
-6. [ ] No real API calls, no real IndexedDB, no real DOM manipulation
-7. [ ] `npx vitest run tests/[file].test.js` passes in isolation
+Before submitting tests, verify:
+
+1. [ ] Source file was read completely before writing tests
+2. [ ] All public methods have at least one test
+3. [ ] Error paths are tested (not just happy path)
+4. [ ] Mocks match the actual API shape (check `references/mock-patterns.md`)
+5. [ ] No test depends on execution order (each test is independent)
+6. [ ] German field names match source (`kunde`, `rechnung`, `angebot`, not English)
+7. [ ] Async tests use `async/await` with proper `expect().rejects` for errors
+8. [ ] `beforeEach` resets all state (localStorage, mocks, service instance)
+9. [ ] Tests run in isolation -- `npx vitest run tests/[file].test.js` passes
+10. [ ] No real API calls, no real IndexedDB, no real DOM manipulation
 
 ## References
 

@@ -148,6 +148,6 @@ Die Mueller GmbH hat 3 Monteure-Teams, ein Buero mit 2 Personen und kaempft mit 
 
 **FreyAI Visions** -- Jonas Glawion
 - E-Mail: kontakt@freyaivisions.de
-- Telefon: +49 179 4228285
+- Telefon: +49 163 6727787
 - Terminbuchung: buchung.freyaivisions.de
 - Web: freyaivisions.de

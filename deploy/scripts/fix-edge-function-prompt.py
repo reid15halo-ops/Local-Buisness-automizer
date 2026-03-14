@@ -211,7 +211,7 @@ if old_followup_html_start in content:
                     <div style="font-size:12px;color:#555;">
                         FreyAI Visions &mdash; Jonas Glawion<br>
                         <a href="https://freyaivisions.de" style="color:#2dd4a8;text-decoration:none;">freyaivisions.de</a>
-                        &middot; +49 179 4228285
+                        &middot; +49 163 6727787
                     </div>
                 </div>
             </div>
@@ -275,7 +275,7 @@ new_simple = r'''async function sendSimpleConfirmation(to: string, name: string)
                     <div style="font-size:12px;color:#555;">
                         FreyAI Visions &mdash; Jonas Glawion<br>
                         <a href="https://freyaivisions.de" style="color:#2dd4a8;text-decoration:none;">freyaivisions.de</a>
-                        &middot; +49 179 4228285
+                        &middot; +49 163 6727787
                     </div>
                 </div>
             </div>

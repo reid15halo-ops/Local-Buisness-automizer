@@ -1,0 +1,320 @@
+{
+  "name": "Paperless-ngx -> Gemini -> Supabase",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Berechne Zeitstempel: letzte 16 Minuten (etwas Puffer)\nconst now = new Date();\nconst since = new Date(now.getTime() - 16 * 60 * 1000);\nconst sinceISO = since.toISOString().split('.')[0];\nreturn [{ json: { since: sinceISO } }];"
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Zeitfenster berechnen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:8010/api/documents/?ordering=-added&page_size=50&added__date__gte={{ $json.since.split('T')[0] }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Paperless: Neue Dokumente abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 300],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "paperless-basic-auth",
+          "name": "Paperless Basic Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filtere nur wirklich neue Dokumente (added in den letzten 16 Min)\nconst since = new Date(Date.now() - 16 * 60 * 1000);\nconst results = $input.first().json.results || [];\n\nconst newDocs = results.filter(doc => {\n  const added = new Date(doc.added);\n  return added >= since;\n});\n\nif (newDocs.length === 0) {\n  return [{ json: { skip: true, count: 0 } }];\n}\n\nreturn newDocs.map(doc => ({ json: doc }));"
+      },
+      "id": "a1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Nur neue filtern",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [840, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Keine neuen Docs?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1040, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:8010/api/documents/{{ $json.id }}/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0006-0006-0006-000000000006",
+      "name": "Paperless: Dokument-Detail abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1240, 200],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "paperless-basic-auth",
+          "name": "Paperless Basic Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "contents": [
+            {
+              "role": "user",
+              "parts": [
+                {
+                  "text": "=Analysiere dieses Dokument aus einem Dokumentenmanagementsystem und extrahiere die folgenden Informationen. Antworte NUR mit validem JSON, kein Markdown, keine Erklärungen.\n\nDokument-Titel: {{ $json.title }}\nKorrespondent: {{ $json.correspondent_name || 'Unbekannt' }}\nDokument-Typ: {{ $json.document_type_name || 'Unbekannt' }}\nTags: {{ ($json.tags_names || []).join(', ') }}\nInhalt (OCR):\n{{ ($json.content || '').substring(0, 4000) }}\n\nExtrahiere:\n{\n  \"doc_type\": \"Rechnung|Angebot|Vertrag|Brief|Lieferschein|Mahnung|Kontoauszug|Sonstiges\",\n  \"sender\": \"Name des Absenders/Ausstellers\",\n  \"amount\": null oder Zahl (nur bei Rechnungen/Angeboten, z.B. 1234.56),\n  \"doc_date\": \"YYYY-MM-DD\" oder null,\n  \"summary\": \"Kurze Zusammenfassung in 1-2 Sätzen auf Deutsch\"\n}"
+                }
+              ]
+            }
+          ],
+          "generationConfig": {
+            "temperature": 0.1,
+            "maxOutputTokens": 500
+          }
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0007-0007-0007-000000000007",
+      "name": "Gemini 2.5 Flash: Analyse",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 200],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "gemini-api-key",
+          "name": "Gemini API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gemini-Response parsen und Supabase-Payload bauen\nconst geminiResp = $input.first().json;\nconst docDetail = $('Paperless: Dokument-Detail abrufen').first().json;\n\nlet extracted = {\n  doc_type: 'Sonstiges',\n  sender: null,\n  amount: null,\n  doc_date: null,\n  summary: null\n};\n\ntry {\n  const rawText = geminiResp.candidates?.[0]?.content?.parts?.[0]?.text || '{}';\n  // JSON aus dem Text extrahieren\n  const jsonMatch = rawText.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    extracted = JSON.parse(jsonMatch[0]);\n  }\n} catch (e) {\n  console.log('Gemini JSON Parse Error:', e.message);\n}\n\n// amount bereinigen\nlet amount = null;\nif (extracted.amount !== null && extracted.amount !== undefined && extracted.amount !== '') {\n  const parsed = parseFloat(String(extracted.amount).replace(',', '.'));\n  if (!isNaN(parsed) && parsed > 0) {\n    amount = parsed;\n  }\n}\n\n// doc_date validieren\nlet docDate = null;\nif (extracted.doc_date && /^\\d{4}-\\d{2}-\\d{2}$/.test(extracted.doc_date)) {\n  docDate = extracted.doc_date;\n}\n\nreturn [{\n  json: {\n    paperless_id: docDetail.id,\n    title: docDetail.title,\n    doc_type: extracted.doc_type || 'Sonstiges',\n    sender: extracted.sender || docDetail.correspondent_name || null,\n    amount: amount,\n    doc_date: docDate,\n    summary: extracted.summary || null,\n    tags: docDetail.tags_names || [],\n    correspondent: docDetail.correspondent_name || null,\n    content: (docDetail.content || '').substring(0, 2000),\n    updated_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "a1b2c3d4-0008-0008-0008-000000000008",
+      "name": "Daten aufbereiten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1640, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://incbhhaiiayohrjqevog.supabase.co/rest/v1/paperless_documents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0009-0009-0009-000000000009",
+      "name": "Supabase: Upsert paperless_documents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1840, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erfolg loggen\nconst saved = $input.first().json;\nconsole.log(`Paperless Doc gespeichert: ID=${saved.paperless_id}, Typ=${saved.doc_type}, Sender=${saved.sender}`);\nreturn $input.all();"
+      },
+      "id": "a1b2c3d4-0010-0010-0010-000000000010",
+      "name": "Erfolg loggen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2040, 200]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Zeitfenster berechnen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zeitfenster berechnen": {
+      "main": [
+        [
+          {
+            "node": "Paperless: Neue Dokumente abrufen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paperless: Neue Dokumente abrufen": {
+      "main": [
+        [
+          {
+            "node": "Nur neue filtern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur neue filtern": {
+      "main": [
+        [
+          {
+            "node": "Keine neuen Docs?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keine neuen Docs?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Paperless: Dokument-Detail abrufen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paperless: Dokument-Detail abrufen": {
+      "main": [
+        [
+          {
+            "node": "Gemini 2.5 Flash: Analyse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Flash: Analyse": {
+      "main": [
+        [
+          {
+            "node": "Daten aufbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daten aufbereiten": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Upsert paperless_documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Upsert paperless_documents": {
+      "main": [
+        [
+          {
+            "node": "Erfolg loggen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["paperless", "documents", "gemini", "supabase"],
+  "pinData": {}
+}

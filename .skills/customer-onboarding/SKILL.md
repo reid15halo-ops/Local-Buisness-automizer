@@ -56,6 +56,7 @@ Landing page → "Jetzt starten" → auth.html
 - Profile row auto-created via database trigger
 - Double-submit protection on signup form
 - German error messages for auth failures
+- DSGVO consent checkbox mandatory before account creation
 
 ## 3. Layer 2: Setup Wizard
 
@@ -92,6 +93,7 @@ Landing page → "Jetzt starten" → auth.html
 3. Wizard only shows once (flagged in profile)
 4. "Zurück" (Back) preserves entered data
 5. Skip option available but discouraged
+6. Data also persists in Supabase + IndexedDB to survive session loss
 
 ## 4. Layer 3: Fragebogen (Questionnaire)
 
@@ -161,7 +163,72 @@ Fragebogen completed
   → Triggers: onboarding tutorial for selected features
 ```
 
-## 6. Excel/CSV Import
+## 6. Tier Recommendation Logic
+
+Based on Fragebogen responses, the import service assigns one of three tiers:
+
+### Starter (€3.500 Setup + €200/Monat)
+**Criteria (any of the following):**
+- Mitarbeiter (employees): 1–3
+- Jahresumsatz: unter €300.000
+- Wünsche & Prioritäten: only basic modules selected (Kunden, Angebote, Rechnungen)
+- No DATEV integration needed
+- No inventory/BOM management needed
+- Budget (Section 11): unter €250/Monat
+
+**Features enabled:** Kunden, Angebote, Aufträge, Rechnungen, Einstellungen
+
+### Professional (€5.500 Setup + €400/Monat)
+**Criteria (any of the following):**
+- Mitarbeiter: 4–7
+- Jahresumsatz: €300.000–€1.000.000
+- Wünsche & Prioritäten: includes automation modules (WhatsApp, Kalender, Mahnwesen)
+- DATEV integration needed (Section 9, `datev_nutzung = true`)
+- Budget: €250–€600/Monat
+
+**Features enabled:** All Starter + WhatsApp-Integration, Kalender, Mahnwesen, DATEV-Export, Kommunikations-Hub
+
+### Enterprise (€7.500 Setup + €700/Monat)
+**Criteria (any of the following):**
+- Mitarbeiter: 8+
+- Jahresumsatz: über €1.000.000
+- Wünsche & Prioritäten: all modules or custom integrations needed
+- Multiple locations or teams
+- Budget: über €600/Monat
+
+**Features enabled:** All Professional + Lagerverwaltung, Bestellwesen, Nachbestellungen, individuelle Automatisierungen
+
+### Feature Toggle Mapping from Fragebogen
+```javascript
+// Section 9 (Buchhaltung) → DATEV toggle
+if (responses.datev_nutzung === true) {
+  featureToggles.datevExport = true;   // → enables DATEV-Export module
+}
+
+// Section 8 (Lagerverwaltung) → Inventory toggle
+if (responses.lager_vorhanden === true) {
+  featureToggles.lagerverwaltung = true;
+}
+
+// Section 7 (Terminplanung) → Calendar toggle
+if (responses.kalender_genutzt === true || responses.kundentermine > 5) {
+  featureToggles.kalender = true;
+}
+
+// Section 6 (Kommunikation) → WhatsApp toggle
+if (responses.whatsapp_nutzung === true) {
+  featureToggles.whatsappIntegration = true;
+}
+```
+
+### Angebot Positions from Fragebogen
+The import service generates draft Angebot line items based on enabled features:
+- Each enabled feature module → 1 position with setup cost + monthly rate
+- DATEV-Export → "DATEV-Anbindung und Export" position
+- WhatsApp-Integration → "WhatsApp Kundenservice-Automatisierung" position
+- Lagerverwaltung → "Lagerverwaltung und Bestellwesen" position
+
+## 7. Excel/CSV Import
 
 ### 4-Step Import Wizard
 1. **Upload**: Drag-drop or browse for .xlsx/.csv file
@@ -177,9 +244,9 @@ Fragebogen completed
 2. Deduplicate on email address
 3. Show error rows separately (don't block valid imports)
 4. Maximum 500 rows per import
-5. UTF-8 encoding required (handle German umlauts)
+5. UTF-8 encoding required (handle German umlauts: ä, ö, ü, ß)
 
-## 7. Onboarding Tutorial
+## 8. Onboarding Tutorial
 
 ### 10 Interactive Steps
 1. Dashboard overview
@@ -199,7 +266,7 @@ Fragebogen completed
 - Progress saved — can resume later
 - Only shows on first login (or manual trigger from Settings)
 
-## 8. Quality Checklist
+## 9. Quality Checklist
 
 Before modifying onboarding, verify all 10 items:
 
@@ -210,7 +277,7 @@ Before modifying onboarding, verify all 10 items:
 5. [ ] Data maps correctly from fragebogen to profiles table
 6. [ ] Excel import handles German umlauts (ä, ö, ü, ß)
 7. [ ] Tutorial highlights correct DOM elements
-8. [ ] Tier recommendation logic matches pricing guide
+8. [ ] Tier recommendation logic matches pricing guide (Starter/Professional/Enterprise)
 9. [ ] DSGVO consent checkbox is mandatory
 10. [ ] Onboarding state persists across sessions (IndexedDB + Supabase)
 

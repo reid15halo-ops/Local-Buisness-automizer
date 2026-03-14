@@ -28,6 +28,8 @@ Every UI decision must pass the "Herr Müller Test": Would a 57-year-old craftsm
 Each view does exactly one thing. No multi-purpose screens. No tabs-within-tabs.
 If you're tempted to add a tab strip inside a modal, stop — you've gone too far.
 
+**Maximum 3 clicks from home screen to any core action.** If it takes 4 or more clicks, restructure the navigation.
+
 ### 2. Big, Obvious, Labeled Buttons
 
 - Minimum touch target: 48x48px (ideally 56px+)
@@ -56,6 +58,13 @@ Rules:
 The app has two modes:
 - **Einfacher Modus** (Simple Mode) — DEFAULT for new users
 - **Profi-Modus** (Pro Mode) — Unlocked explicitly by the user
+
+**Toggle mechanism:** In Einstellungen → "Ansicht", a clearly labeled switch:
+```
+[ Einfacher Modus  ●────  Profi-Modus ]
+```
+- Switching to Profi-Modus shows a plain-German confirmation: "Möchten Sie alle Funktionen einblenden? Sie können jederzeit zurückwechseln."
+- Mode is persisted in profile (Supabase) so it survives logins.
 
 In Simple Mode, hide:
 - Lagerverwaltung (Inventory/BOM management)
@@ -192,27 +201,48 @@ Every error must:
 - Clear labels ABOVE inputs (not placeholder-only)
 - Pre-fill where possible (customer name from selection, dates default to today)
 
-### 10. The Setup Must Be Invisible
+### 10. Loading States — Never Leave the User Guessing
 
-The first-run experience for Herr Müller is NOT a setup wizard. It's:
+Any operation taking more than 300ms must show a loading indicator:
+
+- **Short operations (300ms–2s):** Spinner on the button that was clicked. Button text changes to "Wird geladen…" and is disabled.
+- **Long operations (2s+):** Full-screen overlay with progress message in plain German:
+  ```
+  ┌──────────────────────────────────┐
+  │  ⏳ Angebot wird erstellt...      │
+  │  Bitte warten Sie einen Moment.  │
+  └──────────────────────────────────┘
+  ```
+- **Background saves:** Subtle "Wird gespeichert…" text near the bottom — never a blocking modal.
+- **After success:** Brief green confirmation ("Gespeichert ✓") that fades after 3 seconds.
+- Never show a blank screen or a frozen button without feedback.
+
+### 11. Mobile-First — The App Runs on Phones
+
+Herr Müller uses his app on a smartphone at the job site, not behind a desk.
+
+- Design for 390px viewport width first (iPhone 14 equivalent)
+- All core actions must be reachable with one thumb (no reaching to top corners)
+- Navigation: bottom tab bar on mobile (not hamburger menus)
+- Tables become card lists on mobile — no horizontal scrolling
+- File uploads support camera capture (Kamera öffnen) as first option on mobile
+- Form inputs must not cause zoom on iOS (font-size 16px minimum on inputs)
+- Test every new feature at 390px width before considering it done
+
+### 12. The Setup Must Be Invisible for End Users
+
+The first-run experience for Herr Müller as an end customer is minimal:
 1. He opens the app
 2. He sees "Willkommen! Legen Sie Ihren ersten Kunden an."
 3. He enters a customer name
 4. Done. He's using the app.
 
+**Note:** The onboarding Setup Wizard (13 fields, 3 steps) and Fragebogen (52 questions) are for the initial FreyAI Visions customer engagement — filled out once by the business owner during the paid setup phase, guided by Jonas. They are NOT a self-service sign-up flow. After setup, the app must feel like it was already configured — not like a tool that still needs setting up.
+
 All technical setup (Supabase, Stripe, API keys, n8n webhooks) must be:
 - Pre-configured by the installer/admin (Jonas)
 - Hidden behind "Einstellungen → Technische Einstellungen" (locked behind a code/password)
-- Never shown during user onboarding
-
-The user onboarding should only ask:
-1. Firmenname (Company name)
-2. Ihr Name (Your name)
-3. Adresse (for invoice letterhead)
-4. Steuernummer or USt-IdNr (tax ID — required for invoices)
-5. Optional: Logo hochladen (Upload logo)
-
-That's it. 5 fields. One screen.
+- Never shown during regular app usage
 
 ## Implementation Checklist
 
@@ -222,12 +252,15 @@ When modifying any UI component, verify:
 - [ ] Buttons have text labels (not icon-only)
 - [ ] Touch targets are 48px+
 - [ ] Font size is 16px+
-- [ ] Destructive actions have confirmation dialogs
+- [ ] Destructive actions have confirmation dialogs with amounts and names
 - [ ] Error states show friendly German messages with recovery actions
 - [ ] The feature respects Simple/Pro mode visibility
 - [ ] Forms have labels above inputs (not just placeholders)
 - [ ] Status uses icon + color + text (not color alone)
 - [ ] The feature is reachable in ≤3 clicks from the home screen
+- [ ] Loading states are shown for operations >300ms
+- [ ] Layout tested at 390px (mobile-first)
+- [ ] Auto-save prevents data loss on navigation or network failure
 
 ## Reference: Common German UI Labels
 

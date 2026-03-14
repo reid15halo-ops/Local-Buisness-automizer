@@ -1,0 +1,220 @@
+{
+  "name": "Website Chatbot Backend",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "website-chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://staging.freyaivisions.de,https://app.freyaivisions.de"
+        }
+      },
+      "id": "webhook-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "website-chat-freyai"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT messages_json FROM chat_sessions WHERE session_id = $1 ORDER BY updated_at DESC LIMIT 1",
+        "queryParams": "={{ $json.body.session_id }}",
+        "options": {}
+      },
+      "id": "supabase-read",
+      "name": "Load Chat History",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres",
+          "name": "Supabase DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook').item.json.body;\nconst dbResult = $input.item.json;\n\n// Input validation\nconst sessionId = (body.session_id || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 100) || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;\nlet userMessage = (body.message || '').slice(0, 500).trim();\nif (!userMessage) throw new Error('Empty message');\n\n// Load existing history or start fresh\nlet history = [];\nif (dbResult && dbResult.messages_json) {\n  try {\n    history = JSON.parse(dbResult.messages_json);\n  } catch(e) {\n    history = [];\n  }\n}\n\n// Keep only last 10 messages to stay within context limits\nif (history.length > 10) {\n  history = history.slice(-10);\n}\n\nreturn {\n  session_id: sessionId,\n  user_message: userMessage,\n  history: history\n};"
+      },
+      "id": "prepare-context",
+      "name": "Prepare Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "={{ $env.GOOGLE_GEMINI_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={\n  \"system_instruction\": {\n    \"parts\": [{\n      \"text\": \"Du bist der KI-Assistent von FreyAI Visions, einem Beratungsunternehmen für Handwerker und kleine Betriebe in Deutschland. Du hilfst Interessenten dabei, mehr über die Leistungen von FreyAI Visions zu erfahren und beantwortest Fragen auf Deutsch.\\n\\nÜBER FREYAI VISIONS:\\n- Inhabergeführtes IT- und KI-Beratungsunternehmen aus Großostheim (Bayern)\\n- Spezialisiert auf: Prozessautomatisierung, KI-Integration, Chatbots, Dokumentenverarbeitung\\n- Zielgruppe: Handwerker, Installateure, Baufirmen, kleine und mittelständische Betriebe\\n- Founder: Jonas Glawion, gelernter Steinmetz mit IT-Expertise\\n- Website: freyaivisions.de\\n\\nLEISTUNGEN:\\n1. Prozessautomatisierung: Angebotserstellung, Rechnungslegung, Buchhaltungsvorbereitung automatisieren\\n2. KI-Integration: Intelligente Assistenten für Kundenkommunikation, E-Mail-Bearbeitung\\n3. Chatbots: Website-Chatbots, WhatsApp-Bots für automatische Kundenanfragen\\n4. Dokumentenverarbeitung: Automatische Rechnungserkennung, Dokumentenablage (Paperless-ngx)\\n5. Business-Software: Komplettlösung für CRM, Rechnungen, Angebote, Projektverwaltung\\n\\nPREISGESTALTUNG:\\n- Erstes Beratungsgespräch kostenlos (30 Min via Cal.com buchbar)\\n- Individuelle Projektpreise nach Aufwand\\n- Monatliche Wartungs- und Supportpakete verfügbar\\n\\nKONTAKT:\\n- Anfragen: anfragen@freyaivisions.de\\n- Termine buchen: buchung.freyaivisions.de\\n\\nVERHALTENSREGELN:\\n- Antworte freundlich, professionell und auf Deutsch\\n- Halte Antworten präzise (max 3-4 Sätze)\\n- Bei konkreten Preisfragen: empfehle kostenloses Erstgespräch\\n- Leite bei Kaufinteresse sanft zum Erstgespräch weiter\\n- Erfinde keine Preise oder Leistungen die nicht oben stehen\"\n    }]\n  },\n  \"contents\": {{ JSON.stringify([...$json.history.map(m => ({role: m.role, parts: [{text: m.content}]})), {role: 'user', parts: [{text: $json.user_message}]}]) }}\n}",
+        "options": {}
+      },
+      "id": "gemini-call",
+      "name": "Gemini 2.0 Flash",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const geminiResponse = $input.item.json;\nconst context = $('Prepare Context').item.json;\n\n// Extract reply from Gemini response\nlet reply = 'Entschuldigung, ich konnte Ihre Anfrage gerade nicht verarbeiten. Bitte versuchen Sie es erneut oder schreiben Sie uns direkt an anfragen@freyaivisions.de';\n\ntry {\n  reply = geminiResponse.candidates[0].content.parts[0].text;\n} catch(e) {\n  console.error('Gemini parse error:', e);\n}\n\n// Build updated history\nconst updatedHistory = [\n  ...context.history,\n  { role: 'user', content: context.user_message },\n  { role: 'model', content: reply }\n];\n\n// Keep only last 20 messages total\nconst trimmedHistory = updatedHistory.slice(-20);\n\nreturn {\n  session_id: context.session_id,\n  reply: reply,\n  messages_json: JSON.stringify(trimmedHistory),\n  user_message: context.user_message\n};"
+      },
+      "id": "extract-reply",
+      "name": "Extract Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO chat_sessions (session_id, messages_json, created_at, updated_at)\nVALUES ($1, $2, NOW(), NOW())\nON CONFLICT (session_id) DO UPDATE\nSET messages_json = EXCLUDED.messages_json, updated_at = NOW()",
+        "queryParams": "={{ $json.session_id }},={{ $json.messages_json }}",
+        "options": {}
+      },
+      "id": "supabase-write",
+      "name": "Save Chat History",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1340, 300],
+      "credentials": {
+        "postgres": {
+          "id": "supabase-postgres",
+          "name": "Supabase DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ reply: $('Extract Reply').item.json.reply, session_id: $('Extract Reply').item.json.session_id }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://staging.freyaivisions.de, https://app.freyaivisions.de"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-node",
+      "name": "Send Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "OPTIONS",
+        "path": "website-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "cors-preflight",
+      "name": "CORS Preflight",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 500],
+      "webhookId": "website-chat-freyai-cors"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "https://staging.freyaivisions.de, https://app.freyaivisions.de"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "id": "cors-respond",
+      "name": "CORS Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [460, 500]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{"node": "Load Chat History", "type": "main", "index": 0}]
+      ]
+    },
+    "Load Chat History": {
+      "main": [
+        [{"node": "Prepare Context", "type": "main", "index": 0}]
+      ]
+    },
+    "Prepare Context": {
+      "main": [
+        [{"node": "Gemini 2.0 Flash", "type": "main", "index": 0}]
+      ]
+    },
+    "Gemini 2.0 Flash": {
+      "main": [
+        [{"node": "Extract Reply", "type": "main", "index": 0}]
+      ]
+    },
+    "Extract Reply": {
+      "main": [
+        [{"node": "Save Chat History", "type": "main", "index": 0}]
+      ]
+    },
+    "Save Chat History": {
+      "main": [
+        [{"node": "Send Response", "type": "main", "index": 0}]
+      ]
+    },
+    "CORS Preflight": {
+      "main": [
+        [{"node": "CORS Response", "type": "main", "index": 0}]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["chatbot", "website", "gemini"],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-13T00:00:00.000Z",
+  "versionId": "1"
+}

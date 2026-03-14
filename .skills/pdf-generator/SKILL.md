@@ -107,7 +107,7 @@ const base64 = await window.pdfGenerationService.getPDFBase64(invoice);
     "street": "Grabenstrasse 135",
     "postal_code": "63762",
     "city": "Grossostheim",
-    "phone": "+49 179 4228285",
+    "phone": "+49 163 6727787",
     "email": "kontakt@freyaivisions.de",
     "tax_id": "039 863 50457",
     "iban": "...", "bic": "...", "bank_name": "..."

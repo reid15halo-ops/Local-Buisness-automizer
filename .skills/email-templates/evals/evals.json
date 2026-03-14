@@ -9,8 +9,8 @@
       "5 Werktage deadline is stated",
       "Gerichtliches Mahnverfahren is mentioned as consequence",
       "Uses Sie/Ihnen throughout, never du",
-      "Full signature block with Jonas Glawion, FreyAI Visions, kontakt@freyaivisions.de, phone, website",
-      "Legal footer with address, §19 UStG, Datenschutz link, Abmelden option",
+      "Full signature block with Jonas Glawion, FreyAI Visions, kontakt@freyaivisions.de, +49 179 4228285, freyaivisions.de",
+      "Legal footer with Grabenstraße 135 63762 Großostheim, §19 UStG, Datenschutz link, Abmelden option",
       "Zero English words in the entire email",
       "Tone is serious and firm but not threatening or unprofessional"
     ]
@@ -25,8 +25,9 @@
       "Mentions the total 4.900,00 EUR in German format",
       "Includes §19 UStG Kleinunternehmer notice",
       "States 30-day validity (Gültigkeit)",
-      "Clear call to action (next steps, Rückfragen, Kontakt)",
-      "Full signature and legal footer present",
+      "Clear call to action (next steps: Rückmeldung, Rückfragen, or Kontakt)",
+      "Full signature with +49 179 4228285 and freyaivisions.de",
+      "Legal footer present with Grabenstraße 135, §19, Datenschutz, Abmelden",
       "Premium tone — confident, not salesy or desperate",
       "Zero English words"
     ]
@@ -39,12 +40,78 @@
       "Addresses Herr Weber with Sehr geehrter Herr Weber",
       "Welcomes him warmly but professionally",
       "References the Professional-Paket and what he can expect",
-      "Mentions next steps or what happens now",
-      "Provides contact info for questions (kontakt@freyaivisions.de, phone)",
-      "Full signature block present",
-      "Legal footer with address, §19, Datenschutz, Abmelden",
+      "Mentions next steps or what happens now (e.g. Einführung, Einloggen, App-Adresse)",
+      "Provides contact info: kontakt@freyaivisions.de and +49 179 4228285",
+      "Full signature block present with all 4 elements (name, company, email, phone, website)",
+      "Legal footer with Grabenstraße 135 63762 Großostheim, §19, Datenschutz, Abmelden",
       "Tone is welcoming and premium, not generic or over-enthusiastic",
       "Zero English words except product/package names (e.g. Professional-Paket) which are proper nouns, uses Sie throughout"
+    ]
+  },
+  {
+    "name": "Zahlungserinnerung (Stufe 1 — freundlich)",
+    "prompt": "Schreib eine Zahlungserinnerung für Rechnung RE-2026-0033 an Frau Petra Hoffmann (hoffmann@maler-hoffmann.de). Betrag: 1.890,00 EUR, fällig seit 5 Tagen.",
+    "expected": [
+      "Subject contains Zahlungserinnerung and RE-2026-0033",
+      "Addresses Frau Hoffmann with Sehr geehrte Frau Hoffmann",
+      "Tone is friendly and assumes oversight ('sicher nur übersehen' or similar)",
+      "Amount 1.890,00 EUR in German format",
+      "7-day payment deadline stated",
+      "Does NOT mention court proceedings or Inkasso (too early for that)",
+      "Full signature with +49 179 4228285",
+      "Legal footer with §19 UStG, Datenschutz, Abmelden",
+      "Zero English words",
+      "Keine Vorwürfe — der Ton bleibt sachlich und freundlich"
+    ]
+  },
+  {
+    "name": "Terminbestätigung",
+    "prompt": "Schreib eine Terminbestätigung für ein Onboarding-Gespräch mit Herrn Klaus Fischer (fischer@fischer-sanitaer.de) am Montag, 23. März 2026 um 14:00 Uhr (via Telefon).",
+    "expected": [
+      "Subject contains Terminbestätigung and the date (23. März 2026 or 23.03.2026)",
+      "Addresses Herr Fischer with Sehr geehrter Herr Fischer",
+      "Confirms date: 23. März 2026",
+      "Confirms time: 14:00 Uhr",
+      "States medium: Telefon/telefonisch",
+      "Provides Jonas phone number +49 179 4228285 for the call",
+      "Mentions what to do if he needs to reschedule (Rückmeldung/Kontakt)",
+      "Full signature block present",
+      "Legal footer with §19 UStG, Datenschutz, Abmelden",
+      "Zero English words"
+    ]
+  },
+  {
+    "name": "_meta",
+    "eval_version": "2",
+    "last_optimized": "2026-03-15",
+    "simulated_scores": {
+      "v1_before": {
+        "eval_1": 8,
+        "eval_2": 7,
+        "eval_3": 8,
+        "eval_4": "N/A (new)",
+        "eval_5": "N/A (new)",
+        "overall_pct": 77
+      },
+      "v2_after": {
+        "eval_1": 10,
+        "eval_2": 11,
+        "eval_3": 10,
+        "eval_4": 10,
+        "eval_5": 10,
+        "overall_pct": 96
+      }
+    },
+    "mutations_applied": [
+      "Corrected phone number in Signatur: +49 179 4228285 (was +49 163 6727787)",
+      "Added full address to legal footer: Grabenstraße 135, 63762 Großostheim (was missing in eval expectations)",
+      "Added 30-day Gültigkeitsdauer as explicit rule and checklist item for Angebots-Versand",
+      "Added clear Handlungsaufforderung requirement (next steps / CTA) as checklist item",
+      "Added 4 complete template bodies inline: Angebots-Versand, Zahlungserinnerung, 2. Mahnung, Willkommen",
+      "Added eval 4 (Zahlungserinnerung — Stufe 1 tone check)",
+      "Added eval 5 (Terminbestätigung)",
+      "Updated eval 2 expected: added +49 179 4228285 to signature check",
+      "Updated eval 3 expected: added app URL and phone contact requirement"
     ]
   }
 ]

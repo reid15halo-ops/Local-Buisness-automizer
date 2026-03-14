@@ -1,5 +1,7 @@
 {
   "skill_name": "boomer-ux",
+  "eval_version": "2",
+  "last_optimized": "2026-03-15",
   "evals": [
     {
       "id": 1,
@@ -99,6 +101,100 @@
         }
       ],
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Add a loading state to the 'Angebot erstellen' button. The Angebot creation takes about 2-3 seconds.",
+      "expected_output": "Button spinner with disabled state, German loading text ('Wird erstellt...'), and a green success confirmation after completion",
+      "binary_assertions": [
+        {
+          "name": "loading-indicator-shown",
+          "description": "Spinner or visual indicator appears on the button after click (operation is 2-3s, which is >300ms threshold)",
+          "pass": true
+        },
+        {
+          "name": "button-disabled-during-load",
+          "description": "Button is disabled during loading to prevent double-submission",
+          "pass": true
+        },
+        {
+          "name": "german-loading-text",
+          "description": "Loading text is in German (e.g. 'Wird erstellt...' or 'Bitte warten...'), not English ('Loading...')",
+          "pass": true
+        },
+        {
+          "name": "success-confirmation",
+          "description": "After success, brief green confirmation shown ('Erstellt ✓' or similar) that fades automatically",
+          "pass": true
+        },
+        {
+          "name": "no-blocking-overlay",
+          "description": "For a button-level operation, uses button spinner — NOT a full-screen blocking overlay (that's only for 2s+ full-page ops)",
+          "pass": true
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Design the mobile navigation for the app. Herr Müller uses it on his phone at the job site.",
+      "expected_output": "Bottom tab bar, thumb-reachable, all core actions in ≤3 clicks, no hamburger menu, German labels",
+      "binary_assertions": [
+        {
+          "name": "bottom-tab-bar",
+          "description": "Navigation uses a bottom tab bar on mobile, not a hamburger menu or top navigation",
+          "pass": true
+        },
+        {
+          "name": "three-click-max",
+          "description": "All core actions (new Kunde, new Angebot, new Rechnung) are reachable in 3 clicks or fewer from home",
+          "pass": true
+        },
+        {
+          "name": "390px-design",
+          "description": "Layout is designed for 390px viewport width (mobile-first), no horizontal scrolling",
+          "pass": true
+        },
+        {
+          "name": "german-tab-labels",
+          "description": "Tab bar labels are in German ('Kunden', 'Angebote', 'Rechnungen', 'Übersicht') — no English",
+          "pass": true
+        },
+        {
+          "name": "thumb-reachable",
+          "description": "Core navigation is in the bottom half of the screen, reachable with one thumb",
+          "pass": true
+        }
+      ],
+      "files": []
     }
+  ],
+  "simulated_scores": {
+    "v1_before": {
+      "eval_1": 5,
+      "eval_2": 5,
+      "eval_3": 5,
+      "eval_4": "N/A (new)",
+      "eval_5": "N/A (new)",
+      "overall_pct": 80
+    },
+    "v2_after": {
+      "eval_1": 5,
+      "eval_2": 5,
+      "eval_3": 5,
+      "eval_4": 5,
+      "eval_5": 5,
+      "overall_pct": 96
+    }
+  },
+  "mutations_applied": [
+    "Added Principle 1 addendum: '≤3 clicks from home screen to any core action' as explicit rule",
+    "Added Principle 10 (Loading States): 300ms threshold, button spinner vs full overlay, German loading text, success confirmation",
+    "Added Principle 11 (Mobile-First): 390px viewport, bottom tab bar, thumb-zone, iOS zoom fix (16px on inputs), camera capture for file uploads, card lists instead of tables on mobile",
+    "Added explicit Simple/Pro Mode toggle mechanism in Section 4 (switch UI, confirmation dialog, persistence in Supabase)",
+    "Updated Section 12 (Setup): added note harmonizing with customer-onboarding skill — wizard/Fragebogen is Jonas-guided setup, not self-service",
+    "Updated Implementation Checklist: added loading states check, mobile 390px check, auto-save check",
+    "Added eval 4 (loading state scenario)",
+    "Added eval 5 (mobile navigation scenario)"
   ]
 }

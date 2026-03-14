@@ -1,10 +1,13 @@
 ---
 name: security-audit
 description: |
-  Security audit, vulnerability assessment, and DSGVO/GDPR compliance review for FreyAI Visions.
-  Trigger on: "security audit", "CSP review", "XSS check", "RLS audit", "DSGVO compliance",
-  "vulnerability scan", "is this secure", "check security", "harden this", "OWASP review",
-  or any request to evaluate security posture.
+  Perform security audits, vulnerability assessments, and compliance reviews for the FreyAI Visions platform.
+  Use this skill when the user asks about security review, security audit, CSP policy, Content Security Policy,
+  XSS prevention, cross-site scripting, RLS audit, row level security review, DSGVO compliance, GDPR compliance,
+  auth hardening, authentication security, vulnerability scan, penetration testing, pen test, input validation,
+  OWASP, SQL injection, CSRF, rate limiting, token security, session management, data encryption, PII protection,
+  data breach prevention, or says things like "is this secure", "check security", "audit the auth", "harden this",
+  "review CSP", "fix XSS", "are we DSGVO compliant", "security checklist", "vulnerability check". Be pushy.
 ---
 
 # Security Audit Skill
@@ -13,22 +16,14 @@ Perform comprehensive security audits for FreyAI Visions. This platform handles 
 
 Read `references/checklist.md` before starting any audit -- it contains the full security checklist organized by severity.
 
-## Workflow
-
-1. Read `references/checklist.md` for severity-organized checklist
-2. Identify audit scope (full audit vs. targeted: CSP, XSS, RLS, Auth, DSGVO, OWASP)
-3. For each area: scan actual code, collect evidence, classify findings by severity (Critical > High > Medium > Low)
-4. Produce findings report with evidence and remediation steps
-5. Never report assumptions as findings -- every issue must reference a file path and line number
-
 ## Project Security Architecture
 
-Existing security layers (read these files before auditing):
+Before auditing, understand the existing security layers:
 
-- **`js/services/security-service.js`** -- Input validation, rate limiting, CSRF tokens, security event logging
-- **`js/services/sanitize-service.js`** -- XSS protection (escapeHtml, sanitizeText, sanitizeUrl, sanitizePhone)
-- **`js/services/auth-service.js`** -- Supabase Auth wrapper (login, register, session, password reset)
-- **Supabase RLS** -- Row Level Security on all tables, user_id tenant isolation, service_role bypass
+- **`js/services/security-service.js`** -- Input validation (email, phone, IBAN, tax ID), rate limiting, CSRF tokens, HTML escaping, URL validation, security event logging
+- **`js/services/sanitize-service.js`** -- XSS protection (escapeHtml, escapeAttr, sanitizeText, sanitizeUrl, sanitizeEmail, sanitizePhone), safe JSON parse
+- **`js/services/auth-service.js`** -- Supabase Auth wrapper (login, register, logout, session, password reset, auth state listeners)
+- **Supabase RLS** -- Row Level Security on all tables, user_id tenant isolation, service_role bypass for n8n/Edge Functions
 - **Edge Functions** -- CORS headers, JWT validation, service_role auth for internal calls
 - **Service Worker** -- Offline-first PWA with cache management
 
@@ -54,10 +49,13 @@ Check the Content Security Policy configuration. For this stack (Vanilla JS PWA 
 
 ### Audit Steps
 
-1. Search HTML files for `<meta http-equiv="Content-Security-Policy">` and check Nginx config for CSP headers (server header preferred)
-2. Verify: no `unsafe-eval` in script-src, no wildcard (`*`) in any directive
-3. Verify: Supabase project URL specifically listed (not broad wildcard)
-4. Check browser DevTools Console for CSP violation errors
+1. Check where CSP is set (meta tag in HTML vs. server header). Server header is preferred.
+2. Search all HTML files for `<meta http-equiv="Content-Security-Policy">`
+3. Check Nginx config on VPS for CSP headers
+4. Verify no `unsafe-eval` in script-src (breaks CSP for XSS protection)
+5. Verify no wildcard (`*`) in any directive
+6. Check that Supabase project URL is specifically listed, not a broad wildcard
+7. Test by opening browser DevTools Console -- CSP violations show as errors
 
 ## 2. XSS Prevention
 
@@ -71,18 +69,32 @@ FreyAI uses two services for XSS prevention. Audit their usage across the codeba
 4. **Template literals in DOM** -- search for `` `<div>${variable}` `` patterns without escaping
 5. **Event handler attributes** -- search for `onclick=`, `onerror=` in dynamically generated HTML
 
-### Scan Patterns (use Grep tool, not bash grep)
+### Audit Commands
 
-Search `js/` for these patterns and flag violations:
+```bash
+# Find innerHTML assignments without sanitize
+grep -rn 'innerHTML' js/ --include='*.js' | grep -v 'sanitize\|escapeHtml'
 
-| Pattern | Severity | What to find |
-|---------|----------|-------------|
-| `innerHTML` without `sanitize`/`escapeHtml` | CRITICAL | Direct DOM injection |
-| `document.write`, `eval(` | CRITICAL | Code execution |
-| `insertAdjacentHTML`, `outerHTML` | HIGH | Uncontrolled DOM insertion |
-| `window.location = ` without URL validation | HIGH | Open redirect |
-| `setAttribute('href', ...)` without `sanitizeUrl` | HIGH | XSS via href |
-| Template literals in `innerHTML` assignments | HIGH | Unescaped interpolation |
+# Find template literals injecting into DOM
+grep -rn 'innerHTML.*\`' js/ --include='*.js'
+
+# Find document.write usage (should be zero)
+grep -rn 'document\.write' js/ --include='*.js'
+
+# Find eval usage (should be zero)
+grep -rn 'eval(' js/ --include='*.js'
+
+# Find dangerouslySetInnerHTML patterns
+grep -rn 'insertAdjacentHTML\|outerHTML' js/ --include='*.js'
+```
+
+### DOM Injection Patterns to Flag
+
+- Direct `element.innerHTML = userInput` without escaping -- **CRITICAL**
+- `document.createElement('script')` with dynamic src -- **CRITICAL**
+- `window.location = userInput` without URL validation -- **HIGH**
+- `element.setAttribute('href', userInput)` without sanitizeUrl -- **HIGH**
+- `element.style.cssText = userInput` (CSS injection) -- **MEDIUM**
 
 ## 3. Supabase RLS Audit
 
@@ -112,9 +124,21 @@ The `service_role` key bypasses RLS entirely. Document where it is used:
 - **Backend (FastAPI)**: OCR, PII processing use service_role for data access
 - **NEVER in client-side code**: The anon key is for client-side, service_role must never be exposed to the browser
 
-### Audit Method
+### Audit Command
 
-Read `config/sql/supabase-schema.sql` and verify each table has: RLS enabled, user-own policy (`auth.uid() = user_id`), service_role bypass policy, and `ON DELETE CASCADE` on user_id FK. Cross-reference the tables listed above.
+```sql
+-- Check which tables have RLS enabled
+SELECT schemaname, tablename, rowsecurity
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY tablename;
+
+-- List all RLS policies
+SELECT tablename, policyname, permissive, roles, cmd, qual, with_check
+FROM pg_policies
+WHERE schemaname = 'public'
+ORDER BY tablename;
+```
 
 ## 4. Auth Flow Security
 
@@ -268,19 +292,50 @@ Adapted for Vanilla JS + Supabase + FastAPI + n8n.
 - **Image/file processing**: FastAPI OCR endpoint -- validate file types, don't follow redirects from user URLs
 - **n8n HTTP nodes**: Restrict to known domains in workflow configurations
 
-## 7. Input Validation Audit
+## 7. Input Validation Patterns
 
-Verify dual-layer validation (client + database) for all user-facing inputs:
+### Client-Side (First Layer)
 
-| Field Type | Client Layer | DB Layer | Audit Action |
-|-----------|-------------|----------|-------------|
-| Email | `securityService.validateEmail()` | TEXT + CHECK | Grep for raw email usage without validation |
-| Phone | `securityService.validatePhone()` | TEXT | Grep for phone inputs bypassing sanitize |
-| IBAN | `securityService.validateIBAN()` | TEXT + CHECK | Verify IBAN fields always validated |
-| Amount | `securityService.validateAmount()` | NUMERIC CHECK >= 0 | Check for raw number parsing without validation |
-| Free text | `sanitize.sanitizeText()` | TEXT + length limit | Grep for unsanitized text in Supabase inserts |
+```javascript
+// Always validate before sending to Supabase
+const { valid, sanitized } = securityService.validateEmail(userInput);
+if (!valid) { showError('Invalid email'); return; }
 
-Also audit `.rpc()` calls for string concatenation in custom SQL functions, and `.ilike()`/`.textSearch()` for unescaped special chars (`%`, `_`).
+// Sanitize all text inputs
+const cleanName = sanitize.sanitizeText(rawName);
+const cleanPhone = sanitize.sanitizePhone(rawPhone);
+const cleanUrl = sanitize.sanitizeUrl(rawUrl);
+
+// Validate amounts (prevents NaN, negative values)
+const { valid: amountValid, parsed } = securityService.validateAmount(rawAmount);
+```
+
+### Server-Side (Second Layer -- Supabase)
+
+- **CHECK constraints**: Enforce valid status values at database level
+- **NOT NULL**: Require critical fields at database level
+- **Foreign keys**: Ensure referential integrity
+- **Type enforcement**: PostgreSQL types prevent wrong data types
+
+### PostgREST SQL Injection Prevention
+
+Supabase PostgREST automatically parameterizes queries via the JS SDK. However:
+
+- **`.rpc()` calls**: Parameters are passed safely, but audit custom SQL functions for string concatenation
+- **`.or()` and `.filter()` with user input**: Ensure filter values are sanitized
+- **Text search**: `.textSearch()` and `.ilike()` -- user input should be escaped for special chars (`%`, `_`)
+
+### Validation Rules Reference
+
+| Field Type | Client Validation | DB Constraint |
+|-----------|-------------------|---------------|
+| Email | `securityService.validateEmail()` | TEXT + CHECK format |
+| Phone | `securityService.validatePhone()` | TEXT |
+| IBAN | `securityService.validateIBAN()` | TEXT + CHECK format |
+| Amount | `securityService.validateAmount()` | NUMERIC(10,2) CHECK >= 0 |
+| Status | Dropdown (fixed values) | CHECK constraint |
+| Date | Date picker | TIMESTAMPTZ |
+| Free text | `sanitize.sanitizeText()` | TEXT + length limit |
 
 ## Quality Checklist
 

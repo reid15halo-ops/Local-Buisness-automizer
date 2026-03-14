@@ -126,7 +126,7 @@ Ich schlage ein **30-Minuten-Videogespräch** vor, in dem ich Ihnen FreyAI Visio
 **Kontakt:**<br>
 Jonas Glawion<br>
 Grabenstraße 135, 63762 Großostheim<br>
-+49 179 4228285<br>
++49 163 6727787<br>
 kontakt@freyaivisions.de<br>
 freyaivisions.de
 

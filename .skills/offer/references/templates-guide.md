@@ -25,7 +25,7 @@ Dieses Angebot ist 30 Tage gültig bis zum [Datum + 30 Tage].
 
 Haben Sie Fragen oder möchten Sie Anpassungen besprechen?
 Kontaktieren Sie uns gerne unter kontakt@freyaivisions.de
-oder +49 179 4228285.
+oder +49 163 6727787.
 
 Mit freundlichen Grüßen,
 
@@ -119,7 +119,7 @@ The `getAngebotEmail()` method generates:
 <div style="background: #0c1a1a; color: #888; padding: 24px;">
   <p>FreyAI Visions | Jonas Glawion</p>
   <p>Grabenstraße 135, 63762 Großostheim</p>
-  <p>kontakt@freyaivisions.de | +49 179 4228285</p>
+  <p>kontakt@freyaivisions.de | +49 163 6727787</p>
   <p>IBAN: [from company settings] | Steuernummer: [from settings]</p>
 </div>
 ```
@@ -177,7 +177,7 @@ Grabenstraße 135
 63762 Großostheim
 
 kontakt@freyaivisions.de
-+49 179 4228285
++49 163 6727787
 freyaivisions.de
 
 Kleinunternehmer gemäß §19 UStG

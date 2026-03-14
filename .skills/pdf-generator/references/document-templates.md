@@ -8,7 +8,7 @@
 | Street | `company.street` | `firma.strasse` | Grabenstrasse 135 |
 | PLZ | `company.postal_code` | `firma.plz` | 63762 |
 | City | `company.city` | `firma.ort` | Grossostheim |
-| Phone | `company.phone` | `firma.telefon` | +49 179 4228285 |
+| Phone | `company.phone` | `firma.telefon` | +49 163 6727787 |
 | Email | `company.email` | `firma.email` | kontakt@freyaivisions.de |
 | Steuernummer | `company.tax_id` | `firma.steuernummer` | 039 863 50457 |
 | IBAN | `company.iban` | `firma.iban` | (from settings) |

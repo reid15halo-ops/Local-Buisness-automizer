@@ -22,7 +22,7 @@ German legal requirements for a Kleinunternehmer SaaS business. All output must 
 | **Firma** | FreyAI Visions |
 | **Adresse** | Grabenstraße 135, 63762 Großostheim |
 | **E-Mail** | kontakt@freyaivisions.de |
-| **Telefon** | +49 179 4228285 |
+| **Telefon** | +49 163 6727787 |
 | **Website** | freyaivisions.de |
 | **Steuerstatus** | Kleinunternehmer gemäß §19 UStG |
 | **Gemeindekennzahl** | 09671122 |
@@ -103,7 +103,7 @@ FreyAI Visions
 Grabenstraße 135
 63762 Großostheim
 
-Telefon: +49 179 4228285
+Telefon: +49 163 6727787
 E-Mail: kontakt@freyaivisions.de
 
 Umsatzsteuer:

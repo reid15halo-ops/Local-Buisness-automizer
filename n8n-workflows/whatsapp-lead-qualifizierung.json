@@ -106,7 +106,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyBF80s7kShv--23w7PZdtz4_gw0Ry-2S38",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={{ $env.GOOGLE_GEMINI_API_KEY }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -186,11 +186,11 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY2JoaGFpaWF5b2hyanFldm9nIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE3MTE2MywiZXhwIjoyMDg2NzQ3MTYzfQ.2I8Qkv9HHfHtuIYSs4Re-0F_fOFYx2_3FUVU-sFo2iQ"
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImluY2JoaGFpaWF5b2hyanFldm9nIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTE3MTE2MywiZXhwIjoyMDg2NzQ3MTYzfQ.2I8Qkv9HHfHtuIYSs4Re-0F_fOFYx2_3FUVU-sFo2iQ"
+              "value": "=Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -222,7 +222,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "evo_freyai_2026_secret"
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
             },
             {
               "name": "Content-Type",
@@ -250,7 +250,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "evo_freyai_2026_secret"
+              "value": "={{ $env.EVOLUTION_API_KEY }}"
             },
             {
               "name": "Content-Type",
