@@ -422,3 +422,18 @@
         bottom: 16px;
     }
 }
+
+
+/* Privacy notice */
+.freyai-chat-privacy {
+    font-size: 11px;
+    color: #888;
+    text-align: center;
+    padding: 6px 12px;
+    margin: 0 8px 8px;
+    line-height: 1.4;
+}
+.freyai-chat-privacy a {
+    color: #c8956c;
+    text-decoration: underline;
+}

@@ -21,7 +21,8 @@
             'Termin buchen',
             'Für Handwerker?'
         ],
-        initialMessage: 'Hallo! Ich bin der KI-Assistent von FreyAI Visions. Wie kann ich Ihnen heute helfen? Ich beantworte gerne Fragen zu unseren Leistungen rund um Automatisierung und KI für Ihren Betrieb.'
+        initialMessage: 'Hallo! Ich bin der KI-Assistent von FreyAI Visions. Wie kann ich Ihnen heute helfen? Ich beantworte gerne Fragen zu unseren Leistungen rund um Automatisierung und KI für Ihren Betrieb.',
+        privacyNotice: 'Dieser Chat wird zur Verbesserung unserer Beratung anonymisiert ausgewertet. Details in unserer <a href="/datenschutz.html" target="_blank" style="color:#c8956c">Datenschutzerklärung</a>.'
     };
 
     // ── State ──────────────────────────────────────────────────────────
@@ -44,8 +45,14 @@
         bindRefs();
         bindEvents();
 
-        // Show greeting after short delay
+        // Show privacy notice + greeting after short delay
         setTimeout(() => {
+            if (CHAT_CONFIG.privacyNotice) {
+                const notice = document.createElement('div');
+                notice.className = 'freyai-chat-privacy';
+                notice.innerHTML = CHAT_CONFIG.privacyNotice;
+                messagesEl.appendChild(notice);
+            }
             addBotMessage(CHAT_CONFIG.initialMessage);
             setTimeout(() => showQuickReplies(), 400);
         }, CHAT_CONFIG.greetingDelay);
