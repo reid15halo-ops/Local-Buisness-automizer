@@ -42,12 +42,50 @@ i18nService.setLanguage('en');
 i18nService.applyTranslations();
 ```
 
-## 2. Adding New Translation Keys
+## 2. Anti-Patterns — VERBOTEN
+
+**Niemals hardcoded User-facing Text in HTML oder JS verwenden.**
+
+```javascript
+// FALSCH — hardcoded Text
+element.textContent = 'Rechnung erstellt';
+element.innerHTML = '<span>Gesamt: 1.234,56 EUR</span>';
+throw new Error('Ungültige Eingabe');
+
+// RICHTIG — immer über i18n-Key
+element.textContent = window.t('invoices.created');
+element.innerHTML = `<span>${window.t('invoices.total', { amount: formatted })}</span>`;
+throw new Error(window.t('errors.validation.invalid_input'));
+```
+
+```html
+<!-- FALSCH — hardcoded Text im HTML -->
+<button>Speichern</button>
+<label>Kundenname</label>
+<p>Keine Daten vorhanden</p>
+
+<!-- RICHTIG — data-i18n Attribut mit Fallback -->
+<button data-i18n="common.save">Speichern</button>
+<label data-i18n="customers.name_label">Kundenname</label>
+<p data-i18n="common.no_data">Keine Daten vorhanden</p>
+```
+
+### Audit — Hardcoded Strings finden
+```bash
+# HTML: Text-Nodes ohne data-i18n (grobe Suche)
+grep -rn 'textContent\s*=' js/ --include="*.js" | grep -v "window.t("
+grep -rn 'innerHTML\s*=' js/ --include="*.js" | grep -v "window.t("
+
+# HTML-Dateien auf rohen Text pruefen (Elemente ohne data-i18n)
+grep -n '>[A-ZÜÄÖ][^<]*</' *.html | grep -v 'data-i18n' | grep -v 'data-lang'
+```
+
+## 3. Adding New Translation Keys
 
 ### Step-by-Step
 1. Add key to `js/i18n/de.js` (German FIRST — primary language)
 2. Add same key to `js/i18n/en.js` (English translation)
-3. Use in HTML: `<span data-i18n="section.key">Fallback Text</span>`
+3. Use in HTML: `<span data-i18n="section.key">Fallback Text</span>` — Fallback ist PFLICHT
 4. Use in JS: `window.t('section.key')`
 
 ### Naming Convention
@@ -67,8 +105,9 @@ Examples:
 4. **Use dot notation** — nested objects map to dot-separated keys
 5. **Keep keys stable** — renaming a key requires updating all HTML data-i18n attributes
 6. **No HTML in values** — translations are plain text only
+7. **Fallback in HTML ist Pflicht** — `data-i18n` Elemente MUESSEN einen deutschen Fallback-Text enthalten
 
-## 3. Parameter Interpolation
+## 4. Parameter Interpolation
 
 Use `{{param}}` syntax in translation values:
 
@@ -85,9 +124,74 @@ window.t('welcome.greeting', { name: 'Jonas' });
 ### Rules
 - Parameter names must match between DE and EN files
 - Always provide fallback if parameter might be undefined
-- Use German number formatting in German translations (`1.234,56 €`)
+- Zahlen, Datumsangaben und Waehrungen VOR der Uebergabe an `window.t()` formatieren (nicht in der Translation)
 
-## 4. Plural Forms
+### JS-Fallback fuer fehlende Keys
+```javascript
+// Sicher: Fallback wenn Key fehlt oder undefined
+const label = window.t('section.key') || 'Standardtext';
+
+// Bei optionalen Parametern: Pruefen vor Uebergabe
+const amount = value != null ? formatCurrency(value) : '—';
+window.t('invoices.total', { amount });
+```
+
+## 5. Deutsches Format — Zahlen, Datum, Waehrung
+
+**Alle deutschen Ausgaben MUESSEN folgende Formate verwenden:**
+
+| Typ | Deutsches Format | Beispiel | Falsch |
+|-----|-----------------|---------|--------|
+| Dezimalzahl | Komma als Dezimaltrennzeichen, Punkt als Tausender | `1.234,56` | `1,234.56` |
+| Waehrung | Betrag Komma Dezimal + Leerzeichen + EUR oder € am Ende | `1.234,56 EUR` / `1.234,56 €` | `EUR 1234.56` |
+| Datum | DD.MM.YYYY | `15.03.2026` | `2026-03-15` / `03/15/2026` |
+| Uhrzeit | HH:MM Uhr | `14:30 Uhr` | `2:30 PM` |
+| Prozentzahl | Zahl + Leerzeichen + % | `12,5 %` | `12.5%` |
+
+### Intl API verwenden
+```javascript
+// Waehrung formatieren (vor Uebergabe an window.t)
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);
+// → "1.234,56 €"
+
+// Zahl formatieren
+const formatNumber = (value) =>
+  new Intl.NumberFormat('de-DE').format(value);
+// → "1.234,56"
+
+// Datum formatieren
+const formatDate = (date) =>
+  new Intl.DateTimeFormat('de-DE').format(new Date(date));
+// → "15.3.2026"
+
+// Datum mit fuehrender Null
+const formatDateFull = (date) =>
+  new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(date));
+// → "15.03.2026"
+```
+
+## 6. Deutsche Grammatik und Rechtschreibung
+
+**Pflichtregeln fuer alle deutschen Texte:**
+
+| Regel | Richtig | Falsch |
+|-------|---------|--------|
+| Formelle Anrede | "Sie", "Ihnen", "Ihr" (gross) | "sie", "ihnen", "ihr" |
+| Substantive grossschreiben | "Rechnung", "Kunde", "Betrag" | "rechnung", "kunde" |
+| Umlaute korrekt | "ü", "ö", "ä", "ß" | "ue", "oe", "ae", "ss" |
+| Kein Denglish | "Anmelden" | "Login" (als Button-Text) |
+| Korrekte Interpunktion | "Gespeichert." | "Gespeichert!" (ausser Fehler/Erfolg) |
+| Keine Abkuerzungen | "zum Beispiel" / "z. B." | "zb", "zB" |
+
+**Checkliste vor dem Hinzufuegen einer deutschen Uebersetzung:**
+- [ ] Formelle Sie-Form verwendet?
+- [ ] Alle Substantive grossgeschrieben?
+- [ ] Umlaute und ß korrekt (nicht ue/oe/ae/ss)?
+- [ ] Kein unnoetig englischer Begriff wenn deutsches Wort existiert?
+- [ ] Satzzeichen am Ende bei vollstaendigen Saetzen?
+
+## 7. Plural Forms
 
 ```javascript
 // de.js
@@ -111,8 +215,9 @@ window.t('items.count', { n: 5 });  // "5 Artikel" / "5 items"
 - Most German nouns: same form for singular/plural in these contexts
 - Exception: explicit singular/plural when grammar requires it
 - Always define both `one` and `other` keys
+- Beispiele mit Unterschied: `1 Rechnung` / `{{n}} Rechnungen`, `1 Eintrag` / `{{n}} Eintraege`
 
-## 5. Landing Page Languages
+## 8. Landing Page Languages
 
 The landing page (`landing.html`) uses inline language blocks, NOT the i18n service:
 
@@ -131,7 +236,43 @@ DE, EN, FR, ES, IT, PT, NL, PL, CS, RO, HU, BG, HR, SK, SL, ET, LV, LT, FI, SV, 
 - Add new landing languages as `data-lang` spans
 - App translations (de.js/en.js) are only DE and EN
 
-## 6. Consistency Checks
+## 9. File Structure
+
+```
+js/
+  i18n/
+    de.js      # Deutsche Uebersetzungen (primaer, ~402 keys)
+    en.js      # Englische Uebersetzungen (~402 keys)
+  services/
+    i18n-service.js   # Translation Service + TR inline keys (~15)
+landing.html           # 31-Sprachen Landing via data-lang
+```
+
+**Format der Sprachdateien (`.js`, kein JSON):**
+```javascript
+// js/i18n/de.js
+export default {
+  nav: {
+    dashboard: 'Dashboard',
+    invoices: 'Rechnungen',
+  },
+  invoices: {
+    status: {
+      paid: 'Bezahlt',
+      open: 'Offen',
+    },
+    total: 'Gesamt: {{amount}}',
+  },
+};
+```
+
+**Strukturregeln:**
+- Gleiche Key-Hierarchie in de.js und en.js erzwingen
+- Keine flat keys auf Top-Level (immer mindestens `section.key`)
+- Sektionen alphabetisch sortiert halten
+- Kommentar-Trennlinien fuer grosse Sektionen erlaubt
+
+## 10. Consistency Checks
 
 ### Finding Missing Keys
 ```javascript
@@ -148,20 +289,39 @@ const missingInDE = enKeys.filter(k => !deKeys.includes(k));
 3. **Parameter mismatch** — `{{name}}` in DE but `{{user}}` in EN
 4. **Plural form mismatch** — `one`/`other` in DE but flat string in EN
 5. **Unused keys** — Key exists in translation files but no `data-i18n` or `window.t()` reference
+6. **Fehlender Fallback** — `data-i18n` Element hat keinen Fallback-Text
+7. **Falsche Zahlenformatierung** — Englisches Format `1,234.56` statt deutschem `1.234,56`
 
-## 7. Quality Checklist
+## 11. Quality Checklist
 
-Before adding or modifying translations, verify all 8 items:
+Before adding or modifying translations, verify all items:
 
-1. [ ] Key exists in BOTH de.js and en.js
-2. [ ] Key follows dot notation naming convention
-3. [ ] Parameter names match between DE and EN (`{{param}}`)
-4. [ ] Plural forms define both `one` and `other` in both languages
-5. [ ] HTML elements use `data-i18n` attribute (not hardcoded text)
-6. [ ] German text uses correct formatting (€, Komma decimals, formal "Sie")
-7. [ ] No HTML tags inside translation values
-8. [ ] Landing page additions include all 31 language variants
-9. [ ] Turkish (TR) keys updated if applicable (minimal set in i18n-service.js)
+**Keys & Struktur:**
+- [ ] Key exists in BOTH de.js and en.js
+- [ ] Key follows dot notation naming convention (`section.subsection.action`)
+- [ ] Parameter names match between DE and EN (`{{param}}`)
+- [ ] Plural forms define both `one` and `other` in both languages
+- [ ] Kein hardcoded User-facing Text in HTML oder JS
+
+**HTML Integration:**
+- [ ] HTML elements use `data-i18n` attribute (not hardcoded text)
+- [ ] Jedes `data-i18n` Element hat einen deutschen Fallback-Text
+- [ ] Landing page additions include all 31 language variants
+
+**Deutsches Format:**
+- [ ] Zahlen: Komma als Dezimaltrennzeichen (`1.234,56`)
+- [ ] Waehrung: `1.234,56 EUR` oder `1.234,56 €` (Betrag zuerst)
+- [ ] Datum: DD.MM.YYYY (`15.03.2026`)
+- [ ] Intl API fuer Formatierung verwendet (nicht manuelles String-Concat)
+
+**Deutsche Grammatik:**
+- [ ] Formelle Sie-Form (grossgeschrieben)
+- [ ] Umlaute korrekt (ü/ö/ä/ß, keine ue/oe/ae/ss)
+- [ ] Alle Substantive grossgeschrieben
+- [ ] No HTML tags inside translation values
+
+**TR (Turkish):**
+- [ ] Turkish (TR) keys updated if applicable (minimal set in i18n-service.js)
 
 ## References
 

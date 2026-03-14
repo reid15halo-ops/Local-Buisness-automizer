@@ -8,8 +8,6 @@ description: |
   Also trigger when the user asks to "automate" something, wants to connect Supabase with external APIs,
   or needs to process data in a pipeline (fetch -> transform -> act -> log). Even if the user doesn't
   say "n8n" explicitly, if the task is about recurring automation or event-driven processing, use this skill.
-  Covers: IMAP intake, WhatsApp auto-reply, Mahnwesen (dunning), morning briefing, SLA monitoring,
-  stale-ticket closing, OCR processing, appointment reminders, and any new automation pattern.
 ---
 
 # n8n Workflow Design -- FreyAI Visions
@@ -19,24 +17,12 @@ Design production-grade n8n workflows for a German craftsman business suite. Eve
 
 ## Architecture Context
 
-- **n8n** runs in Docker on Hostinger VPS (Ubuntu 24.04, 16 GB RAM), accessible at localhost:5678
-- **n8n API Key**: `n8n_api_c7464b95fbd282291f05c2ec861b0dd5`
+- **n8n** runs in Docker on Hostinger VPS (Ubuntu 24.04, 16 GB RAM)
 - **Supabase** is the database (PostgreSQL + Edge Functions + Storage)
-- **Gemini 2.5 Flash** via NVIDIA NIM for LLM tasks -- NEVER use Claude/Anthropic in workflows
+- **Ollama** on VPS provides local LLMs (Mistral Small, Qwen3.5:9b) at `http://172.19.0.1:11434`
 - **Supabase Edge Functions** handle email (`send-email`) and SMS (`send-sms`)
 - **Telegram Bot API** for alerts and briefings
 - All workflows export as JSON to `config/n8n-workflows/workflow-<name>.json`
-
-## Existing Workflows (DO NOT duplicate)
-
-| ID | Name | Trigger | Purpose |
-|----|------|---------|---------|
-| 100 | Eingangsrechnung | IMAP (rechnungen@) | Parse invoices with Gemini → create PO → Supabase |
-| sJa545wYjKldjIbA | WhatsApp Support | Evolution API webhook | Auto-reply via Gemini |
-| — | SLA Check | Cron (hourly) | Flag breached SLA tickets |
-| — | Stale Ticket Close | Cron (20:00) | Close inactive tickets |
-
-Before creating a new workflow, check if one already exists for the use case. Extend existing workflows instead of duplicating logic.
 
 ## Workflow Design Process
 
@@ -45,23 +31,20 @@ Before creating a new workflow, check if one already exists for the use case. Ex
 | Trigger | When to Use | Node Type |
 |---------|-------------|-----------|
 | Cron/Schedule | Recurring tasks (daily reports, hourly checks) | `n8n-nodes-base.scheduleTrigger` |
-| Webhook | External event (form submission, API call) | `n8n-nodes-base.webhook` |
-| IMAP | Email-triggered (invoice intake, support) | `n8n-nodes-base.emailReadImap` |
+| Webhook | External event (form submission, API call, Supabase event) | `n8n-nodes-base.webhook` |
 | Manual | Testing or one-off tasks | `n8n-nodes-base.manualTrigger` |
 
-Cron schedules use `Europe/Berlin` timezone. Convention: morning jobs at 07:00-08:00, evening cleanup at 20:00.
+Cron schedules use `Europe/Berlin` timezone. Convention: morning jobs at 07:00-08:00.
 
 ### 2. Follow the Standard Pipeline
 
-Every workflow follows: **Trigger -> Validate -> Fetch -> Transform -> Act -> Log -> Notify**
+Every workflow follows: **Trigger -> Fetch -> Transform -> Act -> Log**
 
-1. **Trigger**: Cron, Webhook, or IMAP (with input validation)
-2. **Validate**: Check inputs are non-empty, filter spam (e.g., Betrag > 0, Lieferant != "Unbekannt")
-3. **Fetch**: Query Supabase tables or external APIs
-4. **Transform**: Set nodes for field mapping, Code nodes for complex logic, IF/Switch for routing
-5. **Act**: Send emails, generate PDFs, call LLMs, update database records
-6. **Log**: Always write to `automation_log` table (action, target, metadata JSONB)
-7. **Notify**: Telegram alert for errors or important outcomes (use Uptime Kuma for health)
+1. **Trigger**: Cron or Webhook (with input validation for webhooks)
+2. **Fetch**: Query Supabase tables or external APIs
+3. **Transform**: Set nodes for field mapping, Code nodes for complex logic, IF/Switch for routing
+4. **Act**: Send emails, generate PDFs, call LLMs, update database records
+5. **Log**: Always write to `automation_log` table (action, target, metadata JSONB)
 
 ### 3. Apply Error Handling
 
@@ -70,14 +53,12 @@ Every workflow needs:
 - A dedicated error handler node that logs to `automation_log` with `action = '<workflow>.error'`
 - Fallback paths when AI/API calls fail (e.g., template text instead of LLM-generated text)
 - Webhook workflows must return proper HTTP responses (200 success, 400 validation, 500 error)
-- **Idempotency**: Use `ON CONFLICT DO NOTHING` or check-before-insert to prevent duplicate records
-- **Rate limiting**: Add 500ms delay between batch API calls to avoid throttling
 
 ### 4. Use the Right Node Types
 
 Read `references/node-patterns.md` for detailed node configurations covering:
 - Supabase CRUD operations (getAll with filters, create, update)
-- Gemini 2.5 Flash LLM calls via HTTP Request (NEVER Claude/Anthropic)
+- Ollama/Mistral LLM calls via HTTP Request
 - Telegram Bot API messaging
 - Supabase Edge Function calls (send-email, send-sms)
 - Batch processing with splitInBatches
@@ -105,50 +86,34 @@ Read `references/node-patterns.md` for detailed node configurations covering:
 | `automation_log` | Write after every action | action, target, metadata (JSONB) |
 | `dokumente` | Store OCR results | dateiname, kategorie, storage_path, extrahierte_daten |
 | `notifications` | Health check alerts | type, title, message, read |
-| `support_tickets` | Ticket lifecycle | ticket_number (FV-YYYY-NNNN), status, priority, sla_deadline |
-| `ticket_messages` | Ticket conversation | ticket_id, sender, message, created_at |
 
 ### Credential: `Supabase API` (id: `cred-supabase-api`)
 
 All Supabase nodes reference this single credential. Uses SERVICE_ROLE key (bypasses RLS).
 
-## LLM Integration
+## LLM Integration via Ollama
 
-Use Gemini 2.5 Flash via NVIDIA NIM. NEVER use Claude, Anthropic, or OpenAI APIs in workflows.
+Local LLMs on VPS via Docker bridge network. Never send PII to external LLM APIs.
+
+```
+URL:     http://172.19.0.1:11434/api/chat
+Model:   mistral-small (default) or mistral:latest
+Stream:  false (always)
+Timeout: 60-120 seconds
+```
 
 System prompts in German. Temperature 0.3-0.4 for business documents, 0.6-0.7 for creative content.
-Always set `stream: false` and timeout 60-120 seconds.
 
 ## Environment Variables
 
 Workflows reference these via `$env['VAR_NAME']`:
 
 - `SUPABASE_PROJECT_REF`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`
+- `OLLAMA_BASE_URL` (default: `http://172.19.0.1:11434`)
+- `OLLAMA_MODEL` (default: `mistral-small`)
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CTO_CHAT_ID`
 - `OWNER_EMAIL` (default: `kontakt@freyaivisions.de`)
 - `BACKEND_URL` (default: `http://backend:8001`)
-
-## Common Workflow Patterns
-
-### Pattern: Daily Digest / Morning Briefing
-```
-Schedule (07:00 Berlin) → Fetch open tickets, overdue invoices, today's appointments
-→ Format summary → Send Telegram message to CTO_CHAT_ID
-```
-
-### Pattern: Dunning Escalation
-```
-Schedule (09:00 Berlin) → SELECT rechnungen WHERE status='offen' AND fällig < NOW()
-→ Calculate mahnstufe from days overdue → IF mahnstufe changed:
-  → Send appropriate Mahnung email → UPDATE mahnstufe → Log
-```
-
-### Pattern: Webhook Intake
-```
-Webhook POST → Validate required fields → IF valid:
-  → INSERT into target table → Log success → Return 200
-  → ELSE: Log validation error → Return 400 with error details
-```
 
 ## Quality Checklist
 
@@ -163,12 +128,9 @@ Before delivering any workflow:
 - [ ] Every node has a `notes` field explaining its purpose
 - [ ] Tags array includes relevant keywords
 - [ ] Workflow-level notes document setup requirements and env vars
-- [ ] LLM calls use Gemini 2.5 Flash, NEVER Claude/Anthropic
+- [ ] LLM calls use local Ollama, not external APIs (unless specifically needed)
 - [ ] Batch processing for large result sets (splitInBatches, batchSize: 5-10)
 - [ ] JSON exported to `config/n8n-workflows/workflow-<name>.json`
-- [ ] Idempotency: duplicate execution does not create duplicate records
-- [ ] Spam filter on inbound data (Betrag > 0, Lieferant != "Unbekannt", etc.)
-- [ ] No existing workflow already covers this use case
 
 ## Reference Files
 

@@ -4,11 +4,10 @@ description: |
   German legal compliance for FreyAI Visions — a SaaS business suite for Handwerker.
   Trigger on ANY mention of: DSGVO, Datenschutz, Datenschutzerklärung, Impressum, AGB,
   GoBD, Kleinunternehmer, §19 UStG, Aufbewahrungspflicht, Cookie, Cookie-Banner,
-  Auftragsverarbeitung, AVV, Verarbeitungsverzeichnis, Löschkonzept, TMG, DDG, ePrivacy,
-  TTDSG, Double-Opt-In, Abmeldelink, UWG, legal, compliance, rechtlich, Rechtskonformität,
+  Auftragsverarbeitung, AVV, Verarbeitungsverzeichnis, Löschkonzept, TMG, ePrivacy,
+  Double-Opt-In, Abmeldelink, UWG, legal, compliance, rechtlich, Rechtskonformität,
   Datenschutzbeauftragter, Verfahrensdokumentation, Mahnverfahren, Widerrufsrecht,
-  Nutzungsbedingungen, Terms of Service, n8n, Evolution API, WhatsApp, Gemini, Einwilligung,
-  Widerruf, Consent, DPIA, Datenschutz-Folgenabschätzung. Be pushy — always activate on legal topics.
+  Nutzungsbedingungen, Terms of Service. Be pushy — always activate on legal topics.
 ---
 
 # Legal Compliance — FreyAI Visions
@@ -27,7 +26,6 @@ German legal requirements for a Kleinunternehmer SaaS business. All output must 
 | **Website** | freyaivisions.de |
 | **Steuerstatus** | Kleinunternehmer gemäß §19 UStG |
 | **Gemeindekennzahl** | 09671122 |
-| **Zuständige Aufsichtsbehörde** | BayLDA (Bayerisches Landesamt für Datenschutzaufsicht) |
 
 ---
 
@@ -37,64 +35,37 @@ German legal requirements for a Kleinunternehmer SaaS business. All output must 
 Must be on every page (link in footer). Required content:
 - Verantwortlicher (Name, Adresse, E-Mail)
 - Zweck und Rechtsgrundlage jeder Verarbeitung (Art. 6 Abs. 1 DSGVO)
-- Empfänger / Auftragsverarbeiter (Supabase, Stripe, Resend, Twilio, Hostinger, Google/Gemini, Evolution API)
+- Empfänger / Auftragsverarbeiter (Supabase, Stripe, Resend, Twilio, Hostinger)
 - Übermittlung in Drittländer (USA) + Schutzmaßnahmen (EU-US Data Privacy Framework, SCCs)
 - Speicherdauer je Datenkategorie
 - Betroffenenrechte (Auskunft, Berichtigung, Löschung, Einschränkung, Datenportabilität, Widerspruch)
-- Beschwerderecht bei BayLDA: https://www.lda.bayern.de/
+- Beschwerderecht bei Aufsichtsbehörde (BayLDA für Bayern)
 - Keine Pflicht zur Bereitstellung + Folgen der Nichtbereitstellung
-
-### Einwilligung / Consent (Art. 6 Abs. 1 lit. a + Art. 7 DSGVO)
-Einwilligung muss sein: freiwillig, informiert, spezifisch, unmissverständlich, nachweisbar.
-
-**App-Onboarding Consent-Pflichten:**
-- Registrierungsseite: Checkbox für Datenschutzerklärung + AGB (KEIN Pre-Check)
-- Checkbox-Text: "Ich habe die Datenschutzerklärung gelesen und stimme der Verarbeitung meiner Daten zu."
-- **Protokollierung:** Zeitstempel, IP-Adresse, Version der Datenschutzerklärung, Checkbox-Status → Supabase `consents` Tabelle
-- **Widerruf jederzeit möglich (Art. 7 Abs. 3 DSGVO):** In-App-Einstellung "Datenschutz" mit Widerrufsbutton. Widerruf darf nicht schwerer sein als Einwilligung.
-- **Folge des Widerrufs:** Verarbeitung für zukünftige Daten stoppen. Bereits verarbeitete Daten (Rechnungen etc.) bleiben rechtmäßig (§257 HGB überlagert DSGVO-Löschrecht).
-
-**DPIA (Datenschutz-Folgenabschätzung, Art. 35 DSGVO):**
-- Pflicht wenn: systematische Verarbeitung sensibler Daten, umfangreiche Überwachung, innovative Technologien
-- Bei Einsatz von KI (Gemini) zur Verarbeitung von Kundendaten → DPIA empfohlen
-- Template: Verarbeitungstätigkeit beschreiben → Notwendigkeit/Verhältnismäßigkeit prüfen → Risiken identifizieren → Maßnahmen definieren
 
 ### Verarbeitungsverzeichnis (Art. 30 DSGVO)
 Even Kleinunternehmer need one if processing is not merely occasional (SaaS = regular). Document:
-- Verarbeitungstätigkeit (z.B. Kundenverwaltung, Rechnungsstellung, E-Mail-Versand, KI-Verarbeitung via Gemini, WhatsApp-Support)
+- Verarbeitungstätigkeit (z.B. Kundenverwaltung, Rechnungsstellung, E-Mail-Versand)
 - Zweck und Rechtsgrundlage
 - Betroffene Kategorien (Kunden, Interessenten, Mitarbeiter der Kunden)
-- Datenkategorien (Name, E-Mail, Adresse, Zahlungsdaten, Auftragsdaten, WhatsApp-Nachrichten)
-- Empfänger (Supabase, Stripe, Resend, Twilio, Google/Gemini API, Evolution API/WhatsApp)
+- Datenkategorien (Name, E-Mail, Adresse, Zahlungsdaten, Auftragsdaten)
+- Empfänger (Supabase, Stripe, Resend, Twilio)
 - Löschfristen
 - TOM-Verweis
-
-**n8n-spezifisch im Verarbeitungsverzeichnis:**
-- n8n läuft self-hosted auf VPS (72.61.187.24) → kein externer AVV, aber Verarbeitung dokumentieren
-- Workflow "Eingangsrechnung" (ID 100): IMAP → Gemini → Supabase (Lieferantendaten, Rechnungsbeträge)
-- Workflow "WhatsApp Support": Evolution API → Gemini → Auto-Reply (Kundennamen, Nachrichteninhalte)
-- Datenkategorien: Geschäftsdaten (Lieferanten), Kundenkommunikation (WhatsApp)
-- Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung) für Rechnungsverarbeitung
-- Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse) für WhatsApp-Support
 
 ### Auftragsverarbeitungsverträge (AVV) — Art. 28 DSGVO
 **Required with every processor.** Status:
 
 | Processor | Service | Data | AVV Status |
 |-----------|---------|------|------------|
-| **Supabase** (US) | Database, Auth, Edge Functions | All customer data | DPA: supabase.com/legal/dpa — DPF-zertifiziert prüfen |
-| **Stripe** (US) | Payment processing | Payment data, email, name | DPA: stripe.com/legal/dpa |
-| **Resend** (US) | Transactional email | Email addresses, names | DPA: resend.com/legal/dpa |
-| **Twilio** (US) | SMS notifications | Phone numbers, message content | DPA: twilio.com/legal/data-protection-addendum |
-| **Hostinger** (LT) | VPS hosting | All data on server | DPA: hostinger.com/legal/dpa |
-| **Hetzner** (DE) | Infrastructure | Backups, logs | DPA: hetzner.com/legal/privacy-policy |
-| **Google** (US) | Gemini AI API (via n8n) | Rechnungsinhalte, WhatsApp-Nachrichten | DPA: Google Cloud DPA — KRITISCH, DA PII |
-| **Evolution API** | WhatsApp Business API | Kundennachrichten, Telefonnummern | Self-hosted: kein ext. AVV — aber Datenfluss zu WhatsApp/Meta dokumentieren |
-| **Meta/WhatsApp** (US) | Messaging-Infrastruktur | Nachrichten-Metadaten | WhatsApp Business Policy akzeptieren + in Datenschutzerkl. nennen |
+| **Supabase** (US) | Database, Auth, Edge Functions | All customer data | DPA available at supabase.com/legal |
+| **Stripe** (US) | Payment processing | Payment data, email, name | DPA at stripe.com/legal/dpa |
+| **Resend** (US) | Transactional email | Email addresses, names | DPA at resend.com/legal/dpa |
+| **Twilio** (US) | SMS notifications | Phone numbers, message content | DPA at twilio.com/legal/data-protection-addendum |
+| **Hostinger** (LT) | VPS hosting | All data on server | DPA at hostinger.com/legal/dpa |
+| **Hetzner** (DE) | Infrastructure | Backups, logs | DPA at hetzner.com/legal/privacy-policy |
+| **Google** (US) | Gemini AI API | Processed text snippets | DPA in Google Cloud terms |
 
 **Action:** Download/sign each DPA. Store in `docs/security/avv/`. For US processors, verify EU-US DPF certification or SCCs.
-
-**n8n self-hosted:** Kein AVV nötig (eigene Infrastruktur). Aber: Datenfluss n8n → Google Gemini API erfordert AVV mit Google. KRITISCH: Rechnungsdaten (Lieferantenname, Beträge) und WhatsApp-Nachrichten werden an US-Server gesendet.
 
 ### Technische und organisatorische Maßnahmen (TOM) — Art. 32 DSGVO
 Document these measures:
@@ -104,32 +75,20 @@ Document these measures:
 - **Backup:** Automated Supabase backups + VPS backup rotation
 - **Monitoring:** Umami analytics (self-hosted, no PII), VPS log monitoring
 - **Incident Response:** Documented procedure, 72h notification to BayLDA
-- **Consent-Protokollierung:** Supabase `consents` Tabelle mit Zeitstempel + IP
 
 ### Löschkonzept
 Define retention and deletion per data category:
 - **Kundendaten:** Retain during business relationship + 10 years (§257 HGB, §147 AO)
-- **Rechnungen/Buchungsdaten:** 10 years (GoBD) — DSGVO-Löschantrag kann NICHT gegen §257 HGB durchgesetzt werden
+- **Rechnungen/Buchungsdaten:** 10 years (GoBD)
 - **E-Mail-Logs:** 6 months operational, then delete
 - **SMS-Logs:** 6 months operational, then delete
-- **WhatsApp-Nachrichten (n8n):** Nach Verarbeitung anonymisieren, Logs max. 6 Monate
-- **Gemini API Inputs (n8n):** Keine dauerhafte Speicherung der API-Requests — nur Ergebnisse in Supabase
 - **Analytics:** Aggregated only, no PII, retain indefinitely
 - **Bewerberdaten:** Delete 6 months after rejection (unless consent)
 - **Account deletion:** On request, delete within 30 days (except legally required retention)
-- **Consent-Logs:** Solange Rechtsbeziehung besteht + Verjährungsfrist (3 Jahre)
-
-**Konflikt DSGVO-Löschrecht vs. Aufbewahrungspflicht:**
-Wenn ein Kunde Datenlöschung beantragt (Art. 17 DSGVO):
-1. Personenbezogene Daten in Rechnungen (Name, Adresse) → NICHT löschbar wegen §257 HGB/§147 AO
-2. Antwort an Kunden: "Gemäß §17 Abs. 3 lit. b DSGVO kann die Löschung nicht erfolgen, soweit die Verarbeitung zur Erfüllung einer rechtlichen Verpflichtung erforderlich ist (§257 HGB, §147 AO). Die Daten werden nach Ablauf der gesetzlichen Aufbewahrungsfrist (10 Jahre) gelöscht."
-3. Stattdessen: Verarbeitung einschränken (Art. 18 DSGVO) — Daten einfrieren, nicht aktiv nutzen
 
 ---
 
 ## 2. Impressum (TMG §5 / DDG §5)
-
-**Hintergrund DDG:** Das Digitale-Dienste-Gesetz (DDG) hat seit Mai 2024 den TMG für Telemedien ersetzt. §5 DDG entspricht inhaltlich §5 TMG. Für einfache Websites/Apps ohne Hosting-Dienstleister-Funktion gelten die gleichen Anforderungen. Praxishinweis: Impressum-Generator auf "DDG §5" umstellen.
 
 **Mandatory for all commercial websites.** Must be reachable within 2 clicks from every page.
 
@@ -166,22 +125,13 @@ vor einer Verbraucherschlichtungsstelle teilzunehmen.
 
 ### Placement
 - Footer link on every page: `impressum.html` or anchor `#impressum`
-- Also link in: landing.html, auth.html, booking page (Cal.com)
+- Also link in: landing.html, auth.html, booking page
 - Label: "Impressum" (not "Legal Notice" — German law requires German label)
-- Erreichbarkeit: Impressum muss direkt erreichbar sein, kein Login erforderlich
 
 ### NOT Required for Kleinunternehmer
 - Handelsregisternummer (no HRB entry)
-- USt-IdNr. (§19 UStG exempt — but must state the exemption explicitly)
+- USt-IdNr. (§19 UStG exempt — but must state the exemption)
 - Wirtschafts-Identifikationsnummer (not yet assigned broadly)
-- Berufsrechtliche Regelungen (no regulated profession)
-
-### DDG-Checkliste (seit Mai 2024)
-- [ ] Name und Anschrift (§5 Abs. 1 Nr. 1 DDG)
-- [ ] Schnelle elektronische Kontaktaufnahme + E-Mail (§5 Abs. 1 Nr. 2 DDG)
-- [ ] Ggf. Handelsregister-/Vereinsregister-Nummer (nicht relevant)
-- [ ] Umsatzsteuer-Angabe oder Kleinunternehmer-Hinweis (§5 Abs. 1 Nr. 6 DDG)
-- [ ] Inhaltlich Verantwortlicher nach §18 Abs. 2 MStV (§5 Abs. 1 Nr. 7 DDG)
 
 ---
 
@@ -285,64 +235,28 @@ Rechnungen müssen enthalten:
 | Angebote (angenommen) | 6 Jahre | §257 HGB |
 | Geschäftsbriefe | 6 Jahre | §257 HGB |
 | Verträge | 10 Jahre nach Vertragsende | §257 HGB |
-| WhatsApp-Nachrichten (geschäftlich) | 6 Jahre (Geschäftsbrief) | §257 HGB |
-
-### Ersetzendes Scannen (GoBD Kap. 9)
-Physische Belege (Papierrechnungen) dürfen nach dem Scannen vernichtet werden, wenn:
-- Scan ist bildtreu und vollständig (alle Seiten, korrekte Ausrichtung)
-- Unveränderbarkeit nach dem Scan gewährleistet (kein nachträgliches Bearbeiten)
-- Scanvorgang dokumentiert ist (wann, von wem, welches Gerät)
-- Scans in einem revisionssicheren System gespeichert werden (Supabase `dokumente` mit Audit-Trail)
-- Verfahrensdokumentation beschreibt den Scan-Prozess
-
-**Empfehlung für n8n Eingangsrechnung-Workflow:** E-Mail-Anhänge (PDFs) direkt in `dokumente` Tabelle speichern als GoBD-konformer Beleg. Zeitstempel des Empfangs = Belegdatum.
-
-### Konflikt: DSGVO-Löschantrag vs. GoBD-Aufbewahrungspflicht
-**Gesetzliche Pflicht schlägt DSGVO-Löschrecht (Art. 17 Abs. 3 lit. b DSGVO).**
-Handlungsanweisung:
-1. Rechnungsdaten (Name, Adresse des Kunden) → 10 Jahre aufbewahren, auch nach Kündigung
-2. Verarbeitung einschränken (Art. 18 DSGVO) — nur für Steuer/Rechtszwecke zugänglich
-3. Schriftliche Antwort an Kunden mit Begründung (§257 HGB, §147 AO) innerhalb 30 Tagen (Art. 12 Abs. 3 DSGVO)
 
 ---
 
-## 6. Cookie / Tracking Rules (ePrivacy / TTDSG)
-
-### Rechtliche Grundlage in Deutschland
-- **TTDSG §25** (Telekommunikation-Telemedien-Datenschutz-Gesetz, seit 01.12.2021): Ersetzt §15 TMG für Cookies. Einwilligung erforderlich für alle nicht technisch notwendigen Zugriffe auf Endgeräte.
-- **ePrivacy-Richtlinie** (2002/58/EG): EU-Basis, durch TTDSG in deutsches Recht umgesetzt
-- **DSGVO Art. 6**: Rechtsgrundlage für die dahinterliegende Datenverarbeitung
+## 6. Cookie / Tracking Rules
 
 ### Umami Analytics (Self-Hosted)
 - Umami is self-hosted at `analytics.freyaivisions.de`
 - **No cookies set** — Umami uses no cookies by default
 - **No PII collected** — only aggregated page views, referrers, device types
-- **TTDSG-Status:** Kein Gerätezugriff für Tracking → kein Consent-Banner erforderlich
 - **DSGVO-Status:** No consent banner needed for Umami (no cookies, no PII, no tracking across sites)
+- **ePrivacy:** Cookie consent only required for non-essential cookies. Umami sets none → no banner needed.
 - **Still mention in Datenschutzerklärung:** Describe Umami as analytics tool, note: no cookies, no PII, self-hosted, no third-party data sharing.
 
-### Wenn Cookie-Banner nötig wird
-Erforderlich bei: Google Analytics, Meta Pixel, YouTube-Einbettungen, Hotjar, Intercom, etc.
-
-**Anforderungen an validen Consent (TTDSG §25 + DSGVO Art. 7):**
-- Opt-in (nicht Opt-out) — vorausgewählte Checkboxen sind RECHTSWIDRIG
-- Granular: Nutzer muss Kategorien einzeln wählen können (Statistik, Marketing etc.)
-- Jederzeit widerrufbar — "Einstellungen ändern" Link im Footer
-- Gleich einfach wie Einwilligung (kein Dark Pattern, kein "Ablehnen" verstecken)
-- Protokollierung: Welche Einwilligung, wann, welche Version der Banner-Texte
-
-**Empfohlene CMPs (kostenlos):**
-- **Klaro** (Open Source, selbst-hostbar): https://klaro.org — Empfehlung für FreyAI
-- **Cookiebot** (kostet ab gewisser Seitenzahl — NICHT verwenden)
-- Eigene Lösung: localStorage `consent_{category}` mit Zeitstempel
-
-**Consent-Nachweis (Art. 7 Abs. 1 DSGVO):**
-- Supabase `cookie_consents` Tabelle: user_id (oder fingerprint), timestamp, consent_version, categories_accepted
-- 3 Jahre aufbewahren (Verjährungsfrist)
+### If Adding Other Tracking
+- Google Analytics, Meta Pixel, etc.: REQUIRE consent banner (ePrivacy + DSGVO)
+- Consent must be: informed, voluntary, specific, prior to tracking (opt-in, not opt-out)
+- Use a CMP (Consent Management Platform) if adding cookie-based tracking
+- Currently: NOT needed. Keep it that way.
 
 ### Service Worker / PWA
 - Service Worker caches are NOT cookies — no consent needed
-- IndexedDB storage for offline: NOT cookies — no consent needed (but mention in Datenschutzerklärung)
+- IndexedDB storage for offline: NOT cookies — no consent needed
 - localStorage for app state: NOT cookies — no consent needed (but mention in Datenschutzerklärung)
 
 ---
@@ -408,48 +322,13 @@ For each third-party processor, a written AVV (Auftragsverarbeitungsvertrag) mus
 
 **Hostinger:** VPS provider. All data stored on their hardware. EU-based (Lithuania). DPA: `https://www.hostinger.com/legal/dpa`
 
-**Google/Gemini API (via n8n):** KRITISCH — n8n sendet Rechnungsinhalte (Lieferant, Betrag) und WhatsApp-Nachrichten (Kundenkommunikation) an Gemini API. US-basiert.
-- DPA: Google Cloud DPA (im Google Cloud Console aktivieren)
-- Sicherstellen: Google nutzt Daten NICHT für Modell-Training (in API-Einstellungen prüfen)
-- US-Transfer: EU-US DPF oder SCCs erforderlich
-- Im Verarbeitungsverzeichnis: "KI-gestützte Dokumentenverarbeitung — Empfänger: Google LLC, USA"
-
-**n8n (self-hosted):** Kein externer AVV nötig — eigene Infrastruktur auf Hostinger VPS.
-- Aber: n8n als Datenverarbeitungs-Tool im Verarbeitungsverzeichnis dokumentieren
-- Absicherung: n8n UI nicht öffentlich zugänglich (nur localhost:5678), API-Key geschützt
-
-**Evolution API / WhatsApp:** Self-hosted Evolution API auf VPS — kein externer AVV für Evolution API selbst.
-- WhatsApp Business API (Meta): WhatsApp Business Terms akzeptieren
-- Meta als Datenprozessor für Nachrichten-Routing → in Datenschutzerklärung erwähnen
-- Kundenmitteilung: Bei Erstkontakt über WhatsApp Hinweis, dass Nachrichten von Meta weitergeleitet werden
-
----
-
-## 9. Quarterly Compliance Audit Checklist
-
-Vierteljährlich prüfen (oder bei wesentlichen Änderungen):
-
-- [ ] Alle DPAs/AVVs noch gültig und aktuell?
-- [ ] US-Prozessoren: DPF-Zertifizierung noch aktiv? (https://www.dataprivacyframework.gov)
-- [ ] Datenschutzerklärung aktuell (neue Services hinzugefügt wie z.B. neue n8n-Workflows)?
-- [ ] Impressum korrekt (Kontaktdaten geändert?)?
-- [ ] §19 UStG-Umsatzgrenze: Wo stehen wir? Alert bei 17.600 EUR (80% von 22.000 EUR)
-- [ ] Supabase RLS Policies: Noch korrekt konfiguriert?
-- [ ] Consent-Logs: Vorhanden und auswertbar?
-- [ ] Löschfristen: Daten gelöscht die Frist überschritten haben (außer GoBD-pflichtige)?
-- [ ] n8n Workflows: Keine neuen PII-Flows ohne Verarbeitungsverzeichnis-Eintrag?
-- [ ] Verfahrensdokumentation (GoBD): Aktuell?
-
 ---
 
 ## Safety Rules
 
 - **Never give definitive legal advice** — always caveat with "Dies ist keine Rechtsberatung. Konsultieren Sie einen Fachanwalt für IT-Recht."
 - **When generating legal texts** (Impressum, AGB, Datenschutzerklärung): Include disclaimer that they need legal review
-- **Track §19 UStG threshold** — alert when revenue approaches 22.000 EUR (80% = 17.600 EUR)
-- **AVV audit** — remind user quarterly to verify all DPAs are current, including Google/Gemini DPA
-- **Aufbewahrungsfristen** — never delete invoices or booking records before 10-year retention expires. GoBD overrides DSGVO deletion requests.
+- **Track §19 UStG threshold** — alert when revenue approaches 22.000 EUR
+- **AVV audit** — remind user quarterly to verify all DPAs are current
+- **Aufbewahrungsfristen** — never delete invoices or booking records before 10-year retention expires
 - **Double-Opt-In** — never send marketing emails without confirmed consent
-- **n8n data flows** — always flag when new n8n workflow processes PII → Verarbeitungsverzeichnis update required
-- **TTDSG** — when adding any new JavaScript libraries/embeds, check if they access device storage (cookies, localStorage) → may require consent
-- **Consent widerrufbar** — every consent collection must have a corresponding revocation path in the app

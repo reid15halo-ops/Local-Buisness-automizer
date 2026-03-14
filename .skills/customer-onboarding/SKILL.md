@@ -7,11 +7,13 @@ description: |
   Also trigger when the user says "onboarding", "setup wizard", "Fragebogen",
   "Kundeneinrichtung", "questionnaire", "data import", "Excel import",
   "customer setup", "training", "go-live", or any request involving new customer activation.
+  Covers: auth flow, 3-step wizard, 52-question Fragebogen, tier recommendation,
+  Excel/CSV import, tutorial walkthrough, portal token generation, and feature toggle mapping.
 ---
 
-# Customer Onboarding Skill — FreyAI Setup Flow
+# Customer Onboarding Skill -- FreyAI Setup Flow
 
-Design and manage the 3-layer customer onboarding: Auth → Setup Wizard → Fragebogen, mapping to the €3.5k–7.5k setup engagement.
+Design and manage the 3-layer customer onboarding: Auth -> Setup Wizard -> Fragebogen, mapping to the 3.5k-7.5k EUR setup engagement.
 
 Read `references/onboarding-flow.md` for the complete journey before making changes.
 
@@ -21,12 +23,12 @@ Three sequential layers, each building on the previous:
 
 ```
 Layer 1: Authentication (auth.html)
-  ↓ User signs up / logs in
+  | User signs up / logs in
 Layer 2: Setup Wizard (3 steps, 13 fields)
-  ↓ Basic company info captured
+  | Basic company info captured
 Layer 3: Fragebogen (52 questions, 11 sections)
-  ↓ Deep business analysis
-→ Ready for: Angebot creation, data import, system configuration
+  | Deep business analysis
+-> Ready for: Angebot creation, data import, system configuration
 ```
 
 ### Key Files
@@ -35,49 +37,58 @@ Layer 3: Fragebogen (52 questions, 11 sections)
 | Auth page | `auth.html` | Login/signup with Supabase Auth |
 | Setup Wizard | `js/modules/setup-wizard.js` | 3-step company setup |
 | Fragebogen | `js/modules/fragebogen.js` | 52-question business questionnaire |
-| Import Service | `js/services/fragebogen-import-service.js` | Maps questionnaire → system config |
+| Import Service | `js/services/fragebogen-import-service.js` | Maps questionnaire -> system config |
 | Tutorial | `js/services/onboarding-tutorial.js` | 10-step interactive walkthrough |
 
 ## 2. Layer 1: Authentication
 
 ### Flow
 ```
-Landing page → "Jetzt starten" → auth.html
-  ├─→ Email/Password signup
-  ├─→ Google OAuth
-  └─→ Magic Link
-→ Profile created in profiles table
-→ Redirect to dashboard (index.html)
-→ Setup wizard auto-triggers if profile incomplete
+Landing page -> "Jetzt starten" -> auth.html
+  |- Email/Password signup
+  |- Google OAuth
+  |- Magic Link
+-> Profile created in profiles table (via DB trigger)
+-> Redirect to dashboard (index.html)
+-> Setup wizard auto-triggers if profile incomplete
 ```
 
 ### Auth Rules
 - Supabase Auth handles all credential management
-- Profile row auto-created via database trigger
-- Double-submit protection on signup form
-- German error messages for auth failures
+- Profile row auto-created via database trigger on `auth.users`
+- Double-submit protection on signup form (disable button after first click)
+- German error messages for auth failures (map Supabase error codes to German text)
 - DSGVO consent checkbox mandatory before account creation
+- Redirect loop prevention: check `setup_complete` flag before showing wizard
+
+### Auth Error Handling
+| Supabase Error | German Message |
+|----------------|----------------|
+| `user_already_exists` | "Diese E-Mail-Adresse ist bereits registriert." |
+| `invalid_credentials` | "E-Mail oder Passwort falsch." |
+| `email_not_confirmed` | "Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse." |
+| `rate_limit_exceeded` | "Zu viele Versuche. Bitte warten Sie einen Moment." |
 
 ## 3. Layer 2: Setup Wizard
 
-### 3 Steps (Welcome → Integrations → Complete)
+### 3 Steps (Welcome -> Integrations -> Complete)
 
-**Step 1: Welcome (User Profile) — 13 Fields**
-| Field (localStorage key) | Type | Required |
-|--------------------------|------|----------|
-| `company_name` | Text | Yes |
-| `owner_name` | Text | Yes |
-| `address_street` | Text | Yes |
-| `address_postal` | Text | Yes |
-| `address_city` | Text | Yes |
-| `tax_number` | Text | Yes |
-| `email` | Email | Yes (pre-filled) |
-| `phone` | Tel | No |
-| `iban` | Text | No |
-| `bic` | Text | No |
-| `kleinunternehmer` | Checkbox | No |
-| `business_type` | Text | No |
-| `company_logo` | File | No |
+**Step 1: Welcome (User Profile) -- 13 Fields**
+| Field (localStorage key) | Type | Required | Validation |
+|--------------------------|------|----------|------------|
+| `company_name` | Text | Yes | min 2 chars |
+| `owner_name` | Text | Yes | min 2 chars |
+| `address_street` | Text | Yes | min 3 chars |
+| `address_postal` | Text | Yes | exactly 5 digits (German PLZ) |
+| `address_city` | Text | Yes | min 2 chars |
+| `tax_number` | Text | Yes | format: XX/XXX/XXXXX or DE+9 digits |
+| `email` | Email | Yes (pre-filled) | valid email format |
+| `phone` | Tel | No | starts with +49 or 0 |
+| `iban` | Text | No | DE + 20 digits |
+| `bic` | Text | No | 8 or 11 alphanumeric |
+| `kleinunternehmer` | Checkbox | No | boolean |
+| `business_type` | Text | No | free text |
+| `company_logo` | File | No | max 2MB, jpg/png/svg |
 
 **Step 2: Integrations (Optional)**
 - Paperless-ngx (URL + API token)
@@ -85,15 +96,16 @@ Landing page → "Jetzt starten" → auth.html
 - Postiz (URL + API key)
 - WhatsApp (API URL + key + instance)
 
-**Step 3: Complete** — Success screen
+**Step 3: Complete** -- Success screen with CTA to start tutorial
 
 ### Wizard Rules
 1. Each step validates before allowing "Weiter" (Next)
-2. Data saves to `profiles` table on completion
-3. Wizard only shows once (flagged in profile)
-4. "Zurück" (Back) preserves entered data
-5. Skip option available but discouraged
-6. Data also persists in Supabase + IndexedDB to survive session loss
+2. Data saves to `profiles` table on completion (upsert by user_id)
+3. Wizard only shows once (flagged via `setup_complete = true` in profile)
+4. "Zurueck" (Back) preserves entered data (held in component state)
+5. Skip option available but discouraged (show warning modal)
+6. Data persists in Supabase + IndexedDB to survive session loss
+7. On validation failure: highlight field with red border + German error text below field
 
 ## 4. Layer 3: Fragebogen (Questionnaire)
 
@@ -101,7 +113,7 @@ Landing page → "Jetzt starten" → auth.html
 
 | # | Section | Questions | Purpose |
 |---|---------|-----------|---------|
-| 1 | Geschäftsübersicht | 5 | Company basics, revenue, goals |
+| 1 | Geschaeftsuebersicht | 5 | Company basics, revenue, goals |
 | 2 | Aktuelle IT-Infrastruktur | 5 | Existing software, pain points |
 | 3 | Kundenverwaltung | 5 | How customers are tracked today |
 | 4 | Angebots- & Auftragswesen | 5 | Quote/order workflow |
@@ -111,28 +123,38 @@ Landing page → "Jetzt starten" → auth.html
 | 8 | Lagerverwaltung | 4 | Inventory, ordering, suppliers |
 | 9 | Buchhaltung | 5 | Bookkeeping, DATEV, tax advisor |
 | 10 | Marketing | 5 | Online presence, social media |
-| 11 | Wünsche & Prioritäten | 5 | Feature priorities, budget, timeline |
+| 11 | Wuensche & Prioritaeten | 5 | Feature priorities, budget, timeline |
 
 ### Question Types
-- **Text**: Free-form input
+- **Text**: Free-form input (max 500 chars)
 - **Select**: Dropdown with predefined options
-- **Multi-select**: Checkbox group
-- **Number**: Numeric input with validation
-- **Scale**: 1-5 rating (priority/satisfaction)
+- **Multi-select**: Checkbox group (store as JSON array)
+- **Number**: Numeric input with min/max validation
+- **Scale**: 1-5 rating (priority/satisfaction, rendered as star/dot selector)
 
 ### Fragebogen Rules
-1. Can be filled incrementally (auto-saves per section)
-2. Section progress tracked visually
-3. Completion triggers notification to admin (Jonas)
-4. Data stored in `fragebogen_responses` or profile JSONB
-5. Can be sent to customer as link (portal token)
+1. Can be filled incrementally (auto-saves per section to IndexedDB + Supabase)
+2. Section progress tracked visually (progress bar per section + overall)
+3. Completion triggers notification to admin (Jonas) via Telegram
+4. Data stored in `fragebogen_responses` table or profile JSONB field
+5. Can be sent to customer as link with portal token (valid 30 days)
+6. Sections can be filled in any order (non-linear navigation)
+7. "Pflichtfelder" (required fields) marked with asterisk, validated on section submit
 
-## 5. Data Import (Fragebogen → System)
+### Portal Token Generation
+```javascript
+// Generate unique portal token for customer self-service
+const token = crypto.randomUUID();
+// Store in profiles table: portal_token, portal_token_expires (NOW() + 30 days)
+// URL: https://app.freyaivisions.de/portal?token={token}
+// Token grants read/write access ONLY to own fragebogen + angebot approval
+```
+
+## 5. Data Import (Fragebogen -> System)
 
 ### Field Mapping (12 core mappings + extras)
 ```javascript
 // fragebogen-import-service.js fieldMapping array
-// Fragebogen field → Setup wizard key → Store settings key
 const fieldMapping = [
   { fragebogen: 'firmenname',    wizard: 'company_name',    store: 'companyName' },
   { fragebogen: 'inhaber',       wizard: 'owner_name',      store: 'owner' },
@@ -147,140 +169,149 @@ const fieldMapping = [
   { fragebogen: 'iban',          wizard: null,              store: 'iban' },
   { fragebogen: 'bic',           wizard: null,              store: 'bic' },
 ];
-
-// Extra fields stored in localStorage blob (not in main mapping):
-// rechtsform, kleinunternehmer, mitarbeiter, website,
-// satz_geselle, satz_meister, satz_azubi, satz_notdienst
 ```
 
 ### Import Flow
 ```
 Fragebogen completed
-  → fragebogen-import-service.js processes responses
-  → Maps to: profile fields, system settings, feature toggles
-  → Generates: recommended tier (Starter/Professional/Enterprise)
-  → Creates: draft Angebot with matched positions
-  → Triggers: onboarding tutorial for selected features
+  -> fragebogen-import-service.js processes responses
+  -> Maps to: profile fields, system settings, feature toggles
+  -> Generates: recommended tier (Starter/Professional/Enterprise)
+  -> Creates: draft Angebot with matched positions
+  -> Triggers: onboarding tutorial for selected features
+  -> Sends: Telegram notification to Jonas with tier + summary
 ```
+
+### Import Error Handling
+- Missing required fields: skip import, show error summary, allow retry
+- Duplicate customer (same email): merge data, prefer newer values, log conflict
+- Invalid field values (e.g., non-numeric PLZ): highlight field, show correction prompt
+- Network failure during save: queue in IndexedDB, retry on reconnect
 
 ## 6. Tier Recommendation Logic
 
 Based on Fragebogen responses, the import service assigns one of three tiers:
 
-### Starter (€3.500 Setup + €200/Monat)
+### Starter (3.500 EUR Setup + 200 EUR/Monat)
 **Criteria (any of the following):**
-- Mitarbeiter (employees): 1–3
-- Jahresumsatz: unter €300.000
-- Wünsche & Prioritäten: only basic modules selected (Kunden, Angebote, Rechnungen)
+- Mitarbeiter (employees): 1-3
+- Jahresumsatz: unter 300.000 EUR
+- Only basic modules selected (Kunden, Angebote, Rechnungen)
 - No DATEV integration needed
 - No inventory/BOM management needed
-- Budget (Section 11): unter €250/Monat
+- Budget (Section 11): unter 250 EUR/Monat
 
-**Features enabled:** Kunden, Angebote, Aufträge, Rechnungen, Einstellungen
+**Features enabled:** Kunden, Angebote, Auftraege, Rechnungen, Einstellungen
 
-### Professional (€5.500 Setup + €400/Monat)
+### Professional (5.500 EUR Setup + 400 EUR/Monat)
 **Criteria (any of the following):**
-- Mitarbeiter: 4–7
-- Jahresumsatz: €300.000–€1.000.000
-- Wünsche & Prioritäten: includes automation modules (WhatsApp, Kalender, Mahnwesen)
+- Mitarbeiter: 4-7
+- Jahresumsatz: 300.000-1.000.000 EUR
+- Includes automation modules (WhatsApp, Kalender, Mahnwesen)
 - DATEV integration needed (Section 9, `datev_nutzung = true`)
-- Budget: €250–€600/Monat
+- Budget: 250-600 EUR/Monat
 
 **Features enabled:** All Starter + WhatsApp-Integration, Kalender, Mahnwesen, DATEV-Export, Kommunikations-Hub
 
-### Enterprise (€7.500 Setup + €700/Monat)
+### Enterprise (7.500 EUR Setup + 700 EUR/Monat)
 **Criteria (any of the following):**
 - Mitarbeiter: 8+
-- Jahresumsatz: über €1.000.000
-- Wünsche & Prioritäten: all modules or custom integrations needed
+- Jahresumsatz: ueber 1.000.000 EUR
+- All modules or custom integrations needed
 - Multiple locations or teams
-- Budget: über €600/Monat
+- Budget: ueber 600 EUR/Monat
 
 **Features enabled:** All Professional + Lagerverwaltung, Bestellwesen, Nachbestellungen, individuelle Automatisierungen
 
+### Tier Conflict Resolution
+When criteria point to multiple tiers (e.g., 2 employees but wants DATEV):
+1. Budget is the strongest signal -- never recommend above stated budget
+2. Feature needs override employee count (small team can need Professional features)
+3. When ambiguous, recommend Professional and note upgrade/downgrade options
+
 ### Feature Toggle Mapping from Fragebogen
 ```javascript
-// Section 9 (Buchhaltung) → DATEV toggle
-if (responses.datev_nutzung === true) {
-  featureToggles.datevExport = true;   // → enables DATEV-Export module
-}
+// Section 9 (Buchhaltung) -> DATEV toggle
+if (responses.datev_nutzung === true) featureToggles.datevExport = true;
 
-// Section 8 (Lagerverwaltung) → Inventory toggle
-if (responses.lager_vorhanden === true) {
-  featureToggles.lagerverwaltung = true;
-}
+// Section 8 (Lagerverwaltung) -> Inventory toggle
+if (responses.lager_vorhanden === true) featureToggles.lagerverwaltung = true;
 
-// Section 7 (Terminplanung) → Calendar toggle
-if (responses.kalender_genutzt === true || responses.kundentermine > 5) {
-  featureToggles.kalender = true;
-}
+// Section 7 (Terminplanung) -> Calendar toggle
+if (responses.kalender_genutzt === true || responses.kundentermine > 5) featureToggles.kalender = true;
 
-// Section 6 (Kommunikation) → WhatsApp toggle
-if (responses.whatsapp_nutzung === true) {
-  featureToggles.whatsappIntegration = true;
-}
+// Section 6 (Kommunikation) -> WhatsApp toggle
+if (responses.whatsapp_nutzung === true) featureToggles.whatsappIntegration = true;
 ```
-
-### Angebot Positions from Fragebogen
-The import service generates draft Angebot line items based on enabled features:
-- Each enabled feature module → 1 position with setup cost + monthly rate
-- DATEV-Export → "DATEV-Anbindung und Export" position
-- WhatsApp-Integration → "WhatsApp Kundenservice-Automatisierung" position
-- Lagerverwaltung → "Lagerverwaltung und Bestellwesen" position
 
 ## 7. Excel/CSV Import
 
 ### 4-Step Import Wizard
-1. **Upload**: Drag-drop or browse for .xlsx/.csv file
-2. **Map Columns**: Match source columns to FreyAI fields
-3. **Preview**: Show first 10 rows with validation warnings
-4. **Import**: Batch insert into `kunden` table
+1. **Upload**: Drag-drop or browse for .xlsx/.csv file (max 5MB)
+2. **Map Columns**: Match source columns to FreyAI fields (auto-detect common German headers)
+3. **Preview**: Show first 10 rows with validation warnings (red = error, yellow = warning)
+4. **Import**: Batch insert into `kunden` table (upsert on email)
 
-### Supported Fields
-`firmenname`, `ansprechpartner`, `email`, `telefon`, `adresse`, `plz`, `ort`, `branche`, `notizen`
+### Auto-Detection Headers
+| Source Header (case-insensitive) | Maps to |
+|----------------------------------|---------|
+| firma, firmenname, unternehmen | firmenname |
+| name, ansprechpartner, kontakt | ansprechpartner |
+| mail, e-mail, email | email |
+| tel, telefon, phone, mobil | telefon |
+| strasse, str | adresse |
+| postleitzahl, plz | plz |
+| stadt, ort, city | ort |
 
 ### Import Rules
-1. Validate email format before import
-2. Deduplicate on email address
+1. Validate email format before import (show invalid rows separately)
+2. Deduplicate on email address (upsert: update if exists, insert if new)
 3. Show error rows separately (don't block valid imports)
-4. Maximum 500 rows per import
-5. UTF-8 encoding required (handle German umlauts: ä, ö, ü, ß)
+4. Maximum 500 rows per import (show warning if file has more)
+5. UTF-8 encoding required (handle German umlauts: ae, oe, ue, ss)
+6. Empty rows silently skipped
+7. Import summary shown after completion: X inserted, Y updated, Z failed
 
 ## 8. Onboarding Tutorial
 
 ### 10 Interactive Steps
-1. Dashboard overview
+1. Dashboard overview (highlight KPI cards)
 2. Kunden (Customers) tab
-3. Adding a new customer
+3. Adding a new customer (open modal)
 4. Anfragen (Inquiries) tab
 5. Creating an Angebot (Quote)
 6. Rechnungen (Invoices) tab
-7. Kalender (Calendar)
+7. Kalender (Calendar) -- only if feature enabled
 8. E-Mail integration
 9. Einstellungen (Settings)
-10. Support & Help
+10. Support & Help (ticket system)
 
 ### Tutorial Rules
-- Highlights UI elements with overlay
-- "Überspringen" (Skip) always available
-- Progress saved — can resume later
-- Only shows on first login (or manual trigger from Settings)
+- Highlights UI elements with semi-transparent overlay + spotlight on target
+- "Ueberspringen" (Skip) always available (top-right X button)
+- Progress saved in localStorage (`tutorial_step`) -- can resume later
+- Only shows on first login (or manual trigger from Settings > "Einfuehrung wiederholen")
+- Steps for disabled features are automatically skipped
+- Each step has: title, description (2-3 sentences), target element selector
 
 ## 9. Quality Checklist
 
-Before modifying onboarding, verify all 10 items:
+Before modifying onboarding, verify all items:
 
-1. [ ] Setup wizard validates all required fields per step
-2. [ ] Fragebogen auto-saves per section (no data loss on navigation)
+1. [ ] Setup wizard validates all required fields per step (see validation column above)
+2. [ ] Fragebogen auto-saves per section (no data loss on navigation or browser crash)
 3. [ ] Auth page has double-submit protection
-4. [ ] Error messages are in German
-5. [ ] Data maps correctly from fragebogen to profiles table
-6. [ ] Excel import handles German umlauts (ä, ö, ü, ß)
-7. [ ] Tutorial highlights correct DOM elements
-8. [ ] Tier recommendation logic matches pricing guide (Starter/Professional/Enterprise)
-9. [ ] DSGVO consent checkbox is mandatory
-10. [ ] Onboarding state persists across sessions (IndexedDB + Supabase)
+4. [ ] All user-facing error messages are in German
+5. [ ] Data maps correctly from fragebogen to profiles table (test all 12 core fields)
+6. [ ] Excel import handles German umlauts and auto-detects common headers
+7. [ ] Tutorial highlights correct DOM elements (test after any layout changes)
+8. [ ] Tier recommendation logic matches pricing (Starter/Professional/Enterprise)
+9. [ ] DSGVO consent checkbox is mandatory and blocks signup if unchecked
+10. [ ] Onboarding state persists across sessions (IndexedDB + Supabase dual-write)
+11. [ ] Portal token expires after 30 days and grants minimal access
+12. [ ] Tier conflict resolution follows budget > features > headcount priority
+13. [ ] Import error handling shows actionable German error messages
 
 ## References
 
-- `references/onboarding-flow.md` — Complete journey map, field definitions, data flow
+- `references/onboarding-flow.md` -- Complete journey map, field definitions, data flow

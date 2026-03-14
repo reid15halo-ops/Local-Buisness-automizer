@@ -207,7 +207,7 @@ Adapted for Vanilla JS + Supabase + FastAPI + n8n.
 
 ### A02: Cryptographic Failures
 
-- **No secrets in frontend code**: Search for API keys, passwords in JS files
+- **No secrets in frontend code**: Scan all JS/HTML files for hardcoded secrets (see Section 8 for patterns)
 - **Environment variables**: All secrets via `.env`, never hardcoded
 - **HTTPS everywhere**: No mixed content, no HTTP fallback
 - **Password hashing**: Handled by Supabase Auth (bcrypt) -- do not implement custom hashing
@@ -268,7 +268,43 @@ Adapted for Vanilla JS + Supabase + FastAPI + n8n.
 - **Image/file processing**: FastAPI OCR endpoint -- validate file types, don't follow redirects from user URLs
 - **n8n HTTP nodes**: Restrict to known domains in workflow configurations
 
-## 7. Input Validation Audit
+## 7. Hardcoded Secrets Detection
+
+Every JS, HTML, and config file in the repo must be scanned for secrets before audit completion. Use the Grep tool with the patterns below. Any match that is not a placeholder/comment is a CRITICAL finding.
+
+### Scan Patterns
+
+| Pattern | Severity | Examples |
+|---------|----------|---------|
+| `eyJ[A-Za-z0-9_-]{20,}` | CRITICAL | JWT / Supabase anon/service_role key |
+| `sk_live_[A-Za-z0-9]{24,}` | CRITICAL | Stripe live secret key |
+| `sk_test_[A-Za-z0-9]{24,}` | HIGH | Stripe test secret key |
+| `SUPABASE_SERVICE_ROLE` | CRITICAL | Service role key reference |
+| `service_role` followed by a key string | CRITICAL | Inline service_role key |
+| `Authorization.*Bearer [A-Za-z0-9._-]{20,}` | CRITICAL | Hardcoded Bearer token |
+| `password\s*[:=]\s*['"][^'"]{6,}` | HIGH | Hardcoded password string |
+| `api[_-]?key\s*[:=]\s*['"][^'"]{10,}` | HIGH | Generic API key assignment |
+| `secret\s*[:=]\s*['"][^'"]{8,}` | HIGH | Hardcoded secret string |
+| `HOSTINGER_API\|hostinger.*api` | HIGH | Hosting provider API key |
+| `n8n_api_[A-Za-z0-9]{20,}` | HIGH | n8n API key |
+| `sbp_[A-Za-z0-9]{30,}` | CRITICAL | Supabase Personal Access Token |
+| `[0-9]{10}:AA[A-Za-z0-9_-]{33}` | HIGH | Telegram Bot Token |
+
+### Scan Procedure
+
+1. Run Grep for each pattern above across `js/`, `config/`, `*.html`, `*.env*`
+2. Exclude `node_modules/`, `.git/`, `*.md`, test fixtures
+3. For each match: verify it is not a comment, placeholder, or example value
+4. If a real secret is found: flag CRITICAL, rotate immediately, add to `.gitignore`
+5. Check `git log --all` for secrets committed historically (if repo access available)
+
+### Common False Positives to Filter
+
+- `'your-api-key-here'`, `'xxx'`, `'PLACEHOLDER'`
+- Strings inside comments (`//`, `/* */`)
+- Values pulled from `import.meta.env.*` or `process.env.*` (these are safe references)
+
+## 8. Input Validation Audit
 
 Verify dual-layer validation (client + database) for all user-facing inputs:
 
@@ -282,6 +318,68 @@ Verify dual-layer validation (client + database) for all user-facing inputs:
 
 Also audit `.rpc()` calls for string concatenation in custom SQL functions, and `.ilike()`/`.textSearch()` for unescaped special chars (`%`, `_`).
 
+## Report Template
+
+Every security audit MUST be delivered using this exact structure. Do not omit sections.
+
+```
+# Security Audit Report — FreyAI Visions
+**Date**: YYYY-MM-DD
+**Scope**: [Full Audit | Targeted: CSP / XSS / RLS / Auth / DSGVO / OWASP / Secrets]
+**Auditor**: Claude (security-audit skill)
+
+---
+
+## Executive Summary
+[2-4 sentences: overall risk level, most critical findings, recommended immediate actions]
+
+**Risk Level**: CRITICAL | HIGH | MEDIUM | LOW
+
+---
+
+## Findings
+
+### [SEVERITY] Finding Title
+| Field | Value |
+|-------|-------|
+| **ID** | SA-001 |
+| **Severity** | CRITICAL / HIGH / MEDIUM / LOW |
+| **Category** | OWASP A01 / XSS / RLS / Secrets / DSGVO / Auth / CSP |
+| **File** | `path/to/file.js:LINE` |
+| **Status** | Open |
+
+**Description**: What the vulnerability is and why it is dangerous.
+
+**Evidence**:
+```code snippet or grep output showing the actual issue```
+
+**Remediation**: Concrete fix with code example where applicable. Include priority (immediate/next sprint/backlog).
+
+---
+[Repeat for each finding, ordered CRITICAL → HIGH → MEDIUM → LOW]
+
+---
+
+## OWASP Top 10 Coverage Matrix
+| # | Category | Status | Findings |
+|---|----------|--------|---------|
+| A01 | Broken Access Control | PASS / FAIL / PARTIAL | SA-001, SA-003 |
+| A02 | Cryptographic Failures | PASS / FAIL / PARTIAL | — |
+| A03 | Injection | PASS / FAIL / PARTIAL | — |
+| A04 | Insecure Design | PASS / FAIL / PARTIAL | — |
+| A05 | Security Misconfiguration | PASS / FAIL / PARTIAL | — |
+| A06 | Vulnerable Components | PASS / FAIL / PARTIAL | — |
+| A07 | Authentication Failures | PASS / FAIL / PARTIAL | — |
+| A08 | Data Integrity Failures | PASS / FAIL / PARTIAL | — |
+| A09 | Logging & Monitoring | PASS / FAIL / PARTIAL | — |
+| A10 | SSRF | PASS / FAIL / PARTIAL | — |
+
+## Statistics
+- Critical: N | High: N | Medium: N | Low: N
+- Total Findings: N
+- Files Audited: N
+```
+
 ## Quality Checklist
 
 Before delivering any security audit, verify:
@@ -292,8 +390,11 @@ Before delivering any security audit, verify:
 - [ ] **Auth flow**: Token storage, session management, password policies reviewed per Section 4
 - [ ] **DSGVO**: Encryption, data minimization, deletion rights, consent checked per Section 5
 - [ ] **OWASP Top 10**: All 10 categories evaluated for this stack per Section 6
-- [ ] **Input validation**: Client-side and server-side validation patterns verified per Section 7
-- [ ] **Findings documented**: Each issue categorized as Critical/High/Medium/Low with remediation steps
+- [ ] **Secrets scan**: All patterns from Section 7 searched across js/, config/, HTML files
+- [ ] **Input validation**: Client-side and server-side validation patterns verified per Section 8
+- [ ] **Report uses template**: Report follows the exact Report Template structure above
+- [ ] **Findings documented**: Each issue has ID, Severity, Category, File:Line, Evidence, Remediation
+- [ ] **OWASP matrix complete**: All 10 rows filled with PASS/FAIL/PARTIAL and finding references
 - [ ] **No false positives**: Each finding verified with actual code evidence, not assumptions
 
 ## Reference Files

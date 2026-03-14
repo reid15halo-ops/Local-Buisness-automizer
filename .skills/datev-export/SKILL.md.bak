@@ -62,191 +62,52 @@ Global instances: `window.datevExportService`, `window.bookkeepingService`
 Umsatz;Soll/Haben;WKZ;Konto;Gegenkonto;BU-Schlüssel;Datum;Belegfeld 1;Belegfeld 2;Skonto;Buchungstext;Postensperre;Kost1;Kost2;USt-IdNr
 ```
 
-### Pflichtfelder vs. Optionale Felder
-
-| Feld | Pflicht | Format | Beispiel | Anmerkung |
-|------|---------|--------|---------|-----------|
-| **Umsatz** | **JA** | Integer (Cents) | `119900` | = 1.199,00 EUR. Immer positiv. NIEMALS leer lassen. |
-| **Soll/Haben** | **JA** | `S` oder `H` | `H` | H=Haben (Einnahme), S=Soll (Ausgabe). NIEMALS leer. |
-| **WKZ** | **JA** | ISO 4217 | `EUR` | Währungskennzeichen. Standard: `EUR`. |
-| **Konto** | **JA** | 4 Stellen | `8400` | Sachkonto. NIEMALS leer oder 0. |
-| **Gegenkonto** | **JA** | 4 Stellen | `1200` | Bank (1200) oder Kasse (1000). NIEMALS leer. |
-| **BU-Schlüssel** | **JA** | 1-2 Stellen | `0` | Steuercode. `0` = ohne USt. NIEMALS leer lassen. |
-| **Datum** | **JA** | DDMM | `1503` | Nur Tag+Monat (Jahr aus Header). PFLICHT. |
-| **Belegfeld 1** | **JA** | max 36 Zeichen | `RE-2026-001` | Rechnungs-/Belegnummer. DATEV-Import ohne dieses Feld unvollständig. |
-| Belegfeld 2 | nein | max 12 Zeichen | | Sekundäre Referenz, optional. |
-| Skonto | nein | Cents | `0` | Skontobetrag, 0 wenn kein Skonto. |
-| **Buchungstext** | **JA** | max 60 Zeichen | `Rechnung Müller GmbH` | Beschreibung. Steuerberater benötigt lesbare Texte. PFLICHT. |
-| Postensperre | nein | 0/1 | `0` | 0=normal, immer 0 setzen. |
-| Kost1 | nein | | | Kostenstelle 1, optional. |
-| Kost2 | nein | | | Kostenstelle 2, optional. |
-| USt-IdNr | nein | | | Nur bei EU-Grenzüberschreitend. |
-
-> **Validierungsregel:** Vor CSV-Generierung prüfen: `Umsatz > 0`, `Konto !== ''`, `Gegenkonto !== ''`, `Datum !== ''`, `Buchungstext !== ''`, `Belegfeld1 !== ''`. Zeilen die diese Checks nicht bestehen NICHT exportieren, sondern in Error-Log schreiben.
-
 ### Data Rows (Line 3+)
 
-Jede Buchung = eine Zeile. Felder in Reihenfolge der Column Headers, semikolon-getrennt.
+| Field | Format | Example | Notes |
+|-------|--------|---------|-------|
+| Umsatz | Cents (integer) | `119900` | = 1.199,00 EUR. Always positive. |
+| Soll/Haben | `S` or `H` | `H` | H=Haben (Einnahme), S=Soll (Ausgabe) |
+| WKZ | ISO 4217 | `EUR` | |
+| Konto | 4 digits | `8400` | Sachkonto (Erlös-/Aufwandskonto) |
+| Gegenkonto | 4 digits | `1200` | Typically Bank (1200) or Kasse (1000) |
+| BU-Schlüssel | 1-2 digits | `0` | See Buchungsschlüssel below |
+| Datum | DDMM | `1503` | Day+Month only (year from header) |
+| Belegfeld 1 | max 36 chars | `RE-2026-001` | Invoice/receipt number |
+| Belegfeld 2 | max 12 chars | | Optional secondary reference |
+| Skonto | Cents | `0` | Skonto amount in cents |
+| Buchungstext | max 60 chars | `Rechnung Müller` | Description |
+| Postensperre | 0/1 | `0` | 0=normal |
+| Kost1 | | | Kostenstelle 1 (optional) |
+| Kost2 | | | Kostenstelle 2 (optional) |
+| USt-IdNr | | | Only for EU cross-border |
 
 ### Encoding & Delimiter
 
-- **Encoding:** Windows-1252 (CP1252) — NOT UTF-8. DATEV-Import schlägt bei UTF-8 fehl.
+- **Encoding:** Windows-1252 (CP1252) — NOT UTF-8
 - **Delimiter:** Semicolon `;`
 - **Line ending:** `\r\n` (CRLF)
 - **Text fields:** Quoted with `""`
-- **Decimal:** Umsatz-Feld ist Integer in Cents (kein Komma)
+- **Decimal:** Comma for display, but Umsatz field is in Cents (integer)
 - **BOM:** No BOM
-
-### FIX: Korrekte Windows-1252 Encoding im Browser
-
-Das ist der kritischste Fix. Aktueller Code exportiert UTF-8 — das lässt sich in reinem Browser-JS ohne externe Library über einen Encoding-Trick lösen:
-
-```javascript
-/**
- * Konvertiert einen String zu Windows-1252 encoded Blob.
- * DATEV erwartet CP1252, nicht UTF-8.
- */
-function encodeToWindows1252(str) {
-    // TextEncoder kann nur UTF-8. Wir nutzen einen Umweg via latin1-Blob:
-    // Alle nicht-latin1-Zeichen werden durch naechste latin1-Entsprechung ersetzt.
-    const cp1252Map = {
-        '\u20AC': 0x80, // €
-        '\u201A': 0x82, // ‚
-        '\u0192': 0x83, // ƒ
-        '\u201E': 0x84, // „
-        '\u2026': 0x85, // …
-        '\u2020': 0x86, // †
-        '\u2021': 0x87, // ‡
-        '\u02C6': 0x88, // ˆ
-        '\u2030': 0x89, // ‰
-        '\u0160': 0x8A, // Š
-        '\u2039': 0x8B, // ‹
-        '\u0152': 0x8C, // Œ
-        '\u017D': 0x8E, // Ž
-        '\u2018': 0x91, // '
-        '\u2019': 0x92, // '
-        '\u201C': 0x93, // "
-        '\u201D': 0x94, // "
-        '\u2022': 0x95, // •
-        '\u2013': 0x96, // –
-        '\u2014': 0x97, // —
-        '\u02DC': 0x98, // ˜
-        '\u2122': 0x99, // ™
-        '\u0161': 0x9A, // š
-        '\u203A': 0x9B, // ›
-        '\u0153': 0x9C, // œ
-        '\u017E': 0x9E, // ž
-        '\u0178': 0x9F, // Ÿ
-    };
-
-    const bytes = new Uint8Array(str.length);
-    for (let i = 0; i < str.length; i++) {
-        const char = str[i];
-        const code = str.charCodeAt(i);
-        if (cp1252Map[char] !== undefined) {
-            bytes[i] = cp1252Map[char];
-        } else if (code <= 0xFF) {
-            bytes[i] = code; // Latin-1 direkt (inkl. ä=0xE4, ö=0xF6, ü=0xFC, ß=0xDF)
-        } else {
-            bytes[i] = 0x3F; // '?' für nicht-darstellbare Zeichen
-        }
-    }
-    return new Blob([bytes], { type: 'text/csv' });
-}
-
-/**
- * Download-Trigger mit korrekter CP1252 Encoding
- */
-function downloadDatevCsv(csvString, filename) {
-    const blob = encodeToWindows1252(csvString);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'DATEV_Export.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-```
-
-**Umlaute-Mapping für CP1252:**
-- `ä` = 0xE4, `ö` = 0xF6, `ü` = 0xFC (Kleinbuchstaben)
-- `Ä` = 0xC4, `Ö` = 0xD6, `Ü` = 0xDC (Großbuchstaben)
-- `ß` = 0xDF
-
-Diese liegen alle im Latin-1-Bereich (0x00–0xFF) und werden korrekt durch `code <= 0xFF` behandelt.
 
 ## Buchungsschlüssel (BU-Schlüssel)
 
 **CRITICAL for §19 Kleinunternehmer:**
 
-| BU | Bedeutung | Anwendungsfall | Regelbesteuerung | Kleinunternehmer §19 |
-|----|-----------|---------------|-----------------|---------------------|
-| `0` | Ohne USt / Steuerfrei | Default §19, steuerfreie Umsätze | - | **DEFAULT für ALLE Einnahmen** |
-| `2` | 7% Vorsteuer | Einkauf mit 7% (Bücher, Lebensmittel) | Einkauf 7% | Nicht anwendbar (VSt nicht abziehbar) |
-| `3` | 19% USt (Ausgangsumsatz) | Normale Einnahme mit 19% USt | **Einnahmen** | NICHT verwenden |
-| `8` | 7% USt (Ausgangsumsatz) | Einnahme mit 7% USt | Einnahmen 7% | NICHT verwenden |
-| `9` | 19% Vorsteuer | Einkauf mit 19% | Einkauf 19% | Nicht anwendbar (VSt nicht abziehbar) |
-| `40` | Innergemeinschaftlicher Erwerb | EU-Einkauf | EU-Einkauf | Sonderfall, selten |
+| BU | Meaning | Use Case |
+|----|---------|----------|
+| `0` | Keine USt | **DEFAULT for Kleinunternehmer §19** |
+| `2` | 7% Vorsteuer | Einkauf mit 7% (Bücher, Lebensmittel) |
+| `3` | 19% USt | Einnahmen mit 19% (NOT for Kleinunternehmer) |
+| `8` | 7% USt | Einnahmen mit 7% (NOT for Kleinunternehmer) |
+| `9` | 19% Vorsteuer | Einkauf mit 19% |
+| `40` | Innergemeinschaftlicher Erwerb | EU-Einkauf |
 
-**FreyAI ist Kleinunternehmer §19 UStG** -> ALL Einnahmen use BU-Schlüssel `0` (keine USt).
+**FreyAI is Kleinunternehmer §19 UStG** -> ALL Einnahmen use BU-Schlüssel `0` (keine USt).
+Ausgaben CAN have Vorsteuer (BU `9` for 19%, BU `2` for 7%) IF the Steuerberater wants to track input VAT for threshold monitoring, but typically also `0` for Kleinunternehmer.
 
-### FIX: BU-Schlüssel Bug in datev-export-service.js
-
-**Aktueller Bug (Zeile ~102):** `buchungsSchluessel: isEinnahme ? '3' : '2'` — das ist falsch für §19.
-
-**Korrekter Fix:**
-
-```javascript
-/**
- * Ermittelt den korrekten BU-Schlüssel abhängig von Kleinunternehmer-Status und Steuersatz.
- * @param {boolean} isEinnahme - true für Einnahmen, false für Ausgaben
- * @param {number} steuersatz - USt-Satz in Prozent (0, 7, 19)
- * @param {boolean} kleinunternehmer - §19 UStG Status
- * @returns {string} BU-Schlüssel
- */
-function getBuchungsSchluessel(isEinnahme, steuersatz, kleinunternehmer) {
-    const isKleinunternehmer = kleinunternehmer ??
-        window.bookkeepingService?.einstellungen?.kleinunternehmer ??
-        true; // FreyAI default: Kleinunternehmer
-
-    if (isKleinunternehmer) {
-        // §19 UStG: Keine USt auf Einnahmen, keine Vorsteuer auf Ausgaben
-        return '0';
-    }
-
-    // Regelbesteuerung
-    if (isEinnahme) {
-        if (steuersatz === 19) return '3'; // 19% USt Ausgang
-        if (steuersatz === 7)  return '8'; // 7% USt Ausgang
-        return '0'; // steuerfrei
-    } else {
-        // Ausgaben / Einkauf
-        if (steuersatz === 19) return '9'; // 19% Vorsteuer
-        if (steuersatz === 7)  return '2'; // 7% Vorsteuer
-        return '0'; // ohne VSt
-    }
-}
-
-// In convertBuchungToDatevRow (datev-export-service.js) ersetzen:
-// ALT: buchungsSchluessel: isEinnahme ? '3' : '2',
-// NEU:
-buchungsSchluessel: getBuchungsSchluessel(isEinnahme, buchung.steuersatz || 0, null),
-```
-
-### Steuer-Schlüssel für Regelbesteuerung (Referenz)
-
-Für Kunden die NICHT §19 sind (zukünftige Nutzung oder andere FreyAI-Instanzen):
-
-| Transaktion | Steuersatz | BU-Schlüssel | Konto | Gegenkonto |
-|-------------|-----------|-------------|-------|-----------|
-| Ausgangsrechnung 19% | 19% | `3` | 8400 | 1400 |
-| Ausgangsrechnung 7% | 7% | `8` | 8300 | 1400 |
-| Steuerfrei | 0% | `0` | 8120 | 1400 |
-| Eingangsrechnung 19% | 19% | `9` | 3400 | 1600 |
-| Eingangsrechnung 7% | 7% | `2` | 3300 | 1600 |
-| Innergemeinsch. Erwerb | 19% | `40` | 3565 | 1787 |
+> **BUG in current code:** `datev-export-service.js` line 102 sets `buchungsSchluessel: isEinnahme ? '3' : '2'` which implies 19% USt. This is WRONG for Kleinunternehmer. Must be `'0'` for all entries, or conditionally `'0'` when `kleinunternehmer === true`.
 
 ## SKR03 Kontenrahmen — Handwerker Accounts
 
@@ -464,7 +325,7 @@ Example: `DATEV_2026-01-01_2026-03-31.csv` (Q1 2026)
 // Generate export
 window.datevExportService.generateExport('2026-01-01', '2026-03-31');
 
-// Download CSV (MUST use CP1252 encoding — see FIX section above)
+// Download CSV
 window.datevExportService.downloadExport('datev-1234567890');
 
 // Update Berater/Mandanten-Nr
@@ -494,9 +355,8 @@ window.bookkeepingService.getBuchungenForMonat(2026, 3);
 
 ### Known Issues to Fix
 
-1. **BU-Schlüssel Bug (KRITISCH):** `datev-export-service.js:102` hardcodes BU `3`/`2` (19% USt). Fix: `getBuchungsSchluessel()` Funktion aus dem Abschnitt "FIX: BU-Schlüssel Bug" oben verwenden.
-2. **Encoding Bug (KRITISCH):** Current export uses UTF-8 — DATEV import fails with Umlauten. Fix: `encodeToWindows1252()` + `downloadDatevCsv()` aus dem Abschnitt "FIX: Korrekte Windows-1252 Encoding" oben verwenden.
-3. **Dual export paths:** Both services generate DATEV CSV independently. Should consolidate to one authoritative path (DatevExportService).
+1. **BU-Schlüssel Bug:** `datev-export-service.js:102` hardcodes BU `3`/`2` (19% USt). Must check `window.bookkeepingService.einstellungen.kleinunternehmer` and use `0` when true.
+2. **Dual export paths:** Both services generate DATEV CSV independently. Should consolidate to one authoritative path (DatevExportService).
+3. **Encoding:** Current export uses UTF-8 (`text/csv;charset=utf-8`). DATEV import expects Windows-1252. May cause Umlaute issues (ä, ö, ü, ß).
 4. **Umsatz format:** DatevExportService uses Cents (correct). BookkeepingService uses decimal with comma (also acceptable but less standard).
 5. **Missing Forderungen workflow:** Current code books directly `Erlöse an Bank`. Should support the two-step flow: `Forderungen an Erlöse` (invoice created) then `Bank an Forderungen` (payment received).
-6. **Pflichtfeld-Validierung fehlt:** Vor CSV-Generierung alle Pflichtfelder prüfen (Umsatz > 0, Konto, Gegenkonto, Datum, Buchungstext, Belegfeld1). Ungültige Zeilen in Error-Log schreiben, nicht exportieren.
