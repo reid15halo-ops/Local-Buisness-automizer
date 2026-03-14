@@ -39,6 +39,61 @@ code {
 
 @media (max-width: 768px) {
 
+    /* --- iOS zoom prevention: inputs < 16px trigger auto-zoom --- */
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+
+    /* --- Mobile menu toggle: proper touch target --- */
+    .mobile-menu-toggle {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        border-radius: var(--border-radius-sm, 4px);
+    }
+
+    .mobile-menu-toggle:active {
+        background: var(--bg-hover, #252830);
+    }
+
+    /* --- Buttons: enforce 44px min-height on mobile --- */
+    .btn {
+        min-height: 44px;
+        padding: 10px 16px;
+    }
+
+    .btn-small,
+    .btn-sm {
+        min-height: 36px;
+        padding: 6px 14px;
+        font-size: 13px;
+    }
+
+    /* --- Form actions: stack on small screens, full-width --- */
+    .form-actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* --- Notification bell: proper touch target --- */
+    .notification-bell {
+        min-width: 44px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     /* --- Sidebar overlay backdrop fix --- */
     .sidebar.active + .main-content::before {
         content: '';
@@ -457,8 +512,15 @@ code {
     /* Checkboxes and radio buttons: larger hit area */
     input[type="checkbox"],
     input[type="radio"] {
-        min-width: 20px;
-        min-height: 20px;
+        min-width: 24px;
+        min-height: 24px;
+    }
+
+    /* Ensure links in lists/cards are tappable */
+    .item-card,
+    .customer-card,
+    .anfrage-card {
+        min-height: 44px;
     }
 }
 
