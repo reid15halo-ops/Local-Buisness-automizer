@@ -10,6 +10,30 @@ const { store, renderActivities } = (() => {
     return { store, renderActivities };
 })();
 
+function countCreatedInRange(items, from, to) {
+    if (!Array.isArray(items)) return 0;
+    return items.filter(item => {
+        const d = item.createdAt ? new Date(item.createdAt) : null;
+        return d && d >= from && d < to;
+    }).length;
+}
+
+function renderTrend(elId, newCount) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    el.className = 'stat-trend';
+    if (newCount === 0) {
+        el.className += ' trend-neutral';
+        el.textContent = 'keine neuen';
+    } else if (newCount > 0) {
+        el.className += ' trend-up';
+        el.textContent = '+' + newCount + ' diese Woche';
+    } else {
+        el.className += ' trend-down';
+        el.textContent = newCount + ' diese Woche';
+    }
+}
+
 function updateDashboard() {
     const offeneAnfragen = store?.anfragen?.filter(a => a.status === 'neu').length || 0;
     const wartendeAngebote = store?.angebote?.filter(a => a.status === 'offen').length || 0;
@@ -25,6 +49,14 @@ function updateDashboard() {
     if (statAngebote) {statAngebote.textContent = wartendeAngebote;}
     if (statAuftraege) {statAuftraege.textContent = aktiveAuftraege;}
     if (statRechnungen) {statRechnungen.textContent = offeneRechnungen;}
+
+    // Trend: items created in the last 7 days
+    const now = new Date();
+    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    renderTrend('trend-anfragen',  countCreatedInRange(store?.anfragen,  weekStart, now));
+    renderTrend('trend-angebote',  countCreatedInRange(store?.angebote,  weekStart, now));
+    renderTrend('trend-auftraege', countCreatedInRange(store?.auftraege, weekStart, now));
+    renderTrend('trend-rechnungen',countCreatedInRange(store?.rechnungen,weekStart, now));
 
     // Update badges
     const anfragenBadge = document.getElementById('anfragen-badge');
