@@ -35,6 +35,7 @@
     overflow-x: hidden;
     --gold: #d4a843;
     --gold-alpha: rgba(212, 168, 67, 0.15);
+    padding-bottom: 70px; /* Space for sticky CTA bar */
 }
 
 /* ---- Display Serif on Headings ---- */
@@ -1153,6 +1154,69 @@
     line-height: 1.5;
     min-width: 700px;
 }
+
+/* Mobile: card-based comparison layout */
+@media (max-width: 768px) {
+    .compare-table-wrap {
+        margin: 0;
+        padding: 0;
+        overflow-x: visible;
+    }
+    .compare-table,
+    .compare-table thead,
+    .compare-table tbody,
+    .compare-table tr,
+    .compare-table td,
+    .compare-table th {
+        display: block;
+        min-width: 0;
+    }
+    .compare-table thead {
+        display: none;
+    }
+    .compare-table tbody tr {
+        background: var(--glass-bg, rgba(255,255,255,0.03));
+        border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+        border-radius: 12px;
+        margin-bottom: 12px;
+        padding: 16px;
+    }
+    .compare-table tbody td {
+        text-align: left;
+        padding: 6px 0;
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+    .compare-table tbody td:first-child {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--accent-primary, #c8956c);
+        padding-bottom: 8px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+        display: block;
+    }
+    .compare-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    .compare-table tbody td:first-child::before {
+        content: none;
+    }
+    .compare-table tbody td:last-child {
+        background: none;
+        border-radius: 0;
+    }
+    .compare-table tbody tr:last-child td:last-child {
+        border-radius: 0;
+    }
+}
 .compare-table thead th {
     padding: 1rem 0.75rem;
     text-align: center;
@@ -1226,26 +1290,7 @@
     font-style: italic;
 }
 
-/* Responsive: stack on mobile */
-@media (max-width: 768px) {
-    .compare-table {
-        min-width: 600px;
-    }
-}
-@media (max-width: 480px) {
-    .compare-table {
-        font-size: 0.82rem;
-        min-width: 520px;
-    }
-    .compare-table thead th {
-        font-size: 0.82rem;
-        padding: 0.75rem 0.5rem;
-    }
-    .compare-table tbody td {
-        padding: 0.5rem 0.4rem;
-        font-size: 0.8rem;
-    }
-}
+/* Responsive: card layout on mobile (handled above) */
 
 /* ============================================
    FAQ
@@ -1493,18 +1538,20 @@
     .nav { padding: 12px 20px; }
     .footer-links a { padding: 8px 4px; min-height: 44px; display: inline-flex; align-items: center; }
 
-    .hero-inner { padding: 100px 20px 32px; }
+    .hero-inner { padding: 80px 16px 24px; flex-direction: column; gap: 32px; align-items: center; text-align: center; }
 
     .hero h1 {
-        font-size: clamp(30px, 8vw, 44px);
+        font-size: clamp(26px, 7vw, 40px);
         letter-spacing: -1px;
     }
 
     .hero-subtitle { font-size: 15px; }
     .hero-label { font-size: 10px; letter-spacing: 2px; }
 
+    .hero-portrait-frame { order: -1; }
+
     .hero-stats {
-        gap: 20px;
+        gap: 16px;
         flex-wrap: wrap;
         justify-content: center;
     }
@@ -1514,6 +1561,13 @@
     .hero-actions {
         flex-direction: column;
         align-items: center;
+        width: 100%;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+        max-width: 320px;
+        justify-content: center;
     }
 
     .section { padding: 64px 20px; }
@@ -1636,6 +1690,7 @@ html.no-js .reveal {
     left: 0;
     right: 0;
     padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
     background: rgba(19, 21, 22, 0.95);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1807,6 +1862,21 @@ body.modal-open {
     .lang-grid .lang-option {
         padding: 8px 10px;
         font-size: 12px;
+    }
+}
+
+/* ============================================
+   Safe area insets (notched devices / landing)
+   ============================================ */
+@supports (padding: env(safe-area-inset-bottom)) {
+    .nav {
+        padding-top: calc(12px + env(safe-area-inset-top));
+    }
+    .sticky-cta {
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+    .landing-page {
+        padding-bottom: calc(70px + env(safe-area-inset-bottom));
     }
 }
 
